@@ -121,8 +121,6 @@ define(["jquery"], ($) => {
 
       const shouldPost = QueryService.decidePost({
         explicit: usePost,
-        queryParams,
-        urlBase,
       });
 
       return { queryParams, urlBase, shouldPost };
@@ -579,30 +577,15 @@ define(["jquery"], ($) => {
     /**
      * Decide whether to use POST or GET for the query. If `explicit` is
      * provided, it overrides the auto-decision. If `disableQueryPOSTs` is set,
-     * always use GET. If the query string length exceeds `maxQueryLength`, use
-     * POST.
-     * @param {object} options The options to decide POST/GET.
-     * @param {boolean} [options.explicit] Explicitly force POST or GET.
-     * @param {object} options.queryParams The query parameters to evaluate.
-     * @param {string} options.urlBase The base URL for the query service.
+     * always use GET. Otherwise, default to using POST.
+     * @param {boolean|null} explicit Explicitly force POST or GET. If `null`
+     * or `undefined`, auto-decide.
      * @returns {boolean} `true` for POST, `false` for GET.
      */
-    static decidePost({ explicit, queryParams, urlBase }) {
+    static decidePost(explicit) {
       if (typeof explicit === "boolean") return explicit;
-
-      // Safely read disableQueryPOSTs; default to false
-      const disablePost = !!MetacatUI?.appModel?.get("disableQueryPOSTs");
-      if (disablePost) return false;
-
-      // TODO: To switch to only using POST, just return true here.
-      // return true;
-
-      // Use default when maxQueryLength isn’t configured
-      const maxLen =
-        MetacatUI?.appModel?.get("maxQueryLength") ?? DEFAULT_MAX_QUERY_LEN;
-
-      const qs = QueryService.toQueryString(queryParams);
-      return urlBase.length + 1 + qs.length > maxLen;
+      if (!!MetacatUI?.appModel?.get("disableQueryPOSTs")) return false;
+      return true;
     }
 
     /**
