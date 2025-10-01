@@ -256,9 +256,8 @@ define([
 
     describe("decidePost()", () => {
       it("respects explicit boolean override", () => {
-        const opts = { explicit: true, queryParams: {}, urlBase: "x" };
-        QueryService.decidePost(opts).should.be.true;
-        QueryService.decidePost({ ...opts, explicit: false }).should.be.false;
+        QueryService.decidePost(true).should.be.true;
+        QueryService.decidePost(false).should.be.false;
       });
 
       it("returns false when disableQueryPOSTs is enabled", () => {
@@ -268,55 +267,26 @@ define([
             get: sandbox.stub().withArgs("disableQueryPOSTs").returns(true),
           },
         });
-        const res = QueryService.decidePost({
-          queryParams: { q: "x" },
-          urlBase: "http://",
-        });
+        const res = QueryService.decidePost();
         res.should.be.false;
       });
 
-      it("returns true when query string length exceeds configured max", () => {
+      it("returns true in all other cases", () => {
         const { sandbox } = state;
-        // max length set to 10 for easier test
-        const getStub = sandbox.stub().callsFake((key) => {
-          if (key === "maxQueryLength") return 10;
-          return false;
-        });
         sandbox.stub(window, "MetacatUI").value({
-          appModel: { get: getStub },
+          appModel: {
+            get: sandbox.stub().withArgs("disableQueryPOSTs").returns(false),
+          },
         });
-        const longParams = { q: "a".repeat(20) };
-        // URL base length is 5, plus '?', plus query length (20) -> 26 > 10
-        const res = QueryService.decidePost({
-          queryParams: longParams,
-          urlBase: "12345",
-        });
+        const res = QueryService.decidePost();
         res.should.be.true;
-        getStub.calledWithExactly("maxQueryLength").should.be.true;
-      });
-
-      it("uses DEFAULT_MAX_QUERY_LEN when configuration is missing", () => {
-        const { sandbox } = state;
-        sandbox
-          .stub(window, "MetacatUI")
-          .value({ appModel: { get: () => undefined } });
-        // Create small query so result is false when default length is large
-        const res = QueryService.decidePost({
-          queryParams: { q: "abc" },
-          urlBase: "",
-        });
-        res.should.be.false;
       });
 
       it("does not throw when MetacatUI is undefined", () => {
         const { sandbox } = state;
         sandbox.stub(window, "MetacatUI").value(undefined);
-        const res = QueryService.decidePost({
-          queryParams: { q: "a" },
-          urlBase: "",
-        });
-        // Using default max length (2000), this should be false
-        res.should.be.false;
+        const res = QueryService.decidePost();
+        res.should.be.true;
       });
     });
 

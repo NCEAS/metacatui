@@ -1,8 +1,6 @@
 "use strict";
 
 define(["jquery"], ($) => {
-  const DEFAULT_MAX_QUERY_LEN = 2000;
-
   /**
    *
    * @typedef {object} QueryOptions
