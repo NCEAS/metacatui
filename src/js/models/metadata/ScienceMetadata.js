@@ -143,7 +143,18 @@
           useAuth: options.useAuth !== false,
         };
 
-        return QueryService.query(opts);
+        const model = this;
+        QueryService.queryWithFetch(opts)
+          .then((docs) => {
+            model.parse(docs, options);
+            if (options.success) options.success(model, docs, options);
+            model.trigger("sync", model, docs, options);
+          })
+          .catch((e) => {
+            console.log(e);
+            if (options.failure) options.failure(model, null, options);
+            model.trigger("error", model, e, options);
+          });
       },
 
       /*

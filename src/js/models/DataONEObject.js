@@ -333,8 +333,6 @@ define([
       },
 
       querySolr() {
-        console.log("Querying Solr for DataONEObject info:", this.get("id"));
-
         const pid = this.get("id");
         const sid = this.get("seriesid");
         if (!pid && !sid) {
@@ -354,7 +352,7 @@ define([
           q: QueryService.buildIdQuery(pid, sid),
           fields: fl,
         };
-        QueryService.query(opts)
+        QueryService.queryWithFetch(opts)
           .then((response) => model.parseSolrResponse(response))
           .catch((e) => this.setNotFound(e));
       },
@@ -377,6 +375,10 @@ define([
         return doc;
       },
 
+      /**
+       * Set the notFound attribute to true and trigger a notFound event
+       * @param {Error} e An optional error object from a failed fetch
+       */
       setNotFound(e) {
         if (e) console.error("Error fetching DataONEObject:", e);
         this.set("notFound", true);
