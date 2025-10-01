@@ -302,7 +302,7 @@ define([
         heading.prepend(icon);
         alertBox.append(heading, citeContainer);
 
-        alertBox.style.marginTop = "-1rem";
+        alertBox.style.marginTop = "-0.8rem";
         heading.style.marginTop = "0";
         citeContainer.style.marginLeft = "1rem";
 
