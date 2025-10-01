@@ -298,6 +298,40 @@ define([
       },
 
       /**
+       * Try to find the entity in the asset's entity collection that has the
+       * given id. If no entity is found with that id, the properties of all
+       * entities are checked to see if any have a property with a name like
+       * "id", "identifier", "name", "title", or "label" that matches the given
+       * id.
+       * @param {string} id The id of the feature to find.
+       * @returns {Cesium.Entity|null} The Cesium Entity with the given id, or
+       * null if not found.
+       * @since 2.35.0
+       */
+      getFeatureById: function (id) {
+        let feature = this.getEntityCollection()?.getById(id);
+        if (!feature) {
+          // get the propreties of all entities and see if any have an id
+          const entities = this.getEntities() || [];
+          for (let x = 0; x < entities.length; x++) {
+            const props = this.getPropertiesFromFeature(entities[x]);
+            const keys = Object.keys(props || {});
+            const keysLower = keys.map((k) => k.toLowerCase());
+            const keysToCheck = ["id", "identifier", "name", "title", "label"];
+            for (let y = 0; y < keysToCheck.length; y++) {
+              const index = keysLower.indexOf(keysToCheck[y]);
+              if (index > -1 && props[keys[index]] == id) {
+                feature = entities[x];
+                break;
+              }
+            }
+            if (feature) break;
+          }
+        }
+        return feature;
+      },
+
+      /**
        * @inheritdoc
        * @since 2.25.0
        */

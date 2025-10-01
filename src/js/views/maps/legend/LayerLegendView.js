@@ -18,6 +18,10 @@ define([
   const BASE_CLASS = "layer-legend";
   const CLASS_NAMES = {
     palette: `${BASE_CLASS}__palette`,
+    icon: "list-item__icon",
+    filterIcon: "list-item__filter-icon",
+    filterIconActive: "list-item__filter-icon--active",
+    layerName: `${BASE_CLASS}__layer-name`,
   };
 
   /**
@@ -53,8 +57,10 @@ define([
 
       /** @inheritdoc */
       initialize(options) {
+        this.filterModel = options.filterModel;
         this.model = options.model;
         this.layerName = options.layerName;
+        this.layerModel = options.layerModel;
       },
 
       /** @inheritdoc */
@@ -83,16 +89,40 @@ define([
             name,
           }),
         );
+
+        // Insert the filter icon to the right of the label element text. This
+        //  icon appears for layers that are "filterable" based on their
+        //  atrributes.
+        this.swatchEl = this.el.querySelector(`.${CLASS_NAMES.layerName}`);
+        if (this.filterModel && this.swatchEl) {
+          const filterIconEl = document.createElement("span");
+          const classes = [
+            CLASS_NAMES.icon,
+            CLASS_NAMES.filterIcon,
+            CLASS_NAMES.filterIconActive,
+          ];
+          filterIconEl.classList.add(...classes);
+          filterIconEl.title = "Filter by property"; // add tooltip
+          filterIconEl.innerHTML = `<i class="icon icon-filter"></i>`;
+          this.swatchEl.prepend(filterIconEl);
+        }
       },
 
       /** Fills the palette div with categorical swatches. */
       renderCategoricalPalette() {
         this.renderTemplate();
         this.model.get("colors").forEach((color) => {
-          const swatch = new CategoricalSwatchView({ model: color });
+          // if (color.get("value")) {
+          // const swatch = new CategoricalSwatchView({ model: color });
+          const swatch = new CategoricalSwatchView({
+            model: color,
+            filterModel: this.filterModel,
+            layerModel: this.layerModel,
+          });
           swatch.render();
 
           this.$(`.${CLASS_NAMES.palette}`).append(swatch.el);
+          // }
         });
       },
 

@@ -501,9 +501,9 @@ represents 1 unit of the given distance measurement. */
 
   .toolbar__content-header {
     color: var(--portal-col-primary-7);
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    line-height: 2rem;
+    line-height: 1.5rem;
     margin: 1rem 1.5rem;
   }
 }
@@ -698,9 +698,9 @@ represents 1 unit of the given distance measurement. */
 
 .search-input {
   padding-bottom: 1rem;
-  background-color: var(--portal-col-neutral-00, var(--map-col-bkg));
 
   .search-input__field {
+    background-color: var(--portal-col-neutral-00, var(--map-col-bkg));
     position: relative;
     display: flex;
     justify-content: flex-end;
@@ -839,15 +839,15 @@ represents 1 unit of the given distance measurement. */
   height: min-content;
 }
 
-.layer-item {
+.list-item {
   display: grid;
   grid-template-columns: min-content auto max-content;
   align-items: center;
   padding: 0 1.5rem;
   cursor: pointer;
 
-  .layer-item__visibility-toggle,
-  .layer-item__filter-icon {
+  .list-item__visibility-toggle,
+  .list-item__filter-icon {
     opacity: var(--map-no-brightness-or-opacity-tweaks, 0.85);
     padding: 0;
     margin: 0.25rem;
@@ -861,7 +861,7 @@ represents 1 unit of the given distance measurement. */
     color: var(--portal-col-neutral-4, currentColor);
     background-color: transparent;
 
-    .layer-item__icon {
+    .list-item__icon {
       fill: var(--portal-col-neutral-4, currentColor);
       svg > path {
         fill: var(--portal-col-neutral-4, currentColor);
@@ -877,17 +877,17 @@ represents 1 unit of the given distance measurement. */
     background-color: var(--portal-col-neutral-1, #323745);
     transition: background-color 0.3s ease-in-out;
 
-    &.layer-item--shown {
+    &.list-item--shown {
       background-color: var(--portal-col-primary-1, #15324e);
     }
 
-    .layer-item__settings {
+    .list-item__settings {
       /* Show button when layer is hovered. */
       display: flex;
       border: 1px solid var(--portal-col-neutral-4);
 
       /* Use the same style on button hover and when selected. */
-      &.layer-item--selected,
+      &.list-item--selected,
       &:hover {
         background-color: var(
           --portal-col-primary-2,
@@ -897,11 +897,11 @@ represents 1 unit of the given distance measurement. */
     }
   }
 
-  &.layer-item--shown {
-    .layer-item__visibility-toggle {
+  &.list-item--shown {
+    .list-item__visibility-toggle {
       color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
 
-      .layer-item__icon {
+      .list-item__icon {
         fill: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
         svg > path {
           fill: var(
@@ -912,24 +912,24 @@ represents 1 unit of the given distance measurement. */
       }
     }
 
-    .layer-item__settings {
+    .list-item__settings {
       /* Show button when layer is shown. */
       display: flex;
       border: 1px solid var(--portal-col-primary-2);
     }
   }
 
-  .layer-item__filter-icon--active {
+  .list-item__filter-icon--active {
     color: var(--portal-col-primary-6);
   }
 
-  .layer-item__settings {
+  .list-item__settings {
     /* By default, don't show button. */
     display: none;
     align-items: center;
     border-radius: var(--map-border-radius-small);
 
-    .layer-item__settings-toggle {
+    .list-item__settings-toggle {
       font-size: 0.85rem;
       width: 1rem;
       height: 1rem;
@@ -941,20 +941,20 @@ represents 1 unit of the given distance measurement. */
     }
 
     /* Use the same style on button hover and when selected. */
-    &.layer-item--selected,
+    &.list-item--selected,
     &:hover {
       display: flex;
       background-color: var(--portal-col-primary-1, #15324e);
       border: 1px solid var(--portal-col-primary-1, #15324e);
 
-      .layer-item__settings-toggle {
+      .list-item__settings-toggle {
         color: var(--portal-col-primary-6);
       }
     }
   }
 }
 
-.layer-item__label {
+.list-item__label {
   font-size: 0.825rem;
   font-weight: 400;
   margin: 0 0.5rem;
@@ -968,16 +968,16 @@ represents 1 unit of the given distance measurement. */
   gap: 4px;
 }
 
-.layer-item__highlighted-text {
+.list-item__highlighted-text {
   background-color: var(--portal-col-highlight-2, rgba(30, 127, 196, 0.5));
 }
 
-.layer-item__icon > svg {
+.list-item__icon > svg {
   height: 100%;
   width: auto;
 }
 
-.layer-item__visibility-toggle:hover {
+.list-item__visibility-toggle:hover {
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.5);
 }
 
@@ -2008,8 +2008,12 @@ other class: .ui-slider-range */
   width: 100%;
 
   .viewfinder__search {
-    border-bottom: 1px solid
-      var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
+    background-color: var(
+      --portal-col-primary-1,
+      var(--map-col-bkg__deprecate)
+    );
+    border: 1px solid var(--portal-col-primary-2);
+    padding-top: 1.5rem;
   }
 
   .viewfinder__zoom-presets {
@@ -2070,7 +2074,7 @@ other class: .ui-slider-range */
 .viewfinder-zoom-presets {
   display: flex;
   flex-direction: column;
-  padding: 0.5rem 1.5rem 1rem 1.5rem;
+  padding: 0.1rem 1.5rem 1rem 1.5rem;
   row-gap: 0.5rem;
 
   .viewfinder-zoom-preset__preset {
@@ -2080,7 +2084,7 @@ other class: .ui-slider-range */
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    padding: 1rem 1.5rem 1rem 2.5rem;
+    padding: 1.1rem 1.1rem 1rem 1.4rem;
     row-gap: 0.5rem;
 
     &:hover {
@@ -2149,6 +2153,14 @@ other class: .ui-slider-range */
         }
       }
     }
+  }
+
+  .viewfinder-zoom-preset__image {
+    float: left;
+    margin: 0.3rem 0.5rem 0 0;
+    border-radius: var(--map-border-radius-big);
+    max-width: 90px;
+    max-height: 90px;
   }
 
   .viewfinder-zoom-preset.viewfinder-zoom-preset--active
@@ -2255,6 +2267,27 @@ other class: .ui-slider-range */
     animation: fadeIn 0.3s ease-in-out;
   }
 }
+
+/* modifier to make the toggle text title-like */
+.expansion-panel--title {
+  box-shadow: none;
+
+  .expansion-panel__toggle {
+    font-size: 1.3rem;
+  }
+
+  .expansion-panel__title {
+    font-weight: 600;
+    color: var(--portal-col-primary-7, var(--map-col-highlight__deprecate));
+  }
+  .expansion-panel__icon {
+    fill: var(--portal-col-primary-7, var(--map-col-highlight__deprecate));
+    color: var(--portal-col-primary-7, var(--map-col-highlight__deprecate));
+  }
+  .expansion-panel__toggle {
+    padding: 0.5rem 1.5rem;
+  }
+}
 /** END - Expansion panel View. */
 
 /*****************************************************************************************
@@ -2354,6 +2387,15 @@ other class: .ui-slider-range */
   color: var(--portal-col-neutral-6, var(--map-col-text__deprecate));
   font-size: 0.8rem;
   font-weight: 500;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .list-item__filter-icon {
+    color: var(--portal-col-primary-6);
+    font-size: 1rem;
+  }
 }
 
 .layer-legend__palette {

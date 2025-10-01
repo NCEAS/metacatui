@@ -32,7 +32,7 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
 
       /**
        * @typedef {Object} ZoomPresetsListViewOptions
-       * @property {ZoomPreset[]} zoomPresets The zoom presets to render.
+       * @property {ZoomPresets} zoomPresets The collection of zoom presets
        * @property {Function} selectZoomPreset The callback function for
        * selecting a zoom preset.
        */
@@ -46,7 +46,8 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
        * Render the view by updating the HTML of the element.
        */
       render() {
-        this.children = this.zoomPresets.map((preset) => {
+        this.el.innerHTML = "";
+        this.children = this.zoomPresets?.models?.map((preset) => {
           const view = new ZoomPresetView({
             selectCallback: () => {
               this.selectZoomPreset(preset);
@@ -57,9 +58,7 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
             preset,
           });
           view.render();
-
           this.el.appendChild(view.el);
-
           return view;
         });
       },
