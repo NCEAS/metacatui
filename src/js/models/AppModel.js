@@ -2309,6 +2309,36 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           bookkeeperCustomersUrl: null,
 
           /**
+           * Enable the DataONE Notification Service integration. When true, MetacatUI will
+           * expose helper models that allow users to manage notification subscriptions.
+           * @type {boolean}
+           * @default false
+           * @since 0.0.0
+           */
+          enableNotificationService: false,
+
+          /**
+           * The base URL for the DataONE Notification Service API. This must point to the
+           * service root that exposes resources such as `/datasetChanges`.
+           * When not provided, the NotificationService client must be instantiated with a
+           * specific URL, or the feature should remain disabled.
+           * @type {string|null}
+           * @default null
+           * @since 0.0.0
+           */
+          notificationServiceUrl: null,
+
+          /**
+           * The set of resource types supported by the Notification Service for this
+           * repository. These values are typically the lowercase enum names exposed by the
+           * service (for example `datasetChanges`).
+           * @type {string[]}
+           * @default ["datasetChanges", "citations"]
+           * @since 0.0.0
+           */
+          notificationServiceResourceTypes: ["datasetChanges", "citations"],
+
+          /**
            * The name of the DataONE Plus membership plan, which is used in messaging throughout the UI.
            * This is only used if the enableBookkeeperServices setting is set to true.
            * @type {string}
