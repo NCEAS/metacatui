@@ -1881,7 +1881,7 @@ define([
        * @since 2.32.0
        */
       addInfoIcon(iconType, iconClass, baseClass, titleText) {
-        const iconHTML = `<span class="${iconType} icons">
+        const iconHTML = `<span class="${iconType} icon">
             <span class="icon-stack ${iconType} tooltip-this"
                   data-toggle="tooltip"
                   data-placement="top"
@@ -1897,13 +1897,13 @@ define([
         const newIconFragment = range.createContextualFragment(iconHTML);
         const newIcon = newIconFragment.firstChild;
 
-        const iconContainerClass = "info-icons";
+        const iconContainerClass = "dataset-info-icons-container";
         let iconContainer = this.el.querySelector(`.${iconContainerClass}`);
         if (!iconContainer) {
           iconContainer = $(document.createElement("span")).addClass(
             iconContainerClass,
           );
-          this.$(".metrics-container").prepend(iconContainer);
+          this.$(".title").append(iconContainer);
         }
 
         iconContainer.append(newIcon);
