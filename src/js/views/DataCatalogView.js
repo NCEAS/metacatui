@@ -75,12 +75,6 @@ define([
       mainContentTemplate: _.template(MainContentTemplate),
       currentFilterTemplate: _.template(CurrentFilterTemplate),
       loadingTemplate: _.template(LoadingTemplate),
-      metricStatTemplate: _.template(
-        "<span class='metric-icon'> <i class='icon" +
-          " <%=metricIcon%>'></i> </span>" +
-          "<span class='metric-value'> <i class='icon metric-icon'>" +
-          "</i> </span>",
-      ),
 
       // Search mode
       mode: "map",

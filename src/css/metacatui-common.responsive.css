@@ -839,45 +839,6 @@
     width: 100%;
     height: auto;
   }
-
-  /* Style for the toolbars that contains buttons in the well on either side. */
-  .metric-toolbar {
-    float: none;
-    width: 100%;
-    justify-content: center;
-    align-items: center;
-    margin-top: 0px;
-  }
-  .edit-toolbar {
-    float: none;
-    border-left: none;
-    margin-top: none;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .edit-toolbar > #metadata-controls-container > .metadata-controls-container {
-    margin-left: 0px;
-    margin-top: 5px;
-    margin-right: 0px;
-    height: 38px;
-  }
-
-  .edit-toolbar > #owner-controls-container > .authority-controls {
-    width: auto;
-    height: 38px;
-    margin-top: -1px;
-    margin-right: 0px;
-    margin-left: 0px;
-  }
-
-  .edit-toolbar
-    > #owner-controls-container
-    > .authority-controls
-    > #editMetadata {
-    margin-right: none;
-  }
-
   /* Query rules in the query builder */
   .query-rule {
     grid-template-columns: 2.2rem auto 1.3rem;
