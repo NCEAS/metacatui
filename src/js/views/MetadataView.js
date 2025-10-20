@@ -25,16 +25,14 @@ define([
   "views/CanonicalDatasetHandlerView",
   "text!templates/metadata/metadata.html",
   "text!templates/dataSource.html",
-  "text!templates/publishDOI.html",
   "text!templates/newerVersion.html",
   "text!templates/loading.html",
-  "text!templates/metadataControls.html",
   "text!templates/alert.html",
-  "text!templates/editMetadata.html",
   "text!templates/dataDisplay.html",
   "text!templates/map.html",
   "text!templates/metaTagsHighwirePress.html",
   "views/MetricView",
+  "semantic",
 ], (
   $,
   $ui,
@@ -62,19 +60,18 @@ define([
   CanonicalDatasetHandlerView,
   MetadataTemplate,
   DataSourceTemplate,
-  PublishDoiTemplate,
   VersionTemplate,
   LoadingTemplate,
-  ControlsTemplate,
   AlertTemplate,
-  EditMetadataTemplate,
   DataDisplayTemplate,
   MapTemplate,
   metaTagsHighwirePressTemplate,
   MetricView,
+  Semantic,
 ) => {
   "use strict";
 
+  const SEM_VARIATIONS = Semantic.CLASS_NAMES.variations;
   /**
    * @class MetadataView
    * @classdesc A human-readable view of a science metadata file
@@ -113,17 +110,32 @@ define([
       // Templates
       template: _.template(MetadataTemplate),
       alertTemplate: _.template(AlertTemplate),
-      doiTemplate: _.template(PublishDoiTemplate),
       versionTemplate: _.template(VersionTemplate),
       loadingTemplate: _.template(LoadingTemplate),
-      controlsTemplate: _.template(ControlsTemplate),
       dataSourceTemplate: _.template(DataSourceTemplate),
-      editMetadataTemplate: _.template(EditMetadataTemplate),
       dataDisplayTemplate: _.template(DataDisplayTemplate),
       mapTemplate: _.template(MapTemplate),
       metaTagsHighwirePressTemplate: _.template(metaTagsHighwirePressTemplate),
 
       objectIds: [],
+
+      /**
+       * Settings passed to the Formantic UI popup module to configure a tooltip
+       * shown over the metric button.
+       * @see https://fomantic-ui.com/modules/popup.html#/settings
+       * @type {object|boolean}
+       * @since 0.0.0
+       */
+      tooltipSettings: {
+        variation: `${SEM_VARIATIONS.mini} ${SEM_VARIATIONS.inverted}`,
+        position: "top center",
+        on: "hover",
+        hoverable: true,
+        delay: {
+          show: 500,
+          hide: 40,
+        },
+      },
 
       /**
        * Text to display in the help tooltip for the alternative identifier
@@ -1623,116 +1635,149 @@ define([
         }
       },
 
+      isAuthorizedToEdit() {
+        const resourceMap = this.dataPackage?.packageModel;
+        const modelsToCheck = [this.model, resourceMap];
+
+        // If there is no EML or no resource map, the user doesn't need
+        // permission to edit it.
+        return modelsToCheck.every(
+          (model) =>
+            // If there is no EML or no resource map, the user doesn't need
+            // permission to edit it.
+            !model ||
+            model.get("notFound") === true ||
+            model.get("isAuthorized_write") === true,
+        );
+      },
+
       /*
        * Inserts control elements onto the page for the user to interact with
        * the dataset - edit, publish, etc. Editor permissions should already
        * have been checked before running this function.
        */
       insertEditorControls() {
-        const view = this;
-        const resourceMap = this.dataPackage
-          ? this.dataPackage.packageModel
-          : null;
-        const modelsToCheck = [this.model, resourceMap];
-        const authorized = _.every(modelsToCheck, (model) =>
-          // If there is no EML or no resource map, the user doesn't need
-          // permission to edit it.
-          !model || model.get("notFound") === true
-            ? true
-            : model.get("isAuthorized_write") === true,
-        );
+        // Do not insert the editor controls twice
+        this.$(this.editorControlsContainer).empty();
+        this.removeEditButton();
+        this.removePublishButton();
 
         // Only run this function when the user has full editor permissions
         // (i.e. write permission on the EML, and write permission on the
         // resource map if there is one.)
-        if (!authorized) {
-          return;
-        }
-
         if (
-          (this.model.get("obsoletedBy") &&
-            this.model.get("obsoletedBy").length > 0) ||
+          !this.isAuthorizedToEdit() ||
+          this.model.get("obsoletedBy")?.length > 0 ||
           this.model.get("archived")
         ) {
           return;
         }
 
+        this.insertEditButton();
+        this.insertPublishButton();
+      },
+
+      removeEditButton() {
+        this.editButton?.remove();
+        this.editButton = null;
+      },
+
+      removePublishButton() {
+        this.publishButton?.remove();
+        this.publishButton = null;
+      },
+
+      /**
+       * Insert an Edit button if the Edit button is enabled
+       */
+      insertEditButton() {
+        this.removeEditButton();
+
+        if (!MetacatUI.appModel.get("displayDatasetEditButton")) {
+          return;
+        }
+
         // Save the element that will contain the owner control buttons
         const container = this.$(this.editorControlsContainer);
-        // Do not insert the editor controls twice
-        container.empty();
 
         // The PID for the EML model
         const pid = this.model.get("id") || this.pid;
 
-        // Insert an Edit button if the Edit button is enabled
-        if (MetacatUI.appModel.get("displayDatasetEditButton")) {
-          // Check that this is an editable metadata format
-          if (
-            _.contains(
-              MetacatUI.appModel.get("editableFormats"),
-              this.model.get("formatId"),
-            )
-          ) {
-            // Insert the Edit Metadata template
-            container.append(
-              this.editMetadataTemplate({
-                identifier: pid,
-                supported: true,
-              }),
-            );
-          }
-          // If this format is not editable, insert an unspported Edit Metadata
-          // template
-          else {
-            container.append(
-              this.editMetadataTemplate({
-                supported: false,
-              }),
-            );
-          }
+        const format = this.model.get("formatId");
+        const editableFormats = MetacatUI.appModel.get("editableFormats") || [];
+        const supported = editableFormats.includes(format);
+        // The share-feature class is added to share/upload/edit/login
+        // features so repo can easily hide them if needed
+        const href = supported
+          ? `${MetacatUI.root}/submit/${encodeURIComponent(pid)}`
+          : null;
+        const button = this.createButton({
+          icon: "pencil",
+          text: "Edit metadata",
+          id: "edit-metadata-btn",
+          disabled: !supported,
+          classes: ["share-feature", "btn-primary"],
+          href,
+        });
+
+        if (!supported) {
+          $(button).popup({
+            ...this.tooltipSettings,
+            title: "This metadata format is not editable.",
+          });
         }
 
+        container.append(button);
+      },
+
+      insertPublishButton() {
+        this.removePublishButton();
+
+        const container = this.$(this.editorControlsContainer);
+
+        const pid = this.model.get("id") || this.pid;
         // Determine if this metadata can be published. The Publish feature has
         // to be enabled in the app. The model cannot already have a DOI
         let canBePublished =
-          MetacatUI.appModel.get("enablePublishDOI") && !view.model.isDOI();
+          MetacatUI.appModel.get("enablePublishDOI") && !this.model.isDOI();
+
+        if (!canBePublished) return;
 
         // If publishing is enabled, check if only certain users and groups can
         // publish metadata
-        if (canBePublished) {
-          // Get the list of authorized publishers from the AppModel
-          const authorizedPublishers = MetacatUI.appModel.get(
-            "enablePublishDOIForSubjects",
-          );
-          // If the logged-in user is one of the subjects in the list or is in a
-          // group that is in the list, then this metadata can be published.
-          // Otherwise, it cannot.
-          if (
-            Array.isArray(authorizedPublishers) &&
-            authorizedPublishers.length
-          ) {
-            if (
-              MetacatUI.appUserModel.hasIdentityOverlap(authorizedPublishers)
-            ) {
-              canBePublished = true;
-            } else {
-              canBePublished = false;
-            }
+
+        // Get the list of authorized publishers from the AppModel
+        const authorizedPublishers = MetacatUI.appModel.get(
+          "enablePublishDOIForSubjects",
+        );
+        // If the logged-in user is one of the subjects in the list or is in a
+        // group that is in the list, then this metadata can be published.
+        // Otherwise, it cannot.
+        if (
+          Array.isArray(authorizedPublishers) &&
+          authorizedPublishers.length
+        ) {
+          if (MetacatUI.appUserModel.hasIdentityOverlap(authorizedPublishers)) {
+            canBePublished = true;
+          } else {
+            canBePublished = false;
           }
         }
 
-        // If this metadata can be published, then insert the Publish button
-        // template
-        if (canBePublished) {
-          // Insert a Publish button template
-          container.append(
-            view.doiTemplate({
-              isAuthorized: true,
-              identifier: pid,
-            }),
-          );
-        }
+        if (!canBePublished) return;
+        const button = this.createButton({
+          icon: "star",
+          text: "Publish with DOI",
+          id: "publish",
+          classes: ["share-feature", "btn-primary"],
+        });
+
+        button.setAttribute("pid", pid);
+        button.setAttribute("data-pid", pid);
+
+        container.append(button);
+
+        this.publishButton = button;
       },
 
       /*
@@ -1779,67 +1824,115 @@ define([
        * - A "Copy Citation" button to copy the citation text
        */
       insertControls() {
-        // Convert the support mdq formatId list to a version that JS regex
-        // likes (with special characters double
-        RegExp.escape = (s) => s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\\\$&");
-        const mdqFormatIds = MetacatUI.appModel.get("mdqFormatIds");
+        const controlsHtml = `
+          <div class="metrics-container btn-toolbar"></div>
+          <div class="controls btn-toolbar">
+            <span id="editor-controls-container" class="controls"></span>
+          </div>`.trim();
 
-        // Check of the current formatId is supported by the current metadata
-        // quality suite. If not, the 'Assessment Report' button will not be
-        // displacyed in the metadata controls panel.
+        $(this.controlsContainer).html(controlsHtml);
+
+        // Escape special regex characters
+        const escapeRegex = (s) => s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+        const mdqFormatIds = MetacatUI.appModel.get("mdqFormatIds") || [];
         const thisFormatId = this.model.get("formatId");
-        let formatFound = false;
-        if (mdqFormatIds !== null) {
-          for (let ifmt = 0; ifmt < mdqFormatIds.length; ifmt += 1) {
-            const currentFormatId = RegExp.escape(mdqFormatIds[ifmt]);
-            const re = new RegExp(currentFormatId);
-            formatFound = re.test(thisFormatId);
-            if (formatFound) {
-              break;
-            }
-          }
+
+        // Check if the current formatId is supported by the metadata quality suite
+        const formatFound = mdqFormatIds.some((id) =>
+          new RegExp(escapeRegex(id)).test(thisFormatId),
+        );
+
+        // Show a link to the assessment report if MDQ is enabled and this format
+        // is supported
+        if (
+          MetacatUI.appModel.get("mdqBaseUrl") &&
+          formatFound &&
+          MetacatUI.appModel.get("displayDatasetQualityMetric")
+        ) {
+          this.insertQualityReportButton();
         }
 
-        // Get template
-        const controlsContainer = this.controlsTemplate({
-          citationTarget: this.citationContainer,
-          url: window.location,
-          displayQualtyReport:
-            MetacatUI.appModel.get("mdqBaseUrl") &&
-            formatFound &&
-            MetacatUI.appModel.get("displayDatasetQualityMetric"),
-          showWholetale: MetacatUI.appModel.get("showWholeTaleFeatures"),
-          model: this.model.toJSON(),
-        });
+        // Show the analyze button if Whole Tale features are enabled
+        if (MetacatUI.appModel.get("showWholeTaleFeatures")) {
+          this.insertWholeTaleButton();
+        }
 
-        $(this.controlsContainer).html(controlsContainer);
+        this.insertCitationButton();
 
         // Insert the info icons
         this.renderInfoIcons();
+      },
 
-        if (MetacatUI.appModel.get("showWholeTaleFeatures")) {
-          this.createWholeTaleButton();
-        }
+      // <a class="btn" id="cite-this-dataset-btn"><i class="icon icon-copy"></i> Cite this dataset</a>
 
+      insertCitationButton() {
         // Show the citation modal with the ability to copy the citation text
         // when the "Copy Citation" button is clicked
-        const citeButton = this.el.querySelector("#cite-this-dataset-btn");
+        if (this.citationModal) this.citationModal.remove();
+        if (this.citationButton) this.citationButton.remove();
+        this.citationModal = null;
+        this.citationButton = null;
+
         this.citationModal = new CitationModalView({
           model: this.model,
           createLink: true,
         });
         this.subviews.push(this.citationModal);
         this.citationModal.render();
-        if (citeButton) {
-          citeButton.removeEventListener("click", this.citationModal);
-          citeButton.addEventListener(
-            "click",
-            () => {
-              this.citationModal.show();
-            },
-            false,
-          );
+
+        this.citationButton = this.createButton({
+          icon: "copy",
+          text: "Cite this dataset",
+          id: "cite-this-dataset-btn",
+        });
+        this.citationButton.removeEventListener("click", this.citationModal);
+        this.citationButton.addEventListener(
+          "click",
+          () => {
+            this.citationModal.show();
+          },
+          false,
+        );
+
+        document
+          .querySelector(this.controlsContainer)
+          .appendChild(this.citationButton);
+      },
+
+      createButton({
+        icon,
+        text,
+        href = null,
+        id = null,
+        classes = [],
+        dropdown = false,
+        disabled = false,
+      }) {
+        const button = document.createElement("a");
+        button.classList.add(...["btn", ...classes]);
+        if (id) button.id = id;
+
+        const iconEl = document.createElement("i");
+        iconEl.classList.add("icon", `icon-${icon}`);
+        button.appendChild(iconEl);
+
+        const textNode = document.createTextNode(` ${text}`);
+        button.appendChild(textNode);
+
+        if (dropdown) {
+          button.setAttribute("data-toggle", "dropdown");
+          button.href = "#";
+          // <span class="caret"></span>
+          const caretSpan = document.createElement("span");
+          caretSpan.classList.add("caret");
+          button.appendChild(caretSpan);
         }
+
+        if (href) button.href = href;
+
+        if (disabled) button.disabled = true;
+
+        return button;
       },
 
       /**
@@ -1912,27 +2005,37 @@ define([
       },
 
       /**
-       *Creates a button which the user can click to launch the package in Whole
-       *Tale
+       * Creates a button which the user can click to launch the package in
+       * Whole Tale
        */
-      createWholeTaleButton() {
-        const self = this;
+      insertWholeTaleButton() {
+        const view = this;
+        const analyzeButton = this.createButton({
+          icon: "bar-chart",
+          text: "Analyze",
+          classes: ["analyze", "dropdown-toggle"],
+          dropdown: true,
+        });
+
+        const dropdownMenu = document.createElement("ul");
+        dropdownMenu.classList.add("dropdown-menu", "analyze-dropdown-menu");
+        const container = document.createElement("span");
+        container.classList.add("dropdown");
+        document.querySelector(this.controlsContainer).appendChild(container);
+
+        container.append(analyzeButton);
+        container.append(dropdownMenu);
+        const title = encodeURIComponent(
+          view.model.get("title") || "Untitled Dataset",
+        );
+        const baseUrl = MetacatUI.appModel.get("d1CNBaseUrl");
+        const dashboardUrl = MetacatUI.appModel.get("dashboardUrl");
+        const currentUrl = window.location.href;
+        const service = MetacatUI.appModel.get("d1CNService");
+        const queryParams = `?uri=${currentUrl}&title=${title}&api=${baseUrl}${service}`;
         MetacatUI.appModel.get("taleEnvironments").forEach((environment) => {
-          const queryParams = `?uri=${
-            window.location.href
-          }&title=${encodeURIComponent(
-            self.model.get("title"),
-          )}&environment=${environment}&api=${MetacatUI.appModel.get(
-            "d1CNBaseUrl",
-          )}${MetacatUI.appModel.get("d1CNService")}`;
-          const composeUrl =
-            MetacatUI.appModel.get("dashboardUrl") + queryParams;
-          const anchor = $("<a>");
-          anchor
-            .attr("href", composeUrl)
-            .append($("<span>").attr("class", "tab").append(environment));
-          anchor.attr("target", "_blank");
-          $(".analyze.dropdown-menu").append($("<li>").append(anchor));
+          const itemHtml = `<li><a tabindex="-1" href="${dashboardUrl}${queryParams}&environment=${environment}" target="_blank" rel="noopener noreferrer">${environment}</a></li>`;
+          dropdownMenu.insertAdjacentHTML("beforeend", itemHtml);
         });
       },
 
