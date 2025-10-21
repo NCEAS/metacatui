@@ -167,5 +167,154 @@ define([
         }, 0);
       });
     });
+
+    describe("Access Policy Management", function () {
+      it("should handle public/private toggle", function() {
+        // First verify the method exists
+        expect(dataItemView.changeAccessPolicy).to.not.be.undefined;
+        expect(typeof dataItemView.changeAccessPolicy).to.equal('function');
+        
+        // Create a mock checkbox event for making the object public
+        const publicEvent = {
+          target: { checked: true }
+        };
+        
+        // Create a mock checkbox event for making the object private  
+        const privateEvent = {
+          target: { checked: false }
+        };
+
+        // Test making the object public when no access policy exists
+        expect(function() {
+          dataItemView.changeAccessPolicy(publicEvent);
+        }).to.not.throw("changeAccessPolicy should handle public toggle without throwing");
+        
+        // Verify createAccessPolicy was called on the model
+        const accessPolicy = model.get("accessPolicy");
+        expect(accessPolicy).to.not.be.undefined;
+        expect(accessPolicy).to.not.be.null;
+        expect(accessPolicy.makePublic).to.not.be.undefined;
+        expect(typeof accessPolicy.makePublic).to.equal('function');
+        
+        // Test making the object public when access policy already exists
+        const makePublicSpy = sinon.spy(accessPolicy, "makePublic");
+        
+        expect(function() {
+          dataItemView.changeAccessPolicy(publicEvent);
+        }).to.not.throw("changeAccessPolicy should handle public toggle on existing policy");
+        
+        expect(makePublicSpy.calledOnce).to.be.true;
+        
+        // Test making the object private
+        expect(accessPolicy.makePrivate).to.not.be.undefined;
+        expect(typeof accessPolicy.makePrivate).to.equal('function');
+        
+        const makePrivateSpy = sinon.spy(accessPolicy, "makePrivate");
+        
+        expect(function() {
+          dataItemView.changeAccessPolicy(privateEvent);
+        }).to.not.throw("changeAccessPolicy should handle private toggle");
+        
+        expect(makePrivateSpy.calledOnce).to.be.true;
+        
+        // Test that the method handles null event gracefully
+        expect(function() {
+          dataItemView.changeAccessPolicy(null);
+        }).to.not.throw("changeAccessPolicy should handle null event gracefully");
+        
+        // Clean up spies
+        makePublicSpy.restore();
+        makePrivateSpy.restore();
+      });
+
+      it.skip("EXPECTED FAILURE: should update UI when AccessPolicy changes", function() {
+        // Create an access policy for the model
+        const accessPolicy = model.createAccessPolicy();
+        model.set("accessPolicy", accessPolicy);
+        
+        // First verify that the required AccessPolicy methods exist
+        expect(accessPolicy.makePrivate).to.not.be.undefined;
+        expect(typeof accessPolicy.makePrivate).to.equal('function');
+        expect(accessPolicy.makePublic).to.not.be.undefined;
+        expect(typeof accessPolicy.makePublic).to.equal('function');
+        
+        // Test that AccessPolicy state methods exist and work
+        if (accessPolicy.isPublic) {
+          expect(typeof accessPolicy.isPublic).to.equal('function');
+        }
+        if (accessPolicy.isPrivate) {
+          expect(typeof accessPolicy.isPrivate).to.equal('function');
+        }
+        
+        // Verify the DataItemView has UI update capabilities
+        expect(dataItemView.$).to.not.be.undefined;
+        expect(typeof dataItemView.$).to.equal('function');
+        
+        // Test that the view responds to AccessPolicy changes
+        let makePrivateEventFired = false;
+        let makePublicEventFired = false;
+        
+        // Listen for change events on the access policy with specific tracking
+        accessPolicy.on('change', function() {
+          console.log("AccessPolicy change event fired");
+        });
+        
+        // Track makePrivate change events specifically
+        accessPolicy.on('change', function() {
+          if (!makePrivateEventFired) {
+            makePrivateEventFired = true;
+            console.log("makePrivate change event detected");
+          }
+        });
+        
+        // Test making the policy private
+        console.log("Testing makePrivate()...");
+        expect(function() {
+          accessPolicy.makePrivate();
+        }).to.not.throw("makePrivate should not throw errors");
+        
+        // Verify that change events are fired when policy changes
+        expect(makePrivateEventFired).to.be.true;
+        console.log("makePrivate change event verification: PASSED");
+        
+        // Setup listener for public change events 
+        accessPolicy.on('change', function() {
+          if (makePrivateEventFired && !makePublicEventFired) {
+            makePublicEventFired = true;
+            console.log("makePublic change event detected");
+          }
+        });
+        
+        // Test making the policy public
+        console.log("Testing makePublic()...");
+        expect(function() {
+          accessPolicy.makePublic();
+        }).to.not.throw("makePublic should not throw errors");
+        
+        // This assertion will fail if makePublic doesn't fire change events
+        console.log("makePublic event fired?", makePublicEventFired);
+        expect(makePublicEventFired).to.be.true;
+        console.log("makePublic change event verification: PASSED");
+        
+        // Test that the DataItemView has methods to handle UI updates
+        const uiUpdateMethods = ['updateAccessPolicyUI', 'renderAccessPolicy', 'showAccessPolicyIndicators'];
+        const existingMethods = uiUpdateMethods.filter(method => typeof dataItemView[method] === 'function');
+        
+        console.log("Available UI update methods:", existingMethods);
+        expect(existingMethods.length).to.be.at.least(1, 
+          "DataItemView should have at least one method to handle UI updates for AccessPolicy changes. " +
+          "Expected one of: " + uiUpdateMethods.join(', '));
+        
+        // Test calling the existing UI update method(s) if they exist
+        existingMethods.forEach(methodName => {
+          expect(function() {
+            dataItemView[methodName]();
+          }).to.not.throw(`${methodName} should not throw when called`);
+        });
+        
+        // Clean up event listeners
+        accessPolicy.off('change');
+      });
+    });
   });
 });

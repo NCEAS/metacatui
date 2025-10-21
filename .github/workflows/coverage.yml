@@ -1,0 +1,54 @@
+name: Coverage
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/**
+      - fix/**
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run coverage (headless)
+        run: npm run coverage
+
+      - name: Save coverage summary to job summary
+        run: npx nyc report --reporter=text-summary >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: coverage/
+
+      - name: Upload lcov
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: coverage/lcov.info
+
+
+      - name: Upload Coverage to CodeCov
+        if: success()
+        uses: codecov/codecov-action@v4
+        with:
+          file: .nyc_output/coverage-final.json
+          flags: unittests
+          name: metacatui-coverage
+          fail_ci_if_error: false

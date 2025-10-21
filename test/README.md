@@ -1,6 +1,7 @@
 # MetacatUI Testing
 
-![Tests Status](https://github.com/NCEAS/metacatui/actions/workflows/test.js.yml/badge.svg)
+[![Tests Status](https://github.com/NCEAS/metacatui/actions/workflows/test.js.yml/badge.svg)](https://github.com/NCEAS/metacatui/actions/workflows/test.js.yml)
+[![Coverage Status](https://codecov.io/gh/NCEAS/metacatui/graph/badge.svg)](https://codecov.io/gh/NCEAS/metacatui)
 
 ## Overview
 
@@ -68,3 +69,24 @@ Note: For convienence, there is a node script called `integration-test` that wil
 
 Tests are executed using the app configuration in `/test/config/appconfig.json`. Change that `appconfig.json` file to
 run integration tests against a specific Metacat instance or to test certain [`AppConfig`](https://nceas.github.io/metacatui/docs/AppConfig.html) options. The `appconfig.json` JSON is the same namespace as the MetacatUI [`AppConfig`](https://nceas.github.io/metacatui/docs/AppConfig.html).
+
+## 📊 Code Coverage
+
+[![Coverage Status](https://codecov.io/gh/NCEAS/metacatui/graph/badge.svg)](https://codecov.io/gh/NCEAS/metacatui)
+
+MetacatUI maintains code coverage tracking to ensure code quality and test completeness. Coverage reports are automatically generated during CI/CD runs and uploaded to [CodeCov](https://codecov.io/gh/NCEAS/metacatui).
+
+### Local Coverage Reports
+
+To generate coverage reports locally:
+
+```bash
+# Run tests with coverage
+npm test
+
+# Generate HTML coverage report
+npx nyc report --reporter=html
+
+# View report
+open coverage/index.html
+```

@@ -1,5 +1,144 @@
-*.DS_Store
-/.project
+# ===================================
+# Editor and IDE files
+# ===================================
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IntelliJ IDEA / WebStorm / PhpStorm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Atom
+.ftpconfig
+.sftpconfig
+
+# ===================================
+# Operating System files
+# ===================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Icon?
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===================================
+# Development and Build artifacts
+# ===================================
+# Node.js (if not already covered)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm
+.yarn-integrity
+
+# Coverage and testing
+coverage/
+coverage-artifacts/
+.nyc_output/
+.coverage
+*.cover
+.nyc_output
+.cache
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# ===================================
+# Build artifacts and temporary files
+# ===================================
+dist/
+build/
+tmp/
+temp/
+*.tmp
+
+# ===================================
+# Environment and configuration
+# ===================================
+# Environment files
+.env
+.env.local
+.env.*.local
+
+
+# Local configuration overrides
+config.local.*
+*local.json
+
+# ===================================
+# Archive and compressed files
+# ===================================
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+
 src/js/themes/ess-dive
 src/js/themes/opc
 src/js/themes/hosted-repository
@@ -22,7 +161,6 @@ src/config/dev
 docs/_site
 docs/vendor
 *.code-workspace
-
 
 # Ignore everything in src/components/semantic except the distribution files we
 # need and the src files we've modified from the npm source.

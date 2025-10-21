@@ -8,6 +8,8 @@
 - Contact us: developers@dataone.org
 
 ![Tests Status](https://github.com/NCEAS/metacatui/actions/workflows/test.js.yml/badge.svg)
+[![Coverage Status](https://codecov.io/gh/NCEAS/metacatui/graph/badge.svg)](https://codecov.io/gh/NCEAS/metacatui)
+
 
 MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API. Currently, it is used as the basis for the [KNB Data Repository](http://knb.ecoinformatics.org), the [NSF Arctic Data Center](https://arcticdata.io/catalog/), the [DataONE federation](https://search.dataone.org), and other repositories.
 
