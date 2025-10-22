@@ -145,10 +145,23 @@ define([
       initialize(options = {}) {
         this.pid =
           options.pid || options.id || MetacatUI.appModel.get("pid") || null;
-
         this.dataPackage = null;
 
         if (typeof options.el !== "undefined") this.setElement(options.el);
+      },
+
+      /**
+       * Reset the model to its default attributes
+       * @since 0.0.0
+       */
+      resetModel() {
+        if (!this.model) return;
+        const defaults =
+          typeof this.model.defaults === "function"
+            ? this.model.defaults()
+            : { ...this.model.defaults };
+
+        this.model.set(defaults);
       },
 
       /** @inheritdoc */
@@ -168,12 +181,11 @@ define([
         // Reset various properties of this view first
         this.classMap = [];
         this.subviews = [];
-        this.model.set(this.model.defaults);
+        this.resetModel();
         this.packageModels = [];
 
         // get the pid to render
         if (!this.pid) this.pid = MetacatUI.appModel.get("pid");
-
         this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
 
         // Listen to when the metadata has been rendered
@@ -3009,7 +3021,7 @@ define([
         });
 
         this.packageModels = [];
-        this.model.set(this.model.defaults);
+        this.resetModel();
         this.pid = null;
         this.dataPackage = null;
         this.seriesId = null;
