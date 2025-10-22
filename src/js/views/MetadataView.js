@@ -11,18 +11,18 @@ define([
   "models/PackageModel",
   "models/SolrResult",
   "models/metadata/ScienceMetadata",
-  "models/MetricsModel",
   "common/Utilities",
   "views/DataPackageView",
   "views/DownloadButtonView",
   "views/ProvChartView",
   "views/MetadataIndexView",
   "views/CitationHeaderView",
-  "views/citations/CitationModalView",
   "views/AnnotationView",
   "views/MarkdownView",
   "views/ViewObjectButtonView",
   "views/CanonicalDatasetHandlerView",
+  "views/metadataView/DatasetControlsView",
+  "common/XMLUtilities",
   "text!templates/metadata/metadata.html",
   "text!templates/dataSource.html",
   "text!templates/newerVersion.html",
@@ -31,8 +31,6 @@ define([
   "text!templates/dataDisplay.html",
   "text!templates/map.html",
   "text!templates/metaTagsHighwirePress.html",
-  "views/MetricView",
-  "semantic",
 ], (
   $,
   $ui,
@@ -46,18 +44,18 @@ define([
   Package,
   SolrResult,
   ScienceMetadata,
-  MetricsModel,
   Utilities,
   DataPackageView,
   DownloadButtonView,
   ProvChart,
   MetadataIndex,
   CitationHeaderView,
-  CitationModalView,
   AnnotationView,
   MarkdownView,
   ViewObjectButtonView,
   CanonicalDatasetHandlerView,
+  ControlsView,
+  XMLUtilities,
   MetadataTemplate,
   DataSourceTemplate,
   VersionTemplate,
@@ -66,12 +64,9 @@ define([
   DataDisplayTemplate,
   MapTemplate,
   metaTagsHighwirePressTemplate,
-  MetricView,
-  Semantic,
 ) => {
   "use strict";
 
-  const SEM_VARIATIONS = Semantic.CLASS_NAMES.variations;
   /**
    * @class MetadataView
    * @classdesc A human-readable view of a science metadata file
@@ -97,9 +92,6 @@ define([
       metadataContainer: "#metadata-container",
       citationContainer: "#citation-container",
       tableContainer: "#table-container",
-      controlsContainer: "#metadata-controls-container",
-      metricsContainer: "#metrics-controls-container",
-      editorControlsContainer: "#editor-controls-container",
       breadcrumbContainer: "#breadcrumb-container",
       parentLinkContainer: "#parent-link-container",
       dataSourceContainer: "#data-source-container",
@@ -120,24 +112,6 @@ define([
       objectIds: [],
 
       /**
-       * Settings passed to the Formantic UI popup module to configure a tooltip
-       * shown over the metric button.
-       * @see https://fomantic-ui.com/modules/popup.html#/settings
-       * @type {object|boolean}
-       * @since 0.0.0
-       */
-      tooltipSettings: {
-        variation: `${SEM_VARIATIONS.mini} ${SEM_VARIATIONS.inverted}`,
-        position: "top center",
-        on: "hover",
-        hoverable: true,
-        delay: {
-          show: 500,
-          hide: 40,
-        },
-      },
-
-      /**
        * Text to display in the help tooltip for the alternative identifier
        * field, if the field is present.
        * @type {string}
@@ -154,7 +128,6 @@ define([
 
       /** @inheritdoc */
       events: {
-        "click #publish": "publish",
         "mouseover .highlight-node": "highlightNode",
         "mouseout  .highlight-node": "highlightNode",
         "click     .preview": "previewData",
@@ -475,15 +448,23 @@ define([
         // is this the latest version? (includes DOI link when needed)
         this.showLatestVersion();
 
-        // Insert various metadata controls in the page
-        this.insertControls();
+        // Insert the icons (private, duplicate, archived)
+        this.renderInfoIcons();
 
-        // If we're displaying the metrics well then display copy citation and
-        // edit button inside the well
-        if (MetacatUI.appModel.get("displayDatasetMetrics")) {
-          // Insert Metrics Stats into the dataset landing pages
-          this.insertMetricsControls();
-        }
+        this.controls = new ControlsView({
+          pid,
+          metadataModel: this.model,
+          publishMethod: () => this.publish.call(this),
+          hasWritePermission: this.isAuthorized_write,
+          el: this.$("#metadata-controls-container"),
+        }).render();
+        this.controls.listenTo(this, "changed:writePermission", (isAuthed) => {
+          this.controls.viewModel.set("hasWritePermission", isAuthed);
+        });
+        this.subviews.push(this.controls);
+        // Components created by the header buttons view and used by other subviews
+        this.citationModal = this.controls.citationModal;
+        this.metricsModel = this.controls.viewModel.get("metricsModel");
 
         // Show loading icon in metadata section
         this.$(this.metadataContainer).html(
@@ -1568,216 +1549,59 @@ define([
        * the EML. Once the permission checks have finished, continue with the
        * functions that depend on them.
        */
-      checkWritePermissions() {
-        const view = this;
-        const authorization = [];
-        const resourceMap = this.dataPackage
-          ? this.dataPackage.packageModel
-          : null;
-        const modelsToCheck = [this.model, resourceMap];
-
-        modelsToCheck.forEach((model, index) => {
-          // If there is no resource map or no EML, then the user does not need
-          // permission to edit it.
-          if (!model || model.get("notFound") === true) {
-            authorization[index] = true;
-            // If we already checked, and the user is authorized, record that
-            // information in the authorzation array.
-          } else if (model.get("isAuthorized_write") === true) {
-            authorization[index] = true;
-            // If we already checked, and the user is not authorized, record
-            // that information in the authorzation array.
-          } else if (model.get("isAuthorized_write") === false) {
-            authorization[index] = false;
-            // If we haven't checked for authorization yet, do that now. Return
-            // to this function once we've finished checking.
-          } else {
-            view.stopListening(model, "change:isAuthorized_write");
-            view.listenToOnce(model, "change:isAuthorized_write", () => {
-              view.checkWritePermissions();
-            });
-            view.stopListening(model, "change:notFound");
-            view.listenToOnce(model, "change:notFound", () => {
-              view.checkWritePermissions();
-            });
-            model.checkAuthority("write");
-          }
-        });
-
-        // Check that all the models were tested for authorization
-
-        // Every value in the auth array must be true for the user to have full
-        // permissions
-        const allTrue = _.every(authorization, (test) => test);
-        // When we have completed checking each of the models that we need to
-        // check for permissions, every value in the authorization array should
-        // be "true" or "false", and the array should have the same length as
-        // the modelsToCheck array.
-        const allBoolean = _.every(
-          authorization,
-          (test) => typeof test === "boolean",
-        );
-        const allChecked =
-          allBoolean && authorization.length === modelsToCheck.length;
-
-        // Check for and render prov diagrams now that we know whether or not
-        // the user has editor permissions (There is a different version of the
-        // chart for users who can edit the resource map and users who cannot)
-        if (allChecked) {
-          this.checkForProv();
-        } else {
-          return;
-        }
-        // Only render the editor controls if we have completed the checks AND
-        // the user has full editor permissions
-        if (allTrue) {
-          this.insertEditorControls();
-        }
-      },
-
-      isAuthorizedToEdit() {
+      async checkWritePermissions() {
         const resourceMap = this.dataPackage?.packageModel;
-        const modelsToCheck = [this.model, resourceMap];
+        const models = [this.model, resourceMap].filter(Boolean);
 
-        // If there is no EML or no resource map, the user doesn't need
-        // permission to edit it.
-        return modelsToCheck.every(
-          (model) =>
-            // If there is no EML or no resource map, the user doesn't need
-            // permission to edit it.
-            !model ||
-            model.get("notFound") === true ||
-            model.get("isAuthorized_write") === true,
-        );
-      },
+        const checks = models.map((model) => this.awaitWritePermission(model));
 
-      /*
-       * Inserts control elements onto the page for the user to interact with
-       * the dataset - edit, publish, etc. Editor permissions should already
-       * have been checked before running this function.
-       */
-      insertEditorControls() {
-        // Do not insert the editor controls twice
-        this.$(this.editorControlsContainer).empty();
-        this.removeEditButton();
-        this.removePublishButton();
-
-        // Only run this function when the user has full editor permissions
-        // (i.e. write permission on the EML, and write permission on the
-        // resource map if there is one.)
-        if (
-          !this.isAuthorizedToEdit() ||
-          this.model.get("obsoletedBy")?.length > 0 ||
-          this.model.get("archived")
-        ) {
-          return;
-        }
-
-        this.insertEditButton();
-        this.insertPublishButton();
-      },
-
-      removeEditButton() {
-        this.editButton?.remove();
-        this.editButton = null;
-      },
-
-      removePublishButton() {
-        this.publishButton?.remove();
-        this.publishButton = null;
+        return Promise.all(checks).then((results) => {
+          if (results.every(Boolean)) {
+            this.checkForProv();
+            this.isAuthorized_write = true;
+            this.trigger("changed:writePermission", true);
+            return true;
+          }
+          this.isAuthorized_write = false;
+          this.trigger("changed:writePermission", false);
+          return false;
+        });
       },
 
       /**
-       * Insert an Edit button if the Edit button is enabled
+       * Waits for the write permission on the given model to be determined.
+       * @param {Backbone.Model} model - The model to check write permission on.
+       * @returns {Promise<boolean>} A promise that resolves to true if the user
+       * has write permission, false otherwise.
+       * @since 0.0.0
        */
-      insertEditButton() {
-        this.removeEditButton();
+      awaitWritePermission(model) {
+        if (model.get("notFound") === true) return Promise.resolve(true);
 
-        if (!MetacatUI.appModel.get("displayDatasetEditButton")) {
-          return;
-        }
+        const value = model.get("isAuthorized_write");
+        if (typeof value === "boolean") return Promise.resolve(value);
 
-        // Save the element that will contain the owner control buttons
-        const container = this.$(this.editorControlsContainer);
+        const listener = new Backbone.Model();
 
-        // The PID for the EML model
-        const pid = this.model.get("id") || this.pid;
+        return new Promise((resolve) => {
+          const finalize = (result) => {
+            listener.stopListening();
+            resolve(result);
+          };
 
-        const format = this.model.get("formatId");
-        const editableFormats = MetacatUI.appModel.get("editableFormats") || [];
-        const supported = editableFormats.includes(format);
-        // The share-feature class is added to share/upload/edit/login
-        // features so repo can easily hide them if needed
-        const href = supported
-          ? `${MetacatUI.root}/submit/${encodeURIComponent(pid)}`
-          : null;
-        const button = this.createButton({
-          icon: "pencil",
-          text: "Edit metadata",
-          id: "edit-metadata-btn",
-          disabled: !supported,
-          classes: ["share-feature", "btn-primary"],
-          href,
+          const onAuthChange = () => {
+            const current = model.get("isAuthorized_write");
+            if (typeof current === "boolean") finalize(current);
+          };
+
+          const onNotFound = () => {
+            if (model.get("notFound") === true) finalize(true);
+          };
+
+          listener.listenTo(model, "change:isAuthorized_write", onAuthChange);
+          listener.listenTo(model, "change:notFound", onNotFound);
+          model.checkAuthority("write");
         });
-
-        if (!supported) {
-          $(button).popup({
-            ...this.tooltipSettings,
-            title: "This metadata format is not editable.",
-          });
-        }
-
-        container.append(button);
-      },
-
-      insertPublishButton() {
-        this.removePublishButton();
-
-        const container = this.$(this.editorControlsContainer);
-
-        const pid = this.model.get("id") || this.pid;
-        // Determine if this metadata can be published. The Publish feature has
-        // to be enabled in the app. The model cannot already have a DOI
-        let canBePublished =
-          MetacatUI.appModel.get("enablePublishDOI") && !this.model.isDOI();
-
-        if (!canBePublished) return;
-
-        // If publishing is enabled, check if only certain users and groups can
-        // publish metadata
-
-        // Get the list of authorized publishers from the AppModel
-        const authorizedPublishers = MetacatUI.appModel.get(
-          "enablePublishDOIForSubjects",
-        );
-        // If the logged-in user is one of the subjects in the list or is in a
-        // group that is in the list, then this metadata can be published.
-        // Otherwise, it cannot.
-        if (
-          Array.isArray(authorizedPublishers) &&
-          authorizedPublishers.length
-        ) {
-          if (MetacatUI.appUserModel.hasIdentityOverlap(authorizedPublishers)) {
-            canBePublished = true;
-          } else {
-            canBePublished = false;
-          }
-        }
-
-        if (!canBePublished) return;
-        const button = this.createButton({
-          icon: "star",
-          text: "Publish with DOI",
-          id: "publish",
-          classes: ["share-feature", "btn-primary"],
-        });
-
-        button.setAttribute("pid", pid);
-        button.setAttribute("data-pid", pid);
-
-        container.append(button);
-
-        this.publishButton = button;
       },
 
       /*
@@ -1817,122 +1641,6 @@ define([
             }, 500);
           });
         });
-      },
-
-      /*
-       * Inserts elements users can use to interact with this dataset:
-       * - A "Copy Citation" button to copy the citation text
-       */
-      insertControls() {
-        const controlsHtml = `
-          <div class="metrics-container btn-toolbar"></div>
-          <div class="controls btn-toolbar">
-            <span id="editor-controls-container" class="controls"></span>
-          </div>`.trim();
-
-        $(this.controlsContainer).html(controlsHtml);
-
-        // Escape special regex characters
-        const escapeRegex = (s) => s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-        const mdqFormatIds = MetacatUI.appModel.get("mdqFormatIds") || [];
-        const thisFormatId = this.model.get("formatId");
-
-        // Check if the current formatId is supported by the metadata quality suite
-        const formatFound = mdqFormatIds.some((id) =>
-          new RegExp(escapeRegex(id)).test(thisFormatId),
-        );
-
-        // Show a link to the assessment report if MDQ is enabled and this format
-        // is supported
-        if (
-          MetacatUI.appModel.get("mdqBaseUrl") &&
-          formatFound &&
-          MetacatUI.appModel.get("displayDatasetQualityMetric")
-        ) {
-          this.insertQualityReportButton();
-        }
-
-        // Show the analyze button if Whole Tale features are enabled
-        if (MetacatUI.appModel.get("showWholeTaleFeatures")) {
-          this.insertWholeTaleButton();
-        }
-
-        this.insertCitationButton();
-
-        // Insert the info icons
-        this.renderInfoIcons();
-      },
-
-      // <a class="btn" id="cite-this-dataset-btn"><i class="icon icon-copy"></i> Cite this dataset</a>
-
-      insertCitationButton() {
-        // Show the citation modal with the ability to copy the citation text
-        // when the "Copy Citation" button is clicked
-        if (this.citationModal) this.citationModal.remove();
-        if (this.citationButton) this.citationButton.remove();
-        this.citationModal = null;
-        this.citationButton = null;
-
-        this.citationModal = new CitationModalView({
-          model: this.model,
-          createLink: true,
-        });
-        this.subviews.push(this.citationModal);
-        this.citationModal.render();
-
-        this.citationButton = this.createButton({
-          icon: "copy",
-          text: "Cite this dataset",
-          id: "cite-this-dataset-btn",
-        });
-        this.citationButton.removeEventListener("click", this.citationModal);
-        this.citationButton.addEventListener(
-          "click",
-          () => {
-            this.citationModal.show();
-          },
-          false,
-        );
-
-        document
-          .querySelector(this.controlsContainer)
-          .appendChild(this.citationButton);
-      },
-
-      createButton({
-        icon,
-        text,
-        href = null,
-        id = null,
-        classes = [],
-        dropdown = false,
-        disabled = false,
-      }) {
-        const button = document.createElement("a");
-        button.classList.add(...["btn", ...classes]);
-        if (id) button.id = id;
-
-        const iconEl = document.createElement("i");
-        iconEl.classList.add("icon", `icon-${icon}`);
-        button.appendChild(iconEl);
-
-        const textNode = document.createTextNode(` ${text}`);
-        button.appendChild(textNode);
-
-        if (dropdown) {
-          button.setAttribute("data-toggle", "dropdown");
-          button.href = "#";
-          // <span class="caret"></span>
-          const caretSpan = document.createElement("span");
-          caretSpan.classList.add("caret");
-          button.appendChild(caretSpan);
-        }
-
-        if (href) button.href = href;
-
-        if (disabled) button.disabled = true;
-
-        return button;
       },
 
       /**
@@ -2002,113 +1710,6 @@ define([
         iconContainer.append(newIcon);
 
         return newIcon;
-      },
-
-      /**
-       * Creates a button which the user can click to launch the package in
-       * Whole Tale
-       */
-      insertWholeTaleButton() {
-        const view = this;
-        const analyzeButton = this.createButton({
-          icon: "bar-chart",
-          text: "Analyze",
-          classes: ["analyze", "dropdown-toggle"],
-          dropdown: true,
-        });
-
-        const dropdownMenu = document.createElement("ul");
-        dropdownMenu.classList.add("dropdown-menu", "analyze-dropdown-menu");
-        const container = document.createElement("span");
-        container.classList.add("dropdown");
-        document.querySelector(this.controlsContainer).appendChild(container);
-
-        container.append(analyzeButton);
-        container.append(dropdownMenu);
-        const title = encodeURIComponent(
-          view.model.get("title") || "Untitled Dataset",
-        );
-        const baseUrl = MetacatUI.appModel.get("d1CNBaseUrl");
-        const dashboardUrl = MetacatUI.appModel.get("dashboardUrl");
-        const currentUrl = window.location.href;
-        const service = MetacatUI.appModel.get("d1CNService");
-        const queryParams = `?uri=${currentUrl}&title=${title}&api=${baseUrl}${service}`;
-        MetacatUI.appModel.get("taleEnvironments").forEach((environment) => {
-          const itemHtml = `<li><a tabindex="-1" href="${dashboardUrl}${queryParams}&environment=${environment}" target="_blank" rel="noopener noreferrer">${environment}</a></li>`;
-          dropdownMenu.insertAdjacentHTML("beforeend", itemHtml);
-        });
-      },
-
-      /** Insert the Metric Stats */
-      insertMetricsControls() {
-        // Exit if metrics shouldn't be shown for this dataset
-        if (this.model.hideMetrics()) {
-          return;
-        }
-
-        const pidList = [];
-        pidList.push(this.pid);
-        const metricsModel = new MetricsModel({
-          pid_list: pidList,
-          type: "dataset",
-        });
-        metricsModel.fetch();
-        this.metricsModel = metricsModel;
-
-        // Retreive the model from the server for the given PID TODO: Create a
-        // Metric Request Object
-
-        if (MetacatUI.appModel.get("displayDatasetMetrics")) {
-          const buttonToolbar = this.$(".metrics-container");
-
-          if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
-            const dwnldsMetricView = new MetricView({
-              metricName: "Downloads",
-              model: metricsModel,
-              pid: this.pid,
-            });
-            buttonToolbar.append(dwnldsMetricView.render().el);
-            this.subviews.push(dwnldsMetricView);
-          }
-
-          if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
-            const citationsMetricView = new MetricView({
-              metricName: "Citations",
-              model: metricsModel,
-              pid: this.pid,
-            });
-            buttonToolbar.append(citationsMetricView.render().el);
-            this.subviews.push(citationsMetricView);
-
-            // Check if the registerCitation=true query string is set
-            if (window.location.search) {
-              if (
-                window.location.search.indexOf("registerCitation=true") > -1
-              ) {
-                // Open the modal for the citations
-                citationsMetricView.showMetricModal();
-
-                // Show the register citation form
-                if (citationsMetricView.modalView) {
-                  citationsMetricView.modalView.on(
-                    "renderComplete",
-                    citationsMetricView.modalView.showCitationForm,
-                  );
-                }
-              }
-            }
-          }
-
-          if (MetacatUI.appModel.get("displayDatasetViewMetric")) {
-            const viewsMetricView = new MetricView({
-              metricName: "Views",
-              model: metricsModel,
-              pid: this.pid,
-            });
-            buttonToolbar.append(viewsMetricView.render().el);
-            this.subviews.push(viewsMetricView);
-          }
-        }
       },
 
       /**
@@ -3075,82 +2676,86 @@ define([
         });
       },
 
-      /**
-       * Publish the data package with a DOI
-       * @param {Event} event - The click event
-       */
-      publish(event) {
-        // target may not actually prevent click events, so double check
-        const disabled = $(event.target).closest("a").attr("disabled");
-        if (disabled) {
-          return;
-        }
+      async publish() {
         const publishServiceUrl = MetacatUI.appModel.get("publishServiceUrl");
-        const pid = $(event.target).closest("a").attr("pid");
-        // eslint-disable-next-line no-restricted-globals, no-alert
-        const ret = confirm(
-          `Are you sure you want to publish ${pid} with a DOI?`,
-        ); // TODO: We should use a custom modal here instead of the browser's confirm dialog
+        const pid = this.model.get("id") || this.pid;
 
-        if (ret) {
-          // show the loading icon
-          const message = "Publishing package...this may take a few moments";
-          this.showLoading(message);
+        if (!publishServiceUrl || !pid) {
+          throw new Error("Missing publishServiceUrl or PID");
+        }
 
-          let identifier = null;
-          const viewRef = this;
-          const requestSettings = {
-            url: publishServiceUrl + pid,
-            type: "PUT",
-            xhrFields: {
-              withCredentials: true,
-            },
-            success(data, _textStatus, _xhr) {
-              // the response should have new identifier in it
-              identifier = $(data).find("d1\\:identifier, identifier").text();
+        // TODO: Replace the browser confirm dialog with a custom modal.
+        const confirmationMessage = `Are you sure you want to publish ${pid} with a DOI?`;
+        // eslint-disable-next-line no-alert
+        if (!window.confirm(confirmationMessage)) {
+          throw new Error("Publish cancelled by user");
+        }
 
-              if (identifier) {
-                viewRef.hideLoading();
-                const msg = `Published data package '${identifier}'. If you are not redirected soon, you can view your <a href='${
-                  MetacatUI.root
-                }/view/${encodeURIComponent(
-                  identifier,
-                )}'>published data package here</a>`;
-                viewRef.$el.find(".container").prepend(
-                  viewRef.alertTemplate({
-                    msg,
-                    classes: "alert-success",
-                  }),
-                );
+        this.showLoading("Publishing package...this may take a few moments");
 
-                // navigate to the new view after a few seconds
-                setTimeout(() => {
-                  // avoid a double fade out/in
-                  viewRef.$el.html("");
-                  viewRef.showLoading();
-                  MetacatUI.uiRouter.navigate(`view/${identifier}`, {
-                    trigger: true,
-                  });
-                }, 3000);
-              }
-            },
-            error(xhr, _textStatus, _errorThrown) {
-              // show the error message, but stay on the same page
-              const msg = `Publish failed: ${$(xhr.responseText)
-                .find("description")
-                .text()}`;
+        const publishUrlNormalized = publishServiceUrl.replace(/\/+$/, "");
+        const endpoint = `${publishUrlNormalized}/${encodeURIComponent(pid)}`;
+        const fetchOptions = {
+          ...MetacatUI.appUserModel.createFetchSettings(),
+          method: "PUT",
+        };
 
-              viewRef.hideLoading();
-              viewRef.showError(msg);
-            },
-          };
+        try {
+          const response = await fetch(endpoint, fetchOptions);
+          const responseText = await response.text();
 
-          $.ajax(
-            _.extend(
-              requestSettings,
-              MetacatUI.appUserModel.createAjaxSettings(),
-            ),
+          if (!response.ok) {
+            const description = XMLUtilities.extractText(responseText, [
+              "description",
+              "d1\\:description",
+            ]);
+            throw new Error(
+              description ||
+                response.statusText ||
+                `Request failed with status ${response.status}`,
+            );
+          }
+
+          const identifier = XMLUtilities.extractText(responseText, [
+            "identifier",
+            "d1\\:identifier",
+          ]);
+          if (!identifier) {
+            throw new Error(
+              "Publish succeeded but no identifier was returned.",
+            );
+          }
+
+          this.hideLoading();
+
+          const newUrl = `${MetacatUI.root}/view/${encodeURIComponent(identifier)}`;
+          const msg = `Published data package '${identifier}'. If you are not redirected soon,
+      you can view your <a href='${newUrl}'>published data package here</a>`;
+          this.el.querySelector(".container").prepend(
+            this.alertTemplate({
+              msg,
+              classes: "alert-success",
+            }),
           );
+
+          setTimeout(() => {
+            this.$el.html("");
+            this.showLoading();
+            MetacatUI.uiRouter.navigate(`view/${identifier}`, {
+              trigger: true,
+            });
+          }, 3000);
+
+          return identifier;
+        } catch (error) {
+          this.hideLoading();
+          const message =
+            error instanceof Error ? error.message : String(error);
+          const formattedMessage = message.startsWith("Publish failed")
+            ? message
+            : `Publish failed: ${message}`;
+          this.showError(formattedMessage, { remove: true });
+          throw new Error(formattedMessage); // ✅ rejects the promise
         }
       },
 
@@ -3248,8 +2853,10 @@ define([
       /**
        * Show an error message to the user
        * @param {string} msg - The error message to display
+       * @param {object} [options] - Additional options to pass to the alert
+       * template.
        */
-      showError(msg) {
+      showError(msg, options = {}) {
         // Remove any existing error messages
         this.$el.children(".alert-container").remove();
 
@@ -3259,6 +2866,7 @@ define([
             classes: "alert-error",
             containerClasses: "page",
             includeEmail: true,
+            ...options,
           }),
         );
       },

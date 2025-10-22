@@ -141,7 +141,9 @@ define(["backbone", "views/MetricModalView", "semantic"], (
        * view
        */
       initialize(options = {}) {
-        this.metricName = options.metricName;
+        let name = options.metricName || "";
+        name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+        this.metricName = name;
         this.model = options.model;
         this.pid = options.pid;
       },

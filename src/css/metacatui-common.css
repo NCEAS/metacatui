@@ -474,6 +474,8 @@ header .citation {
   max-width: 90%;
   margin-left: 5%;
   margin-top: 2rem;
+  /* so the close button (position:absolute) is relative to this container */
+  position: relative;
 }
 body > .alert-container.important-app-message {
   bottom: 0px;
