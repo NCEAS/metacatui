@@ -833,20 +833,10 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            */
           signInUrlOrcid: null,
 
-          /**
-           * Enable DataONE LDAP authentication. If true, users can sign in from an LDAP account that is in the DataONE CN LDAP directory.
-           * This is not recommended, as DataONE is moving towards supporting only ORCID logins for users.
-           * This LDAP authentication is separate from the File-based authentication for the Metacat Admin interface.
-           * @type {boolean}
-           * @default false
-           * @since 2.11.0
-           */
+          /** @deprecated since 0.0.0 */
           enableLdapSignIn: false,
-          /**
-           * The URL for the DataONE Sign In API using LDAP as the identity provider
-           * This URL is constructed dynamically once the {@link AppModel} is initialized.
-           * @type {string}
-           */
+
+          /** @deprecated since 0.0.0 */
           signInUrlLdap: null,
 
           /**
@@ -2588,13 +2578,6 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
                 "signInUrlOrcid",
                 d1CNBaseUrl + "/portal/" + "oauth?action=start&target=",
               );
-
-            if (this.get("enableLdapSignIn") && !this.get("signInUrlLdap")) {
-              this.set(
-                "signInUrlLdap",
-                d1CNBaseUrl + "/portal/" + "ldap?target=",
-              );
-            }
 
             if (this.get("orcidBaseUrl"))
               this.set(

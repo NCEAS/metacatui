@@ -24,9 +24,6 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         "signout(/)": "logout", // logout the user
         "signin(/)": "renderSignIn", // signin the user
         "signinsuccess(/)": "renderSignInSuccess",
-        "signinldaperror(/)": "renderLdapSignInError",
-        "signinLdap(/)": "renderLdapSignIn",
-        "signinSuccessLdap(/)": "renderLdapSignInSuccess",
         "signin-help": "renderSignInHelp", //The Sign In troubleshotting page
         "share(/*pid)(/)": "renderEditor", // registry page
         "submit(/*pid)(/)": "renderEditor", // registry page
@@ -642,76 +639,6 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
       renderSignInSuccess: function () {
         $("body").html("Sign-in successful.");
         setTimeout(window.close, 1000);
-      },
-
-      renderLdapSignInSuccess: function () {
-        //If there is an LDAP sign in error message
-        if (
-          window.location.pathname.indexOf(
-            "error=Unable%20to%20authenticate%20LDAP%20user",
-          ) > -1
-        ) {
-          this.renderLdapOnlySignInError();
-        } else {
-          this.renderSignInSuccess();
-        }
-      },
-
-      renderLdapSignInError: function () {
-        this.routeHistory.push("signinldaperror");
-
-        if (!MetacatUI.appView.signInView) {
-          require(["views/SignInView"], function (SignInView) {
-            MetacatUI.appView.signInView = new SignInView({ el: "#Content" });
-            MetacatUI.appView.signInView.ldapError = true;
-            MetacatUI.appView.signInView.ldapOnly = true;
-            MetacatUI.appView.signInView.fullPage = true;
-            MetacatUI.appView.showView(MetacatUI.appView.signInView);
-          });
-        } else {
-          MetacatUI.appView.signInView.ldapError = true;
-          MetacatUI.appView.signInView.ldapOnly = true;
-          MetacatUI.appView.signInView.fullPage = true;
-          MetacatUI.appView.showView(MetacatUI.appView.signInView);
-        }
-      },
-
-      renderLdapOnlySignInError: function () {
-        this.routeHistory.push("signinldaponlyerror");
-
-        if (!MetacatUI.appView.signInView) {
-          require(["views/SignInView"], function (SignInView) {
-            var signInView = new SignInView({ el: "#Content" });
-            signInView.ldapError = true;
-            signInView.ldapOnly = true;
-            signInView.fullPage = true;
-            MetacatUI.appView.showView(signInView);
-          });
-        } else {
-          var signInView = new SignInView({ el: "#Content" });
-          signInView.ldapError = true;
-          signInView.ldapOnly = true;
-          signInView.fullPage = true;
-          MetacatUI.appView.showView(signInView);
-        }
-      },
-
-      renderLdapSignIn: function () {
-        this.routeHistory.push("signinLdap");
-
-        if (!MetacatUI.appView.signInView) {
-          require(["views/SignInView"], function (SignInView) {
-            MetacatUI.appView.signInView = new SignInView({ el: "#Content" });
-            MetacatUI.appView.signInView.ldapOnly = true;
-            MetacatUI.appView.signInView.fullPage = true;
-            MetacatUI.appView.showView(MetacatUI.appView.signInView);
-          });
-        } else {
-          var signInLdapView = new SignInView({ el: "#Content" });
-          MetacatUI.appView.signInView.ldapOnly = true;
-          MetacatUI.appView.signInView.fullPage = true;
-          MetacatUI.appView.showView(signInLdapView);
-        }
       },
 
       navigateToDefault: function () {

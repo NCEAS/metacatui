@@ -782,18 +782,6 @@ define([
                 "#request-alert-container",
               );
             } else {
-              //Make a more understandable error message when the account isn't found
-              if (
-                xhr.responseText.indexOf(
-                  "LDAP: error code 32 - No Such Object",
-                ) > -1
-              ) {
-                xhr.responseText =
-                  "The username " +
-                  equivalentIdentity +
-                  " does not exist in our system.";
-              }
-
               viewRef.showAlert(
                 xhr.responseText,
                 "alert-error",

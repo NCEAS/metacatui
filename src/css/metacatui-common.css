@@ -1629,9 +1629,6 @@ svg.icon {
 #signInPopup .orcid-signin {
   margin-top: 10%;
 }
-.sign-in-ldap select {
-  width: 220px;
-}
 .modal.container {
   padding: 20px 20px 40px 20px;
 }

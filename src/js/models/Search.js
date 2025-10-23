@@ -1099,16 +1099,6 @@ define([
           return true;
         }
 
-        //Check if this is an account subject string
-        var LDAPSubjectRegEx =
-            /(uid=|UID=|cn=|CN=).+([a-zA-Z]=).+([a-zA-Z]=).*/,
-          ORCIDRegEx =
-            /^http\:\/\/orcid\.org\/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9X]{4}/;
-
-        if (LDAPSubjectRegEx.exec(value) || ORCIDRegEx.exec(value)) {
-          return true;
-        }
-
         return false;
       },
 

@@ -6,7 +6,6 @@ define([
   "text!templates/alert.html",
   "text!templates/loginButtons.html",
   "text!templates/loginOptions.html",
-  "text!templates/login-ldap.html",
 ], function (
   $,
   _,
@@ -15,7 +14,6 @@ define([
   AlertTemplate,
   LoginButtonsTemplate,
   LoginOptionsTemplate,
-  LdapLoginTemplate,
 ) {
   "use strict";
 
@@ -31,15 +29,9 @@ define([
       alertTemplate: _.template(AlertTemplate),
       buttonsTemplate: _.template(LoginButtonsTemplate),
       loginOptionsTemplate: _.template(LoginOptionsTemplate),
-      ldapTemplate: _.template(LdapLoginTemplate),
 
       tagName: "div",
       className: "sign-in-btns",
-
-      ldapError: false,
-
-      /* Set to true to only show the LDAP login form */
-      ldapOnly: false,
 
       /* Set to true if this SignInView is the only thing on the page */
       fullPage: false,
@@ -134,12 +126,6 @@ define([
 
           this.$el.append(signInBtnsContainer);
 
-          //Remove the accordion widget from the ldap login so it gets displayed as a popup window instead
-          if (this.$("#signinLdap").length) {
-            this.$("[href='" + "#signinLdap']").addClass("signin");
-            this.$(".accordion").removeClass("accordion");
-          }
-
           this.$el.prepend(
             $(document.createElement("div"))
               .addClass("container")
@@ -221,54 +207,23 @@ define([
             var container = document.createElement("div");
             container.className = "container login";
 
-            if (this.ldapOnly) {
-              var redirectUrl =
-                window.location.origin + window.location.pathname;
-              redirectUrl = redirectUrl.substring(
-                0,
-                redirectUrl.lastIndexOf("/"),
-              );
-              redirectUrl + "/signinSuccessLdap";
-
-              $(container).append(
-                this.ldapTemplate({
-                  redirectUrl: redirectUrl,
-                }),
-              );
-              this.$el.append(container);
-
-              //Hide all the other page elements so it's just the login form
-              $("#Navbar, #HeaderContainer, #Footer").hide();
-            } else {
-              $(container).append(
-                this.buttonsTemplate({
-                  signInUrl:
-                    MetacatUI.appModel.get("signInUrlOrcid") +
-                    this.getRedirectURL(),
-                }),
-              );
-              this.$el.append(container);
-            }
+            $(container).append(
+              this.buttonsTemplate({
+                signInUrl:
+                  MetacatUI.appModel.get("signInUrlOrcid") +
+                  this.getRedirectURL(),
+              }),
+            );
+            this.$el.append(container);
           } else {
-            if (this.ldapOnly) {
-              var redirectUrl = MetacatUI.root + "/signinSuccessLdap";
+            let signInUrl =
+              MetacatUI.appModel.get("signInUrlOrcid") + this.getRedirectURL();
 
-              this.$el.append(
-                this.ldapTemplate({
-                  redirectUrl: redirectUrl,
-                }),
-              );
-            } else {
-              let signInUrl =
-                MetacatUI.appModel.get("signInUrlOrcid") +
-                this.getRedirectURL();
-
-              this.$el.append(
-                this.buttonsTemplate({
-                  signInUrl: signInUrl,
-                }),
-              );
-            }
+            this.$el.append(
+              this.buttonsTemplate({
+                signInUrl: signInUrl,
+              }),
+            );
           }
 
           //Insert the sign in popup screen once
@@ -280,66 +235,26 @@ define([
             var signInUrlOrcid = MetacatUI.appModel.get("signInUrlOrcid")
               ? MetacatUI.appModel.get("signInUrlOrcid") + target
               : null;
-            var signInUrlLdap = MetacatUI.appModel.get("signInUrlLdap")
-                ? MetacatUI.appModel.get("signInUrlLdap") + target
-                : null,
-              redirectUrl =
-                window.location.href.indexOf("signinldaperror") > -1
-                  ? window.location.href.replace("signinldaperror", "")
-                  : window.location.href;
+
+            const redirectUrl = window.location.href;
 
             $("body").append(
               this.template({
                 signInUrl: signInUrl,
                 signInUrlOrcid: signInUrlOrcid,
-                signInUrlLdap: signInUrlLdap,
-                ldapLoginForm: this.ldapTemplate({
-                  redirectUrl: redirectUrl,
-                }),
                 currentUrl: window.location.href,
                 loginOptions: this.loginOptionsTemplate({
                   signInUrl: signInUrl,
                 }).trim(),
-                collapseLdap: !MetacatUI.appUserModel.get("errorLogin"),
                 redirectUrl: redirectUrl,
               }),
             );
 
             this.setUpPopup();
           }
-
-          //If there is an error message in the URL, it means authentication has failed
-          if (this.ldapError) {
-            MetacatUI.appUserModel.failedLdapLogin();
-            this.failedLdapLogin();
-          }
         }
 
         return this;
-      },
-
-      /*
-       * This function is executed when LDAP authentication fails in the DataONE portal
-       */
-      failedLdapLogin: function () {
-        //Insert an error message
-        this.$("form").before(
-          this.alertTemplate({
-            classes: "alert-error",
-            msg: "Incorrect username or password. Please try again.",
-          }),
-        );
-
-        //If this is a full-page sign-in view, then take the form and insert it into the page
-        if (this.$el.attr("id") == "Content" && !$("#Content form").length)
-          $("#Content").html($("#signinLdap").html());
-        //Else, just show the login in the modal window
-        else if (!this.ldapOnly) {
-          $("#signinPopup").modal("show");
-        }
-
-        //Show the LDAP login form
-        $("#signinLdap").removeClass("collapse").css("height", "auto");
       },
 
       setUpPopup: function () {
