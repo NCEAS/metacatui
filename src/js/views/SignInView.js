@@ -5,7 +5,6 @@ define([
   "text!templates/login.html",
   "text!templates/alert.html",
   "text!templates/loginButtons.html",
-  "text!templates/loginOptions.html",
 ], function (
   $,
   _,
@@ -13,7 +12,6 @@ define([
   LoginTemplate,
   AlertTemplate,
   LoginButtonsTemplate,
-  LoginOptionsTemplate,
 ) {
   "use strict";
 
@@ -28,7 +26,6 @@ define([
       template: _.template(LoginTemplate),
       alertTemplate: _.template(AlertTemplate),
       buttonsTemplate: _.template(LoginButtonsTemplate),
-      loginOptionsTemplate: _.template(LoginOptionsTemplate),
 
       tagName: "div",
       className: "sign-in-btns",
@@ -229,9 +226,6 @@ define([
           //Insert the sign in popup screen once
           if (!$("#signinPopup").length) {
             var target = this.getRedirectURL();
-            var signInUrl = MetacatUI.appModel.get("signInUrl")
-              ? MetacatUI.appModel.get("signInUrl") + target
-              : null;
             var signInUrlOrcid = MetacatUI.appModel.get("signInUrlOrcid")
               ? MetacatUI.appModel.get("signInUrlOrcid") + target
               : null;
@@ -240,12 +234,8 @@ define([
 
             $("body").append(
               this.template({
-                signInUrl: signInUrl,
                 signInUrlOrcid: signInUrlOrcid,
                 currentUrl: window.location.href,
-                loginOptions: this.loginOptionsTemplate({
-                  signInUrl: signInUrl,
-                }).trim(),
                 redirectUrl: redirectUrl,
               }),
             );
@@ -264,14 +254,6 @@ define([
         $("#signupPopup, #signinPopup").modal({
           show: false,
           shown: function () {
-            //Update the sign-in URLs so we are redirected back to the previous page after authentication
-            if (MetacatUI.appModel.get("enableCILogonSignIn")) {
-              $("a.update-sign-in-url").attr(
-                "href",
-                MetacatUI.appModel.get("signInUrl") +
-                  encodeURIComponent(window.location.href),
-              );
-            }
             $("a.update-orcid-sign-in-url").attr(
               "href",
               MetacatUI.appModel.get("signInUrlOrcid") +

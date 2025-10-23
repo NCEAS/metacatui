@@ -806,19 +806,11 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @since 2.13.3
            */
           showSignInHelp: true,
-          /**
-           * If true, users can sign in using CILogon as the identity provider.
-           * ORCID is the only recommended identity provider. CILogon may be deprecated
-           * in the future.
-           * @type {boolean}
-           * @default false
-           */
+
+          /** @deprecated since 0.0.0 */
           enableCILogonSignIn: false,
-          /**
-           * The URL for the DataONE Sign In API using CILogon as the identity provider
-           * This URL is constructed dynamically once the {@link AppModel} is initialized.
-           * @type {string}
-           */
+
+          /** @deprecated since 0.0.0*/
           signInUrl: null,
           /**
            * The URL for the DataONE Sign Out API
@@ -2564,32 +2556,14 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
               d1CNBaseUrl + this.get("d1CNService") + "/diag/subject",
             );
 
-            //The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
-            if (
-              this.get("enableCILogonSignIn") ||
-              typeof this.get("signInUrl") !== "undefined"
-            )
-              this.set(
-                "signInUrl",
-                d1CNBaseUrl + "/portal/" + "startRequest?target=",
-              );
-            if (typeof this.get("signInUrlOrcid") !== "undefined")
+            //The sign-in and out URLs
+            if (this.get("signInUrlOrcid")) {
               this.set(
                 "signInUrlOrcid",
                 d1CNBaseUrl + "/portal/" + "oauth?action=start&target=",
               );
-
-            if (this.get("orcidBaseUrl"))
-              this.set(
-                "orcidSearchUrl",
-                this.get("orcidBaseUrl") + "/v1.1/search/orcid-bio?q=",
-              );
-
-            if (
-              typeof this.get("signInUrl") !== "undefined" ||
-              typeof this.get("signInUrlOrcid") !== "undefined"
-            )
               this.set("signOutUrl", d1CNBaseUrl + "/portal/" + "logout");
+            }
           }
 
           // Object format list
