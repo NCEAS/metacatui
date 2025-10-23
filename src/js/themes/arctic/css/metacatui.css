@@ -1503,10 +1503,6 @@ svg .no-activity,
   font-weight: lighter;
   font-size: 12px;
 }
-.citation ~ .metadata-controls-container .btn.copy {
-  margin-top: 0px;
-  margin-bottom: 20px;
-}
 
 /* The active attribute in the attribute name list */
 .attributeListTable tr.active {

@@ -25,6 +25,7 @@ define([
     // Containers for each button/metric
     analyzeContainer: "dataset-analyze-container",
     citeContainer: "dataset-cite-container",
+    notificationsContainer: "dataset-notifications-container",
     publishContainer: "dataset-publish-container",
     editContainer: "dataset-edit-metadata-container",
     downloadsContainer: "dataset-downloads-container",
@@ -44,11 +45,22 @@ define([
     shareFeature: "share-feature",
 
     // Bootstrap classes
+    icon: "icon",
     button: "btn",
     primaryButton: "btn-primary",
     dropdown: "dropdown",
     dropdownMenu: "dropdown-menu",
     caret: "caret",
+
+    // Borrowed from MetricView for consistent styling
+    metricButton: "metrics",
+    buttonLink: "btn-link",
+    buttonLinkNeutral: "btn-link--neutral",
+
+    // Other
+    iconOnLeft: "icon-on-left",
+    hideBelow1200: "hide-below-1200",
+    hideAbove1200: "hide-above-1200",
   };
 
   // Helper to get AppModel properties
@@ -67,15 +79,6 @@ define([
    */
 
   /**
-   * @typedef {object} DatasetControlsViewModel
-   * @property {string} [pid] - The dataset identifier for this page.
-   * @property {MetadataModel} [metadataModel] - The associated metadata model.
-   * @property {object} [dataPackage] - The data package containing
-   * packageModel.
-   * @property {Function} [publishMethod] - Method to publish the dataset.
-   */
-
-  /**
    * @class DatasetControls
    * @classdesc A view that displays dataset metrics (views, downloads,
    * citations) and action buttons (download, share, cite) for a dataset
@@ -91,13 +94,20 @@ define([
     {
       /**
        * Button configuration map keyed by logical button name.
-       * @type {object.<string, ButtonConfig>}
+       * @type {Object<string, ButtonConfig>}
        */
       buttons: {
         mdq: {
           icon: "dashboard",
-          text: "Assessment Report",
-          classes: [],
+          text: "Assessment Reports",
+          textOnSmallScreen: "Reports",
+          singularText: "Assessment Report",
+          singularTextOnSmallScreen: "Report",
+          classes: [
+            CLASS_NAMES.metricButton,
+            CLASS_NAMES.buttonLink,
+            CLASS_NAMES.buttonLinkNeutral,
+          ],
           tooltip:
             "View detailed Assessment Reports about this dataset's metadata and file information.",
           container: CLASS_NAMES.reportsContainer,
@@ -115,7 +125,7 @@ define([
         },
         cite: {
           icon: "copy",
-          text: "Cite this dataset",
+          text: "Cite",
           id: "cite-this-dataset-btn",
           classes: [],
           tooltip: "View and copy the citation for this dataset.",
@@ -124,7 +134,7 @@ define([
         },
         edit: {
           icon: "pencil",
-          text: "Edit Metadata",
+          text: "Edit",
           classes: [CLASS_NAMES.primaryButton],
           tooltip: "Edit this dataset's metadata.",
           container: CLASS_NAMES.editContainer,
@@ -133,6 +143,7 @@ define([
         publish: {
           icon: "star",
           text: "Publish with DOI",
+          textOnSmallScreen: "Publish",
           classes: [CLASS_NAMES.primaryButton],
           id: "publish",
           tooltip:
@@ -154,12 +165,27 @@ define([
           container: CLASS_NAMES.citationsContainer,
           render: "renderCitations",
         },
+        // placeholder for future implementation
+        notifications: {
+          container: CLASS_NAMES.notificationsContainer,
+          render: "renderNotifications",
+          text: "Watch",
+          icon: "bell",
+          tooltip: "Be notified of changes to this dataset.",
+        },
+      },
+
+      // placeholder for future implementation
+      renderNotifications() {
+        // Don't render yet
+        return null;
+        // this.renderButton("notifications");
       },
 
       /**
        * References to rendered button root elements keyed by name. These will
        * be added during render().
-       * @type {object.<string, HTMLElement>}
+       * @type {Object<string, HTMLElement>}
        */
       buttonEls: {},
 
@@ -184,6 +210,7 @@ define([
             <span class="${CLASS_NAMES.reportsContainer}"></span>
           </span>
           <span class="${CLASS_NAMES.actionsContainer}">
+            <span class="${CLASS_NAMES.notificationsContainer}"></span>
             <span class="${CLASS_NAMES.analyzeContainer}"></span>
             <span class="${CLASS_NAMES.citeContainer}"></span>
             <span class="${CLASS_NAMES.publishContainer}"></span>
@@ -231,7 +258,7 @@ define([
        * complete, throwing an error if publishing fails.
        */
       initialize(options = {}) {
-        const metadataModel = options.metadataModel;
+        const { metadataModel } = options;
 
         const pid =
           options.pid ||
@@ -247,12 +274,21 @@ define([
             type: "dataset",
           });
 
+        /**
+         * @typedef {object} DatasetControlsViewModel
+         * @property {string} [pid] - The dataset identifier for this page.
+         * @property {SolrResults|EML211} [metadataModel] - The associated metadata model.
+         * @property {Function} [publishMethod] - Method to publish the dataset.
+         * @property {boolean} [hasWritePermission] - Whether the current user has
+         * write permission for the dataset.
+         * @property {MetricsModel} [metricsModel] - The metrics model for this dataset.
+         */
         this.viewModel = new Backbone.Model({
-          pid: pid,
+          pid,
           metadataModel: options.metadataModel,
           publishMethod: options.publishMethod,
           hasWritePermission: options.hasWritePermission === true,
-          metricsModel: metricsModel,
+          metricsModel,
         });
       },
 
@@ -273,7 +309,7 @@ define([
         this.subviews = [];
 
         // Remove all the buttons
-        Object.entries(this.buttonEls).forEach(([name]) =>
+        Object.entries(this.buttons).forEach(([name]) =>
           this.removeButton(name),
         );
 
@@ -291,13 +327,13 @@ define([
        * @returns {this} This view instance for chaining.
        */
       render() {
+        this.el.innerHTML = this.template();
         this.reset();
 
         // Re-render when the metadata model or pid changes
         this.listenTo(this.viewModel, "change", this.render);
 
         if (!this.viewModel.get("pid")) return this;
-        this.el.innerHTML = this.template();
         const buttons = { ...this.buttons };
         Object.entries(buttons).forEach(([name, config]) => {
           try {
@@ -355,7 +391,7 @@ define([
        * @returns {MetricsModel} The metrics model instance for this view.
        */
       getMetricsModel() {
-        let model = this.viewModel.get("metricsModel");
+        const model = this.viewModel.get("metricsModel");
 
         // Check if the model's been fetched yet
         if (!model.get("fetched") && !model.get("fetching")) {
@@ -407,6 +443,8 @@ define([
 
         const container = this.getButtonContainer(name);
         container.appendChild(metricView.el);
+        // Make sure the container is visible
+        container.style.display = "";
       },
 
       async canEdit() {
@@ -421,7 +459,7 @@ define([
       async renderEdit() {
         // Do not render the edit button if user does not have permission or the
         // app is configured to hide it.
-        if (!APP_GET("displayDatasetEditButton")) return false;
+        if (!APP_GET("displayDatasetEditButton")) return;
         const canEdit = await this.canEdit();
 
         if (!canEdit) return;
@@ -525,19 +563,36 @@ define([
 
       /** Render the metadata quality report button */
       renderMDQ() {
-        if (!this.canDisplayMDQ()) return;
+        if (!this.canDisplayMDQ()) {
+          // hide the separator if no reports are available
+          const separator = this.el.querySelector(`.${CLASS_NAMES.separator}`);
+          if (separator) separator.style.display = "none";
+          return;
+        }
         const pid = this.viewModel.get("pid");
         const mdqUrl = `${MetacatUI.root}/quality/${encodeURIComponent(pid)}`;
-        const button = this.renderButton("mdq", { href: mdqUrl });
         // get the number of available reports from the MDQ service
         const numReports = APP_GET("mdqSuiteIds")?.length || 0;
-        if (numReports > 0) {
-          // show a badge w/ number of reports like the metric buttons
-          const badge = document.createElement("span");
-          badge.classList.add("ui", "mini", "red", "label", "mdq-badge");
-          badge.textContent = numReports;
-          button.appendChild(badge);
+
+        const options = { href: mdqUrl };
+        if (numReports === 1) {
+          // use singular text if only one report is available
+          options.text = this.buttons.mdq.singularText;
+          options.textOnSmallScreen =
+            this.buttons.mdq.singularTextOnSmallScreen;
         }
+        const button = this.renderButton("mdq", options);
+
+        // show a badge w/ number of reports like the metric buttons
+        const badge = document.createElement("span");
+        badge.classList.add("metric-value");
+        badge.textContent = numReports;
+        // place it after the icon and before the text
+        const iconEl = button.querySelector("i");
+        iconEl.insertAdjacentElement("afterend", badge);
+
+        // add the metric class names to the icon for consistent styling
+        iconEl.classList.add("metric-icon");
       },
 
       /** Render the WholeTale Analyze dropdown button when configured. */
@@ -596,7 +651,8 @@ define([
         return (
           APP_GET("mdqBaseUrl") &&
           this.formatIsMDQSupported() &&
-          APP_GET("displayDatasetQualityMetric")
+          APP_GET("displayDatasetQualityMetric") &&
+          MetacatUI.appModel.get("mdqSuiteIds")?.length > 0
         );
       },
 
@@ -681,7 +737,8 @@ define([
 
         // Create the button element
         let button = document.createElement("a");
-        button.classList.add(...["btn", ...opts.classes]);
+        const classes = Array.isArray(opts.classes) ? opts.classes : [];
+        button.classList.add(...["btn", ...classes]);
         if (opts.id) button.id = opts.id;
 
         if (opts.href) button.href = opts.href;
@@ -690,13 +747,24 @@ define([
 
         if (opts.icon) {
           const icon = document.createElement("i");
-          icon.className = `icon icon-${opts.icon}`;
+          icon.className = `${CLASS_NAMES.icon} icon-${opts.icon} ${CLASS_NAMES.iconOnLeft}`;
           button.appendChild(icon);
         }
 
-        if (opts.text) {
-          const textNode = document.createTextNode(` ${opts.text}`);
-          button.appendChild(textNode);
+        const { text, textOnSmallScreen } = opts;
+        if (text) {
+          const textSpan = document.createElement("span");
+          if (textOnSmallScreen) {
+            const mobileSpan = document.createElement("span");
+            mobileSpan.classList.add(CLASS_NAMES.hideAbove1200);
+            mobileSpan.textContent = textOnSmallScreen;
+            textSpan.classList.add(CLASS_NAMES.hideBelow1200);
+            textSpan.textContent = text;
+            button.appendChild(mobileSpan);
+          } else {
+            textSpan.textContent = text;
+          }
+          button.appendChild(textSpan);
         }
 
         if (opts.tooltip) {

@@ -6,6 +6,9 @@
 
   --color-private: #ff7600;
   --color-info: #3a87ad;
+
+  --color-neutral-2: #cccccc;
+  --color-neutral-6: #656565;
 }
 /******************************************
 ** General Styling ***
@@ -322,6 +325,22 @@ header .citation {
   display: block;
   max-width: 30%;
 }
+/* many themes have overwritten btn colours, without accounting for the
+  bootstrap btn-link style being border & bkg free. */
+.btn-link {
+  border: none !important;
+  background-color: transparent !important;
+}
+.btn-link.btn-link--neutral {
+  color: var(--color-neutral-6, #656565);
+}
+.btn-link.btn-link--neutral:hover,
+.btn-link.btn-link--neutral:focus {
+  filter: brightness(75%);
+  > i {
+    text-decoration: none;
+  }
+}
 .orcid-signin.btn-large.center {
   max-width: 45%;
   margin-bottom: 0px;
@@ -502,7 +521,7 @@ body > .alert-container.important-app-message > .alert {
 /******************************************
 ** Icons ***
 ******************************************/
-.btn > i {
+.btn > i:not(.icon-on-left) {
   margin-left: 5px;
 }
 h3 > .icon,
@@ -2074,6 +2093,17 @@ body > .alert-container {
 }
 #publication-identifier.register-citation-doi-validation {
   border: 1px solid red;
+}
+
+.metric.btn {
+  font-weight: 500;
+  font-size: 1.1em;
+}
+
+.btn.metrics .metric-value {
+  font-weight: 700;
+  color: #333333;
+  margin-right: 0.15rem;
 }
 /******************************************
 * Search Page / Data Catalog Page Metrics
@@ -7967,14 +7997,6 @@ ul.side-nav-items {
   opacity: 0.5;
 }
 
-/* Editor package table column 5 */
-.data-package-item td:last-of-type {
-  text-align: right;
-  padding-right: 10px;
-  padding-left: 0px;
-  width: 100px;
-}
-
 /* Editor package table buttons */
 .data-package-item td button {
   text-align: center;
@@ -9491,18 +9513,18 @@ body > #extension-is-installed {
   border-radius: 50%;
   height: 15px;
   width: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  > i {
+    margin: 0;
+  }
 }
 
-.btn.btn-rounded.action.downloadAction {
-  border: none;
-}
-
-.btn.btn-rounded.action.downloadAction > i {
-  margin-left: -4px;
-}
-
-.btn.btn-rounded.action.viewAction > i {
-  margin-left: -2px;
+.file-actions {
+  display: flex;
+  gap: 0.5em;
+  justify-content: flex-end;
 }
 
 /* Data Package Item */
@@ -9698,4 +9720,46 @@ body > #extension-is-installed {
     padding-left: 0.1rem;
     opacity: 0.9;
   }
+}
+
+/******************************************
+* Dataset Controls View
+********************************************/
+.controls-container {
+  display: flex;
+  /* space between */
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 1.3rem;
+  gap: 0.8rem;
+  width: 100%;
+
+  .btn {
+    /* reduce padding from bootstrap default */
+    padding: 4px 9px;
+  }
+  .btn .caret {
+    margin-left: 0.3rem;
+  }
+
+  .btn .i {
+    margin-right: 0.4rem;
+    font-size: 1.1em;
+  }
+}
+
+.dataset-actions-container {
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.dataset-metrics-container,
+.dataset-actions-container {
+  display: flex;
+}
+
+.dataset-metrics-actions-separator {
+  border-left: 1px solid var(--color-neutral-2, #ccc);
+  margin: 0.5rem;
+  max-height: 1rem;
 }

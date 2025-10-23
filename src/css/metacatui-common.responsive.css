@@ -819,25 +819,12 @@
   /******************************************
     * Metrics Controller Styling
     ********************************************/
-  /* Style for the metric button */
-  a.btn.metrics {
-    float: none;
-    width: 150px;
-    margin: 1px;
-    padding-right: 0px;
-  }
+
   .btn-group + .btn-group,
   .btn-toolbar > .btn + .btn,
   .btn-toolbar > .btn + .btn-group,
   .btn-toolbar > .btn-group + .btn {
     margin-left: 0px;
-  }
-
-  .metric-well {
-    float: none;
-    flex-wrap: wrap;
-    width: 100%;
-    height: auto;
   }
   /* Query rules in the query builder */
   .query-rule {
@@ -954,6 +941,24 @@
   }
 }
 
+@media (max-width: 1200px) {
+  .hide-below-1200 {
+    display: none;
+  }
+  .btn.metrics {
+    padding: 4px 4px;
+  }
+  .dataset-metrics-actions-separator {
+    display: none;
+  }
+}
+
+@media (min-width: 1201px) {
+  .hide-above-1200 {
+    display: none;
+  }
+}
+
 /**********
 * These styles control the mobile navigation
 **********/
@@ -1008,6 +1013,19 @@
   /* Set a height on input forms in the nav*/
   #main-nav form {
     height: 40px;
+  }
+  /* Dataset controls (metrics & actions buttons) */
+  .controls-container {
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 0.2rem;
+  }
+  .metadata-view .citation {
+    margin-bottom: 0.3rem;
+  }
+  /* switch the order of the 2 children */
+  .dataset-actions-container {
+    order: -1;
   }
 }
 

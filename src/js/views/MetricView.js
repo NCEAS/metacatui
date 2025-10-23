@@ -9,17 +9,22 @@ define(["backbone", "views/MetricModalView", "semantic"], (
   const SEM_VARIATIONS = Semantic.CLASS_NAMES.variations;
 
   const CLASS_NAMES = {
-    metricButton: "btn metrics",
-    icon: "icon",
+    metricButton: "metrics",
     metricIcon: "metric-icon",
     metricName: "metric-name",
     metricValue: "metric-value",
+    metricsButtonDisabled: "metrics-button-disabled",
+    buttonLinkNeutral: "btn-link--neutral",
+    // Icon classes
     iconSpinner: "icon-spinner",
     iconSpin: "icon-spin",
-    badge: "badge",
     iconExclamationSign: "icon-exclamation-sign",
     moreInfo: "more-info",
-    metricsButtonDisabled: "metrics-button-disabled",
+    // Bootstrap classes
+    button: "btn",
+    buttonLink: "btn-link",
+    icon: "icon",
+    iconOnLeft: "icon-on-left",
   };
 
   /**
@@ -38,7 +43,7 @@ define(["backbone", "views/MetricModalView", "semantic"], (
        * Class name to be applied to the metric buttons
        * @type {string}
        */
-      className: CLASS_NAMES.metricButton,
+      className: `${CLASS_NAMES.metricButton} ${CLASS_NAMES.button} ${CLASS_NAMES.buttonLink} ${CLASS_NAMES.buttonLinkNeutral}`,
 
       /**
        * Attribute to indicate the type of metric
@@ -118,11 +123,17 @@ define(["backbone", "views/MetricModalView", "semantic"], (
           CLASS_NAMES.iconSpinner,
           CLASS_NAMES.iconSpin,
         ].join(" ");
+        const iconClasses = [
+          CLASS_NAMES.icon,
+          CLASS_NAMES.metricIcon,
+          CLASS_NAMES.iconOnLeft,
+          metricIcon,
+        ].join(" ");
         const val = metricValue || `<i class='${loaderIconClasses}'></i>`;
         return `
-          <span class='${CLASS_NAMES.metricIcon}'> <i class='${CLASS_NAMES.icon} ${metricIcon}'></i> </span>
-          <span class='${CLASS_NAMES.metricName}'> ${metricName} </span>
-          <span class='${CLASS_NAMES.metricValue}'> ${val} </span>
+          <i class='${iconClasses}'></i>
+          <span class='${CLASS_NAMES.metricValue}'>${val}</span>
+          <span class='${CLASS_NAMES.metricName}'>${metricName}</span>
         `.trim();
       },
 
@@ -165,7 +176,13 @@ define(["backbone", "views/MetricModalView", "semantic"], (
           metricValue: "",
           metricIcon: `icon-${icon}`,
           metricName: this.metricName,
-        });
+        })
+          // remove all the white spaces and new lines for consistent spacing
+          // between elements with the same classes (e.g. assessment report button
+          // from DatasetControlsView)
+          .trim()
+          .replace(/\s+/g, " ")
+          .replace(/>\s+</g, "><");
 
         // Adding tool-tip for the buttons
         if (MetacatUI.appModel.get("displayDatasetMetricsTooltip")) {
@@ -228,7 +245,7 @@ define(["backbone", "views/MetricModalView", "semantic"], (
         this.$(`.${CLASS_NAMES.metricValue}`).text(
           MetacatUI.appView.numberAbbreviator(total, 1),
         );
-        this.$(`.${CLASS_NAMES.metricValue}`).addClass(CLASS_NAMES.badge);
+        this.$(`.${CLASS_NAMES.metricValue}`);
       },
 
       /**
