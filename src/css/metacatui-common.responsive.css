@@ -661,10 +661,12 @@
   .row-fluid .span6.pagination-left {
     width: 100%;
   }
-  #Content {
+  #Content,
+  .Editor #Content {
+    box-sizing: border-box;
     width: 100%;
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 
   #portal-header-container {
@@ -1014,14 +1016,25 @@
   #main-nav form {
     height: 40px;
   }
+  /* metadata view */
+  .metadata-view .citation {
+    margin-bottom: 0.6rem;
+  }
+  .citation.header .title {
+    /* make the font 30% smaller than whatever it is set to */
+    font-size: 1.3em;
+  }
+  .citation-container.has-data-source {
+    width: calc(100% - 4rem);
+  }
+  .metadata-view .data-source {
+    max-width: 4rem;
+  }
   /* Dataset controls (metrics & actions buttons) */
   .controls-container {
     flex-direction: column;
     align-items: center;
     margin-bottom: 0.2rem;
-  }
-  .metadata-view .citation {
-    margin-bottom: 0.3rem;
   }
   /* switch the order of the 2 children */
   .dataset-actions-container {

@@ -175,13 +175,6 @@ define([
         },
       },
 
-      // placeholder for future implementation
-      renderNotifications() {
-        // Don't render yet
-        return null;
-        // this.renderButton("notifications");
-      },
-
       /**
        * References to rendered button root elements keyed by name. These will
        * be added during render().
@@ -293,6 +286,31 @@ define([
       },
 
       /**
+       * Render the view content and all configured buttons/metrics.
+       * @returns {this} This view instance for chaining.
+       */
+      render() {
+        this.el.innerHTML = this.template();
+        this.reset();
+
+        // Re-render when the metadata model or pid changes
+        this.listenTo(this.viewModel, "change", this.render);
+
+        if (!this.viewModel.get("pid")) return this;
+        const buttons = { ...this.buttons };
+        Object.entries(buttons).forEach(([name, config]) => {
+          try {
+            this[config.render].call(this);
+          } catch (error) {
+            this.removeButton(name);
+            // eslint-disable-next-line no-console
+            console.error(`Error rendering the ${name} button:`, error);
+          }
+        });
+        return this;
+      },
+
+      /**
        * Clear the view content and remove subviews and event listeners.
        * @param {boolean} [destroyCitationModal] If true, also destroy the
        * citation modal subview. We avoid this unless the entire view is being
@@ -320,31 +338,6 @@ define([
           this.citationModal = null;
         }
         this.stopListening();
-      },
-
-      /**
-       * Render the view content and all configured buttons/metrics.
-       * @returns {this} This view instance for chaining.
-       */
-      render() {
-        this.el.innerHTML = this.template();
-        this.reset();
-
-        // Re-render when the metadata model or pid changes
-        this.listenTo(this.viewModel, "change", this.render);
-
-        if (!this.viewModel.get("pid")) return this;
-        const buttons = { ...this.buttons };
-        Object.entries(buttons).forEach(([name, config]) => {
-          try {
-            this[config.render].call(this);
-          } catch (error) {
-            this.removeButton(name);
-            // eslint-disable-next-line no-console
-            console.error(`Error rendering the ${name} button:`, error);
-          }
-        });
-        return this;
       },
 
       /**
@@ -478,47 +471,6 @@ define([
       },
 
       /**
-       * Determine if this metadata can be published with a DOI, assuming the
-       * user has permission to edit it and it is not obsolete or archived.
-       * @returns {boolean} True if the metadata can be published, false
-       * otherwise
-       */
-      async canPublish() {
-        // The Publish feature has to be enabled for the repo & the model cannot
-        // already have a DOI
-        const metadata = this.viewModel.get("metadataModel");
-        if (!APP_GET("enablePublishDOI") || metadata.isDOI()) {
-          return false;
-        }
-
-        // Need a publish method to call
-        const publishMethod = this.viewModel.get("publishMethod");
-        if (typeof publishMethod !== "function") {
-          return false;
-        }
-
-        // Check if only certain users and groups can publish metadata
-
-        // Get the list of authorized publishers from the AppModel
-        const authorizedPublishers = APP_GET("enablePublishDOIForSubjects");
-        // If the logged-in user is one of the subjects in the list or is in a
-        // group that is in the list, then this metadata can be published.
-        // Otherwise, it cannot.
-        if (
-          Array.isArray(authorizedPublishers) &&
-          authorizedPublishers.length
-        ) {
-          if (MetacatUI.appUserModel.hasIdentityOverlap(authorizedPublishers)) {
-            return true;
-          }
-        } else {
-          return true;
-        }
-
-        return false;
-      },
-
-      /**
        * Render the Publish with DOI button if user is authorized and publishing
        * is allowed.
        */
@@ -528,37 +480,6 @@ define([
         const canPublish = await this.canPublish();
         if (!canPublish) return;
         this.renderButton("publish");
-      },
-
-      /**
-       * Determine if the dataset is obsolete or archived.
-       * @returns {boolean} True if obsolete or archived, otherwise false.
-       */
-      isObsoleteOrArchived() {
-        const metadata = this.viewModel.get("metadataModel");
-        if (!metadata) return false;
-
-        if (
-          (metadata.get("obsoletedBy") &&
-            metadata.get("obsoletedBy").length > 0) ||
-          metadata.get("archived")
-        ) {
-          return true;
-        }
-
-        return false;
-      },
-
-      /**
-       * Determine if the metadata format is editable in this repository.
-       * @returns {boolean} True if the current formatId is allowed to edit.
-       */
-      isEditableFormat() {
-        const metadata = this.viewModel.get("metadataModel");
-        if (!metadata) return false;
-        const format = metadata.get("formatId");
-        const editableFormats = APP_GET("editableFormats") || [];
-        return editableFormats.includes(format);
       },
 
       /** Render the metadata quality report button */
@@ -628,40 +549,6 @@ define([
       },
 
       /**
-       * Check if the current formatId is supported by the metadata quality
-       * suite
-       * @returns {boolean} True if the formatId is supported by MDQ, false
-       * otherwise
-       */
-      formatIsMDQSupported() {
-        const metadataModel = this.viewModel.get("metadataModel");
-        const formatId = metadataModel.get("formatId");
-        const mdqFormatIds = MetacatUI.appModel.get("mdqFormatIds") || [];
-
-        return mdqFormatIds.some((pattern) =>
-          Utilities.wildcardToRegex(pattern).test(formatId),
-        );
-      },
-
-      /**
-       * Determine if MDQ button should be displayed based on configuration.
-       * @returns {boolean} True if MDQ can be displayed, false otherwise.
-       */
-      canDisplayMDQ() {
-        return (
-          APP_GET("mdqBaseUrl") &&
-          this.formatIsMDQSupported() &&
-          APP_GET("displayDatasetQualityMetric") &&
-          MetacatUI.appModel.get("mdqSuiteIds")?.length > 0
-        );
-      },
-
-      /** Open the citation modal, creating and rendering it if needed. */
-      openCitationModal() {
-        this.citationModal?.show();
-      },
-
-      /**
        * Build the WholeTale dropdown menu element from configured environments.
        * @returns {HTMLUListElement} The populated unordered list element.
        */
@@ -680,32 +567,11 @@ define([
         return dropdownMenu;
       },
 
-      /**
-       * Construct a WholeTale URL for the given environment targeting this
-       * dataset.
-       * @param {string} env - The WholeTale environment name.
-       * @returns {string} The generated WholeTale dashboard URL.
-       */
-      createWholetaleUrl(env) {
-        const baseUrl = MetacatUI.appModel.get("d1CNBaseUrl");
-        const dashboardUrl = MetacatUI.appModel.get("dashboardUrl");
-        const currentUrl = encodeURIComponent(window.location.href);
-        const service = MetacatUI.appModel.get("d1CNService");
-        const title = encodeURIComponent(
-          this.viewModel.get("metadataModel")?.get("title") ||
-            "Untitled Dataset",
-        );
-        const queryParams = `?uri=${currentUrl}&title=${title}&api=${baseUrl}${service}`;
-        return `${dashboardUrl}${queryParams}&environment=${env}`;
-      },
-
-      /**
-       * Build the URL to edit this dataset in the submit workflow.
-       * @returns {string} The edit URL.
-       */
-      createEditUrl() {
-        const pid = this.viewModel.get("pid");
-        return `${MetacatUI.root}/submit/${encodeURIComponent(pid)}`;
+      // placeholder for future implementation
+      renderNotifications() {
+        // Don't render yet
+        return null;
+        // this.renderButton("notifications");
       },
 
       /**
@@ -842,6 +708,144 @@ define([
         buttonEl.innerHTML = `<i class='icon icon-${config.icon}'></i> ${config.text}`;
         buttonEl.classList.add(state === "progress" ? "disabled" : state);
         if (state === "progress") buttonEl.disabled = true;
+      },
+
+      // --------------------------------------------------------
+      // MODEL LOGIC: Methods below belong in a model (TODO)
+      // --------------------------------------------------------
+
+      /** Open the citation modal, creating and rendering it if needed. */
+      openCitationModal() {
+        this.citationModal?.show();
+      },
+
+      /**
+       * Check if the current formatId is supported by the metadata quality
+       * suite
+       * @returns {boolean} True if the formatId is supported by MDQ, false
+       * otherwise
+       */
+      formatIsMDQSupported() {
+        const metadataModel = this.viewModel.get("metadataModel");
+        const formatId = metadataModel.get("formatId");
+        const mdqFormatIds = MetacatUI.appModel.get("mdqFormatIds") || [];
+
+        return mdqFormatIds.some((pattern) =>
+          Utilities.wildcardToRegex(pattern).test(formatId),
+        );
+      },
+
+      /**
+       * Determine if MDQ button should be displayed based on configuration.
+       * @returns {boolean} True if MDQ can be displayed, false otherwise.
+       */
+      canDisplayMDQ() {
+        return (
+          APP_GET("mdqBaseUrl") &&
+          this.formatIsMDQSupported() &&
+          APP_GET("displayDatasetQualityMetric") &&
+          MetacatUI.appModel.get("mdqSuiteIds")?.length > 0
+        );
+      },
+
+      /**
+       * Determine if this metadata can be published with a DOI, assuming the
+       * user has permission to edit it and it is not obsolete or archived.
+       * @returns {boolean} True if the metadata can be published, false
+       * otherwise
+       */
+      async canPublish() {
+        // The Publish feature has to be enabled for the repo & the model cannot
+        // already have a DOI
+        const metadata = this.viewModel.get("metadataModel");
+        if (!APP_GET("enablePublishDOI") || metadata.isDOI()) {
+          return false;
+        }
+
+        // Need a publish method to call
+        const publishMethod = this.viewModel.get("publishMethod");
+        if (typeof publishMethod !== "function") {
+          return false;
+        }
+
+        // Check if only certain users and groups can publish metadata
+
+        // Get the list of authorized publishers from the AppModel
+        const authorizedPublishers = APP_GET("enablePublishDOIForSubjects");
+        // If the logged-in user is one of the subjects in the list or is in a
+        // group that is in the list, then this metadata can be published.
+        // Otherwise, it cannot.
+        if (
+          Array.isArray(authorizedPublishers) &&
+          authorizedPublishers.length
+        ) {
+          if (MetacatUI.appUserModel.hasIdentityOverlap(authorizedPublishers)) {
+            return true;
+          }
+        } else {
+          return true;
+        }
+
+        return false;
+      },
+
+      /**
+       * Determine if the dataset is obsolete or archived.
+       * @returns {boolean} True if obsolete or archived, otherwise false.
+       */
+      isObsoleteOrArchived() {
+        const metadata = this.viewModel.get("metadataModel");
+        if (!metadata) return false;
+
+        if (
+          (metadata.get("obsoletedBy") &&
+            metadata.get("obsoletedBy").length > 0) ||
+          metadata.get("archived")
+        ) {
+          return true;
+        }
+
+        return false;
+      },
+
+      /**
+       * Determine if the metadata format is editable in this repository.
+       * @returns {boolean} True if the current formatId is allowed to edit.
+       */
+      isEditableFormat() {
+        const metadata = this.viewModel.get("metadataModel");
+        if (!metadata) return false;
+        const format = metadata.get("formatId");
+        const editableFormats = APP_GET("editableFormats") || [];
+        return editableFormats.includes(format);
+      },
+
+      /**
+       * Construct a WholeTale URL for the given environment targeting this
+       * dataset.
+       * @param {string} env - The WholeTale environment name.
+       * @returns {string} The generated WholeTale dashboard URL.
+       */
+      createWholetaleUrl(env) {
+        const baseUrl = MetacatUI.appModel.get("d1CNBaseUrl");
+        const dashboardUrl = MetacatUI.appModel.get("dashboardUrl");
+        const currentUrl = encodeURIComponent(window.location.href);
+        const service = MetacatUI.appModel.get("d1CNService");
+        const title = encodeURIComponent(
+          this.viewModel.get("metadataModel")?.get("title") ||
+            "Untitled Dataset",
+        );
+        const queryParams = `?uri=${currentUrl}&title=${title}&api=${baseUrl}${service}`;
+        return `${dashboardUrl}${queryParams}&environment=${env}`;
+      },
+
+      /**
+       * Build the URL to edit this dataset in the submit workflow.
+       * @returns {string} The edit URL.
+       */
+      createEditUrl() {
+        const pid = this.viewModel.get("pid");
+        return `${MetacatUI.root}/submit/${encodeURIComponent(pid)}`;
       },
 
       /**
