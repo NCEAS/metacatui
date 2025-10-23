@@ -68,10 +68,6 @@ define([
         "click .subsection-link": "switchToSubSection",
         "click .token-generator": "getToken",
         "click #mod-save-btn": "saveUser",
-        "click #map-request-btn": "sendMapRequest",
-        "click .remove-identity-btn": "removeMap",
-        "click .confirm-request-btn": "confirmMapRequest",
-        "click .reject-request-btn": "rejectMapRequest",
         "click [highlight-subsection]": "highlightSubSection",
         "keypress #add-group-name": "preventSubmit",
         "click .token-tab": "switchTabs",
@@ -306,7 +302,12 @@ define([
         }
 
         //Insert the template first
-        this.sectionHolder.append(this.settingsTemplate(this.model.toJSON()));
+        this.sectionHolder.append(
+          this.settingsTemplate({
+            ...this.model.toJSON(),
+            emailContact: MetacatUI.appModel.get("emailContact") || "",
+          }),
+        );
         this.$settings = this.$("[data-section='settings']");
 
         //Draw the group list
@@ -317,8 +318,6 @@ define([
         this.insertIdentityList();
 
         //Listen for the pending list
-        this.listenTo(this.model, "change:pending", this.insertPendingList);
-        this.model.getPendingIdentities();
 
         //Render the portals subsection
         this.renderMyPortals();
@@ -740,153 +739,19 @@ define([
       },
 
       //------------------------------------------------ Identities/Accounts -------------------------------------------------------//
-      /*
-       * Sends a new identity map request and displays notifications about the result
-       */
-      sendMapRequest: function (e) {
-        e.preventDefault();
+      /**  @deprecated since 0.0.0. Users should contact support to link
+       * accounts. */
+      sendMapRequest() {},
 
-        //Get the identity entered into the input
-        var equivalentIdentity = this.$("#map-request-field").val();
-        if (!equivalentIdentity || equivalentIdentity.length < 1) {
-          return;
-        }
-        //Clear the text input
-        this.$("#map-request-field").val("");
+      /** @deprecated since 0.0.0. Users should contact support to unlink
+       * accounts. */
+      removeMap() {},
 
-        //Show notifications after the identity map request is a success or failure
-        var viewRef = this,
-          success = function () {
-            var message =
-              "An account map request has been sent to <a href=" +
-              MetacatUI.root +
-              "'/profile/" +
-              equivalentIdentity +
-              "'>" +
-              equivalentIdentity +
-              "</a>" +
-              "<h4>Next step:</h4><p>Sign In with this other account and approve this request.</p>";
-            viewRef.showAlert(message, null, "#request-alert-container");
-          },
-          error = function (xhr) {
-            var errorMessage = xhr.responseText;
+      /** @deprecated since 0.0.0. */
+      confirmMapRequest() {},
 
-            if (xhr.responseText.indexOf("Request already issued") > -1) {
-              viewRef.showAlert(
-                "<p>You have already sent a request to map this account to " +
-                  equivalentIdentity +
-                  ".</p> <h4>Next Step:</h4><p> Sign In with your " +
-                  equivalentIdentity +
-                  " account and approve the request.</p>",
-                "alert-info",
-                "#request-alert-container",
-              );
-            } else {
-              viewRef.showAlert(
-                xhr.responseText,
-                "alert-error",
-                "#request-alert-container",
-              );
-            }
-          };
-
-        //Send it
-        this.model.addMap(equivalentIdentity, success, error);
-      },
-
-      /*
-       * Removes a confirmed identity map request and displays notifications about the result
-       */
-      removeMap: function (e) {
-        e.preventDefault();
-
-        var equivalentIdentity = $(e.target).parents("a").attr("data-identity");
-        if (!equivalentIdentity) return;
-
-        var viewRef = this,
-          success = function () {
-            viewRef.showAlert(
-              "Success! Your account is no longer associated with the user " +
-                equivalentIdentity,
-              "alert-success",
-              "#identity-alert-container",
-            );
-          },
-          error = function (xhr, textStatus, error) {
-            viewRef.showAlert(
-              "Something went wrong: " + xhr.responseText,
-              "alert-error",
-              "#identity-alert-container",
-            );
-          };
-
-        this.model.removeMap(equivalentIdentity, success, error);
-      },
-
-      /*
-       * Confirms an identity map request that was initiated from another user, and displays notifications about the result
-       */
-      confirmMapRequest: function (e) {
-        var model = this.model;
-
-        e.preventDefault();
-        var otherUsername = $(e.target).parents("a").attr("data-identity"),
-          mapRequestEl = $(e.target).parents(".pending.identity");
-
-        var viewRef = this;
-
-        var success = function (data, textStatus, xhr) {
-          viewRef.showAlert(
-            "Success! Your account is now linked with the username " +
-              otherUsername,
-            "alert-success",
-            "#pending-alert-container",
-          );
-
-          mapRequestEl.remove();
-        };
-        var error = function (xhr, textStatus, error) {
-          viewRef.showAlert(
-            xhr.responseText,
-            "alert-error",
-            "#pending-alert-container",
-          );
-        };
-
-        //Confirm this map request
-        this.model.confirmMapRequest(otherUsername, success, error);
-      },
-
-      /*
-       * Rejects an identity map request that was initiated by another user, and displays notifications about the result
-       */
-      rejectMapRequest: function (e) {
-        e.preventDefault();
-
-        var equivalentIdentity = $(e.target).parents("a").attr("data-identity"),
-          mapRequestEl = $(e.target).parents(".pending.identity");
-
-        if (!equivalentIdentity) return;
-
-        var viewRef = this,
-          success = function (data) {
-            viewRef.showAlert(
-              "Removed mapping request for " + equivalentIdentity,
-              "alert-success",
-              "#pending-alert-container",
-            );
-            $(mapRequestEl).remove();
-          },
-          error = function (xhr, textStatus, error) {
-            viewRef.showAlert(
-              xhr.responseText,
-              "alert-error",
-              "#pending-alert-container",
-            );
-          };
-
-        this.model.denyMapRequest(equivalentIdentity, success, error);
-      },
+      /** @deprecated since 0.0.0. */
+      rejectMapRequest() {},
 
       insertIdentityList: function () {
         var identities = this.model.get("identities");
@@ -899,8 +764,9 @@ define([
         //Create the list element
         if (identities.length < 1) {
           var identityList = $(document.createElement("p")).text(
-            "You haven't linked to another account yet. Send a request below.",
+            "You have no linked accounts.",
           );
+          identityList.addClass("well");
         } else
           var identityList = $(document.createElement("ul"))
             .addClass("list-identity")
@@ -923,72 +789,13 @@ define([
         });
 
         //Add to the page
-        //$(identityList).find(".collapsed").hide();
         this.$("#identity-list-container").append(identityList);
       },
 
-      insertPendingList: function () {
-        var pending = this.model.get("pending");
+      /** @deprecated since 0.0.0 */
+      insertPendingList() {},
 
-        //Remove the equivalentIdentities list if it was drawn already so we don't do it twice
-        this.$("#pending-list-container").empty();
-
-        //Create the list element
-        if (pending.length < 1) {
-          this.$("[data-subsection='pending-accounts']").hide();
-          return;
-        } else {
-          this.$("[data-subsection='pending-accounts']").show();
-          this.$("#pending-list-container").prepend(
-            $(document.createElement("p")).text(
-              "You have " +
-                pending.length +
-                " new request to map accounts. If these requests are from you, accept them below. If you do not recognize a username, reject the request.",
-            ),
-          );
-          var pendingList = $(document.createElement("ul"))
-            .addClass("list-identity")
-            .attr("id", "pending-list");
-          var pendingCount = $(document.createElement("span"))
-            .addClass("badge")
-            .attr("id", "pending-count")
-            .text(pending.length);
-          this.$("#pending-list-heading").append(pendingCount);
-        }
-
-        //Create a list item for each pending id
-        var view = this;
-        _.each(pending, function (pendingUser, i) {
-          var listItem = view.createUserListItem(pendingUser, {
-            pending: true,
-          });
-          $(pendingList).append(listItem);
-
-          if (pendingUser.isOrcid()) {
-            view.listenToOnce(
-              pendingUser,
-              "change:fullName",
-              function (pendingUser) {
-                var newListItem = view.createUserListItem(pendingUser, {
-                  pending: true,
-                });
-                listItem.replaceWith(newListItem);
-              },
-            );
-          }
-        });
-
-        //Add to the page
-        this.$("#pending-list-container").append(pendingList);
-      },
-
-      createUserListItem: function (user, options) {
-        var pending = false,
-          confirmed = false;
-
-        if (options && options.pending) pending = true;
-        if (options && options.confirmed) confirmed = true;
-
+      createUserListItem: function (user, options = {}) {
         var username = user.get("username"),
           fullName = user.get("fullName") || username;
 
@@ -1004,48 +811,6 @@ define([
             .text(username);
 
         listItem.append(link, details);
-
-        if (pending) {
-          var acceptIcon = $(document.createElement("i"))
-              .addClass("icon icon-ok icon-large icon-positive tooltip-this")
-              .attr("data-title", "Accept Request")
-              .attr("data-trigger", "hover")
-              .attr("data-placement", "top"),
-            rejectIcon = $(document.createElement("i"))
-              .addClass(
-                "icon icon-remove icon-large icon-negative tooltip-this",
-              )
-              .attr("data-title", "Reject Request")
-              .attr("data-trigger", "hover")
-              .attr("data-placement", "top"),
-            confirm = $(document.createElement("a"))
-              .attr("href", "#")
-              .addClass("confirm-request-btn")
-              .attr("data-identity", username)
-              .append(acceptIcon),
-            reject = $(document.createElement("a"))
-              .attr("href", "#")
-              .addClass("reject-request-btn")
-              .attr("data-identity", username)
-              .append(rejectIcon);
-
-          listItem.prepend(confirm, reject).addClass("pending");
-        } else if (confirmed) {
-          var removeIcon = $(document.createElement("i")).addClass(
-              "icon icon-remove icon-large icon-negative",
-            ),
-            remove = $(document.createElement("a"))
-              .attr("href", "#")
-              .addClass("remove-identity-btn")
-              .attr("data-identity", username)
-              .append(removeIcon);
-          $(remove).tooltip({
-            trigger: "hover",
-            placement: "top",
-            title: "Remove equivalent account",
-          });
-          listItem.prepend(remove.append(removeIcon));
-        }
 
         if (user.isOrcid()) {
           details.prepend(this.createIdPrefix(), " ORCID: ");

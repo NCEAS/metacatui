@@ -68,38 +68,13 @@
 			  </div>
 			  <div class="panel-body">
 			  	<p>
-				 	If you have uploaded data with another account(s), you can link your accounts together so that you can log in with just one and manage <strong>all</strong> your data.
+				 	Linked accounts let you manage all your data under one login. Any
+				 	existing links are listed below. To link or unlink accounts, please
+				 	contact support. <% if(emailContact){ %>You can reach support at
+				 	<a href="mailto:<%=emailContact%>"><%=emailContact%></a>.<% } %>
 				</p>
 			  	<div id="identity-alert-container"></div>
 			  	<div id="identity-list-container"></div>
-
-			   <div class="panel panel-default" data-subsection="add-account">
-				  <div class="panel-heading">
-				  	<h4 class="panel-title">Add Another Account</h4>
-				  </div>
-				  <div class="panel-body" id="identity-request-container">
-				  	<div id="request-alert-container"></div>
-				  	<form>
-					  	<div class="input-append">
-					  		<label for="map-request-field">Search by username, email, or name OR enter a full username below.</label>
-						  	<input class="input-xlarge account-autocomplete" type="text" placeholder="Username or Name (cn=me, o=my org...)" id="map-request-field">
-							<button class="btn" id="map-request-btn"><i class="icon-plus"></i></button>
-					  	</div>
-					</form>
-				  </div>
-				</div>
-
-				<div class="panel panel-default" data-subsection="pending-accounts">
-				  <div class="panel-heading">
-				  	<h4 class="panel-title" id="pending-list-heading">Pending Requests</h4>
-				  </div>
-				  <div class="panel-body">
-					  <div id="pending-alert-container"></div>
-				 	  <div id="pending-list-container"></div>
-				  </div>
-			   </div>
-
-			  </div>
 			</div>
 	</div>
 
