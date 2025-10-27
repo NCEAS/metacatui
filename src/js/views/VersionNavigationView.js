@@ -1,6 +1,8 @@
-define(["backbone", "models/sysmeta/VersionTracker"], (
+define(["jquery", "backbone", "models/sysmeta/VersionTracker", "semantic"], (
+  $,
   Backbone,
   VersionTracker,
+  Semantic,
 ) => {
   "use strict";
 
@@ -18,6 +20,17 @@ define(["backbone", "models/sysmeta/VersionTracker"], (
   };
 
   const BUTTON_CLASSES = `${CLASS_NAMES.BUTTON} ${CLASS_NAMES.BUTTON_LINK} ${CLASS_NAMES.BUTTON_LINK_NEUTRAL}`;
+
+  const DEFAULT_DOC_TYPE = "document";
+
+  const GET_DEFAULT_DESCRIPTION = (type) => {
+    const docType = type || DEFAULT_DOC_TYPE;
+    return {
+      prev: `View the previous version of this ${docType}`,
+      next: `View the next version of this ${docType}`,
+      all: `Browse all versions of this ${docType}`,
+    };
+  };
 
   /**
    * @class VersionNavigationView
@@ -43,6 +56,27 @@ define(["backbone", "models/sysmeta/VersionTracker"], (
 
       /** @inheritdoc */
       className: CLASS_NAMES.BASE,
+
+      /**
+       * Settings for the tooltips
+       * @type {object}
+       * @see https://fomantic-ui.com/modules/popup.html#/settings
+       */
+      tooltipSettings: {
+        position: "top center",
+        variation: `${Semantic.CLASS_NAMES.variations.inverted} ${Semantic.CLASS_NAMES.variations.mini}`,
+        delay: {
+          show: 400,
+          hide: 20,
+        },
+        exclusive: true,
+      },
+
+      /**
+       * Descriptions for the tooltips
+       * @type {object}
+       */
+      descriptions: GET_DEFAULT_DESCRIPTION(),
 
       /**
        * Template for the view
@@ -96,12 +130,21 @@ define(["backbone", "models/sysmeta/VersionTracker"], (
        * @param {object} options Object containing the view's options
        * @param {pid} options.pid The PID of the metadata document
        * @param {boolean} [options.showAllVersionsLink] Whether to show a link
-       *  to view all versions of the document
+       * to view all versions of the document
+       * @param {object} [options.descriptions] An object containing custom
+       * descriptions for the tooltips
+       * @param {string} [options.documentType] The type of document (e.g.
+       * dataset, article, etc.) to use in the default tooltip descriptions
        */
       initialize(options = {}) {
         this.pid = options.pid;
         this.showAllVersionsLink = options.showAllVersionsLink !== false;
         this.versionTracker = VersionTracker.get();
+        if (options.descriptions) {
+          this.descriptions = { ...this.descriptions, ...options.descriptions };
+        } else if (options.documentType) {
+          this.descriptions = GET_DEFAULT_DESCRIPTION(options.documentType);
+        }
       },
 
       /**
@@ -138,17 +181,35 @@ define(["backbone", "models/sysmeta/VersionTracker"], (
         if (versions.next) {
           const nextUrl = this.getViewUrl(versions.next);
           next.innerHTML = this.prevNextBtnTemplate(nextUrl, "next");
+          this.addTooltip(next, this.descriptions.next);
         }
         if (versions.prev) {
           const prevUrl = this.getViewUrl(versions.prev);
           prev.innerHTML = this.prevNextBtnTemplate(prevUrl, "prev");
+          this.addTooltip(prev, this.descriptions.prev);
         }
         if (this.showAllVersionsLink && (versions.prev || versions.next)) {
           const allUrl = this.getAllVersionsUrl(this.pid);
           allVersionsLink.innerHTML = this.allVersionsTemplate(allUrl);
+          this.addTooltip(allVersionsLink, this.descriptions.allVersions);
         }
 
         return this;
+      },
+
+      /**
+       * Add a tooltip to an element
+       * @param {HTMLElement} element The element to add the tooltip to
+       * @param {string} content The content of the tooltip
+       */
+      addTooltip(element, content) {
+        if (!element || !content) return;
+        $(element)
+          .find("a")
+          .popup({
+            content,
+            ...this.tooltipSettings,
+          });
       },
 
       /**
@@ -166,6 +227,17 @@ define(["backbone", "models/sysmeta/VersionTracker"], (
         return "";
         // if (!pid) return "";
         // return `${MetacatUI.root}/versionHistory/${encodeURIComponent(pid)}`;
+      },
+
+      /** Clean up tasks before the view is closed */
+      onClose() {
+        this.$el.find(".popup").popup("destroy");
+      },
+
+      /** @inheritdoc */
+      remove() {
+        this.onClose();
+        return Backbone.View.prototype.remove.call(this);
       },
     },
   );

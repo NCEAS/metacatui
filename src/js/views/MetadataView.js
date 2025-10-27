@@ -2833,9 +2833,16 @@ define([
        */
       async showVersionNavigation() {
         if (this.versionNavigation) {
+          this.subviews = this.subviews.filter(
+            (view) => view !== this.versionNavigation,
+          );
           this.versionNavigation.remove();
         }
-        this.versionNavigation = new VersionNavigationView({ pid: this.pid });
+        this.versionNavigation = new VersionNavigationView({
+          pid: this.pid,
+          documentType: "dataset",
+        });
+        this.subviews.push(this.versionNavigation);
         await this.versionNavigation.render();
         const container = this.el.querySelector(
           `.${CLASS_NAMES.VERSION_NAVIGATION_CONTAINER}`,
@@ -3029,7 +3036,7 @@ define([
         _.each(this.subviews, (subview) => {
           if (subview.onClose) subview.onClose();
         });
-
+        this.subviews = [];
         this.packageModels = [];
         this.resetModel();
         this.pid = null;
