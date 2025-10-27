@@ -9408,12 +9408,19 @@ body > #extension-is-installed {
   margin-bottom: 3px;
 }
 
+.top-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.1rem;
+  width: 100%;
+}
+
 .citation.header .top-info > *:not(.id) {
   text-transform: uppercase;
   font-size: 13px;
   letter-spacing: 0.02em;
   line-height: 1;
-  margin-top: 20px;
 }
 
 .citation.header .type {
@@ -9762,4 +9769,19 @@ body > #extension-is-installed {
   border-left: 1px solid var(--color-neutral-2, #ccc);
   margin: 0.5rem;
   max-height: 1rem;
+}
+
+/* VersionNavigationView */
+.version-navigation-view {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  text-transform: uppercase;
+  margin-left: 1rem;
+  a {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0.1rem 0.3rem 0.1rem;
+    letter-spacing: 0.02em;
+  }
 }
