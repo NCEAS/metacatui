@@ -9402,11 +9402,17 @@ body > #extension-is-installed {
   width: 100%;
 }
 
-.citation.header .top-info > *:not(.id) {
-  text-transform: uppercase;
+.citation.header .top-info > * {
   font-size: 13px;
-  letter-spacing: 0.02em;
   line-height: 1;
+  font-size: 14px;
+}
+
+.citation.header .top-info > *:not(.id) {
+  /* id should remain in original case */
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 13px;
 }
 
 .citation.header .type {
