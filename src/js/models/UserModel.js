@@ -35,7 +35,6 @@ define([
           searchModel: null,
           searchResults: null,
           loggedIn: false,
-          ldapError: false, // Was there an error logging in to LDAP
           registered: false,
           isMemberOf: [],
           isOwnerOf: [],
@@ -486,36 +485,6 @@ define([
         this.set("checked", true);
       },
 
-      loginLdap(formData, success, error) {
-        if (!formData || !appModel.get("signInUrlLdap")) return false;
-
-        const model = this;
-
-        const requestSettings = {
-          type: "POST",
-          url: MetacatUI.appModel.get("signInUrlLdap") + window.location.href,
-          data: formData,
-          success(data, textStatus, xhr) {
-            if (success) success(this);
-
-            model.getToken();
-          },
-          error() {
-            /* if(error)
-						error(this);
-					*/
-            model.getToken();
-          },
-        };
-
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
-      },
-
       logout() {
         // Construct the sign out url and redirect
         let signOutUrl = MetacatUI.appModel.get("signOutUrl");
@@ -906,54 +875,9 @@ define([
           success(data, textStatus, xhr) {
             if (typeof onSuccess === "function")
               onSuccess(data, textStatus, xhr);
-
             model.getInfo();
           },
-          error(xhr, textStatus, error) {
-            // Check if the username might have been spelled or formatted incorrectly
-            // ORCIDs, in particular, have different formats that we should account for
-            if (
-              xhr.responseText.indexOf("LDAP: error code 32 - No Such Object") >
-                -1 &&
-              model.isOrcid(otherUsername)
-            ) {
-              if (otherUsername.length == 19)
-                model.addMap(
-                  `http://orcid.org/${otherUsername}`,
-                  onSuccess,
-                  onError,
-                );
-              else if (otherUsername.indexOf("https://orcid.org") == 0)
-                model.addMap(
-                  otherUsername.replace("https", "http"),
-                  onSuccess,
-                  onError,
-                );
-              else if (otherUsername.indexOf("orcid.org") == 0)
-                model.addMap(`http://${otherUsername}`, onSuccess, onError);
-              else if (otherUsername.indexOf("www.orcid.org") == 0)
-                model.addMap(
-                  otherUsername.replace("www.", "http://"),
-                  onSuccess,
-                  onError,
-                );
-              else if (otherUsername.indexOf("http://www.orcid.org") == 0)
-                model.addMap(
-                  otherUsername.replace("www.", ""),
-                  onSuccess,
-                  onError,
-                );
-              else if (otherUsername.indexOf("https://www.orcid.org") == 0)
-                model.addMap(
-                  otherUsername.replace("https://www.", "http://"),
-                  onSuccess,
-                  onError,
-                );
-              else if (typeof onError === "function")
-                onError(xhr, textStatus, error);
-            } else if (typeof onError === "function")
-              onError(xhr, textStatus, error);
-          },
+          error: onError,
         };
 
         $.ajax(
@@ -992,12 +916,6 @@ define([
             MetacatUI.appUserModel.createAjaxSettings(),
           ),
         );
-      },
-
-      failedLdapLogin() {
-        this.set("loggedIn", false);
-        this.set("checked", true);
-        this.set("ldapError", true);
       },
 
       pluckIdentityUsernames() {

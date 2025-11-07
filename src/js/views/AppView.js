@@ -64,18 +64,6 @@
       },
 
       initialize: function () {
-        //Check for the LDAP sign in error message
-        if (
-          window.location.search.indexOf(
-            "error=Unable%20to%20authenticate%20LDAP%20user",
-          ) > -1
-        ) {
-          window.location =
-            window.location.origin +
-            window.location.pathname +
-            "#signinldaperror";
-        }
-
         //Is there a logged-in user?
         MetacatUI.appUserModel.checkStatus();
 

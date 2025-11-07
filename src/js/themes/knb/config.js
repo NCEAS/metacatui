@@ -14,7 +14,6 @@ MetacatUI.AppConfig = Object.assign(
     googleAnalyticsKey: "G-JK039KFNBC",
     repositoryName: "KNB",
     nodeId: "urn:node:KNB",
-    enableLdapSignIn: true,
 
     //Editor
     emlEditorRequiredFields: {

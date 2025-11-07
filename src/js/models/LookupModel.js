@@ -337,47 +337,8 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
         });
       },
 
-      /*
-       * Gets the bio of a person given an ORCID Updates the given user model
-       * with the bio info from ORCID
-       */
-      orcidGetBio: function (options) {
-        if (!options || !options.userModel) return;
-
-        var orcid = options.userModel.get("username"),
-          onSuccess = options.success || function () {},
-          onError = options.error || function () {};
-
-        $.ajax({
-          url: MetacatUI.appModel.get("orcidSearchUrl") + orcid,
-          type: "GET",
-          //accepts: "application/orcid+json",
-          success: function (data, textStatus, xhr) {
-            // get the orcid info
-            var orcidNode = $(data).find("path:contains(" + orcid + ")"),
-              profile = orcidNode.length
-                ? $(orcidNode).parents("orcid-profile")
-                : [];
-
-            if (!profile.length) return;
-
-            var fullName =
-              $(profile)
-                .find("orcid-bio > personal-details > given-names")
-                .text() +
-              " " +
-              $(profile)
-                .find("orcid-bio > personal-details > family-name")
-                .text();
-            options.userModel.set("fullName", fullName);
-
-            onSuccess(data, textStatus, xhr);
-          },
-          error: function (xhr, textStatus, error) {
-            onError(xhr, textStatus, error);
-          },
-        });
-      },
+      /** @deprecated since 0.0.0 */
+      orcidGetBio: () => {},
 
       /**
        * Using the NSF Award Search API, get a list of grants that match the

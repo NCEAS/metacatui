@@ -1645,9 +1645,6 @@ svg.icon {
 #signInPopup .orcid-signin {
   margin-top: 10%;
 }
-.sign-in-ldap select {
-  width: 220px;
-}
 .modal.container {
   padding: 20px 20px 40px 20px;
 }
@@ -5866,19 +5863,8 @@ textarea.token {
 .form-group {
   clear: both;
 }
-.list-group-item .remove-identity-btn {
-  float: right;
-  line-height: 2.7em;
-}
-.list-group-item.identity.pending .details {
-  margin-left: 52px;
-}
 .list-group-item.identity .details .orcid-logo {
   margin-left: 0px;
-}
-.list-group-item .confirm-request-btn,
-.list-group-item .reject-request-btn {
-  margin-right: 5px;
 }
 .icon.is-owner {
   color: #ffd700;
