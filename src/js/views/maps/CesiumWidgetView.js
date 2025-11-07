@@ -1434,23 +1434,35 @@ define([
 
           // The asset should be visible and the cesium model should be ready
           // before starting to render the asset
-          const checkAndRenderAsset = function () {
-            let shouldRender =
-              mapAsset.get("visible") && mapAsset.get("status") === "ready";
-            if (shouldRender) {
-              renderFunction.call(view, mapAsset.get("cesiumModel"));
-              view.stopListening(mapAsset);
+          const checkAndRenderAsset = (mapAsset, listenModel) => {
+            const cesiumModel = mapAsset.get("cesiumModel");
+            const ready = mapAsset.get("status") === "ready";
+            const visible = mapAsset.get("visible");
+            const shouldRender = ready && visible && cesiumModel;
+            if (!shouldRender) return false;
+
+            renderFunction.call(view, cesiumModel);
+            if (listenModel) {
+              listenModel.stopListening(mapAsset);
+              listenModel.destroy();
             }
+
+            return true;
           };
 
-          checkAndRenderAsset();
-
-          if (!mapAsset.get("visible")) {
-            view.listenToOnce(mapAsset, "change:visible", checkAndRenderAsset);
-          }
-
-          if (mapAsset.get("status") !== "ready") {
-            view.listenTo(mapAsset, "change:status", checkAndRenderAsset);
+          const done = checkAndRenderAsset(mapAsset);
+          if (!done) {
+            // Make a model just to listen for when mapAsset is ready to render.
+            // This way we can stop listening once it's rendered, without
+            // stopping any other view listeners on the mapAsset.
+            const listenModel = new Backbone.Model();
+            listenModel.listenTo(
+              mapAsset,
+              "change:visible change:status",
+              () => {
+                checkAndRenderAsset(mapAsset, listenModel);
+              },
+            );
           }
         } catch (e) {
           console.error("Error rendering an asset", e, mapAsset);

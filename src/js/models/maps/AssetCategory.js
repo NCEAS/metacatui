@@ -84,7 +84,6 @@ define([
           return {
             ...layer,
             configuredVisibility: layer.visible,
-            originalVisibility: visible,
             visible,
           };
         });

@@ -109,11 +109,13 @@ define([
         try {
           if (!assetConfig) assetConfig = {};
 
-          MapAsset.prototype.initialize.call(this, assetConfig);
-
           if (assetConfig.filters) {
-            this.set("filters", new VectorFilters(assetConfig.filters));
+            const filters = new VectorFilters(assetConfig.filters);
+            this.set("filters", filters);
+            assetConfig.filters = filters;
           }
+
+          MapAsset.prototype.initialize.call(this, assetConfig);
 
           // displayReady will be updated by the Cesium map within which the
           // asset is rendered. The map will set it to true when the data is
@@ -141,7 +143,7 @@ define([
             );
           }
 
-          this.createCesiumModel();
+          this.createCesiumModelWhenVisible();
         } catch (error) {
           console.log("Error initializing a CesiumVectorData model.", error);
         }
@@ -211,6 +213,9 @@ define([
           const data = JSON.parse(JSON.stringify(cesiumOptions.data));
           delete cesiumOptions.data;
 
+          // TODO: Could show a progress bar starting here ...
+          // does dataSource.load support progress events?
+
           dataSource
             .load(data, cesiumOptions)
             .then(function (loadedData) {
@@ -222,7 +227,10 @@ define([
               model.updateAppearance();
               model.setReady();
             })
-            .otherwise(model.setError.bind(model));
+            .otherwise((error) => {
+              console.log("Failed to load Cesium Vector Data.", error);
+              model.setError.bind(model, error.message || error);
+            });
         } catch (error) {
           console.log("Failed to create a VectorData Cesium Model.", error);
         }
@@ -233,19 +241,15 @@ define([
        * updated.
        */
       setListeners: function () {
-        try {
-          MapAsset.prototype.setListeners.call(this);
-          const appearEvents =
-            "change:visible change:opacity change:color change:outlineColor" +
-            " change:temporarilyHidden";
-          this.stopListening(this, appearEvents);
-          this.listenTo(this, appearEvents, this.updateAppearance);
-          const filters = this.get("filters");
-          this.stopListening(filters, "update");
-          this.listenTo(filters, "update", this.updateFeatureVisibility);
-        } catch (error) {
-          console.log("Failed to set CesiumVectorData listeners.", error);
-        }
+        MapAsset.prototype.setListeners.call(this);
+        const appearEvents =
+          "change:visible change:opacity change:color change:outlineColor" +
+          " change:temporarilyHidden";
+        this.stopListening(this, appearEvents);
+        this.listenTo(this, appearEvents, this.updateAppearance);
+        const filters = this.get("filters");
+        this.stopListening(filters, "update");
+        this.listenTo(filters, "update", this.updateFeatureVisibility);
       },
 
       /**

@@ -87,7 +87,7 @@ define([
             this.set("filters", new VectorFilters(assetConfig.filters));
           }
 
-          this.createCesiumModel();
+          this.createCesiumModelWhenVisible();
         } catch (error) {
           console.log(
             "There was an error initializing a 3DTileset model" +
