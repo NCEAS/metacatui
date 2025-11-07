@@ -1,28 +1,49 @@
-define(["jquery", "underscore", "backbone", "views/MetricModalView"], function (
-  $,
-  _,
+define(["backbone", "views/MetricModalView", "semantic"], (
   Backbone,
   MetricModalView,
-) {
+  Semantic,
+) => {
   "use strict";
+
+  const METRIC_NAMES = ["Citations", "Downloads", "Views"];
+  const SEM_VARIATIONS = Semantic.CLASS_NAMES.variations;
+
+  const CLASS_NAMES = {
+    metricButton: "metrics",
+    metricIcon: "metric-icon",
+    metricName: "metric-name",
+    metricValue: "metric-value",
+    metricsButtonDisabled: "metrics-button-disabled",
+    buttonLinkNeutral: "btn-link--neutral",
+    // Icon classes
+    iconSpinner: "icon-spinner",
+    iconSpin: "icon-spin",
+    iconExclamationSign: "icon-exclamation-sign",
+    moreInfo: "more-info",
+    // Bootstrap classes
+    button: "btn",
+    buttonLink: "btn-link",
+    icon: "icon",
+    iconOnLeft: "icon-on-left",
+  };
 
   /**
    * @class MetricView
-   * @classdesc the display of the dataset citation and usage metrics on the dataset landing page
+   * @classdesc the display of the dataset citation and usage metrics on the
+   * dataset landing page
    * @classcategory Views
    * @screenshot views/MetricView.png
-   * @extends Backbone.View
+   * @augments Backbone.View
    */
-  var MetricView = Backbone.View.extend(
+  const MetricView = Backbone.View.extend(
     /** @lends MetricView.prototype */ {
       tagName: "a",
-      // id: 'metrics-button',
 
       /**
        * Class name to be applied to the metric buttons
        * @type {string}
        */
-      className: "btn metrics",
+      className: `${CLASS_NAMES.metricButton} ${CLASS_NAMES.button} ${CLASS_NAMES.buttonLink} ${CLASS_NAMES.buttonLinkNeutral}`,
 
       /**
        * Attribute to indicate the type of metric
@@ -36,100 +57,145 @@ define(["jquery", "underscore", "backbone", "views/MetricModalView"], function (
        */
       model: null,
 
-      //Templates
-      metricButtonTemplate: _.template(
-        "<span class='metric-icon'> <i class='icon" +
-          " <%=metricIcon%>'></i> </span>" +
-          "<span class='metric-name'> <%=metricName%> </span>" +
-          "<span class='metric-value'> <i class='icon metric-icon icon-spinner icon-spin'>" +
-          "</i> </span>",
-      ),
+      /**
+       * The font-awesome icons associated with each metric
+       * @type {object}
+       * @param {string} Citations - The icon for citations metric
+       * @param {string} Downloads - The icon for downloads metric
+       * @param {string} Views - The icon for views metric
+       * @since 0.0.0
+       */
+      metricsIcons: {
+        Citations: "quote-right",
+        Downloads: "cloud-download",
+        Views: "eye-open",
+      },
 
+      /**
+       * The descriptions associated with each metric for tool-tips
+       * @type {object}
+       * @param {string} Citations - The description for citations metric
+       * @param {string} Downloads - The description for downloads metric
+       * @param {string} Views - The description for views metric
+       * @since 0.0.0
+       */
+      metricsTooltips: {
+        Citations:
+          "For all the versions of this dataset, the number of times that all or part of this dataset was cited.",
+        Downloads:
+          "For all the versions of this dataset, the number of times that all or part of this dataset was downloaded.",
+        Views:
+          "For all the versions of this dataset, the number of times that all or part of this dataset was viewed.",
+      },
+
+      /**
+       * Settings passed to the Formantic UI popup module to configure a tooltip
+       * shown over the metric button.
+       * @see https://fomantic-ui.com/modules/popup.html#/settings
+       * @type {object|boolean}
+       * @since 0.0.0
+       */
+      tooltipSettings: {
+        variation: `${SEM_VARIATIONS.mini} ${SEM_VARIATIONS.inverted}`,
+        position: "top center",
+        on: "hover",
+        hoverable: true,
+        delay: {
+          show: 500,
+          hide: 40,
+        },
+      },
+
+      /**
+       * The template for the metric button
+       * @param {object} options - A literal object with options for the
+       * template
+       * @param {string} options.metricValue - The value of the metric to be
+       * displayed
+       * @param {string} options.metricIcon - The icon class for the metric
+       * @param {string} options.metricName - The name of the metric
+       * @returns {string} - The HTML string for the metric button
+       */
+      metricButtonTemplate: ({ metricValue, metricIcon, metricName }) => {
+        const loaderIconClasses = [
+          CLASS_NAMES.icon,
+          CLASS_NAMES.metricIcon,
+          CLASS_NAMES.iconSpinner,
+          CLASS_NAMES.iconSpin,
+        ].join(" ");
+        const iconClasses = [
+          CLASS_NAMES.icon,
+          CLASS_NAMES.metricIcon,
+          CLASS_NAMES.iconOnLeft,
+          metricIcon,
+        ].join(" ");
+        const val = metricValue || `<i class='${loaderIconClasses}'></i>`;
+        return `
+          <i class='${iconClasses}'></i>
+          <span class='${CLASS_NAMES.metricValue}'>${val}</span>
+          <span class='${CLASS_NAMES.metricName}'>${metricName}</span>
+        `.trim();
+      },
+
+      /** @inheritdoc */
       events: {
         click: "showMetricModal",
       },
 
       /**
-       * @param {Object} options - A literal object with options to pass to the view
-       * @property {MetricsModel} options.model - The MetricsModel object associated with this view
-       * @property {string} options.metricName - The name of the metric view
-       * @property {string} options.pid - Associated dataset identifier with this view
+       * @param {object} options - A literal object with options to pass to the
+       * view
+       * @param {MetricsModel} options.model - The MetricsModel object
+       * associated with this view
+       * @param {string} options.metricName - The name of the metric view
+       * @param {string} options.pid - Associated dataset identifier with this
+       * view
        */
-      initialize: function (options) {
-        if (typeof options == "undefined") {
-          var options = {};
-        }
-
-        this.metricName = options.metricName;
+      initialize(options = {}) {
+        let name = options.metricName || "";
+        name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+        this.metricName = name;
         this.model = options.model;
         this.pid = options.pid;
       },
 
       /**
        * Renders the apprpriate metric view on the UI
+       * @returns {MetricView} - The MetricView object
        */
-      render: function () {
-        // Generating the Button view for the given metric
-        if (this.metricName == "Citations") {
-          this.$el.html(
-            this.metricButtonTemplate({
-              metricValue: "",
-              metricIcon: "icon-quote-right",
-              metricName: this.metricName,
-            }),
-          );
-        } else if (this.metricName == "Downloads") {
-          this.$el.html(
-            this.metricButtonTemplate({
-              metricValue: "",
-              metricIcon: "icon-cloud-download",
-              metricName: this.metricName,
-            }),
-          );
-        } else if (this.metricName == "Views") {
-          this.$el.html(
-            this.metricButtonTemplate({
-              metricValue: "",
-              metricIcon: "icon-eye-open",
-              metricName: this.metricName,
-            }),
-          );
-        } else {
-          this.$el.html("");
+      render() {
+        const icon = this.metricsIcons[this.metricName];
+
+        if (!METRIC_NAMES.includes(this.metricName)) {
+          this.el.innerHTML = "";
+          this.removeTooltip();
+          return this;
         }
 
+        this.el.innerHTML = this.metricButtonTemplate({
+          metricValue: "",
+          metricIcon: `icon-${icon}`,
+          metricName: this.metricName,
+        })
+          // remove all the white spaces and new lines for consistent spacing
+          // between elements with the same classes (e.g. assessment report button
+          // from DatasetControlsView)
+          .trim()
+          .replace(/\s+/g, " ")
+          .replace(/>\s+</g, "><");
+
         // Adding tool-tip for the buttons
-        // TODO: Change to 'Show metricName', once you've the modals working.
         if (MetacatUI.appModel.get("displayDatasetMetricsTooltip")) {
-          this.$el
-            .addClass("tooltip-this")
-            .attr("data-placement", "top")
-            .attr("data-trigger", "hover")
-            .attr("data-delay", "700")
-            .attr("data-container", "body");
-          if (this.metricName == "Citations") {
-            this.$el.attr(
-              "data-title",
-              "For all the versions of this dataset, the number of times that all or part of this dataset was cited.",
-            );
-          } else if (this.metricName == "Downloads") {
-            this.$el.attr(
-              "data-title",
-              "For all the versions of this dataset, the number of times that all or part of this dataset was downloaded.",
-            );
-          } else if (this.metricName == "Views") {
-            this.$el.attr(
-              "data-title",
-              "For all the versions of this dataset, the number of times that all or part of this dataset was viewed.",
-            );
-          } else {
-            this.$el.attr("data-title", "");
-          }
+          const tooltipText = this.metricsTooltips[this.metricName];
+          this.addTooltip(tooltipText);
+        } else {
+          this.removeTooltip();
         }
+
+        this.stopListening(this.model);
 
         // waiting for the fetch() call to succeed.
         this.listenTo(this.model, "sync", this.renderResults);
-
         // in case when there is an error for the fetch call.
         this.listenTo(this.model, "error", this.renderError);
 
@@ -137,11 +203,13 @@ define(["jquery", "underscore", "backbone", "views/MetricModalView"], function (
       },
 
       /**
-       * Handles the click functions and displays appropriate modals on click events
+       * Handles the click functions and displays appropriate modals on click
+       * events
+       * @param {Event} _e - The click event object
        */
-      showMetricModal: function (e) {
+      showMetricModal(_e) {
         if (MetacatUI.appModel.get("displayMetricModals")) {
-          var modalView = new MetricModalView({
+          const modalView = new MetricModalView({
             metricName: this.metricName,
             metricsModel: this.model,
             pid: this.pid,
@@ -155,7 +223,7 @@ define(["jquery", "underscore", "backbone", "views/MetricModalView"], function (
             this.subviews = [modalView];
           }
 
-          //Track this event
+          // Track this event
           MetacatUI.analytics?.trackEvent(
             "metrics",
             "Click metric",
@@ -167,55 +235,66 @@ define(["jquery", "underscore", "backbone", "views/MetricModalView"], function (
       /**
        * Displays the metrics count and badge on the landing page
        */
-      renderResults: function () {
-        var total = this.model.get("total" + this.metricName);
-        // Check if the metric object exists in results obtained from the service
-        // If it does, get its total value else set the total count to 0
+      renderResults() {
+        const total = this.model.get(`total${this.metricName}`);
+        // Check if the metric object exists in results obtained from the
+        // service If it does, get its total value else set the total count to 0
 
         // Replacing the metric total count with the spinning icon.
 
-        this.$(".metric-value").text(
+        this.$(`.${CLASS_NAMES.metricValue}`).text(
           MetacatUI.appView.numberAbbreviator(total, 1),
         );
-        this.$(".metric-value").addClass("badge");
+        this.$(`.${CLASS_NAMES.metricValue}`);
       },
 
       /**
        * Manages error handling in case Metrics Service does not responsd
        */
-      renderError: function () {
-        // Replacing the spinning icon with a question-mark
-        // when the metrics are not loaded
-        var iconEl = this.$(".metric-value").find(".metric-icon");
-        iconEl.removeClass("icon-spinner");
-        iconEl.removeClass("icon-spin");
-        iconEl.addClass("icon-exclamation-sign more-info");
+      renderError() {
+        // Replacing the spinning icon with a question-mark when the metrics are
+        // not loaded
+        const iconEl = this.$(`.${CLASS_NAMES.metricValue}`).find(
+          `.${CLASS_NAMES.metricIcon}`,
+        );
+        iconEl.removeClass(CLASS_NAMES.iconSpinner);
+        iconEl.removeClass(CLASS_NAMES.iconSpin);
+        iconEl.addClass(CLASS_NAMES.iconExclamationSign);
+        iconEl.addClass(CLASS_NAMES.moreInfo);
+
+        this.$el.addClass(CLASS_NAMES.metricsButtonDisabled);
 
         // Setting the error tool-tip
-        this.$el.removeAttr("data-title");
-
-        this.$el.addClass("metrics-button-disabled");
-        this.$el.attr(
-          "data-title",
-          "The number of " +
-            this.metricName +
-            " could not be retreived at this time.",
+        this.addTooltip(
+          "Metrics are currently unavailable. Please try again later.",
         );
+      },
+
+      /**
+       * Add a tooltip to the button with the given text
+       * @param {string} tooltipText - The text to show in the tooltip
+       */
+      addTooltip(tooltipText) {
+        this.tooltipSettings.content = tooltipText;
+        this.$el.popup(this.tooltipSettings);
+      },
+
+      /** Remove any tooltip set on the button */
+      removeTooltip() {
+        this.$el.popup("destroy");
       },
 
       /**
        * Cleans up listeners from this view
        */
-      onClose: function () {
-        _.each(
-          this.subviews,
-          function (view) {
-            if (view.onClose) {
-              view.onClose();
-            }
-          },
-          this,
-        );
+      onClose() {
+        this.subviews?.forEach((view) => {
+          if (typeof view.onClose === "function") {
+            view.onClose();
+          }
+        });
+        this.removeTooltip();
+        this.stopListening();
       },
     },
   );

@@ -2493,17 +2493,6 @@ dt {
   stroke: var(--c-major-accent-6);
 }
 
-.metrics .metric-value.badge {
-  background-color: #1c6e84;
-  background-color: var(--c-major-accent-6);
-}
-
-.metrics:hover .metric-value.badge {
-  background-color: #ffffff;
-  color: #1c6e84;
-  color: var(--c-major-accent-6);
-}
-
 /****************************************************************
 * Styles for compatibility with the d1website styles
 *****************************************************************/
