@@ -752,35 +752,31 @@ define([
           const fetchOptions = _.extend({ dataType: "text" }, options);
 
           const thisPackage = this;
-
-          // Function to retry fetching with user login details if the initial
-          // fetch fails
-          const retryFetch = () => {
+          // If the initial fetch fails, retry with user login details
+          fetchOptions.error = () => {
             // Add the authorization options
             const authFetchOptions = _.extend(
               fetchOptions,
               MetacatUI.appUserModel.createAjaxSettings(),
             );
-
+            authFetchOptions.error = () => {
+              // If the fetch fails even with user login details, trigger a
+              // fetchFailed event on this package
+              thisPackage.trigger("fetchFailed", thisPackage);
+              reject();
+            };
+            authFetchOptions.success = () => {
+              resolve();
+            };
             // Fetch the resource map RDF XML with user login details
-            return Backbone.Collection.prototype.fetch
-              .call(thisPackage, authFetchOptions)
-              .fail(() => {
-                thisPackage.trigger("fetchFailed", thisPackage);
-                reject();
-              });
+            return Backbone.Collection.prototype.fetch.call(
+              thisPackage,
+              authFetchOptions,
+            );
           };
 
           // Fetch the resource map RDF XML
-          Backbone.Collection.prototype.fetch
-            .call(this, fetchOptions)
-            .done(() => resolve())
-            .fail(() => {
-              // If the initial fetch fails, retry with user login details
-              retryFetch()
-                .done(() => resolve())
-                .fail(() => reject());
-            });
+          Backbone.Collection.prototype.fetch.call(this, fetchOptions);
         });
       },
 

@@ -344,7 +344,7 @@ define([
               ))
           ) {
             //Get the name of the source member node
-            const sourceMNName = "original data repository",
+            let sourceMNName = "original data repository",
               mnURL = "";
             if (typeof sourceMN == "string") {
               const sourceMNObject = MetacatUI.nodeModel.getMember(sourceMN);

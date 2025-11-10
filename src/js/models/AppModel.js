@@ -248,9 +248,13 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           displayDownloadButtonInSearchResults: false,
 
           /**
-           * If set to false, some parts of the app will send POST HTTP requests to the
-           * Solr search index via the `/query/solr` DataONE API.
-           * Set this configuration to true if using Metacat 2.10.2 or earlier
+           * If set to false, some parts of the app will send POST HTTP requests
+           * to the Solr search index via the `/query/solr` DataONE API. Set
+           * this configuration to true if using Metacat 2.10.2 or earlier.
+           *
+           * IMPORTANT: this option will be removed in a future release. POST
+           * requests to Solr will be used by default to avoid URL length
+           * limitations and to allow more complex queries.
            * @type {boolean}
            */
           disableQueryPOSTs: false,
