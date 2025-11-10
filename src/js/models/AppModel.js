@@ -2557,7 +2557,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
             );
 
             //The sign-in and out URLs
-            if (this.get("signInUrlOrcid")) {
+            if (typeof this.get("signInUrlOrcid") != "undefined") {
               this.set(
                 "signInUrlOrcid",
                 d1CNBaseUrl + "/portal/" + "oauth?action=start&target=",
