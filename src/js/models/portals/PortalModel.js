@@ -7,8 +7,6 @@ define([
   "backbone",
   "gmaps",
   "uuid",
-  "collections/Filters",
-  "collections/SolrResults",
   "models/filters/Filter",
   "models/portals/PortalSectionModel",
   "models/portals/PortalVizSectionModel",
@@ -16,17 +14,15 @@ define([
   "models/metadata/eml211/EMLParty",
   "models/metadata/eml220/EMLText",
   "models/CollectionModel",
-  "models/Search",
   "models/filters/FilterGroup",
   "models/Map",
+  "common/QueryService",
 ], function (
   $,
   _,
   Backbone,
   gmaps,
   uuid,
-  Filters,
-  SolrResults,
   FilterModel,
   PortalSectionModel,
   PortalVizSectionModel,
@@ -34,9 +30,9 @@ define([
   EMLParty,
   EMLText,
   CollectionModel,
-  SearchModel,
   FilterGroup,
   MapModel,
+  QueryService,
 ) {
   /**
    * @classdesc A PortalModel is a specialized collection that represents a portal,
@@ -434,120 +430,80 @@ define([
        * Get the portal seriesId by searching for the portal by its label in Solr
        */
       getSeriesIdByLabel: function () {
-        //Exit if there is no portal name set
-        if (!this.get("label")) return;
+        const model = this;
+        const label = this.get("label");
+        if (!label) return;
 
-        var model = this;
+        // Save a boolean flag for whether or not this fetch was done with user authentication.
+        this.set("fetchedWithAuth", MetacatUI.appUserModel.get("loggedIn"));
 
-        //Start the base URL for the query service
-        var baseUrl = "";
-
+        // Build candidate query service URLs to try
+        let candidates = [];
         try {
-          //If this app instance is pointing to the CN, find the Portal series ID on the MN
-          if (MetacatUI.appModel.get("alternateRepositories").length) {
-            //Get the array of possible authoritative MNs
-            var possibleAuthMNs = this.get("possibleAuthMNs");
-
-            //If there are no possible authoritative MNs, use the CN query service
-            if (!possibleAuthMNs.length) {
-              baseUrl = MetacatUI.appModel.get("queryServiceUrl");
-            } else {
-              baseUrl = possibleAuthMNs[0].queryServiceUrl;
-            }
+          const possibleAuthMNs = this.get("possibleAuthMNs") || [];
+          if (
+            MetacatUI.appModel.get("alternateRepositories").length &&
+            possibleAuthMNs.length
+          ) {
+            candidates = possibleAuthMNs
+              .map((mn) => mn && mn.queryServiceUrl)
+              .filter(Boolean);
           } else {
-            //Get the query service URL
-            baseUrl = MetacatUI.appModel.get("queryServiceUrl");
+            candidates = [MetacatUI.appModel.get("queryServiceUrl")];
           }
         } catch (e) {
           console.error(
-            "Error in trying to determine the query service URL. Going to try to use the AppModel setting. ",
+            "Error determining queryServiceUrl candidates; falling back to AppModel setting.",
             e,
           );
-        } finally {
-          //Default to the query service URL configured in the AppModel, if one wasn't set earlier
-          if (!baseUrl) {
-            baseUrl = MetacatUI.appModel.get("queryServiceUrl");
-            //If there isn't a query service URL, trigger a "not found" error and exit
-            if (!baseUrl) {
-              this.trigger("notFound");
-              return;
-            }
-          }
+        }
+        if (!candidates.length && MetacatUI.appModel.get("queryServiceUrl")) {
+          candidates = [MetacatUI.appModel.get("queryServiceUrl")];
+        }
+        candidates = _.uniq(candidates.filter(Boolean));
+        if (!candidates.length) {
+          this.trigger("notFound");
+          return;
         }
 
-        var requestSettings = {
-          url:
-            baseUrl +
-            'q=label:"' +
-            this.get("label") +
-            '" OR ' +
-            'seriesId:"' +
-            this.get("label") +
-            '"' +
-            "&fl=seriesId,id,label,datasource" +
-            "&sort=dateUploaded%20asc" +
-            "&rows=1" +
-            "&wt=json",
-          dataType: "json",
-          error: function (response) {
-            model.trigger("error", model, response);
-
-            if (response.status == 404) {
-              model.trigger("notFound");
-            }
-          },
-          success: function (response) {
-            if (response.response.numFound > 0) {
-              //Set the label and datasource
-              model.set("label", response.response.docs[0].label);
-              model.set("datasource", response.response.docs[0].datasource);
-
-              //Save the seriesId, if one is found
-              if (response.response.docs[0].seriesId) {
-                model.set("seriesId", response.response.docs[0].seriesId);
+        const tryIndex = function (i) {
+          if (i >= candidates.length) {
+            model.trigger("notFound");
+            return;
+          }
+          QueryService.queryWithFetch({
+            q: `label:"${label}" OR seriesId:"${label}"`,
+            fields: ["seriesId", "id", "label", "datasource"],
+            sort: "dateUploaded asc",
+            rows: 1,
+            urlBase: candidates[i],
+            useAuth: true,
+          })
+            .then((response) => QueryService.parseResponse(response))
+            .then((docs) => {
+              if (!docs.length) {
+                tryIndex(i + 1);
+                return;
               }
-              //If this portal doesn't have a seriesId,
-              //but id has been found
-              else if (response.response.docs[0].id) {
-                //Save the id
-                model.set("id", response.response.docs[0].id);
-
-                //Find the latest version in this version chain
-                model.findLatestVersion(response.response.docs[0].id);
-              }
-              // if we don't have Id or SeriesId
-              else {
+              const doc = docs[0];
+              model.set("label", doc.label);
+              model.set("datasource", doc.datasource);
+              if (doc.seriesId) {
+                model.set("seriesId", doc.seriesId);
+              } else if (doc.id) {
+                model.set("id", doc.id);
+                model.findLatestVersion(doc.id);
+              } else {
                 model.trigger("notFound");
               }
-            } else {
-              var possibleAuthMNs = model.get("possibleAuthMNs");
-              if (possibleAuthMNs.length) {
-                //Remove the first MN from the array, since it didn't contain the Portal, so it's not the auth MN
-                possibleAuthMNs.shift();
-              }
-
-              //If there are no other possible auth MNs to check, trigger this Portal as Not Found.
-              if (possibleAuthMNs.length == 0 || !possibleAuthMNs) {
-                model.trigger("notFound");
-              }
-              //If there's more MNs to check, try again
-              else {
-                model.getSeriesIdByLabel();
-              }
-            }
-          },
+            })
+            .catch((e) => {
+              console.error(e);
+              tryIndex(i + 1);
+            });
         };
 
-        //Save a boolean flag for whether or not this fetch was done with user authentication.
-        //This is helpful when the app is dealing with potentially private data
-        this.set("fetchedWithAuth", MetacatUI.appUserModel.get("loggedIn"));
-
-        requestSettings = _.extend(
-          requestSettings,
-          MetacatUI.appUserModel.createAjaxSettings(),
-        );
-
-        $.ajax(requestSettings);
+        tryIndex(0);
       },
 
       /**
@@ -1663,139 +1619,79 @@ define([
       },
 
       /**
-       * Checks for the existing block list for repository labels
-       * If at least one other Portal has the same label, then it is not available.
-       * @param {string} label - The label to query for
+       * Queries the Solr discovery index for other Portal objects with this
+       * same label. Also, checks for the existing block list for repository
+       * labels If at least one other Portal has the same label, then it is not
+       * available.
+       * @param {string} l - The label to query for
        */
-      checkLabelAvailability: function (label) {
-        //Validate the label set on the model if one isn't given
-        if (!label || typeof label != "string") {
-          var label = this.get("label");
-          if (!label || typeof label != "string") {
-            //Trigger an error event
-            this.trigger("errorValidatingLabel");
-            console.error("error validating label, no label provided");
-            return;
-          }
+      checkLabelAvailability: function (l) {
+        // Validate the label set on the model if one isn't given
+        let label = typeof l === "string" ? l.trim() : this.get("label");
+        if (typeof label !== "string") {
+          this.errorValidatingLabel();
+          return;
         }
-
-        var model = this;
-
+        // Check that we have a node blockList
         if (!this.get("checkedNodeLabels")) {
           // query CN to fetch the latest node data
-          model.updateNodeBlockList();
-
-          this.listenTo(this, "change:checkedNodeLabels", function () {
-            this.checkPortalLabelAvailability(label);
-          });
-        } else {
-          this.checkPortalLabelAvailability(label);
+          this.updateNodeBlockList();
+          this.listenToOnce(this, "change:checkedNodeLabels", () =>
+            this.checkLabelAvailability(label),
+          );
+          return;
         }
-      },
-
-      /**
-       * Queries the Solr discovery index for other Portal objects with this same label.
-       * Also, checks for the existing block list for repository labels
-       * If at least one other Portal has the same label, then it is not available.
-       * @param {string} label - The label to query for
-       */
-      checkPortalLabelAvailability: function (label) {
-        var model = this;
-
-        // Stop Listening to the node model. We only need to retrieve this node label once.
-        this.stopListening(this, "change:checkedNodeLabels", function () {
-          this.checkPortalLabelAvailability(label);
-        });
-
-        // Convert the block list to lower case for case insensitive match
-        var lowerCaseBlockList = this.get("labelBlockList").map(
-          function (value) {
-            return value.toLowerCase();
-          },
-        );
-
-        // Check the existing blockList before making a Solr call
-        if (lowerCaseBlockList.indexOf(label.toLowerCase()) > -1) {
-          model.trigger("labelTaken");
+        // Check existing blockList before making a Solr call (case insensitive)
+        const blockList = this.get("labelBlockList") || [];
+        if (blockList.find((b) => b.toLowerCase() === label.toLowerCase())) {
+          this.labelAvailable();
           return;
         }
 
-        // Query solr to see if other portals already use this label
-        var requestSettings = {
-          url:
-            MetacatUI.appModel.get("queryServiceUrl") +
-            'q=label:"' +
-            label +
-            '"' +
-            ' AND formatId:"' +
-            this.get("formatId") +
-            '"' +
-            "&rows=0" +
-            "&wt=json",
-          error: function (response) {
-            model.trigger("errorValidatingLabel");
-          },
-          success: function (response) {
-            if (response.response.numFound > 0) {
-              //Add this label to the blockList so we don't have to query for it later
-              var blockList = model.get("labelBlockList");
-              if (Array.isArray(blockList)) {
-                blockList.push(label);
-              }
+        // Query Solr for this label
+        this.queryForLabel(label);
+      },
 
-              model.trigger("labelTaken");
-            } else {
-              if (MetacatUI.appModel.get("alternateRepositories").length) {
-                MetacatUI.appModel.setActiveAltRepo();
-                var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
-                if (activeAltRepo) {
-                  var requestSettings = {
-                    url:
-                      activeAltRepo.queryServiceUrl +
-                      'q=label:"' +
-                      label +
-                      '"' +
-                      ' AND formatId:"' +
-                      model.get("formatId") +
-                      '"' +
-                      "&rows=0" +
-                      "&wt=json",
-                    error: function (response) {
-                      model.trigger("errorValidatingLabel");
-                    },
-                    success: function (response) {
-                      if (response.response.numFound > 0) {
-                        //Add this label to the blockList so we don't have to query for it later
-                        var blockList = model.get("labelBlockList");
-                        if (Array.isArray(blockList)) {
-                          blockList.push(label);
-                        }
+      labelAvailable() {
+        this.trigger("labelAvailable");
+      },
 
-                        model.trigger("labelTaken");
-                      } else {
-                        model.trigger("labelAvailable");
-                      }
-                    },
-                  };
-                  //Attach the User auth info and send the request
-                  requestSettings = _.extend(
-                    requestSettings,
-                    MetacatUI.appUserModel.createAjaxSettings(),
-                  );
-                  $.ajax(requestSettings);
-                }
+      labelTaken(label) {
+        const blockList = this.get("labelBlockList");
+        if (Array.isArray(blockList)) blockList.push(label);
+        this.trigger("labelTaken");
+      },
+
+      errorValidatingLabel(e) {
+        const msg = e || "There was an error validating the portal label.";
+        console.error(msg);
+        this.trigger("errorValidatingLabel");
+      },
+
+      queryForLabel(label, urlBase, tryAltRepo = true) {
+        const q = `label:"${label}" AND formatId:"${this.get("formatId")}"`;
+        const opts = { q, rows: 0, useAuth: true };
+        if (urlBase) opts.urlBase = urlBase;
+        QueryService.queryWithFetch(opts)
+          .then((response) => {
+            if (response?.response?.numFound > 0) {
+              this.labelTaken(label);
+            } else if (
+              tryAltRepo &&
+              MetacatUI.appModel.get("alternateRepositories").length
+            ) {
+              MetacatUI.appModel.setActiveAltRepo();
+              var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+              if (!activeAltRepo) {
+                this.labelAvailable();
               } else {
-                model.trigger("labelAvailable");
+                this.queryForLabel(label, activeAltRepo.queryServiceUrl, false);
               }
+            } else {
+              this.labelAvailable();
             }
-          },
-        };
-        //Attach the User auth info and send the request
-        requestSettings = _.extend(
-          requestSettings,
-          MetacatUI.appUserModel.createAjaxSettings(),
-        );
-        $.ajax(requestSettings);
+          })
+          .catch((e) => this.errorValidatingLabel(e));
       },
 
       /**
@@ -1810,7 +1706,7 @@ define([
           error: function (data, textStatus, xhr) {
             // if there is an error in retrieving the node list;
             // proceed with the existing node list to perform the checks
-            model.checkPortalLabelAvailability();
+            this.set("checkedNodeLabels", "true");
           },
           success: function (data, textStatus, xhr) {
             var xmlResponse = $.parseXML(data) || null;

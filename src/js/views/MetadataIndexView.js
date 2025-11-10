@@ -4,6 +4,7 @@ define([
   "backbone",
   "gmaps",
   "common/Utilities",
+  "common/QueryService",
   "models/SolrResult",
   "views/DownloadButtonView",
   "text!templates/loading.html",
@@ -16,6 +17,7 @@ define([
   Backbone,
   gmaps,
   Utilities,
+  QueryService,
   SolrResult,
   DownloadButtonView,
   LoadingTemplate,
@@ -67,16 +69,17 @@ define([
       if (!this.pid) return false;
 
       const view = this;
+      const pid = this.pid;
 
-      // Get all the fields from the Solr index
-      const query = `q=(id:"${encodeURIComponent(
-        this.pid,
-      )}"+OR+seriesId:"${encodeURIComponent(
-        this.pid,
-      )}")&rows=1&start=0&fl=*&wt=json`;
-      var requestSettings = {
-        url: MetacatUI.appModel.get("queryServiceUrl") + query,
-        success(data, textStatus, xhr) {
+      // Get all the fields from the Solr index using QueryService
+      const q = `((id:"${pid}") OR (seriesId:"${pid}"))`;
+      QueryService.queryWithFetch({
+        q,
+        rows: 1,
+        fields: "*",
+        useAuth: true,
+      })
+        .then((data) => {
           try {
             if (!data?.response?.numFound) {
               if (view.parentView && view.parentView.model) {
@@ -236,16 +239,11 @@ define([
             console.log(`Solr response: ${data}`);
             view.parentView.showNotFound();
           }
-        },
-        error() {
+        })
+        .catch(() => {
           const msg = "<h4>Sorry, no dataset was found.</h4>";
           view.$el.html(view.alertTemplate({ msg, classes: "alert-danger" }));
-        },
-      };
-
-      $.ajax(
-        _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()),
-      );
+        });
 
       // Send a request for the EML doc itself to extract certain info
       if (this.parentView && this.parentView.model) {
