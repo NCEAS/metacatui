@@ -13,7 +13,6 @@ MetacatUI.AppConfig = Object.assign(
     d1Service: "/cn/v2",
     metacatContext: "",
     enableMonitorStatus: false,
-    enableCILogonSignIn: false,
     showSignInHelp: false,
 
     // Cesium map for portals
