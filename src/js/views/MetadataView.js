@@ -22,6 +22,7 @@ define([
   "views/ViewObjectButtonView",
   "views/CanonicalDatasetHandlerView",
   "views/metadataView/DatasetControlsView",
+  "views/VersionNavigationView",
   "common/XMLUtilities",
   "text!templates/metadata/metadata.html",
   "text!templates/dataSource.html",
@@ -55,6 +56,7 @@ define([
   ViewObjectButtonView,
   CanonicalDatasetHandlerView,
   ControlsView,
+  VersionNavigationView,
   XMLUtilities,
   MetadataTemplate,
   DataSourceTemplate,
@@ -66,6 +68,10 @@ define([
   metaTagsHighwirePressTemplate,
 ) => {
   "use strict";
+
+  const CLASS_NAMES = {
+    VERSION_NAVIGATION_CONTAINER: "top-info",
+  };
 
   /**
    * @class MetadataView
@@ -458,7 +464,7 @@ define([
         // Insert the data source logo
         this.insertDataSource();
         // is this the latest version? (includes DOI link when needed)
-        this.showLatestVersion();
+        this.showVersionNavigation();
 
         // Insert the icons (private, duplicate, archived)
         this.renderInfoIcons();
@@ -1991,7 +1997,7 @@ define([
         // Alternatively, turn off save bar if there are no prov edits, which
         // could occur if a user undoes a previous which could result in an
         // empty edit list.
-        if (this.dataPackage.provEditsPending()) {
+        if (this.dataPackage?.provEditsPending()) {
           this.showEditorControls();
         } else {
           this.hideEditorControls();
@@ -2802,40 +2808,51 @@ define([
         );
       },
 
-      /** Lokup the latest version of the PID and display a link to it */
-      showLatestVersion() {
-        // If this metadata doc is not obsoleted by a new version, then exit the
-        // function
-        if (!this.model.get("obsoletedBy")) {
-          return;
+      /**
+       * Show an alert at the top of the metadata if there is a newer version of
+       * this metadata available
+       * @param {string} pid - The PID of the latest version. If null or
+       * undefined, the alert will be removed.
+       */
+      showLatestVersion(pid) {
+        this.model.set("newestVersion", pid);
+        // if there is already an alert, remove it.
+        if (this.newVersionAlert) this.newVersionAlert.remove();
+        if (!pid) return;
+        // insert the template
+        const versionAlertHtml = this.versionTemplate({ pid });
+        const template = document.createElement("div");
+        template.innerHTML = versionAlertHtml;
+        this.newVersionAlert = template.firstChild;
+        this.el.prepend(this.newVersionAlert);
+      },
+
+      /**
+       * Show the previous/next version navigation buttons
+       * @since 0.0.0
+       */
+      async showVersionNavigation() {
+        if (this.versionNavigation) {
+          this.subviews = this.subviews.filter(
+            (view) => view !== this.versionNavigation,
+          );
+          this.versionNavigation.remove();
         }
-
-        const view = this;
-
-        // When the latest version is found,
-        this.listenTo(this.model, "change:newestVersion", () => {
-          // Make sure it has a newer version, and if so,
-          if (view.model.get("newestVersion") !== view.model.get("id")) {
-            // Put a link to the newest version in the content
-            view.$(".newer-version").replaceWith(
-              view.versionTemplate({
-                pid: view.model.get("newestVersion"),
-              }),
-            );
-          } else {
-            view.$(".newer-version").remove();
-          }
+        this.versionNavigation = new VersionNavigationView({
+          pid: this.pid,
+          documentType: "dataset",
         });
-
-        // Insert the newest version template with a loading message
-        this.$el.prepend(
-          this.versionTemplate({
-            loading: true,
-          }),
+        this.subviews.push(this.versionNavigation);
+        await this.versionNavigation.render();
+        const container = this.el.querySelector(
+          `.${CLASS_NAMES.VERSION_NAVIGATION_CONTAINER}`,
         );
-
-        // Find the latest version of this metadata object
-        this.model.findLatestVersion();
+        if (container) container.appendChild(this.versionNavigation.el);
+        const nextVersion = await this.versionNavigation.versionTracker.getNext(
+          this.pid,
+          true,
+        );
+        this.showLatestVersion(nextVersion);
       },
 
       /**
@@ -3019,7 +3036,7 @@ define([
         _.each(this.subviews, (subview) => {
           if (subview.onClose) subview.onClose();
         });
-
+        this.subviews = [];
         this.packageModels = [];
         this.resetModel();
         this.pid = null;

@@ -634,6 +634,11 @@ input[type="text"][disabled="disabled"] {
   text-shadow: none;
 }
 
+.metadata-header .btn,
+.controls-container .btn {
+  margin-bottom: 0;
+}
+
 .btn:hover,
 .annotator-editor a:focus,
 .annotator-editor a:hover {
