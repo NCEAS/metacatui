@@ -92,7 +92,7 @@ define([
             this.initUSGSImageryTopo(assetConfig);
           }
 
-          this.createCesiumModel();
+          this.createCesiumModelWhenVisible();
 
           this.getThumbnail();
         } catch (e) {
@@ -287,6 +287,11 @@ define([
       setListeners: function () {
         try {
           var cesiumModel = this.get("cesiumModel");
+
+          if (!cesiumModel) {
+            this.listenToOnce(this, "change:cesiumModel", this.setListeners);
+            return;
+          }
 
           // Make sure the listeners are only set once!
           this.stopListening(this);
