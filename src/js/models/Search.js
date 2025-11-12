@@ -1083,7 +1083,7 @@ define([
        * names to get the facet field names for. If not given, the default facet
        * fields will be used.
        * @returns {string[]} An array of facet field names
-       * @since 0.0.0
+       * @since 2.36.0
        */
       getFacetFields(fields) {
         if (!fields) {
@@ -1115,7 +1115,7 @@ define([
        * field names to get the facet field names for. If not given, the default
        * facet fields will be used.
        * @returns {object} An object with the facet parameters
-       * @since 0.0.0
+       * @since 2.36.0
        */
       getFacetQueryForQueryService: function (fields) {
         const facetFields = this.getFacetFields(fields);

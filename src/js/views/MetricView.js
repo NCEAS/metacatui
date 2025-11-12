@@ -63,7 +63,7 @@ define(["backbone", "views/MetricModalView", "semantic"], (
        * @param {string} Citations - The icon for citations metric
        * @param {string} Downloads - The icon for downloads metric
        * @param {string} Views - The icon for views metric
-       * @since 0.0.0
+       * @since 2.36.0
        */
       metricsIcons: {
         Citations: "quote-right",
@@ -77,7 +77,7 @@ define(["backbone", "views/MetricModalView", "semantic"], (
        * @param {string} Citations - The description for citations metric
        * @param {string} Downloads - The description for downloads metric
        * @param {string} Views - The description for views metric
-       * @since 0.0.0
+       * @since 2.36.0
        */
       metricsTooltips: {
         Citations:
@@ -93,7 +93,7 @@ define(["backbone", "views/MetricModalView", "semantic"], (
        * shown over the metric button.
        * @see https://fomantic-ui.com/modules/popup.html#/settings
        * @type {object|boolean}
-       * @since 0.0.0
+       * @since 2.36.0
        */
       tooltipSettings: {
         variation: `${SEM_VARIATIONS.mini} ${SEM_VARIATIONS.inverted}`,

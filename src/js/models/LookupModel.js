@@ -337,7 +337,7 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
         });
       },
 
-      /** @deprecated since 0.0.0 */
+      /** @deprecated since 2.36.0 */
       orcidGetBio: () => {},
 
       /**

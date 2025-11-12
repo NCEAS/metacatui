@@ -87,7 +87,7 @@ define([
    * @augments Backbone.View
    * @class
    * @screenshot views/metadataView/DatasetControls.png // TODO
-   * @since 0.0.0
+   * @since 2.36.0
    */
   const DatasetControls = Backbone.View.extend(
     /** @lends DatasetControls.prototype */
@@ -217,7 +217,7 @@ define([
        * shown over the metric button.
        * @see https://fomantic-ui.com/modules/popup.html#/settings
        * @type {object|boolean}
-       * @since 0.0.0
+       * @since 2.36.0
        */
       tooltipSettings: {
         variation: `${SEM_VARIATIONS.mini} ${SEM_VARIATIONS.inverted}`,

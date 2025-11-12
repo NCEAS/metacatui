@@ -811,10 +811,10 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            */
           showSignInHelp: true,
 
-          /** @deprecated since 0.0.0 */
+          /** @deprecated since 2.36.0 */
           enableCILogonSignIn: false,
 
-          /** @deprecated since 0.0.0*/
+          /** @deprecated since 2.36.0*/
           signInUrl: null,
           /**
            * The URL for the DataONE Sign Out API
@@ -829,10 +829,10 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            */
           signInUrlOrcid: null,
 
-          /** @deprecated since 0.0.0 */
+          /** @deprecated since 2.36.0 */
           enableLdapSignIn: false,
 
-          /** @deprecated since 0.0.0 */
+          /** @deprecated since 2.36.0 */
           signInUrlLdap: null,
 
           /**

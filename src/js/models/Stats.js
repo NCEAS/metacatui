@@ -321,7 +321,7 @@ define(["jquery", "underscore", "backbone", "promise", "common/QueryService"], (
        * Parses and saves the metadata statistics returned from Solr
        * @param {object} data The Solr response object
        * @see {@link Stats#getMetadataStats}
-       * @since 0.0.0
+       * @since 2.36.0
        */
       setMetadataStats(data) {
         const model = this;
@@ -516,7 +516,7 @@ define(["jquery", "underscore", "backbone", "promise", "common/QueryService"], (
        * Parses and saves the data statistics returned from Solr
        * @param {object} data The Solr response object
        * @see {@link Stats#getDataStats}
-       * @since 0.0.0
+       * @since 2.36.0
        */
       setDataStats(data) {
         const model = this;

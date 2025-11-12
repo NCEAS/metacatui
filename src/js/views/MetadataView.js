@@ -158,7 +158,7 @@ define([
 
       /**
        * Reset the model to its default attributes
-       * @since 0.0.0
+       * @since 2.36.0
        */
       resetModel() {
         if (!this.model) return;
@@ -1591,7 +1591,7 @@ define([
        * @param {Backbone.Model} model - The model to check write permission on.
        * @returns {Promise<boolean>} A promise that resolves to true if the user
        * has write permission, false otherwise.
-       * @since 0.0.0
+       * @since 2.36.0
        */
       awaitWritePermission(model) {
         if (model.get("notFound") === true) return Promise.resolve(true);
@@ -2829,7 +2829,7 @@ define([
 
       /**
        * Show the previous/next version navigation buttons
-       * @since 0.0.0
+       * @since 2.36.0
        */
       async showVersionNavigation() {
         if (this.versionNavigation) {

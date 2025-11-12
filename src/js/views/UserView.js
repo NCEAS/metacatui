@@ -739,18 +739,18 @@ define([
       },
 
       //------------------------------------------------ Identities/Accounts -------------------------------------------------------//
-      /**  @deprecated since 0.0.0. Users should contact support to link
+      /**  @deprecated since 2.36.0. Users should contact support to link
        * accounts. */
       sendMapRequest() {},
 
-      /** @deprecated since 0.0.0. Users should contact support to unlink
+      /** @deprecated since 2.36.0. Users should contact support to unlink
        * accounts. */
       removeMap() {},
 
-      /** @deprecated since 0.0.0. */
+      /** @deprecated since 2.36.0. */
       confirmMapRequest() {},
 
-      /** @deprecated since 0.0.0. */
+      /** @deprecated since 2.36.0. */
       rejectMapRequest() {},
 
       insertIdentityList: function () {
@@ -792,7 +792,7 @@ define([
         this.$("#identity-list-container").append(identityList);
       },
 
-      /** @deprecated since 0.0.0 */
+      /** @deprecated since 2.36.0 */
       insertPendingList() {},
 
       createUserListItem: function (user, options = {}) {

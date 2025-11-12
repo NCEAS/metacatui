@@ -371,7 +371,7 @@ define([
        * Create the Cesium model for this asset, if it doesn't already exist and
        * the asset is visible. If not visible, then wait until it becomes
        * visible to create the model.
-       * @since 0.0.0
+       * @since 2.36.0
        */
       createCesiumModelWhenVisible() {
         if (this.get("visible") && !this.get("cesiumModel")) {

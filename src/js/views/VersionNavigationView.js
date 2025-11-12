@@ -37,7 +37,7 @@ define(["jquery", "backbone", "models/sysmeta/VersionTracker", "semantic"], (
    * @classdesc A view showing buttons that lead to the previous and next
    * versions of a metadata document, as well as a link to show all versions if
    * configured.
-   * @since 0.0.0
+   * @since 2.36.0
    * @classcategory Views
    * @augments Backbone.View
    * @class
