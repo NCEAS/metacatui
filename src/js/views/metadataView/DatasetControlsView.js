@@ -387,7 +387,7 @@ define([
         const model = this.viewModel.get("metricsModel");
 
         // Check if the model's been fetched yet
-        if (!model.get("fetched") && !model.get("fetching")) {
+        if (!model.get("synced") && !model.get("fetching")) {
           model.fetch();
         }
 
