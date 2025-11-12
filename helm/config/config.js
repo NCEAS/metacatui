@@ -5,10 +5,8 @@ MetacatUI.AppConfig = {
           {{- if regexFind "new\\s+[A-Za-z]+\\s*\\(" (printf "%v" $value) -}}
               {{/* don't put quotes around JS object declarations -- e.g.: new Date(... */}}
               {{- $key | nindent 4 }}: {{ $value }},
-          {{- else if eq (typeOf $value) "string" }}
-              {{- $key | nindent 4 }}: {{ $value | quote }},
-          {{- else }}
-              {{- $key | nindent 4 }}: {{ $value }},
+          {{- else -}}
+              {{- $key | nindent 4 }}: {{ $value | toJson }},
           {{- end }}
       {{- end }}
   {{- end -}}
