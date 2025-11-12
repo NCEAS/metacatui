@@ -545,7 +545,7 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
               MetacatUI.appModel.get("metaServiceUrl") +
               encodeURIComponent(docs[0].seriesId),
             type: "GET",
-            success(sysMetaData) {
+            success: (sysMetaData) => {
               // Get the identifier node from the system metadata
               const seriesHeadID = $(sysMetaData).find("identifier").text();
               // Get the doc from the Solr results with that identifier
@@ -571,7 +571,7 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
 
               this.trigger("sync");
             },
-            error(__xhr, _textStatus, _errorThrown) {
+            error: (__xhr, _textStatus, _errorThrown) => {
               // Fall back on the first doc in the list
               if (mostRecent.length) {
                 this.set(mostRecent[0]);
@@ -586,7 +586,7 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
           $.ajax(
             _.extend(
               sysMetaRequestSettings,
-              MetacatUI.appUserthis.createAjaxSettings(),
+              MetacatUI.appUserModel.createAjaxSettings(),
             ),
           );
         }
