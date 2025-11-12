@@ -139,7 +139,10 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
         });
       },
 
-      /** @type {string} The type of this model */
+      /**
+       * The type of this model
+       * @type {string}
+       */
       type: "SolrResult",
 
       /** Toggle the `selected` state of the result */

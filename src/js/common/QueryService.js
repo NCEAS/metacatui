@@ -20,16 +20,18 @@ define(["jquery"], ($) => {
    * @property {string} [facetRangeStart]
    * @property {string} [facetRangeEnd]
    * @property {string} [facetRangeGap]
-   * @property {string} [urlBase] Optional override for the query service base URL.
+   * @property {string} [urlBase] Optional override for the query service base
+   * URL.
    * @property {boolean} [usePost] Force POST / GET (overrides auto-choice).
    * @property {boolean} [useAuth=true] Inject MetacatUI auth headers?
    * @property {boolean} [archived] Include archived items? Default `false`.
    * @property {boolean} [group] Use Solr grouping (group=true)?
    * @property {string} [groupField] Field to group by (if `group` is true).
-   * @property {number} [groupLimit] Limit of groups to return (if `group` is true).
-   * @property {[][]} [extraParams] Extra parameters to include in the
-   * query. Formatted as key-value pairs in an array, e.g., `[['key', 'val'],
-   * ['key2', 'val2']]`.
+   * @property {number} [groupLimit] Limit of groups to return (if `group` is
+   * true).
+   * @property {Array.<Array.<string>>} [extraParams] Extra arbitrary parameters
+   * to include in the query. Formatted as key-value pairs in an array, e.g.,
+   * `[['key', 'val'], ['key2', 'val2']]`.
    * @property {boolean} [disableQueryPOSTs] Disable POST requests for queries?
    */
 
@@ -39,7 +41,6 @@ define(["jquery"], ($) => {
    * handles query parameters, and can include facets, filter queries, and
    * statistics fields.
    * @class QueryService
-   * @example
    */
   class QueryService {
     // --------------------------------------------------------------------- //
@@ -535,9 +536,9 @@ define(["jquery"], ($) => {
      * Detect and normalize a Lucene query component that may be URL-encoded or
      * contain unnecessary escapes such as \/. Safe to call on already
      * normalized strings; returns the input when no changes are needed.
-     * @param {string} str
-     * @param {{label?: string}} [opts]
-     * @returns {string}
+     * @param {string} str The string to normalize.
+     * @param {object} opts Options object.
+     * @returns {string} The normalized string.
      */
     static normalizeLucene(str, opts = {}) {
       try {

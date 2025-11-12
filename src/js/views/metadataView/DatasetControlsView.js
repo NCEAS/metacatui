@@ -577,7 +577,9 @@ define([
       /**
        * Render a button by name into its configured container.
        * @param {string} name - Logical button key.
-       * @param {{href?: string|null, disabled?: boolean}} [options] - Render
+       * @param {object} [options] - Button option
+       * @param {string} [options.href] - URL for the button link.
+       * @param {boolean} [options.disabled] - Whether to disable the button.
        * overrides.
        * @returns {HTMLElement|null} The root element for the button, or null if
        * skipped.
