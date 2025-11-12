@@ -33,19 +33,21 @@ When all resolution strategies fail, it usually means that an existing metadata 
 This helps repository managers identify which metadata records may need attention. The event is sent to Google Analytics 4 (GA4) using the following format:
 
 ```js
-gtag('event', 'resource_map_missing', { pid: '{UUID/DOI}' });
+gtag("event", "resource_map_missing", { pid: "{UUID/DOI}" });
 ```
 
 This event:
-  - Fires once per PID per page load
-  - Includes the PID of the affected metadata document
-  - Is emitted only when all resolution strategies fail
+
+- Fires once per PID per page load
+- Includes the PID of the affected metadata document
+- Is emitted only when all resolution strategies fail
 
 To make use of this feature, repository managers can set up a custom dimension in Google Analytics to track the pid parameter. This allows for filtering and reporting on which PIDs are missing resource maps.
 
 ### Viewing and Filtering `resource_map_missing` Events in GA4
 
 To view and filter these events in GA4:
+
 1. Open your GA4 property
 2. Navigate to Reports → Engagement → Events
 3. Look for the event named `resource_map_missing`
@@ -54,12 +56,15 @@ To view and filter these events in GA4:
 ### Setting Up the `pid` Parameter in GA4
 
 To access pid values in GA4 reports:
+
 1. Go to Admin → Custom Definitions
 2. Click Create custom dimension
 3. Fill out the form:
-  - Dimension name: pid
-  - Scope: Event
-  - Event parameter: pid
+
+- Dimension name: pid
+- Scope: Event
+- Event parameter: pid
+
 4. Click Save
 
 Once configured, pid will appear as a filterable and reportable field in Explorations and event reports going forward. Note that this is not retroactive.

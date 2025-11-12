@@ -180,8 +180,12 @@ define(["jquery", "underscore", "backbone", "promise", "common/QueryService"], (
 
         // Count all the datasets with coverage before the first year in the
         // year range queries
-        beginDateLimit = new Date(Date.UTC(firstYear - 1, 11, 31, 23, 59, 59, 999));
-        facetQueries.push(`{!key=<${firstYear}}(beginDate:[* TO ${beginDateLimit.toISOString()}/YEAR])`);
+        beginDateLimit = new Date(
+          Date.UTC(firstYear - 1, 11, 31, 23, 59, 59, 999),
+        );
+        facetQueries.push(
+          `{!key=<${firstYear}}(beginDate:[* TO ${beginDateLimit.toISOString()}/YEAR])`,
+        );
 
         // Construct our facet.queries for the beginDate and endDates, starting
         // with all years before this current year
@@ -202,7 +206,9 @@ define(["jquery", "underscore", "backbone", "promise", "common/QueryService"], (
               const oneYearFromNow = new Date(Date.UTC(today + 1, 0, 1));
               const now = new Date();
 
-              facetQueries.push(`{!key=${lastYear}}(beginDate:[* TO ${oneYearFromNow.toISOString()}/YEAR] AND endDate:[${now.toISOString()}/YEAR TO *])`);
+              facetQueries.push(
+                `{!key=${lastYear}}(beginDate:[* TO ${oneYearFromNow.toISOString()}/YEAR] AND endDate:[${now.toISOString()}/YEAR TO *])`,
+              );
             } else {
               key = today - yearsAgo;
 
@@ -212,7 +218,9 @@ define(["jquery", "underscore", "backbone", "promise", "common/QueryService"], (
               // The coverage should end sometime in this year range or later.
               endDateLimit = new Date(Date.UTC(today - yearsAgo, 0, 1));
 
-              facetQueries.push(`{!key=${key}}(beginDate:[* TO ${beginDateLimit.toISOString()}/YEAR] AND endDate:[${endDateLimit.toISOString()}/YEAR TO *])`);
+              facetQueries.push(
+                `{!key=${key}}(beginDate:[* TO ${beginDateLimit.toISOString()}/YEAR] AND endDate:[${endDateLimit.toISOString()}/YEAR TO *])`,
+              );
             }
           }
           // If this is the last date range
@@ -235,7 +243,9 @@ define(["jquery", "underscore", "backbone", "promise", "common/QueryService"], (
             // The coverage should end sometime in this year range or later.
             endDateLimit = new Date(Date.UTC(firstYearInBin, 0, 1));
 
-            facetQueries.push(`{!key=${key}}(beginDate:[* TO ${beginDateLimit.toISOString()}/YEAR] AND endDate:[${endDateLimit.toISOString()}/YEAR TO *])`);
+            facetQueries.push(
+              `{!key=${key}}(beginDate:[* TO ${beginDateLimit.toISOString()}/YEAR] AND endDate:[${endDateLimit.toISOString()}/YEAR TO *])`,
+            );
           }
           // For all other bins,
           else {
@@ -255,7 +265,9 @@ define(["jquery", "underscore", "backbone", "promise", "common/QueryService"], (
             // The coverage should end sometime in this year range or later.
             endDateLimit = new Date(Date.UTC(firstYearInBin, 0, 1));
 
-            facetQueries.push(`{!key=${key}}(beginDate:[* TO ${beginDateLimit.toISOString()}/YEAR] AND endDate:[${endDateLimit.toISOString()}/YEAR TO *])`);
+            facetQueries.push(
+              `{!key=${key}}(beginDate:[* TO ${beginDateLimit.toISOString()}/YEAR] AND endDate:[${endDateLimit.toISOString()}/YEAR TO *])`,
+            );
           }
         }
 
@@ -283,17 +295,13 @@ define(["jquery", "underscore", "backbone", "promise", "common/QueryService"], (
             "-obsoletedBy:*",
           ],
           statsFields: ["size"],
-          facets: [
-            facetFormatIdField,
-            facetBeginDateField,
-            facetEndDateField,
-          ],
+          facets: [facetFormatIdField, facetBeginDateField, facetEndDateField],
           facetQueries,
           facetLimit: -1,
           facetRange: facetRangeField,
           facetRangeStart: "1900-01-01T00:00:00.000Z",
           facetRangeEnd: new Date().toISOString(),
-            facetRangeGap: "+1MONTH",
+          facetRangeGap: "+1MONTH",
           extraParams: [
             ["f.formatId.facet.mincount", "1"],
             ["f.formatId.facet.missing", "false"],
@@ -304,7 +312,9 @@ define(["jquery", "underscore", "backbone", "promise", "common/QueryService"], (
             ["f.dateUploaded.facet.missing", "true"],
           ],
         };
-        QueryService.queryWithFetch(opts).then(this.setMetadataStats.bind(this));
+        QueryService.queryWithFetch(opts).then(
+          this.setMetadataStats.bind(this),
+        );
       },
 
       /**
@@ -764,7 +774,12 @@ define(["jquery", "underscore", "backbone", "promise", "common/QueryService"], (
         const query = `${this.get("query")} AND endDate:[${this.get(
           "firstPossibleDate",
         )} TO ${new Date().toISOString()}] AND -obsoletedBy:*`;
-        const opts = { q: query, rows: 1, sort: "endDate asc", fields: "endDate" };
+        const opts = {
+          q: query,
+          rows: 1,
+          sort: "endDate asc",
+          fields: "endDate",
+        };
         return QueryService.queryWithFetch(opts)
           .then((data) => QueryService.parseResponse(data))
           .then((docs) => (docs?.length ? new Date(docs[0].endDate) : null));
@@ -800,11 +815,18 @@ define(["jquery", "underscore", "backbone", "promise", "common/QueryService"], (
         if (this.get("postQuery")) {
           query = this.get("postQuery") + specialQueryParams;
         } else if (this.get("searchModel")) {
-          const base = this.get("searchModel").getQuery(undefined, { forPOST: true });
+          const base = this.get("searchModel").getQuery(undefined, {
+            forPOST: true,
+          });
           this.set("postQuery", base);
           query = base + specialQueryParams;
         }
-        const opts = { q: query, rows: 1, sort: "endDate desc", fields: "endDate" };
+        const opts = {
+          q: query,
+          rows: 1,
+          sort: "endDate desc",
+          fields: "endDate",
+        };
         QueryService.queryWithFetch(opts)
           .then((data) => QueryService.parseResponse(data))
           .then((docs) => {

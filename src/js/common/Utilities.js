@@ -222,11 +222,9 @@ define([], () => {
 
     /**
      * Convert number of bytes into human readable format
-     * @param integer bytes     Number of bytes to convert
-     * @param integer precision Number of digits after the decimal separator
-     * @param bytes
-     * @param precision
-     * @returns string
+     * @param {number} bytes - The number of bytes
+     * @param {number} [precision] - The number of decimal places to include
+     * @returns {string} The formatted size string
      */
     bytesToSize(bytes, precision = 0) {
       if (typeof bytes === "undefined") return `0 B`;
@@ -247,6 +245,20 @@ define([], () => {
         return `${(bytes / TEBIBYTE).toFixed(precision)} TiB`;
       }
       return `${bytes} B`;
+    },
+
+    /**
+     * Convert a wildcard pattern (e.g. "eml*", "*iso*") to a safe RegExp.
+     * Escapes all regex special chars except '*' which becomes '.*'
+     * @param {string} pattern - A simple wildcard pattern
+     * @returns {RegExp} Regex for case-insensitive matching
+     */
+    wildcardToRegex(pattern) {
+      // Escape regex special characters, except "*"
+      const escaped = pattern.replace(/[-/\\^$+?.()|[\]{}]/g, "\\$&");
+      // Replace "*" with ".*" for multi-character wildcard
+      const regexString = `^${escaped.replace(/\*/g, ".*")}$`;
+      return new RegExp(regexString, "i"); // "i" = case-insensitive, if desired
     },
   };
 

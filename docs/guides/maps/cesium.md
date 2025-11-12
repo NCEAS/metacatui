@@ -109,7 +109,7 @@ Below is an example of a detailed map configuration (descriptions have been shor
           "filterType": "categorical",
           "property": "year",
           "values": [2021],
-          "allValues": [2019, 2020, 2021],
+          "allValues": [2019, 2020, 2021]
         }
       ]
     },

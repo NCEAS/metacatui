@@ -11,5 +11,4 @@ of your MetacatUI application.
 - <a href="{{ site.url }}/guides/editor/resource-map-resolution.html">🔗 Resource Map Resolution</a>
 - <a href="{{ site.url }}/guides/filters/configuring-filters.html">🔎 Search Filters</a>
 
-
 <b>ℹ️ Is something missing? [Email us](mailto:developers@dataone.org) or join us on [Slack](https://slack.dataone.org/) and we'll add it!</b>
