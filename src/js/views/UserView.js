@@ -6,7 +6,6 @@ define([
   "collections/UserGroup",
   "models/UserModel",
   "models/Stats",
-  "views/SignInView",
   "views/StatsView",
   "views/DataCatalogView",
   "views/UserGroupView",
@@ -24,7 +23,6 @@ define([
   UserGroup,
   UserModel,
   Stats,
-  SignInView,
   StatsView,
   DataCatalogView,
   UserGroupView,
@@ -36,6 +34,12 @@ define([
   NoResultsTemplate,
 ) => {
   "use strict";
+
+  const TEXT_TO_HTML_EL = (txt) => {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = txt;
+    return tmp.firstChild;
+  };
 
   /**
    * @class UserView
@@ -104,7 +108,7 @@ define([
         this.$el.html(this.sectionHolder);
 
         // Show the loading sign first
-        // $(this.sectionHolder).html(this.loadingTemplate());
+        $(this.sectionHolder).html(this.loadingTemplate());
         this.$el.show();
 
         // set the header type
@@ -301,13 +305,19 @@ define([
           return;
         }
 
+        if (this.settingsEl) {
+          this.settingsEl.remove();
+          this.settingsEl = null;
+        }
+
+        const settingsText = this.settingsTemplate({
+          ...this.model.toJSON(),
+          emailContact: MetacatUI.appModel.get("emailContact") || "",
+        });
+        this.settingsEl = TEXT_TO_HTML_EL(settingsText.trim());
+
         // Insert the template first
-        this.sectionHolder.append(
-          this.settingsTemplate({
-            ...this.model.toJSON(),
-            emailContact: MetacatUI.appModel.get("emailContact") || "",
-          }),
-        );
+        this.sectionHolder.append(this.settingsEl);
         this.$settings = this.$("[data-section='settings']");
 
         // Draw the group list
@@ -341,6 +351,10 @@ define([
        * Displays a menu for the user to switch between different views of the user profile
        */
       insertMenu() {
+        if (this.menu) {
+          this.menu.remove();
+          this.menu = null;
+        }
         // If the user is not logged in, then remove the menu
         if (!MetacatUI.appUserModel.get("loggedIn")) {
           this.$(".nav").remove();
@@ -348,11 +362,11 @@ define([
         }
 
         // Otherwise, insert the menu
-        const menu = this.menuTemplate({
+        const menuText = this.menuTemplate({
           username: this.model.get("username"),
         });
-
-        this.$el.prepend(menu);
+        this.menu = TEXT_TO_HTML_EL(menuText.trim());
+        this.el.prepend(this.menu);
       },
 
       // ------------------------------------------ Navigating sections of view ------------------------------------------------//
@@ -400,6 +414,12 @@ define([
         }
       },
 
+      /**
+       * Activate (show) a sub-section and hide all others
+       * @param {Event} e - The click event that triggered this function
+       * @param {string} subsectionName - The name of the sub-section to show,
+       * if an event did not trigger this function
+       */
       switchToSubSection(e, subsectionName) {
         let label = subsectionName;
 
@@ -414,17 +434,44 @@ define([
           }
         }
 
-        // Mark its links as active
-        $(".section.active").find(".subsection-link").removeClass("active");
-        $(".section.active")
-          .find(`.subsection-link[data-section='${label}']`)
-          .addClass("active");
+        this.hideActiveSubSections();
+        this.showSubSection(label);
+      },
 
-        // Hide all the other sections
-        $(".section.active").find(".subsection").hide();
-        $(".section.active")
-          .find(`.subsection[data-section='${label}']`)
-          .show();
+      /** Hide contents of all sub-sections that are active */
+      hideActiveSubSections() {
+        // Unactivate all the subsection links
+        const activeLinks = document.querySelectorAll(
+          ".subsection-link.active",
+        );
+
+        activeLinks.forEach((link) => link.classList.remove("active"));
+
+        // Hide all the subsections
+        const activeSubsections = document.querySelectorAll(
+          ".section.active .subsection",
+        );
+
+        activeSubsections.forEach((subsection) => {
+          const el = subsection;
+          el.style.display = "none";
+        });
+      },
+
+      /**
+       * Activate (show) a sub-section
+       * @param {string} label - The data-section label of the sub-section to show
+       */
+      showSubSection(label) {
+        const sectionLink = document.querySelector(
+          `.subsection-link[data-section='${label}']`,
+        );
+        if (sectionLink) sectionLink.classList.add("active");
+
+        const subsection = document.querySelector(
+          `.subsection[data-section='${label}']`,
+        );
+        if (subsection) subsection.style.display = "block";
       },
 
       resetSections() {
