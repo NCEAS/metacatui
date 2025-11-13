@@ -269,6 +269,7 @@ MetacatUI.AppConfig = Object.assign(
     trustedContentSources: [
       "https://*arcticdata.io",
       "https://cosima.nceas.ucsb.edu*",
+      "https://shirlysteph.github.io/salmon-storymap/",
     ],
   },
   MetacatUI.AppConfig || {},
