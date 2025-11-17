@@ -439,10 +439,14 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           editorSerializationFormat: "https://eml.ecoinformatics.org/eml-2.2.0",
 
           /**
-           * The XML schema location the dataset editor will use when creating new EML. This should
-           * correspond with {@link AppConfig#editorSerializationFormat}
+           * The XML schema location the dataset editor will use when creating
+           * new EML. This should correspond with
+           * {@link AppConfig#editorSerializationFormat}. Note there must be an
+           * even number of values in this string, with each pair consisting of
+           * a namespace URI and the schema location URL for that namespace.
            * @type {string}
-           * @default "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd"
+           * @default "https://eml.ecoinformatics.org/eml-2.2.0
+           * https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd"
            * @readonly
            * @since 2.13.0
            */
