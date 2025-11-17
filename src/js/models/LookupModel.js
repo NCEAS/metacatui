@@ -267,41 +267,79 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
       /** @deprecated since 0.0.0 */
       orcidGetConcepts: function () {},
 
-      /*
+      /**
        * Supplies search results for ORCiDs to autocomplete UI elements
+       * @param {jQuery} request - The jQuery UI autocomplete request object
+       * @param {function} response - The jQuery UI autocomplete response function
+       * @param {Array} [more=[]] - An array of additional results to include
+       * @param {Array} [ignore=[]] - An array of ORCiD IDs to ignore in the
+       * search results
+       * @param {number} [numResults=10] - The number of results to return
+       * @returns {Promise<void>}
        */
-      orcidSearch: function (request, response, more, ignore) {
-        var people = [];
+      async orcidSearch(
+        request,
+        response,
+        more = [],
+        ignore = [],
+        numResults = 10,
+      ) {
+        const baseUrl = MetacatUI.appModel.get("orcidSearchUrl");
+        const searchTerm = request.term?.trim();
+        const rowQuery = `&rows=${numResults || 10}&start=0`;
 
-        if (!ignore) var ignore = [];
+        if (!baseUrl || !searchTerm) return response(more);
 
-        var query = MetacatUI.appModel.get("orcidSearchUrl") + request.term;
-        $.get(query, function (data, status, xhr) {
-          // get the orcid info
-          var profile = $(data).find("orcid-profile");
+        let ignoreQuery = "";
 
-          _.each(profile, function (obj) {
-            var choice = {};
-            choice.value = $(obj).find("orcid-identifier > uri").text();
+        if (ignore.length > 0) {
+          const orcidRegex = /^(https?:\/\/orcid\.org\/)?/i;
+          // Expected format: +-orcid:(0000-0002-0879-455X+0000-0001-6238-4490)
+          const ignoreIds = ignore.map((id) =>
+            id.replace(orcidRegex, "").trim(),
+          );
+          ignoreQuery = `+-orcid:(${ignoreIds.join("+")})`;
+        }
 
-            if (_.contains(ignore, choice.value.toLowerCase())) return;
+        const url = `${baseUrl}${searchTerm}${ignoreQuery}${rowQuery}`;
 
-            choice.label =
-              $(obj).find("orcid-bio > personal-details > given-names").text() +
-              " " +
-              $(obj).find("orcid-bio > personal-details > family-name").text();
-            choice.desc = $(obj).find("orcid-bio > personal-details").text();
-            people.push(choice);
+        let data;
+
+        try {
+          const orcidResponse = await fetch(url, {
+            headers: { "Content-Type": "application/json" },
           });
-
-          // add more if called that way
-          if (more) {
-            people = more.concat(people);
+          if (!orcidResponse?.ok) {
+            const reason = await orcidResponse.text();
+            throw new Error(
+              `ORCiD search request failed: ${orcidResponse.status} ${orcidResponse.statusText} - ${reason}`,
+            );
           }
+          data = await orcidResponse.json();
+        } catch (error) {
+          console.error("Error fetching ORCID data: ", error);
+          return response(more);
+        }
 
-          // callback with answers
-          response(people);
+        if ((data["num-found"] || 0) === 0) return response(more);
+
+        const peopleFound = data["expanded-result"] || [];
+
+        const choices = peopleFound.map((result) => {
+          const orcidId = result["orcid-id"];
+          const givenNames = result["given-names"];
+          const familyNames = result["family-names"];
+          const institutionNames = result["institution-name"];
+          return {
+            value: `https://orcid.org/${orcidId}`,
+            label: `${givenNames} ${familyNames}`,
+            desc: institutionNames.join(", "),
+            fullName: `${givenNames} ${familyNames}`,
+          };
         });
+
+        const allResults = more ? more.concat(choices) : choices;
+        response(allResults);
       },
 
       /** @deprecated since 2.36.0 */

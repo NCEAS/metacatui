@@ -2585,7 +2585,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         // ORCID search
         const orcidBaseUrl = this.get("orcidBaseUrl");
         if (orcidBaseUrl) {
-          const searchUrl = `${NORMALIZE_URL(orcidBaseUrl)}/v3.0/search/?q=`;
+          const searchUrl = `${NORMALIZE_URL(orcidBaseUrl)}/v3.0/expanded-search/?q=`;
           this.set("orcidSearchUrl", searchUrl);
         }
 
