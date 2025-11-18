@@ -1185,6 +1185,8 @@ define([
           emlString += this.formatXML(rootEMLNode);
         });
 
+        emlString = this.revertSourcedToSource(emlString);
+
         return emlString;
       },
 
@@ -2187,14 +2189,29 @@ define([
 
       /**
        * Replace elements named "source" with "sourced" due to limitations with
-       * using $.parseHTML() rather than $.parseXML()
+       * using $.parseHTML() rather than $.parseXML(). In HTML <source> is
+       * treated as a void element a closing tag so any <source>…</source> will
+       * have the closing tag removed upon parsing. To avoid this problem, we
+       * replace <source> with <sourced> before parsing, and then revert it back
+       * to <source> before saving to the server.
        * @param {string} xmlString The XML string to make the replacement in
        * @returns {string} The cleaned up XML string
        */
       cleanUpXML(xmlString) {
-        xmlString.replace("<source>", "<sourced>");
-        xmlString.replace("</source>", "</sourced>");
+        xmlString = xmlString.replace(/<source>/g, "<sourced>");
+        xmlString = xmlString.replace(/<\/source>/g, "</sourced>");
+        return xmlString;
+      },
 
+      /**
+       * Revert elements named "sourced" back to "source" before saving to the
+       * server. See cleanUpXML() for more info.
+       * @param {string} xmlString The XML string in which to make the replacement
+       * @returns {string} The cleaned up XML string
+       */
+      revertSourcedToSource(xmlString) {
+        xmlString = xmlString.replace(/<sourced>/g, "<source>");
+        xmlString = xmlString.replace(/<\/sourced>/g, "</source>");
         return xmlString;
       },
 

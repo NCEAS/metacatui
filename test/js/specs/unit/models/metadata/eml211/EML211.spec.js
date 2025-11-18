@@ -44,5 +44,26 @@ define([
           .should.be.instanceof(EMLTaxonCoverage);
       });
     });
+
+    describe("XML clean up helpers", function () {
+      const sourceXML =
+        "<dataset><source>One</source><source>Two</source></dataset>";
+      const sourcedXML =
+        "<dataset><sourced>One</sourced><sourced>Two</sourced></dataset>";
+
+      it("cleanUpXML converts source elements to sourced", function () {
+        state.eml.cleanUpXML(sourceXML).should.equal(sourcedXML);
+      });
+
+      it("revertSourcedToSource converts sourced elements back to source", function () {
+        state.eml.revertSourcedToSource(sourcedXML).should.equal(sourceXML);
+      });
+
+      it("round trips source elements through cleanUpXML and revertSourcedToSource", function () {
+        state.eml
+          .revertSourcedToSource(state.eml.cleanUpXML(sourceXML))
+          .should.equal(sourceXML);
+      });
+    });
   });
 });
