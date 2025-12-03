@@ -1891,6 +1891,17 @@ define([
       },
 
       /**
+       * Checks for a 404 error in the error status or message
+       * @returns {boolean} True if a 404 error is found
+       * @since 0.0.0
+       */
+      fileDoesNotExist() {
+        if (this.get("errorStatus") === 404) return true;
+        if (this.get("errorMessage")?.includes("404")) return true;
+        return false;
+      },
+
+      /**
        * A utility function that will format an XML string or XML nodes by camel-casing the node names, as necessary
        * @param {string|Element} xml - The XML to format
        * @returns {string} The formatted XML string

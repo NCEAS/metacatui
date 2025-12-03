@@ -114,6 +114,14 @@ define([
       render() {
         // Prevent duplicate listeners
         this.stopListening();
+        // listen for changes to rerender the view
+        this.listenTo(
+          this.model,
+          "change:fileName change:title change:id change:formatType " +
+            "change:formatId change:type change:resourceMap change:documents change:isDocumentedBy " +
+            "change:size change:nodeLevel change:uploadStatus change:errorMessage change:errorStatus",
+          this.render,
+        );
 
         let itemPathParts = [];
 
@@ -483,15 +491,6 @@ define([
               this.toggleSaving,
             );
 
-            // listen for changes to rerender the view
-            this.listenTo(
-              this.model,
-              "change:fileName change:title change:id change:formatType " +
-                "change:formatId change:type change:resourceMap change:documents change:isDocumentedBy " +
-                "change:size change:nodeLevel change:uploadStatus change:errorMessage",
-              this.render,
-            ); // render changes to the item
-
             const view = this;
             this.listenTo(this.model, "replace", (newModel) => {
               view.model = newModel;
@@ -642,6 +641,10 @@ define([
               .attr("data-trigger", "hover")
               .attr("data-delay", "300")
               .attr("data-title", objectTitleTooltip);
+
+            // Check for errors indicating that the file does not exist and
+            // show im UI
+            this.handleNonExistentFile();
           }
         }
 
@@ -1462,13 +1465,18 @@ define([
        * @since 2.32.1
        */
       showError(message) {
+        let messageNormalized = message;
+        if (messageNormalized === "404") {
+          messageNormalized =
+            "This file does not exist in the repository. Please remove or replace it.";
+        }
         this.$el.removeClass("loading");
         const nameColumn = this.$(".name");
         nameColumn.addClass("error");
         // Append an error message
         this.errorEl = $(document.createElement("div"))
           .addClass("error-message")
-          .text(`There was an error: ${message}`);
+          .text(`Error: ${messageNormalized}`);
         nameColumn.append(this.errorEl);
         const icon = this.$(".type-icon");
         icon.addClass("error");
@@ -1578,8 +1586,22 @@ define([
         return null;
       },
 
+      /**
+       * Handle the case where the file does not exist on the server
+       * @since 0.0.0
+       */
+      handleNonExistentFile() {
+        if (!this.model.fileDoesNotExist()) return;
+        this.$el.addClass("non-existent-file");
+        if (this.downloadButtonView) {
+          this.downloadButtonView.inactivate(
+            "This file does not exist on the server, but is referenced in the metadata. Please contact the author for assistance.",
+          );
+        }
+      },
+
       downloadFile(e) {
-        this.downloadButtonView.download(e);
+        this.downloadButtonView?.download(e);
       },
 
       // Member row metrics for the package table
