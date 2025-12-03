@@ -392,7 +392,10 @@ define([
        */
       parse(response) {
         // If the response is XML
-        if (typeof response === "string" && response.indexOf("<") == 0) {
+        if (
+          typeof response === "string" &&
+          response.trim().indexOf("<") === 0
+        ) {
           const responseDoc = $.parseHTML(response);
           let systemMetadata;
 

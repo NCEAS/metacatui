@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 define([
   "jquery",
@@ -161,8 +161,8 @@ define([
 
         if (this.edit) {
           // Listen for  add events because models are being merged
-          this.listenTo(this.dataPackage, "add", this.addOne);
-          this.listenTo(this.dataPackage, "fileAdded", this.addOne);
+          this.stopListening(this.dataPackage, "add fileAdded", this.addOne);
+          this.listenTo(this.dataPackage, "add fileAdded", this.addOne);
         }
 
         // Render the current set of models in the DataPackage
@@ -204,6 +204,7 @@ define([
 
         // Don't add duplicate rows
         if (this.$(`.data-package-item[data-id='${item.id}']`).length) return;
+        if (_.contains(Object.keys(this.subviews), item.id)) return;
 
         // Don't add data package
         if (
@@ -216,10 +217,6 @@ define([
         let scimetaParent;
         let parentRow;
         let delayedModels;
-
-        if (_.contains(Object.keys(this.subviews), item.id)) {
-          return; // Don't double render
-        }
 
         let itemPath = null;
         const view = this;
@@ -503,10 +500,7 @@ define([
             this.sortedFilePathObj = sortedFilePathObj;
 
             this.addFilesAndFolders(sortedFilePathObj);
-          } else {
-            this.dataPackage.each(this.addOne, this, this.dataPackage);
           }
-
           this.dataPackage.each(this.addOne, this, this.dataPackage);
         } else {
           this.dataPackage.each(this.addOne, this);
