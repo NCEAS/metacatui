@@ -452,6 +452,15 @@ define([
       },
 
       /**
+       * Checks whether any member models are missing files
+       * @returns {boolean} True if any member models are missing files
+       * @since 0.0.0
+       */
+      missingFilesDetected() {
+        return this.some((model) => model.fileDoesNotExist());
+      },
+
+      /**
        * Fetches member models in batches to avoid fetching all members
        * simultaneously.
        * @param {Backbone.Model[]} models The array of member models to fetch.

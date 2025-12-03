@@ -1175,6 +1175,8 @@ define([
           metricsModel: this.metricsModel,
         });
 
+        // TODO: move all the following behaviour into the DataPackageView
+
         // Get the package table container
         const tablesContainer = this.$(this.tableContainer);
 
@@ -1223,6 +1225,31 @@ define([
         // Trigger a custom event in this view that indicates the package table
         // has been rendered
         this.trigger("dataPackageRendered");
+
+        this.preventDownloadAllIfMissingFiles();
+      },
+
+      /**
+       * Disables the "Download All" button if there are missing files in the
+       * data package.
+       * @since 0.0.0
+       */
+      preventDownloadAllIfMissingFiles() {
+        this.listenTo(
+          this.dataPackage,
+          "change:errorMessage",
+          this.preventDownloadAllIfMissingFiles,
+        );
+        if (!this.dataPackage.missingFilesDetected()) return;
+        if (!this.downloadButtonView) return;
+        this.downloadButtonView.inactivate(
+          "Some files are missing from this package, so downloading the entire package is not available. Please download individual files instead.",
+        );
+        this.stopListening(
+          this.dataPackage,
+          "change:errorMessage",
+          this.preventDownloadAllIfMissingFiles,
+        );
       },
 
       /**
