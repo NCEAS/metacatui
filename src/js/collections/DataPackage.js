@@ -573,8 +573,13 @@ define([
           // Wait for whichever finishes first
           return await Promise.race([fetchPromise, timerPromise]);
         } catch (err) {
-          // Retry if we still have attempts left
-          if (attempt >= maxRetries - 1) {
+          // Retry if we still have attempts left and the type of error makes
+          // sense to retry
+          const dontRetryErrors = [401, 403, 404, 410];
+          if (
+            attempt >= maxRetries - 1 ||
+            dontRetryErrors.includes(model.get("errorStatus"))
+          ) {
             throw err;
           }
           // Recursively call ourselves with an incremented attempt count
@@ -699,8 +704,12 @@ define([
                 resolve(model);
               });
             },
-            error: (m, response) => {
-              reject(new Error(response?.statusText || "Model fetch failed"));
+            error: (_m, response) => {
+              model.set("errorStatus", response.status);
+              model.set("errorMessage", response.statusText);
+              reject(new Error(response.statusText || "Fetch failed"), {
+                cause: response,
+              });
             },
           });
         });
