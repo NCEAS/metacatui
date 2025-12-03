@@ -587,7 +587,7 @@ define([
           const dontRetryErrors = [401, 403, 404, 410];
           if (
             attempt >= maxRetries - 1 ||
-            dontRetryErrors.includes(model.get("errorStatus"))
+            dontRetryErrors.includes(memberModel.get("errorStatus"))
           ) {
             throw err;
           }
