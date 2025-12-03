@@ -434,6 +434,24 @@ define([
       },
 
       /**
+       * Fetches the system metadata for all member models that are marked as
+       * placeholder documents (i.e., isPlaceHolder_b === true). This property
+       * is retrieved from Solr and indicates that the file ID is referenced in
+       * a resource map, but has either not yet been indexed or is missing from
+       * the repository.
+       * @returns {Promise} A promise that resolves when all placeholder member
+       * models have been fetched.
+       * @since 0.0.0
+       */
+      async fetchSysMetaForPlaceholders() {
+        const placeholder_prop = "isPlaceHolder_b";
+        const placeholder_models = this.filter(
+          (model) => model.get(placeholder_prop) === true,
+        );
+        await this.fetchMemberModels(placeholder_models);
+      },
+
+      /**
        * Fetches member models in batches to avoid fetching all members
        * simultaneously.
        * @param {Backbone.Model[]} models The array of member models to fetch.

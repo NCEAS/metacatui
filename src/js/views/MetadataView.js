@@ -257,6 +257,9 @@ define([
             dataPackageView.dataPackageCollection = this.dataPackage;
             dataPackageView.checkForPrivateMembers();
           }
+          // Check if any docs exist as placeholders only, and fetch sysmeta
+          // instead of relying on Solr
+          this.dataPackage.fetchSysMetaForPlaceholders();
         });
 
         this.listenToOnce(this.dataPackage, "fetchFailed", () => {
