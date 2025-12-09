@@ -79,9 +79,11 @@ MetacatUI.AppConfig = Object.assign(
 
     //Metadata assessments
     displayDatasetQualityMetric: true,
-    mdqSuiteIds: ["FAIR-suite-0.4.0"],
-    mdqSuiteLabels: ["FAIR Suite v0.4.0"],
-    mdqFormatIds: ["eml*", "https://eml*"],
+    mdqFormatIds: [
+      "eml*",
+      "https://eml*",
+      "science-on-schema.org/Dataset;ld+json",
+    ],
 
     //Portals
     hideSummaryCitationsChart: false,

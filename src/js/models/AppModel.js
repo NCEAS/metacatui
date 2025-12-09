@@ -885,33 +885,38 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           /**
            * Metadata Assessment Suite IDs for the dataset assessment reports.
            * @type {string[]}
-           * @default ["FAIR-suite-0.4.0"]
+           * @default ["FAIR-suite-0.5.0"]
            */
-          mdqSuiteIds: ["FAIR-suite-0.4.0"],
+          mdqSuiteIds: ["FAIR-suite-0.5.0"],
           /**
            * Metadata Assessment Suite labels for the dataset assessment reports
            * @type {string[]}
-           * @default ["FAIR Suite v0.4.0"]
+           * @default ["FAIR Suite v0.5.0"]
            */
-          mdqSuiteLabels: ["FAIR Suite v0.4.0"],
+          mdqSuiteLabels: ["FAIR Suite v0.5.0"],
           /**
            * Metadata Assessment Suite IDs for the aggregated assessment charts
            * @type {string[]}
-           * @default ["FAIR-suite-0.4.0"]
+           * @default ["FAIR-suite-0.5.0"]
            */
-          mdqAggregatedSuiteIds: ["FAIR-suite-0.4.0"],
+          mdqAggregatedSuiteIds: ["FAIR-suite-0.5.0"],
           /**
            * Metadata Assessment Suite labels for the aggregated assessment charts
            * @type {string[]}
-           * @default ["FAIR Suite v0.4.0"]
+           * @default ["FAIR Suite v0.5.0"]
            */
-          mdqAggregatedSuiteLabels: ["FAIR Suite v0.4.0"],
+          mdqAggregatedSuiteLabels: ["FAIR Suite v0.5.0"],
           /**
            * The metadata formats for which to display metadata assessment reports
            * @type {string[]}
            * @default ["eml*", "https://eml*", "*isotc211*"]
            */
-          mdqFormatIds: ["eml*", "https://eml*", "*isotc211*"],
+          mdqFormatIds: [
+            "eml*",
+            "https://eml*",
+            "*isotc211*",
+            "science-on-schema.org/Dataset;ld+json",
+          ],
 
           /**
            * Metrics endpoint url
