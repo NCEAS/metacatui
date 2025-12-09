@@ -171,10 +171,9 @@ define(["jquery"], ($) => {
 
       const res = await fetch(urlBase, fetchOptions);
       if (!res.ok) {
-        throw new Error(
-          `QueryService.queryWithFetch(): HTTP ${res.status}`,
-          res,
-        );
+        throw new Error(`QueryService.queryWithFetch(): HTTP ${res.status}`, {
+          cause: res,
+        });
       }
       return res.json();
     }

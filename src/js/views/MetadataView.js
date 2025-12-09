@@ -433,10 +433,26 @@ define([
         });
 
         // Listen to 404 and 401 errors when we get the metadata object
-        this.stopListening(model, "404");
-        this.listenToOnce(model, "404", this.showNotFound);
-        this.stopListening(model, "401");
-        this.listenToOnce(model, "401", this.showIsPrivate);
+        this.listenToOnce(model, "getInfoError error", (status, message) => {
+          if (status === 404) {
+            this.showNotFound();
+          } else if (status === 401) {
+            this.showIsPrivate();
+          } else {
+            // other error, e.g. CORS issue
+            let msg = "<h4>Error retrieving metadata.</h4>";
+            if (message) {
+              msg += `<p>The following error occurred: ${Utilities.encodeHTML(
+                message,
+              )}</p>`;
+            }
+            if (status) {
+              msg += `<p>Error code: ${status}</p>`;
+            }
+            this.hideLoading();
+            this.showError(msg);
+          }
+        });
 
         // Fetch the model
         model.getInfo();
