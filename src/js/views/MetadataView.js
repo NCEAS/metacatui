@@ -570,6 +570,11 @@ define([
                   viewRef.trigger("renderComplete");
                 }
               } catch (e) {
+                // eslint-disable-next-line no-console
+                console.warn(
+                  "Rendering from index because of an error rendering from view service:",
+                  e,
+                );
                 MetacatUI.analytics?.trackException(
                   `Error rendering metadata from the view service. Fellback to index, ${e}, Response: ${response}`,
                   pid,
@@ -1226,30 +1231,44 @@ define([
         // has been rendered
         this.trigger("dataPackageRendered");
 
-        this.preventDownloadAllIfMissingFiles();
+        // Listen for and handle any missing data objects in the package
+        this.handleMissingFiles();
       },
 
       /**
-       * Disables the "Download All" button if there are missing files in the
-       * data package.
+       * If there files listed in the dataPackage don't exist in the repository,
+       * inactivate the download buttons for those files in the entity tables
+       * and inactivates the download all button in the package table.
        * @since 0.0.0
        */
-      preventDownloadAllIfMissingFiles() {
+      handleMissingFiles() {
+        this.stopListening(
+          this.dataPackage,
+          "change:errorMessage",
+          this.handleMissingFiles,
+        );
         this.listenTo(
           this.dataPackage,
           "change:errorMessage",
-          this.preventDownloadAllIfMissingFiles,
+          this.handleMissingFiles,
         );
         if (!this.dataPackage.missingFilesDetected()) return;
         if (!this.downloadButtonView) return;
         this.downloadButtonView.inactivate(
           "Some files are missing from this package, so downloading the entire package is not available. Please download individual files instead.",
         );
-        this.stopListening(
-          this.dataPackage,
-          "change:errorMessage",
-          this.preventDownloadAllIfMissingFiles,
-        );
+
+        const missingModels = this.dataPackage.getMissingFileModels();
+        const ids = missingModels?.map((m) => m.get("id"));
+        // Inactivate the view & download buttons in the entity tables
+        ids.forEach((id) => {
+          const entityButton = this.entityDownloadButtons[id];
+          if (entityButton) {
+            entityButton.inactivate(
+              "This file is missing from the package and cannot be downloaded.",
+            );
+          }
+        });
       },
 
       /**
@@ -2682,12 +2701,18 @@ define([
           "control-group",
           "data-interaction-buttons",
         );
+        const id = solrResult.get("id");
         const nameLabel = $(container).find("label:contains('Entity Name')");
+
         // Create a button to download the data object
         const downloadButton = new DownloadButtonView({
           model: solrResult,
         });
+        if (!this.entityDownloadButtons) this.entityDownloadButtons = {};
+        this.entityDownloadButtons[id] = downloadButton;
         downloadButton.render();
+
+        // Create a button to view the data object
         const viewButton = new ViewObjectButtonView({
           model: solrResult,
           modalContainer: this.$el,

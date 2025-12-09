@@ -461,6 +461,16 @@ define([
       },
 
       /**
+       * Returns an array of member models that are missing files
+       * @returns {Backbone.Model[]} An array of member models that are missing
+       * files
+       * @since 0.0.0
+       */
+      getMissingFileModels() {
+        return this.filter((model) => model.fileDoesNotExist());
+      },
+
+      /**
        * Fetches member models in batches to avoid fetching all members
        * simultaneously.
        * @param {Backbone.Model[]} models The array of member models to fetch.
