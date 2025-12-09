@@ -1255,7 +1255,7 @@ define([
        * If there files listed in the dataPackage don't exist in the repository,
        * inactivate the download buttons for those files in the entity tables
        * and inactivates the download all button in the package table.
-       * @since 0.0.0
+       * @since 2.36.2
        */
       handleMissingFiles() {
         this.stopListening(

@@ -146,7 +146,7 @@ define([
        * Prevents the download button from being clickable and adds a tooltip
        * with a message explaining why.
        * @param {string} [message] - The message to display in the tooltip.
-       * @since 0.0.0
+       * @since 2.36.2
        */
       inactivate(message = "This file is not available for download.") {
         this.$el.addClass("disabled").attr("disabled", "disabled");

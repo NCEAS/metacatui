@@ -441,7 +441,7 @@ define([
        * the repository.
        * @returns {Promise} A promise that resolves when all placeholder member
        * models have been fetched.
-       * @since 0.0.0
+       * @since 2.36.2
        */
       async fetchSysMetaForPlaceholders() {
         const placeholder_prop = "isPlaceHolder_b";
@@ -454,7 +454,7 @@ define([
       /**
        * Checks whether any member models are missing files
        * @returns {boolean} True if any member models are missing files
-       * @since 0.0.0
+       * @since 2.36.2
        */
       missingFilesDetected() {
         return this.some((model) => model.fileDoesNotExist());
@@ -464,7 +464,7 @@ define([
        * Returns an array of member models that are missing files
        * @returns {Backbone.Model[]} An array of member models that are missing
        * files
-       * @since 0.0.0
+       * @since 2.36.2
        */
       getMissingFileModels() {
         return this.filter((model) => model.fileDoesNotExist());

@@ -1588,7 +1588,7 @@ define([
 
       /**
        * Handle the case where the file does not exist on the server
-       * @since 0.0.0
+       * @since 2.36.2
        */
       handleNonExistentFile() {
         if (!this.model.fileDoesNotExist()) return;

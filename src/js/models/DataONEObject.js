@@ -1896,7 +1896,7 @@ define([
       /**
        * Checks for a 404 error in the error status or message
        * @returns {boolean} True if a 404 error is found
-       * @since 0.0.0
+       * @since 2.36.2
        */
       fileDoesNotExist() {
         if (this.get("errorStatus") === 404) return true;
