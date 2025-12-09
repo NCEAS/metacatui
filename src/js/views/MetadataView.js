@@ -257,6 +257,9 @@ define([
             dataPackageView.dataPackageCollection = this.dataPackage;
             dataPackageView.checkForPrivateMembers();
           }
+          // Check if any docs exist as placeholders only, and fetch sysmeta
+          // instead of relying on Solr
+          this.dataPackage.fetchSysMetaForPlaceholders();
         });
 
         this.listenToOnce(this.dataPackage, "fetchFailed", () => {
@@ -567,6 +570,11 @@ define([
                   viewRef.trigger("renderComplete");
                 }
               } catch (e) {
+                // eslint-disable-next-line no-console
+                console.warn(
+                  "Rendering from index because of an error rendering from view service:",
+                  e,
+                );
                 MetacatUI.analytics?.trackException(
                   `Error rendering metadata from the view service. Fellback to index, ${e}, Response: ${response}`,
                   pid,
@@ -1172,6 +1180,8 @@ define([
           metricsModel: this.metricsModel,
         });
 
+        // TODO: move all the following behaviour into the DataPackageView
+
         // Get the package table container
         const tablesContainer = this.$(this.tableContainer);
 
@@ -1220,6 +1230,45 @@ define([
         // Trigger a custom event in this view that indicates the package table
         // has been rendered
         this.trigger("dataPackageRendered");
+
+        // Listen for and handle any missing data objects in the package
+        this.handleMissingFiles();
+      },
+
+      /**
+       * If there files listed in the dataPackage don't exist in the repository,
+       * inactivate the download buttons for those files in the entity tables
+       * and inactivates the download all button in the package table.
+       * @since 0.0.0
+       */
+      handleMissingFiles() {
+        this.stopListening(
+          this.dataPackage,
+          "change:errorMessage",
+          this.handleMissingFiles,
+        );
+        this.listenTo(
+          this.dataPackage,
+          "change:errorMessage",
+          this.handleMissingFiles,
+        );
+        if (!this.dataPackage.missingFilesDetected()) return;
+        if (!this.downloadButtonView) return;
+        this.downloadButtonView.inactivate(
+          "Some files are missing from this package, so downloading the entire package is not available. Please download individual files instead.",
+        );
+
+        const missingModels = this.dataPackage.getMissingFileModels();
+        const ids = missingModels?.map((m) => m.get("id"));
+        // Inactivate the view & download buttons in the entity tables
+        ids.forEach((id) => {
+          const entityButton = this.entityDownloadButtons[id];
+          if (entityButton) {
+            entityButton.inactivate(
+              "This file is missing from the package and cannot be downloaded.",
+            );
+          }
+        });
       },
 
       /**
@@ -2652,12 +2701,18 @@ define([
           "control-group",
           "data-interaction-buttons",
         );
+        const id = solrResult.get("id");
         const nameLabel = $(container).find("label:contains('Entity Name')");
+
         // Create a button to download the data object
         const downloadButton = new DownloadButtonView({
           model: solrResult,
         });
+        if (!this.entityDownloadButtons) this.entityDownloadButtons = {};
+        this.entityDownloadButtons[id] = downloadButton;
         downloadButton.render();
+
+        // Create a button to view the data object
         const viewButton = new ViewObjectButtonView({
           model: solrResult,
           modalContainer: this.$el,

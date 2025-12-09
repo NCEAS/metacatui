@@ -24,7 +24,9 @@ define(["jquery"], ($) => {
    * URL.
    * @property {boolean} [usePost] Force POST / GET (overrides auto-choice).
    * @property {boolean} [useAuth=true] Inject MetacatUI auth headers?
-   * @property {boolean} [archived] Include archived items? Default `false`.
+   * @property {boolean} [archived] Include archived resources in the results. A
+   * special filter query is applied to include all docs that have any value for
+   * the `archived` field.
    * @property {boolean} [group] Use Solr grouping (group=true)?
    * @property {string} [groupField] Field to group by (if `group` is true).
    * @property {number} [groupLimit] Limit of groups to return (if `group` is
@@ -483,7 +485,6 @@ define(["jquery"], ($) => {
         });
       }
 
-      // TODO - are there other values possible for the archived param?
       if (archived) {
         params["archived"] = "archived:*";
       }

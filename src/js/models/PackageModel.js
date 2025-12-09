@@ -196,7 +196,7 @@ define([
           fields:
             `resourceMap,fileName,obsoletes,obsoletedBy,size,formatType,formatId,` +
             `id,datasource,rightsHolder,dateUploaded,archived,title,origin,` +
-            `prov_instanceOfClass,isDocumentedBy,isPublic`,
+            `prov_instanceOfClass,isDocumentedBy,isPublic,isPlaceHolder_b`,
           rows: 1000,
           archived: this.get("getArchivedMembers") ? true : false,
         })
@@ -235,7 +235,7 @@ define([
         return this;
       },
 
-      /*
+      /**
        * Send custom options to the Backbone.Model.fetch() function
        */
       fetch(options = {}) {
@@ -291,7 +291,7 @@ define([
         });
       },
 
-      /*
+      /**
        * Deserialize a Package from OAI-ORE RDF XML
        */
       parse(response) {

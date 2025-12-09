@@ -7937,7 +7937,8 @@ ul.side-nav-items {
 }
 
 .data-package-item td.error > [contenteditable] {
-  border: 2px solid red;
+  border: 1.5px solid red;
+  border-radius: 6px;
 }
 /* Editor package table column 1 */
 .data-package-item td:first-of-type {
