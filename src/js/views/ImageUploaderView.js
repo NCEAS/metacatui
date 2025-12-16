@@ -220,7 +220,7 @@ define([
           // Add upload & drag and drop functionality to the dropzone div.
           // For config details, see: https://www.dropzonejs.com/#configuration
           var $dropZone = view.$(".dropzone").dropzone({
-            url: view.model.get("imageURL") || view.model.url(),
+            url: view.model.get("imageURL") || view.model.url() || MetacatUI.appModel.getActiveAltRepo()?.objectServiceUrl,
             acceptedFiles: "image/*",
             addRemoveLinks: false,
             maxFiles: 1,
