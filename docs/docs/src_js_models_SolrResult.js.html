@@ -539,14 +539,25 @@
 
       handleGetInfoError(error) {
         console.error(`Error getting info for ${this.get("id")}`, error);
+        const status = error.status || error.cause?.status;
+        const message = error.message || error.cause?.statusText || error;
+
+        if (status) {
+          this.set("errorStatus", status);
+        }
+        if (message) {
+          this.set("errorMessage", message);
+        }
+        if (status === 404) this.set("notFound", true);
+
         this.set("indexed", false);
-        this.trigger("getInfoError");
+        this.trigger("getInfoError", status, message);
       },
 
       getInfoSuccess(data) {
         // If the Solr response was not as expected, trigger and error and exit
         if (!data?.response?.docs) {
-          this.handleGetInfoError();
+          this.handleGetInfoError({ message: "No data found" });
           return;
         }
 
@@ -701,21 +712,10 @@
             model.trigger("sync");
           },
           error(response) {
-            // When the user is unauthorized to access this object, trigger a
-            // 401 error
-            if (response.status === 401) {
-              model.set("notFound", true);
-              model.trigger("401");
-            }
-            // When the object doesn't exist, trigger a 404 error
-            else if (response.status === 404) {
-              model.set("notFound", true);
-              model.trigger("404");
-            }
-            // Other error codes trigger a generic error
-            else {
-              model.trigger("error");
-            }
+            const errorStatus = response.status;
+            const errorMessage = response.statusText;
+            model.set({ errorStatus, errorMessage, notFound: true });
+            model.trigger("error", errorStatus, errorMessage);
           },
         };
 

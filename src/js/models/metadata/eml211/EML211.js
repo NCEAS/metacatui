@@ -2169,10 +2169,7 @@ define([
         // Set base attributes
         eml.attr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         eml.attr("xmlns:stmml", "http://www.xml-cml.org/schema/stmml-1.1");
-        eml.attr(
-          "xsi:schemaLocation",
-          "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd",
-        );
+        this.setSchemaLocation(eml);
         eml.attr("packageId", this.get("id"));
         eml.attr("system", emlSystem);
 
@@ -2390,33 +2387,31 @@ define([
        * @returns {Element} The element, possibly modified
        */
       setSchemaLocation(eml) {
-        if (!MetacatUI || !MetacatUI.appModel) {
-          return eml;
-        }
+        if (!MetacatUI || !MetacatUI.appModel) return eml;
 
-        const current = $(eml).attr("xsi:schemaLocation");
-        const format = MetacatUI.appModel.get("editorSerializationFormat");
         const location = MetacatUI.appModel.get("editorSchemaLocation");
 
         // Return now if we can't do anything anyway
-        if (!format || !location) {
+        if (!location) return eml;
+
+        const format = MetacatUI.appModel.get("editorSerializationFormat");
+        const current = $(eml).attr("xsi:schemaLocation")?.trim();
+        const isString = current && typeof current === "string";
+        // Must be even: a namespace URI plus the schema location
+        const hasEvenNumber = current?.split(/\s+/).length % 2 === 0 || false;
+
+        // Don't append if it's already present and valid
+        if (isString && hasEvenNumber && current?.includes(format)) return eml;
+
+        // If there is already a valid location but is missing this format,
+        // append it
+        if (current && isString && hasEvenNumber) {
+          $(eml).attr("xsi:schemaLocation", `${current} ${location}`);
           return eml;
         }
 
-        // Simply add if the attribute isn't present to begin with
-        if (!current || typeof current !== "string") {
-          $(eml).attr("xsi:schemaLocation", `${format} ${location}`);
-
-          return eml;
-        }
-
-        // Don't append if it's already present
-        if (current.indexOf(format) >= 0) {
-          return eml;
-        }
-
-        $(eml).attr("xsi:schemaLocation", `${current} ${location}`);
-
+        // In all other cases, set the schema location to just this format
+        $(eml).attr("xsi:schemaLocation", location);
         return eml;
       },
 

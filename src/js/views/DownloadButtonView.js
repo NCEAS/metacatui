@@ -112,17 +112,9 @@ define([
             // then we can assume the resource map object is private. So disable
             // the download button.
             if (!this.model.get("indexDoc")) {
-              this.$el
-                .attr("disabled", "disabled")
-                .addClass("disabled")
-                .attr("href", "")
-                .tooltip({
-                  trigger: "hover",
-                  placement: "top",
-                  delay: 500,
-                  title:
-                    "This dataset may contain private data, so each data file should be downloaded individually.",
-                });
+              this.inactivate(
+                "This dataset may contain private data, so each data file should be downloaded individually.",
+              );
             }
           }
           // For individual DataONEObjects
@@ -142,25 +134,32 @@ define([
           this.model.type === "Package" &&
           this.model.getTotalSize() > MetacatUI.appModel.get("maxDownloadSize")
         ) {
-          this.$el
-            .addClass("tooltip-this")
-            .attr("disabled", "disabled")
-            .attr(
-              "data-title",
-              "This dataset is too large to download as a package. Please download the files individually or contact us for alternate data access.",
-            )
-            .attr("data-placement", "top")
-            .attr("data-trigger", "hover")
-            .attr("data-container", "body");
-
-          // Removing the `href` attribute while disabling the download button.
-          this.$el.removeAttr("href");
-
-          // Removing pointer as cursor and setting to default
-          this.$el.css("cursor", "default");
+          this.inactivate(
+            `This dataset is too large to download all at once. Please download individual files separately."`,
+          );
         }
 
         return this;
+      },
+
+      /**
+       * Prevents the download button from being clickable and adds a tooltip
+       * with a message explaining why.
+       * @param {string} [message] - The message to display in the tooltip.
+       * @since 2.36.2
+       */
+      inactivate(message = "This file is not available for download.") {
+        this.$el.addClass("disabled").attr("disabled", "disabled");
+        this.$el.css("cursor", "default");
+        this.$el.removeAttr("href");
+
+        this.$el.tooltip({
+          trigger: "hover",
+          placement: "top",
+          delay: 100,
+          title: message,
+          container: "body",
+        });
       },
 
       /**
