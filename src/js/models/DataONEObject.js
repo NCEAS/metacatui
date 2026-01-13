@@ -392,7 +392,10 @@ define([
        */
       parse(response) {
         // If the response is XML
-        if (typeof response === "string" && response.indexOf("<") == 0) {
+        if (
+          typeof response === "string" &&
+          response.trim().indexOf("<") === 0
+        ) {
           const responseDoc = $.parseHTML(response);
           let systemMetadata;
 
@@ -1888,6 +1891,17 @@ define([
             MetacatUI.appUserModel.createAjaxSettings(),
           ),
         );
+      },
+
+      /**
+       * Checks for a 404 error in the error status or message
+       * @returns {boolean} True if a 404 error is found
+       * @since 2.36.2
+       */
+      fileDoesNotExist() {
+        if (this.get("errorStatus") === 404) return true;
+        if (this.get("errorMessage")?.includes("404")) return true;
+        return false;
       },
 
       /**

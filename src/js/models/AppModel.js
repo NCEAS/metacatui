@@ -1,6 +1,9 @@
 define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
   "use strict";
 
+  // Remove any trailing slashes from a URL
+  const NORMALIZE_URL = (url) => url.replace(/\/+$/, "");
+
   /**
    * @class AppModel
    * @classdesc A utility model that contains top-level configuration and storage for the application
@@ -765,9 +768,9 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           /**
            * The base URL for the ORCID REST services
            * @type {string}
-           * @default "https:/orcid.org"
+           * @default "https://pub.orcid.org/"
            */
-          orcidBaseUrl: "https:/orcid.org",
+          orcidBaseUrl: "https://pub.orcid.org/",
 
           /**
            * The URL for the ORCID search API, which can be used to search for information
@@ -889,33 +892,38 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           /**
            * Metadata Assessment Suite IDs for the dataset assessment reports.
            * @type {string[]}
-           * @default ["FAIR-suite-0.4.0"]
+           * @default ["FAIR-suite-0.5.0"]
            */
-          mdqSuiteIds: ["FAIR-suite-0.4.0"],
+          mdqSuiteIds: ["FAIR-suite-0.5.0"],
           /**
            * Metadata Assessment Suite labels for the dataset assessment reports
            * @type {string[]}
-           * @default ["FAIR Suite v0.4.0"]
+           * @default ["FAIR Suite v0.5.0"]
            */
-          mdqSuiteLabels: ["FAIR Suite v0.4.0"],
+          mdqSuiteLabels: ["FAIR Suite v0.5.0"],
           /**
            * Metadata Assessment Suite IDs for the aggregated assessment charts
            * @type {string[]}
-           * @default ["FAIR-suite-0.4.0"]
+           * @default ["FAIR-suite-0.5.0"]
            */
-          mdqAggregatedSuiteIds: ["FAIR-suite-0.4.0"],
+          mdqAggregatedSuiteIds: ["FAIR-suite-0.5.0"],
           /**
            * Metadata Assessment Suite labels for the aggregated assessment charts
            * @type {string[]}
-           * @default ["FAIR Suite v0.4.0"]
+           * @default ["FAIR Suite v0.5.0"]
            */
-          mdqAggregatedSuiteLabels: ["FAIR Suite v0.4.0"],
+          mdqAggregatedSuiteLabels: ["FAIR Suite v0.5.0"],
           /**
            * The metadata formats for which to display metadata assessment reports
            * @type {string[]}
            * @default ["eml*", "https://eml*", "*isotc211*"]
            */
-          mdqFormatIds: ["eml*", "https://eml*", "*isotc211*"],
+          mdqFormatIds: [
+            "eml*",
+            "https://eml*",
+            "*isotc211*",
+            "science-on-schema.org/Dataset;ld+json",
+          ],
 
           /**
            * Metrics endpoint url
@@ -2581,13 +2589,13 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
               d1CNBaseUrl + this.get("d1CNService") + this.get("formatsUrl"),
             );
           }
+        }
 
-          //ORCID search
-          if (typeof this.get("orcidBaseUrl") != "undefined")
-            this.set(
-              "orcidSearchUrl",
-              this.get("orcidBaseUrl") + "/search/orcid-bio?q=",
-            );
+        // ORCID search
+        const orcidBaseUrl = this.get("orcidBaseUrl");
+        if (orcidBaseUrl) {
+          const searchUrl = `${NORMALIZE_URL(orcidBaseUrl)}/v3.0/expanded-search/?q=`;
+          this.set("orcidSearchUrl", searchUrl);
         }
 
         // Metadata quality report services
