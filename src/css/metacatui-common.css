@@ -1483,14 +1483,6 @@ svg.icon {
   fill: #b94a48;
 }
 
-#mdqResult .donut.data > g:nth-child(4) .donut-arc {
-  fill: #91d7fb;
-}
-#mdqResult .donut.data > g:nth-child(4) .donut-arc-label,
-#mdqResult .donut.data > g:nth-child(4) .donut-arc.active {
-  fill: #3a87ad;
-}
-
 #mdqResult .donut-labels {
   opacity: 0;
 }

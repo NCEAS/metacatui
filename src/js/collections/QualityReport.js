@@ -100,7 +100,7 @@ define([
             return color;
           }
           if (status === "SKIP") {
-            color = "BLUE";
+            color = "GREY";
             return color;
           }
           // always green for success
@@ -137,6 +137,9 @@ define([
         }
         if (!groupedResults.RED) {
           groupedResults.RED = [];
+        }
+        if (!groupedResults.GREY) {
+          groupedResults.GREY = [];
         }
 
         // if (groupedResults.BLUE) {
