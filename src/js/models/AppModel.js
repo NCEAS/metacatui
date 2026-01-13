@@ -1,6 +1,9 @@
 define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
   "use strict";
 
+  // Remove any trailing slashes from a URL
+  const NORMALIZE_URL = (url) => url.replace(/\/+$/, "");
+
   /**
    * @class AppModel
    * @classdesc A utility model that contains top-level configuration and storage for the application
@@ -761,9 +764,9 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           /**
            * The base URL for the ORCID REST services
            * @type {string}
-           * @default "https:/orcid.org"
+           * @default "https://pub.orcid.org/"
            */
-          orcidBaseUrl: "https:/orcid.org",
+          orcidBaseUrl: "https://pub.orcid.org/",
 
           /**
            * The URL for the ORCID search API, which can be used to search for information
@@ -2582,13 +2585,13 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
               d1CNBaseUrl + this.get("d1CNService") + this.get("formatsUrl"),
             );
           }
+        }
 
-          //ORCID search
-          if (typeof this.get("orcidBaseUrl") != "undefined")
-            this.set(
-              "orcidSearchUrl",
-              this.get("orcidBaseUrl") + "/search/orcid-bio?q=",
-            );
+        // ORCID search
+        const orcidBaseUrl = this.get("orcidBaseUrl");
+        if (orcidBaseUrl) {
+          const searchUrl = `${NORMALIZE_URL(orcidBaseUrl)}/v3.0/expanded-search/?q=`;
+          this.set("orcidSearchUrl", searchUrl);
         }
 
         // Metadata quality report services
