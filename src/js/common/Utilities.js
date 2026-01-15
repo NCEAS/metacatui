@@ -260,6 +260,28 @@ define([], () => {
       const regexString = `^${escaped.replace(/\*/g, ".*")}$`;
       return new RegExp(regexString, "i"); // "i" = case-insensitive, if desired
     },
+
+    /**
+     * Get a value from a plain object using a case-insensitive key.
+     * @param {object} obj Source object
+     * @param {string} keyName Key name to look up (case-insensitive)
+     * @param {Function} [normalizeValue] Optional value normalizer
+     * @returns {*} The matched value, or undefined if not found
+     * @since 0.0.0
+     */
+    getCaseInsensitive(obj, keyName, normalizeValue) {
+      if (!obj || !keyName) return undefined;
+
+      const target = String(keyName).toLowerCase();
+      const key = Object.keys(obj).find(
+        (k) => String(k).toLowerCase() === target,
+      );
+
+      if (!key) return undefined;
+
+      const value = obj[key];
+      return normalizeValue ? normalizeValue(value) : value;
+    },
   };
 
   return Utilities;
