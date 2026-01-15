@@ -36,6 +36,11 @@ define([
       encoded.should.equal(encodedPath);
     });
 
+    it("encodes invalid percent sequences without throwing", () => {
+      const encoded = UrlBuilder.encodePathSegments("object/%E0%A4%A");
+      encoded.should.equal("object/%25E0%25A4%25A");
+    });
+
     it("should handle mixed encoded and unencoded segments", () => {
       const encoded = UrlBuilder.encodePathSegments(
         "/data/pid:abc%2F123/file name.txt",
@@ -51,7 +56,7 @@ define([
     });
 
     it("should handle unicode characters", () => {
-      const encoded = UrlBuilder.encodePathSegments("/data/文件.txt");
+      const encoded = UrlBuilder.encodePathSegments("/data/\u6587\u4ef6.txt");
       encoded.should.equal("/data/%E6%96%87%E4%BB%B6.txt");
     });
 
@@ -88,7 +93,7 @@ define([
         "object/pid:abc 123",
         true,
       );
-      url.should.equal("https://example.org/object/pid%3Aabc%20123/");
+      url.should.equal("https://example.org/object/pid%3Aabc%20123");
     });
 
     it("maintains the full url when baseUrl includes path", () => {
@@ -97,7 +102,7 @@ define([
         "object/pid:abc 123",
         true,
       );
-      url.should.equal("https://example.org/api/v1/object/pid%3Aabc%20123/");
+      url.should.equal("https://example.org/api/v1/object/pid%3Aabc%20123");
     });
 
     it("builds URLs with unencoded paths", () => {
@@ -108,12 +113,12 @@ define([
       );
       // The space is still encoded because JS's URL normalizes URLs to encode
       // characters that are not allowed in URLs
-      url.should.equal("https://example.org/object/pid:abc%20123/");
+      url.should.equal("https://example.org/object/pid:abc%20123");
     });
 
     it("builds URLs with empty paths", () => {
       const url = UrlBuilder.buildUrl("https://example.org", "", true);
-      url.should.equal("https://example.org/");
+      url.should.equal("https://example.org");
     });
   });
 });

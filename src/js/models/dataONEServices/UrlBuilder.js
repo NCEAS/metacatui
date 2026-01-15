@@ -58,21 +58,28 @@ define([], () => {
    * @returns {string} Full URL
    */
   const buildUrl = (baseUrl = "", path = "", encodePath = true) => {
-    // The path needs a slash at the start to be treated as relative to the base
-    // URL, and no trailing slash so that URL handles it correctly.
     const normalizedPath = path.trim() || "";
+    const normalizedBaseUrl = baseUrl.trim() || window.location?.origin || "";
+    // BaseURL must end with a slash for URL to treat path as relative
+    const correctedBaseUrl = correctSlashes(normalizedBaseUrl, false, true);
+
+    // If no path, return base URL without trailing slash, otherwise URL will
+    // resolve to the domain root
+    if (!normalizedPath) {
+      return correctedBaseUrl.replace(/\/$/, "");
+    }
+
     const encodedPath = encodePath
       ? encodePathSegments(normalizedPath)
       : normalizedPath;
+
+    // The path needs a slash at the start to be treated as relative to the base
+    // URL, and no trailing slash so that URL handles it correctly.
     const correctedPath = correctSlashes(encodedPath, false, true);
 
-    // BaseURL must end with a slash for URL to treat path as relative
-    const normalizedBaseUrl = baseUrl.trim() || window.location?.origin || "";
-    const correctedBaseUrl = correctSlashes(normalizedBaseUrl, false, true);
-
+    // Create a string and then remove trailing slash
     const url = new URL(correctedPath, correctedBaseUrl);
-
-    return url.toString();
+    return url.toString().replace(/\/$/, "");
   };
 
   return { encodePathSegments, correctSlashes, buildUrl };
