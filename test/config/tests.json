@@ -42,8 +42,15 @@
     "./js/specs/unit/models/metadata/eml211/EMLGeoCoverage.spec.js",
     "./js/specs/unit/models/sysmeta/SysMeta.spec.js",
     "./js/specs/unit/models/sysmeta/VersionTracker.spec.js",
-    "./js/specs/unit/models/sysmeta/VersionStorage.spec.js",
     "./js/specs/unit/models/resourceMap/ResourceMapResolver.spec.js",
+
+    "./js/specs/unit/models/PersistentStorage.spec.js",
+    "./js/specs/unit/models/dataONEServices/DataONEHttpClient.spec.js",
+    "./js/specs/unit/models/dataONEServices/DataONEService.spec.js",
+    "./js/specs/unit/models/dataONEServices/UrlBuilder.spec.js",
+    "./js/specs/unit/models/sysmeta/SysMeta.spec.js",
+    "./js/specs/unit/models/sysmeta/VersionTracker.spec.js",
+
     "./js/specs/unit/models/metadata/eml211/EMLAttributeList.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLReferences.spec.js",
     "./js/specs/unit/models/maps/ExpansionPanelsModel.spec.js",
