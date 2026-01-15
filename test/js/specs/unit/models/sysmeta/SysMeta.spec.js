@@ -20,6 +20,28 @@ define(["/test/js/specs/shared/clean-state.js", "models/sysmeta/SysMeta"], (
       <dateSysMetadataModified>2025-06-24T12:00:00Z</dateSysMetadataModified>
     </systemMetadata>
   `;
+  const MINIMAL_XML = `
+    <systemMetadata>
+      <identifier>minimal.1</identifier>
+      <archived>TRUE</archived>
+      <serialVersion>7</serialVersion>
+    </systemMetadata>
+  `;
+  const ERROR_XML = `
+    <error detailCode="1040" errorCode="401" name="NotAuthorized">
+      <description> READ not allowed </description>
+    </error>
+  `;
+  const ERROR_XML_NO_DESC = `
+    <error errorCode="500"></error>
+  `;
+  const ERROR_XML_NO_CODE = `
+    <error><description>Oops</description></error>
+  `;
+  const XML_NO_ERROR = `
+    <systemMetadata><identifier>ok</identifier></systemMetadata>
+  `;
+  const INVALID_XML = "<systemMetadata><identifier>bad</identifier>";
 
   describe("SysMeta Test Suite", () => {
     const state = cleanState(
@@ -39,53 +61,36 @@ define(["/test/js/specs/shared/clean-state.js", "models/sysmeta/SysMeta"], (
     });
 
     describe("Instantiation & URL building", () => {
-      it("throws if no identifier is supplied", () => {
-        expect(() => new SysMeta()).to.throw("identifier is required");
-      });
-
-      it("uses the default metaServiceUrl when none is supplied", () => {
-        const s = new SysMeta({ identifier: "foo" });
-        s.metaServiceUrl.should.equal(
-          SysMeta.DEFAULT_META_SERVICE_URL.endsWith("/")
-            ? SysMeta.DEFAULT_META_SERVICE_URL
-            : `${SysMeta.DEFAULT_META_SERVICE_URL}/`,
-        );
-      });
-
-      it("always stores metaServiceUrl with a trailing slash", () => {
-        const s = new SysMeta({
-          identifier: "abc",
-          metaServiceUrl: "https://mynode.org/sysmeta",
-        });
-        s.metaServiceUrl.should.equal("https://mynode.org/sysmeta/");
-      });
-
-      it("builds a correct URL using encodeURIComponent", () => {
-        const s = new SysMeta({
-          identifier: "weird id/with#chars",
-          metaServiceUrl: "https://x/",
-        });
-        s.url.should.equal(
-          `https://x/${encodeURIComponent("weird id/with#chars")}`,
-        );
-      });
-
-      it("throws if url() is accessed with an empty/invalid identifier", () => {
-        const s = new SysMeta({
-          identifier: "good",
-          metaServiceUrl: "https://x/",
-        });
-        // Manually blank-out identifier so we can test the guard
-        s.data.identifier = "";
-        expect(() => s.url).to.throw("identifier must be a non-empty string");
-      });
-
-      it("initialises data with the defaults plus identifier", () => {
-        const s = new SysMeta({ identifier: "id.1" });
-        s.data.should.have.property("identifier", "id.1");
+      it("initialises data with the defaults", () => {
+        const s = new SysMeta({ identifier: "" });
+        s.data.should.have.property("identifier", "");
         // a couple of representative defaults
         s.data.should.have.property("formatId", null);
         s.data.should.have.property("archived", false);
+        s.data.should.have.property("preferredNodes").that.is.an("array");
+      });
+
+      it("creates independent default arrays per instance", () => {
+        const a = new SysMeta();
+        const b = new SysMeta();
+
+        a.data.preferredNodes.push("node1");
+
+        a.data.preferredNodes.should.have.length(1);
+        b.data.preferredNodes.should.have.length(0);
+        a.data.preferredNodes.should.not.equal(b.data.preferredNodes);
+      });
+
+      it("merges provided data over defaults", () => {
+        const s = new SysMeta({
+          identifier: "custom.1",
+          archived: true,
+          preferredNodes: ["nodeA"],
+        });
+
+        s.data.identifier.should.equal("custom.1");
+        s.data.archived.should.equal(true);
+        s.data.preferredNodes.should.deep.equal(["nodeA"]);
       });
     });
 
@@ -110,78 +115,86 @@ define(["/test/js/specs/shared/clean-state.js", "models/sysmeta/SysMeta"], (
         parsed.dateSysMetadataModified.should.be.instanceof(Date);
         s.parsed.should.be.true;
       });
+
+      it("parses minimal XML and preserves defaults", () => {
+        const s = new SysMeta();
+        const parsed = s.parse(MINIMAL_XML);
+
+        parsed.identifier.should.equal("minimal.1");
+        parsed.serialVersion.should.equal(7);
+        parsed.archived.should.equal(true);
+        expect(parsed.size).to.equal(null);
+        expect(parsed.checksum).to.equal(null);
+        expect(parsed.checksumAlgorithm).to.equal(null);
+        expect(parsed.dateUploaded).to.equal(null);
+
+        s.parsed.should.be.true;
+        s.parseError.should.be.false;
+        s.fetchedXmlString.should.equal(MINIMAL_XML);
+        parsed.should.equal(s.data);
+      });
+
+      it("creates independent arrays per parse", () => {
+        const a = new SysMeta();
+        const b = new SysMeta();
+
+        a.parse(SAMPLE_XML);
+        b.parse(SAMPLE_XML);
+
+        a.data.accessPolicy.should.not.equal(b.data.accessPolicy);
+        a.data.preferredNodes.should.not.equal(b.data.preferredNodes);
+      });
+
+      it("throws on invalid XML and sets parseError", () => {
+        const s = new SysMeta();
+        let caught;
+        try {
+          s.parse(INVALID_XML);
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/Invalid SystemMetadata XML/);
+        s.parseError.should.be.true;
+        s.parsed.should.be.false;
+        s.fetchedXmlString.should.equal(INVALID_XML);
+      });
     });
 
-    describe("fetch()", () => {
-      it("successfully fetches, parses and populates data", async () => {
-        // Stub global fetch so we don't hit the network
-        state.sandbox.stub(globalThis, "fetch").resolves({
-          ok: true,
-          text: () => Promise.resolve(SAMPLE_XML),
-        });
-
-        const s = new SysMeta({
-          identifier: "sample.1",
-          metaServiceUrl: "https://example.org/sysmeta/",
-        });
-
-        const data = await s.fetch();
-        // Basic expectations
-        data.identifier.should.equal("sample.1");
-        s.fetched.should.be.true;
-        s.fetchedWithError.should.be.false;
-        s.parsed.should.be.true;
+    describe("parseError()", () => {
+      it("returns null for empty input or no error element", () => {
+        expect(SysMeta.parseError("")).to.equal(null);
+        expect(SysMeta.parseError(null)).to.equal(null);
+        expect(SysMeta.parseError(XML_NO_ERROR)).to.equal(null);
       });
 
-      it("adds an Authorization header when a token is supplied", async () => {
-        const TOKEN = "abc123token";
-        const fetchStub = state.sandbox
-          .stub(globalThis, "fetch")
-          .callsFake((url, opts = {}) => {
-            opts.should.have.nested.property(
-              "headers.Authorization",
-              `Bearer ${TOKEN}`,
-            );
-            return Promise.resolve({
-              ok: true,
-              text: () => Promise.resolve(SAMPLE_XML),
-            });
-          });
-
-        const s = new SysMeta({ identifier: "sample.1" });
-        await s.fetch(TOKEN);
-        fetchStub.calledOnce.should.be.true;
+      it("parses error details from an error response", () => {
+        const err = SysMeta.parseError(ERROR_XML);
+        expect(err).to.be.instanceof(Error);
+        expect(err.name).to.equal("SysMetaError");
+        expect(err.message).to.equal("READ not allowed");
+        expect(err.status).to.equal("401");
       });
 
-      it("records an error when the response is not ok", async () => {
-        state.sandbox.stub(globalThis, "fetch").resolves({
-          ok: false,
-          status: 401,
-          statusText: "Server error",
-          text: () => Promise.resolve(""),
-        });
+      it("uses fallback values when error fields are missing", () => {
+        const errNoDesc = SysMeta.parseError(ERROR_XML_NO_DESC);
+        expect(errNoDesc.message).to.equal("Unknown error");
+        expect(errNoDesc.status).to.equal("500");
 
-        const s = new SysMeta({
-          identifier: "err.1",
-          metaServiceUrl: "https://x/",
-        });
-
-        const error = await s.fetch().catch((e) => e);
-        s.fetched.should.be.false;
-        s.fetchedWithError.should.be.true;
-        error.status.should.equal(401);
+        const errNoCode = SysMeta.parseError(ERROR_XML_NO_CODE);
+        expect(errNoCode.message).to.equal("Oops");
+        expect(errNoCode.status).to.equal("unknown");
       });
+    });
 
-      it("handles network-level fetch rejections", async () => {
-        state.sandbox
-          .stub(globalThis, "fetch")
-          .rejects(new Error("Network down"));
-
-        const s = new SysMeta({ identifier: "net.1" });
-        const error = await s.fetch().catch((e) => e);
-        s.fetched.should.be.false;
-        s.fetchedWithError.should.be.true;
-        error.message.should.include("Network down");
+    describe("fromXml()", () => {
+      it("returns a SysMeta instance with parsed data", () => {
+        const sysMeta = SysMeta.fromXml(SAMPLE_XML);
+        sysMeta.should.be.instanceof(SysMeta);
+        sysMeta.parsed.should.be.true;
+        sysMeta.data.identifier.should.equal("sample.1");
+        sysMeta.data.checksumAlgorithm.should.equal("SHA-256");
       });
     });
   });

@@ -40,7 +40,6 @@ define([], () => {
     serialVersion: null,
   };
 
-  const DEFAULT_META_SERVICE_URL = MetacatUI.appModel.get("metaServiceUrl");
   // TODO: Add more fields like accessPolicy, replicationPolicy, etc.
   // TODO: Add node order constant for serialization
 
@@ -70,83 +69,12 @@ define([], () => {
     /**
      * Creates an instance of SystemMetadata.
      * @class
-     * @param {object} options - Configuration options for the SystemMetadata instance.
-     * @param {string} options.identifier - The identifier for the DataONE object.
-     * @param {string} [options.metaServiceUrl] - The URL of the metadata service.
+     * @param {object} data SystemMetadata fields and values, if known.
      */
-    constructor({ identifier, metaServiceUrl } = {}) {
-      const defaultUrl = SystemMetadata.DEFAULT_META_SERVICE_URL;
-      let url = metaServiceUrl || defaultUrl;
-      url = typeof url !== "string" ? defaultUrl : url;
-
-      if (!identifier) {
-        throw new Error("identifier is required");
-      }
-
-      this.metaServiceUrl = url.endsWith("/") ? url : `${url}/`;
-
-      // Initialize fields with null/defaults
-      this.data = { ...DEFAULTS, identifier };
-
-      // Initialize state, errors, and version tracking
-      this.fetched = false;
-      this.fetchedWithError = false;
-    }
-
-    /**
-     * Returns the URL for fetching the system metadata.
-     * @returns {string} The URL to fetch the system metadata.
-     */
-    get url() {
-      const id = this.data.identifier;
-      if (!id || typeof id !== "string") {
-        throw new Error("identifier must be a non-empty string");
-      }
-      return `${this.metaServiceUrl}${encodeURIComponent(id)}`;
-    }
-
-    /**
-     * Fetches the system metadata from the configured URL.
-     * @param {string} [token] - Optional authentication token for the request.
-     * @returns {Promise<object|null>} A promise that resolves to the system
-     * metadata object or null if an error occurs.
-     */
-    async fetch(token) {
-      this.parsed = false;
-      this.fetched = false;
-      this.fetchedWithError = false;
-
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const options = { headers, credentials: "include" };
-
-      let response;
-      try {
-        response = await fetch(this.url, options);
-      } catch (networkError) {
-        this.handleFetchError(networkError);
-        return null;
-      }
-
-      const text = await response.text();
-
-      if (!response.ok) {
-        const parsedError = SystemMetadata.parseError(text);
-        this.handleFetchError({
-          status: parsedError?.status ?? response.status,
-          message: parsedError?.message ?? "Failed to fetch system metadata",
-        });
-        return null;
-      }
-
-      try {
-        const parsed = this.parse(text);
-        this.data = { ...DEFAULTS, ...parsed };
-        this.fetched = true;
-        return this.data;
-      } catch (parseError) {
-        this.handleFetchError(parseError);
-        return null;
-      }
+    constructor(data = {}) {
+      // Deep copy defaults so that nested objects/arrays are not shared
+      const defaults = JSON.parse(JSON.stringify(DEFAULTS));
+      this.data = { ...defaults, ...data };
     }
 
     /**
@@ -180,40 +108,23 @@ define([], () => {
     }
 
     /**
-     * Handles errors that occur during the fetch operation.
-     * @param {Error} e - The error object containing error details.
-     */
-    handleFetchError(e) {
-      this.fetched = false;
-      this.parsed = false;
-      this.fetchedWithError = true;
-      let status = e.status ?? e?.response?.status ?? 500;
-      // try to coerce status to a number
-      if (typeof status === "string") {
-        status = parseInt(status, 10);
-      }
-
-      e.status = status;
-      e.identifier = this.data.identifier;
-
-      throw e;
-    }
-
-    /**
      * Parses the XML string into a system metadata object.
      * @param {string} xmlString - The XML string to parse.
      * @returns {object} The parsed system metadata object.
      */
     parse(xmlString) {
       this.parsed = false;
+      this.parseError = false;
       this.fetchedXmlString = xmlString;
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlString, "application/xml");
       // Detect XML parser errors (e.g., when the server returns HTML)
       if (xmlDoc.querySelector("parsererror")) {
+        this.parseError = true;
         throw new Error("Invalid SystemMetadata XML");
       }
-      const sysMeta = {};
+      const defaults = JSON.parse(JSON.stringify(DEFAULTS));
+      const sysMeta = { ...defaults };
 
       const getText = (tag) => {
         const el = xmlDoc.querySelector(tag);
@@ -246,13 +157,19 @@ define([], () => {
         sysMeta.checksumAlgorithm = checksumEl.getAttribute("algorithm");
       }
 
+      this.data = sysMeta;
+
       // TODO: accessPolicy, replicationPolicy, etc.
       this.parsed = true;
       return sysMeta;
     }
   }
 
-  SystemMetadata.DEFAULT_META_SERVICE_URL = DEFAULT_META_SERVICE_URL;
+  SystemMetadata.fromXml = function fromXml(xmlString) {
+    const sysMeta = new SystemMetadata();
+    sysMeta.parse(xmlString);
+    return sysMeta;
+  };
 
   return SystemMetadata;
 });
