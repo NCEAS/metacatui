@@ -20,6 +20,7 @@
     "./js/specs/unit/models/CitationModel.spec.js",
     "./js/specs/unit/models/CrossRefModel.spec.js",
     "./js/specs/unit/collections/ProjectList.spec.js",
+    "./js/specs/unit/collections/AccessPolicy.spec.js",
     "./js/specs/unit/collections/DataPackage.spec.js",
     "./js/specs/unit/models/project/Project.spec.js",
     "./js/specs/unit/models/metadata/eml211/EML211.spec.js",
@@ -82,6 +83,7 @@
     "./js/specs/unit/models/Search.spec.js",
     "./js/specs/unit/models/SolrResult.spec.js",
     "./js/specs/unit/models/DataONEObject.spec.js",
+    "./js/specs/unit/models/AppModel.spec.js",
     "./js/specs/unit/views/maps/MapView.spec.js",
     "./js/specs/unit/views/maps/MapWidgetContainerView.spec.js",
     "./js/specs/unit/views/maps/legend/LayerLegendView.spec.js",
@@ -101,7 +103,9 @@
     "./js/specs/unit/models/ontologies/BioontologyOntology.spec.js",
     "./js/specs/unit/models/accordion/Accordion.spec.js",
     "./js/specs/unit/models/accordion/AccordionItem.spec.js",
+    "./js/specs/unit/views/AccessPolicyView.spec.js",
     "./js/specs/unit/views/DataItemView.spec.js",
+    "./js/specs/unit/views/EditorView.spec.js",
     "./js/specs/unit/views/metadata/EML211EditorView.spec.js"
   ],
   "integration": [
