@@ -9,7 +9,7 @@ define([
   const { getCaseInsensitive } = Utilities;
 
   /**
-   * Header names that affect request deduplication. Defaults for the client.
+   * Header names that affect request deduplication. Defaults.
    * @type {string[]}
    */
   const DEFAULT_HEADER_NAMES_DEDUP = [
@@ -43,6 +43,21 @@ define([
    * @type {string[]}
    */
   const DEFAULT_RESPONSE_TYPES = ["json", "arrayBuffer", "blob", "text"];
+
+  /**
+   * Default options for DataONEHttpClient instances.
+   * @type {DataONEHttpClientOptions}
+   */
+  const DEFAULT_OPTIONS = {
+    baseUrl: "",
+    defaultHeaders: {},
+    timeoutMs: null,
+    retry: {},
+    dedupe: true,
+    allowedHttpMethods: DEFAULT_ALLOWED_HTTP_METHODS,
+    headerNamesForDedup: DEFAULT_HEADER_NAMES_DEDUP,
+    responseTypes: DEFAULT_RESPONSE_TYPES,
+  };
 
   /**
    * Create an AbortError with the provided reason.
@@ -118,7 +133,8 @@ define([
    * @property {string} [baseUrl] Base URL for relative requests, e.g.
    * "https://arcticdata.io/metacat/d1/mn/v2/"
    * @property {object} [defaultHeaders] Headers applied to every request
-   * @property {number|null} [timeoutMs] Default timeout per request (ms)
+   * @property {number|null} [timeoutMs] Default timeout per request (ms). Set
+   * to null for no timeout.
    * @property {object} [retry] Retry configuration, see
    * {@link HttpRetryPolicy}
    * @property {boolean} [dedupe] Enable in-flight deduplication. If
@@ -182,43 +198,163 @@ define([
 
   /**
    * @class DataONEHttpClient
+   * @classcategory  Models/DataONEServices
    * @classdesc Generic HTTP client for DataONE APIs. Handles auth headers,
    * retries with backoff, optional in-flight deduplication, abort support,
    * normalized responses/errors, and timeouts. It does not know about app
    * models or TTLs; it only handles transport concerns.
+   * @since 0.0.0
    */
   class DataONEHttpClient {
     /**
      * @param {DataONEHttpClientOptions} [options] Client configuration
      */
-    constructor({
-      baseUrl = "",
-      defaultHeaders = {},
-      timeoutMs = null,
-      retry = {},
-      dedupe = true,
-      allowedHttpMethods = DEFAULT_ALLOWED_HTTP_METHODS,
-      headerNamesForDedup = DEFAULT_HEADER_NAMES_DEDUP,
-      responseTypes = DEFAULT_RESPONSE_TYPES,
-    } = {}) {
+    constructor(options = {}) {
+      const {
+        baseUrl,
+        defaultHeaders,
+        timeoutMs,
+        retry,
+        dedupe,
+        allowedHttpMethods,
+        headerNamesForDedup,
+        responseTypes,
+      } = this.constructor.normalizeOptions(options);
       this.baseUrl = baseUrl;
-      this.defaultHeaders = { ...defaultHeaders };
+      this.defaultHeaders = defaultHeaders;
       this.timeoutMs = timeoutMs;
       this.retryPolicy = new HttpRetryPolicy(retry);
       this.dedupe = dedupe;
+
       // Map of dedupeKey -> Promise for in-flight requests
       this.inFlight = new Map();
       // For request deduplication, objects that can't be serialized will be
       // assigned unique IDs
       this.bodyIds = new WeakMap();
       this.bodyIdSeq = 0;
-      // Set of allowed HTTP methods and headers which affect deduplication
+
       this.allowedHttpMethods = allowedHttpMethods;
-      this.headerNamesForDedup = headerNamesForDedup.map((h) =>
-        String(h).toLowerCase(),
+      this.headerNamesForDedup = headerNamesForDedup;
+      this.responseTypes = responseTypes;
+    }
+
+    /**
+     * Normalize options for instance keys and default values.
+     * @param {DataONEHttpClientOptions} [options] Client configuration
+     * @returns {object} Normalized options
+     */
+
+    static normalizeOptions(options = {}) {
+      const source =
+        options && typeof options === "object" ? options : DEFAULT_OPTIONS;
+      const copyObject = (value, fallback = {}) =>
+        value && typeof value === "object" ? { ...value } : { ...fallback };
+      const copyArray = (value, fallback = []) =>
+        Array.isArray(value) ? [...value] : [...fallback];
+      const toUpper = (item) => String(item).toUpperCase();
+      const toLower = (item) => String(item).toLowerCase();
+
+      const dedupe =
+        source.dedupe === undefined ? DEFAULT_OPTIONS.dedupe : source.dedupe;
+      if (typeof dedupe !== "boolean") {
+        throw new Error("dedupe must be a boolean");
+      }
+
+      const rawTimeoutMs =
+        source.timeoutMs === undefined
+          ? DEFAULT_OPTIONS.timeoutMs
+          : source.timeoutMs;
+      const timeoutMs = this.normalizeTimeoutMs(rawTimeoutMs);
+
+      return {
+        ...DEFAULT_OPTIONS,
+        ...source,
+        baseUrl: source.baseUrl
+          ? Utilities.normalizeUrl(source.baseUrl)
+          : DEFAULT_OPTIONS.baseUrl,
+        timeoutMs,
+        dedupe,
+        // For arrays and objects, we want to ensure we create new instances so
+        // that they can be safely mutated without affecting the defaults or
+        // other instances that use the same defaults.
+        defaultHeaders: copyObject(
+          source.defaultHeaders,
+          DEFAULT_OPTIONS.defaultHeaders,
+        ),
+        retry: copyObject(source.retry, DEFAULT_OPTIONS.retry),
+        allowedHttpMethods: copyArray(
+          source.allowedHttpMethods,
+          DEFAULT_OPTIONS.allowedHttpMethods,
+        ).map(toUpper),
+        headerNamesForDedup: copyArray(
+          source.headerNamesForDedup,
+          DEFAULT_OPTIONS.headerNamesForDedup,
+        ).map(toLower),
+        responseTypes: copyArray(
+          source.responseTypes,
+          DEFAULT_OPTIONS.responseTypes,
+        ).map(toLower),
+      };
+    }
+
+    /**
+     * Normalize a timeout value to either a valid number or null.
+     * @param {number|null|undefined} timeoutMs Timeout in milliseconds
+     * @returns {number|null} Normalized timeout
+     * @throws {Error} If timeout is not null/undefined and not a non-negative number
+     * @private
+     */
+    static normalizeTimeoutMs(timeoutMs) {
+      if (timeoutMs === null || timeoutMs === undefined) return null;
+      if (!Number.isFinite(timeoutMs) || timeoutMs < 0) {
+        throw new Error("timeoutMs must be a non-negative number or null");
+      }
+      return timeoutMs;
+    }
+
+    /**
+     * Build a unique instance key based on client options.
+     * @param {DataONEHttpClientOptions} [options] Client configuration
+     * @returns {string} Instance key
+     */
+    static buildInstanceKey(options = {}) {
+      const normalizedOptions = this.normalizeOptions(options);
+      const keyFields = [
+        "baseUrl",
+        "timeoutMs",
+        "dedupe",
+        "defaultHeaders",
+        "retry",
+        "allowedHttpMethods",
+        "headerNamesForDedup",
+        "responseTypes",
+      ];
+      const normalizers = {
+        baseUrl: Utilities.normalizeUrl,
+        defaultHeaders: Utilities.stableStringify,
+        retry: Utilities.stableStringify,
+        allowedHttpMethods: Utilities.stableStringify,
+        headerNamesForDedup: Utilities.stableStringify,
+        responseTypes: Utilities.stableStringify,
+      };
+      return Utilities.buildInstanceKey(
+        normalizedOptions,
+        keyFields,
+        normalizers,
       );
-      // Supported response types
-      this.responseTypes = responseTypes.map((rt) => String(rt).toLowerCase());
+    }
+
+    /**
+     * Get a singleton DataONEHttpClient instance for the provided options.
+     * @param {DataONEHttpClientOptions} [options] Client configuration
+     * @returns {DataONEHttpClient} Client instance
+     */
+    static get(options = {}) {
+      return Utilities.getSingleton(
+        this,
+        options,
+        this.buildInstanceKey.bind(this),
+      );
     }
 
     /**
@@ -238,8 +374,8 @@ define([
         body,
         token = null,
         signal,
-        timeoutMs,
-        retry = {},
+        timeoutMs: requestTimeoutMs,
+        retry: retryOverrides = {},
       } = options;
 
       if (typeof path !== "string") {
@@ -250,17 +386,26 @@ define([
       const normalizedResponseType = this.normalizeResponseType(responseType);
       const url = buildUrl(this.baseUrl, path, encodePath);
 
-      const mergedHeaders = {
-        ...this.defaultHeaders,
-        ...(headers || {}),
-      };
+      const mergedHeaders = this.constructor.mergeHeaders(
+        this.defaultHeaders,
+        headers,
+      );
 
       if (token && !getCaseInsensitive(mergedHeaders, "Authorization")) {
         mergedHeaders.Authorization = `Bearer ${token}`;
       }
 
-      const effectiveTimeout =
-        timeoutMs !== undefined ? timeoutMs : this.timeoutMs;
+      const hasRequestTimeoutOverride =
+        requestTimeoutMs !== undefined && requestTimeoutMs !== null;
+      const timeoutSource = hasRequestTimeoutOverride
+        ? requestTimeoutMs
+        : this.timeoutMs;
+      const normalizedTimeoutMs =
+        this.constructor.normalizeTimeoutMs(timeoutSource);
+      const retry =
+        retryOverrides && typeof retryOverrides === "object"
+          ? retryOverrides
+          : {};
       const retryPolicy = this.retryPolicy.withOverrides(retry);
 
       return {
@@ -271,7 +416,7 @@ define([
         body,
         token,
         signal,
-        timeoutMs: effectiveTimeout,
+        timeoutMs: normalizedTimeoutMs,
         retry,
         retryPolicy,
       };
@@ -284,13 +429,48 @@ define([
      * @private
      */
     normalizeResponseType(responseType) {
-      if (this.responseTypes.includes(responseType.toLowerCase()))
-        return responseType.toLowerCase();
+      if (typeof responseType !== "string") {
+        throw new Error("responseType must be a string");
+      }
+      const normalizedResponseType = responseType.toLowerCase();
+      if (this.responseTypes.includes(normalizedResponseType))
+        return normalizedResponseType;
       // Otherwise throw an error
       throw new Error(
         `Invalid responseType: ${responseType}. ` +
           `Allowed types: ${this.responseTypes.join(", ")}`,
       );
+    }
+
+    /**
+     * Merge two header objects case-insensitively. Headers in requestHeaders
+     * override defaults regardless of key casing.
+     * @param {object} defaultHeaders Default headers
+     * @param {object} requestHeaders Request-specific headers
+     * @returns {object} Merged headers object
+     * @private
+     */
+    static mergeHeaders(defaultHeaders = {}, requestHeaders = {}) {
+      const merged = {};
+      const keyByLower = Object.create(null);
+
+      const addHeaders = (headers) => {
+        if (!headers || typeof headers !== "object") return;
+        Object.entries(headers).forEach(([key, value]) => {
+          const normalizedKey = String(key).toLowerCase();
+          const existingKey = keyByLower[normalizedKey];
+          if (existingKey && existingKey !== key) {
+            delete merged[existingKey];
+          }
+          keyByLower[normalizedKey] = key;
+          merged[key] = value;
+        });
+      };
+
+      addHeaders(defaultHeaders);
+      addHeaders(requestHeaders);
+
+      return merged;
     }
 
     /**
@@ -562,7 +742,7 @@ define([
         timeoutMs === null || timeoutMs === undefined
           ? "none"
           : String(timeoutMs);
-      const retryKey = this.normalizeBodyForKey(retry);
+      const retryKey = Utilities.stableStringify(retry);
       const signalKey = signal ? this.getBodyId(signal) : "none";
 
       const keyParts = [
@@ -613,7 +793,9 @@ define([
 
     /**
      * Convert a body sent with a request into a string suitable for generating
-     * a deduplication key.
+     * a deduplication key. It will be assigned an ID if it's a non-serializable
+     * type. If the same object is used in multiple requests, it will have the
+     * same ID.
      * @param {*} body Request body
      * @returns {string} Normalized body representation
      * @private
@@ -632,27 +814,31 @@ define([
         return `fd:${this.getBodyId(body)}`;
       }
 
+      let prefix = "";
+
       if (body instanceof Blob || body instanceof File) {
         const type = body.type || "unknown";
         const size = typeof body.size === "number" ? body.size : 0;
-        return `blob:${type}:${size}:${this.getBodyId(body)}`;
+        prefix = `blob:${type}:${size}`;
       }
 
       // Binary views / buffers: avoid hashing bytes
-      if (body instanceof ArrayBuffer) {
-        return `bin:${body.byteLength}:${this.getBodyId(body)}`;
-      }
-
-      if (ArrayBuffer?.isView?.(body)) {
+      if (ArrayBuffer?.isView?.(body) || body instanceof ArrayBuffer) {
         const byteLength =
           typeof body.byteLength === "number" ? body.byteLength : 0;
-        return `bin:${byteLength}:${this.getBodyId(body)}`;
+        prefix = `bin:${byteLength}`;
       }
 
-      // Try to JSON serialize other body types. May fail for circular refs. May
-      // not produce stable results for objects with different key orders.
+      if (prefix) {
+        return `${prefix}:${this.getBodyId(body)}`;
+      }
+
+      // Try to JSON serialize other body types with stable key ordering.
       try {
-        const json = JSON.stringify(body);
+        const json = Utilities.stableStringify(body, {
+          ignoreCase: false,
+          orderMatters: true,
+        });
         return `json:${md5(json)}`;
       } catch (e) {
         return `obj:${this.getBodyId(body)}`;
@@ -688,7 +874,7 @@ define([
         if (Array.isArray(value)) value = value.join(",");
         else if (typeof value === "object") {
           try {
-            value = JSON.stringify(value);
+            value = Utilities.stableStringify(value);
           } catch (e) {
             value = this.getBodyId(value);
           }
@@ -707,7 +893,9 @@ define([
   DataONEHttpClient.DEFAULT_HEADER_NAMES_DEDUP = DEFAULT_HEADER_NAMES_DEDUP;
   DataONEHttpClient.ALLOWED_HTTP_METHODS = DEFAULT_ALLOWED_HTTP_METHODS;
   DataONEHttpClient.RESPONSE_TYPES = DEFAULT_RESPONSE_TYPES;
+  DataONEHttpClient.DEFAULT_OPTIONS = DEFAULT_OPTIONS;
   DataONEHttpClient.Error = DataONEHttpError;
+  DataONEHttpClient.instances = new Map();
 
   return DataONEHttpClient;
 });
