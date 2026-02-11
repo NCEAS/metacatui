@@ -37,8 +37,12 @@ define([
         const service = new SysMetaService({
           baseUrl: "https://example.org/sysmeta",
         });
-        service.storageConfig.endpoint.should.equal("sysmeta");
-        service.storageConfig.name.should.equal("MetacatUI_SysMetaService");
+        service.storageConfig.ttlMs.should.equal(60 * 60 * 1000);
+        service.storageConfig.schemaVersion.should.equal(1);
+        service.storageConfig.instanceKeys.should.include("SysMetaService");
+        service.storageConfig.instanceKeys.should.include(
+          "https://example.org/sysmeta",
+        );
         service.client.allowedHttpMethods.should.include("POST");
         service.client.responseTypes.should.include("text");
       });
@@ -46,10 +50,19 @@ define([
       it("merges storage overrides", () => {
         const service = new SysMetaService({
           baseUrl: "https://example.org/sysmeta",
-          storageConfig: { ttlMs: 5000, endpoint: "custom" },
+          storageConfig: {
+            ttlMs: 5000,
+            schemaVersion: 2,
+            instanceKeys: ["custom"],
+          },
         });
         service.storageConfig.ttlMs.should.equal(5000);
-        service.storageConfig.endpoint.should.equal("custom");
+        service.storageConfig.schemaVersion.should.equal(2);
+        service.storageConfig.instanceKeys.should.include("custom");
+        service.storageConfig.instanceKeys.should.include("SysMetaService");
+        service.storageConfig.instanceKeys.should.include(
+          "https://example.org/sysmeta",
+        );
       });
     });
 
@@ -69,6 +82,23 @@ define([
 
         result.should.be.instanceof(SysMeta);
         result.data.identifier.should.equal("sample.1");
+      });
+
+      it("sets seriesId when returned identifier differs from requested PID", async () => {
+        state.sandbox
+          .stub(globalThis, "fetch")
+          .resolves(makeResponse(SAMPLE_XML));
+
+        const service = new SysMetaService({
+          baseUrl: "https://example.org/sysmeta",
+        });
+        const result = await service.download("series.1", {
+          auth: false,
+          useCache: false,
+        });
+
+        result.data.identifier.should.equal("sample.1");
+        result.seriesId.should.equal("series.1");
       });
 
       it("returns cached XML when available", async () => {
@@ -131,6 +161,30 @@ define([
 
         fetchStub.calledOnce.should.be.true;
       });
+
+      it("invalidates cache and rejects when XML parsing fails", async () => {
+        const service = new SysMetaService({
+          baseUrl: "https://example.org/sysmeta",
+        });
+        state.sandbox.stub(service, "getCached").resolves(null);
+        state.sandbox.stub(service, "request").resolves({ data: "<not-xml>" });
+        state.sandbox.stub(service, "setCached").resolves("<not-xml>");
+        const removeCachedStub = state.sandbox
+          .stub(service, "removeCached")
+          .resolves();
+        state.sandbox.stub(SysMeta, "fromXml").throws(new Error("Bad XML"));
+
+        try {
+          await service.download("pid.bad", { auth: false, cacheKey: "k.bad" });
+          should.fail("Expected SysMetaService.download to reject on parse failure");
+        } catch (err) {
+          err.message.should.match(
+            /Failed to parse SysMeta XML for PID pid\.bad: Bad XML/,
+          );
+        }
+
+        removeCachedStub.calledOnceWith("k.bad").should.be.true;
+      });
     });
 
     describe("invalidate", () => {
@@ -142,8 +196,8 @@ define([
           .stub(service, "removeCached")
           .resolves();
 
-        await service.invalidate("pid.1", { token: "tok" });
-        removeStub.calledOnceWith("pid.1", { token: "tok" }).should.be.true;
+        await service.invalidate("pid.1");
+        removeStub.calledOnceWith("pid.1").should.be.true;
       });
 
       it("no-ops without a PID", async () => {
@@ -169,14 +223,13 @@ define([
           .resolves({ data: "ok" });
         const xml = "<systemMetadata></systemMetadata>";
 
-        await service.upload(xml, { token: "tok" });
+        await service.upload(xml, { auth: false });
 
         const opts = reqStub.firstCall.args[0];
         opts.method.should.equal("POST");
         opts.path.should.equal("");
         opts.headers["Content-Type"].should.equal("application/xml");
         opts.body.should.equal(xml);
-        opts.token.should.equal("tok");
       });
     });
   });
