@@ -1,10 +1,8 @@
-define(["localforage"], (localforage) => {
+define(["localforage", "common/Utilities"], (localforage, Utilities) => {
   // Default TTL: 1 hour
-  const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
+  const DEFAULT_TTL_MS = 60 * 60 * 1000;
   // Change this when making breaking schema changes
   const DEFAULT_SCHEMA_VERSION = 1;
-  // Default localforage DB name
-  const DEFAULT_NAME = "MetacatUI_Persistent";
   // The default memory cache setting
   const DEFAULT_MEMORY_ENABLED = true;
   // Convert a string to alphanumeric + underscores (localforage requirement)
@@ -13,14 +11,19 @@ define(["localforage"], (localforage) => {
   /**
    * Options for PersistentStorage
    * @typedef {object} PersistentStorageOptions
-   * @property {string} namespace Logical namespace for the store
-   * @property {number|null} [ttlMs] Default TTL in milliseconds. Null
-   * disables expiration. Defaults to 24h.
+   * @property {number|null} [ttlMs] Default TTL in milliseconds. Null, 0, or
+   * other falsey value disables automatic TTL-based record expiration. Defaults
+   * to 1 hour.
    * @property {number} [schemaVersion] Schema version for the store
-   * @property {string} [name] localforage DB name
    * @property {boolean} [memory] Enable in-memory cache layer
+   * @property {string[]} [instanceKeys] A list of strings to include in the
+   * namespace for the store and the key/is for this instance. Use this to
+   * ensure the store is unique to your the case (e.g., baseUrl, authorization,
+   * endpoint, etc). Other options like ttlMs, schemaVersion, etc. are
+   * automatically included in the instance key and store namespace.
    * @property {object} [localforageConfig] Extra config passed to
-   * localforage.createInstance
+   * localforage.createInstance. If a name or storeName is provided here, it
+   * will override the generated instance key.
    */
 
   /**
@@ -36,42 +39,77 @@ define(["localforage"], (localforage) => {
     /**
      * @param {PersistentStorageOptions} options Options for the store
      */
-    constructor({
-      namespace,
-      ttlMs = DEFAULT_TTL_MS,
-      schemaVersion = DEFAULT_SCHEMA_VERSION,
-      name = DEFAULT_NAME,
-      memory = DEFAULT_MEMORY_ENABLED,
-      localforageConfig = {},
-    } = {}) {
-      if (typeof namespace !== "string" || !namespace.length) {
-        throw new Error("A namespace is required for PersistentStorage");
-      }
+    constructor(options) {
+      const { ttlMs, schemaVersion, memory, localforageConfig } =
+        this.constructor.normalizeOptions(options);
 
-      this.namespace = namespace;
-      this.ttlMs = typeof ttlMs === "number" && ttlMs > 0 ? ttlMs : null;
       this.schemaVersion = schemaVersion;
-      this.memoryEnabled = !!memory;
+      this.memoryEnabled = memory;
       this.memoryCache = this.memoryEnabled ? new Map() : null;
       this.locks = new Map();
+      this.ttlMs = ttlMs;
+
+      // Use the same instanceKey that we generate for the singleton map
+      // for the local forage store name and DB name.
+      const instanceKey = this.constructor.buildInstanceKey(options);
+      this.instanceKey = instanceKey;
 
       this.lf = localforage.createInstance({
-        name,
-        storeName: this.constructor.createStoreName(namespace, schemaVersion),
-        version: this.schemaVersion,
+        // Unless overwritten by localforageConfig, create one object store per
+        // database instance for simplicity (name === storeName)
+        name: instanceKey,
+        storeName: instanceKey,
+        version: schemaVersion,
         ...localforageConfig,
       });
     }
 
     /**
-     * Create a valid store name for localforage based on namespace + schema.
-     * @param {string} namespace Logical namespace
-     * @param {number} [schemaVersion] Schema version
-     * @returns {string} Store name
+     * Normalize the options for creating a PersistentStorage instance.
+     * @param {PersistentStorageOptions} options Options passed to the
+     * constructor for this instance
+     * @returns {object} Options with defaults applied and values standardized
      */
-    static createStoreName(namespace, schemaVersion = DEFAULT_SCHEMA_VERSION) {
-      const safeNamespace = toAlphanumUnderscore(namespace);
-      return `${safeNamespace}_v${schemaVersion}`;
+    static normalizeOptions(options = {}) {
+      const {
+        instanceKeys = ["default"],
+        ttlMs = DEFAULT_TTL_MS,
+        schemaVersion = DEFAULT_SCHEMA_VERSION,
+        memory = DEFAULT_MEMORY_ENABLED,
+        localforageConfig = {},
+      } = options;
+
+      // Use a falsey value to disable TTL
+      let ttlMsNormalized = DEFAULT_TTL_MS;
+      if (!ttlMs) {
+        ttlMsNormalized = null;
+      } else if (typeof ttlMs !== "number" || ttlMs < 0) {
+        throw new Error(
+          "ttlMs must be a non-negative number or null/0 to disable",
+        );
+      } else {
+        ttlMsNormalized = ttlMs;
+      }
+
+      const memoryEnabled = !!memory;
+
+      let instanceKeySuffix = "";
+      if (instanceKeys && instanceKeys.length > 0) {
+        const suffixParts = instanceKeys.reduce((acc, part) => {
+          const sanitized = this.sanitizeNamespacePart(part);
+          if (sanitized.length > 0) acc.push(sanitized);
+          return acc;
+        }, []);
+        instanceKeySuffix = suffixParts.join("|");
+      }
+
+      return {
+        ttlMs: ttlMsNormalized,
+        schemaVersion,
+        memory: memoryEnabled,
+        localforageConfig,
+        instanceKeySuffix,
+      };
     }
 
     /**
@@ -85,127 +123,49 @@ define(["localforage"], (localforage) => {
       // Just remove http(s):// and www. for URLs
       const urlPattern = /^(https?:\/\/)?(www\.)?/i;
       strPart = strPart.replace(urlPattern, "");
+      // Remove any trailing slashes, incase it's a URL
+      strPart = strPart.replace(/\/+$/i, "");
+      // Make the case the same for all
+      strPart = strPart.toLowerCase();
       // localForage: "Must be alphanumeric, with underscores."
       return toAlphanumUnderscore(strPart);
     }
 
     /**
-     * Build a consistent namespace string for a given service/context.
-     * Suggested convention: <app>__<domain>__<endpoint>__<scope>__[baseUrl]
-     * @param {object} options Options for building the namespace
-     * @param {string} [options.app] Application/product identifier
-     * @param {string} options.domain Logical domain (e.g. "dataone",
-     * "bioportal")
-     * @param {string} options.endpoint Logical endpoint name (e.g. "sysmeta")
-     * @param {string} [options.scope] Authorization scope (e.g. "public",
-     * "auth:<hash>")
-     * @param {string} [options.baseUrl] Base URL for the upstream service
-     * @returns {string} Namespace string
+     * Build a unique namespace string for the PersistentStorage instance based
+     * on the options provided to the constructor. This is used to create
+     * singleton instances of PersistentStorage, so that different parts of the
+     * app can share the same store if they use the same options.
+     * @param {object} options Options for the PersistentStorage instance
+     * @returns {string} The namespace string
      */
-    static buildNamespace({
-      app = "metacatui",
-      domain,
-      endpoint,
-      scope = "public",
-      baseUrl = "",
-    } = {}) {
-      if (!domain)
-        throw new Error("PersistentStorage.buildNamespace: domain is required");
-      if (!endpoint)
-        throw new Error(
-          "PersistentStorage.buildNamespace: endpoint is required",
-        );
-
-      const parts = [
-        this.sanitizeNamespacePart(app),
-        this.sanitizeNamespacePart(domain),
-        this.sanitizeNamespacePart(endpoint),
-        this.sanitizeNamespacePart(scope || "public"),
-        this.sanitizeNamespacePart(baseUrl),
+    static buildInstanceKey(options) {
+      const normalizedOptions = PersistentStorage.normalizeOptions(options);
+      const keyFields = [
+        "ttlMs",
+        "schemaVersion",
+        "memory",
+        "instanceKeySuffix",
+        "localforageConfig",
       ];
-
-      // '__' separator for readability
-      return parts.filter(Boolean).join("__");
+      const normalizers = {
+        localforageConfig: Utilities.stableStringify,
+      };
+      return Utilities.buildInstanceKey(
+        normalizedOptions,
+        keyFields,
+        normalizers,
+      );
     }
 
     /**
      * Get a singleton PersistentStorage instance for the provided namespace and
-     * schema version. Important: the singleton key is name + storeName
-     * (namespace + schemaVersion). If you call `get()` again with the same key
-     * but different config (ttlMs, memory, localforageConfig), the function
-     * throws to avoid silently reusing a store with unexpected behavior.
+     * schema version.
      * @param {object} options Options for the PersistentStorage instance
-     * @param {object} [options.namespaceOptions] Options passed to
-     * buildNamespace()
      * @returns {PersistentStorage} The PersistentStorage instance
      */
     static get(options = {}) {
-      const {
-        namespace: explicitNamespace,
-        namespaceOptions,
-        schemaVersion = DEFAULT_SCHEMA_VERSION,
-        name = DEFAULT_NAME,
-      } = options;
-
-      const normalizedOptions = { ...options };
-
-      const namespace =
-        explicitNamespace ??
-        (namespaceOptions ? this.buildNamespace(namespaceOptions) : null);
-
-      if (!namespace) {
-        throw new Error(
-          "PersistentStorage.get: namespace or namespaceOptions is required",
-        );
-      }
-
-      normalizedOptions.namespace = namespace;
-      normalizedOptions.schemaVersion = schemaVersion;
-
-      if (!this.instances) this.instances = new Map();
-
-      const storeName = this.createStoreName(namespace, schemaVersion);
-      const key = `${name}__${storeName}`;
-
-      if (!this.instances.has(key)) {
-        this.instances.set(key, new PersistentStorage(normalizedOptions));
-        return this.instances.get(key);
-      }
-
-      const instance = this.instances.get(key);
-
-      // Guard against subtle bugs where callers assume `get()` will honor new
-      // options. If you want a different config, use a different namespace
-      // and/or schemaVersion.
-      const requestedTtlMs =
-        typeof normalizedOptions.ttlMs === "number" &&
-        normalizedOptions.ttlMs > 0
-          ? normalizedOptions.ttlMs
-          : DEFAULT_TTL_MS;
-      const requestedMemoryEnabled =
-        normalizedOptions.memory !== undefined
-          ? !!normalizedOptions.memory
-          : DEFAULT_MEMORY_ENABLED;
-
-      if (requestedTtlMs !== instance.ttlMs) {
-        throw new Error(
-          `PersistentStorage.get: Conflicting ttlMs for "${key}". ` +
-            `Existing instance ttlMs=${instance.ttlMs}, requested ttlMs=${requestedTtlMs}. ` +
-            `Use a different namespace or schemaVersion if you need different TTL behavior.`,
-        );
-      }
-
-      if (requestedMemoryEnabled !== instance.memoryEnabled) {
-        throw new Error(
-          `PersistentStorage.get: Conflicting memory setting for "${key}". ` +
-            `Existing instance memory=${instance.memoryEnabled}, requested memory=${requestedMemoryEnabled}. ` +
-            `Use a different namespace or schemaVersion if you need different memory behavior.`,
-        );
-      }
-
-      // Don't deep compare localforageConfig since it be
-      // complex/non-serializable.
-      return instance;
+      return Utilities.getSingleton(this, options, this.buildInstanceKey);
     }
 
     /**
@@ -228,21 +188,35 @@ define(["localforage"], (localforage) => {
     }
 
     /**
-     * Determine if a record is expired.
+     * Determine if a record is expired. (Instance method version that calls the
+     * static method for convenience.)
      * @param {object} record The record to check
      * @returns {boolean} True if expired
      */
     isExpired(record) {
-      const ttl = typeof record?.ttlMs === "number" ? record.ttlMs : this.ttlMs;
-      if (!ttl) return false;
-      if (typeof record?.updatedAt !== "number") return false;
-      return Date.now() - record.updatedAt > ttl;
+      return this.constructor.isExpired(record);
+    }
+
+    /**
+     * Determine if a record is expired.
+     * @param {object} record The record to check
+     * @returns {boolean} True if expired
+     */
+    static isExpired(record) {
+      const { expiresAt } = record || {};
+      // If no expiration time is set, it never expires
+      if (expiresAt === null || expiresAt === undefined) return false;
+      if (!Number.isFinite(expiresAt) || expiresAt <= 0) {
+        // Invalid expiresAt value, treat as expired to be safe
+        return true;
+      }
+      return Date.now() > expiresAt;
     }
 
     /**
      * Normalize a raw stored value to a record with metadata.
      * @param {*} raw The raw stored value
-     * @returns {{value: *, updatedAt: number, ttlMs: number|null}} The record
+     * @returns {{value: *, expiresAt: number|null}} The record
      * @private
      */
     static decodeRecord(raw) {
@@ -251,27 +225,32 @@ define(["localforage"], (localforage) => {
         typeof raw === "object" &&
         Object.prototype.hasOwnProperty.call(raw, "value")
       ) {
+        if (typeof raw.expiresAt === "number") {
+          return {
+            value: raw.value,
+            expiresAt: raw.expiresAt,
+          };
+        }
         return {
           value: raw.value,
-          updatedAt: raw.updatedAt ?? 0,
-          ttlMs: raw.ttlMs ?? null,
+          expiresAt: null,
         };
       }
-      return { value: raw, updatedAt: 0, ttlMs: null };
+      return { value: raw, expiresAt: null };
     }
 
     /**
      * Build the record envelope to persist.
      * @param {*} value The value to store
      * @param {number|null|undefined} ttlMs TTL in milliseconds
-     * @returns {{value: *, updatedAt: number, ttlMs: number|null}} The record
+     * @returns {{value: *, expiresAt: number|null}} The record
      * @private
      */
     static encodeRecord(value, ttlMs) {
       return {
         value,
-        updatedAt: Date.now(),
-        ttlMs: typeof ttlMs === "number" && ttlMs > 0 ? ttlMs : null,
+        expiresAt:
+          typeof ttlMs === "number" && ttlMs > 0 ? Date.now() + ttlMs : null,
       };
     }
 
@@ -297,8 +276,8 @@ define(["localforage"], (localforage) => {
      */
     async withLock(key, fn, onPreviousError = null) {
       const { locks } = this;
-
-      const previous = locks.get(key) || Promise.resolve();
+      const existingJob = locks.get(key);
+      const previous = existingJob || Promise.resolve();
 
       const job = previous
         .catch((err) => {
@@ -311,7 +290,8 @@ define(["localforage"], (localforage) => {
       locks.set(key, job);
 
       try {
-        return await job;
+        const result = await job;
+        return result;
       } finally {
         // Clean up the lock if it's still pointing to this job
         if (locks.get(key) === job) {
@@ -334,17 +314,20 @@ define(["localforage"], (localforage) => {
         this.memoryCache.delete(key);
       }
 
-      const raw = await this.lf.getItem(key);
-      if (raw === null || raw === undefined) return null;
+      return this.withLock(key, async () => {
+        const raw = await this.lf.getItem(key);
+        if (raw === null || raw === undefined) return null;
 
-      const record = this.constructor.decodeRecord(raw);
-      if (this.isExpired(record)) {
-        await this.removeItem(key);
-        return null;
-      }
+        const record = this.constructor.decodeRecord(raw);
+        if (this.isExpired(record)) {
+          if (this.memoryEnabled) this.memoryCache.delete(key);
+          await this.lf.removeItem(key);
+          return null;
+        }
 
-      if (this.memoryEnabled) this.memoryCache.set(key, record);
-      return record;
+        if (this.memoryEnabled) this.memoryCache.set(key, record);
+        return record;
+      });
     }
 
     /**
@@ -366,15 +349,19 @@ define(["localforage"], (localforage) => {
      * expiration.
      * @returns {Promise<*>} The saved value
      */
-    async setItem(key, value, { ttlMs } = {}) {
+    async setItem(key, value, options = {}) {
       if (!key) throw new Error("A key is required");
-      const record = this.constructor.encodeRecord(value, ttlMs);
+      const normalizedOptions =
+        options && typeof options === "object" ? options : {};
+      const { ttlMs } = normalizedOptions;
+      const effectiveTtlMs = ttlMs === undefined ? this.ttlMs : ttlMs;
+      const record = this.constructor.encodeRecord(value, effectiveTtlMs);
       await this.withLock(key, async () => {
         try {
           await this.lf.setItem(key, record);
         } catch (e) {
           if (this.constructor.isQuotaError(e)) {
-            await this.clear();
+            await this.clear({ awaitLocks: false });
             await this.lf.setItem(key, record);
           } else {
             throw e;
@@ -394,23 +381,27 @@ define(["localforage"], (localforage) => {
       if (!key) return;
       if (this.memoryEnabled) this.memoryCache.delete(key);
       await this.withLock(key, async () => {
-        try {
-          await this.lf.removeItem(key);
-        } catch (e) {
-          // Failing to remove an item is not a critical error.
-          // eslint-disable-next-line no-console
-          console.error(`PersistentStorage: Failed to remove key "${key}":`, e);
-        }
+        await this.lf.removeItem(key);
       });
     }
 
     /**
      * Clear the entire store.
+     * @param {object} [options] Optional settings
+     * @param {boolean} [options.awaitLocks] Wait for in-flight lock operations
+     * before clearing. Defaults to true.
      * @returns {Promise<void>}
      */
-    async clear() {
+    async clear({ awaitLocks = true } = {}) {
+      if (awaitLocks && this.locks.size > 0) {
+        await Promise.allSettled(Array.from(this.locks.values()));
+      }
       if (this.memoryEnabled) this.memoryCache.clear();
-      this.locks.clear();
+      // Preserve in-flight lock tracking when awaitLocks is false so new jobs
+      // for the same key continue to serialize behind active jobs.
+      if (awaitLocks) {
+        this.locks.clear();
+      }
       await this.lf.clear();
     }
 
@@ -431,14 +422,14 @@ define(["localforage"], (localforage) => {
     }
 
     /**
-     * Check if a key exists and is not expired.
+     * Check if a record exists and is not expired for a given key. It will
+     * return true for non-expired records even when the value is falsey
      * @param {string} key The storage key
-     * @returns {Promise<boolean>} True if the key exists and is valid
+     * @returns {Promise<boolean>} True if the record exists
      */
-    async hasKey(key) {
-      return this.getItem(key).then(
-        (value) => value !== null && value !== undefined,
-      );
+    async hasRecord(key) {
+      const record = await this.getRecord(key);
+      return !!record;
     }
 
     /**
@@ -460,6 +451,11 @@ define(["localforage"], (localforage) => {
 
   // Map of singleton PersistentStorage instances
   PersistentStorage.instances = new Map();
+
+  // Add the defaults for reference
+  PersistentStorage.DEFAULT_TTL_MS = DEFAULT_TTL_MS;
+  PersistentStorage.DEFAULT_SCHEMA_VERSION = DEFAULT_SCHEMA_VERSION;
+  PersistentStorage.DEFAULT_MEMORY_ENABLED = DEFAULT_MEMORY_ENABLED;
 
   return PersistentStorage;
 });
