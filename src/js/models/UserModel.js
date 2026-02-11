@@ -616,7 +616,7 @@ define([
        * @returns {Promise<string>} A promise that resolves with the token or
        * rejects with an error message.
        */
-      getTokenPromise(timeout = 5000) {
+      getTokenPromise(timeout = 7500) {
         const model = this;
         return new Promise((resolve, reject) => {
           const listenModel = new Backbone.Model();

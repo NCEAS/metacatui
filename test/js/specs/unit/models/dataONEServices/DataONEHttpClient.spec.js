@@ -58,6 +58,81 @@ define([
 
     afterEach(() => {
       state.sandbox.restore();
+      DataONEHttpClient.instances = new Map();
+    });
+
+    describe("singleton helpers", () => {
+      it("normalizes baseUrl when building instance keys", () => {
+        const a = DataONEHttpClient.buildInstanceKey({
+          baseUrl: "https://example.org/",
+        });
+        const b = DataONEHttpClient.buildInstanceKey({
+          baseUrl: "https://example.org",
+        });
+        a.should.equal(b);
+      });
+
+      it("throws when dedupe is not a boolean", () => {
+        expect(() =>
+          DataONEHttpClient.buildInstanceKey({
+            baseUrl: "https://example.org",
+            dedupe: "yes",
+          }),
+        ).to.throw(/dedupe must be a boolean/i);
+      });
+
+      it("throws when timeoutMs is invalid in client options", () => {
+        expect(() =>
+          DataONEHttpClient.buildInstanceKey({
+            baseUrl: "https://example.org",
+            timeoutMs: -1,
+          }),
+        ).to.throw(/non-negative number or null/i);
+      });
+
+      it("includes retry randomFn in instance keys", () => {
+        const a = DataONEHttpClient.buildInstanceKey({
+          baseUrl: "https://example.org",
+          retry: { randomFn: () => 0.1 },
+        });
+        const b = DataONEHttpClient.buildInstanceKey({
+          baseUrl: "https://example.org",
+          retry: { randomFn: () => 0.9 },
+        });
+        a.should.not.equal(b);
+      });
+
+      it("preserves retry randomFn in normalized request retry policy", () => {
+        const randomFn = () => 1;
+        const client = new DataONEHttpClient({
+          baseUrl: "https://example.org",
+          retry: {
+            baseDelayMs: 100,
+            maxDelayMs: 1000,
+            randomFn,
+          },
+        });
+        const { retryPolicy } = client.normalizeRequestOptions({
+          path: "/object/1",
+        });
+
+        retryPolicy.randomFn.should.equal(randomFn);
+        retryPolicy.computeDelay({ attempt: 1 }).should.equal(120);
+      });
+
+      it("returns singletons per instance key", () => {
+        DataONEHttpClient.instances = new Map();
+        const a = DataONEHttpClient.get({ baseUrl: "https://example.org" });
+        const b = DataONEHttpClient.get({ baseUrl: "https://example.org/" });
+        const c = DataONEHttpClient.get({
+          baseUrl: "https://example.org",
+          dedupe: false,
+        });
+
+        a.should.equal(b);
+        a.should.not.equal(c);
+        DataONEHttpClient.instances.size.should.equal(2);
+      });
     });
 
     describe("request options", () => {
@@ -103,6 +178,30 @@ define([
         opts.headers.Authorization.should.equal("Bearer abc123");
       });
 
+      it("overrides default headers case-insensitively", async () => {
+        const client = new DataONEHttpClient({
+          baseUrl: "https://example.org",
+          defaultHeaders: {
+            authorization: "Bearer default",
+            Accept: "application/json",
+          },
+        });
+        const fetchStub = state.sandbox
+          .stub(window, "fetch")
+          .resolves(buildResponse("ok"));
+
+        await client.request({
+          path: "/object/4",
+          headers: { Authorization: "Bearer request" },
+        });
+
+        fetchStub.calledOnce.should.be.true;
+        const [, opts] = fetchStub.firstCall.args;
+        opts.headers.Authorization.should.equal("Bearer request");
+        should.not.exist(opts.headers.authorization);
+        opts.headers.Accept.should.equal("application/json");
+      });
+
       it("does not inject tokens when Authorization is already set", async () => {
         const fetchStub = state.sandbox
           .stub(window, "fetch")
@@ -134,6 +233,34 @@ define([
         const [, opts] = fetchStub.firstCall.args;
         opts.method.should.equal("POST");
         expect(res.data).to.deep.equal({ ok: true });
+      });
+
+      it("uses client timeout unless a request timeout override is set", () => {
+        const client = new DataONEHttpClient({
+          baseUrl: "https://example.org",
+          timeoutMs: 25,
+        });
+
+        client.normalizeRequestOptions({ path: "/object/1" }).timeoutMs.should
+          .equal(25);
+        client.normalizeRequestOptions({ path: "/object/1", timeoutMs: null })
+          .timeoutMs.should.equal(25);
+        client.normalizeRequestOptions({ path: "/object/1", timeoutMs: 0 })
+          .timeoutMs.should.equal(0);
+      });
+
+      it("treats non-object retry overrides as empty", () => {
+        const client = new DataONEHttpClient({
+          baseUrl: "https://example.org",
+          retry: { maxRetries: 3 },
+        });
+        const normalized = client.normalizeRequestOptions({
+          path: "/object/1",
+          retry: "bad",
+        });
+
+        expect(normalized.retry).to.deep.equal({});
+        normalized.retryPolicy.maxRetries.should.equal(3);
       });
 
       it("throws when path is missing", async () => {
@@ -187,6 +314,36 @@ define([
         expect(caught.message).to.match(/Invalid responseType/i);
       });
 
+      it("throws when responseType is not a string", async () => {
+        let caught;
+        try {
+          await state.client.request({
+            path: "/object/1",
+            responseType: 42,
+          });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/responseType must be a string/i);
+      });
+
+      it("throws when request timeoutMs is invalid", async () => {
+        let caught;
+        try {
+          await state.client.request({
+            path: "/object/1",
+            timeoutMs: -1,
+          });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/non-negative number or null/i);
+      });
+
       it("throws when encodePath is true and path contains a query string", async () => {
         let caught;
         try {
@@ -207,7 +364,11 @@ define([
           .stub(window, "fetch")
           .resolves(buildResponse("ok"));
         const path = "/object/1?format=json";
-        const expected = UrlBuilder.buildUrl("https://example.org", path, false);
+        const expected = UrlBuilder.buildUrl(
+          "https://example.org",
+          path,
+          false,
+        );
 
         await state.client.request({ path, encodePath: false });
 
@@ -369,6 +530,33 @@ define([
         r2.data.should.equal("ok");
       });
 
+      it("dedupes when JSON bodies have different key order", async () => {
+        const deferred = createDeferred();
+        const fetchStub = state.sandbox
+          .stub(window, "fetch")
+          .returns(deferred.promise);
+        const bodyA = { b: 2, a: 1 };
+        const bodyB = { a: 1, b: 2 };
+
+        const p1 = state.client.request({
+          path: "/object/13",
+          method: "POST",
+          body: bodyA,
+        });
+        const p2 = state.client.request({
+          path: "/object/13",
+          method: "POST",
+          body: bodyB,
+        });
+
+        fetchStub.callCount.should.equal(1);
+
+        deferred.resolve(buildResponse("ok"));
+        const [r1, r2] = await Promise.all([p1, p2]);
+        r1.data.should.equal("ok");
+        r2.data.should.equal("ok");
+      });
+
       it("does not dedupe when body differs", async () => {
         const fetchStub = state.sandbox.stub(window, "fetch");
 
@@ -405,6 +593,34 @@ define([
         });
 
         fetchStub.calledOnce.should.be.true;
+      });
+
+      it("dedupes when non-serializable bodies share identity", async () => {
+        const deferred = createDeferred();
+        const fetchStub = state.sandbox
+          .stub(window, "fetch")
+          .returns(deferred.promise);
+
+        const circular = {};
+        circular.self = circular;
+
+        const p1 = state.client.request({
+          path: "/object/16",
+          method: "POST",
+          body: circular,
+        });
+        const p2 = state.client.request({
+          path: "/object/16",
+          method: "POST",
+          body: circular,
+        });
+
+        fetchStub.callCount.should.equal(1);
+
+        deferred.resolve(buildResponse("deduped"));
+        const [r1, r2] = await Promise.all([p1, p2]);
+        r1.data.should.equal("deduped");
+        r2.data.should.equal("deduped");
       });
     });
 
@@ -595,11 +811,7 @@ define([
 
         let caught;
         try {
-          console.log("awaiting");
-
           await promise;
-
-          console.log("done");
         } catch (err) {
           caught = err;
         }

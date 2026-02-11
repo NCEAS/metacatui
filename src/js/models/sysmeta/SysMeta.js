@@ -50,18 +50,12 @@ define([], () => {
    * elements like accessPolicy and replicationPolicy. In the future, all fields
    * will be implemented, and the class will support serialization to XML and
    * updating system metadata on the server.
-   * @property {string} metaServiceUrl - The URL of the metadata service.
    * @property {object} data - The object that contains all the system metadata
    * fields, like identifier, formatId, size, checksum, etc.
-   * @property {boolean} fetched - Indicates whether the system metadata has
-   * been fetched successfully.
-   * @property {boolean} fetchedWithError - Indicates whether there was an error
-   * during the fetch operation.
    * @property {Array} errors - An array to hold any errors that occur during
    * the fetch operation.
    * @property {boolean} parsed - Indicates whether the system metadata has been
    * parsed from XML.
-   * @property {string} url - The URL to fetch the system metadata.
    * @class SystemMetadata
    * @since 2.34.0
    */
@@ -163,8 +157,42 @@ define([], () => {
       this.parsed = true;
       return sysMeta;
     }
+
+    /**
+     * Return a JSON-serializable representation of the SystemMetadata.
+     * @returns {object} The JSON representation of the SystemMetadata, as a new
+     * and unreferenced object.
+     * @param {boolean} [includeErrors] Whether to include any parsing errors in
+     * the output. If true, the `errors` array will be included, and if there
+     * was a parsing error, an additional Error object will be added to the
+     * array. If false, no errors will be included.
+     * @param {Array} [otherFields] An array of other SystemMetadata fields to
+     * include in the output, if they exist on the instance.
+     */
+    toJSON(includeErrors = true, otherFields = []) {
+      const json = JSON.parse(JSON.stringify(this.data));
+      if (includeErrors) {
+        json.errors = this.errors ? [...this.errors] : [];
+        if (this.parseError) {
+          json.errors.push(new Error("Failed to parse SystemMetadata XML"));
+        }
+      }
+      if (Array.isArray(otherFields) && otherFields.length > 0) {
+        otherFields.forEach((field) => {
+          if (this[field] !== undefined) {
+            json[field] = this[field];
+          }
+        });
+      }
+      return json;
+    }
   }
 
+  /**
+   * Create a SystemMetadata instance from an XML string.
+   * @param {string} xmlString XML string to parse.
+   * @returns {SystemMetadata} Parsed SystemMetadata instance.
+   */
   SystemMetadata.fromXml = function fromXml(xmlString) {
     const sysMeta = new SystemMetadata();
     sysMeta.parse(xmlString);
