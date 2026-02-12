@@ -132,7 +132,9 @@ define([], () => {
 
       SIMPLE_NUMBER_FIELDS.forEach((field) => {
         const value = getText(field);
-        if (value !== null) sysMeta[field] = parseInt(value, 10);
+        if ((value || value === "0") && !isNaN(value)) {
+          sysMeta[field] = parseInt(value, 10);
+        }
       });
 
       SIMPLE_BOOLEAN_FIELDS.forEach((field) => {

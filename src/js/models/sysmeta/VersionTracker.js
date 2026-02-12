@@ -1,10 +1,11 @@
-define(["backbone", "models/dataONEServices/SysMetaService"], (
-  Backbone,
-  SysMetaService,
-) => {
+define([
+  "backbone",
+  "models/dataONEServices/SysMetaService",
+  "common/Utilities",
+], (Backbone, SysMetaService, Utilities) => {
   /**
-   * @constant {number} DEFAULT_TTL_MS Default Time-To-Live for cached records
-   * in milliseconds.
+   * @constant {number} DEFAULT_TTL_MS Default Time-To-Live for cached data
+   * object to resource map PID mappings, in milliseconds.
    */
   const DEFAULT_TTL_MS = 1000 * 60 * 60; // 1 hour
 
@@ -15,37 +16,12 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
   const DEFAULT_MAX_CHAIN_HOPS = 200;
 
   /**
-   * @constant {object} FIELD_NAMES Field names for version links in SysMeta
-   * @property {string} next The field name for the next version link
-   * @property {string} prev The field name for the previous version link
-   */
-  const FIELD_NAMES = {
-    next: "obsoletedBy",
-    prev: "obsoletes",
-  };
-
-  /**
    * Get the field name for the next or previous version link.
    * @param {boolean} forward True for next version, false for previous version
    * @returns {string} the field name
    */
   function NEXT_OR_PREV(forward = true) {
-    return forward ? FIELD_NAMES.next : FIELD_NAMES.prev;
-  }
-
-  /**
-   * Normalize the SysMeta service URL by ensuring it's a string and removing
-   * trailing slashes.
-   * @param {string} url The SysMeta service URL
-   * @returns {Promise<string>} resolves to the normalized URL
-   */
-  function NORMALIZE_METASERVICE_URL(url) {
-    let urlResolved = url;
-    if (typeof urlResolved !== "string" || !urlResolved) {
-      urlResolved = MetacatUI.appModel.get("sysmetaServiceUrl");
-    }
-    // Remove trailing slashes
-    return urlResolved.replace(/\/+$/, "");
+    return forward ? "obsoletedBy" : "obsoletes";
   }
 
   /**
@@ -85,50 +61,56 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
    * const allVersions = await vt.getAllVersions("pid123");
    * console.log("All versions in chain:", allVersions.prev.versions,
    *  allVersions.next.versions);
-   * @example
-   * // Get a singleton instance for a specific SysMeta service URL
-   * // This will create a new instance if it doesn't exist yet.
-   * const vt = VersionTracker.get("https://example.com/sysmeta");
    */
   class VersionTracker {
     /**
      * Create a new VersionTracker instance.
      * @param {object} options - configuration options
-     * @param {string} options.metaServiceUrl - URL of the SysMeta service
+     * @param {string} [options.metaServiceUrl] - URL of the SysMeta service
      * @param {number} [options.maxChainHops] - Maximum number of hops in the
      * version chain to cache. Defaults to 200 hops.
-     * @param {number} [options.ttlMs] - Time-To-Live for cached records in
-     * milliseconds. Defaults to 24 hours (1 day).
+     * @param {number|null} [options.ttlMs] - Time-To-Live for cached records in
+     * milliseconds. Defaults to 1 hour. Set to null to disable expiration.
      */
     constructor({
       metaServiceUrl,
       maxChainHops = DEFAULT_MAX_CHAIN_HOPS,
       ttlMs = DEFAULT_TTL_MS,
     } = {}) {
-      this.metaServiceUrl = NORMALIZE_METASERVICE_URL(metaServiceUrl);
+      const url =
+        metaServiceUrl || globalThis.MetacatUI?.appModel?.get("metaServiceUrl");
+      const normalizedUrl = Utilities.normalizeUrl(url);
+      if (!normalizedUrl) {
+        throw new Error("VersionTracker: metaServiceUrl is required");
+      }
+      this.metaServiceUrl = normalizedUrl;
 
       // TTL for cached records in milliseconds
-      if (typeof ttlMs !== "number" || ttlMs <= 0) {
-        throw new Error("Invalid TTL provided to VersionTracker");
+      if ((!Number.isFinite(ttlMs) || ttlMs <= 0) && ttlMs !== null) {
+        throw new Error(
+          `VersionTracker: ttlMs must be a positive number or null, got ${ttlMs}`,
+        );
       }
-      this.TTL_MS = ttlMs;
+      this.ttlMs = ttlMs;
 
       // Avoid excessively long chains
       if (typeof maxChainHops !== "number" || maxChainHops <= 0) {
         throw new Error("Invalid maxChainHops provided to VersionTracker");
       }
+
       this.MAX_CHAIN_HOPS = maxChainHops;
 
-      // Create SysMetaService instance for fetching SysMeta
-      this.sysMetaService = SysMetaService.get({
+      // Get a SysMetaService instance for this metaServiceUrl (singleton per
+      // URL and config)
+      this.sysMetaService = new SysMetaService({
         baseUrl: this.metaServiceUrl,
         storageConfig: {
-          ttlMs: this.TTL_MS,
+          ttlMs: this.ttlMs,
         },
         persistPrivate: true,
       });
 
-      // To make compatible with Backbone-based MetacatUI, allow eventing
+      // To make compatible with Backbone views, event handling
       this.events = { ...Backbone.Events };
     }
 
@@ -136,11 +118,11 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
      * Get the SysMeta for a given PID. SysMetaService handles caching, token
      * management, and duplicate fetch prevention.
      * @param {string} pid the PID to get SysMeta for
+     * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<SysMeta>} resolves to the SysMeta object for the PID
      */
-    async getSysMeta(pid) {
-      // TODO: handle 401 (private) and 404 (non existent) errors...
-      return this.sysMetaService.download(pid);
+    async getSysMeta(pid, options = {}) {
+      return this.sysMetaService.download(pid, options);
     }
 
     /**
@@ -179,21 +161,27 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
      * @param {string} pid The starting PID
      * @param {boolean} forward True to get the next (newer) version, false for
      * the previous (older) version.
+     * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<string|null>} resolves to the adjacent version PID, or
      * null if no such version exists.
      */
-    async getAdjacent(pid, forward = true) {
+    async getAdjacent(pid, forward = true, options = {}) {
       if (typeof pid !== "string" || !pid) {
         throw new Error("Invalid PID provided");
       }
       const getAdjacentPid = async () => {
-        const sysMeta = await this.getSysMeta(pid);
+        const sysMeta = await this.getSysMeta(pid, options);
         return sysMeta?.data?.[NEXT_OR_PREV(forward)] || null;
       };
       const adjacentPid = await getAdjacentPid();
       // Force re-check in case end of chain has changed
-      if (!adjacentPid && (await this.sysMetaIsCached(pid))) {
-        this.sysMetaService.removeCached(pid);
+      const cacheKey = options?.cacheKey ?? pid;
+      if (
+        !adjacentPid &&
+        options?.useCache !== false &&
+        (await this.sysMetaIsCached(cacheKey))
+      ) {
+        await this.sysMetaService.removeCached(cacheKey);
         return getAdjacentPid();
       }
       return adjacentPid;
@@ -206,11 +194,16 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
      * Positive values indicate newer versions, negative values indicate older
      * versions. For example, a step of 1 gets the next version, -1 gets the
      * previous version.
+     * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<VersionRecord>} resolves to a record that includes
      * versions found, number of completed steps, and flags for chain
      * completion, privacy, and not-found status.
      */
-    async getVersions(startPid, steps) {
+    async getVersions(startPid, steps, options = {}) {
+      if (typeof startPid !== "string" || !startPid) {
+        throw new Error("Invalid PID provided");
+      }
+
       const record = {
         pid: startPid,
         requestedSteps: steps,
@@ -221,49 +214,87 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
         endNotFound: false,
       };
 
+      if (typeof steps !== "number" || !Number.isInteger(steps)) {
+        throw new Error("Steps must be an integer");
+      }
+
       const cappedSteps = this.capSteps(steps);
       const absSteps = Math.abs(cappedSteps);
       const forward = steps > 0;
-
       let currentPid = startPid;
+      let traversalError = null;
+      const notifyQueue = [];
 
-      /* eslint-disable no-await-in-loop */
-      for (let step = 0; step < absSteps; step += 1) {
-        let adjPid;
-        try {
-          adjPid = await this.getAdjacent(currentPid, forward);
-        } catch (error) {
-          // Stop if we hit an error fetching the adjacent version
-          if (error.status === 401) {
-            record.endIsPrivate = true;
-          } else if (error.status === 404) {
-            record.endNotFound = true;
-          } else {
-            throw error;
+      // Queue notifications so version-chain traversal can continue without
+      // blocking, but still surface async notify failures to callers.
+      const queueNotify = (pid, foundPid, step, status) => {
+        notifyQueue.push(this.notify(pid, foundPid, step, status, options));
+      };
+
+      try {
+        // Send notice for sysMeta found for starting PID for consistency for UIs
+        queueNotify(startPid, startPid, 0, null);
+
+        /* eslint-disable no-await-in-loop */
+        for (let step = 0; step < absSteps; step += 1) {
+          let adjPid;
+          let status = null;
+          const currentStep = forward ? step + 1 : -(step + 1);
+          try {
+            adjPid = await this.getAdjacent(currentPid, forward, options);
+          } catch (error) {
+            status = error.status;
+            adjPid = null;
+            // Stop if we hit an error fetching the adjacent version
+            if (error.status === 401) {
+              record.endIsPrivate = true;
+            } else if (error.status === 404) {
+              record.endNotFound = true;
+            } else {
+              throw error;
+            }
           }
-          break;
+
+          queueNotify(startPid, adjPid, currentStep, status);
+
+          // Stop if there is no adjacent version
+          if (!adjPid) break;
+
+          // Update record and continue to next version
+          record.completedSteps = currentStep;
+          record.versions.push(adjPid);
+          currentPid = adjPid;
         }
+        /* eslint-enable no-await-in-loop */
 
-        const currentStep = forward ? step + 1 : -(step + 1);
-        // TODO: consider fire and forget notify to speed up loop?
-        await this.notify(startPid, adjPid, currentStep);
+        const { versions } = record;
 
-        // Stop if there is no adjacent version
-        if (!adjPid) break;
-        record.completedSteps = currentStep;
-        record.versions.push(adjPid);
-
-        currentPid = adjPid;
+        if (!record.endIsPrivate && !record.endNotFound) {
+          const lastPid = versions.length
+            ? versions[versions.length - 1]
+            : startPid;
+          record.chainComplete = await this.isEndOfChain(
+            lastPid,
+            forward,
+            options,
+          );
+        }
+      } catch (error) {
+        traversalError = error;
       }
-      /* eslint-enable no-await-in-loop */
 
-      const { versions } = record;
+      // Always drain queued notify promises to avoid unhandled rejections. If
+      // notifications failed, throw the first rejection explicitly.
+      const notifyResults = await Promise.allSettled(notifyQueue);
+      const firstNotifyFailure = notifyResults.find(
+        (result) => result.status === "rejected",
+      );
 
-      if (!record.endIsPrivate && !record.endNotFound) {
-        const lastPid = versions.length
-          ? versions[versions.length - 1]
-          : startPid;
-        record.chainComplete = await this.isEndOfChain(lastPid, forward);
+      if (traversalError) {
+        throw traversalError;
+      }
+      if (firstNotifyFailure) {
+        throw firstNotifyFailure.reason;
       }
 
       return record;
@@ -273,12 +304,13 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
      * Get all versions in one direction (newer or older) from a starting PID.
      * @param {string} startPid The starting PID
      * @param {boolean} forward True to get newer versions, false for older
+     * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<object>} resolves to a record with the following
      */
-    async getAllVersionsOneDirection(startPid, forward = true) {
+    async getAllVersionsOneDirection(startPid, forward = true, options = {}) {
       const max = this.MAX_CHAIN_HOPS;
       const steps = forward ? max : -max;
-      return this.getVersions(startPid, steps);
+      return this.getVersions(startPid, steps, options);
     }
 
     /**
@@ -292,6 +324,9 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
      * of steps, or null if no such version exists.
      */
     async getNth(pid, steps) {
+      if (typeof pid !== "string" || !pid) {
+        throw new Error("Invalid PID provided");
+      }
       if (steps === 0) return pid;
       const record = await this.getVersions(pid, steps);
       const { versions, completedSteps } = record;
@@ -304,13 +339,14 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
     /**
      * Get the complete version chain for the given PID.
      * @param {string}  pid - PID to get the chain for
+     * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<{prev: VersionRecord, next: VersionRecord}>} resolves
      * to an object with 'prev' and 'next' VersionRecords
      */
-    async getAllVersions(pid) {
+    async getAllVersions(pid, options = {}) {
       const results = await Promise.all([
-        this.getAllVersionsOneDirection(pid, false),
-        this.getAllVersionsOneDirection(pid, true),
+        this.getAllVersionsOneDirection(pid, false, options),
+        this.getAllVersionsOneDirection(pid, true, options),
       ]);
       return { prev: results[0], next: results[1] };
     }
@@ -321,12 +357,13 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
      * @param {string} pid PID to check
      * @param {boolean} forward True to check for next version, false for
      * previous
+     * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<boolean>} resolves to true if the PID is at the end of
      * the chain in the given direction
      * @throws {Error} if the PID is invalid or SysMeta cannot be retrieved
      */
-    async isEndOfChain(pid, forward = true) {
-      const sysMeta = await this.getSysMeta(pid);
+    async isEndOfChain(pid, forward = true, options = {}) {
+      const sysMeta = await this.getSysMeta(pid, options);
       return !sysMeta?.data?.[NEXT_OR_PREV(forward)];
     }
 
@@ -335,11 +372,12 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
      * newest versions are private or not found, this will return the last
      * available version.
      * @param {string} pid PID to get the latest version for
+     * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<string>} resolves to the latest version PID, or the
      * original PID if no newer versions exist or are accessible.
      */
-    async getLatestVersion(pid) {
-      const record = await this.getAllVersionsOneDirection(pid, true);
+    async getLatestVersion(pid, options = {}) {
+      const record = await this.getAllVersionsOneDirection(pid, true, options);
       const { versions, completedSteps } = record;
       if (completedSteps === 0) return pid;
       return versions[versions.length - 1];
@@ -354,51 +392,59 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
     }
 
     /**
-     * Notify subscribers/listeners that a new version has been found within the
-     * version history of a given PID. Sends update with the following info:
-     *   - pid: the original PID whose version chain was updated
-     *   - steps: the offset of the new version from the original PID, positive
-     *     for newer, negative for older
-     *   - foundPid: the new version PID that was added, or null if no new
-     *     version was found
-     *   - foundSysMeta:  SysMeta object for the foundPid, or null if not found
-     *   - status: a status code indicating why foundPid was null (e.g. 404 or
-     *     401)
-     * @param {string} pid the PID whose version chain was updated
-     * @param {string|null} foundPid the new version PID that was added, or null
-     * if no new version was found
-     *  @param {number} steps the offset of the new version from the original
-     * PID, positive for newer, negative for older
-     * @param {404|401} [status] a status code indicating why foundPid was null
+     * Notify listeners that a version was found (or not) for the given PID.
+     * @param {string} pid The PID whose chain is being updated.
+     * @param {string|null} foundPid The PID that was found, or null.
+     * @param {number} steps Offset from the original PID (positive/negative).
+     * @param {404|401|null} [status] Status code explaining why foundPid is null.
+     * @param {object} [options] Options passed to SysMetaService.download.
      * @private
-     * @fires Backbone.Events#update
+     * @fires Backbone.Events#versionFound
      */
-    async notify(pid, foundPid, steps, status) {
-      let foundSysMeta = null;
-      let finalStatus = status;
-      try {
-        foundSysMeta = foundPid ? await this.getSysMeta(foundPid) : null;
-      } catch (e) {
-        // If there was a found pid, then sysmeta should be cached. However, in
-        // case something went wrong, we only throw if the error is not a 404 or
-        // 401, since those are expected for private or non-existent versions.
-        if (e.status !== 404 && e.status !== 401) {
-          throw e;
-        } else {
-          finalStatus = e.status;
+    async notify(pid, foundPid, steps, status, options = {}) {
+      if (!pid) return;
+      const errors = status ? [status] : [];
+      let sysMeta = null;
+
+      // If we have the SysMeta cached for the foundPid, get it
+      if (!errors.length && foundPid) {
+        try {
+          sysMeta = await this.getSysMeta(foundPid, options);
+        } catch (e) {
+          if (e.status === 404 || e.status === 401) {
+            errors.push(e.status);
+            sysMeta = new SysMetaService.SysMeta({ identifier: foundPid });
+          } else {
+            throw e;
+          }
         }
       }
+      if (sysMeta) {
+        sysMeta.versionHistory = {};
+        sysMeta.versionHistory[pid] = steps;
+        if (!sysMeta.errors) {
+          sysMeta.errors = [];
+        }
+        sysMeta.errors.push(...errors);
+      } else if (errors.length) {
+        // If no adjacent SysMeta but there are errors, use placeholder SysMeta
+        // to pass on error info.
+        sysMeta = new SysMetaService.SysMeta();
+        sysMeta.errors = errors;
+      }
+      try {
+        this.events.trigger("versionFound", sysMeta);
+        this.events.trigger(`versionFound:${pid}`, sysMeta);
+      } catch (e) {
+        // Failure to notify is not critical, so just log the error. This allows
+        // callers to fire and forget without worrying about listener errors.
 
-      const record = {
-        pid,
-        steps,
-        foundPid,
-        foundSysMeta,
-        status: finalStatus,
-      };
-      // Trigger Backbone-style events
-      this.events.trigger("update", record);
-      this.events.trigger(`update:${pid}`, record);
+        // eslint-disable-next-line no-console
+        console.error(
+          `VersionTracker.notify: Error triggering update event for PID ${pid}:`,
+          e,
+        );
+      }
     }
 
     /**
@@ -423,19 +469,8 @@ define(["backbone", "models/dataONEServices/SysMetaService"], (
     }
   }
 
-  // Static singleton instance management: Create one VersionTracker per
-  // unique SysMeta service URL.
-  VersionTracker.instances = new Map();
-  VersionTracker.get = function get(metaServiceUrl) {
-    const msUrl = NORMALIZE_METASERVICE_URL(metaServiceUrl);
-    if (!VersionTracker.instances.has(msUrl)) {
-      VersionTracker.instances.set(
-        msUrl,
-        new VersionTracker({ metaServiceUrl: msUrl }),
-      );
-    }
-    return VersionTracker.instances.get(msUrl);
-  };
+  VersionTracker.SysMetaService = SysMetaService;
+  VersionTracker.SysMeta = SysMetaService.SysMeta;
 
   return VersionTracker;
 });

@@ -197,5 +197,34 @@ define(["/test/js/specs/shared/clean-state.js", "models/sysmeta/SysMeta"], (
         sysMeta.data.checksumAlgorithm.should.equal("SHA-256");
       });
     });
+
+    describe("toJSON()", () => {
+      it("includes errors when parseError is true", () => {
+        const s = new SysMeta();
+        try {
+          s.parse(INVALID_XML);
+        } catch (e) {
+          // expected
+        }
+
+        const json = s.toJSON(true);
+        json.errors.should.be.an("array");
+        json.errors[0].message.should.equal("Failed to parse SystemMetadata XML");
+      });
+
+      it("omits errors when includeErrors is false", () => {
+        const s = new SysMeta();
+        const json = s.toJSON(false);
+        expect(json.errors).to.equal(undefined);
+      });
+
+      it("includes extra fields when requested", () => {
+        const s = new SysMeta({ identifier: "pid.1" });
+        s.versionHistory = { "pid.1": 0 };
+
+        const json = s.toJSON(true, ["versionHistory"]);
+        json.versionHistory.should.deep.equal({ "pid.1": 0 });
+      });
+    });
   });
 });
