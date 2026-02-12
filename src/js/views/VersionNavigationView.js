@@ -1,11 +1,13 @@
-define(["jquery", "backbone", "models/sysmeta/VersionTracker", "semantic"], (
-  $,
-  Backbone,
-  VersionTracker,
-  Semantic,
-) => {
+define([
+  "jquery",
+  "backbone",
+  "models/sysmeta/VersionTracker",
+  "semantic",
+  "common/Utilities",
+], ($, Backbone, VersionTracker, Semantic, Utilities) => {
   "use strict";
 
+  // Define class names used in the view
   const CLASS_NAMES = {
     BASE: "version-navigation-view",
     PREV_VERSION_CONTAINER: "prev-version-container",
@@ -19,10 +21,18 @@ define(["jquery", "backbone", "models/sysmeta/VersionTracker", "semantic"], (
     BUTTON_MINI: "btn-mini",
   };
 
+  // Define button classes
   const BUTTON_CLASSES = `${CLASS_NAMES.BUTTON} ${CLASS_NAMES.BUTTON_LINK} ${CLASS_NAMES.BUTTON_LINK_NEUTRAL}`;
 
+  // Default document type for tooltip descriptions
   const DEFAULT_DOC_TYPE = "document";
 
+  /**
+   * Build default tooltip descriptions based on a document type.
+   * @param {string} [type] Document type to interpolate.
+   * @returns {{prev: string, next: string, all: string}} The default
+   * descriptions.
+   */
   const GET_DEFAULT_DESCRIPTION = (type) => {
     const docType = type || DEFAULT_DOC_TYPE;
     return {
@@ -139,7 +149,6 @@ define(["jquery", "backbone", "models/sysmeta/VersionTracker", "semantic"], (
       initialize(options = {}) {
         this.pid = options.pid;
         this.showAllVersionsLink = options.showAllVersionsLink !== false;
-        this.versionTracker = VersionTracker.get();
         if (options.descriptions) {
           this.descriptions = { ...this.descriptions, ...options.descriptions };
         } else if (options.documentType) {
@@ -173,22 +182,29 @@ define(["jquery", "backbone", "models/sysmeta/VersionTracker", "semantic"], (
       /** @inheritdoc */
       async render() {
         if (!this.pid) return this;
+        if (!this.versionTracker) {
+          const metaServiceUrl = await Utilities.awaitMetacatUI({
+            property: "sysMetaModel",
+          });
+          this.versionTracker = new VersionTracker({ metaServiceUrl });
+        }
 
         this.el.innerHTML = this.template();
         const { prev, next, allVersionsLink } = this.selectContainers();
-        const versions = await this.versionTracker.getAdjacent(this.pid, true);
+        const nextPid = await this.versionTracker.getNext(this.pid);
+        const prevPid = await this.versionTracker.getPrev(this.pid);
 
-        if (versions.next) {
-          const nextUrl = this.getViewUrl(versions.next);
+        if (nextPid) {
+          const nextUrl = this.getViewUrl(nextPid);
           next.innerHTML = this.prevNextBtnTemplate(nextUrl, "next");
           this.addTooltip(next, this.descriptions.next);
         }
-        if (versions.prev) {
-          const prevUrl = this.getViewUrl(versions.prev);
+        if (prevPid) {
+          const prevUrl = this.getViewUrl(prevPid);
           prev.innerHTML = this.prevNextBtnTemplate(prevUrl, "prev");
           this.addTooltip(prev, this.descriptions.prev);
         }
-        if (this.showAllVersionsLink && (versions.prev || versions.next)) {
+        if (this.showAllVersionsLink && (prevPid || nextPid)) {
           const allUrl = this.getAllVersionsUrl(this.pid);
           allVersionsLink.innerHTML = this.allVersionsTemplate(allUrl);
           this.addTooltip(allVersionsLink, this.descriptions.allVersions);
