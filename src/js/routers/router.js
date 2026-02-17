@@ -182,8 +182,9 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         }
 
         const options = { pid: decodedPid ? decodedPid.trim() : "" };
-
-        require(["views/VersionHistoryView"], (VersionHistoryView) => {
+        require(["views/versionHistory/VersionHistoryView"], (
+          VersionHistoryView,
+        ) => {
           if (!MetacatUI.appView.versionHistoryView) {
             MetacatUI.appView.versionHistoryView = new VersionHistoryView(
               options,

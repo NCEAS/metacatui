@@ -11,7 +11,7 @@ define(["backbone", "views/versionHistory/VersionTimelineGroupView"], (
    * versions for a specific date.
    * @classcategory Views/VersionHistory
    * @augments Backbone.View
-   * @screenshot views/VersionTimelineGroupsView.png // TODO: add screenshot
+   * @screenshot views/versionHistory/VersionTimelineGroupsView.png
    * @since 0.0.0
    */
   const VersionTimelineGroupsView = Backbone.View.extend(

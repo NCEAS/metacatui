@@ -1,10 +1,6 @@
 // TODO:
 // - pagination if too many versions
 
-/**
- * Backbone view that orchestrates fetching the version chain for a PID and
- * visualizing it as a grouped timeline with citations and status updates.
- */
 define([
   "backbone",
   "models/sysmeta/VersionTracker",
@@ -80,6 +76,17 @@ define([
     history: `${BASE_CLASS}__history`,
   };
 
+  /**
+   * Backbone view that orchestrates fetching the version chain for a PID and
+   * visualizing it as a grouped timeline with citations and status updates.
+   * @class VersionHistoryView
+   * @classdesc A view that renders the version history for a given PID, showing
+   * progress as it is fetched and summarizing the results once complete.
+   * @classcategory Views/VersionHistory
+   * @augments Backbone.View
+   * @screenshot views/versionHistory/VersionHistoryView.png
+   * @since 0.0.0
+   */
   const VersionHistoryView = Backbone.View.extend(
     /** @lends VersionHistoryView.prototype */ {
       /**
