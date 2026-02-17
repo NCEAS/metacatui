@@ -23,7 +23,7 @@ define([
    * version history timeline.
    * @classcategory Views/VersionHistory
    * @augments Backbone.View
-   * @screenshot views/VersionTimelineGroupView.png // TODO: add screenshot
+   * @screenshot views/versionHistory/VersionTimelineGroupView.png
    * @since 0.0.0
    */
   const VersionTimelineGroupView = Backbone.View.extend(

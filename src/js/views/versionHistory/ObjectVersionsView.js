@@ -24,7 +24,7 @@ define([
    * @classdesc A view that renders a list of object versions as <li> elements.
    * @classcategory Views/VersionHistory
    * @augments Backbone.View
-   * @screenshot views/ObjectVersionsView.png // TODO: add screenshot
+   * @screenshot views/versionHistory/ObjectVersionsView.png
    * @since 0.0.0
    */
   const ObjectVersionsView = Backbone.View.extend(
