@@ -73,7 +73,7 @@ define(["backbone", "common/Utilities"], (Backbone, Utilities) => {
    * view page in a new tab.
    * @classcategory Views/VersionHistory
    * @augments Backbone.View
-   * @screenshot views/ObjectVersionView.png
+   * @screenshot views/VersionHistory/ObjectVersionView.png
    * @since 0.0.0
    */
   const ObjectVersionView = Backbone.View.extend(
