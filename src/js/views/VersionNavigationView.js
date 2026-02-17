@@ -238,11 +238,14 @@ define([
         return `${MetacatUI.root}/view/${encodeURIComponent(pid)}`;
       },
 
-      // TODO: Implement version history page
-      getAllVersionsUrl(_pid) {
-        return "";
-        // if (!pid) return "";
-        // return `${MetacatUI.root}/versionHistory/${encodeURIComponent(pid)}`;
+      /**
+       * Get the URL to view all versions of a metadata document by its PID
+       * @param {string} pid The PID of the metadata document
+       * @returns {string} The URL to view all versions of the metadata document
+       */
+      getAllVersionsUrl(pid) {
+        if (!pid) return "";
+        return `${MetacatUI.root}/versionHistory/${encodeURIComponent(pid)}`;
       },
 
       /** Clean up tasks before the view is closed */

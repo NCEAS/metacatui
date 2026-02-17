@@ -27,6 +27,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         "signin-help": "renderSignInHelp", //The Sign In troubleshotting page
         "share(/*pid)(/)": "renderEditor", // registry page
         "submit(/*pid)(/)": "renderEditor", // registry page
+        "versionHistory(/*pid)(/)": "renderVersionHistory",
         "quality(/s=:suiteId)(/:pid)(/)": "renderMdqRun", // MDQ page
         "api(/:anchorId)(/)": "renderAPI", // API page
         "edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)":
@@ -160,6 +161,40 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         };
 
         this.renderText(options);
+      },
+
+      /**
+       * Display a page with complete versio history for a given dataset.
+       * @param {string} pidParam The identifier of the dataset to display the
+       * version history for. Typically a metadata (EML) pid, but this will work
+       * for any PID with an obsoletes/obsoletedBy chain in its sysMeta.
+       * @since 0.0.0
+       */
+      renderVersionHistory(pidParam) {
+        this.routeHistory.push("versionHistory");
+        let decodedPid = "";
+        if (pidParam) {
+          try {
+            decodedPid = decodeURIComponent(pidParam);
+          } catch (error) {
+            decodedPid = pidParam;
+          }
+        }
+
+        const options = { pid: decodedPid ? decodedPid.trim() : "" };
+
+        require(["views/VersionHistoryView"], (VersionHistoryView) => {
+          if (!MetacatUI.appView.versionHistoryView) {
+            MetacatUI.appView.versionHistoryView = new VersionHistoryView(
+              options,
+            );
+          }
+          MetacatUI.appView.versionHistoryView.pid = options.pid;
+          MetacatUI.appView.showView(
+            MetacatUI.appView.versionHistoryView,
+            options,
+          );
+        });
       },
 
       renderProjects: function () {
