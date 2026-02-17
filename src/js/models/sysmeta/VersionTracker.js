@@ -414,6 +414,9 @@ define([
           if (e.status === 404 || e.status === 401) {
             errors.push(e.status);
             sysMeta = new SysMetaService.SysMeta({ identifier: foundPid });
+          } else if (e.name === "AbortError") {
+            // Stop processing if the request was aborted by the caller
+            return;
           } else {
             throw e;
           }
