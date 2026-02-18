@@ -369,13 +369,14 @@ define([
        */
       showPartial(error) {
         let message = "Incomplete version history. ";
+        if (error) {
+          message += ` ${error}`;
+        }
         if (this.numNext === 0 && this.numPrev === 0) {
           message += `No other versions of the document with ID <strong>${this.pid}</strong> were found.`;
         } else {
+          message += " ";
           message += this.getVersionSummaryMessage();
-        }
-        if (error) {
-          message += ` ${error}`;
         }
         this.showWarning(message);
       },

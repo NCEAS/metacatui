@@ -2,10 +2,9 @@
 
 .version-history {
   --timeline-point-height: 2.4rem;
-}
-
-.version-history__history {
-  max-width: 43rem;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .version-history__header .citation {
