@@ -1,0 +1,147 @@
+"use strict";
+
+define([], () => {
+  const pad2 = (value) => String(value).padStart(2, "0");
+
+  /**
+   * @class DateUtility
+   * @classdesc Utility helpers for parsing, grouping, and formatting dates.
+   * @since 0.0.0
+   */
+  class DateUtility {
+    /**
+     * Check if a value is a valid Date instance.
+     * @param {*} value Candidate value.
+     * @returns {boolean} True when value is a valid Date.
+     */
+    static isValidDate(value) {
+      return value instanceof Date && !Number.isNaN(value.getTime());
+    }
+
+    /**
+     * Convert a value into a Date.
+     * @param {string|number|Date} value Date-like value.
+     * @returns {Date|null} Parsed Date or null when invalid.
+     */
+    static toDate(value) {
+      if (value === null || value === undefined || value === "") {
+        return null;
+      }
+      const date =
+        value instanceof Date ? new Date(value.getTime()) : new Date(value);
+      return DateUtility.isValidDate(date) ? date : null;
+    }
+
+    /**
+     * Build a Date for start-of-day in the requested timezone mode.
+     * @param {string|number|Date} value Date-like value.
+     * @param {("local"|"UTC")} [groupingTimeZone="local"] Day boundary mode.
+     * @returns {Date|null} Midnight Date or null when invalid.
+     */
+    static toMidnightDate(value, groupingTimeZone = "local") {
+      const date = DateUtility.toDate(value);
+      if (!date) return null;
+      if (groupingTimeZone === "UTC") {
+        return new Date(
+          Date.UTC(
+            date.getUTCFullYear(),
+            date.getUTCMonth(),
+            date.getUTCDate(),
+          ),
+        );
+      }
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
+    /**
+     * Convert a date into a YYYY-MM-DD string.
+     * @param {string|number|Date} value Date-like value.
+     * @param {("local"|"UTC")} [groupingTimeZone="local"] Day boundary mode.
+     * @returns {string} Date-only string, or empty string when invalid.
+     */
+    static toISODateOnly(value, groupingTimeZone = "local") {
+      const date = DateUtility.toDate(value);
+      if (!date) return "";
+      const useUTC = groupingTimeZone === "UTC";
+      const year = useUTC ? date.getUTCFullYear() : date.getFullYear();
+      const month = useUTC ? date.getUTCMonth() + 1 : date.getMonth() + 1;
+      const day = useUTC ? date.getUTCDate() : date.getDate();
+      return `${year}-${pad2(month)}-${pad2(day)}`;
+    }
+
+    /**
+     * Convert a date into a stable day identifier.
+     * @param {string|number|Date} value Date-like value.
+     * @param {("local"|"UTC")} [groupingTimeZone="local"] Day boundary mode.
+     * @param {string} [prefix="date"] Prefix to include in ID.
+     * @returns {string} Stable ID string.
+     */
+    static toDayId(value, groupingTimeZone = "local", prefix = "date") {
+      const dateOnly = DateUtility.toISODateOnly(value, groupingTimeZone);
+      return dateOnly ? `${prefix}:${dateOnly}` : `${prefix}:invalid`;
+    }
+
+    /**
+     * Format a date using locale-aware date formatting.
+     * @param {string|number|Date} value Date-like value.
+     * @param {object} [options]
+     * @param {string} [options.locale] Locale override. Set to null to use the
+     * default locale.
+     * @param {Intl.DateTimeFormatOptions} [options.formatOptions]
+     * @returns {string} Formatted date or empty string when invalid.
+     */
+    static toLocaleDateString(
+      value,
+      {
+        locale,
+        formatOptions = { year: "numeric", month: "long", day: "numeric" },
+      } = {},
+    ) {
+      const date = DateUtility.toDate(value);
+      if (!date) return "";
+      return date.toLocaleDateString(locale, formatOptions);
+    }
+
+    /**
+     * Format a local timestamp with a short timezone token.
+     * @param {string|number|Date} value Date-like value.
+     * @returns {string} Formatted timestamp or empty string when invalid.
+     */
+    static toLocalTimestampWithZone(value) {
+      const date = DateUtility.toDate(value);
+      if (!date) return "";
+
+      const y = date.getFullYear();
+      const m = pad2(date.getMonth() + 1);
+      const d = pad2(date.getDate());
+      const hours24 = date.getHours();
+      const minutes = pad2(date.getMinutes());
+
+      const tz = date
+        .toLocaleTimeString(undefined, { timeZoneName: "short" })
+        .split(" ")
+        .pop();
+
+      return `${y}-${m}-${d} ${hours24}:${minutes} ${tz}`;
+    }
+
+    /**
+     * Convert a date-ish value into an ISO-8601 timestamp.
+     * @param {string|number|Date} value Date-like value.
+     * @returns {string} ISO timestamp or empty string when invalid.
+     */
+    static toISOString(value) {
+      const date = DateUtility.toDate(value);
+      if (!date) return "";
+      try {
+        return date.toISOString();
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn("Error converting date to ISO string:", e);
+        return "";
+      }
+    }
+  }
+
+  return DateUtility;
+});

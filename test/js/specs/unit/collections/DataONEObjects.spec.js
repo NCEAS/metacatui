@@ -70,13 +70,79 @@ define(["collections/DataONEObjects", "models/DataONEObject"], function (
     });
 
     describe("groupByDate", function () {
-      it("returns an empty object for empty collections", function () {
+      it("returns an empty array for empty collections", function () {
         collection.reset([]);
         const grouped = collection.groupByDate();
-        Object.keys(grouped).should.have.length(0);
+        grouped.should.deep.equal([]);
       });
 
-      it("groups models by the YYYY-MM-DD portion of dateUploaded", function () {
+      it("groups models by local calendar day and returns Date values at midnight", function () {
+        collection.reset([
+          {
+            identifier: "a",
+            dateUploaded: "2024-01-02T12:00:00Z",
+          },
+          {
+            identifier: "b",
+            dateUploaded: "2024-01-02T14:00:00Z",
+          },
+          {
+            identifier: "c",
+            dateUploaded: "2024-01-04T12:00:00Z",
+          },
+          {
+            identifier: "no-date",
+          },
+        ]);
+
+        const grouped = collection.groupByDate();
+        grouped.should.have.length(3);
+
+        const groupWithA = grouped.find((group) =>
+          group.models.some((model) => model.get("identifier") === "a"),
+        );
+        const groupWithB = grouped.find((group) =>
+          group.models.some((model) => model.get("identifier") === "b"),
+        );
+        const groupWithC = grouped.find((group) =>
+          group.models.some((model) => model.get("identifier") === "c"),
+        );
+        const undatedGroup = grouped.find((group) => group.date === null);
+
+        expect(groupWithA).to.equal(groupWithB);
+        groupWithA.models.should.have.length(2);
+        groupWithA.date.should.be.instanceof(Date);
+        Object.keys(groupWithA).sort().should.deep.equal(["date", "models"]);
+
+        groupWithC.date.should.be.instanceof(Date);
+        groupWithC.models[0].get("identifier").should.equal("c");
+        undatedGroup.models.should.have.length(1);
+        undatedGroup.models[0].get("identifier").should.equal("no-date");
+      });
+
+      it("places invalid dates into the null-date bucket", function () {
+        const warnStub = sinon.stub(console, "warn");
+        try {
+          collection.reset([
+            {
+              identifier: "bad",
+              dateUploaded: "not-a-date",
+            },
+          ]);
+
+          const grouped = collection.groupByDate();
+
+          grouped.should.have.length(1);
+          expect(grouped[0].date).to.equal(null);
+          grouped[0].models.should.have.length(1);
+          grouped[0].models[0].get("identifier").should.equal("bad");
+          warnStub.calledOnce.should.be.true;
+        } finally {
+          warnStub.restore();
+        }
+      });
+
+      it("groups by UTC day when groupingTimeZone is UTC", function () {
         collection.reset([
           {
             identifier: "a",
@@ -90,35 +156,22 @@ define(["collections/DataONEObjects", "models/DataONEObject"], function (
             identifier: "c",
             dateUploaded: "2024-01-03T01:00:00Z",
           },
-          {
-            identifier: "no-date",
-          },
         ]);
 
-        const grouped = collection.groupByDate();
-        Object.keys(grouped).should.have.length(3);
-        grouped["2024-01-02"].should.have.length(2);
-        grouped["2024-01-03"].should.have.length(1);
-        grouped["2024-01-03"][0].get("identifier").should.equal("c");
-        grouped[""].should.have.length(1);
-        grouped[""][0].get("identifier").should.equal("no-date");
-      });
+        const grouped = collection.groupByDate({ groupingTimeZone: "UTC" });
+        grouped.should.have.length(2);
 
-      it("places invalid dates into the empty-date bucket", function () {
-        const warnStub = sinon.stub(console, "warn");
-        collection.reset([
-          {
-            identifier: "bad",
-            dateUploaded: "not-a-date",
-          },
-        ]);
+        const jan2Group = grouped.find((group) =>
+          group.models.some((model) => model.get("identifier") === "a"),
+        );
+        const jan3Group = grouped.find((group) =>
+          group.models.some((model) => model.get("identifier") === "c"),
+        );
 
-        const grouped = collection.groupByDate();
-
-        grouped[""].should.have.length(1);
-        grouped[""][0].get("identifier").should.equal("bad");
-        warnStub.calledOnce.should.be.true;
-        warnStub.restore();
+        jan2Group.models.should.have.length(2);
+        jan3Group.models.should.have.length(1);
+        jan2Group.date.should.be.instanceof(Date);
+        jan3Group.date.should.be.instanceof(Date);
       });
 
       it("sorts automatically models by dateUploaded", function () {
