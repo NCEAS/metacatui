@@ -1,4 +1,4 @@
-define(["backbone"], (Backbone) => {
+define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
   "use strict";
 
   // Labels used for undated version groups (e.g. those where sysMeta is
@@ -6,20 +6,26 @@ define(["backbone"], (Backbone) => {
   const FUTURE_DATE_LABEL = "Future Date (Newer)";
   const PAST_DATE_LABEL = "Unknown Date (Older)";
   const NO_DATE_LABEL = "Unknown Date";
+  const LABEL_SORT_RANK = {
+    [FUTURE_DATE_LABEL]: 0,
+    [NO_DATE_LABEL]: 2,
+    [PAST_DATE_LABEL]: 3,
+  };
 
-  /**
-   * Converts a date label into a sortable value so the collection can remain in
-   * descending chronological order regardless of the input format.
-   * @param {string} date - Human-readable date string (e.g., "Jan 1, 2024").
-   * @returns {number|string} Timestamp when parseable, otherwise a string
-   * value.
-   */
-  const toSortValue = (date) => {
-    const parsed = Date.parse(date);
-    if (!Number.isNaN(parsed)) {
-      return parsed;
-    }
-    return date || "";
+  // Convert a label and set of models into attrs for a VersionTimelineGroup
+  // model
+  const toLabelGroup = (label, models) => {
+    return {
+      id: label, // for Backbone
+      date: null,
+      label,
+      models,
+    };
+  };
+
+  const sortRank = (model) => {
+    if (DateUtility.isValidDate(model.get("date"))) return 1;
+    return LABEL_SORT_RANK[model.get("label")] ?? 2;
   };
 
   /**
@@ -41,10 +47,12 @@ define(["backbone"], (Backbone) => {
       model: Backbone.Model.extend(
         /** @lends VersionTimelineGroupModel.prototype */ {
           type: "VersionTimelineGroupModel",
-          idAttribute: "date",
+          idAttribute: "id",
           defaults() {
             return {
-              date: "",
+              id: "",
+              date: null,
+              label: null,
               models: [],
             };
           },
@@ -60,34 +68,26 @@ define(["backbone"], (Backbone) => {
        * @returns {number} Comparator result for Backbone's sorting.
        */
       comparator(modelA, modelB) {
-        const a = toSortValue(modelA.get("date"));
-        const b = toSortValue(modelB.get("date"));
+        const rankA = sortRank(modelA);
+        const rankB = sortRank(modelB);
 
-        // Numbers (timestamps) are sorted numerically
-        if (typeof a === "number" && typeof b === "number") {
-          if (a === b) {
-            return 0;
-          }
-          if (a < b) {
-            return 1;
-          }
-          return -1;
+        if (rankA !== rankB) {
+          return rankA < rankB ? -1 : 1;
         }
 
-        // If labeled as Future or Past, those always go to the top or bottom
-        if (a === FUTURE_DATE_LABEL) return -1;
-        if (b === FUTURE_DATE_LABEL) return 1;
-        if (a === PAST_DATE_LABEL) return 1;
-        if (b === PAST_DATE_LABEL) return -1;
-        // If labeled as No Date, those always go to the bottom
-        if (a === NO_DATE_LABEL) return 1;
-        if (b === NO_DATE_LABEL) return -1;
+        if (rankA === 1) {
+          const dateA = modelA.get("date");
+          const dateB = modelB.get("date");
+          const timeA = dateA.getTime();
+          const timeB = dateB.getTime();
+          if (timeA === timeB) return 0;
+          return timeA < timeB ? 1 : -1;
+        }
 
-        // Otherwise, sort as strings
-        const aStr = String(a);
-        const bStr = String(b);
-        if (aStr === bStr) return 0;
-        return aStr < bStr ? 1 : -1;
+        const labelA = modelA.get("label") || "";
+        const labelB = modelB.get("label") || "";
+        if (labelA === labelB) return 0;
+        return labelA < labelB ? -1 : 1;
       },
 
       /**
@@ -99,23 +99,43 @@ define(["backbone"], (Backbone) => {
        * @param {string|null} [options.referencePid] Reference PID used to split
        * undated models into future/past groups.
        */
-      fromDataONEObjects(
-        collection,
-        options = { remove: true, referencePid: null },
-      ) {
-        const groupedByDate = collection.groupByDate();
-        const noDates = groupedByDate[""];
+      fromDataONEObjects(collection, options = {}) {
+        const {
+          remove = true,
+          referencePid = null,
+          groupingTimeZone = "local",
+          ...setOptions
+        } = options;
+
+        const groupedByDate = collection.groupByDate({
+          groupingTimeZone,
+        });
+        const groupedModels = [];
+        const noDateModels = [];
+
+        groupedByDate.forEach((group) => {
+          if (DateUtility.isValidDate(group.date)) {
+            groupedModels.push({
+              id: DateUtility.toDayId(group.date, groupingTimeZone, "date"),
+              date: group.date,
+              label: null,
+              models: group.models,
+            });
+          } else {
+            noDateModels.push(...group.models);
+          }
+        });
 
         // If there are undated models and a reference PID is provided, we can
         // separate them into future and past versions, relative to that PID.
-        if (noDates && options.referencePid) {
+        if (noDateModels.length > 0 && referencePid) {
           const futureModels = [];
           const pastModels = [];
           const noRefModels = [];
-          const noDateModels = groupedByDate[""];
+
           noDateModels.forEach((model) => {
             const versionHistory = model.get("versionHistory");
-            const refIndex = versionHistory?.[options.referencePid];
+            const refIndex = versionHistory?.[referencePid];
             if (refIndex === 0 || refIndex === undefined) {
               noRefModels.push(model);
             } else if (refIndex > 0) {
@@ -125,24 +145,21 @@ define(["backbone"], (Backbone) => {
               pastModels.push(model);
             }
           });
+
           if (futureModels.length > 0) {
-            groupedByDate[FUTURE_DATE_LABEL] = futureModels;
+            groupedModels.push(toLabelGroup(FUTURE_DATE_LABEL, futureModels));
           }
           if (pastModels.length > 0) {
-            groupedByDate[PAST_DATE_LABEL] = pastModels;
+            groupedModels.push(toLabelGroup(PAST_DATE_LABEL, pastModels));
           }
           if (noRefModels.length > 0) {
-            groupedByDate[NO_DATE_LABEL] = noRefModels;
+            groupedModels.push(toLabelGroup(NO_DATE_LABEL, noRefModels));
           }
-          delete groupedByDate[""];
+        } else if (noDateModels.length > 0) {
+          groupedModels.push(toLabelGroup(NO_DATE_LABEL, noDateModels));
         }
 
-        const groupedModels = Object.keys(groupedByDate).map((date) => {
-          const models = groupedByDate[date];
-          return { date, models };
-        });
-
-        this.set(groupedModels, options);
+        this.set(groupedModels, { ...setOptions, remove });
       },
     },
   );

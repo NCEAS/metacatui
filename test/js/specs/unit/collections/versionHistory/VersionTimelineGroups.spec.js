@@ -4,6 +4,9 @@ define([
 ], function (VersionTimelineGroups, DataONEObjects) {
   var should = chai.should();
   var expect = chai.expect;
+  const FUTURE_DATE_LABEL = "Future Date (Newer)";
+  const PAST_DATE_LABEL = "Unknown Date (Older)";
+  const NO_DATE_LABEL = "Unknown Date";
 
   describe("VersionTimelineGroups Collection", function () {
     let groups;
@@ -18,74 +21,87 @@ define([
     });
 
     describe("Initialization", function () {
-      it("creates models keyed by date", function () {
-        const model = groups.add({ date: "2024-01-01" });
-        model.idAttribute.should.equal("date");
+      it("creates models keyed by id", function () {
+        const model = groups.add({
+          id: "date:2024-01-01",
+          date: new Date(2024, 0, 1),
+        });
+        model.idAttribute.should.equal("id");
         model.get("models").should.be.an("array");
+        model.get("date").should.be.instanceof(Date);
       });
     });
 
     describe("Sorting", function () {
-      it("orders parseable dates newest to oldest", function () {
+      it("orders date groups newest to oldest", function () {
         groups.set([
-          { date: "2024-01-01", models: [] },
-          { date: "2023-12-15", models: [] },
-          { date: "2024-02-01", models: [] },
+          { id: "date:2024-01-01", date: new Date(2024, 0, 1), models: [] },
+          { id: "date:2023-12-15", date: new Date(2023, 11, 15), models: [] },
+          { id: "date:2024-02-01", date: new Date(2024, 1, 1), models: [] },
         ]);
 
-        groups
-          .pluck("date")
-          .should.deep.equal(["2024-02-01", "2024-01-01", "2023-12-15"]);
-      });
-
-      it("falls back to lexical ordering for non-date strings", function () {
-        groups.set([
-          { date: "zzz", models: [] },
-          { date: "aaa", models: [] },
-          { date: "mmm", models: [] },
+        groups.pluck("id").should.deep.equal([
+          "date:2024-02-01",
+          "date:2024-01-01",
+          "date:2023-12-15",
         ]);
-
-        groups.pluck("date").should.deep.equal(["zzz", "mmm", "aaa"]);
       });
 
       it("keeps future/unknown labels at the extremes", function () {
         groups.set([
-          { date: "Unknown Date (Older)", models: [] },
-          { date: "2024-01-01", models: [] },
-          { date: "Unknown Date", models: [] },
-          { date: "Future Date (Newer)", models: [] },
+          {
+            id: PAST_DATE_LABEL,
+            date: null,
+            label: PAST_DATE_LABEL,
+            models: [],
+          },
+          { id: "date:2024-01-01", date: new Date(2024, 0, 1), models: [] },
+          { id: "date:2024-02-01", date: new Date(2024, 1, 1), models: [] },
+          {
+            id: NO_DATE_LABEL,
+            date: null,
+            label: NO_DATE_LABEL,
+            models: [],
+          },
+          {
+            id: FUTURE_DATE_LABEL,
+            date: null,
+            label: FUTURE_DATE_LABEL,
+            models: [],
+          },
         ]);
 
         groups
-          .pluck("date")
+          .map((model) => model.get("label") || "DATE")
           .should.deep.equal([
-            "Future Date (Newer)",
-            "2024-01-01",
-            "Unknown Date",
-            "Unknown Date (Older)",
+            FUTURE_DATE_LABEL,
+            "DATE",
+            "DATE",
+            NO_DATE_LABEL,
+            PAST_DATE_LABEL,
           ]);
       });
     });
 
     describe("Updating via set", function () {
-      it("uses the date idAttribute to merge updates", function () {
+      it("uses the idAttribute to merge updates", function () {
         groups.set([
-          { date: "2024-04-01", models: ["initial"] },
-          { date: "2024-03-01", models: ["older"] },
+          { id: "date:2024-04-01", date: new Date(2024, 3, 1), models: ["initial"] },
+          { id: "date:2024-03-01", date: new Date(2024, 2, 1), models: ["older"] },
         ]);
 
         groups.set(
           [
-            { date: "2024-04-01", models: ["updated"] },
-            { date: "2024-05-01", models: ["new"] },
+            { id: "date:2024-04-01", date: new Date(2024, 3, 1), models: ["updated"] },
+            { id: "date:2024-05-01", date: new Date(2024, 4, 1), models: ["new"] },
           ],
           { remove: true },
         );
 
         groups.length.should.equal(2);
-        groups.pluck("date").should.deep.equal(["2024-05-01", "2024-04-01"]);
+        groups.pluck("id").should.deep.equal(["date:2024-05-01", "date:2024-04-01"]);
         groups
-          .findWhere({ date: "2024-04-01" })
+          .findWhere({ id: "date:2024-04-01" })
           .get("models")[0]
           .should.equal("updated");
       });
@@ -94,16 +110,24 @@ define([
     describe("fromDataONEObjects", function () {
       it("groups by date and keeps undated records when no reference pid", function () {
         const collection = new DataONEObjects([
-          { identifier: "a", dateUploaded: "2024-01-01T00:00:00Z" },
+          { identifier: "a", dateUploaded: "2024-01-01T12:00:00Z" },
           { identifier: "b" },
         ]);
 
         groups.fromDataONEObjects(collection);
 
-        const dates = groups.pluck("date");
-        dates.should.include("2024-01-01");
-        dates.should.include("");
-        groups.findWhere({ date: "" }).get("models").length.should.equal(1);
+        const datedGroup = groups.find((group) => group.get("date") instanceof Date);
+        expect(datedGroup).to.exist;
+        expect(datedGroup.get("label")).to.equal(null);
+
+        const undatedGroup = groups.findWhere({ label: NO_DATE_LABEL });
+        expect(undatedGroup).to.exist;
+        expect(undatedGroup.get("date")).to.equal(null);
+        undatedGroup.get("models").length.should.equal(1);
+        undatedGroup
+          .get("models")[0]
+          .get("identifier")
+          .should.equal("b");
       });
 
       it("splits undated models into future/past/no-ref when reference pid is provided", function () {
@@ -111,7 +135,7 @@ define([
         const collection = new DataONEObjects([
           {
             identifier: "dated",
-            dateUploaded: "2024-01-02T00:00:00Z",
+            dateUploaded: "2024-01-02T12:00:00Z",
             versionHistory: { [referencePid]: 0 },
           },
           {
@@ -131,26 +155,29 @@ define([
         groups.fromDataONEObjects(collection, { referencePid });
 
         groups
-          .pluck("date")
+          .map((group) => group.get("label") || "DATE")
           .should.deep.equal([
-            "Future Date (Newer)",
-            "2024-01-02",
-            "Unknown Date",
-            "Unknown Date (Older)",
+            FUTURE_DATE_LABEL,
+            "DATE",
+            NO_DATE_LABEL,
+            PAST_DATE_LABEL,
           ]);
 
+        const datedGroup = groups.find((group) => group.get("date") instanceof Date);
+        expect(datedGroup).to.exist;
+
         groups
-          .findWhere({ date: "Future Date (Newer)" })
+          .findWhere({ label: FUTURE_DATE_LABEL })
           .get("models")[0]
           .get("identifier")
           .should.equal("future");
         groups
-          .findWhere({ date: "Unknown Date (Older)" })
+          .findWhere({ label: PAST_DATE_LABEL })
           .get("models")[0]
           .get("identifier")
           .should.equal("past");
         groups
-          .findWhere({ date: "Unknown Date" })
+          .findWhere({ label: NO_DATE_LABEL })
           .get("models")[0]
           .get("identifier")
           .should.equal("no-ref");

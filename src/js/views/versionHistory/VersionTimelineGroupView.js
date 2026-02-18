@@ -5,8 +5,9 @@
 define([
   "backbone",
   "collections/DataONEObjects",
+  "common/DateUtility",
   "views/versionHistory/ObjectVersionsView",
-], (Backbone, DataONEObjects, ObjectVersionsView) => {
+], (Backbone, DataONEObjects, DateUtility, ObjectVersionsView) => {
   "use strict";
 
   // SVG for the timeline point, included inline to avoid an extra request and
@@ -41,27 +42,15 @@ define([
       className: BASE_CLASS,
 
       /**
-       * Format the date label for display.
-       * @param {string|Date} date Date value to format.
-       * @returns {string} Formatted date label.
-       */
-      formatDate(date) {
-        const options = { year: "numeric", month: "short", day: "numeric" };
-        let newDate = new Date(date).toLocaleDateString(undefined, options);
-        if (newDate === "Invalid Date") {
-          newDate = date;
-        }
-        return newDate;
-      },
-
-      /**
        * @param {object} [options] View options.
-       * @param {string} [options.date] The display date for the group header.
+       * @param {Date|null} [options.date] The display date for the group header.
+       * @param {string|null} [options.label] Label for synthetic date groups.
        * @param {DataONEObjects|object[]} [options.collection] - Collection or
        * raw data for the versions on that date.
        */
       initialize(options = {}) {
-        this.date = options.date || "";
+        this.date = options.date ?? null;
+        this.label = options.label ?? null;
         this.collection =
           options.collection instanceof DataONEObjects
             ? options.collection
@@ -71,17 +60,31 @@ define([
 
       /**
        * Base markup for the timeline group.
-       * @param {{date: string}} params Template parameters.
-       * @param {string} params.date Human-readable date label.
+       * @param {{date: Date|null, label: string|null}} params Template parameters.
+       * @param {Date|null} params.date Group date at midnight.
+       * @param {string|null} params.label Human-readable label for synthetic groups.
        * @returns {string} HTML string for the timeline group shell.
        */
-      template({ date }) {
-        const formattedDate = this.formatDate(date);
+      template({ date, label }) {
+        let displayDate = label
+          ? label
+          : DateUtility.toLocaleDateString(date, {
+              formatOptions: {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              },
+            });
+        // If it's a date and not e.g. "unknown" label, wrap it in <time>
+        if (DateUtility.isValidDate(date)) {
+          const dateAttr = DateUtility.toISODateOnly(date);
+          displayDate = `<time datetime="${dateAttr}">${displayDate}</time>`;
+        }
 
         return `
           <div class="timeline-point">${TIMELINE_POINT_SVG}</div>
           <div class="timeline-content">
-            <h3>${formattedDate}</h3>
+            <h3>${displayDate}</h3>
             <ul class="object-versions"></ul>
           </div>
         `;
@@ -92,7 +95,10 @@ define([
        * @returns {this} The view instance.
        */
       render() {
-        this.el.innerHTML = this.template({ date: this.date });
+        this.el.innerHTML = this.template({
+          date: this.date,
+          label: this.label,
+        });
         const listEl = this.el.querySelector(".object-versions");
 
         if (this.objectVersionsView) {
@@ -115,6 +121,17 @@ define([
        */
       setModels(models) {
         this.collection.set(models, { parse: true, merge: true });
+      },
+
+      /**
+       * Update the group header date/label and re-render this group.
+       * @param {Date|null} date Group date.
+       * @param {string|null} label Group label.
+       */
+      setDateAndLabel(date, label) {
+        this.date = date ?? null;
+        this.label = label ?? null;
+        this.render();
       },
 
       /**

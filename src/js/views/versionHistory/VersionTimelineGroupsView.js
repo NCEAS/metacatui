@@ -35,6 +35,11 @@ define(["backbone", "views/versionHistory/VersionTimelineGroupView"], (
         this.listenTo(this.collection, "remove", this.removeOne);
         this.listenTo(this.collection, "reset sort", this.renderAll);
         this.listenTo(this.collection, "change:models", this.updateGroupModels);
+        this.listenTo(
+          this.collection,
+          "change:date change:label",
+          this.updateGroupDate,
+        );
       },
 
       /**
@@ -47,6 +52,7 @@ define(["backbone", "views/versionHistory/VersionTimelineGroupView"], (
         if (!view) {
           view = new VersionTimelineGroupView({
             date: model.get("date"),
+            label: model.get("label"),
             collection: model.get("models"),
             referencePid: this.referencePid,
           }).render();
@@ -84,6 +90,17 @@ define(["backbone", "views/versionHistory/VersionTimelineGroupView"], (
         const view = this.childViews.get(model.cid);
         if (view) {
           view.setModels(model.get("models"));
+        }
+      },
+
+      /**
+       * Update the group view's date header when its date or label changes.
+       * @param {Backbone.Model} model Updated group model.
+       */
+      updateGroupDate(model) {
+        const view = this.childViews.get(model.cid);
+        if (view) {
+          view.setDateAndLabel(model.get("date"), model.get("label"));
         }
       },
 

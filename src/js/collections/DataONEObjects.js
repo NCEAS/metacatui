@@ -1,6 +1,8 @@
 "use strict";
 
-define(["backbone", "models/DataONEObject"], (Backbone, DataONEObject) => {
+define(
+  ["backbone", "models/DataONEObject", "common/DateUtility"],
+  (Backbone, DataONEObject, DateUtility) => {
   /**
    * @class DataONEObjects
    * @classdesc A collection of DataONEObject models.
@@ -55,43 +57,55 @@ define(["backbone", "models/DataONEObject"], (Backbone, DataONEObject) => {
     },
 
     /**
-     * Group the models in the collection by their `dateUploaded` property.
-     * @returns {object} An object where the keys are dates (YYYY-MM-DD) and the
-     * values are arrays of DataONEObject models uploaded on that date.
+     * Group models by calendar day in the chosen timezone.
+     * @param {object} [options]
+     * @param {string} [options.dateProp="dateUploaded"] Model property to read.
+     * @param {("local"|"UTC")} [options.groupingTimeZone="local"] Timezone used
+     * to determine day boundaries.
+     * @returns {{date: Date|null, models: Backbone.Model[]}[]} Grouped models.
      */
-    groupByDate() {
-      const dateProp = "dateUploaded";
-      if (!this.length) return {};
+    groupByDate({
+      dateProp = "dateUploaded",
+      groupingTimeZone = "local",
+    } = {}) {
+      if (!this.length) return [];
 
-      // group by date (YYYY-MM-DD)
-      const groups = this.models.reduce((acc, obj) => {
-        const dateUploaded = obj.get(dateProp);
-        let dateKey;
-        if (dateUploaded) {
+      const normalizedTimeZone = groupingTimeZone === "UTC" ? "UTC" : "local";
+      const groups = new Map();
+
+      this.models.forEach((obj) => {
+        const rawDate = obj.get(dateProp);
+        let dateKey = null;
+        let groupDate = null;
+
+        if (rawDate) {
           try {
-            const date = new Date(dateUploaded);
-            const dateParts = date.toISOString().split("T");
-            [dateKey] = dateParts;
+            const parsedDate = DateUtility.toDate(rawDate);
+            if (!parsedDate) {
+              throw new Error("Invalid Date");
+            }
+            groupDate = DateUtility.toMidnightDate(
+              parsedDate,
+              normalizedTimeZone,
+            );
+            dateKey = groupDate.getTime();
           } catch (e) {
             // eslint-disable-next-line no-console
             console.warn(
               "Error parsing dateUploaded for grouping:",
-              dateUploaded,
+              rawDate,
               e,
             );
-            dateKey = "";
           }
-        } else {
-          dateKey = "";
         }
-        if (!acc[dateKey]) {
-          acc[dateKey] = [];
-        }
-        acc[dateKey].push(obj);
-        return acc;
-      }, {});
 
-      return groups;
+        if (!groups.has(dateKey)) {
+          groups.set(dateKey, { date: groupDate, models: [] });
+        }
+        groups.get(dateKey).models.push(obj);
+      });
+
+      return Array.from(groups.values());
     },
   });
 
