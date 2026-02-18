@@ -43,19 +43,28 @@ define([
 
       /**
        * @param {object} [options] View options.
-       * @param {Date|null} [options.date] The display date for the group header.
-       * @param {string|null} [options.label] Label for synthetic date groups.
-       * @param {DataONEObjects|object[]} [options.collection] - Collection or
-       * raw data for the versions on that date.
+       * @param {Backbone.Model} [options.model] VersionTimeLineGroup model
+       * (defined in VersionTimelineGroups collection).
+       * @param {string} [options.referencePid] PID used for badge context.
        */
       initialize(options = {}) {
-        this.date = options.date ?? null;
-        this.label = options.label ?? null;
-        this.collection =
-          options.collection instanceof DataONEObjects
-            ? options.collection
-            : new DataONEObjects(options.collection || []);
         this.referencePid = options.referencePid || null;
+
+        this.model = options.model || null;
+        if (!this.model) {
+          this.model = new Backbone.Model({
+            models: new DataONEObjects(),
+          });
+        }
+
+        const models = this.model.get("models");
+
+        this.date = this.model.get("date") ?? null;
+        this.label = this.model.get("label") ?? null;
+        this.collection =
+          models instanceof DataONEObjects
+            ? models
+            : new DataONEObjects(models || []);
       },
 
       /**
