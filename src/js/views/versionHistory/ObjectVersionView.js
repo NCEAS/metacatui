@@ -1,6 +1,10 @@
 "use strict";
 
-define(["backbone", "common/Utilities"], (Backbone, Utilities) => {
+define(["backbone", "common/Utilities", "common/DateUtility"], (
+  Backbone,
+  Utilities,
+  DateUtility,
+) => {
   // The prefix for BEM-style class names for this view
   const BASE_CLASS = "object-version";
 
@@ -122,9 +126,9 @@ define(["backbone", "common/Utilities"], (Backbone, Utilities) => {
       template(model) {
         const { identifier, dateUploaded } = model.toJSON();
 
-        let friendlyDate = this.friendlyDate(dateUploaded);
-        let isoDate = this.isoDate(dateUploaded);
-        if (!dateUploaded) {
+        let friendlyDate = DateUtility.toLocalTimestampWithZone(dateUploaded);
+        let isoDate = DateUtility.toISOString(dateUploaded);
+        if (!friendlyDate) {
           friendlyDate = "Unknown Date";
           isoDate = "";
         }
@@ -213,37 +217,6 @@ define(["backbone", "common/Utilities"], (Backbone, Utilities) => {
           this.model = newModel;
           this.listenTo(this.model, "change", this.render);
           this.render();
-        }
-      },
-
-      /**
-       * Provides a locale-aware friendly timestamp string.
-       * @param {string|number|Date} date The date-ish value to convert.
-       * @returns {string} Date in a friendly format.
-       */
-      friendlyDate(date) {
-        const options = {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        };
-        return new Date(date).toLocaleDateString(undefined, options);
-      },
-
-      /**
-       * Converts the provided date-ish value to ISO-8601 string.
-       * @param {string|number|Date} date The date-ish value to convert.
-       * @returns {string} Date in ISO-8601 format.
-       */
-      isoDate(date) {
-        try {
-          return new Date(date).toISOString();
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.warn("Error converting date to ISO string:", e);
-          return "";
         }
       },
     },
