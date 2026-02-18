@@ -33,7 +33,7 @@ define(["backbone", "views/versionHistory/VersionTimelineGroupView"], (
         this.childViews = new Map();
         this.listenTo(this.collection, "add", this.addOne);
         this.listenTo(this.collection, "remove", this.removeOne);
-        this.listenTo(this.collection, "reset sort", this.renderAll);
+        this.listenTo(this.collection, "reset sort", this.render);
         this.listenTo(this.collection, "change:models", this.updateGroupModels);
         this.listenTo(
           this.collection,
@@ -44,16 +44,15 @@ define(["backbone", "views/versionHistory/VersionTimelineGroupView"], (
 
       /**
        * Ensure a child group view exists for the given model.
-       * @param {Backbone.Model} model Group model.
+       * @param {Backbone.Model} model VersionTimeLineGroup model (defined in
+       * VersionTimelineGroups collection).
        * @returns {VersionTimelineGroupView} The group view instance.
        */
       ensureChildView(model) {
         let view = this.childViews.get(model.cid);
         if (!view) {
           view = new VersionTimelineGroupView({
-            date: model.get("date"),
-            label: model.get("label"),
-            collection: model.get("models"),
+            model,
             referencePid: this.referencePid,
           }).render();
           this.childViews.set(model.cid, view);
@@ -106,9 +105,9 @@ define(["backbone", "views/versionHistory/VersionTimelineGroupView"], (
 
       /**
        * Render all group views in the collection.
-       * @returns {this} The view instance.
+       * @returns {VersionTimelineGroupsView} The view instance.
        */
-      renderAll() {
+      render() {
         const fragment = document.createDocumentFragment();
         this.collection.each((model) => {
           const view = this.ensureChildView(model);
@@ -116,14 +115,6 @@ define(["backbone", "views/versionHistory/VersionTimelineGroupView"], (
         });
         this.el.appendChild(fragment);
         return this;
-      },
-
-      /**
-       * Render wrapper that delegates to renderAll.
-       * @returns {this} The view instance.
-       */
-      render() {
-        return this.renderAll();
       },
 
       /**
