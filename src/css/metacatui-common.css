@@ -9722,6 +9722,13 @@ body > #extension-is-installed {
   }
 }
 
+.toggle-container--disabled {
+  .toggle-option {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
 /******************************************
 * Dataset Controls View
 ********************************************/

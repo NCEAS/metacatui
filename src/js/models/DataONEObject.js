@@ -2489,6 +2489,15 @@ define([
        * @returns {boolean} True if it is a DOI
        */
       isDOI(customString) {
+        const isDOI = globalThis.MetacatUI?.appModel?.isDOI.bind(
+          MetacatUI.appModel,
+        );
+        if (!isDOI) {
+          console.warn(
+            "The isDOI function is not defined on the appModel. Please define this function to check if an identifier is a DOI.",
+          );
+          return false;
+        }
         return (
           isDOI(customString) ||
           isDOI(this.get("id")) ||

@@ -9,6 +9,7 @@ define([
   "collections/versionHistory/VersionTimelineGroups",
   "views/versionHistory/VersionTimelineGroupsView",
   "views/CitationView",
+  "views/uiElements/ToggleView",
   "common/Utilities",
   // CSS
   `text!${MetacatUI.root}/css/version-history/version-history.css`,
@@ -20,6 +21,7 @@ define([
   VersionTimelineGroups,
   VersionTimelineGroupsView,
   CitationView,
+  ToggleView,
   Utilities,
   VersionHistoryCSS,
 ) => {
@@ -71,9 +73,9 @@ define([
     base: BASE_CLASS,
     header: `${BASE_CLASS}__header`,
     subtitle: `${BASE_CLASS}__subtitle`,
-    summary: `${BASE_CLASS}__summary`,
     status: `${BASE_CLASS}__status alert alert-info`,
     history: `${BASE_CLASS}__history`,
+    toggle: `${BASE_CLASS}__toggle`,
   };
 
   /**
@@ -129,8 +131,8 @@ define([
         <header class="${CLASS_NAMES.header}" data-role="header">
           <h1>Version History</h1>
         </header>
-        <p class="${CLASS_NAMES.summary}" data-role="summary"></p>
         <div class="${CLASS_NAMES.status}" data-role="status" role="status"></div>
+        <div class="${CLASS_NAMES.toggle}" data-role="toggle"></div>
         <div class="${CLASS_NAMES.history}" data-role="list"></div>
         `.trim();
       },
@@ -142,6 +144,10 @@ define([
       async render() {
         // Clean up any previous listeners & subviews
         this.onClose();
+
+        // Begin with the toggle defaulted to "all" so all versions are shown as
+        // they are found
+        this.showDOIOnly = false;
 
         if (!MetacatUI.appUserModel.get("loggedIn")) {
           this.listenToOnce(MetacatUI.appUserModel, "change:loggedIn", () =>
@@ -162,8 +168,8 @@ define([
         this.statusEl = this.el.querySelector('[data-role="status"]');
         this.listEl = this.el.querySelector('[data-role="list"]');
         this.pidEl = this.el.querySelector('[data-role="pid"]');
-        this.summaryEl = this.el.querySelector('[data-role="summary"]');
         this.headerEl = this.el.querySelector(`[data-role="header"]`);
+        this.toggleEl = this.el.querySelector(`[data-role="toggle"]`);
 
         this.timelineGroupsView?.remove();
         this.timelineGroupsView = new VersionTimelineGroupsView({
@@ -179,6 +185,7 @@ define([
           return this;
         }
 
+        this.renderToggle();
         this.showLoading();
         this.renderHeader();
         this.listenToVersionsFound();
@@ -220,6 +227,50 @@ define([
       },
 
       /**
+       * Create the toggle view for showing all versions vs. DOI-only versions,
+       * and listen for changes to update the timeline groups accordingly.
+       */
+      renderToggle() {
+        this.toggle = new ToggleView({
+          disabled: true, // start disabled until versions are loaded
+          selected: "all",
+          options: [
+            {
+              value: "all",
+              label: "All Versions",
+              tooltip: "Show all versions regardless of DOI status",
+              icon: "list",
+            },
+            {
+              value: "doi",
+              label: "DOI Only",
+              tooltip: "Only show versions published with a DOI",
+              icon: "star",
+            },
+          ],
+        }).render();
+        this.toggleEl.appendChild(this.toggle.el);
+        this.listenTo(this.toggle, "toggle:change", this.onToggle);
+      },
+
+      /**
+       * When the toggle is changed, update the "hiddenByUI" attribute on each object
+       * model to control whether it is shown in the timeline groups.
+       * @param {"all"|"doi"} value The currently selected toggle value.
+       */
+      onToggle(value) {
+        const showDOIOnly = value === "doi";
+        if (this.showDOIOnly === showDOIOnly) return; // No change
+        this.showDOIOnly = showDOIOnly;
+        this.collection.each((model) => {
+          model.set("hiddenByUI", false);
+          if (showDOIOnly && !model.isDOI()) {
+            model.set("hiddenByUI", true);
+          }
+        });
+      },
+
+      /**
        * Sets up listeners to respond to VersionTracker updates and to mirror
        * the fetched collection into the timeline groups collection.
        */
@@ -249,6 +300,9 @@ define([
        * @returns {Promise<void>}
        */
       async findVersions() {
+        if (this.toggle) {
+          this.toggle.disable();
+        }
         let controller = null;
         try {
           const { pid, versionTracker } = this;
@@ -272,6 +326,14 @@ define([
           this.onVersionFound(thisSysMeta);
 
           const record = await versionTracker.getAllVersions(pid, { signal });
+
+          // If another findVersions() call started since we began,
+          // this.chainAbortController will no longer equal our controller. In
+          // that case, ignore this result entirely.
+          if (this.chainAbortController !== controller) {
+            return;
+          }
+
           if (!record) {
             throw new Error(
               `No version history found for the document with ID: <strong>${pid}</strong>.`,
@@ -296,8 +358,12 @@ define([
           }
           this.showError(error.message || error);
         } finally {
-          if (this.chainAbortController === controller) {
+          const isCurrent = this.chainAbortController === controller;
+          if (isCurrent) {
             this.chainAbortController = null;
+            // Enable the toggle now that versions have loaded (even if there was
+            // an error, some versions may have been found)
+            if (this.toggle) this.toggle.enable();
           }
         }
       },
