@@ -1,4 +1,4 @@
-define(["backbone"], (Backbone) => {
+define(["backbone", "semantic"], (Backbone, Semantic) => {
   /**
    * @class ToggleView
    * @classdesc A configurable two-option toggle with optional description area.
@@ -17,37 +17,68 @@ define(["backbone"], (Backbone) => {
     option: "toggle-option",
     active: "toggle-option--active",
     description: "toggle-description",
+    disabled: "toggle-container--disabled",
   };
 
   const DEFAULT_ICON = "check-sign";
+  const SEM_VARIATIONS = Semantic.CLASS_NAMES.variations;
+  const DEFAULT_TOOLTIP_SETTINGS = {
+    variation: `${SEM_VARIATIONS.mini} ${SEM_VARIATIONS.inverted}`,
+    position: "top center",
+    on: "hover",
+    hoverable: true,
+    delay: {
+      show: 250,
+      hide: 40,
+    },
+  };
 
   const ToggleView = Backbone.View.extend(
     /** @lends ToggleView.prototype */ {
       /**
        * @typedef {object} ToggleOption
-       * @property {string} value - Internal value of the option
+       * @property {*} value - Internal value of the option
        * @property {string} label - Display label for the option
-       * @property {description} [description] - Optional description for the
-       * option
+       * @property {string} [description] - Optional description for the option
        * @property {string} [icon] - Optional icon for the option. A
        * font-awesome 3 icon name, e.g. "star-empty". Defaults to "check-sign".
+       * @property {string} [tooltip] - Optional tooltip content for the option.
        */
 
       /**
        * @param {object} options - Configuration options
        * @param {ToggleOption[]} options.options - Array of exactly two options
-       * @param {string} options.selected - The value of the initially selected
-       * option
+       * @param {*} [options.selected] - The value of the initially selected option
        * @param {boolean} [options.showDescription] - Whether to show
        * description below toggle. True by default.
+       * @param {object|boolean} [options.tooltipSettings] - Custom settings for
+       * Formantic UI popup tooltips. Set to false to disable tooltips entirely.
        */
       initialize(options = {}) {
         if (!options.options || options.options.length !== 2) {
           throw new Error("ToggleView requires exactly two options");
         }
-        this.options = options.options;
+
+        this.disabled = options.disabled === true;
+
+        this.toggleOptions = options.options;
         this.showDescription = options.showDescription !== false;
-        this.selected = options.selected;
+        this.selected =
+          typeof options.selected !== "undefined"
+            ? options.selected
+            : this.toggleOptions[0].value;
+
+        this.tooltipSettings =
+          options.tooltipSettings === false
+            ? false
+            : {
+                ...DEFAULT_TOOLTIP_SETTINGS,
+                ...(options.tooltipSettings || {}),
+              };
+
+        if (!this.getOptionByKey(`${this.selected}`)) {
+          this.selected = this.toggleOptions[0].value;
+        }
       },
 
       /** @inheritdoc */
@@ -65,17 +96,20 @@ define(["backbone"], (Backbone) => {
        * @returns {ToggleView} This view instance
        */
       render() {
-        const { options, showDescription } = this;
+        this.toggleDisabled(this.disabled);
+        const { toggleOptions, showDescription } = this;
+        this.removeTooltips();
 
         const container = document.createDocumentFragment();
 
         const toggle = document.createElement("div");
         toggle.className = CLASS_NAMES.switch;
 
-        options.forEach((opt) => {
+        toggleOptions.forEach((opt) => {
           const button = document.createElement("button");
+          button.type = "button";
           button.className = CLASS_NAMES.option;
-          button.dataset.value = opt.value;
+          button.dataset.value = `${opt.value}`;
           toggle.appendChild(button);
         });
 
@@ -92,36 +126,75 @@ define(["backbone"], (Backbone) => {
 
         // Set initial state for buttons and description
         this.updateButtonsAndDescription(this.selected);
+        this.addTooltips();
 
         return this;
       },
 
       /**
        * Updates the toggle buttons' active state and icons
-       * @param {string} selectedValue - The value of the currently selected option
+       * @param {*} selectedValue - The value of the currently selected option
        */
       updateButtonsAndDescription(selectedValue) {
+        const selectedOption =
+          this.getOptionByKey(`${selectedValue}`) || this.toggleOptions[0];
+        const selectedValueKey = `${selectedOption.value}`;
+        this.selected = selectedOption.value;
+
         const buttons = this.el.querySelectorAll(`.${CLASS_NAMES.option}`);
         buttons.forEach((button) => {
           const btn = button;
-          const opt = this.options.find((o) => o.value === btn.dataset.value);
-          if (btn.dataset.value === selectedValue) {
-            btn.classList.add(CLASS_NAMES.active);
-            const iconName = (opt && opt.icon) || DEFAULT_ICON;
-            btn.innerHTML = `<i class="icon icon-${iconName}"></i> ${opt.label}`;
+          const opt = this.getOptionByKey(btn.dataset.value);
+          const isActive = btn.dataset.value === selectedValueKey;
+
+          if (!opt) {
+            return;
+          }
+
+          btn.classList.toggle(CLASS_NAMES.active, isActive);
+          btn.setAttribute("aria-pressed", isActive.toString());
+          btn.innerHTML = "";
+
+          if (isActive) {
+            const iconName = opt.icon || DEFAULT_ICON;
+            const iconEl = document.createElement("i");
+            iconEl.className = `icon icon-${iconName}`;
+            btn.append(iconEl, document.createTextNode(` ${opt.label}`));
           } else {
-            btn.classList.remove(CLASS_NAMES.active);
-            btn.innerHTML = opt.label;
+            btn.textContent = opt.label;
           }
         });
 
         if (this.showDescription) {
-          const opt = this.options.find((o) => o.value === selectedValue);
           const descEl = this.el.querySelector(`.${CLASS_NAMES.description}`);
           if (descEl) {
-            descEl.textContent = (opt && opt.description) || "";
+            descEl.textContent = selectedOption.description || "";
           }
         }
+      },
+
+      /**
+       * Enable or disable the toggle
+       * @param {boolean} disabled Whether the toggle should be disabled
+       */
+      toggleDisabled(disabled) {
+        if (disabled) {
+          this.disabled = true;
+          this.el.classList.add(CLASS_NAMES.disabled);
+        } else {
+          this.disabled = false;
+          this.el.classList.remove(CLASS_NAMES.disabled);
+        }
+      },
+
+      /** Disable the toggle */
+      disable() {
+        this.toggleDisabled(true);
+      },
+
+      /** Enable the toggle */
+      enable() {
+        this.toggleDisabled(false);
       },
 
       /**
@@ -129,12 +202,79 @@ define(["backbone"], (Backbone) => {
        * @param {MouseEvent} e - Click event
        */
       onToggle(e) {
-        const newValue = e.currentTarget.dataset.value;
-        if (newValue === this.selected) return;
+        if (this.disabled) return;
+        const newValueKey = e.currentTarget.dataset.value;
+        const selectedOption = this.getOptionByKey(newValueKey);
+        if (!selectedOption) return;
 
-        this.selected = newValue;
-        this.updateButtonsAndDescription(newValue);
-        this.trigger("toggle:change", this.selected);
+        if (newValueKey === `${this.selected}`) return;
+
+        this.selected = selectedOption.value;
+        this.updateButtonsAndDescription(this.selected);
+        this.trigger("toggle:change", this.selected, selectedOption);
+        this.trigger("change", this.selected, selectedOption);
+      },
+
+      /**
+       * Initialize option tooltips using the Formantic UI popup module.
+       */
+      addTooltips() {
+        if (!this.tooltipSettings || !this.hasPopupModule()) return;
+
+        const buttons = this.el.querySelectorAll(`.${CLASS_NAMES.option}`);
+        buttons.forEach((button) => {
+          const option = this.getOptionByKey(button.dataset.value);
+          const tooltip = option?.tooltip;
+          const $button = this.$(button);
+
+          if (tooltip) {
+            button.setAttribute("data-content", tooltip);
+            $button.popup({
+              content: tooltip,
+              ...this.tooltipSettings,
+            });
+          } else {
+            button.removeAttribute("data-content");
+            $button.popup("destroy");
+          }
+        });
+      },
+
+      /**
+       * Remove Formantic UI popup instances from this toggle's options.
+       */
+      removeTooltips() {
+        if (!this.hasPopupModule()) return;
+        const buttons = this.el.querySelectorAll(`.${CLASS_NAMES.option}`);
+        buttons.forEach((button) => {
+          this.$(button).popup("destroy");
+        });
+      },
+
+      /**
+       * Get an option by its DOM key.
+       * @param {string} valueKey - String key from DOM data attribute.
+       * @returns {ToggleOption|undefined} The matching option, or undefined if not found.
+       */
+      getOptionByKey(valueKey) {
+        return this.toggleOptions.find(
+          (option) => `${option.value}` === valueKey,
+        );
+      },
+
+      /**
+       * Check whether the Formantic popup plugin is loaded in this context.
+       * @returns {boolean} True if the popup plugin is available, false
+       * otherwise.
+       */
+      hasPopupModule() {
+        return typeof this.$el.popup === "function";
+      },
+
+      /** @inheritdoc */
+      remove() {
+        this.removeTooltips();
+        return Backbone.View.prototype.remove.call(this);
       },
     },
   );

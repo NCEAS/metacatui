@@ -5,6 +5,9 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
   Utilities,
   DateUtility,
 ) => {
+  // SVG for the star icon used in the DOI badge
+  const starIcon = `<i class="icon-star"></i>`;
+
   // The prefix for BEM-style class names for this view
   const BASE_CLASS = "object-version";
 
@@ -16,10 +19,12 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
     base: BASE_CLASS,
     title: `${BASE_CLASS}__title`,
     link: `${BASE_CLASS}__link`,
-    // badge: `${BASE_CLASS}__badge`,
+    badgesContainer: `${BASE_CLASS}__badges`,
     badge: `label object-version__badge`,
     date: `${BASE_CLASS}__date`,
     size: `${BASE_CLASS}__size`,
+    hidden: `${BASE_CLASS}--hidden`,
+    doi: `${BASE_CLASS}--doi`,
     badgeTypes: {
       FIRST: `${BASE_CLASS}__badge--first`,
       LATEST: `${BASE_CLASS}__badge--latest`,
@@ -29,6 +34,7 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
       CURRENT: `${BASE_CLASS}__badge--current`,
       PRIVATE: `${BASE_CLASS}__badge--private`,
       NOTFOUND: `${BASE_CLASS}__badge--not-found`,
+      DOI: `${BASE_CLASS}__badge--doi`,
     },
   };
 
@@ -119,6 +125,16 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
       },
 
       /**
+       * Determines if the current version is a DOI based on its identifier.
+       * @returns {boolean} True if the version is a DOI, false otherwise.
+       */
+      isDOI() {
+        const identifier = this.model.get("identifier");
+        if (!identifier) return false;
+        return this.model.isDOI(identifier);
+      },
+
+      /**
        * Generates the markup representing a single version entry.
        * @param {DataONEObject} model The DataONEObject model to represent.
        * @returns {string} The HTML string.
@@ -135,6 +151,10 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
         const viewUrl = this.createViewURL(model);
         const status = this.getStatus();
 
+        let doiBadge = "<span></span>";
+        if (this.isDOI()) {
+          doiBadge = `<span class="${CLASS_NAMES.badge} ${CLASS_NAMES.badgeTypes.DOI}">${starIcon} DOI</span>`;
+        }
         const htmlIdentifier = Utilities.encodeHTML(identifier);
         const statusBadge = `<span class="${CLASS_NAMES.badge} ${status.className}">${status.label}</span>`;
         return `
@@ -142,7 +162,10 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
           <a href="${viewUrl}" class="${CLASS_NAMES.link}" target="_blank" rel="noopener">
             <h4 class="${CLASS_NAMES.title}">${htmlIdentifier}</h4>
           </a>
-          ${statusBadge}
+          <div class ="${CLASS_NAMES.badgesContainer}">
+            ${doiBadge}
+            ${statusBadge}
+          </div>
         `;
       },
 
@@ -203,7 +226,16 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
 
       /** @inheritdoc */
       render() {
+        this.el.classList.remove(`${CLASS_NAMES.hidden}`);
+        if (this.model.get("hiddenByUI") === true) {
+          this.el.innerHTML = "";
+          this.el.classList.add(`${CLASS_NAMES.hidden}`);
+          return this;
+        }
         this.el.innerHTML = this.template(this.model);
+        if (this.isDOI()) {
+          this.el.classList.add(`${CLASS_NAMES.doi}`);
+        }
         return this;
       },
 

@@ -16,7 +16,16 @@ define([
 
   // Base class for the timeline group, used in the className property and for
   // scoping styles
-  const BASE_CLASS = "version-history__group";
+  const BASE_CLASS = "version-history-group";
+
+  // All class names used in this view, for easy reference and to avoid typos
+  const CLASS_NAMES = {
+    container: BASE_CLASS,
+    hidden: `${BASE_CLASS}--hidden`,
+    timelinePoint: `${BASE_CLASS}__timeline-point`,
+    timelineContent: `${BASE_CLASS}__timeline-content`,
+    objectVersionsList: `object-versions`,
+  };
 
   /**
    * @class VersionTimelineGroupView
@@ -39,7 +48,7 @@ define([
       tagName: "div",
 
       /** @inheritdoc */
-      className: BASE_CLASS,
+      className: CLASS_NAMES.container,
 
       /**
        * @param {object} [options] View options.
@@ -65,6 +74,7 @@ define([
           models instanceof DataONEObjects
             ? models
             : new DataONEObjects(models || []);
+        this.model.set("models", this.collection);
       },
 
       /**
@@ -75,15 +85,15 @@ define([
        * @returns {string} HTML string for the timeline group shell.
        */
       template({ date, label }) {
-        let displayDate = label
-          ? label
-          : DateUtility.toLocaleDateString(date, {
-              formatOptions: {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              },
-            });
+        let displayDate =
+          label ||
+          DateUtility.toLocaleDateString(date, {
+            formatOptions: {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            },
+          });
         // If it's a date and not e.g. "unknown" label, wrap it in <time>
         if (DateUtility.isValidDate(date)) {
           const dateAttr = DateUtility.toISODateOnly(date);
@@ -91,10 +101,10 @@ define([
         }
 
         return `
-          <div class="timeline-point">${TIMELINE_POINT_SVG}</div>
-          <div class="timeline-content">
+          <div class="${CLASS_NAMES.timelinePoint}">${TIMELINE_POINT_SVG}</div>
+          <div class="${CLASS_NAMES.timelineContent}">
             <h3>${displayDate}</h3>
-            <ul class="object-versions"></ul>
+            <ul class="${CLASS_NAMES.objectVersionsList}"></ul>
           </div>
         `;
       },
@@ -104,11 +114,24 @@ define([
        * @returns {this} The view instance.
        */
       render() {
+        // Hide the group if there are no versions to show, or if all versions
+        // are hidden by the UI (e.g. filtered out by the DOI toggle)
+        if (this.collection.length === 0 || this.collection.allHidden()) {
+          this.el.innerHTML = "";
+          this.el.classList.add(`${CLASS_NAMES.hidden}`);
+          return this;
+        }
+        this.el.classList.remove(`${CLASS_NAMES.hidden}`);
+        this.stopListening(this.collection);
+        this.listenTo(this.collection, "change:hiddenByUI", this.render);
+
         this.el.innerHTML = this.template({
           date: this.date,
           label: this.label,
         });
-        const listEl = this.el.querySelector(".object-versions");
+        const listEl = this.el.querySelector(
+          `.${CLASS_NAMES.objectVersionsList}`,
+        );
 
         if (this.objectVersionsView) {
           this.objectVersionsView.remove();
