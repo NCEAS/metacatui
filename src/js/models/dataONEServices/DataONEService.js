@@ -132,7 +132,11 @@ define([
       let userName = userModel.get("username");
       if (!userName) {
         try {
-          await userModel.getTokenPromise(); // Parses token and sets username
+          await this.getToken(); // Parses token and sets username
+          // small pause to ensure parsing is complete and username is set
+          await new Promise((resolve) => {
+            setTimeout(resolve, 10);
+          });
           userName = userModel.get("username");
         } catch (e) {
           // eslint-disable-next-line no-console
@@ -152,7 +156,7 @@ define([
     async getToken() {
       const userModel = await this.constructor.awaitUserModel();
       let token = userModel.get("token");
-      if (!token) {
+      if (!token && userModel.get("tokenChecked") !== true) {
         try {
           token = await userModel.getTokenPromise();
         } catch (e) {

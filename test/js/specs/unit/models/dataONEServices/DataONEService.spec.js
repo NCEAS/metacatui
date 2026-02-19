@@ -110,8 +110,17 @@ define([
 
       it("getUserName resolves usernames from token parsing", async () => {
         const getStub = state.sandbox.stub();
-        getStub.onCall(0).returns(null);
-        getStub.onCall(1).returns("bob");
+        // when get is called with "tokenChecked", return false to trigger token parsing
+        getStub.withArgs("tokenChecked").returns(false);
+        // If get is called with "token", return null the first time to indicate
+        // no token is set, then return a token the second time to trigger
+        // username parsing
+        getStub.withArgs("token").onFirstCall().returns(null);
+        getStub.withArgs("token").onSecondCall().returns("tok");
+        // when get is called with "username" the first time, return null to indicate the username is not already set
+        getStub.withArgs("username").onFirstCall().returns(null);
+        // when get is called with "username" the second time, return the parsed username
+        getStub.withArgs("username").onSecondCall().returns("bob");
         const userModel = {
           get: getStub,
           getTokenPromise: state.sandbox.stub().resolves("tok"),
