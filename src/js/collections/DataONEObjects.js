@@ -1,8 +1,10 @@
 "use strict";
 
-define(
-  ["backbone", "models/DataONEObject", "common/DateUtility"],
-  (Backbone, DataONEObject, DateUtility) => {
+define(["backbone", "models/DataONEObject", "common/DateUtility"], (
+  Backbone,
+  DataONEObject,
+  DateUtility,
+) => {
   /**
    * @class DataONEObjects
    * @classdesc A collection of DataONEObject models.
@@ -17,6 +19,18 @@ define(
 
     /** @inheritdoc */
     comparator: "dateUploaded",
+
+    /**
+     * Determine if all models in the collection are hidden by the UI based on
+     * the `hiddenByUI` property.
+     * @returns {boolean} True if all models are hidden, false otherwise.
+     */
+    allHidden() {
+      return (
+        this.length > 0 &&
+        this.every((model) => model.get("hiddenByUI") === true)
+      );
+    },
 
     /**
      * Determine if the object with the given identifier is the newest in the
@@ -58,9 +72,9 @@ define(
 
     /**
      * Group models by calendar day in the chosen timezone.
-     * @param {object} [options]
-     * @param {string} [options.dateProp="dateUploaded"] Model property to read.
-     * @param {("local"|"UTC")} [options.groupingTimeZone="local"] Timezone used
+     * @param {object} [options] Options for grouping
+     * @param {string} [options.dateProp] Model property to read.
+     * @param {("local"|"UTC")} [options.groupingTimeZone] Timezone used
      * to determine day boundaries.
      * @returns {{date: Date|null, models: Backbone.Model[]}[]} Grouped models.
      */
