@@ -42,34 +42,51 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
     FIRST: {
       label: "First",
       className: CLASS_NAMES.badgeTypes.FIRST,
+      description: "This is the first version of this object.",
     },
     LATEST: {
       label: "Latest",
       className: CLASS_NAMES.badgeTypes.LATEST,
+      description: "This is the newest version of this object.",
     },
     NEWER: {
       label: "Newer",
       className: CLASS_NAMES.badgeTypes.NEWER,
+      description: "This was created more recently than the reference version.",
     },
     OLDER: {
       label: "Older",
       className: CLASS_NAMES.badgeTypes.OLDER,
+      description: "This was created before the reference version.",
     },
     CURRENT: {
       label: "This Version",
       className: CLASS_NAMES.badgeTypes.CURRENT,
+      description:
+        "You are viewing the version history of this version, all versions are relative to this one.",
     },
     EMPTY: {
       label: "",
       className: CLASS_NAMES.badgeTypes.EMPTY,
+      description: "",
     },
     PRIVATE: {
       label: "Private",
       className: CLASS_NAMES.badgeTypes.PRIVATE,
+      description:
+        "This version is private and cannot be accessed with your current credentials. Login with an account that has access to this version to view it.",
     },
     NOTFOUND: {
       label: "Not Found",
       className: CLASS_NAMES.badgeTypes.NOTFOUND,
+      description:
+        "This version is referenced in the version history but was not found in this data repository.",
+    },
+    DOI: {
+      label: `${starIcon} DOI`,
+      className: CLASS_NAMES.badgeTypes.DOI,
+      description:
+        "This version has been published with a Data Object Identifier (DOI).",
     },
   };
 
@@ -101,12 +118,6 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
       className: CLASS_NAMES.base,
 
       /**
-       * Set to false to hide the status badge.
-       * @type {boolean}
-       */
-      showStatus: true,
-
-      /**
        * Initializes the ObjectVersionView.
        * @param {object} options - Options to configure the view.
        * @param {DataONEObject} options.model - The DataONEObject model to
@@ -114,9 +125,6 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
        */
       initialize(options) {
         this.model = options.model;
-        if (options.showStatus === false) {
-          this.showStatus = false;
-        }
         if (typeof options.status === "string") {
           this.status = options.status;
         }
@@ -149,14 +157,13 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
           isoDate = "";
         }
         const viewUrl = this.createViewURL(model);
-        const status = this.getStatus();
-
-        let doiBadge = "<span></span>";
-        if (this.isDOI()) {
-          doiBadge = `<span class="${CLASS_NAMES.badge} ${CLASS_NAMES.badgeTypes.DOI}">${starIcon} DOI</span>`;
-        }
         const htmlIdentifier = Utilities.encodeHTML(identifier);
-        const statusBadge = `<span class="${CLASS_NAMES.badge} ${status.className}">${status.label}</span>`;
+
+        const doiBadge = this.getDOIBadge();
+        const dateBadge = this.getRelativeDateBadge();
+        const errorBadge = this.getErrorBadge();
+        const keyPointsBadge = this.getKeyPointsBadge();
+
         return `
         <time class="${CLASS_NAMES.date}" datetime="${isoDate}" title="${friendlyDate}">${friendlyDate}</time>
           <a href="${viewUrl}" class="${CLASS_NAMES.link}" target="_blank" rel="noopener">
@@ -164,7 +171,9 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
           </a>
           <div class ="${CLASS_NAMES.badgesContainer}">
             ${doiBadge}
-            ${statusBadge}
+            ${errorBadge}
+            ${keyPointsBadge}
+            ${dateBadge}
           </div>
         `;
       },
@@ -182,46 +191,122 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
       },
 
       /**
-       * Determine the status badge for the current model.
-       * @returns {{label: string, className: string}} Status display info.
+       * Special badge for versions that are first or last in the version
+       * history, or the current reference version.
+       * @returns {string} HTML string for the badge.
        */
-      getStatus() {
-        if (this.showStatus === false) {
-          return STATUS.EMPTY;
-        }
+      getKeyPointsBadge() {
+        const { obsoletes, obsoletedBy } = this.model.toJSON();
 
-        const { obsoletes, obsoletedBy, errors, versionHistory } =
-          this.model.toJSON();
-
+        let status = STATUS.EMPTY;
         if (this.referencePid === this.model.get("identifier")) {
-          return STATUS.CURRENT;
-        }
-        if (errors?.length) {
-          // For now support only one error per object
-          const error = errors[0];
-          if (error === 401) {
-            return STATUS.PRIVATE;
-          }
-          if (error === 404) {
-            return STATUS.NOTFOUND;
-          }
+          status = STATUS.CURRENT;
         }
         if (!obsoletes && obsoletedBy) {
-          return STATUS.FIRST;
+          status = STATUS.FIRST;
         }
         if (obsoletes && !obsoletedBy) {
-          return STATUS.LATEST;
+          status = STATUS.LATEST;
         }
+        return this.createBadge(status);
+      },
 
-        const index = versionHistory?.[this.referencePid];
-        if (index > 0) {
-          return STATUS.NEWER;
+      /**
+       * Get the badge that indicates how old or new this version is (based on
+       * dateUploaded) relative to the reference version. If it's the reference
+       * version, return the "current" badge.
+       * @returns {string} HTML string for the badge.
+       */
+      getRelativeDateBadge() {
+        let status = STATUS.EMPTY;
+        const emptyBadge = this.createEmptyBadge();
+        if (this.referencePid === this.model.get("identifier")) {
+          return emptyBadge;
         }
-        if (index < 0) {
-          return STATUS.OLDER;
+        const { collection } = this.model;
+        const referenceModel = collection?.findWhere({
+          identifier: this.referencePid,
+        });
+        if (!referenceModel) {
+          return emptyBadge;
         }
+        const referenceDate = referenceModel.get("dateUploaded");
+        const thisDate = this.model.get("dateUploaded");
+        if (!referenceDate || !thisDate) {
+          return emptyBadge;
+        }
+        const thisDateObj = DateUtility.toDate(thisDate);
+        const referenceDateObj = DateUtility.toDate(referenceDate);
+        const relativeDateString = DateUtility.getRelativeDateString(
+          thisDateObj,
+          referenceDateObj,
+        );
+        if (relativeDateString === "current") {
+          return emptyBadge;
+        }
+        if (thisDate > referenceDate) {
+          status = STATUS.NEWER;
+        }
+        if (thisDate < referenceDate) {
+          status = STATUS.OLDER;
+        }
+        return this.createBadge({
+          label: relativeDateString,
+          className: status.className,
+          description: status.description,
+        });
+      },
 
-        return STATUS.EMPTY;
+      /**
+       * Get the badge that indicates any errors or warnings, like 401s or 404s.
+       * @returns {string} HTML string for the badge.
+       */
+      getErrorBadge() {
+        const errors = this.model.get("errors");
+        let badges = "";
+        if (errors?.length) {
+          errors.array.forEach((error) => {
+            if (error === 401) {
+              badges += this.createBadge(STATUS.PRIVATE);
+            } else if (error === 404) {
+              badges += this.createBadge(STATUS.NOTFOUND);
+            }
+          });
+        } else {
+          badges += this.createEmptyBadge();
+        }
+        return badges;
+      },
+
+      /**
+       * Get the DOI badge if this version has a DOI identifier.
+       * @returns {string} HTML string for the DOI badge, or an empty string if
+       * this version does not have a DOI.
+       */
+      getDOIBadge() {
+        if (this.isDOI()) return this.createBadge(STATUS.DOI);
+        return this.createEmptyBadge();
+      },
+
+      /**
+       * Helper method to create a badge HTML string based on the given status.
+       * @param {{label: string, className: string, description: string}} status
+       * Status object containing label, CSS class name, and description for the
+       * badge.
+       * @returns {string} HTML string for the badge.
+       */
+      createBadge({ label, className, description }) {
+        return `<span class="${CLASS_NAMES.badge} ${className}" title="${description}">${label}</span>`;
+        // TODO: add tooltip here using description.
+      },
+
+      /**
+       * Helper method to create an empty badge for spacing consistency when no
+       * status badge is needed.
+       * @returns {string} HTML string for an empty badge.
+       */
+      createEmptyBadge() {
+        return this.createBadge(STATUS.EMPTY);
       },
 
       /** @inheritdoc */

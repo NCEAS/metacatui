@@ -35,7 +35,7 @@ define([], () => {
     /**
      * Build a Date for start-of-day in the requested timezone mode.
      * @param {string|number|Date} value Date-like value.
-     * @param {("local"|"UTC")} [groupingTimeZone="local"] Day boundary mode.
+     * @param {("local"|"UTC")} [groupingTimeZone] Day boundary mode.
      * @returns {Date|null} Midnight Date or null when invalid.
      */
     static toMidnightDate(value, groupingTimeZone = "local") {
@@ -56,7 +56,7 @@ define([], () => {
     /**
      * Convert a date into a YYYY-MM-DD string.
      * @param {string|number|Date} value Date-like value.
-     * @param {("local"|"UTC")} [groupingTimeZone="local"] Day boundary mode.
+     * @param {("local"|"UTC")} [groupingTimeZone] Day boundary mode.
      * @returns {string} Date-only string, or empty string when invalid.
      */
     static toISODateOnly(value, groupingTimeZone = "local") {
@@ -72,8 +72,8 @@ define([], () => {
     /**
      * Convert a date into a stable day identifier.
      * @param {string|number|Date} value Date-like value.
-     * @param {("local"|"UTC")} [groupingTimeZone="local"] Day boundary mode.
-     * @param {string} [prefix="date"] Prefix to include in ID.
+     * @param {("local"|"UTC")} [groupingTimeZone] Day boundary mode.
+     * @param {string} [prefix] Prefix to include in ID.
      * @returns {string} Stable ID string.
      */
     static toDayId(value, groupingTimeZone = "local", prefix = "date") {
@@ -84,10 +84,11 @@ define([], () => {
     /**
      * Format a date using locale-aware date formatting.
      * @param {string|number|Date} value Date-like value.
-     * @param {object} [options]
+     * @param {object} [options] Formatting options.
      * @param {string} [options.locale] Locale override. Set to null to use the
      * default locale.
-     * @param {Intl.DateTimeFormatOptions} [options.formatOptions]
+     * @param {Intl.DateTimeFormatOptions} [options.formatOptions] Options for
+     * date formatting. Defaults to { year: "numeric", month: "long", day: "numeric" }.
      * @returns {string} Formatted date or empty string when invalid.
      */
     static toLocaleDateString(
@@ -140,6 +141,51 @@ define([], () => {
         console.warn("Error converting date to ISO string:", e);
         return "";
       }
+    }
+
+    /**
+     * Return a human-readable string describing how much newer or older a date
+     * is compared to a reference date, e.g. "one day newer" or "two days
+     * older". It will resolve to seconds, minutes, hours, days, months, or
+     * years as appropriate. If the date is the same as the reference date,
+     * return "current".
+     * @param {string|number|Date} value Date-like value to compare.
+     * @param {string|number|Date} referenceValue Date-like reference value.
+     * @returns {string} Relative date string, or empty string when invalid.
+     */
+    static getRelativeDateString(value, referenceValue) {
+      const date = DateUtility.toDate(value);
+      const referenceDate = DateUtility.toDate(referenceValue);
+      if (!date || !referenceDate) return "";
+
+      const diffMs = date.getTime() - referenceDate.getTime();
+      if (diffMs === 0) return "current";
+
+      const absDiffMs = Math.abs(diffMs);
+      const isNewer = diffMs > 0;
+
+      const units = [
+        { label: "year", ms: 365.25 * 24 * 60 * 60 * 1000 },
+        { label: "month", ms: 30.44 * 24 * 60 * 60 * 1000 },
+        { label: "day", ms: 24 * 60 * 60 * 1000 },
+        { label: "hour", ms: 60 * 60 * 1000 },
+        { label: "minute", ms: 60 * 1000 },
+        { label: "second", ms: 1000 },
+      ];
+
+      const unit = units.find((u) => {
+        const diffInUnits = Math.round(absDiffMs / u.ms);
+        return diffInUnits >= 1;
+      });
+
+      if (unit) {
+        const diffInUnits = Math.round(absDiffMs / unit.ms);
+        return `${diffInUnits} ${unit.label}${diffInUnits > 1 ? "s" : ""} ${
+          isNewer ? "newer" : "older"
+        }`;
+      }
+
+      return `less than 1 second ${isNewer ? "newer" : "older"}`;
     }
   }
 

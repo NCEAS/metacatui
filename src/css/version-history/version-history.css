@@ -67,6 +67,9 @@
   color: var(--badge-text-color);
   border-style: solid;
   border-width: 1px;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.05em;
 }
 
 .object-version__badge--empty {

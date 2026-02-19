@@ -172,5 +172,45 @@ define(["common/DateUtility"], function (DateUtility) {
         }
       });
     });
+
+    describe("getRelativeDateString", function () {
+      const reference = "2024-01-01T00:00:00.000Z";
+
+      it("returns empty string when either value is invalid", function () {
+        expect(
+          DateUtility.getRelativeDateString("bad-date", reference),
+        ).to.equal("");
+        expect(
+          DateUtility.getRelativeDateString(reference, "bad-date"),
+        ).to.equal("");
+      });
+
+      it("returns current when the values are the same", function () {
+        expect(
+          DateUtility.getRelativeDateString(reference, reference),
+        ).to.equal("current");
+      });
+
+      it("returns relative newer and older strings", function () {
+        expect(
+          DateUtility.getRelativeDateString(
+            "2024-01-01T00:00:01.000Z",
+            reference,
+          ),
+        ).to.equal("1 second newer");
+        expect(
+          DateUtility.getRelativeDateString(
+            "2023-12-31T23:58:00.000Z",
+            reference,
+          ),
+        ).to.equal("2 minutes older");
+      });
+
+      it("returns less than 1 second newer/older for sub-second differences", function () {
+        expect(
+          DateUtility.getRelativeDateString(1704067200400, 1704067200000),
+        ).to.equal("less than 1 second newer");
+      });
+    });
   });
 });
