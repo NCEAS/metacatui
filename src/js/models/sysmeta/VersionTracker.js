@@ -255,6 +255,10 @@ define([
             }
           }
 
+          if (Math.abs(currentStep) >= this.MAX_CHAIN_HOPS) {
+            record.maxHopsReached = true;
+          }
+
           queueNotify(startPid, adjPid, currentStep, status);
 
           // Stop if there is no adjacent version
