@@ -1,15 +1,20 @@
 "use strict";
 
-define(["backbone", "common/Utilities", "common/DateUtility"], (
-  Backbone,
-  Utilities,
-  DateUtility,
-) => {
+define([
+  "jquery",
+  "backbone",
+  "common/Utilities",
+  "common/DateUtility",
+  "semantic",
+], ($, Backbone, Utilities, DateUtility, Semantic) => {
   // SVG for the star icon used in the DOI badge
   const starIcon = `<i class="icon-star"></i>`;
 
   // The prefix for BEM-style class names for this view
   const BASE_CLASS = "object-version";
+
+  // Semantic UI class names for variations, used in tooltipSettings
+  const SEM_VARIATIONS = Semantic.CLASS_NAMES.variations;
 
   /**
    * CSS class names used throughout the ObjectVersionView.
@@ -20,7 +25,8 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
     title: `${BASE_CLASS}__title`,
     link: `${BASE_CLASS}__link`,
     badgesContainer: `${BASE_CLASS}__badges`,
-    badge: `label object-version__badge`,
+    label: `label`, // Bootstrap
+    badge: `object-version__badge`,
     date: `${BASE_CLASS}__date`,
     size: `${BASE_CLASS}__size`,
     hidden: `${BASE_CLASS}--hidden`,
@@ -42,28 +48,42 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
     FIRST: {
       label: "First",
       className: CLASS_NAMES.badgeTypes.FIRST,
-      description: "This is the first version of this object.",
+      description: "This version is the first in the series.",
     },
     LATEST: {
       label: "Latest",
       className: CLASS_NAMES.badgeTypes.LATEST,
-      description: "This is the newest version of this object.",
+      description: "This version is the latest in the series.",
     },
     NEWER: {
-      label: "Newer",
+      label: (timeDiff) => `${timeDiff} Newer`,
       className: CLASS_NAMES.badgeTypes.NEWER,
-      description: "This was created more recently than the reference version.",
+      description: (timeDiff) =>
+        `This version was created ${timeDiff} after the reference version.`,
     },
     OLDER: {
-      label: "Older",
+      label: (timeDiff) => `${timeDiff} Older`,
       className: CLASS_NAMES.badgeTypes.OLDER,
-      description: "This was created before the reference version.",
+      description: (timeDiff) =>
+        `This version was created ${timeDiff} before the reference version.`,
+    },
+    AHEAD: {
+      label: (index, versionWord) => `${index} ${versionWord} Ahead`,
+      className: CLASS_NAMES.badgeTypes.NEWER,
+      description: (versionDiff, versionWord) =>
+        `This version is ${versionDiff} ${versionWord} ahead of the reference version`,
+    },
+    BEHIND: {
+      label: (index, versionWord) => `${index} ${versionWord} Behind`,
+      className: CLASS_NAMES.badgeTypes.OLDER,
+      description: (versionDiff, versionWord) =>
+        `This version is ${versionDiff} ${versionWord} behind the reference version`,
     },
     CURRENT: {
       label: "This Version",
       className: CLASS_NAMES.badgeTypes.CURRENT,
       description:
-        "You are viewing the version history of this version, all versions are relative to this one.",
+        "All other versions are shown relative to this reference version.",
     },
     EMPTY: {
       label: "",
@@ -80,7 +100,7 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
       label: "Not Found",
       className: CLASS_NAMES.badgeTypes.NOTFOUND,
       description:
-        "This version is referenced in the version history but was not found in this data repository.",
+        "This version is referenced in the history but was not found in this data repository.",
     },
     DOI: {
       label: `${starIcon} DOI`,
@@ -118,17 +138,45 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
       className: CLASS_NAMES.base,
 
       /**
+       * Settings passed to the Formantic UI popup module to configure a tooltip
+       * shown over item titles. The item must have a description set in order
+       * for the tooltip to be shown.
+       * @see https://fomantic-ui.com/modules/popup.html#/settings
+       * @type {object|boolean}
+       */
+      tooltipSettings: {
+        variation: `${SEM_VARIATIONS.mini} ${SEM_VARIATIONS.inverted}`,
+        position: "top center",
+        on: "hover",
+        hoverable: true,
+        delay: {
+          show: 250,
+          hide: 0,
+        },
+      },
+
+      /**
        * Initializes the ObjectVersionView.
-       * @param {object} options - Options to configure the view.
+       * @param {object} options Options to configure the view.
        * @param {DataONEObject} options.model - The DataONEObject model to
        * represent in this view.
+       * @param {string} [options.referencePid] The identifier of the
+       * reference version to compare against for relative date badges. If not
+       * provided, no relative date badges will be shown.
+       * @param {object} [options.tooltipSettings] Optional settings to
+       * override the default tooltipSettings for this view instance. See
+       * tooltipSettings property for details on available settings and
+       * defaults.
        */
       initialize(options) {
         this.model = options.model;
-        if (typeof options.status === "string") {
-          this.status = options.status;
-        }
         this.referencePid = options.referencePid || null;
+        if (
+          options.tooltipSettings &&
+          typeof options.tooltipSettings === "object"
+        ) {
+          this.tooltipSettings = options.tooltipSettings;
+        }
         this.listenTo(this.model, "change", this.render);
       },
 
@@ -163,6 +211,7 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
         const dateBadge = this.getRelativeDateBadge();
         const errorBadge = this.getErrorBadge();
         const keyPointsBadge = this.getKeyPointsBadge();
+        const versionOrderBadge = this.getVersionOrderBadge();
 
         return `
         <time class="${CLASS_NAMES.date}" datetime="${isoDate}" title="${friendlyDate}">${friendlyDate}</time>
@@ -173,6 +222,7 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
             ${doiBadge}
             ${errorBadge}
             ${keyPointsBadge}
+            ${versionOrderBadge}
             ${dateBadge}
           </div>
         `;
@@ -199,9 +249,6 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
         const { obsoletes, obsoletedBy } = this.model.toJSON();
 
         let status = STATUS.EMPTY;
-        if (this.referencePid === this.model.get("identifier")) {
-          status = STATUS.CURRENT;
-        }
         if (!obsoletes && obsoletedBy) {
           status = STATUS.FIRST;
         }
@@ -240,6 +287,11 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
         const relativeDateString = DateUtility.getRelativeDateString(
           thisDateObj,
           referenceDateObj,
+          {
+            newerWord: "",
+            olderWord: "",
+            currentWord: "current",
+          },
         );
         if (relativeDateString === "current") {
           return emptyBadge;
@@ -251,10 +303,39 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
           status = STATUS.OLDER;
         }
         return this.createBadge({
-          label: relativeDateString,
+          label: status.label(relativeDateString),
           className: status.className,
-          description: status.description,
+          description: status.description(relativeDateString),
         });
+      },
+
+      /**
+       * Get the badge that indicates how many versions ahead or behind this
+       * version is relative to the reference version, based on the version
+       * history index. If it's the reference version, return the "current"
+       * badge.
+       * @returns {string} HTML string for the badge.
+       */
+      getVersionOrderBadge() {
+        const emptyBadge = this.createEmptyBadge();
+        const vh = this.model.get("versionHistory");
+        const refPid = this.referencePid;
+        if (!vh || !refPid) return emptyBadge;
+        const index = vh[refPid];
+        if (!index && index !== 0) return emptyBadge;
+        const absIndex = Math.abs(index);
+        const versionWord = absIndex === 1 ? "version" : "versions";
+        let settings = STATUS.EMPTY;
+        if (absIndex === 0) {
+          settings = STATUS.CURRENT;
+        } else {
+          settings = index > 0 ? STATUS.AHEAD : STATUS.BEHIND;
+          settings = { ...settings };
+          settings.label = settings.label(absIndex, versionWord);
+          settings.description = settings.description(absIndex, versionWord);
+        }
+
+        return this.createBadge(settings);
       },
 
       /**
@@ -265,7 +346,7 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
         const errors = this.model.get("errors");
         let badges = "";
         if (errors?.length) {
-          errors.array.forEach((error) => {
+          errors.forEach((error) => {
             if (error === 401) {
               badges += this.createBadge(STATUS.PRIVATE);
             } else if (error === 404) {
@@ -296,8 +377,7 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
        * @returns {string} HTML string for the badge.
        */
       createBadge({ label, className, description }) {
-        return `<span class="${CLASS_NAMES.badge} ${className}" title="${description}">${label}</span>`;
-        // TODO: add tooltip here using description.
+        return `<span class="${CLASS_NAMES.label} ${CLASS_NAMES.badge} ${className}" title="${description}">${label}</span>`;
       },
 
       /**
@@ -311,6 +391,7 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
 
       /** @inheritdoc */
       render() {
+        this.removeTooltips();
         this.el.classList.remove(`${CLASS_NAMES.hidden}`);
         if (this.model.get("hiddenByUI") === true) {
           this.el.innerHTML = "";
@@ -321,7 +402,41 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
         if (this.isDOI()) {
           this.el.classList.add(`${CLASS_NAMES.doi}`);
         }
+        this.addTooltips();
         return this;
+      },
+
+      /**
+       * Add Semantic UI tooltips to badge elements based on their title attributes and the view's tooltipSettings.
+       */
+      addTooltips() {
+        if (!this.tooltipSettings || !this.el.isConnected) {
+          return;
+        }
+        const badgeElements = this.el.querySelectorAll(`.${CLASS_NAMES.badge}`);
+        badgeElements.forEach((badge) => {
+          const title = badge.getAttribute("title");
+          const $badge = this.$(badge);
+          if (title) {
+            $badge.popup("destroy");
+            $badge.popup({
+              content: title,
+              ...this.tooltipSettings,
+            });
+          } else {
+            $badge.popup("destroy");
+          }
+        });
+      },
+
+      /**
+       * Remove all Formantic popup instances from badge elements in this row.
+       */
+      removeTooltips() {
+        const badgeElements = this.el.querySelectorAll(`.${CLASS_NAMES.badge}`);
+        badgeElements.forEach((badge) => {
+          this.$(badge).popup("destroy");
+        });
       },
 
       /**
@@ -335,6 +450,19 @@ define(["backbone", "common/Utilities", "common/DateUtility"], (
           this.listenTo(this.model, "change", this.render);
           this.render();
         }
+      },
+
+      /**
+       * Clean up view resources before removal.
+       */
+      onClose() {
+        this.removeTooltips();
+      },
+
+      /** @inheritdoc */
+      remove() {
+        this.onClose();
+        return Backbone.View.prototype.remove.call(this);
       },
     },
   );
