@@ -108,12 +108,11 @@ define(["backbone", "views/versionHistory/VersionTimelineGroupView"], (
        * @returns {VersionTimelineGroupsView} The view instance.
        */
       render() {
-        const fragment = document.createDocumentFragment();
         this.collection.each((model) => {
           const view = this.ensureChildView(model);
-          fragment.appendChild(view.el);
+          this.el.appendChild(view.el);
+          view.render();
         });
-        this.el.appendChild(fragment);
         return this;
       },
 

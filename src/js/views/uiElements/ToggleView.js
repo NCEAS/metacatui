@@ -219,7 +219,7 @@ define(["backbone", "semantic"], (Backbone, Semantic) => {
        * Initialize option tooltips using the Formantic UI popup module.
        */
       addTooltips() {
-        if (!this.tooltipSettings || !this.hasPopupModule()) return;
+        if (!this.tooltipSettings) return;
 
         const buttons = this.el.querySelectorAll(`.${CLASS_NAMES.option}`);
         buttons.forEach((button) => {
@@ -244,7 +244,6 @@ define(["backbone", "semantic"], (Backbone, Semantic) => {
        * Remove Formantic UI popup instances from this toggle's options.
        */
       removeTooltips() {
-        if (!this.hasPopupModule()) return;
         const buttons = this.el.querySelectorAll(`.${CLASS_NAMES.option}`);
         buttons.forEach((button) => {
           this.$(button).popup("destroy");
@@ -260,15 +259,6 @@ define(["backbone", "semantic"], (Backbone, Semantic) => {
         return this.toggleOptions.find(
           (option) => `${option.value}` === valueKey,
         );
-      },
-
-      /**
-       * Check whether the Formantic popup plugin is loaded in this context.
-       * @returns {boolean} True if the popup plugin is available, false
-       * otherwise.
-       */
-      hasPopupModule() {
-        return typeof this.$el.popup === "function";
       },
 
       /** @inheritdoc */

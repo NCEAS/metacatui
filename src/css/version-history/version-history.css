@@ -70,6 +70,7 @@
   text-transform: uppercase;
   font-size: 10px;
   letter-spacing: 0.05em;
+  cursor: pointer;
 }
 
 .object-version__badge--empty {

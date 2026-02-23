@@ -151,15 +151,30 @@ define([], () => {
      * return "current".
      * @param {string|number|Date} value Date-like value to compare.
      * @param {string|number|Date} referenceValue Date-like reference value.
+     * @param {object} [options] Formatting options.
+     * @param {string} [options.newerWord] Set to customize the "newer" label,
+     * for example, "before". Defaults to "newer".
+     * @param {string} [options.olderWord] Set to customize the "older" label,
+     * for example, "after". Defaults to "older".
+     * @param {string} [options.currentWord] Set to customize the "current"
+     * label. For example, "right now". Defaults to "current".
      * @returns {string} Relative date string, or empty string when invalid.
      */
-    static getRelativeDateString(value, referenceValue) {
+    static getRelativeDateString(
+      value,
+      referenceValue,
+      {
+        newerWord = "newer",
+        olderWord = "older",
+        currentWord = "current",
+      } = {},
+    ) {
       const date = DateUtility.toDate(value);
       const referenceDate = DateUtility.toDate(referenceValue);
       if (!date || !referenceDate) return "";
 
       const diffMs = date.getTime() - referenceDate.getTime();
-      if (diffMs === 0) return "current";
+      if (diffMs === 0) return currentWord;
 
       const absDiffMs = Math.abs(diffMs);
       const isNewer = diffMs > 0;
@@ -181,11 +196,11 @@ define([], () => {
       if (unit) {
         const diffInUnits = Math.round(absDiffMs / unit.ms);
         return `${diffInUnits} ${unit.label}${diffInUnits > 1 ? "s" : ""} ${
-          isNewer ? "newer" : "older"
+          isNewer ? newerWord : olderWord
         }`;
       }
 
-      return `less than 1 second ${isNewer ? "newer" : "older"}`;
+      return `less than 1 second ${isNewer ? newerWord : olderWord}`;
     }
   }
 

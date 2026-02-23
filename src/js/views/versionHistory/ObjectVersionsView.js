@@ -106,7 +106,8 @@ define([
             model,
             referencePid: this.referencePid,
           });
-          this.el.prepend(objectVersionView.render().el);
+          this.el.prepend(objectVersionView.el);
+          objectVersionView.render();
           // Keep track of subviews so we can remove them later
           this.subViews.push(objectVersionView);
         });
