@@ -39,6 +39,12 @@ define([
       "At least one newer version was not found in this data repository.",
     Prev404:
       "At least one older version was not found in this data repository.",
+    nextMaxHopsReached:
+      "The search for newer versions was stopped after reaching the maximum steps allowed for a single search. To see more newer versions, please view the version history for the newest version found.",
+    prevMaxHopsReached:
+      "The search for older versions was stopped after reaching the maximum steps allowed for a single search. To see more older versions, please view the version history for the oldest version found.",
+    bothMaxHopsReached:
+      "The search for newer and older versions was stopped after reaching the maximum steps allowed for a single search. To see more versions, please view the version history for the newest and oldest versions found.",
     500: "An internal server error occurred while trying to retrieve the version history. Please try again later.",
     DEFAULT: "An unknown error occurred while retrieving the version history.",
   };
@@ -540,6 +546,16 @@ define([
           messages.push(ERROR_TEXT.Next404);
         } else if (prev404) {
           messages.push(ERROR_TEXT.Prev404);
+        }
+
+        const nextMaxed = next.maxHopsReached || false;
+        const prevMaxed = prev.maxHopsReached || false;
+        if (nextMaxed && prevMaxed) {
+          messages.push(ERROR_TEXT.bothMaxHopsReached);
+        } else if (nextMaxed) {
+          messages.push(ERROR_TEXT.nextMaxHopsReached);
+        } else if (prevMaxed) {
+          messages.push(ERROR_TEXT.prevMaxHopsReached);
         }
 
         return messages.join(" ");
