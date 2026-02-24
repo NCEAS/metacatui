@@ -2,7 +2,8 @@ define([
   "backbone",
   "models/dataONEServices/SysMetaService",
   "common/Utilities",
-], (Backbone, SysMetaService, Utilities) => {
+  "common/DateUtility",
+], (Backbone, SysMetaService, Utilities, DateUtility) => {
   /**
    * @constant {number} DEFAULT_TTL_MS Default Time-To-Live for cached data
    * object to resource map PID mappings, in milliseconds.
@@ -40,6 +41,22 @@ define([
    * private version was encountered
    * @property {boolean} endNotFound Whether the fetching stopped because a
    * version was not found (404)
+   * @property {DateConflict[]} dateConflicts Array of detected
+   * sequence date conflicts in the versions found
+   */
+
+  /**
+   * @typedef {object} DateConflict
+   * @property {SysMeta} prevSysMeta The SysMeta of the version that appears
+   * earlier in the obsolsence chain, i.e. the obsoleted version
+   * @property {Date} prevDate The dateUploaded of the previous version
+   * @property {string} prevPid The PID of the previous version
+   * @property {SysMeta} nextSysMeta The SysMeta of the version that appears
+   * later in the obsolescence chain, i.e. the obsoleting version
+   * @property {Date} nextDate The dateUploaded of the next version
+   * @property {string} nextPid The PID of the next version
+   * @property {number} timeDiffMs The time difference between the two
+   * versions in milliseconds
    */
 
   /**
@@ -137,23 +154,25 @@ define([
     /**
      * Get the next most recent version after the given PID.
      * @param {string} pid The PID that is obsoleted by the next version
+     * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<string>} resolves to the next version PID, or null if
      * there is no next version.
      * @since 2.34.1
      */
-    async getNext(pid) {
-      return this.getAdjacent(pid, true);
+    async getNext(pid, options) {
+      return this.getAdjacent(pid, true, options);
     }
 
     /**
      * Get the previous version before the given PID.
      * @param {string} pid The PID that obsoletes the previous version
+     * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<string>} resolves to the previous version PID, or null
      * if there is no previous version.
      * @since 2.34.1
      */
-    async getPrev(pid) {
-      return this.getAdjacent(pid, false);
+    async getPrev(pid, options) {
+      return this.getAdjacent(pid, false, options);
     }
 
     /**
@@ -212,6 +231,7 @@ define([
         chainComplete: false,
         endIsPrivate: false,
         endNotFound: false,
+        dateConflicts: [],
       };
 
       if (typeof steps !== "number" || !Number.isInteger(steps)) {
@@ -235,6 +255,7 @@ define([
         // Send notice for sysMeta found for starting PID for consistency for UIs
         queueNotify(startPid, startPid, 0, null);
 
+        let currentStepSysMeta = null;
         /* eslint-disable no-await-in-loop */
         for (let step = 0; step < absSteps; step += 1) {
           let adjPid;
@@ -263,6 +284,32 @@ define([
 
           // Stop if there is no adjacent version
           if (!adjPid) break;
+
+          try {
+            if (!currentStepSysMeta) {
+              currentStepSysMeta = await this.getSysMeta(currentPid, options);
+            }
+            const adjSysMeta = await this.getSysMeta(adjPid, options);
+            const conflict = VersionTracker.detectDateConflict(
+              currentStepSysMeta,
+              adjSysMeta,
+              forward,
+            );
+            if (conflict) {
+              record.dateConflicts.push(conflict);
+            }
+            currentStepSysMeta = adjSysMeta;
+          } catch (error) {
+            if (error?.name === "AbortError") {
+              throw error;
+            }
+            if (error?.status !== 401 && error?.status !== 404) {
+              throw error;
+            }
+            // Conflict detection is best-effort; keep traversal and notifications
+            // intact when a version's sysmeta is private or missing.
+            currentStepSysMeta = null;
+          }
 
           // Update record and continue to next version
           record.completedSteps = currentStep;
@@ -300,8 +347,49 @@ define([
       if (firstNotifyFailure) {
         throw firstNotifyFailure.reason;
       }
-
       return record;
+    }
+
+    /**
+     * Detect if there is a date conflict between two adjacent versions in the
+     * version chain. A conflict occurs when the dateUploaded of an obsoleting
+     * version is earlier than that of the obsoleted version, which breaks the
+     * expected chronological order.
+     * @param {SysMeta} sysMeta The SysMeta of the version to check for
+     * conflicts.
+     * @param {SysMeta} adjSysMeta The SysMeta of the adjacent version to
+     * compare against.
+     * @param {boolean} forward True if adjSysMeta is the obsoleting (newer)
+     * version, false if adjSysMeta is the obsoleted (older) version.
+     * @returns {DateConflict|false} A DateConflict object if a conflict is
+     * detected, or false if no conflict is found or if either SysMeta is
+     * missing necessary date information.
+     */
+    static detectDateConflict(sysMeta, adjSysMeta, forward) {
+      if (!sysMeta || !adjSysMeta) return false;
+
+      const prevSysMeta = forward ? sysMeta : adjSysMeta;
+      const nextSysMeta = forward ? adjSysMeta : sysMeta;
+      const prevDate = DateUtility.toDate(prevSysMeta.data?.dateUploaded);
+      const nextDate = DateUtility.toDate(nextSysMeta.data?.dateUploaded);
+
+      if (!prevDate || !nextDate) {
+        return false;
+      }
+
+      if (prevDate > nextDate) {
+        // relative the adjacent version since it's the one that breaks the chain
+        return {
+          prevSysMeta,
+          prevDate,
+          prevPid: prevSysMeta.data?.identifier,
+          nextSysMeta,
+          nextDate,
+          nextPid: nextSysMeta.data?.identifier,
+          timeDiffMs: Math.abs(prevDate - nextDate),
+        };
+      }
+      return false;
     }
 
     /**
@@ -400,18 +488,18 @@ define([
      * @param {string} pid The PID whose chain is being updated.
      * @param {string|null} foundPid The PID that was found, or null.
      * @param {number} steps Offset from the original PID (positive/negative).
-     * @param {404|401|null} [status] Status code explaining why foundPid is null.
+     * @param {404|401|null} [error] Status code explaining why foundPid is null.
      * @param {object} [options] Options passed to SysMetaService.download.
      * @private
      * @fires Backbone.Events#versionFound
      */
-    async notify(pid, foundPid, steps, status, options = {}) {
+    async notify(pid, foundPid, steps, error, options = {}) {
       if (!pid) return;
-      const errors = status ? [status] : [];
+      const errors = error ? [error] : [];
       let sysMeta = null;
 
       // If we have the SysMeta cached for the foundPid, get it
-      if (!errors.length && foundPid) {
+      if (foundPid && !errors.includes(404) && !errors.includes(401)) {
         try {
           sysMeta = await this.getSysMeta(foundPid, options);
         } catch (e) {
@@ -426,19 +514,13 @@ define([
           }
         }
       }
-      if (sysMeta) {
-        sysMeta.versionHistory = {};
-        sysMeta.versionHistory[pid] = steps;
-        if (!sysMeta.errors) {
-          sysMeta.errors = [];
-        }
-        sysMeta.errors.push(...errors);
-      } else if (errors.length) {
-        // If no adjacent SysMeta but there are errors, use placeholder SysMeta
-        // to pass on error info.
+      if (!sysMeta) {
         sysMeta = new SysMetaService.SysMeta();
-        sysMeta.errors = errors;
       }
+      sysMeta.versionHistory = {};
+      sysMeta.versionHistory[pid] = steps;
+      if (!sysMeta.errors) sysMeta.errors = [];
+      sysMeta.errors.push(...errors);
       try {
         this.events.trigger("versionFound", sysMeta);
         this.events.trigger(`versionFound:${pid}`, sysMeta);
