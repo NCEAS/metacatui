@@ -51,6 +51,7 @@ define([
             ? options.collection
             : new DataONEObjects();
         this.subViews = [];
+        this.subViewsByCid = new Map();
         this.referencePid = options.referencePid || null;
       },
 
@@ -80,7 +81,11 @@ define([
        */
       listenToCollection() {
         this.stopListeningCollection();
-        this.listenTo(this.collection, "update sort", this.render);
+        this.listenTo(
+          this.collection,
+          "add remove update sort reset",
+          this.syncViews,
+        );
       },
 
       /**
@@ -97,37 +102,84 @@ define([
        * @returns {this} The view instance
        */
       render() {
-        this.onClose(); // Remove existing subviews and listeners
         this.listenToCollection();
         this.el.innerHTML = this.template(this.model);
+        this.syncViews();
+        return this;
+      },
 
-        this.collection.each((model) => {
-          const objectVersionView = new ObjectVersionView({
-            model,
-            referencePid: this.referencePid,
-          });
-          this.el.append(objectVersionView.el);
-          objectVersionView.render();
-          // Keep track of subviews so we can remove them later
-          this.subViews.push(objectVersionView);
+      /**
+       * Ensure row subviews match the collection contents and order.
+       * Reuses existing row views to avoid rebuilding the full list on each
+       * incremental collection update.
+       * @returns {this} The view instance.
+       */
+      syncViews() {
+        if (!this.collection) return this;
+
+        const activeCids = new Set(this.collection.map((model) => model.cid));
+        this.subViewsByCid.forEach((subView, cid) => {
+          if (!activeCids.has(cid)) {
+            if (typeof subView.onClose === "function") {
+              subView.onClose();
+            }
+            subView.remove();
+            this.subViewsByCid.delete(cid);
+          }
         });
 
+        const fragment = document.createDocumentFragment();
+        const newSubViews = [];
+        const viewsNeedingInitialRender = [];
+
+        this.collection.each((model) => {
+          let subView = this.subViewsByCid.get(model.cid);
+          if (!subView) {
+            subView = new ObjectVersionView({
+              model,
+              referencePid: this.referencePid,
+            });
+            this.subViewsByCid.set(model.cid, subView);
+            viewsNeedingInitialRender.push(subView);
+          } else if (subView.model !== model) {
+            subView.changeModel(model);
+          }
+
+          fragment.appendChild(subView.el);
+          newSubViews.push(subView);
+        });
+
+        this.el.appendChild(fragment);
+        viewsNeedingInitialRender.forEach((subView) => subView.render());
+        this.subViews = newSubViews;
+
         return this;
+      },
+
+      /** Show or hide sub-views based on their model's hiddenByUI attribute */
+      applyVisibilityState() {
+        this.subViews.forEach((subView) => subView.applyVisibilityState?.());
+      },
+
+      /**
+       * Manually add tooltips to sub-views. Useful if they've been rendered
+       * while not in the DOM.
+       */
+      addTooltips() {
+        this.subViews.forEach((subView) => subView.addTooltips?.());
       },
 
       /**
        * Cleans up and removes all the ObjectVersionView subviews.
        */
       removeSubViews() {
-        const sv = this.subViews;
-        if (sv && Array.isArray(sv)) {
-          sv.forEach((subView) => {
-            if (typeof subView.onClose === "function") {
-              subView.onClose();
-            }
-            subView.remove();
-          });
-        }
+        this.subViewsByCid.forEach((subView) => {
+          if (typeof subView.onClose === "function") {
+            subView.onClose();
+          }
+          subView.remove();
+        });
+        this.subViewsByCid.clear();
         this.subViews = [];
       },
 
