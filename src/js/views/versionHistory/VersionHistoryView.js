@@ -1,3 +1,5 @@
+"use strict";
+
 // TODO:
 // - pagination if too many versions
 
@@ -11,6 +13,7 @@ define([
   "views/CitationView",
   "views/uiElements/ToggleView",
   "common/Utilities",
+  "common/DateUtility",
   // CSS
   `text!${MetacatUI.root}/css/version-history/version-history.css`,
 ], (
@@ -23,10 +26,9 @@ define([
   CitationView,
   ToggleView,
   Utilities,
+  DateUtility,
   VersionHistoryCSS,
 ) => {
-  "use strict";
-
   const SPINNER = `<i class="icon-spinner icon-spin icon-large loading icon"></i>`;
 
   // Friendly text to explain common server errors
@@ -80,6 +82,8 @@ define([
     header: `${BASE_CLASS}__header`,
     subtitle: `${BASE_CLASS}__subtitle`,
     status: `${BASE_CLASS}__status alert alert-info`,
+    dateConflictSummary: `alert alert-warning ${BASE_CLASS}__date-conflict-summary`,
+    dateConflictHidden: `version-history--hidden`,
     history: `${BASE_CLASS}__history`,
     toggle: `${BASE_CLASS}__toggle`,
   };
@@ -138,6 +142,7 @@ define([
           <h1>Version History</h1>
         </header>
         <div class="${CLASS_NAMES.status}" data-role="status" role="status"></div>
+        <div class="${CLASS_NAMES.dateConflictSummary} ${CLASS_NAMES.dateConflictHidden}" data-role="date-conflict-summary"></div>
         <div class="${CLASS_NAMES.toggle}" data-role="toggle"></div>
         <div class="${CLASS_NAMES.history}" data-role="list"></div>
         `.trim();
@@ -175,6 +180,9 @@ define([
         this.listEl = this.el.querySelector('[data-role="list"]');
         this.pidEl = this.el.querySelector('[data-role="pid"]');
         this.headerEl = this.el.querySelector(`[data-role="header"]`);
+        this.dateConflictSummaryEl = this.el.querySelector(
+          `[data-role="date-conflict-summary"]`,
+        );
         this.toggleEl = this.el.querySelector(`[data-role="toggle"]`);
 
         this.timelineGroupsView?.remove();
@@ -333,13 +341,6 @@ define([
 
           const record = await versionTracker.getAllVersions(pid, { signal });
 
-          // If another findVersions() call started since we began,
-          // this.chainAbortController will no longer equal our controller. In
-          // that case, ignore this result entirely.
-          if (this.chainAbortController !== controller) {
-            return;
-          }
-
           if (!record) {
             throw new Error(
               `No version history found for the document with ID: <strong>${pid}</strong>.`,
@@ -348,9 +349,10 @@ define([
 
           // Once all versions are found, show summary status
           const errorMessage = this.getErrorMessage(record);
-          this.numNext = record.next.completedSteps || 0;
-          this.numPrev = Math.abs(record.prev.completedSteps || 0);
           const { next, prev } = record;
+
+          this.numNext = next.completedSteps || 0;
+          this.numPrev = Math.abs(prev.completedSteps || 0);
 
           // If there were no errors and the full chain was traversed
           if (next.chainComplete && prev.chainComplete) {
@@ -358,6 +360,13 @@ define([
           } else {
             this.showPartial(errorMessage);
           }
+
+          // Render any detected version date conflicts in the summary
+          const dateConflicts = [
+            ...record.next.dateConflicts,
+            ...record.prev.dateConflicts,
+          ];
+          this.showDateConflicts(dateConflicts);
         } catch (error) {
           if (error?.name === "AbortError") {
             return;
@@ -411,10 +420,7 @@ define([
        * @param {string} message The warning message to display.
        */
       showWarning(message) {
-        this.updateStatus(
-          `<p class="text-warning">⚠️ Warning: ${message}</p>`,
-          "warning",
-        );
+        this.updateStatus(`<b>⚠️ Warning:</b> ${message}`, "warning");
       },
 
       /**
@@ -460,15 +466,29 @@ define([
        */
       getVersionSummaryMessage() {
         const { numNext, numPrev, pid } = this;
+        const htmlPid = Utilities.encodeHTML(pid);
         const nextStr = VERSION_STR(numNext, true);
         const prevStr = VERSION_STR(numPrev, false);
-        return `Found ${nextStr} and ${prevStr} for the document with ID: <strong>${pid}</strong>.`;
+        const dateRange = this.collection.getDateRange();
+        let dateStr = "";
+        if (dateRange) {
+          dateStr = DateUtility.getRelativeDateString(
+            dateRange.minDate,
+            dateRange.maxDate,
+            { newerWord: "", olderWord: "", currentWord: "" },
+          ).trim();
+          if (dateStr) {
+            dateStr = ` spanning <b>${dateStr}</b>`;
+          }
+        }
+        return `Found ${nextStr} and ${prevStr}${dateStr} for the document with ID: <strong>${htmlPid}</strong>.`;
       },
 
       /**
        * Updates the status alert with the provided HTML payload.
        * @param {string} message - HTML string.
-       * @param {"info"|"danger"|"success"} [type] Type of alert to show.
+       * @param {"info"|"danger"|"success"|"warning"} [type] Type of alert to
+       * show.
        */
       updateStatus(message, type = "info") {
         this.statusEl.innerHTML = message;
@@ -476,8 +496,64 @@ define([
           "alert-info",
           "alert-danger",
           "alert-success",
+          "alert-warning",
         );
         this.statusEl.classList.add(`alert-${type}`);
+      },
+
+      /** Remove date conflicts flags from models and clear the summary. */
+      clearDateConflicts() {
+        if (this.collection) {
+          this.collection.each((model) => {
+            if (model.has("versionDateConflict")) {
+              model.unset("versionDateConflict");
+            }
+          });
+        }
+        if (this.dateConflictSummaryEl) {
+          this.dateConflictSummaryEl.classList.add(
+            CLASS_NAMES.dateConflictHidden,
+          );
+          this.dateConflictSummaryEl.innerHTML = "";
+        }
+      },
+
+      /**
+       * Render a page-level summary for detected version date conflicts, i.e.
+       * cases where the date a obsoleting version was uploaded is *earlier*
+       * than the date of the version it obsoletes.
+       * @param {VersionTracker.DateConflict[]} conflicts An array of
+       * detected version date conflicts to summarize. If not provided, the
+       * summary will be cleared.
+       */
+      showDateConflicts(conflicts = []) {
+        this.clearDateConflicts();
+        const count = Array.isArray(conflicts) ? conflicts.length : 0;
+        if (!this.dateConflictSummaryEl || !count || !this.collection) {
+          return;
+        }
+        if (count === 0) return;
+        this.dateConflictSummaryEl.classList.remove(
+          CLASS_NAMES.dateConflictHidden,
+        );
+        const s = count > 1 ? "s" : "";
+        const be = count > 1 ? "were" : "was";
+        const replace = count > 1 ? "they replace" : "it replaces";
+        // TODO: fix wording, make configurable...
+        this.dateConflictSummaryEl.innerHTML =
+          `<strong>⏰ Date Conflict${s} Detected:</strong> The dates ` +
+          `in the version history are not strictly chronological. ${count} ` +
+          `version${s} ${be} uploaded after the version${s} ${replace},` +
+          ` which can happen when records are added or corrected at a later date.`;
+
+        conflicts.forEach((conflict) => {
+          // Just mark the previous version in the conflict because that is the
+          // one with the anomalous upload date (i.e. it was uploaded after the
+          // version that obsoletes it)
+          const { prevPid } = conflict;
+          const prevModel = this.collection.get(prevPid);
+          prevModel?.set("versionDateConflict", conflict);
+        });
       },
 
       /**
@@ -510,7 +586,7 @@ define([
         } else if (index < 0) {
           this.numPrev = Math.abs(index);
         }
-        const sysMetaData = sysMeta.toJSON(true, ["versionHistory"]);
+        const sysMetaData = sysMeta.toJSON(true, ["versionHistory", "errors"]);
         // For merging purposes, ensure id is set to identifier
         sysMetaData.id = sysMetaData.identifier;
         this.collection.add(sysMetaData, { merge: true });
@@ -568,6 +644,7 @@ define([
       onClose() {
         this.numNext = 0;
         this.numPrev = 0;
+        this.clearDateConflicts();
         this.abortChainFetch(
           "VersionHistoryView: Cleaning up before re-render or destroy",
         );
@@ -586,6 +663,7 @@ define([
         this.timelineGroups?.reset();
         this.citationView = null;
         this.solrResultModel = null;
+        this.dateConflictSummaryEl = null;
         this.collection?.reset();
       },
 

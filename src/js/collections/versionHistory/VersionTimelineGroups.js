@@ -1,40 +1,45 @@
 define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
   "use strict";
 
-  // Labels used for undated version groups (e.g. those where sysMeta is
-  // private)
-  const FUTURE_DATE_LABEL = "Future Date (Newer)";
-  const PAST_DATE_LABEL = "Unknown Date (Older)";
   const NO_DATE_LABEL = "Unknown Date";
-  const LABEL_SORT_RANK = {
-    [FUTURE_DATE_LABEL]: 0,
-    [NO_DATE_LABEL]: 2,
-    [PAST_DATE_LABEL]: 3,
-  };
 
-  // Convert a label and set of models into attrs for a VersionTimelineGroup
-  // model
-  const toLabelGroup = (label, models) => {
+  /**
+   * Normalize a model date into a grouping key and display values.
+   * @param {Backbone.Model} model Version model.
+   * @param {("local"|"UTC")} groupingTimeZone Day-boundary timezone.
+   * @returns {{key: string, date: Date|null, label: string|null}} Normalized
+   * date info for grouping and display.
+   */
+  const toSegmentDateInfo = (model, groupingTimeZone = "local") => {
+    const rawDate = model.get("dateUploaded");
+    const parsedDate = DateUtility.toDate(rawDate);
+    if (!parsedDate) {
+      return {
+        key: "unknown",
+        date: null,
+        label: NO_DATE_LABEL,
+      };
+    }
+
+    const normalizedDate = DateUtility.toMidnightDate(
+      parsedDate,
+      groupingTimeZone,
+    );
     return {
-      id: label, // for Backbone
-      date: null,
-      label,
-      models,
+      key: DateUtility.toDayId(normalizedDate, groupingTimeZone, "date"),
+      date: normalizedDate,
+      label: null,
     };
   };
 
-  const sortRank = (model) => {
-    if (DateUtility.isValidDate(model.get("date"))) return 1;
-    return LABEL_SORT_RANK[model.get("label")] ?? 2;
-  };
-
   /**
-   * Backbone collection representing the set of grouped timeline entries, where
-   * each model corresponds to all object versions that share the same date.
+   * Backbone collection representing grouped timeline entries for the version
+   * history view. Each group is a contiguous segment of versions in chain order
+   * that share the same calendar day (or "Unknown Date" label).
    * @since 0.0.0
    * @class VersionTimelineGroups
-   * @classdesc A collection of Backbone models, each representing a group of
-   * versions for a specific date.
+   * @classdesc A collection of Backbone models, each representing a contiguous
+   * segment of versions for a specific date label/date.
    * @classcategory Collections/VersionHistory
    */
   const VersionTimelineGroups = Backbone.Collection.extend(
@@ -42,7 +47,7 @@ define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
       type: "VersionTimelineGroups",
 
       /**
-       * The model representing a group of versions for a specific date.
+       * The model representing a group of versions for a specific date segment.
        */
       model: Backbone.Model.extend(
         /** @lends VersionTimelineGroupModel.prototype */ {
@@ -51,6 +56,7 @@ define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
           defaults() {
             return {
               id: "",
+              sequence: 0,
               date: null,
               label: null,
               models: [],
@@ -60,44 +66,41 @@ define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
       ),
 
       /**
-       * Ensures the collection stays sorted newest-to-oldest whenever models
-       * are added or reset.
-       * @param {Backbone.Model} modelA The first VersionTimelineGroup model to
-       * compare.
-       * @param {Backbone.Model} modelB The other model to compare.
-       * @returns {number} Comparator result for Backbone's sorting.
+       * Sort groups strictly by their segment sequence in chain order.
+       * @param {Backbone.Model} modelA First model.
+       * @param {Backbone.Model} modelB Other model.
+       * @returns {number} Comparator result.
        */
       comparator(modelA, modelB) {
-        const rankA = sortRank(modelA);
-        const rankB = sortRank(modelB);
+        const seqA = modelA.get("sequence");
+        const seqB = modelB.get("sequence");
+        const finiteA = Number.isFinite(seqA);
+        const finiteB = Number.isFinite(seqB);
 
-        if (rankA !== rankB) {
-          return rankA < rankB ? -1 : 1;
+        if (finiteA && finiteB) {
+          if (seqA === seqB) return 0;
+          return seqA < seqB ? -1 : 1;
+        }
+        if (finiteA !== finiteB) {
+          return finiteA ? -1 : 1;
         }
 
-        if (rankA === 1) {
-          const dateA = modelA.get("date");
-          const dateB = modelB.get("date");
-          const timeA = dateA.getTime();
-          const timeB = dateB.getTime();
-          if (timeA === timeB) return 0;
-          return timeA < timeB ? 1 : -1;
-        }
-
-        const labelA = modelA.get("label") || "";
-        const labelB = modelB.get("label") || "";
-        if (labelA === labelB) return 0;
-        return labelA < labelB ? -1 : 1;
+        const idA = modelA.get("id") || "";
+        const idB = modelB.get("id") || "";
+        if (idA === idB) return 0;
+        return idA < idB ? -1 : 1;
       },
 
       /**
-       * Populate the collection from a DataONEObjects collection, grouped by
-       * upload date.
+       * Populate the collection from a DataONEObjects collection using strict
+       * obsolescence-chain order, segmented into contiguous date buckets.
        * @param {DataONEObjects} collection DataONEObjects collection to group.
        * @param {object} [options] Options passed to `set`.
        * @param {boolean} [options.remove] Whether to remove existing models.
-       * @param {string|null} [options.referencePid] Reference PID used to split
-       * undated models into future/past groups.
+       * @param {string} options.referencePid Reference PID used to order the
+       * chain via versionHistory indexes.
+       * @param {("local"|"UTC")} [options.groupingTimeZone] Timezone
+       * used to determine day boundaries.
        */
       fromDataONEObjects(collection, options = {}) {
         const {
@@ -107,62 +110,47 @@ define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
           ...setOptions
         } = options;
 
-        const groupedByDate = collection.groupByDate({
-          groupingTimeZone,
-        });
-        const groupedModels = [];
-        const noDateModels = [];
-
-        groupedByDate.forEach((group) => {
-          if (DateUtility.isValidDate(group.date)) {
-            groupedModels.push({
-              id: DateUtility.toDayId(group.date, groupingTimeZone, "date"),
-              date: group.date,
-              label: null,
-              models: group.models,
-            });
-          } else {
-            noDateModels.push(...group.models);
-          }
-        });
-
-        // If there are undated models and a reference PID is provided, we can
-        // separate them into future and past versions, relative to that PID.
-        if (noDateModels.length > 0 && referencePid) {
-          const futureModels = [];
-          const pastModels = [];
-          const noRefModels = [];
-
-          noDateModels.forEach((model) => {
-            const versionHistory = model.get("versionHistory");
-            const refIndex = versionHistory?.[referencePid];
-            if (refIndex === 0 || refIndex === undefined) {
-              noRefModels.push(model);
-            } else if (refIndex > 0) {
-              futureModels.push(model);
-            } else {
-              // Lump truly undated models with past versions
-              pastModels.push(model);
-            }
-          });
-
-          if (futureModels.length > 0) {
-            groupedModels.push(toLabelGroup(FUTURE_DATE_LABEL, futureModels));
-          }
-          if (pastModels.length > 0) {
-            groupedModels.push(toLabelGroup(PAST_DATE_LABEL, pastModels));
-          }
-          if (noRefModels.length > 0) {
-            groupedModels.push(toLabelGroup(NO_DATE_LABEL, noRefModels));
-          }
-        } else if (noDateModels.length > 0) {
-          groupedModels.push(toLabelGroup(NO_DATE_LABEL, noDateModels));
+        if (!referencePid) {
+          throw new Error(
+            "VersionTimelineGroups.fromDataONEObjects requires referencePid",
+          );
         }
+
+        const orderedModels = collection.getChainOrdered(referencePid);
+        const groupedModels = [];
+
+        let currentGroup = null;
+        let currentKey = null;
+        let sequence = 0;
+
+        orderedModels.forEach((model) => {
+          const dateInfo = toSegmentDateInfo(model, groupingTimeZone);
+          const identifier = model.get("identifier") || `unknown-${sequence}`;
+          const isNewGroup =
+            currentGroup == null || dateInfo.key !== currentKey;
+
+          if (isNewGroup) {
+            currentKey = dateInfo.key;
+            currentGroup = {
+              id: `segment:${sequence}:${identifier}`,
+              sequence,
+              date: dateInfo.date,
+              label: dateInfo.label,
+              models: [],
+            };
+            groupedModels.push(currentGroup);
+            sequence += 1;
+          }
+
+          currentGroup.models.push(model);
+        });
 
         this.set(groupedModels, { ...setOptions, remove });
       },
     },
   );
+
+  VersionTimelineGroups.NO_DATE_LABEL = NO_DATE_LABEL;
 
   return VersionTimelineGroups;
 });
