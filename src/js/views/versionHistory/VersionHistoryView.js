@@ -129,6 +129,7 @@ define([
         this.collection = new DataONEObjects();
         this.timelineGroups = new VersionTimelineGroups();
         this.chainAbortController = null;
+        this.completed = false;
         MetacatUI.appModel.addCSS(VersionHistoryCSS, "versionHistoryView");
       },
 
@@ -276,12 +277,16 @@ define([
         const showDOIOnly = value === "doi";
         if (this.showDOIOnly === showDOIOnly) return; // No change
         this.showDOIOnly = showDOIOnly;
+        let anyChanged = false;
         this.collection.each((model) => {
-          model.set("hiddenByUI", false);
-          if (showDOIOnly && !model.isDOI()) {
-            model.set("hiddenByUI", true);
+          const hidden = showDOIOnly && !model.isDOI();
+          if (model.get("hiddenByUI") !== hidden) {
+            model.set("hiddenByUI", hidden, { silent: true });
+            anyChanged = true;
           }
         });
+        if (!anyChanged) return;
+        this.timelineGroupsView.updateVisualState();
       },
 
       /**
@@ -300,9 +305,9 @@ define([
           },
         );
         // When the collection updates, keep the timeline collection in sync
-        this.stopListening(this.collection, "update reset sort");
-        this.listenTo(this.collection, "update reset sort", () =>
-          this.timelineGroups.fromDataONEObjects(this.collection, {
+        this.stopListening(this.collection, "update reset");
+        this.listenTo(this.collection, "update reset", () =>
+          this.timelineGroups?.fromDataONEObjects(this.collection, {
             remove: true,
             referencePid: this.pid,
           }),
@@ -314,6 +319,7 @@ define([
        * @returns {Promise<void>}
        */
       async findVersions() {
+        this.completed = false;
         if (this.toggle) {
           this.toggle.disable();
         }
@@ -340,6 +346,12 @@ define([
           this.onVersionFound(thisSysMeta);
 
           const record = await versionTracker.getAllVersions(pid, { signal });
+
+          // If the fetch was aborted, don't update the view with any results
+          const isCurrent = this.chainAbortController === controller;
+          if (!isCurrent) return;
+
+          this.completed = true;
 
           if (!record) {
             throw new Error(
@@ -368,19 +380,28 @@ define([
           ];
           this.showDateConflicts(dateConflicts);
         } catch (error) {
+          this.completed = true;
           if (error?.name === "AbortError") {
             return;
           }
+
           this.showError(error.message || error);
         } finally {
           const isCurrent = this.chainAbortController === controller;
           if (isCurrent) {
+            this.completed = true;
             this.chainAbortController = null;
             // Enable the toggle now that versions have loaded (even if there was
             // an error, some versions may have been found)
             if (this.toggle) this.toggle.enable();
+            this.addTooltips();
           }
         }
+      },
+
+      /** Add tooltips to Version views once they're rendered and in the DOM. */
+      addTooltips() {
+        this.timelineGroupsView?.addTooltips();
       },
 
       /**
@@ -398,6 +419,10 @@ define([
        * default message based on the number of versions found will be shown.
        */
       showProgress(message) {
+        // Don't update the progress message if we've already found all
+        // versions, or else we might overwrite the status message set in
+        // showComplete or showPartial (or error)
+        if (this.completed) return;
         const defaultMessage =
           `Found ${this.numNext} newer versions and ${this.numPrev} older ` +
           `versions for the document with ID: <strong>${this.pid}</strong>. Still searching...`;
@@ -642,6 +667,7 @@ define([
        * or destroying the view.
        */
       onClose() {
+        this.completed = false;
         this.numNext = 0;
         this.numPrev = 0;
         this.clearDateConflicts();

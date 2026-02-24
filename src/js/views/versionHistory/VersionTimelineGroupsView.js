@@ -108,12 +108,29 @@ define(["backbone", "views/versionHistory/VersionTimelineGroupView"], (
        * @returns {VersionTimelineGroupsView} The view instance.
        */
       render() {
+        const fragment = document.createDocumentFragment();
         this.collection.each((model) => {
           const view = this.ensureChildView(model);
-          this.el.appendChild(view.el);
-          view.render();
+          fragment.appendChild(view.el);
         });
+        this.el.appendChild(fragment);
         return this;
+      },
+
+      /**
+       * Sync the ObjectGroupViews hidden/conflict classes with their models'
+       * hiddenByUI and hasDateConflict properties. Run after batch-updating
+       * models.
+       */
+      updateVisualState() {
+        this.childViews.forEach((view) => view.updateVisualState());
+      },
+
+      /**
+       * Add tooltips to the ObjectVersionViews within each group.
+       */
+      addTooltips() {
+        this.childViews.forEach((view) => view.addTooltips());
       },
 
       /**

@@ -80,6 +80,7 @@ define([
             ? models
             : new DataONEObjects(models || [], { sort: false });
         this.model.set("models", this.collection);
+        this.dateKey = null;
       },
 
       /**
@@ -117,11 +118,11 @@ define([
       },
 
       /**
-       * Count visible versions in this group that have a date-vs-chain anomaly
-       * annotation.
+       * Count visible versions in this group that have a version date conflict
+       * (version date is later than the one that obsoletes it).
        * @returns {number} Number of visible anomalous versions.
        */
-      getVisibleDateChainAnomalyCount() {
+      getVisibleDateConflicts() {
         if (!this.collection?.length) return 0;
         return this.collection.reduce((count, model) => {
           if (model.get("hiddenByUI") === true) return count;
@@ -131,51 +132,77 @@ define([
       },
 
       /**
+       * Compute a stable key for the current date/label combination, used to
+       * determine when the group header needs to be re-rendered.
+       * @returns {string}
+       */
+      getDateKey() {
+        const dateKey = DateUtility.isValidDate(this.date)
+          ? this.date.getTime()
+          : "nodate";
+        return `${dateKey}|${this.label || ""}`;
+      },
+
+      /** Start listening for row-level UI-affecting changes */
+      listenToCollection() {
+        const events = "change:hiddenByUI change:versionDateConflict";
+        this.stopListening(this.collection, events);
+        this.listenTo(this.collection, events, this.updateVisualState);
+      },
+
+      /**
+       * Show or hide the group depending on whether all versions are hidden,
+       * and add/remove the date conflict class based on whether any visible
+       * versions have a date conflict. Update the ObjectVersionsView to
+       * show/hide conflict chips on individual versions.
+       */
+      updateVisualState() {
+        // Hide or show the entire group if all versions are hidden
+        const allHidden =
+          this.collection.length === 0 || this.collection.allHidden();
+        this.el.classList.toggle(`${CLASS_NAMES.hidden}`, allHidden);
+
+        // Add or remove the date conflict class based on whether any visible
+        // versions have a date conflict
+        const NumVisConflicts = allHidden ? 0 : this.getVisibleDateConflicts();
+        this.el.classList.toggle(
+          `${CLASS_NAMES.dateConflict}`,
+          NumVisConflicts > 0,
+        );
+
+        // Show or hide the individual object version views based on their
+        // "hiddenByUI" state
+        this.objectVersionsView?.applyVisibilityState?.();
+      },
+
+      /**
        * Renders the timeline group shell and embeds an ObjectVersionsView.
        * @returns {this} The view instance.
        */
       render() {
-        // Hide the group if there are no versions to show, or if all versions
-        // are hidden by the UI (e.g. filtered out by the DOI toggle)
-        if (this.collection.length === 0 || this.collection.allHidden()) {
-          this.el.innerHTML = "";
-          this.el.classList.add(`${CLASS_NAMES.hidden}`);
-          this.el.classList.remove(`${CLASS_NAMES.dateConflict}`);
-          return this;
+        this.listenToCollection();
+        const newDateKey = this.getDateKey();
+        // Only re-render the group if the date/label has changed, to preserve
+        // UI state and avoid unnecessary re-renders when updating the
+        // collection models
+        if (this.dateKey !== newDateKey) {
+          this.el.innerHTML = this.template({
+            date: this.date,
+            label: this.label,
+          });
+          const listEl = this.el.querySelector(
+            `.${CLASS_NAMES.objectVersionsList}`,
+          );
+
+          this.objectVersionsView?.remove();
+          this.objectVersionsView = new ObjectVersionsView({
+            collection: this.collection,
+            el: listEl,
+            referencePid: this.referencePid,
+          }).render();
+          this.dateKey = this.getDateKey();
         }
-        this.el.classList.remove(`${CLASS_NAMES.hidden}`);
-        this.stopListening(this.collection);
-        this.listenTo(
-          this.collection,
-          "change:hiddenByUI change:versionDateConflict",
-          this.render,
-        );
-
-        // If there is a date jump, make the timeline point visually distinct
-        const conflictCount = this.getVisibleDateChainAnomalyCount();
-        this.el.classList.toggle(
-          `${CLASS_NAMES.dateConflict}`,
-          conflictCount > 0,
-        );
-
-        this.el.innerHTML = this.template({
-          date: this.date,
-          label: this.label,
-        });
-        const listEl = this.el.querySelector(
-          `.${CLASS_NAMES.objectVersionsList}`,
-        );
-
-        if (this.objectVersionsView) {
-          this.objectVersionsView.remove();
-        }
-
-        this.objectVersionsView = new ObjectVersionsView({
-          collection: this.collection,
-          el: listEl,
-          referencePid: this.referencePid,
-        }).render();
-
+        this.updateVisualState();
         return this;
       },
 
@@ -185,7 +212,18 @@ define([
        * @param {object[]} models - Plain model attributes grouped for the date.
        */
       setModels(models) {
-        this.collection.set(models, { parse: true, merge: true, sort: false });
+        const newModels = Array.isArray(models) ? models : [];
+        const hasChanges =
+          this.collection.length !== newModels.length ||
+          this.collection.every((model, index) => model === newModels[index]);
+        if (hasChanges) {
+          this.collection.set(newModels, {
+            parse: true,
+            merge: true,
+            sort: false,
+          });
+        }
+        this.updateVisualState();
       },
 
       /**
@@ -196,7 +234,17 @@ define([
       setDateAndLabel(date, label) {
         this.date = date ?? null;
         this.label = label ?? null;
+        this.dateKey = null;
         this.render();
+      },
+
+      /**
+       * Add tooltips to the ObjectVersionViews within this group. Should be
+       * called after the view is in the DOM to ensure tooltips are properly
+       * attached.
+       */
+      addTooltips() {
+        this.objectVersionsView?.addTooltips?.();
       },
 
       /**
@@ -204,8 +252,11 @@ define([
        * removed.
        */
       onClose() {
-        this.collection.reset();
+        this.stopListening(this.collection);
         this.objectVersionsView?.remove();
+        this.objectVersionsView = null;
+        this.collection.reset();
+        this.dateKey = null;
       },
 
       /** @inheritdoc */

@@ -132,7 +132,9 @@ define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
           if (isNewGroup) {
             currentKey = dateInfo.key;
             currentGroup = {
-              id: `segment:${sequence}:${identifier}`,
+              // Keep group ids stable across incremental loads so Backbone can
+              // merge/reorder existing groups instead of tearing them down.
+              id: `segment:${dateInfo.key}:${identifier}`,
               sequence,
               date: dateInfo.date,
               label: dateInfo.label,
