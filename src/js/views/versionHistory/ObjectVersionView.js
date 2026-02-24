@@ -185,7 +185,33 @@ define([
         ) {
           this.tooltipSettings = options.tooltipSettings;
         }
-        this.listenTo(this.model, "change", this.render);
+        this.listenTo(
+          this.model,
+          "change:hiddenByUI",
+          this.applyVisibilityState,
+        );
+        this.listenTo(this.model, "change", this.onModelChange);
+      },
+
+      /**
+       * Handle model change events and avoid full re-render when only the
+       * visibility flag changed.
+       */
+      onModelChange() {
+        const changed = this.model.changedAttributes() || {};
+        const keys = Object.keys(changed);
+        if (keys.length === 1 && keys[0] === "hiddenByUI") {
+          return;
+        }
+        this.render();
+      },
+
+      /** Show or hide the view based on the model's hiddenByUI attribute */
+      applyVisibilityState() {
+        this.el.classList.toggle(
+          `${CLASS_NAMES.hidden}`,
+          this.model.get("hiddenByUI") === true,
+        );
       },
 
       /**
@@ -425,22 +451,21 @@ define([
       /** @inheritdoc */
       render() {
         this.removeTooltips();
-        this.el.classList.remove(`${CLASS_NAMES.hidden}`);
-        if (this.model.get("hiddenByUI") === true) {
-          this.el.innerHTML = "";
-          this.el.classList.add(`${CLASS_NAMES.hidden}`);
-          return this;
-        }
+        this.applyVisibilityState();
+        if (this.model.get("hiddenByUI") === true) return this;
         this.el.innerHTML = this.template(this.model);
         if (this.isDOI()) {
           this.el.classList.add(`${CLASS_NAMES.doi}`);
         }
-        this.addTooltips();
+        if (this.autoAddTooltips) {
+          this.addTooltips();
+        }
         return this;
       },
 
       /**
-       * Add Semantic UI tooltips to badge elements based on their title attributes and the view's tooltipSettings.
+       * Add Semantic UI tooltips to badge elements based on their title
+       * attributes and the view's tooltipSettings.
        */
       addTooltips() {
         if (!this.tooltipSettings || !this.el.isConnected) {
@@ -480,7 +505,12 @@ define([
         if (this.model !== newModel) {
           this.stopListening(this.model);
           this.model = newModel;
-          this.listenTo(this.model, "change", this.render);
+          this.listenTo(
+            this.model,
+            "change:hiddenByUI",
+            this.applyVisibilityState,
+          );
+          this.listenTo(this.model, "change", this.onModelChange);
           this.render();
         }
       },
