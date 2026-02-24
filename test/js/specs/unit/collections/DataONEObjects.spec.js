@@ -69,6 +69,59 @@ define(["collections/DataONEObjects", "models/DataONEObject"], function (
       });
     });
 
+    describe("getChainOrdered", function () {
+      it("orders models newest-to-oldest by versionHistory index for a reference PID", function () {
+        const referencePid = "ref.1";
+        collection.reset(
+          [
+            {
+              identifier: "older",
+              versionHistory: { [referencePid]: -1 },
+            },
+            {
+              identifier: "newest",
+              versionHistory: { [referencePid]: 2 },
+            },
+            {
+              identifier: "ref",
+              versionHistory: { [referencePid]: 0 },
+            },
+            {
+              identifier: "newer",
+              versionHistory: { [referencePid]: 1 },
+            },
+          ],
+          { sort: false },
+        );
+
+        const ordered = collection.getChainOrdered(referencePid);
+        ordered
+          .map((m) => m.get("identifier"))
+          .should.deep.equal(["newest", "newer", "ref", "older"]);
+      });
+
+      it("places models without chain index after indexed models deterministically", function () {
+        const referencePid = "ref.1";
+        collection.reset(
+          [
+            { identifier: "z-missing", versionHistory: {} },
+            { identifier: "a-missing" },
+            { identifier: "indexed", versionHistory: { [referencePid]: 0 } },
+          ],
+          { sort: false },
+        );
+
+        const ordered = collection.getChainOrdered(referencePid);
+        ordered
+          .map((m) => m.get("identifier"))
+          .should.deep.equal(["indexed", "a-missing", "z-missing"]);
+      });
+
+      it("throws when referencePid is missing", function () {
+        expect(() => collection.getChainOrdered()).to.throw(/referencePid/i);
+      });
+    });
+
     describe("groupByDate", function () {
       it("returns an empty array for empty collections", function () {
         collection.reset([]);

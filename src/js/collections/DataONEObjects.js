@@ -33,6 +33,43 @@ define(["backbone", "models/DataONEObject", "common/DateUtility"], (
     },
 
     /**
+     * Return models ordered by version-chain position relative to a reference
+     * PID, newest to oldest. Models without a valid chain index are placed at
+     * the end in deterministic identifier order.
+     * @param {string} referencePid PID used as the versionHistory index key.
+     * @returns {Backbone.Model[]} Ordered model array (new array).
+     */
+    getChainOrdered(referencePid) {
+      if (!referencePid) {
+        throw new Error("referencePid is required to order by version chain");
+      }
+
+      const getIndex = (model) => {
+        const index = model.get("versionHistory")?.[referencePid];
+        return Number.isFinite(index) ? index : null;
+      };
+
+      return [...this.models].sort((a, b) => {
+        const indexA = getIndex(a);
+        const indexB = getIndex(b);
+        const hasIndexA = Number.isFinite(indexA);
+        const hasIndexB = Number.isFinite(indexB);
+
+        if (hasIndexA && hasIndexB && indexA !== indexB) {
+          return indexB - indexA; // newer (+) first, older (-) last
+        }
+        if (hasIndexA !== hasIndexB) {
+          return hasIndexA ? -1 : 1;
+        }
+
+        const idA = a.get("identifier") || "";
+        const idB = b.get("identifier") || "";
+        if (idA === idB) return 0;
+        return idA < idB ? -1 : 1;
+      });
+    },
+
+    /**
      * Determine if the object with the given identifier is the newest in the
      * collection based on the `dateUploaded` property.
      * @param {string} identifier - The identifier of the object to check.
@@ -68,6 +105,53 @@ define(["backbone", "models/DataONEObject", "common/DateUtility"], (
       const sorted = this.sortBy((obj) => obj.get("dateUploaded"));
       const oldest = sorted[0];
       return oldest.get("identifier") === identifier;
+    },
+
+    /**
+     * Get the date range of the collection based on the `dateUploaded`
+     * property. Returns null if there are no valid dates.
+     * @param {object} [options] Options for calculating date range.
+     * @param {string} [options.dateProp] Model property to read.
+     * @returns {{minDate: Date, maxDate: Date, minModel: Backbone.Model,
+     * maxModel: Backbone.Model}|null} Date range info or null if no valid
+     * dates.
+     */
+    getDateRange({ dateProp = "dateUploaded" } = {}) {
+      if (!this.length) return null;
+
+      let minDate = null;
+      let maxDate = null;
+      let idMinDate = null;
+      let idMaxDate = null;
+
+      // Pluck the date & id for all models
+      this.each((model) => {
+        const dateValue = model.get(dateProp);
+        const date = DateUtility.toDate(dateValue);
+        if (date) {
+          if (!minDate || date < minDate) {
+            minDate = date;
+            idMinDate = model.get("identifier");
+          }
+          if (!maxDate || date > maxDate) {
+            maxDate = date;
+            idMaxDate = model.get("identifier");
+          }
+        }
+      });
+
+      const minModel = this.get(idMinDate);
+      const maxModel = this.get(idMaxDate);
+
+      if (minDate && maxDate) {
+        return {
+          minDate,
+          maxDate,
+          minModel,
+          maxModel,
+        };
+      }
+      return null;
     },
 
     /**

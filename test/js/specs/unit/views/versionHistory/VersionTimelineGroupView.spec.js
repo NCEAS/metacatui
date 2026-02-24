@@ -1,0 +1,117 @@
+define([
+  "jquery",
+  "backbone",
+  "collections/DataONEObjects",
+  "views/versionHistory/VersionTimelineGroupView",
+  "/test/js/specs/shared/clean-state.js",
+], ($, Backbone, DataONEObjects, VersionTimelineGroupView, cleanState) => {
+  const expect = chai.expect;
+
+  describe("VersionTimelineGroupView", () => {
+    const state = cleanState(
+      () => {
+        const sandbox = sinon.createSandbox();
+        const originalPopup = $.fn.popup;
+        $.fn.popup = sandbox.stub().callsFake(function popupStub() {
+          return this;
+        });
+
+        const originalMetacatUI = globalThis.MetacatUI;
+        const appModel = {
+          get: sandbox.stub().callsFake((key) => {
+            if (key === "alternateRepositories") return [];
+            return null;
+          }),
+          getActiveAltRepo: sandbox.stub().returns(null),
+          isDOI: sandbox.stub().returns(false),
+        };
+        globalThis.MetacatUI = {
+          ...(originalMetacatUI || {}),
+          root: (originalMetacatUI && originalMetacatUI.root) || "",
+          appModel,
+          appUserModel: { get: sandbox.stub().returns(false) },
+          nodeModel: { get: sandbox.stub(), length: 0 },
+        };
+
+        const models = new DataONEObjects(
+          [
+            {
+              identifier: "p1",
+              dateUploaded: "2022-08-08T00:00:00Z",
+              versionDateConflict: {
+                prevPid: "p1",
+                nextPid: "p2",
+                timeDiffMs: 1000,
+              },
+            },
+            {
+              identifier: "p2",
+              dateUploaded: "2022-08-08T00:10:00Z",
+            },
+          ],
+          { sort: false },
+        );
+
+        const groupModel = new Backbone.Model({
+          id: "segment:0:p1",
+          sequence: 0,
+          date: new Date("2022-08-08T00:00:00Z"),
+          label: null,
+          models,
+        });
+
+        const view = new VersionTimelineGroupView({
+          model: groupModel,
+          referencePid: "ref.1",
+        });
+        document.body.appendChild(view.el);
+
+        return {
+          sandbox,
+          originalPopup,
+          originalMetacatUI,
+          models,
+          view,
+        };
+      },
+      beforeEach,
+      afterEach,
+    );
+
+    afterEach(() => {
+      state.view?.remove();
+      $.fn.popup = state.originalPopup;
+      globalThis.MetacatUI = state.originalMetacatUI;
+      state.sandbox?.restore();
+    });
+
+    it("toggles the group conflict class when versionDateConflict flags change", () => {
+      state.models.at(0).unset("versionDateConflict");
+      state.view.render();
+      expect(
+        state.view.el.classList.contains("version-history-group--date-conflict"),
+      ).to.equal(false);
+
+      state.models.at(1).set("versionDateConflict", {
+        prevPid: "p2",
+        nextPid: "p3",
+        timeDiffMs: 2000,
+      });
+      expect(
+        state.view.el.classList.contains("version-history-group--date-conflict"),
+      ).to.equal(true);
+    });
+
+    it("does not mark the group if only hidden rows in the group are conflicted", () => {
+      state.models.at(0).set("hiddenByUI", true);
+      state.models.at(1).unset("versionDateConflict");
+      state.view.render();
+
+      expect(
+        state.view.el.classList.contains(
+          "version-history-group--date-conflict",
+        ),
+      ).to.equal(false);
+    });
+  });
+});

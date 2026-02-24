@@ -21,9 +21,14 @@ define([
   // All class names used in this view, for easy reference and to avoid typos
   const CLASS_NAMES = {
     container: BASE_CLASS,
-    hidden: `${BASE_CLASS}--hidden`,
+    hidden: `version-history--hidden`,
+    dateConflict: `${BASE_CLASS}--date-conflict`,
     timelinePoint: `${BASE_CLASS}__timeline-point`,
     timelineContent: `${BASE_CLASS}__timeline-content`,
+    header: `${BASE_CLASS}__header`,
+    dateTitle: `${BASE_CLASS}__date-title`,
+    anomalyChip: `${BASE_CLASS}__date-conflict-chip`,
+    anomalyChipIcon: `${BASE_CLASS}__date-conflict-icon`,
     objectVersionsList: `object-versions`,
   };
 
@@ -73,7 +78,7 @@ define([
         this.collection =
           models instanceof DataONEObjects
             ? models
-            : new DataONEObjects(models || []);
+            : new DataONEObjects(models || [], { sort: false });
         this.model.set("models", this.collection);
       },
 
@@ -103,10 +108,26 @@ define([
         return `
           <div class="${CLASS_NAMES.timelinePoint}">${TIMELINE_POINT_SVG}</div>
           <div class="${CLASS_NAMES.timelineContent}">
-            <h3>${displayDate}</h3>
+            <div class="${CLASS_NAMES.header}">
+              <h3 class="${CLASS_NAMES.dateTitle}">${displayDate}</h3>\
+            </div>
             <ul class="${CLASS_NAMES.objectVersionsList}"></ul>
           </div>
         `;
+      },
+
+      /**
+       * Count visible versions in this group that have a date-vs-chain anomaly
+       * annotation.
+       * @returns {number} Number of visible anomalous versions.
+       */
+      getVisibleDateChainAnomalyCount() {
+        if (!this.collection?.length) return 0;
+        return this.collection.reduce((count, model) => {
+          if (model.get("hiddenByUI") === true) return count;
+          if (model.get("versionDateConflict")) return count + 1;
+          return count;
+        }, 0);
       },
 
       /**
@@ -119,11 +140,23 @@ define([
         if (this.collection.length === 0 || this.collection.allHidden()) {
           this.el.innerHTML = "";
           this.el.classList.add(`${CLASS_NAMES.hidden}`);
+          this.el.classList.remove(`${CLASS_NAMES.dateConflict}`);
           return this;
         }
         this.el.classList.remove(`${CLASS_NAMES.hidden}`);
         this.stopListening(this.collection);
-        this.listenTo(this.collection, "change:hiddenByUI", this.render);
+        this.listenTo(
+          this.collection,
+          "change:hiddenByUI change:versionDateConflict",
+          this.render,
+        );
+
+        // If there is a date jump, make the timeline point visually distinct
+        const conflictCount = this.getVisibleDateChainAnomalyCount();
+        this.el.classList.toggle(
+          `${CLASS_NAMES.dateConflict}`,
+          conflictCount > 0,
+        );
 
         this.el.innerHTML = this.template({
           date: this.date,
@@ -152,7 +185,7 @@ define([
        * @param {object[]} models - Plain model attributes grouped for the date.
        */
       setModels(models) {
-        this.collection.set(models, { parse: true, merge: true });
+        this.collection.set(models, { parse: true, merge: true, sort: false });
       },
 
       /**
