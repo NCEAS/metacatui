@@ -2,10 +2,23 @@
 
 .version-history {
   --timeline-point-height: 2.4rem;
-  --borderColor-muted: var(--color-neutral-1, #e3e3e3);
+  --border-color-muted: var(--color-neutral-1, #e3e3e3);
+  --warning-color: #9d742d;
+  --warning-background: #fcf8e3;
+  --warning-border-color: #fbeed5;
   max-width: 1280px;
   margin-left: auto;
   margin-right: auto;
+
+  .alert-warning {
+    /* darker than bootstrap default */
+    color: var(--warning-color);
+  }
+}
+
+/* for any element hidden within version history */
+.version-history--hidden {
+  display: none !important;
 }
 
 .version-history__header .citation {
@@ -13,8 +26,8 @@
 }
 
 .object-versions {
-  --borderColor-muted: #e3e3e3;
-  border: 1px solid var(--borderColor-muted);
+  --border-color-muted: #e3e3e3;
+  border: 1px solid var(--border-color-muted);
   border-radius: 6px;
   margin-block-start: 0;
   margin-block-end: 0;
@@ -23,28 +36,25 @@
 }
 
 .object-version {
-  --borderColor-muted: #e3e3e3;
+  --border-color-muted: #e3e3e3;
   list-style: none;
-  border-bottom: 1px solid var(--borderColor-muted);
+  border-bottom: 1px solid var(--border-color-muted);
   min-height: 2rem;
   padding: 0.5rem 0.9rem 0.6rem 0.9rem;
 
   display: grid;
   grid-template-columns: 1fr max-content;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: auto auto auto;
   grid-auto-flow: row;
   grid-template-areas:
     "date badge"
-    "pid badge";
+    "pid badge"
+    "note note";
   align-items: center;
 }
 
 .object-version--doi .object-version__date {
   font-weight: 600;
-}
-
-.object-version--hidden {
-  display: none;
 }
 
 .object-version__date {
@@ -127,6 +137,13 @@
   --badge-text-color: #a569e0;
 }
 
+.object-version__date-conflict-note {
+  grid-area: note;
+  margin: 0.4rem 0 0 0;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.45rem;
+}
+
 .object-version:last-child {
   border-bottom: none;
 }
@@ -158,10 +175,6 @@
   width: 100%;
 }
 
-.version-history-group--hidden {
-  display: none;
-}
-
 /* timeline vertical line */
 .version-history-group:before {
   background-color: var(--color-neutral-3, #ccc);
@@ -176,6 +189,7 @@
 }
 
 .version-history-group__timeline-point {
+  position: relative;
   height: var(--timeline-point-height);
   width: var(--timeline-point-height);
   margin-left: -1rem;
@@ -187,10 +201,44 @@
   color: var(--color-neutral-6, #ccc);
 }
 
+.version-history-group--date-conflict .version-history-group__timeline-point {
+  color: var(--warning-color, #c09853);
+}
+
+/* the badge by the point indicating a date jump */
+.version-history-group--date-conflict
+  .version-history-group__timeline-point::after {
+  content: "!";
+  position: absolute;
+  right: -0.18rem;
+  top: 0.1rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 999px;
+  background: var(--warning-background, #fcf8e3);
+  border: 1px solid var(--warning-border-color, #fbeed5);
+  color: var(--warning-color, #c09853);
+  font-size: 0.62rem;
+  line-height: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+}
+
 .version-history-group__timeline-content {
   width: 100%;
   padding-right: 2rem;
   padding-left: 0.8rem;
+}
+
+.version-history-group__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.version-history-group__date-title {
+  margin: 0;
 }
 
 .version-history-group__timeline-content h3 {
@@ -201,7 +249,7 @@
 /* doi only toggle */
 
 .version-history__toggle .toggle-container {
-  --toggle-border-color: var(--borderColor-muted);
+  --toggle-border-color: var(--border-color-muted);
   width: 19rem;
   margin-left: auto;
 }
