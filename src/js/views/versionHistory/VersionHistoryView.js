@@ -4,6 +4,7 @@
 // - pagination if too many versions
 
 define([
+  "jquery",
   "backbone",
   "models/sysmeta/VersionTracker",
   "collections/DataONEObjects",
@@ -14,9 +15,11 @@ define([
   "views/uiElements/ToggleView",
   "common/Utilities",
   "common/DateUtility",
+  "semantic",
   // CSS
   `text!${MetacatUI.root}/css/version-history/version-history.css`,
 ], (
+  $,
   Backbone,
   VersionTracker,
   DataONEObjects,
@@ -27,9 +30,12 @@ define([
   ToggleView,
   Utilities,
   DateUtility,
+  Semantic,
   VersionHistoryCSS,
 ) => {
   const SPINNER = `<i class="icon-spinner icon-spin icon-large loading icon"></i>`;
+  const REFRESH_ICON = `<i class="icon icon-refresh icon-on-left"></i>`;
+  const SEM_VARIATIONS = Semantic.CLASS_NAMES.variations;
 
   // Friendly text to explain common server errors
   const ERROR_TEXT = {
@@ -85,7 +91,9 @@ define([
     dateConflictSummary: `alert alert-warning ${BASE_CLASS}__date-conflict-summary`,
     dateConflictHidden: `version-history--hidden`,
     history: `${BASE_CLASS}__history`,
+    controls: `${BASE_CLASS}__controls`,
     toggle: `${BASE_CLASS}__toggle`,
+    refreshButton: `${BASE_CLASS}__refresh-button`,
   };
 
   /**
@@ -120,6 +128,22 @@ define([
       className: CLASS_NAMES.base,
 
       /**
+       * Settings for the toggle and refresh button tooltips. Can be set to
+       * false to disable tooltips entirely.
+       * @type {object|boolean}
+       */
+      tooltipSettings: {
+        variation: `${SEM_VARIATIONS.mini} ${SEM_VARIATIONS.inverted}`,
+        position: "top center",
+        on: "hover",
+        hoverable: true,
+        delay: {
+          show: 250,
+          hide: 40,
+        },
+      },
+
+      /**
        * Initializes the VersionHistoryView and prepares the version tracker.
        * @param {object} [options] - Configuration options for the view.
        * @param {string} [options.pid] - The PID whose history should be shown.
@@ -144,7 +168,10 @@ define([
         </header>
         <div class="${CLASS_NAMES.status}" data-role="status" role="status"></div>
         <div class="${CLASS_NAMES.dateConflictSummary} ${CLASS_NAMES.dateConflictHidden}" data-role="date-conflict-summary"></div>
-        <div class="${CLASS_NAMES.toggle}" data-role="toggle"></div>
+        <div class="${CLASS_NAMES.controls}">
+          <button class="${CLASS_NAMES.refreshButton}" data-role="refresh-button"></button>
+          <div class="${CLASS_NAMES.toggle}" data-role="toggle"></div>
+        </div>
         <div class="${CLASS_NAMES.history}" data-role="list"></div>
         `.trim();
       },
@@ -185,6 +212,9 @@ define([
           `[data-role="date-conflict-summary"]`,
         );
         this.toggleEl = this.el.querySelector(`[data-role="toggle"]`);
+        this.refreshButtonEl = this.el.querySelector(
+          `[data-role="refresh-button"]`,
+        );
 
         this.timelineGroupsView?.remove();
         this.timelineGroupsView = new VersionTimelineGroupsView({
@@ -205,6 +235,7 @@ define([
         this.renderHeader();
         this.listenToVersionsFound();
         this.findVersions();
+        this.renderRefreshButton();
 
         return this;
       },
@@ -249,6 +280,7 @@ define([
         this.toggle = new ToggleView({
           disabled: true, // start disabled until versions are loaded
           selected: "all",
+          tooltipSettings: this.tooltipSettings,
           options: [
             {
               value: "all",
@@ -287,6 +319,40 @@ define([
         });
         if (!anyChanged) return;
         this.timelineGroupsView.updateVisualState();
+      },
+
+      /**
+       * Renders the refresh button, which allows users to clear stored versions
+       * and re-fetch the version history from the server.
+       */
+      renderRefreshButton() {
+        const refreshButton = this.refreshButtonEl;
+        if (!refreshButton) return;
+        // refreshButton.className = "btn btn-secondary";
+        refreshButton.innerHTML = `${REFRESH_ICON} Refresh`;
+        refreshButton.title =
+          "Clear all stored versions and re-fetch the version history from the server.";
+        refreshButton.addEventListener("click", () => this.refresh());
+        // add a tooltip to the refresh button
+        $(refreshButton).tooltip({
+          ...this.tooltipSettings,
+          content: refreshButton.title,
+        });
+      },
+
+      /**
+       * Refresh the version history by clearing the VersionTracker cache and
+       * re-rendering the view (which will trigger a new fetch).
+       */
+      async refresh() {
+        try {
+          await this.versionTracker.clearCache();
+          await this.render();
+        } catch (error) {
+          this.showError(
+            `Failed to clear version history cache: ${error.message || error}`,
+          );
+        }
       },
 
       /**
@@ -691,6 +757,7 @@ define([
         this.solrResultModel = null;
         this.dateConflictSummaryEl = null;
         this.collection?.reset();
+        this.refreshButtonEl = null;
       },
 
       /**
