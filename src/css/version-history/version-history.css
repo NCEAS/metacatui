@@ -248,20 +248,49 @@
 
 /* doi only toggle */
 
-.version-history__toggle .toggle-container {
+.version-history__controls {
   --toggle-border-color: var(--border-color-muted);
-  width: 19rem;
+  width: 100%;
   margin-left: auto;
+  display: flex;
+  justify-content: end;
+  gap: 1rem;
 }
 
-.version-history__toggle .toggle-option:last-child.toggle-option--active {
-  --toggle-background-color-active: #f3e8fe;
-  --toggle-color-active: #a569e0;
+.version-history__toggle {
+  width: 19rem;
+  .toggle-option:last-child.toggle-option--active {
+    --toggle-background-color-active: #f3e8fe;
+    --toggle-color-active: #a569e0;
+  }
+  .toggle-option:first-child.toggle-option--active {
+    --toggle-background-color-active: #d6ecfc;
+    --toggle-color-active: #333333;
+  }
 }
 
-.version-history__toggle .toggle-option:first-child.toggle-option--active {
+.version-history__refresh-button {
+  /* mimic styles from toggle view */
+  background: none;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1;
+  padding: 0.5em 0.6em;
+  margin: 1rem 0 1.5rem 0;
+  border-radius: 5px;
+  font-weight: 500;
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--color-neutral-3, #ccc);
+  color: #555;
+}
+
+.version-history__refresh-button:hover {
   --toggle-background-color-active: #d6ecfc;
   --toggle-color-active: #333333;
+  background: var(--toggle-background-color-active);
+  color: var(--toggle-color-active);
+  border-color: var(--toggle-color-active);
 }
 
 /* more compact for small screens */
