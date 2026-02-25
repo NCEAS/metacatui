@@ -164,17 +164,26 @@ define([
       },
 
       /**
+       * Add tooltips to the badge elements immediately after rendering. False
+       * by default since tooltips must be added only once the view is in the
+       * DOM. This view is added to a Document Fragment during rendering of the
+       * timeline, which prevents tooltips from being added at that stage.
+       */
+      autoAddTooltips: false,
+
+      /**
        * Initializes the ObjectVersionView.
        * @param {object} options Options to configure the view.
        * @param {DataONEObject} options.model - The DataONEObject model to
        * represent in this view.
-       * @param {string} [options.referencePid] The identifier of the
-       * reference version to compare against for relative date badges. If not
-       * provided, no relative date badges will be shown.
-       * @param {object} [options.tooltipSettings] Optional settings to
-       * override the default tooltipSettings for this view instance. See
-       * tooltipSettings property for details on available settings and
-       * defaults.
+       * @param {string} [options.referencePid] The identifier of the reference
+       * version to compare against for relative date badges. If not provided,
+       * no relative date badges will be shown.
+       * @param {object} [options.tooltipSettings] Optional settings to override
+       * the default tooltipSettings for this view instance. See tooltipSettings
+       * property for details on available settings and defaults.
+       * @param {boolean} [options.autoAddTooltips] Set to true to automatically
+       * add tooltips after rendering. Defaults to false.
        */
       initialize(options) {
         this.model = options.model;
@@ -184,6 +193,9 @@ define([
           typeof options.tooltipSettings === "object"
         ) {
           this.tooltipSettings = options.tooltipSettings;
+        }
+        if (options.autoAddTooltips === true) {
+          this.autoAddTooltips = true;
         }
         this.listenTo(
           this.model,
