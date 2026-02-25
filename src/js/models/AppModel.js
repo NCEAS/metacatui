@@ -1,4 +1,4 @@
-define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
+define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
   "use strict";
 
   // Remove any trailing slashes from a URL
@@ -8,11 +8,11 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
    * @class AppModel
    * @classdesc A utility model that contains top-level configuration and storage for the application
    * @name AppModel
-   * @extends Backbone.Model
-   * @constructor
+   * @augments Backbone.Model
+   * @class
    * @classcategory Models
    */
-  var AppModel = Backbone.Model.extend(
+  const AppModel = Backbone.Model.extend(
     /** @lends AppModel.prototype */ {
       defaults: _.extend(
         /** @lends AppConfig.prototype */ {
@@ -2484,6 +2484,14 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @since 2.32.1
            */
           fileDownloadTimeout: 0,
+
+          /**
+           * Whether to show or hide the version history view for each dataset.
+           * @type {boolean}
+           * @default true
+           * @since 0.0.0
+           */
+          showVersionHistory: true,
         },
         MetacatUI.AppConfig,
       ),
