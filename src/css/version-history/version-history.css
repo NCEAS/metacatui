@@ -3,9 +3,9 @@
 .version-history {
   --timeline-point-height: 2.4rem;
   --border-color-muted: var(--color-neutral-1, #e3e3e3);
-  --warning-color: #9d742d;
-  --warning-background: #fcf8e3;
-  --warning-border-color: #fbeed5;
+  --info-color: #1f5f95;
+  --info-background: #edf6fc;
+  --info-border-color: #c7e0f3;
   max-width: 1280px;
   margin-left: auto;
   margin-right: auto;
@@ -13,7 +13,7 @@
 
   .alert-warning {
     /* darker than bootstrap default */
-    color: var(--warning-color);
+    color: #9d742d;
   }
 }
 
@@ -142,11 +142,14 @@
   --badge-text-color: #a569e0;
 }
 
-.object-version__date-conflict-note {
+.object-version__date-note {
   grid-area: note;
   margin: 0.4rem 0 0 0;
   font-size: 0.85rem;
   padding: 0.3rem 0.45rem;
+  color: var(--info-color, #1f5f95);
+  background: var(--info-background, #edf6fc);
+  border-color: var(--info-border-color, #c7e0f3);
 }
 
 .object-version:last-child {
@@ -206,27 +209,34 @@
   color: var(--color-neutral-6, #ccc);
 }
 
-.version-history-group--date-conflict .version-history-group__timeline-point {
-  color: var(--warning-color, #c09853);
+.version-history-group__point-note-icon {
+  display: none;
+  position: absolute;
+  right: -0.22rem;
+  top: 0.02rem;
+  width: 0.92rem;
+  height: 0.92rem;
+  border-radius: 999px;
+  background: var(--info-background, #edf6fc);
+  border: 1px solid var(--info-border-color, #c7e0f3);
+  color: var(--info-color, #1f5f95);
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  box-sizing: border-box;
 }
 
-/* the badge by the point indicating a date jump */
-.version-history-group--date-conflict
-  .version-history-group__timeline-point::after {
-  content: "!";
-  position: absolute;
-  right: -0.18rem;
-  top: 0.1rem;
-  width: 0.8rem;
-  height: 0.8rem;
-  border-radius: 999px;
-  background: var(--warning-background, #fcf8e3);
-  border: 1px solid var(--warning-border-color, #fbeed5);
-  color: var(--warning-color, #c09853);
-  font-size: 0.62rem;
-  line-height: 0.78rem;
-  font-weight: 700;
-  text-align: center;
+.version-history-group__point-note-icon .icon {
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+.version-history-group--date-note .version-history-group__timeline-point {
+  color: var(--info-color, #1f5f95);
+}
+
+.version-history-group--date-note .version-history-group__point-note-icon {
+  display: inline-flex;
 }
 
 .version-history-group__timeline-content {

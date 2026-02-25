@@ -88,8 +88,6 @@ define([
     header: `${BASE_CLASS}__header`,
     subtitle: `${BASE_CLASS}__subtitle`,
     status: `${BASE_CLASS}__status alert alert-info`,
-    dateConflictSummary: `alert alert-warning ${BASE_CLASS}__date-conflict-summary`,
-    dateConflictHidden: `version-history--hidden`,
     history: `${BASE_CLASS}__history`,
     controls: `${BASE_CLASS}__controls`,
     toggle: `${BASE_CLASS}__toggle`,
@@ -167,7 +165,6 @@ define([
           <h1>Version History</h1>
         </header>
         <div class="${CLASS_NAMES.status}" data-role="status" role="status"></div>
-        <div class="${CLASS_NAMES.dateConflictSummary} ${CLASS_NAMES.dateConflictHidden}" data-role="date-conflict-summary"></div>
         <div class="${CLASS_NAMES.controls}">
           <button class="${CLASS_NAMES.refreshButton}" data-role="refresh-button"></button>
           <div class="${CLASS_NAMES.toggle}" data-role="toggle"></div>
@@ -208,9 +205,6 @@ define([
         this.listEl = this.el.querySelector('[data-role="list"]');
         this.pidEl = this.el.querySelector('[data-role="pid"]');
         this.headerEl = this.el.querySelector(`[data-role="header"]`);
-        this.dateConflictSummaryEl = this.el.querySelector(
-          `[data-role="date-conflict-summary"]`,
-        );
         this.toggleEl = this.el.querySelector(`[data-role="toggle"]`);
         this.refreshButtonEl = this.el.querySelector(
           `[data-role="refresh-button"]`,
@@ -439,12 +433,12 @@ define([
             this.showPartial(errorMessage);
           }
 
-          // Render any detected version date conflicts in the summary
+          // Apply any detected out-of-order date notes to individual versions
           const dateConflicts = [
             ...record.next.dateConflicts,
             ...record.prev.dateConflicts,
           ];
-          this.showDateConflicts(dateConflicts);
+          this.applyDateNotes(dateConflicts);
         } catch (error) {
           if (error?.name === "AbortError") {
             return;
@@ -591,58 +585,37 @@ define([
         this.statusEl.classList.add(`alert-${type}`);
       },
 
-      /** Remove date conflicts flags from models and clear the summary. */
-      clearDateConflicts() {
+      /** Remove any row-level date note flags from version models. */
+      clearDateNotes() {
         if (this.collection) {
           this.collection.each((model) => {
-            if (model.has("versionDateConflict")) {
-              model.unset("versionDateConflict");
+            if (model.has("versionDateNote")) {
+              model.unset("versionDateNote");
             }
           });
-        }
-        if (this.dateConflictSummaryEl) {
-          this.dateConflictSummaryEl.classList.add(
-            CLASS_NAMES.dateConflictHidden,
-          );
-          this.dateConflictSummaryEl.innerHTML = "";
         }
       },
 
       /**
-       * Render a page-level summary for detected version date conflicts, i.e.
+       * Apply row-level notes for detected version date conflicts, i.e.
        * cases where the date a obsoleting version was uploaded is *earlier*
        * than the date of the version it obsoletes.
        * @param {VersionTracker.DateConflict[]} conflicts An array of
-       * detected version date conflicts to summarize. If not provided, the
-       * summary will be cleared.
+       * detected version date conflicts. If not provided, any existing row
+       * notes will be cleared.
        */
-      showDateConflicts(conflicts = []) {
-        this.clearDateConflicts();
-        const count = Array.isArray(conflicts) ? conflicts.length : 0;
-        if (!this.dateConflictSummaryEl || !count || !this.collection) {
+      applyDateNotes(conflicts = []) {
+        this.clearDateNotes();
+        if (!this.collection || !Array.isArray(conflicts) || !conflicts.length) {
           return;
         }
-        if (count === 0) return;
-        this.dateConflictSummaryEl.classList.remove(
-          CLASS_NAMES.dateConflictHidden,
-        );
-        const s = count > 1 ? "s" : "";
-        const be = count > 1 ? "were" : "was";
-        const replace = count > 1 ? "they replace" : "it replaces";
-        // TODO: fix wording, make configurable...
-        this.dateConflictSummaryEl.innerHTML =
-          `<strong>⏰ Date Conflict${s} Detected:</strong> The dates ` +
-          `in the version history are not strictly chronological. ${count} ` +
-          `version${s} ${be} uploaded after the version${s} ${replace},` +
-          ` which can happen when records are added or corrected at a later date.`;
-
         conflicts.forEach((conflict) => {
-          // Just mark the previous version in the conflict because that is the
-          // one with the anomalous upload date (i.e. it was uploaded after the
-          // version that obsoletes it)
+          // Mark the earlier-in-chain version because that is the one with the
+          // out-of-order upload date (uploaded after the version that obsoletes
+          // it)
           const { prevPid } = conflict;
           const prevModel = this.collection.get(prevPid);
-          prevModel?.set("versionDateConflict", conflict);
+          prevModel?.set("versionDateNote", conflict);
         });
       },
 
@@ -735,7 +708,7 @@ define([
         this.completed = false;
         this.numNext = 0;
         this.numPrev = 0;
-        this.clearDateConflicts();
+        this.clearDateNotes();
         this.abortChainFetch(
           "VersionHistoryView: Cleaning up before re-render or destroy",
         );
@@ -754,7 +727,6 @@ define([
         this.timelineGroups?.reset();
         this.citationView = null;
         this.solrResultModel = null;
-        this.dateConflictSummaryEl = null;
         this.collection?.reset();
         this.refreshButtonEl = null;
       },

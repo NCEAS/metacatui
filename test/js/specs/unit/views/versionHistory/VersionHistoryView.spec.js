@@ -33,10 +33,7 @@ define([
         const view = new VersionHistoryView({ pid: "ref.1" });
         view.statusEl = document.createElement("div");
         view.statusEl.className = "alert alert-info";
-        view.dateConflictSummaryEl = document.createElement("div");
-        view.dateConflictSummaryEl.className = "version-history--hidden";
         document.body.appendChild(view.statusEl);
-        document.body.appendChild(view.dateConflictSummaryEl);
 
         return {
           sandbox,
@@ -50,15 +47,13 @@ define([
 
     afterEach(() => {
       const statusEl = state.view?.statusEl;
-      const summaryEl = state.view?.dateConflictSummaryEl;
       state.view?.remove();
       statusEl?.remove?.();
-      summaryEl?.remove?.();
       globalThis.MetacatUI = state.originalMetacatUI;
       state.sandbox?.restore();
     });
 
-    it("renders a date conflict summary and marks the conflicting previous model", () => {
+    it("applies row-level date notes and marks the out-of-order previous model", () => {
       state.view.collection = new Backbone.Collection([
         {
           id: "older.1",
@@ -78,52 +73,34 @@ define([
         timeDiffMs: 24 * 60 * 60 * 1000,
       };
 
-      state.view.showDateConflicts([conflict]);
+      state.view.applyDateNotes([conflict]);
 
       expect(
-        state.view.dateConflictSummaryEl.classList.contains(
-          "version-history--hidden",
-        ),
-      ).to.equal(false);
-      expect(state.view.dateConflictSummaryEl.innerHTML).to.contain(
-        "Date Conflict",
-      );
-      expect(
-        state.view.collection.get("older.1").get("versionDateConflict"),
+        state.view.collection.get("older.1").get("versionDateNote"),
       ).to.equal(conflict);
       expect(
-        state.view.collection.get("newer.1").get("versionDateConflict"),
+        state.view.collection.get("newer.1").get("versionDateNote"),
       ).to.equal(undefined);
     });
 
-    it("clears summary content and transient conflict flags", () => {
+    it("clears transient date note flags", () => {
       state.view.collection = new Backbone.Collection([
         {
           id: "older.1",
           identifier: "older.1",
-          versionDateConflict: { prevPid: "older.1" },
+          versionDateNote: { prevPid: "older.1" },
         },
         {
           id: "newer.1",
           identifier: "newer.1",
         },
       ]);
-      state.view.dateConflictSummaryEl.innerHTML = "existing summary";
-      state.view.dateConflictSummaryEl.classList.remove(
-        "version-history--hidden",
-      );
 
-      state.view.clearDateConflicts();
+      state.view.clearDateNotes();
 
       expect(
-        state.view.collection.get("older.1").get("versionDateConflict"),
+        state.view.collection.get("older.1").get("versionDateNote"),
       ).to.equal(undefined);
-      expect(state.view.dateConflictSummaryEl.innerHTML).to.equal("");
-      expect(
-        state.view.dateConflictSummaryEl.classList.contains(
-          "version-history--hidden",
-        ),
-      ).to.equal(true);
     });
 
     it("removes alert-warning when updating the status to a different type", () => {

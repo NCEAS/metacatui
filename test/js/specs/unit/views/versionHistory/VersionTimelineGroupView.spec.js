@@ -38,7 +38,7 @@ define([
             {
               identifier: "p1",
               dateUploaded: "2022-08-08T00:00:00Z",
-              versionDateConflict: {
+              versionDateNote: {
                 prevPid: "p1",
                 nextPid: "p2",
                 timeDiffMs: 1000,
@@ -85,32 +85,36 @@ define([
       state.sandbox?.restore();
     });
 
-    it("toggles the group conflict class when versionDateConflict flags change", () => {
-      state.models.at(0).unset("versionDateConflict");
+    it("toggles the group date note class when versionDateNote flags change", () => {
+      state.models.at(0).unset("versionDateNote");
       state.view.render();
       expect(
-        state.view.el.classList.contains("version-history-group--date-conflict"),
+        state.view.el.classList.contains("version-history-group--date-note"),
       ).to.equal(false);
 
-      state.models.at(1).set("versionDateConflict", {
+      state.models.at(1).set("versionDateNote", {
         prevPid: "p2",
         nextPid: "p3",
         timeDiffMs: 2000,
       });
       expect(
-        state.view.el.classList.contains("version-history-group--date-conflict"),
+        state.view.el.classList.contains("version-history-group--date-note"),
       ).to.equal(true);
+
+      const iconEl = state.view.el.querySelector(
+        ".version-history-group__point-note-icon",
+      );
+      expect(iconEl).to.exist;
+      expect(iconEl.getAttribute("aria-label")).to.contain("Note on dates");
     });
 
-    it("does not mark the group if only hidden rows in the group are conflicted", () => {
+    it("does not mark the group if only hidden rows in the group have date notes", () => {
       state.models.at(0).set("hiddenByUI", true);
-      state.models.at(1).unset("versionDateConflict");
+      state.models.at(1).unset("versionDateNote");
       state.view.render();
 
       expect(
-        state.view.el.classList.contains(
-          "version-history-group--date-conflict",
-        ),
+        state.view.el.classList.contains("version-history-group--date-note"),
       ).to.equal(false);
     });
   });
