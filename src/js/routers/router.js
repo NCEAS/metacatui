@@ -1,14 +1,14 @@
 "use strict";
 
-define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
+define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
   /**
    * @class UIRouter
    * @classdesc MetacatUI Router
    * @classcategory Router
-   * @extends Backbone.Router
-   * @constructor
+   * @augments Backbone.Router
+   * @class
    */
-  var UIRouter = Backbone.Router.extend(
+  const UIRouter = Backbone.Router.extend(
     /** @lends UIRouter.prototype */ {
       routes: {
         "": "renderIndex", // the default route
@@ -171,6 +171,11 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
        * @since 0.0.0
        */
       renderVersionHistory(pidParam) {
+        if (!MetacatUI.appModel.get("showVersionHistory")) {
+          this.navigateToDefault();
+          return;
+        }
+
         this.routeHistory.push("versionHistory");
         let decodedPid = "";
         if (pidParam) {
