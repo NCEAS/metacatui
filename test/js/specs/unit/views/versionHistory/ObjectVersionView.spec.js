@@ -78,13 +78,13 @@ define([
       state.sandbox?.restore();
     });
 
-    it("renders a date conflict note only when versionDateConflict is present", () => {
+    it("renders a date note only when versionDateNote is present", () => {
       state.view.render();
       expect(
-        state.view.el.querySelector(".object-version__date-conflict-note"),
+        state.view.el.querySelector(".object-version__date-note"),
       ).to.equal(null);
 
-      state.model.set("versionDateConflict", {
+      state.model.set("versionDateNote", {
         prevPid: "target.1",
         nextPid: "<next.1>",
         prevDate: new Date("2022-01-01T00:00:00Z"),
@@ -92,18 +92,18 @@ define([
         timeDiffMs: 24 * 60 * 60 * 1000,
       });
 
-      const noteEl = state.view.el.querySelector(
-        ".object-version__date-conflict-note",
-      );
+      const noteEl = state.view.el.querySelector(".object-version__date-note");
       expect(noteEl).to.exist;
-      expect(noteEl.textContent).to.contain("Date Conflict");
-      expect(noteEl.textContent).to.contain("successor in the version chain");
-      expect(noteEl.innerHTML).to.contain("&lt;next.1&gt;");
-      expect(noteEl.innerHTML).to.not.contain("<next.1>");
+      expect(noteEl.textContent).to.contain("Note on dates");
+      expect(noteEl.textContent).to.contain(
+        "a newer version in the history",
+      );
+      expect(noteEl.textContent).to.contain("1 day");
+      expect(noteEl.textContent).to.not.contain("Date Conflict");
     });
 
-    it("still renders badges and initializes tooltips when a date conflict note is present", () => {
-      state.model.set("versionDateConflict", {
+    it("still renders badges and initializes tooltips when a date note is present", () => {
+      state.model.set("versionDateNote", {
         prevPid: "target.1",
         nextPid: "next.1",
         prevDate: new Date("2022-01-01T00:00:00Z"),

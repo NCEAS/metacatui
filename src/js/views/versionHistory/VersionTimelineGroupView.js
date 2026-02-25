@@ -10,6 +10,9 @@ define([
 ], (Backbone, DataONEObjects, DateUtility, ObjectVersionsView) => {
   "use strict";
 
+  const DATE_NOTE_ICON_LABEL =
+    "Note on dates: Upload dates may appear out of order due to later curation.";
+
   // SVG for the timeline point, included inline to avoid an extra request and
   // allow CSS styling
   const TIMELINE_POINT_SVG = `<svg aria-hidden="true" viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M11.93 8.5a4.002 4.002 0 0 1-7.86 0H.75a.75.75 0 0 1 0-1.5h3.32a4.002 4.002 0 0 1 7.86 0h3.32a.75.75 0 0 1 0 1.5Zm-1.43-.75a2.5 2.5 0 1 0-5 0 2.5 2.5 0 0 0 5 0Z"/></svg>`;
@@ -22,13 +25,12 @@ define([
   const CLASS_NAMES = {
     container: BASE_CLASS,
     hidden: `version-history--hidden`,
-    dateConflict: `${BASE_CLASS}--date-conflict`,
+    dateNote: `${BASE_CLASS}--date-note`,
     timelinePoint: `${BASE_CLASS}__timeline-point`,
+    timelinePointDateNoteIcon: `${BASE_CLASS}__point-note-icon`,
     timelineContent: `${BASE_CLASS}__timeline-content`,
     header: `${BASE_CLASS}__header`,
     dateTitle: `${BASE_CLASS}__date-title`,
-    anomalyChip: `${BASE_CLASS}__date-conflict-chip`,
-    anomalyChipIcon: `${BASE_CLASS}__date-conflict-icon`,
     objectVersionsList: `object-versions`,
   };
 
@@ -107,7 +109,17 @@ define([
         }
 
         return `
-          <div class="${CLASS_NAMES.timelinePoint}">${TIMELINE_POINT_SVG}</div>
+          <div class="${CLASS_NAMES.timelinePoint}">
+            ${TIMELINE_POINT_SVG}
+            <span
+              class="${CLASS_NAMES.timelinePointDateNoteIcon}"
+              role="img"
+              aria-label="${DATE_NOTE_ICON_LABEL}"
+              title="Note on dates"
+            >
+              <i class="icon icon-info-sign" aria-hidden="true"></i>
+            </span>
+          </div>
           <div class="${CLASS_NAMES.timelineContent}">
             <div class="${CLASS_NAMES.header}">
               <h3 class="${CLASS_NAMES.dateTitle}">${displayDate}</h3>\
@@ -118,15 +130,15 @@ define([
       },
 
       /**
-       * Count visible versions in this group that have a version date conflict
+       * Count visible versions in this group that have a version date note
        * (version date is later than the one that obsoletes it).
-       * @returns {number} Number of visible anomalous versions.
+       * @returns {number} Number of visible versions with a date note.
        */
-      getVisibleDateConflicts() {
+      getVisibleDateNotes() {
         if (!this.collection?.length) return 0;
         return this.collection.reduce((count, model) => {
           if (model.get("hiddenByUI") === true) return count;
-          if (model.get("versionDateConflict")) return count + 1;
+          if (model.get("versionDateNote")) return count + 1;
           return count;
         }, 0);
       },
@@ -134,7 +146,8 @@ define([
       /**
        * Compute a stable key for the current date/label combination, used to
        * determine when the group header needs to be re-rendered.
-       * @returns {string}
+       * @returns {string} Unique key representing the current date and label of
+       * this group.
        */
       getDateKey() {
         const dateKey = DateUtility.isValidDate(this.date)
@@ -145,16 +158,16 @@ define([
 
       /** Start listening for row-level UI-affecting changes */
       listenToCollection() {
-        const events = "change:hiddenByUI change:versionDateConflict";
+        const events = "change:hiddenByUI change:versionDateNote";
         this.stopListening(this.collection, events);
         this.listenTo(this.collection, events, this.updateVisualState);
       },
 
       /**
        * Show or hide the group depending on whether all versions are hidden,
-       * and add/remove the date conflict class based on whether any visible
-       * versions have a date conflict. Update the ObjectVersionsView to
-       * show/hide conflict chips on individual versions.
+       * and add/remove the date note class based on whether any visible
+       * versions have a date note. Update the ObjectVersionsView to show/hide
+       * individual rows.
        */
       updateVisualState() {
         // Hide or show the entire group if all versions are hidden
@@ -162,12 +175,12 @@ define([
           this.collection.length === 0 || this.collection.allHidden();
         this.el.classList.toggle(`${CLASS_NAMES.hidden}`, allHidden);
 
-        // Add or remove the date conflict class based on whether any visible
-        // versions have a date conflict
-        const NumVisConflicts = allHidden ? 0 : this.getVisibleDateConflicts();
+        // Add or remove the date note class based on whether any visible
+        // versions have a date note
+        const numVisibleDateNotes = allHidden ? 0 : this.getVisibleDateNotes();
         this.el.classList.toggle(
-          `${CLASS_NAMES.dateConflict}`,
-          NumVisConflicts > 0,
+          `${CLASS_NAMES.dateNote}`,
+          numVisibleDateNotes > 0,
         );
 
         // Show or hide the individual object version views based on their
