@@ -40,7 +40,6 @@ define([
       LATEST: `${BASE_CLASS}__badge--latest`,
       NEWER: `${BASE_CLASS}__badge--newer`,
       OLDER: `${BASE_CLASS}__badge--older`,
-      EMPTY: `${BASE_CLASS}__badge--empty`,
       CURRENT: `${BASE_CLASS}__badge--current`,
       PRIVATE: `${BASE_CLASS}__badge--private`,
       NOTFOUND: `${BASE_CLASS}__badge--not-found`,
@@ -91,11 +90,6 @@ define([
       className: CLASS_NAMES.badgeTypes.CURRENT,
       description:
         "All other versions are shown relative to this reference version.",
-    },
-    EMPTY: {
-      label: "",
-      className: CLASS_NAMES.badgeTypes.EMPTY,
-      description: "",
     },
     PRIVATE: {
       label: "Private",
@@ -295,7 +289,7 @@ define([
       getKeyPointsBadge() {
         const { obsoletes, obsoletedBy } = this.model.toJSON();
 
-        let status = STATUS.EMPTY;
+        let status = null;
         if (!obsoletes && obsoletedBy) {
           status = STATUS.FIRST;
         }
@@ -312,22 +306,21 @@ define([
        * @returns {string} HTML string for the badge.
        */
       getRelativeDateBadge() {
-        let status = STATUS.EMPTY;
-        const emptyBadge = this.createEmptyBadge();
+        let status = null;
         if (this.referencePid === this.model.get("identifier")) {
-          return emptyBadge;
+          return "";
         }
         const { collection } = this.model;
         const referenceModel = collection?.findWhere({
           identifier: this.referencePid,
         });
         if (!referenceModel) {
-          return emptyBadge;
+          return "";
         }
         const referenceDate = referenceModel.get("dateUploaded");
         const thisDate = this.model.get("dateUploaded");
         if (!referenceDate || !thisDate) {
-          return emptyBadge;
+          return "";
         }
         const thisDateObj = DateUtility.toDate(thisDate);
         const referenceDateObj = DateUtility.toDate(referenceDate);
@@ -341,7 +334,7 @@ define([
           },
         );
         if (relativeDateString === "current") {
-          return emptyBadge;
+          return "";
         }
         if (thisDate > referenceDate) {
           status = STATUS.NEWER;
@@ -349,6 +342,7 @@ define([
         if (thisDate < referenceDate) {
           status = STATUS.OLDER;
         }
+        if (!status) return "";
         return this.createBadge({
           label: status.label(relativeDateString),
           className: status.className,
@@ -364,15 +358,14 @@ define([
        * @returns {string} HTML string for the badge.
        */
       getVersionOrderBadge() {
-        const emptyBadge = this.createEmptyBadge();
         const vh = this.model.get("versionHistory");
         const refPid = this.referencePid;
-        if (!vh || !refPid) return emptyBadge;
+        if (!vh || !refPid) return "";
         const index = vh[refPid];
-        if (!index && index !== 0) return emptyBadge;
+        if (!index && index !== 0) return "";
         const absIndex = Math.abs(index);
         const versionWord = absIndex === 1 ? "version" : "versions";
-        let settings = STATUS.EMPTY;
+        let settings = null;
         if (absIndex === 0) {
           settings = STATUS.CURRENT;
         } else {
@@ -381,7 +374,6 @@ define([
           settings.label = settings.label(absIndex, versionWord);
           settings.description = settings.description(absIndex, versionWord);
         }
-
         return this.createBadge(settings);
       },
 
@@ -400,8 +392,6 @@ define([
               badges += this.createBadge(STATUS.NOTFOUND);
             }
           });
-        } else {
-          badges += this.createEmptyBadge();
         }
         return badges;
       },
@@ -413,7 +403,7 @@ define([
        */
       getDOIBadge() {
         if (this.isDOI()) return this.createBadge(STATUS.DOI);
-        return this.createEmptyBadge();
+        return "";
       },
 
       /**
@@ -446,17 +436,10 @@ define([
        * badge.
        * @returns {string} HTML string for the badge.
        */
-      createBadge({ label, className, description }) {
+      createBadge(status) {
+        if (!status) return "";
+        const { label, className, description } = status;
         return `<span class="${CLASS_NAMES.badge} ${className}" title="${description}">${label}</span>`;
-      },
-
-      /**
-       * Helper method to create an empty badge for spacing consistency when no
-       * status badge is needed.
-       * @returns {string} HTML string for an empty badge.
-       */
-      createEmptyBadge() {
-        return this.createBadge(STATUS.EMPTY);
       },
 
       /** @inheritdoc */
