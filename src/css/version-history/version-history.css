@@ -263,3 +263,29 @@
   --toggle-background-color-active: #d6ecfc;
   --toggle-color-active: #333333;
 }
+
+/* more compact for small screens */
+@media (max-width: 600px) {
+  .object-version__badges {
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    max-width: 9.5rem;
+  }
+  .object-version__title {
+    word-wrap: break-word;
+    font-size: 0.95rem;
+  }
+  .object-version--doi .object-version__date {
+    font-size: 0.85rem;
+  }
+  .object-version__link {
+    align-self: flex-start;
+  }
+  .version-history-group {
+    margin-left: 1rem;
+  }
+  .version-history-group__timeline-content {
+    padding-left: 0.3rem;
+    padding-right: 1.2rem;
+  }
+}
