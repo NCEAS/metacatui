@@ -92,10 +92,6 @@
   vertical-align: baseline;
 }
 
-.object-version__badge--empty {
-  visibility: hidden; /* to maintain grid structure */
-}
-
 .object-version__badge--latest {
   --badge-border-color: #cdebd8;
   --badge-background-color: #eefbec;
