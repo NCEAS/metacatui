@@ -29,7 +29,6 @@ define([
     title: `${BASE_CLASS}__title`,
     link: `${BASE_CLASS}__link`,
     badgesContainer: `${BASE_CLASS}__badges`,
-    label: `label`, // Bootstrap
     badge: `object-version__badge`,
     dateConflictNote: `${BASE_CLASS}__date-conflict-note`,
     date: `${BASE_CLASS}__date`,
@@ -448,7 +447,7 @@ define([
        * @returns {string} HTML string for the badge.
        */
       createBadge({ label, className, description }) {
-        return `<span class="${CLASS_NAMES.label} ${CLASS_NAMES.badge} ${className}" title="${description}">${label}</span>`;
+        return `<span class="${CLASS_NAMES.badge} ${className}" title="${description}">${label}</span>`;
       },
 
       /**

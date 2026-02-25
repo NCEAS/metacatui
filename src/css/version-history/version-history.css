@@ -9,6 +9,7 @@
   max-width: 1280px;
   margin-left: auto;
   margin-right: auto;
+  margin-bottom: 2rem;
 
   .alert-warning {
     /* darker than bootstrap default */
@@ -81,6 +82,14 @@
   font-size: 10px;
   letter-spacing: 0.05em;
   cursor: pointer;
+
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0.95;
+  font-weight: 700;
+  line-height: 14px;
+  white-space: nowrap;
+  vertical-align: baseline;
 }
 
 .object-version__badge--empty {
@@ -259,6 +268,9 @@
 
 .version-history__toggle {
   width: 19rem;
+  .toggle-container {
+    padding: 1rem 0 0 0;
+  }
   .toggle-option:last-child.toggle-option--active {
     --toggle-background-color-active: #f3e8fe;
     --toggle-color-active: #a569e0;
@@ -276,7 +288,7 @@
   text-align: center;
   line-height: 1;
   padding: 0.5em 0.6em;
-  margin: 1rem 0 1.5rem 0;
+  margin: 1rem 0 0.5rem 0;
   border-radius: 5px;
   font-weight: 500;
   display: flex;

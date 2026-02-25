@@ -446,7 +446,6 @@ define([
           ];
           this.showDateConflicts(dateConflicts);
         } catch (error) {
-          this.completed = true;
           if (error?.name === "AbortError") {
             return;
           }
