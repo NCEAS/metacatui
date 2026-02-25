@@ -16,9 +16,10 @@ define([
   // Semantic UI class names for variations, used in tooltipSettings
   const SEM_VARIATIONS = Semantic.CLASS_NAMES.variations;
 
-  const DATE_CONFLICT_NOTE = (timeDiff, nextPid) =>
-    `<b>Date Conflict:</b> This version was uploaded ${timeDiff} ` +
-    `<b>after</b> its successor in the version chain (${nextPid}).`;
+  const DATE_NOTE_MESSAGE = (timeDiff) =>
+    `<b>Note on dates:</b> This version was uploaded ${timeDiff} ` +
+    `after a newer version in the history. This can occur when version ` +
+    `relationships are updated later as part of record curation.`;
 
   /**
    * CSS class names used throughout the ObjectVersionView.
@@ -30,7 +31,7 @@ define([
     link: `${BASE_CLASS}__link`,
     badgesContainer: `${BASE_CLASS}__badges`,
     badge: `object-version__badge`,
-    dateConflictNote: `${BASE_CLASS}__date-conflict-note`,
+    dateNote: `${BASE_CLASS}__date-note`,
     date: `${BASE_CLASS}__date`,
     size: `${BASE_CLASS}__size`,
     hidden: `version-history--hidden`,
@@ -47,7 +48,7 @@ define([
     },
     // bootstrap
     alert: "alert",
-    alertWarning: "alert-warning",
+    alertInfo: "alert-info",
   };
 
   const STATUS = {
@@ -251,7 +252,7 @@ define([
         const errorBadge = this.getErrorBadge();
         const keyPointsBadge = this.getKeyPointsBadge();
         const versionOrderBadge = this.getVersionOrderBadge();
-        const dateConflictNote = this.getDateConflictNote();
+        const dateNote = this.getDateNote();
 
         return `
         <time class="${CLASS_NAMES.date}" datetime="${isoDate}" title="${friendlyDate}">${friendlyDate}</time>
@@ -265,7 +266,7 @@ define([
             ${versionOrderBadge}
             ${dateBadge}
           </div>
-          ${dateConflictNote}
+          ${dateNote}
         `;
       },
 
@@ -411,21 +412,20 @@ define([
        * dateUploaded chronology for this row.
        * @returns {string} HTML string for the note, or an empty string.
        */
-      getDateConflictNote() {
-        const conflict = this.model.get("versionDateConflict");
-        if (!conflict) return "";
+      getDateNote() {
+        const dateNote = this.model.get("versionDateNote");
+        if (!dateNote) return "";
 
-        const { timeDiffMs, nextPid } = conflict;
-        const htmlPid = Utilities.encodeHTML(nextPid);
-
+        const { timeDiffMs } = dateNote;
         const timeDiff = DateUtility.getRelativeDateString(timeDiffMs, 0, {
           newerWord: "",
+          olderWord: "",
         });
 
-        const classes = `${CLASS_NAMES.alert} ${CLASS_NAMES.alertWarning} ${CLASS_NAMES.dateConflictNote}`;
+        const classes = `${CLASS_NAMES.alert} ${CLASS_NAMES.alertInfo} ${CLASS_NAMES.dateNote}`;
 
         return `
-          <div class="${classes}">⏰ ${DATE_CONFLICT_NOTE(timeDiff, htmlPid)}</div>
+          <div class="${classes}">${DATE_NOTE_MESSAGE(timeDiff)}</div>
         `;
       },
 
