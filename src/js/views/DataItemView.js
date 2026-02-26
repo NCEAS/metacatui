@@ -1591,7 +1591,13 @@ define([
        * @since 2.36.2
        */
       handleNonExistentFile() {
-        if (!this.model.fileDoesNotExist()) return;
+        // fileDoesNotExist is on DataONEObject models + extesions. SolrResult
+        // is used to show nested packages and doesn't have fileDoesNotExist.
+        if (
+          typeof this.model.fileDoesNotExist !== "function" ||
+          !this.model.fileDoesNotExist()
+        )
+          return;
         this.$el.addClass("non-existent-file");
         if (this.downloadButtonView) {
           this.downloadButtonView.inactivate(
