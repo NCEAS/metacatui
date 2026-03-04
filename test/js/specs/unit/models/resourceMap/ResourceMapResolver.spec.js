@@ -81,6 +81,25 @@ define([
           `id:"${escapedPid}" OR seriesId:"${escapedPid}"`,
         ).should.be.true;
       });
+
+      it("returns a direct RM for a data PID when one RM is indexed", async () => {
+        state.sandbox.stub(SolrResults.prototype, "setQuery");
+        state.sandbox.stub(SolrResults.prototype, "setfields");
+        state.sandbox.stub(SolrResults.prototype, "queryPromise").resolves();
+        state.sandbox.stub(SolrResults.prototype, "toJSON").returns([
+          {
+            id: "data.1",
+            formatType: "DATA",
+            resourceMap: ["rm.1"],
+          },
+        ]);
+        state.sandbox.stub(SolrResults.prototype, "getNumFound").returns(1);
+
+        const result = await ResourceMapResolver.searchIndex("data.1");
+
+        result.rm.should.equal("rm.1");
+        result.meta.isData.should.equal(true);
+      });
     });
 
     describe("checkStorage()", () => {
@@ -371,6 +390,61 @@ define([
         result.rm.should.equal("rm2");
         rmr.multiRMCheck.calledOnce.should.be.true;
       });
+
+      it("resolves a data PID via metadata links from isDocumentedBy", async () => {
+        const { sandbox, rmr } = state;
+
+        sandbox
+          .stub(ResourceMapResolver, "searchIndex")
+          .onCall(0)
+          .resolves({
+            rm: null,
+            meta: {
+              isSid: false,
+              isData: true,
+              isDocumentedBy: ["meta.1"],
+              rms: [],
+            },
+          })
+          .onCall(1)
+          .resolves({
+            rm: "rm.fromMeta",
+            meta: {
+              isSid: false,
+              rms: ["rm.fromMeta"],
+            },
+          });
+
+        sandbox.stub(rmr, "status").callsFake((pid, _status, rm) => ({
+          success: !!rm,
+          pid,
+          rm: rm || null,
+        }));
+
+        const result = await rmr.resolve("data.1");
+        result.should.deep.equal({
+          success: true,
+          pid: "data.1",
+          rm: "rm.fromMeta",
+        });
+
+        ResourceMapResolver.searchIndex.firstCall.args[0].should.equal("data.1");
+        ResourceMapResolver.searchIndex.secondCall.args[0].should.equal("meta.1");
+      });
+    });
+
+    describe("data PID helper methods", () => {
+      it("getLatestMetadataPids returns only non-obsoleted metadata versions", async () => {
+        const { sandbox, rmr } = state;
+
+        sandbox.stub(ResourceMapResolver, "searchIndexByPids").resolves([
+          { id: "meta.1", obsoletedBy: "meta.2" },
+          { id: "meta.2", obsoletedBy: null },
+        ]);
+
+        const latest = await rmr.getLatestMetadataPids(["meta.1", "meta.2"]);
+        latest.should.deep.equal(["meta.2"]);
+      });
     });
 
     describe("walkSysmeta()", () => {
@@ -421,6 +495,20 @@ define([
         result.should.be.false;
 
         rmr.status.calledOnce.should.be.true;
+      });
+
+      it("accepts additional verification PIDs when validating RM membership", async () => {
+        const { sandbox, rmr } = state;
+        const model = new Backbone.Model({ memberIds: ["meta.2"] });
+
+        sandbox.stub(rmr, "fetchResourceMap").resolves({ model, status: 200 });
+        sandbox.stub(rmr, "status");
+
+        const result = await rmr.verify("rm123", "data.1", ["meta.2"]);
+        result.should.be.true;
+
+        rmr.status.calledOnce.should.be.true;
+        rmr.status.firstCall.args[3].matchedPid.should.equal("meta.2");
       });
     });
 
