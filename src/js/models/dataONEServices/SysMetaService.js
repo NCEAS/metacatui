@@ -147,6 +147,37 @@ define([
         body: sysMetaXml,
       });
     }
+
+    /**
+     * Update SysMeta XML for an existing object.
+     * @param {string} pid PID to update system metadata for.
+     * @param {string} sysMetaXml SysMeta XML string.
+     * @param {object} [options] Options passed to {@link DataONEService#upload}.
+     * @returns {Promise<DataONEHttpResponse>} Promise resolving to the update response.
+     */
+    async update(pid, sysMetaXml, options = {}) {
+      if (typeof pid !== "string" || !pid.trim()) {
+        throw new Error("SysMetaService.update requires a PID");
+      }
+      if (typeof sysMetaXml !== "string" || !sysMetaXml.trim()) {
+        throw new Error("SysMetaService.update requires sysMetaXml");
+      }
+
+      const formData = new FormData();
+      formData.append("pid", pid);
+      const xmlBlob = new Blob([sysMetaXml], { type: "application/xml" });
+      formData.append("sysmeta", xmlBlob, "sysmeta.xml");
+
+      return super.upload(pid, {
+        ...options,
+        method: "PUT",
+        useCache: false,
+        dedupe: false,
+        transport: "xhr",
+        responseType: "text",
+        body: formData,
+      });
+    }
   }
 
   SysMetaService.endpoint = "sysmeta";

@@ -232,5 +232,79 @@ define([
         opts.body.should.equal(xml);
       });
     });
+
+    describe("update", () => {
+      it("puts multipart sysmeta updates with XHR transport", async () => {
+        const service = new SysMetaService({
+          baseUrl: "https://example.org/sysmeta",
+        });
+        const reqStub = state.sandbox
+          .stub(service, "request")
+          .resolves({ data: "ok" });
+        const setCachedStub = state.sandbox
+          .stub(service, "setCached")
+          .resolves();
+        const xml = "<systemMetadata></systemMetadata>";
+        const onUploadProgress = state.sandbox.spy();
+        const controller = new AbortController();
+
+        await service.update("pid.1", xml, {
+          auth: false,
+          signal: controller.signal,
+          onUploadProgress,
+        });
+
+        const opts = reqStub.firstCall.args[0];
+        opts.method.should.equal("PUT");
+        opts.path.should.equal("pid.1");
+        opts.transport.should.equal("xhr");
+        opts.dedupe.should.equal(false);
+        opts.responseType.should.equal("text");
+        opts.useCache.should.equal(false);
+        opts.signal.should.equal(controller.signal);
+        opts.onUploadProgress.should.equal(onUploadProgress);
+        opts.body.should.be.instanceof(FormData);
+        opts.body.get("pid").should.equal("pid.1");
+        opts.body.get("sysmeta").should.be.instanceof(Blob);
+        setCachedStub.called.should.be.false;
+      });
+
+      it("encodes slashes in PIDs when updating", async () => {
+        const requests = [];
+        class FakeXMLHttpRequest {
+          open(method, url) {
+            this.method = method;
+            this.url = url;
+          }
+
+          setRequestHeader() {}
+
+          getAllResponseHeaders() {
+            return "";
+          }
+
+          send() {
+            requests.push(this.url);
+            this.status = 200;
+            this.responseText = "ok";
+            this.responseURL = this.url;
+            this.onload();
+          }
+        }
+        state.sandbox.stub(globalThis, "XMLHttpRequest").callsFake(() => {
+          return new FakeXMLHttpRequest();
+        });
+
+        const service = new SysMetaService({
+          baseUrl: "https://example.org/sysmeta",
+        });
+        const xml = "<systemMetadata></systemMetadata>";
+
+        await service.update("doi:10.5063/abc", xml, { auth: false });
+        requests[0].should.equal(
+          "https://example.org/sysmeta/doi%3A10.5063%2Fabc",
+        );
+      });
+    });
   });
 });
