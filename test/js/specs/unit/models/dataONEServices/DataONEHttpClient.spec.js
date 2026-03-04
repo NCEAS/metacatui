@@ -47,6 +47,121 @@ define([
     return { r1, r2 };
   };
 
+  const createFakeXhrClass = (behaviors = []) => {
+    const queue = [...behaviors];
+
+    class FakeXMLHttpRequest {
+      constructor() {
+        this.method = null;
+        this.url = null;
+        this.headers = {};
+        this.responseType = "";
+        this.response = null;
+        this._responseText = "";
+        this.status = 0;
+        this.timeout = 0;
+        this.responseURL = "";
+        this.responseHeadersRaw = "";
+        this.uploadProgressListener = null;
+        Object.defineProperty(this, "responseText", {
+          configurable: true,
+          enumerable: true,
+          get: () => {
+            if (this.responseType && this.responseType !== "text") {
+              throw new Error("InvalidStateError");
+            }
+            return this._responseText;
+          },
+          set: (value) => {
+            this._responseText = value;
+          },
+        });
+        this.upload = {
+          addEventListener: (type, handler) => {
+            if (type === "progress") {
+              this.uploadProgressListener = handler;
+            }
+          },
+          removeEventListener: (type, handler) => {
+            if (
+              type === "progress" &&
+              this.uploadProgressListener === handler
+            ) {
+              this.uploadProgressListener = null;
+            }
+          },
+        };
+        FakeXMLHttpRequest.instances.push(this);
+      }
+
+      open(method, url) {
+        this.method = method;
+        this.url = url;
+      }
+
+      setRequestHeader(key, value) {
+        this.headers[key] = value;
+      }
+
+      getAllResponseHeaders() {
+        return this.responseHeadersRaw;
+      }
+
+      abort() {
+        if (typeof this.onabort === "function") {
+          this.onabort();
+        }
+      }
+
+      send(body) {
+        this.body = body;
+        const behavior = queue.length
+          ? queue.shift()
+          : { type: "load", status: 200, body: "ok" };
+
+        if (this.uploadProgressListener && behavior.progressEvent) {
+          this.uploadProgressListener(behavior.progressEvent);
+        }
+
+        this.responseHeadersRaw = behavior.headersRaw || "";
+        this.responseURL = behavior.url || this.url;
+
+        if (behavior.type === "error") {
+          if (typeof this.onerror === "function") this.onerror();
+          return;
+        }
+        if (behavior.type === "timeout") {
+          if (typeof this.ontimeout === "function") this.ontimeout();
+          return;
+        }
+        if (behavior.type === "abort") {
+          if (typeof this.onabort === "function") this.onabort();
+          return;
+        }
+        if (behavior.type === "hold") {
+          return;
+        }
+
+        this.status = behavior.status === undefined ? 200 : behavior.status;
+        if (this.responseType && this.responseType !== "text") {
+          this.response = behavior.body;
+        } else {
+          this.responseText =
+            typeof behavior.body === "string"
+              ? behavior.body
+              : behavior.body === undefined || behavior.body === null
+                ? ""
+                : String(behavior.body);
+        }
+
+        if (typeof this.onload === "function") this.onload();
+      }
+    }
+
+    FakeXMLHttpRequest.instances = [];
+    return FakeXMLHttpRequest;
+  };
+
   describe("DataONEHttpClient", () => {
     const state = cleanState(() => {
       const sandbox = sinon.createSandbox();
@@ -249,6 +364,17 @@ define([
           .timeoutMs.should.equal(0);
       });
 
+      it("normalizes transport and dedupe request options", () => {
+        const normalized = state.client.normalizeRequestOptions({
+          path: "/object/1",
+          transport: "XHR",
+          dedupe: false,
+        });
+
+        normalized.transport.should.equal("xhr");
+        normalized.dedupe.should.equal(false);
+      });
+
       it("treats non-object retry overrides as empty", () => {
         const client = new DataONEHttpClient({
           baseUrl: "https://example.org",
@@ -344,6 +470,52 @@ define([
         expect(caught.message).to.match(/non-negative number or null/i);
       });
 
+      it("throws when request dedupe is not a boolean", async () => {
+        let caught;
+        try {
+          await state.client.request({
+            path: "/object/1",
+            dedupe: "yes",
+          });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/dedupe must be a boolean/i);
+      });
+
+      it("throws when transport is not supported", async () => {
+        let caught;
+        try {
+          await state.client.request({
+            path: "/object/1",
+            transport: "iframe",
+          });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/Invalid transport/i);
+      });
+
+      it("throws when onUploadProgress is not a function", async () => {
+        let caught;
+        try {
+          await state.client.request({
+            path: "/object/1",
+            transport: "xhr",
+            onUploadProgress: true,
+          });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/onUploadProgress must be a function/i);
+      });
+
       it("throws when encodePath is true and path contains a query string", async () => {
         let caught;
         try {
@@ -418,6 +590,44 @@ define([
           { path: "/object/5" },
           { path: "/object/5" },
         );
+      });
+
+      it("does not dedupe when request-level dedupe is false", async () => {
+        const fetchStub = state.sandbox.stub(window, "fetch");
+
+        await expectNoDedupe(
+          state.client,
+          fetchStub,
+          { path: "/object/5", dedupe: false },
+          { path: "/object/5", dedupe: false },
+        );
+      });
+
+      it("does not dedupe across different transports", async () => {
+        const fetchStub = state.sandbox
+          .stub(window, "fetch")
+          .resolves(buildResponse("fetch"));
+        const FakeXMLHttpRequest = createFakeXhrClass([
+          { type: "load", status: 200, body: "xhr" },
+        ]);
+        state.sandbox
+          .stub(globalThis, "XMLHttpRequest")
+          .callsFake(() => new FakeXMLHttpRequest());
+
+        const p1 = state.client.request({
+          path: "/object/5",
+          transport: "fetch",
+        });
+        const p2 = state.client.request({
+          path: "/object/5",
+          transport: "xhr",
+        });
+
+        const [r1, r2] = await Promise.all([p1, p2]);
+        r1.data.should.equal("fetch");
+        r2.data.should.equal("xhr");
+        fetchStub.calledOnce.should.be.true;
+        FakeXMLHttpRequest.instances.length.should.equal(1);
       });
 
       it("does not dedupe when headers differ", async () => {
@@ -901,6 +1111,188 @@ define([
         expect(caught).to.be.instanceof(DataONEHttpError);
         fetchStub.calledOnce.should.be.true;
         clock.restore();
+      });
+    });
+
+    describe("xhr transport", () => {
+      it("parses xhr text responses", async () => {
+        const FakeXMLHttpRequest = createFakeXhrClass([
+          { type: "load", status: 200, body: "hello from xhr" },
+        ]);
+        state.sandbox
+          .stub(globalThis, "XMLHttpRequest")
+          .callsFake(() => new FakeXMLHttpRequest());
+
+        const response = await state.client.request({
+          path: "/object/xhr-text",
+          transport: "xhr",
+          responseType: "text",
+        });
+
+        response.data.should.equal("hello from xhr");
+      });
+
+      it("parses xhr JSON and falls back to text on parse failure", async () => {
+        const FakeXMLHttpRequest = createFakeXhrClass([
+          {
+            type: "load",
+            status: 200,
+            body: JSON.stringify({ hello: "world" }),
+          },
+          {
+            type: "load",
+            status: 200,
+            body: "not-json",
+          },
+        ]);
+        state.sandbox
+          .stub(globalThis, "XMLHttpRequest")
+          .callsFake(() => new FakeXMLHttpRequest());
+
+        const parsed = await state.client.request({
+          path: "/object/xhr-json",
+          transport: "xhr",
+          responseType: "json",
+        });
+        const fallback = await state.client.request({
+          path: "/object/xhr-json-invalid",
+          transport: "xhr",
+          responseType: "json",
+        });
+
+        expect(parsed.data).to.deep.equal({ hello: "world" });
+        fallback.data.should.equal("not-json");
+      });
+
+      it("parses xhr arrayBuffer and blob responses", async () => {
+        const buffer = new Uint8Array([1, 2, 3]).buffer;
+        const blob = new Blob(["hello"], { type: "text/plain" });
+        const FakeXMLHttpRequest = createFakeXhrClass([
+          { type: "load", status: 200, body: buffer },
+          { type: "load", status: 200, body: blob },
+        ]);
+        state.sandbox
+          .stub(globalThis, "XMLHttpRequest")
+          .callsFake(() => new FakeXMLHttpRequest());
+
+        const arrayBufferResponse = await state.client.request({
+          path: "/object/xhr-array",
+          transport: "xhr",
+          responseType: "arrayBuffer",
+        });
+        const blobResponse = await state.client.request({
+          path: "/object/xhr-blob",
+          transport: "xhr",
+          responseType: "blob",
+        });
+
+        arrayBufferResponse.data.should.be.instanceof(ArrayBuffer);
+        arrayBufferResponse.data.byteLength.should.equal(3);
+        blobResponse.data.should.be.instanceof(Blob);
+        blobResponse.data.size.should.equal(5);
+      });
+
+      it("parses xhr document responses", async () => {
+        const documentResponse = { nodeType: 9, title: "fake-doc" };
+        const FakeXMLHttpRequest = createFakeXhrClass([
+          { type: "load", status: 200, body: documentResponse },
+        ]);
+        state.sandbox
+          .stub(globalThis, "XMLHttpRequest")
+          .callsFake(() => new FakeXMLHttpRequest());
+
+        const response = await state.client.request({
+          path: "/object/xhr-document",
+          transport: "xhr",
+          responseType: "document",
+        });
+
+        response.data.should.equal(documentResponse);
+      });
+
+      it("emits xhr upload progress callbacks", async () => {
+        const progressSpy = state.sandbox.spy();
+        const FakeXMLHttpRequest = createFakeXhrClass([
+          {
+            type: "load",
+            status: 200,
+            body: "ok",
+            progressEvent: {
+              lengthComputable: true,
+              loaded: 3,
+              total: 10,
+            },
+          },
+        ]);
+        state.sandbox
+          .stub(globalThis, "XMLHttpRequest")
+          .callsFake(() => new FakeXMLHttpRequest());
+
+        await state.client.request({
+          path: "/object/xhr-progress",
+          method: "POST",
+          transport: "xhr",
+          body: new FormData(),
+          onUploadProgress: progressSpy,
+        });
+
+        progressSpy.calledOnce.should.be.true;
+      });
+
+      it("propagates AbortError when caller aborts an xhr request", async () => {
+        const controller = new AbortController();
+        const FakeXMLHttpRequest = createFakeXhrClass([
+          { type: "hold" },
+        ]);
+        state.sandbox
+          .stub(globalThis, "XMLHttpRequest")
+          .callsFake(() => new FakeXMLHttpRequest());
+
+        const requestPromise = state.client.request({
+          path: "/object/xhr-abort",
+          transport: "xhr",
+          signal: controller.signal,
+        });
+        controller.abort("stop");
+
+        let caught;
+        try {
+          await requestPromise;
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.name).to.equal("AbortError");
+      });
+
+      it("retries xhr timeouts when retry policy allows", async () => {
+        const FakeXMLHttpRequest = createFakeXhrClass([
+          { type: "timeout" },
+          { type: "load", status: 200, body: "ok" },
+        ]);
+        state.sandbox
+          .stub(globalThis, "XMLHttpRequest")
+          .callsFake(() => new FakeXMLHttpRequest());
+
+        const client = new DataONEHttpClient({
+          baseUrl: "https://example.org",
+          retry: {
+            maxRetries: 1,
+            baseDelayMs: 0,
+            maxDelayMs: 0,
+            randomFn: () => 0.5,
+          },
+        });
+
+        const result = await client.request({
+          path: "/object/xhr-timeout",
+          transport: "xhr",
+          timeoutMs: 1,
+        });
+
+        result.data.should.equal("ok");
+        FakeXMLHttpRequest.instances.length.should.equal(2);
       });
     });
 
