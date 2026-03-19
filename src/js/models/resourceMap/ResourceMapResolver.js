@@ -6,7 +6,7 @@ define([
   "collections/SolrResults",
   "common/EventLog",
   "common/QueryService",
-  "common/Utilities",
+  "common/ValueUtilities",
 ], (
   Backbone,
   PersistentStorage,
@@ -15,7 +15,7 @@ define([
   Solr,
   EventLog,
   QueryService,
-  Utilities,
+  ValueUtilities,
 ) => {
   // Index field names
   const RM_FIELD = "resourceMap";
@@ -115,7 +115,7 @@ define([
       const url =
         options.metaServiceUrl ||
         globalThis.MetacatUI?.appModel?.get("metaServiceUrl");
-      const normalizedUrl = Utilities.normalizeUrl(url);
+      const normalizedUrl = ValueUtilities.normalizeUrl(url);
 
       // Storage to store obj:ResMap pid pairs.
       const storageOptions = {

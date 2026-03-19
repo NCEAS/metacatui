@@ -2,9 +2,9 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "common/Utilities",
+  "common/ValidationUtilities",
   "text!templates/registerCitation.html",
-], function ($, _, Backbone, Utilities, RegisterCitationTemplate) {
+], function ($, _, Backbone, ValidationUtilities, RegisterCitationTemplate) {
   "use strict";
 
   /**
@@ -184,7 +184,7 @@ define([
       validateDOI: function () {
         var identifierInput = this.$("#publication-identifier").val();
 
-        if (!Utilities.isValidDOI(identifierInput)) {
+        if (!ValidationUtilities.isValidDOI(identifierInput)) {
           //Show a warning that the user was trying to edit old content
           MetacatUI.appView.showAlert({
             message: "Please enter a valid DOI.",

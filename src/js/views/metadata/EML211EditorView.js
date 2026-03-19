@@ -13,7 +13,6 @@ define([
   "views/DataPackageView",
   "views/metadata/EML211View",
   "views/metadata/EMLEntityView",
-  "collections/ObjectFormats",
   "common/Utilities",
 ], (
   $,
@@ -30,7 +29,6 @@ define([
   DataPackageView,
   EMLView,
   EMLEntityView,
-  ObjectFormats,
   Utilities,
 ) => {
   /**
@@ -136,10 +134,7 @@ define([
       /** @inheritdoc */
       initialize(options = {}) {
         // Ensure the object formats are cached for the editor's use
-        if (typeof MetacatUI.objectFormats === "undefined") {
-          MetacatUI.objectFormats = new ObjectFormats();
-          MetacatUI.objectFormats.fetch();
-        }
+        Utilities.getObjectFormats();
         this.pid = options?.pid || null;
         return this;
       },

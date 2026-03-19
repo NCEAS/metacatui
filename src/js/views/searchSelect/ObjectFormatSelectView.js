@@ -1,6 +1,6 @@
-define(["views/searchSelect/SearchSelectView", "collections/ObjectFormats"], (
+define(["views/searchSelect/SearchSelectView", "common/Utilities"], (
   SearchSelect,
-  ObjectFormats,
+  Utilities,
 ) => {
   /**
    * @class ObjectFormatSelect
@@ -40,26 +40,16 @@ define(["views/searchSelect/SearchSelectView", "collections/ObjectFormats"], (
        * select options on the model
        * @since 2.31.0
        */
-      getObjectFormats() {
-        const view = this;
-        // Ensure the object formats are cached
-        if (!MetacatUI.objectFormats)
-          MetacatUI.objectFormats = new ObjectFormats();
-
-        // eslint-disable-next-line no-underscore-dangle
-        const events = MetacatUI.objectFormats._events;
-
-        if (!MetacatUI.objectFormats.length && !(events && events.sync)) {
-          view.listenToOnce(
-            MetacatUI.objectFormats,
-            "sync error",
-            view.getObjectFormats,
-          );
-          MetacatUI.objectFormats.fetch();
+      async getObjectFormats() {
+        let formatIds = {};
+        try {
+          formatIds = await Utilities.getObjectFormats();
+        } catch (error) {
+          /* eslint-disable no-console */
+          console.error("Error fetching object formats:", error);
+          this.updateOptions([]);
           return;
         }
-
-        const formatIds = MetacatUI.objectFormats.toJSON();
 
         const options = formatIds
           // Query Rules automatically include a rule for formatType="METADATA"
@@ -72,7 +62,7 @@ define(["views/searchSelect/SearchSelectView", "collections/ObjectFormats"], (
             description: format.formatId,
           }));
 
-        view.updateOptions(options);
+        this.updateOptions(options);
       },
     },
   );

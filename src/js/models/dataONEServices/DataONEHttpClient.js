@@ -3,10 +3,10 @@ define([
   "models/dataONEServices/UrlBuilder",
   "models/dataONEServices/HttpRetryPolicy",
   "models/dataONEServices/DataONEHttpError",
-  "common/Utilities",
-], (md5, UrlBuilder, HttpRetryPolicy, DataONEHttpError, Utilities) => {
+  "common/ValueUtilities",
+], (md5, UrlBuilder, HttpRetryPolicy, DataONEHttpError, ValueUtilities) => {
   const { buildUrl } = UrlBuilder;
-  const { getCaseInsensitive } = Utilities;
+  const { getCaseInsensitive } = ValueUtilities;
 
   /**
    * Header names that affect request deduplication. Defaults.
@@ -276,7 +276,7 @@ define([
         ...DEFAULT_OPTIONS,
         ...source,
         baseUrl: source.baseUrl
-          ? Utilities.normalizeUrl(source.baseUrl)
+          ? ValueUtilities.normalizeUrl(source.baseUrl)
           : DEFAULT_OPTIONS.baseUrl,
         timeoutMs,
         dedupe,
@@ -337,14 +337,14 @@ define([
         "responseTypes",
       ];
       const normalizers = {
-        baseUrl: Utilities.normalizeUrl,
-        defaultHeaders: Utilities.stableStringify,
-        retry: Utilities.stableStringify,
-        allowedHttpMethods: Utilities.stableStringify,
-        headerNamesForDedup: Utilities.stableStringify,
-        responseTypes: Utilities.stableStringify,
+        baseUrl: ValueUtilities.normalizeUrl,
+        defaultHeaders: ValueUtilities.stableStringify,
+        retry: ValueUtilities.stableStringify,
+        allowedHttpMethods: ValueUtilities.stableStringify,
+        headerNamesForDedup: ValueUtilities.stableStringify,
+        responseTypes: ValueUtilities.stableStringify,
       };
-      return Utilities.buildInstanceKey(
+      return ValueUtilities.buildInstanceKey(
         normalizedOptions,
         keyFields,
         normalizers,
@@ -357,7 +357,7 @@ define([
      * @returns {DataONEHttpClient} Client instance
      */
     static get(options = {}) {
-      return Utilities.getSingleton(
+      return ValueUtilities.getSingleton(
         this,
         options,
         this.buildInstanceKey.bind(this),
@@ -957,7 +957,7 @@ define([
         timeoutMs === null || timeoutMs === undefined
           ? "none"
           : String(timeoutMs);
-      const retryKey = Utilities.stableStringify(retry);
+      const retryKey = ValueUtilities.stableStringify(retry);
       const signalKey = signal ? this.getBodyId(signal) : "none";
 
       const keyParts = [
@@ -1140,7 +1140,7 @@ define([
 
       // Try to JSON serialize other body types with stable key ordering.
       try {
-        const json = Utilities.stableStringify(body, {
+        const json = ValueUtilities.stableStringify(body, {
           ignoreCase: false,
           orderMatters: true,
         });
@@ -1179,7 +1179,7 @@ define([
         if (Array.isArray(value)) value = value.join(",");
         else if (typeof value === "object") {
           try {
-            value = Utilities.stableStringify(value);
+            value = ValueUtilities.stableStringify(value);
           } catch (e) {
             value = this.getBodyId(value);
           }

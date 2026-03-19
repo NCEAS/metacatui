@@ -144,6 +144,24 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
       });
     });
 
+    describe("parseRequiredXmlString", () => {
+      it("returns a parsed XML document for non-empty XML", () => {
+        const parsed = XMLUtilities.parseRequiredXmlString(
+          "<identifier>urn:uuid:test.4</identifier>",
+          "strict parse",
+        );
+
+        expect(parsed).to.be.instanceof(Document);
+        expect(parsed.documentElement.localName).to.equal("identifier");
+      });
+
+      it("throws for empty XML input", () => {
+        expect(() =>
+          XMLUtilities.parseRequiredXmlString("   ", "strict parse"),
+        ).to.throw(XMLUtilities.ParseError, /strict parse/i);
+      });
+    });
+
     describe("getNormalizedElementName", () => {
       it("normalizes names using localName when available", () => {
         const xml = new DOMParser().parseFromString(
@@ -235,6 +253,32 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
         expect(children.map((child) => child.textContent.trim())).to.deep.equal(
           ["one", "two"],
         );
+      });
+    });
+
+    describe("getDirectChildText", () => {
+      it("returns trimmed text for the first matching direct child", () => {
+        const xml = new DOMParser().parseFromString(
+          "<root><identifier> direct </identifier></root>",
+          "application/xml",
+        );
+
+        expect(
+          XMLUtilities.getDirectChildText(xml.documentElement, "identifier"),
+        ).to.equal("direct");
+      });
+    });
+
+    describe("getDirectChildTexts", () => {
+      it("returns trimmed text for all matching direct children", () => {
+        const xml = new DOMParser().parseFromString(
+          "<root><replica> one </replica><replica>two</replica></root>",
+          "application/xml",
+        );
+
+        expect(
+          XMLUtilities.getDirectChildTexts(xml.documentElement, "replica"),
+        ).to.deep.equal(["one", "two"]);
       });
     });
 
@@ -408,6 +452,242 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
 
         result.value.should.equal("urn:node:ARCTIC");
         result.xml.should.be.instanceof(Document);
+      });
+    });
+
+    describe("requireDocumentElement", () => {
+      it("returns the root element when the expected name matches", () => {
+        const xml = new DOMParser().parseFromString(
+          "<systemMetadata><identifier>id</identifier></systemMetadata>",
+          "application/xml",
+        );
+
+        expect(
+          XMLUtilities.requireDocumentElement(
+            xml,
+            "systemMetadata",
+            "root check",
+          ),
+        ).to.equal(xml.documentElement);
+      });
+
+      it("throws when the root element does not match", () => {
+        const xml = new DOMParser().parseFromString(
+          "<response><identifier>id</identifier></response>",
+          "application/xml",
+        );
+
+        expect(() =>
+          XMLUtilities.requireDocumentElement(xml, "systemMetadata", "root check"),
+        ).to.throw(/expected root <systemMetadata>/i);
+      });
+    });
+
+    describe("requireNamespaceUri", () => {
+      it("returns the matched namespace URI when supported", () => {
+        const xml = new DOMParser().parseFromString(
+          '<d1:systemMetadata xmlns:d1="urn:test"><identifier>id</identifier></d1:systemMetadata>',
+          "application/xml",
+        );
+
+        expect(
+          XMLUtilities.requireNamespaceUri(
+            xml.documentElement,
+            ["urn:test", "urn:other"],
+            "namespace check",
+          ),
+        ).to.equal("urn:test");
+      });
+
+      it("throws when the namespace URI is missing or unsupported", () => {
+        const xml = new DOMParser().parseFromString(
+          "<systemMetadata><identifier>id</identifier></systemMetadata>",
+          "application/xml",
+        );
+
+        expect(() =>
+          XMLUtilities.requireNamespaceUri(
+            xml.documentElement,
+            ["urn:test"],
+            "namespace check",
+          ),
+        ).to.throw(/supported namespace uris/i);
+      });
+    });
+
+    describe("requireAllowedAttributeNames", () => {
+      it("ignores namespace declarations and rejects unexpected attributes", () => {
+        const validXml = new DOMParser().parseFromString(
+          '<d1:systemMetadata xmlns:d1="urn:test"><identifier>id</identifier></d1:systemMetadata>',
+          "application/xml",
+        );
+        const invalidXml = new DOMParser().parseFromString(
+          '<checksum algorithm="SHA-256" bogus="1">abc</checksum>',
+          "application/xml",
+        );
+
+        expect(
+          XMLUtilities.requireAllowedAttributeNames(
+            validXml.documentElement,
+            [],
+            "attr check",
+          ),
+        ).to.deep.equal([]);
+        expect(() =>
+          XMLUtilities.requireAllowedAttributeNames(
+            invalidXml.documentElement,
+            ["algorithm"],
+            "attr check",
+          ),
+        ).to.throw(/unexpected attribute "bogus"/i);
+      });
+    });
+
+    describe("getRequiredAttribute", () => {
+      it("returns trimmed attribute values and throws when missing", () => {
+        const xml = new DOMParser().parseFromString(
+          '<checksum algorithm=" SHA-256 ">abc</checksum>',
+          "application/xml",
+        );
+
+        expect(
+          XMLUtilities.getRequiredAttribute(
+            xml.documentElement,
+            "algorithm",
+            "attr check",
+          ),
+        ).to.equal("SHA-256");
+        expect(() =>
+          XMLUtilities.getRequiredAttribute(
+            xml.documentElement,
+            "missing",
+            "attr check",
+          ),
+        ).to.throw(/required "missing" attribute/i);
+      });
+    });
+
+    describe("requireDirectChildSequence", () => {
+      it("accepts ordered children within the configured cardinality", () => {
+        const xml = new DOMParser().parseFromString(
+          "<root><first /><second /><second /></root>",
+          "application/xml",
+        );
+
+        const matches = XMLUtilities.requireDirectChildSequence(
+          xml.documentElement,
+          [
+            { name: "first", minOccurs: 1, maxOccurs: 1 },
+            { name: "second", minOccurs: 0, maxOccurs: Infinity },
+          ],
+          "sequence check",
+        );
+
+        expect(matches.get("first")).to.have.length(1);
+        expect(matches.get("second")).to.have.length(2);
+      });
+
+      it("rejects unexpected, duplicate, and out-of-order children", () => {
+        const unexpectedXml = new DOMParser().parseFromString(
+          "<root><third /></root>",
+          "application/xml",
+        );
+        const duplicateXml = new DOMParser().parseFromString(
+          "<root><first /><first /></root>",
+          "application/xml",
+        );
+        const outOfOrderXml = new DOMParser().parseFromString(
+          "<root><second /><first /></root>",
+          "application/xml",
+        );
+
+        const definitions = [
+          { name: "first", minOccurs: 1, maxOccurs: 1 },
+          { name: "second", minOccurs: 0, maxOccurs: Infinity },
+        ];
+
+        expect(() =>
+          XMLUtilities.requireDirectChildSequence(
+            unexpectedXml.documentElement,
+            definitions,
+            "sequence check",
+          ),
+        ).to.throw(/unexpected <third>/i);
+        expect(() =>
+          XMLUtilities.requireDirectChildSequence(
+            duplicateXml.documentElement,
+            definitions,
+            "sequence check",
+          ),
+        ).to.throw(/at most 1 time/i);
+        expect(() =>
+          XMLUtilities.requireDirectChildSequence(
+            outOfOrderXml.documentElement,
+            definitions,
+            "sequence check",
+          ),
+        ).to.throw(/out of order/i);
+      });
+    });
+
+    describe("extractXmlDeclaration", () => {
+      it("extracts the XML declaration when present", () => {
+        expect(
+          XMLUtilities.extractXmlDeclaration(
+            '<?xml version="1.0" encoding="UTF-8"?><root />',
+          ),
+        ).to.equal('<?xml version="1.0" encoding="UTF-8"?>');
+      });
+
+      it("returns null when no declaration exists", () => {
+        expect(XMLUtilities.extractXmlDeclaration("<root />")).to.equal(null);
+      });
+    });
+
+    describe("getNamespaceAttributes", () => {
+      it("returns namespace declarations in source order", () => {
+        const xml = new DOMParser().parseFromString(
+          '<d1:systemMetadata xmlns:d1="urn:test" xmlns:d2="urn:test:two"><identifier>id</identifier></d1:systemMetadata>',
+          "application/xml",
+        );
+
+        expect(
+          XMLUtilities.getNamespaceAttributes(xml.documentElement),
+        ).to.deep.equal([
+          { name: "xmlns:d1", value: "urn:test" },
+          { name: "xmlns:d2", value: "urn:test:two" },
+        ]);
+      });
+    });
+
+    describe("serializeXmlDocument", () => {
+      it("prepends the provided XML declaration when serializing", () => {
+        const xml = new DOMParser().parseFromString(
+          "<root><identifier>id</identifier></root>",
+          "application/xml",
+        );
+
+        const serialized = XMLUtilities.serializeXmlDocument(
+          xml,
+          '<?xml version="1.0" encoding="UTF-8"?>',
+        );
+
+        expect(serialized).to.contain(
+          '<?xml version="1.0" encoding="UTF-8"?>',
+        );
+        expect(serialized).to.contain("<root><identifier>id</identifier></root>");
+      });
+    });
+
+    describe("createXmlDocument", () => {
+      it("creates a document with the requested root namespace and qualified name", () => {
+        const doc = XMLUtilities.createXmlDocument(
+          "urn:test",
+          "d1:systemMetadata",
+        );
+
+        expect(doc.documentElement.namespaceURI).to.equal("urn:test");
+        expect(doc.documentElement.tagName).to.equal("d1:systemMetadata");
       });
     });
 

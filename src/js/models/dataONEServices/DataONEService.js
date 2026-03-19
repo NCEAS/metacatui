@@ -3,7 +3,8 @@ define([
   "models/dataONEServices/DataONEHttpClient",
   "models/PersistentStorage",
   "common/Utilities",
-], (md5, DataONEHttpClient, PersistentStorage, Utilities) => {
+  "common/ValueUtilities",
+], (md5, DataONEHttpClient, PersistentStorage, Utilities, ValueUtilities) => {
   /**
    * Extensible base class for DataONE API services, e.g. the System Metadata
    * service. It includes in-memory and persistent caching scoped by user
@@ -64,7 +65,7 @@ define([
       if (!normalized.baseUrl) {
         throw new Error("DataONEService: baseUrl is required");
       }
-      normalized.baseUrl = Utilities.normalizeUrl(normalized.baseUrl);
+      normalized.baseUrl = ValueUtilities.normalizeUrl(normalized.baseUrl);
 
       normalized.clientConfig = {
         ...normalized.clientConfig,

@@ -5,7 +5,7 @@ define([
   "models/MetricsModel",
   "views/MetricView",
   "views/citations/CitationModalView",
-  "common/Utilities",
+  "common/ValueUtilities",
 ], (
   $,
   Backbone,
@@ -13,7 +13,7 @@ define([
   MetricsModel,
   MetricView,
   CitationModalView,
-  Utilities,
+  ValueUtilities,
 ) => {
   "use strict";
 
@@ -733,7 +733,7 @@ define([
         const mdqFormatIds = MetacatUI.appModel.get("mdqFormatIds") || [];
 
         return mdqFormatIds.some((pattern) =>
-          Utilities.wildcardToRegex(pattern).test(formatId),
+          ValueUtilities.wildcardToRegex(pattern).test(formatId),
         );
       },
 

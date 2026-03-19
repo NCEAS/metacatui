@@ -144,6 +144,23 @@ define([], () => {
     }
 
     /**
+     * Convert a date-ish value into a DataONE-friendly XML timestamp.
+     * This preserves the UTC instant but uses an explicit `+00:00` offset.
+     * @param {string|number|Date} value Date-like value.
+     * @returns {string} XML timestamp or empty string when invalid.
+     */
+    static toXmlDateTimeString(value) {
+      const date = DateUtility.toDate(value);
+      if (!date) return "";
+
+      return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(
+        date.getUTCDate(),
+      )}T${pad2(date.getUTCHours())}:${pad2(date.getUTCMinutes())}:${pad2(
+        date.getUTCSeconds(),
+      )}.${String(date.getUTCMilliseconds()).padStart(3, "0")}+00:00`;
+    }
+
+    /**
      * Return a human-readable string describing how much newer or older a date
      * is compared to a reference date, e.g. "one day newer" or "two days
      * older". It will resolve to seconds, minutes, hours, days, months, or

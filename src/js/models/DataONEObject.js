@@ -5,22 +5,11 @@ define([
   "uuid",
   "he",
   "collections/AccessPolicy",
-  "collections/ObjectFormats",
   "common/Utilities",
+  "common/ValueUtilities",
   "md5",
   "common/QueryService",
-], (
-  $,
-  _,
-  Backbone,
-  uuid,
-  he,
-  AccessPolicy,
-  ObjectFormats,
-  Utilities,
-  md5,
-  QueryService,
-) => {
+], ($, _, Backbone, uuid, he, AccessPolicy, Utilities, ValueUtilities, md5, QueryService) => {
   /**
    * @class DataONEObject
    * @classdesc A DataONEObject represents a DataONE object, such as a data file,
@@ -139,11 +128,11 @@ define([
 
         const model = this;
         this.on("change:size", () => {
-          const size = Utilities.bytesToSize(model.get("size"));
+          const size = ValueUtilities.bytesToSize(model.get("size"));
           model.set("sizeStr", size);
         });
         if (attrs.size) {
-          const size = Utilities.bytesToSize(model.get("size"));
+          const size = ValueUtilities.bytesToSize(model.get("size"));
           model.set("sizeStr", size);
         }
 
@@ -174,6 +163,9 @@ define([
         // Find Member Node object that might be the authoritative MN
         // This is helpful when MetacatUI may be displaying content from multiple MNs
         this.setPossibleAuthMNs();
+
+        // Ensure the object formats are cached for this model's use
+        Utilities.getObjectFormats();
       },
 
       /**

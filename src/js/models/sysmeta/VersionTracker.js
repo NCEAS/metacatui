@@ -1,9 +1,9 @@
 define([
   "backbone",
   "models/dataONEServices/SysMetaService",
-  "common/Utilities",
+  "common/ValueUtilities",
   "common/DateUtility",
-], (Backbone, SysMetaService, Utilities, DateUtility) => {
+], (Backbone, SysMetaService, ValueUtilities, DateUtility) => {
   /**
    * @constant {number} DEFAULT_TTL_MS Default Time-To-Live for cached data
    * object to resource map PID mappings, in milliseconds.
@@ -96,7 +96,7 @@ define([
     } = {}) {
       const url =
         metaServiceUrl || globalThis.MetacatUI?.appModel?.get("metaServiceUrl");
-      const normalizedUrl = Utilities.normalizeUrl(url);
+      const normalizedUrl = ValueUtilities.normalizeUrl(url);
       if (!normalizedUrl) {
         throw new Error("VersionTracker: metaServiceUrl is required");
       }

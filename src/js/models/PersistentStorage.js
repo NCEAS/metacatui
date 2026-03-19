@@ -1,4 +1,4 @@
-define(["localforage", "common/Utilities"], (localforage, Utilities) => {
+define(["localforage", "common/ValueUtilities"], (localforage, ValueUtilities) => {
   // Default TTL: 1 hour
   const DEFAULT_TTL_MS = 60 * 60 * 1000;
   // Change this when making breaking schema changes
@@ -149,9 +149,9 @@ define(["localforage", "common/Utilities"], (localforage, Utilities) => {
         "localforageConfig",
       ];
       const normalizers = {
-        localforageConfig: Utilities.stableStringify,
+        localforageConfig: ValueUtilities.stableStringify,
       };
-      return Utilities.buildInstanceKey(
+      return ValueUtilities.buildInstanceKey(
         normalizedOptions,
         keyFields,
         normalizers,
@@ -165,7 +165,7 @@ define(["localforage", "common/Utilities"], (localforage, Utilities) => {
      * @returns {PersistentStorage} The PersistentStorage instance
      */
     static get(options = {}) {
-      return Utilities.getSingleton(this, options, this.buildInstanceKey);
+      return ValueUtilities.getSingleton(this, options, this.buildInstanceKey);
     }
 
     /**

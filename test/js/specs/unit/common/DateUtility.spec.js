@@ -173,6 +173,18 @@ define(["common/DateUtility"], function (DateUtility) {
       });
     });
 
+    describe("toXmlDateTimeString", function () {
+      it("returns XML timestamps with an explicit UTC offset", function () {
+        expect(
+          DateUtility.toXmlDateTimeString("2024-01-02T03:04:05.678Z"),
+        ).to.equal("2024-01-02T03:04:05.678+00:00");
+      });
+
+      it("returns empty string for invalid values", function () {
+        expect(DateUtility.toXmlDateTimeString("bad-date")).to.equal("");
+      });
+    });
+
     describe("getRelativeDateString", function () {
       const reference = "2024-01-01T00:00:00.000Z";
 

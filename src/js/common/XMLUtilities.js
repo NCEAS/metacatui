@@ -109,6 +109,22 @@ define([], () => {
     },
 
     /**
+     * Parse an XML string and require a non-empty XML document.
+     * @param {string} xmlString XML text to parse.
+     * @param {string} [context] Context label for parse errors.
+     * @returns {Document} Parsed XML document.
+     * @throws {ParseError} Throws when the XML is empty or invalid.
+     * @since 0.0.0
+     */
+    parseRequiredXmlString(xmlString, context = "XML response") {
+      const xml = this.parseXmlString(xmlString, context);
+      if (!xml) {
+        throw new ParseError(`${context}: response body must be non-empty XML text`);
+      }
+      return xml;
+    },
+
+    /**
      * Return a lower-cased local element name with any namespace prefix
      * removed.
      * @param {Node} node The XML node to inspect.
@@ -304,6 +320,232 @@ define([], () => {
     },
 
     /**
+     * Extract trimmed text from the first matching direct child element.
+     * @param {Node} node The parent XML node.
+     * @param {string} name Local child element name to match.
+     * @returns {string|null} The trimmed child text, or null.
+     * @since 0.0.0
+     */
+    getDirectChildText(node, name) {
+      return this.getElementText(this.findDirectChildElement(node, name));
+    },
+
+    /**
+     * Extract trimmed text from all matching direct child elements.
+     * @param {Node} node The parent XML node.
+     * @param {string} name Local child element name to match.
+     * @returns {Array<string|null>} Matching child text values.
+     * @since 0.0.0
+     */
+    getDirectChildTexts(node, name) {
+      return this.findDirectChildElements(node, name).map((child) =>
+        this.getElementText(child),
+      );
+    },
+
+    /**
+     * Require that an element uses one of the expected namespace URIs.
+     * @param {Element} element XML element to inspect.
+     * @param {string[]} allowedNamespaceUris Allowed namespace URIs.
+     * @param {string} [context="XML response"] Context label for errors.
+     * @returns {string} The matched namespace URI.
+     * @throws {Error} Throws when the namespace URI is missing or unsupported.
+     * @since 0.0.0
+     */
+    requireNamespaceUri(
+      element,
+      allowedNamespaceUris,
+      context = "XML response",
+    ) {
+      const namespaceUri = element?.namespaceURI || null;
+      const allowed = Array.isArray(allowedNamespaceUris)
+        ? allowedNamespaceUris.filter(Boolean)
+        : [];
+      const elementLabel = element?.tagName || element?.nodeName || "element";
+
+      if (allowed.includes(namespaceUri)) return namespaceUri;
+
+      throw new Error(
+        `${context}: <${elementLabel}> must use one of the supported namespace URIs: ${allowed.join(
+          ", ",
+        )}`,
+      );
+    },
+
+    /**
+     * Require that an element contains only allowed attribute names.
+     * Namespace declaration attributes are ignored by default.
+     * @param {Element} element XML element to inspect.
+     * @param {string[]} allowedNames Allowed attribute names.
+     * @param {string} [context="XML response"] Context label for errors.
+     * @param {object} [options] Additional options.
+     * @param {boolean} [options.allowNamespaceDeclarations=true] Whether xmlns
+     * attributes are ignored during validation.
+     * @returns {string[]} Present non-namespace attribute names.
+     * @throws {Error} Throws when an unexpected attribute is present.
+     * @since 0.0.0
+     */
+    requireAllowedAttributeNames(
+      element,
+      allowedNames,
+      context = "XML response",
+      { allowNamespaceDeclarations = true } = {},
+    ) {
+      const allowed = new Set(Array.isArray(allowedNames) ? allowedNames : []);
+      const elementLabel = element?.tagName || element?.nodeName || "element";
+      const attributeNames = Array.from(element?.attributes || [])
+        .filter((attribute) => {
+          if (!allowNamespaceDeclarations) return true;
+          const attributeName = attribute?.name || "";
+          return (
+            attributeName !== "xmlns" &&
+            !attributeName.startsWith("xmlns:")
+          );
+        })
+        .map((attribute) => attribute.name);
+
+      attributeNames.forEach((attributeName) => {
+        if (!allowed.has(attributeName)) {
+          throw new Error(
+            `${context}: unexpected attribute "${attributeName}" on <${elementLabel}>`,
+          );
+        }
+      });
+
+      return attributeNames;
+    },
+
+    /**
+     * Require a non-empty attribute value on an element.
+     * @param {Element} element XML element to inspect.
+     * @param {string} attributeName Attribute name to read.
+     * @param {string} [context="XML response"] Context label for errors.
+     * @returns {string} Trimmed attribute value.
+     * @throws {Error} Throws when the attribute is missing or empty.
+     * @since 0.0.0
+     */
+    getRequiredAttribute(element, attributeName, context = "XML response") {
+      const value = element?.getAttribute?.(attributeName)?.trim() || "";
+      const elementLabel = element?.tagName || element?.nodeName || "element";
+      if (value) return value;
+
+      throw new Error(
+        `${context}: <${elementLabel}> is missing required "${attributeName}" attribute`,
+      );
+    },
+
+    /**
+     * Require that direct child elements match an ordered schema-like
+     * sequence, including min/max occurrence constraints.
+     * @param {Node} node Parent XML node.
+     * @param {Array<{name:string,minOccurs?:number,maxOccurs?:number}>} definitions
+     * Ordered direct-child definitions.
+     * @param {string} [context="XML response"] Context label for errors.
+     * @returns {Map<string, Element[]>} Matching child elements by local name.
+     * @throws {Error} Throws on unexpected, out-of-order, duplicate, or missing
+     * child elements.
+     * @since 0.0.0
+     */
+    requireDirectChildSequence(node, definitions, context = "XML response") {
+      const childElements = this.getElementChildren(node);
+      const parentLabel = node?.tagName || node?.nodeName || "element";
+      const normalizedDefinitions = Array.isArray(definitions)
+        ? definitions.map((definition) => ({
+            name: String(definition?.name || "").toLowerCase(),
+            minOccurs: definition?.minOccurs ?? 0,
+            maxOccurs: definition?.maxOccurs ?? 1,
+          }))
+        : [];
+      const definitionMap = new Map();
+      normalizedDefinitions.forEach((definition, index) => {
+        definitionMap.set(definition.name, { ...definition, index });
+      });
+
+      const matches = new Map();
+      let previousIndex = -1;
+
+      childElements.forEach((child) => {
+        const childName = this.getNormalizedElementName(child);
+        const childLabel = child?.tagName || child?.nodeName || childName;
+        const definition = definitionMap.get(childName);
+
+        if (!definition) {
+          throw new Error(
+            `${context}: unexpected <${childLabel}> under <${parentLabel}>`,
+          );
+        }
+
+        if (definition.index < previousIndex) {
+          throw new Error(
+            `${context}: <${childLabel}> is out of order under <${parentLabel}>`,
+          );
+        }
+
+        previousIndex = definition.index;
+        const existing = matches.get(childName) || [];
+        existing.push(child);
+        matches.set(childName, existing);
+
+        if (
+          definition.maxOccurs !== Infinity &&
+          existing.length > definition.maxOccurs
+        ) {
+          throw new Error(
+            `${context}: <${childLabel}> may occur at most ${definition.maxOccurs} time(s) under <${parentLabel}>`,
+          );
+        }
+      });
+
+      normalizedDefinitions.forEach((definition) => {
+        const count = matches.get(definition.name)?.length || 0;
+        if (count < definition.minOccurs) {
+          throw new Error(
+            `${context}: missing required <${definition.name}> under <${parentLabel}>`,
+          );
+        }
+      });
+
+      return matches;
+    },
+
+    /**
+     * Require that the provided document or element has the expected root name.
+     * Matching is case-insensitive and ignores namespace prefixes.
+     * @param {Document|Element} documentOrElement Parsed XML document or root element.
+     * @param {string} expectedName Expected root local name.
+     * @param {string} [context="XML response"] Context label for error messages.
+     * @returns {Element} The validated root element.
+     * @throws {Error} Throws when the root is missing or has the wrong name.
+     * @since 0.0.0
+     */
+    requireDocumentElement(
+      documentOrElement,
+      expectedName,
+      context = "XML response",
+    ) {
+      const root = documentOrElement?.documentElement
+        ? documentOrElement.documentElement
+        : documentOrElement?.nodeType === 1
+          ? documentOrElement
+          : null;
+
+      if (!root) {
+        throw new Error(`${context}: parsed XML document is required`);
+      }
+
+      const actualName = this.getNormalizedElementName(root);
+      const normalizedExpected = String(expectedName || "").toLowerCase();
+      if (actualName !== normalizedExpected) {
+        const actualLabel = root.tagName || root.nodeName || actualName || "unknown";
+        throw new Error(
+          `${context}: expected root <${expectedName}> but found <${actualLabel}>`,
+        );
+      }
+
+      return root;
+    },
+
+    /**
      * Extract the first non-empty text value from a given element. The element
      * is matched by local name and searched for anywhere under the given
      * document or node. Throws an error if the element is not found or if the
@@ -354,10 +596,7 @@ define([], () => {
       elementName,
       context = "XML response",
     ) {
-      const xml = this.parseXmlString(xmlString, context);
-      if (!xml) {
-        throw new Error(`${context}: response body must be non-empty XML text`);
-      }
+      const xml = this.parseRequiredXmlString(xmlString, context);
 
       return {
         value: this.getRequiredElementText(xml, elementName, context),
@@ -406,6 +645,67 @@ define([], () => {
       this.setElementText(doc, element, value);
       parent.appendChild(element);
       return element;
+    },
+
+    /**
+     * Create an XML document with the requested root namespace URI and
+     * qualified name.
+     * @param {string|null} namespaceUri Root namespace URI.
+     * @param {string} qualifiedName Root qualified name.
+     * @returns {Document} Newly created XML document.
+     * @since 0.0.0
+     */
+    createXmlDocument(namespaceUri, qualifiedName) {
+      return document.implementation.createDocument(
+        namespaceUri || null,
+        qualifiedName,
+        null,
+      );
+    },
+
+    /**
+     * Extract the XML declaration from raw XML text, if present.
+     * @param {string|null|undefined} xmlString XML text to inspect.
+     * @returns {string|null} XML declaration text.
+     * @since 0.0.0
+     */
+    extractXmlDeclaration(xmlString) {
+      if (!isString(xmlString) || !String(xmlString).trim()) return null;
+      const match = String(xmlString).match(/^\s*(<\?xml\b[\s\S]*?\?>)/i);
+      return match?.[1] || null;
+    },
+
+    /**
+     * Capture namespace declarations from an XML element in source order.
+     * @param {Element|null} element XML element to inspect.
+     * @returns {Array<{name:string, value:string}>} Namespace attributes.
+     * @since 0.0.0
+     */
+    getNamespaceAttributes(element) {
+      return Array.from(element?.attributes || [])
+        .filter((attribute) => {
+          const attributeName = attribute?.name || "";
+          return attributeName === "xmlns" || attributeName.startsWith("xmlns:");
+        })
+        .map((attribute) => ({
+          name: attribute.name,
+          value: attribute.value,
+        }));
+    },
+
+    /**
+     * Serialize an XML document and optionally prepend an XML declaration.
+     * @param {Document} doc XML document to serialize.
+     * @param {string|null} [xmlDeclaration] Optional XML declaration to prepend.
+     * @returns {string} Serialized XML text.
+     * @since 0.0.0
+     */
+    serializeXmlDocument(doc, xmlDeclaration = null) {
+      const xmlString = new XMLSerializer().serializeToString(doc);
+      if (xmlDeclaration) {
+        return `${xmlDeclaration}\n${xmlString}`;
+      }
+      return xmlString;
     },
 
     /**
