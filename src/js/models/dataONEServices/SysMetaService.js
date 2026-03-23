@@ -111,11 +111,6 @@ define([
         throw error;
       }
 
-      // If the PID doesn't match, then this is the latest version in a series
-      if (sysMeta.data.identifier !== pid) {
-        sysMeta.seriesId = pid;
-      }
-
       return sysMeta;
     }
 

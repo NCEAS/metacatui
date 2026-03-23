@@ -399,10 +399,8 @@ define([
           const signal = controller?.signal;
 
           // Mock a record update for the current PID to show initial progress
-          const thisSysMeta = new VersionTracker.SysMeta({
-            identifier: pid,
-            versionHistory: { [pid]: 0 },
-          });
+          const thisSysMeta = new VersionTracker.SysMeta({ identifier: pid });
+          thisSysMeta.versionHistory = { [pid]: 0 };
           this.onVersionFound(thisSysMeta);
 
           const record = await versionTracker.getAllVersions(pid, { signal });
@@ -630,9 +628,13 @@ define([
           return;
         }
 
-        // When requesting sysMeta for a series ID, Metacat will return the latest
-        // version in that series.
-        if (sysMeta.seriesId === this.pid) {
+        // When requesting sysMeta for a series ID, Metacat returns the latest
+        // version in that series. The returned sysmeta still carries the
+        // requested SID in the schema's seriesId field.
+        if (
+          sysMeta.data.seriesId === this.pid &&
+          sysMeta.data.identifier !== this.pid
+        ) {
           // Delete the record with the series ID because we don't want it to
           // appear as a separate version in the timeline
           this.collection.remove(this.pid);
