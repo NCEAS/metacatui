@@ -94,6 +94,33 @@ define(["common/DataONEXmlUtilities"], (DataONEXmlUtilities) => {
       });
     });
 
+    describe("parseIdentifierResponse", () => {
+      it("returns the normalized identifier response payload", () => {
+        const result = DataONEXmlUtilities.parseIdentifierResponse(
+          "<identifier>urn:uuid:test.4</identifier>",
+          "generate",
+        );
+
+        expect(result.identifier).to.equal("urn:uuid:test.4");
+        expect(result.xml).to.be.instanceof(Document);
+      });
+
+      it("throws parsed DataONE service errors", () => {
+        let caught = null;
+
+        try {
+          DataONEXmlUtilities.parseIdentifierResponse(ERROR_XML, "reserve");
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.name).to.equal("NotAuthorized");
+        expect(caught.message).to.equal("READ not allowed");
+        expect(caught.status).to.equal("401");
+      });
+    });
+
     describe("toPlainError", () => {
       it("serializes Error instances to JSON-safe plain objects", () => {
         const error = new Error("SystemMetadata validation failed");

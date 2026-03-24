@@ -129,6 +129,30 @@ define([
         xml,
       };
     },
+
+    /**
+     * Parse a DataONE identifier XML response into the normalized service
+     * payload shape.
+     * @param {string} xmlString XML response text.
+     * @param {string} [context="DataONE XML response"] Context label for parse
+     * errors.
+     * @returns {{identifier:string, xml:Document}} Parsed identifier response.
+     */
+    parseIdentifierResponse(
+      xmlString,
+      context = "DataONE XML response",
+    ) {
+      const parsed = this.parseXmlStringForRequiredElementText(
+        xmlString,
+        "identifier",
+        context,
+      );
+
+      return {
+        identifier: parsed.value,
+        xml: parsed.xml,
+      };
+    },
   };
 
   return DataONEXmlUtilities;

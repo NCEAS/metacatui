@@ -197,6 +197,66 @@ define([
     }
 
     /**
+     * Merge request headers with defaults case-insensitively.
+     * Caller-provided headers always win, while preserving caller casing.
+     * @param {object} [requestHeaders] Request-specific headers.
+     * @param {object} [defaultHeaders] Default headers to apply when missing.
+     * @returns {object} Merged headers.
+     */
+    static mergeHeadersWithDefaults(requestHeaders = {}, defaultHeaders = {}) {
+      const merged = {};
+      const keyByLower = Object.create(null);
+
+      const addHeaders = (headers, onlyIfMissing = false) => {
+        if (!headers || typeof headers !== "object") return;
+        Object.entries(headers).forEach(([key, value]) => {
+          const normalizedKey = String(key).toLowerCase();
+          const existingKey = keyByLower[normalizedKey];
+          if (existingKey) {
+            if (onlyIfMissing) {
+              return;
+            }
+            if (existingKey !== key) {
+              delete merged[existingKey];
+            }
+          }
+          keyByLower[normalizedKey] = key;
+          merged[key] = value;
+        });
+      };
+
+      addHeaders(requestHeaders, false);
+      addHeaders(defaultHeaders, true);
+
+      return merged;
+    }
+
+    /**
+     * Apply a default Accept header when one is not already provided.
+     * @param {object} [options] Request options.
+     * @param {string} [accept="text/xml"] Default Accept header value.
+     * @returns {object} Options object with merged headers.
+     */
+    static withDefaultAccept(options = {}, accept = "text/xml") {
+      const normalizedOptions =
+        options && typeof options === "object" ? { ...options } : {};
+      const normalizedAccept =
+        typeof accept === "string" ? accept.trim() : String(accept || "").trim();
+      if (!normalizedAccept) {
+        return normalizedOptions;
+      }
+
+      normalizedOptions.headers = this.mergeHeadersWithDefaults(
+        normalizedOptions.headers,
+        {
+          Accept: normalizedAccept,
+        },
+      );
+
+      return normalizedOptions;
+    }
+
+    /**
      * Determine whether caching is allowed for the current user scope.
      * @returns {Promise<boolean>} Promise resolving to whether caching is
      * allowed.

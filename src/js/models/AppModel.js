@@ -719,6 +719,13 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            */
           reserveServiceUrl: null,
           /**
+           * The URL for the DataONE generateIdentifier() API. This URL is contructed dynamically when the
+           * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+           * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#CNCore.generateIdentifier)
+           * @type {string}
+           */
+          generateServiceUrl: null,
+          /**
            * The URL for the DataONE system metadata API. This URL is contructed dynamically when the
            * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
            * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/MN_APIs.html#MNRead.getSystemMetadata
@@ -2570,6 +2577,10 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             "reserveServiceUrl",
             d1CNBaseUrl + this.get("d1CNService") + "/reserve",
           );
+          this.set(
+            "generateServiceUrl",
+            d1CNBaseUrl + this.get("d1CNService") + "/generate",
+          );
 
           //Token URLs
           if (typeof this.get("tokenUrl") != "undefined") {
@@ -2713,6 +2724,10 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
 
         if (d1Service.indexOf("mn") > 0) {
           urls.objectServiceUrl = baseUrl + "/object/";
+        }
+        if (/\/cn\/v\d+$/i.test(baseUrl)) {
+          urls.generateServiceUrl = baseUrl + "/generate";
+          urls.reserveServiceUrl = baseUrl + "/reserve";
         }
 
         if (this.get("enableMonitorStatus")) {

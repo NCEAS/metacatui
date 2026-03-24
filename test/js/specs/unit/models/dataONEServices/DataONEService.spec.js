@@ -81,6 +81,52 @@ define([
       });
     });
 
+    describe("header helpers", () => {
+      it("mergeHeadersWithDefaults applies missing defaults case-insensitively", () => {
+        const merged = DataONEService.mergeHeadersWithDefaults(
+          {
+            Authorization: "Bearer abc",
+          },
+          {
+            Accept: "text/xml",
+            "Content-Type": "application/xml",
+          },
+        );
+
+        merged.Authorization.should.equal("Bearer abc");
+        merged.Accept.should.equal("text/xml");
+        merged["Content-Type"].should.equal("application/xml");
+      });
+
+      it("mergeHeadersWithDefaults preserves caller-provided headers", () => {
+        const merged = DataONEService.mergeHeadersWithDefaults(
+          {
+            accept: "application/json",
+          },
+          {
+            Accept: "text/xml",
+          },
+        );
+
+        merged.accept.should.equal("application/json");
+        should.not.exist(merged.Accept);
+      });
+
+      it("withDefaultAccept injects Accept only when absent", () => {
+        const opts = DataONEService.withDefaultAccept({ path: "/x" });
+        opts.headers.Accept.should.equal("text/xml");
+
+        const explicit = DataONEService.withDefaultAccept({
+          path: "/x",
+          headers: {
+            accept: "application/xml",
+          },
+        });
+        explicit.headers.accept.should.equal("application/xml");
+        should.not.exist(explicit.headers.Accept);
+      });
+    });
+
     describe("construction", () => {
       it("uses DataONEHttpClient.get with normalized client config", () => {
         const service = new DataONEService({ baseUrl: "https://example.org/" });

@@ -516,6 +516,22 @@ define([
         expect(caught.message).to.match(/onUploadProgress must be a function/i);
       });
 
+      it("throws when onUploadProgress is used with non-xhr transport", async () => {
+        let caught;
+        try {
+          await state.client.request({
+            path: "/object/1",
+            transport: "fetch",
+            onUploadProgress: () => {},
+          });
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/onUploadProgress.*xhr/i);
+      });
+
       it("throws when encodePath is true and path contains a query string", async () => {
         let caught;
         try {

@@ -1,6 +1,6 @@
 "use strict";
 
-define([], () => {
+define(["collections/ObjectFormats"], (ObjectFormats) => {
   /**
    * @namespace Utilities
    * @description Miscellaneous app/browser helpers that do not yet fit better
