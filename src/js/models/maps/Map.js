@@ -112,6 +112,9 @@ define([
        * layer-specific debug flags like 3D Tiles `debugShowGeometricError`;
        * those can still be passed directly through a layer's
        * `cesiumOptions`.
+       * @property {boolean} [show3DTilesInspector=false] - Whether or not to
+       * show Cesium's built-in 3D Tiles inspector widget for tileset
+       * debugging.
        * @property {MapConfig#ZoomPresets} [zoomPresets=null] - A predefined
        * list of locations with an enabled list of layer IDs to be shown the
        * zoom presets UI, or an object with a URL to fetch the presets from.
@@ -246,6 +249,8 @@ define([
        * when no layer is shown.
        * @property {boolean} [debug=false] - Enables Cesium's built-in map
        * debugging aids and overlays for development.
+       * @property {boolean} [show3DTilesInspector=false] - Whether or not to
+       * show Cesium's built-in 3D Tiles inspector widget.
        * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
        * predefined list of locations with an enabled list of layer IDs to be
        * shown the zoom presets UI. Requires `showViewfinder` to be true as this
@@ -284,6 +289,7 @@ define([
           feedbackText: null,
           globeBaseColor: null,
           debug: false,
+          show3DTilesInspector: false,
           zoomPresets: null,
         };
       },

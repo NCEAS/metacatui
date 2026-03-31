@@ -17,6 +17,8 @@ define([
   const spy = sinon.spy();
 
   describe("CesiumWidgetView Test Suite", () => {
+    let tilesInspectorStub;
+
     const state = cleanState(() => {
       SearchParams.clearSavedView();
 
@@ -28,6 +30,8 @@ define([
     afterEach(() => {
       SearchParams.clearSavedView();
       spy.resetHistory();
+      tilesInspectorStub?.restore();
+      tilesInspectorStub = null;
     });
 
     describe("Initialization", () => {
@@ -247,6 +251,48 @@ define([
         expect(
           state.view.el.querySelector(".cesium-debug-overlay")?.textContent,
         ).to.contain("Camera");
+      });
+
+      it("renders the 3D Tiles inspector when configured", () => {
+        tilesInspectorStub = sinon
+          .stub(Cesium, "Cesium3DTilesInspector")
+          .callsFake(function (container, scene) {
+            this.container = container;
+            this.scene = scene;
+            this.destroy = sinon.spy();
+            this.isDestroyed = () => false;
+          });
+        state.view.load3DTilesInspectorCSS = sinon.spy();
+        state.view.model.set("show3DTilesInspector", true);
+
+        state.view.render();
+
+        expect(state.view.load3DTilesInspectorCSS.calledOnce).to.equal(true);
+        expect(tilesInspectorStub.callCount).to.equal(1);
+        expect(tilesInspectorStub.args[0][1]).to.equal(state.view.scene);
+        expect(
+          state.view.el.querySelector(".cesium-3d-tiles-inspector-container"),
+        ).to.equal(state.view.tilesInspectorContainer);
+      });
+    });
+
+    describe("cleanup", () => {
+      it("destroys the 3D Tiles inspector on close", () => {
+        const destroy = sinon.spy();
+        const container = document.createElement("div");
+        state.view.el.appendChild(container);
+        state.view.tilesInspector = {
+          destroy,
+          isDestroyed: () => false,
+        };
+        state.view.tilesInspectorContainer = container;
+
+        state.view.onClose();
+
+        expect(destroy.calledOnce).to.equal(true);
+        expect(state.view.tilesInspector).to.equal(null);
+        expect(state.view.tilesInspectorContainer).to.equal(null);
+        expect(state.view.el.contains(container)).to.equal(false);
       });
     });
   });

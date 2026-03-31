@@ -410,6 +410,20 @@
   min-width: 7rem;
 }
 
+.cesium-3d-tiles-inspector-container {
+  position: absolute;
+  top: 4rem;
+  right: 1rem;
+  z-index: var(--map-z-index-base);
+  max-height: calc(100% - 5rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.cesium-3d-tiles-inspector-container h3 {
+  line-height: unset;
+}
+
 /*****************************************************************************************
  *
  * Scale Bar

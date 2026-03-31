@@ -209,6 +209,9 @@ define([
           if (view.isDebugEnabled()) {
             view.enableDebugMode();
           }
+          if (view.is3DTilesInspectorEnabled()) {
+            view.render3DTilesInspector();
+          }
 
           const destination = SearchParams.getDestination();
           if (this.model.get("showShareUrl") && destination) {
@@ -236,6 +239,16 @@ define([
        */
       isDebugEnabled() {
         return Boolean(this.model?.get("debug"));
+      },
+
+      /**
+       * Returns true when the map config enables the Cesium 3D Tiles
+       * inspector.
+       * @returns {boolean}
+       * @since 0.0.0
+       */
+      is3DTilesInspectorEnabled() {
+        return Boolean(this.model?.get("show3DTilesInspector"));
       },
 
       /**
@@ -292,6 +305,83 @@ define([
         this.updateDebugCameraOverlay();
         this.logDebugLayerSummary();
         this.requestRender();
+      },
+
+      /**
+       * Add the Cesium 3D Tiles inspector stylesheet to the app once, when
+       * the inspector is actually needed.
+       * @since 0.0.0
+       */
+      load3DTilesInspectorCSS() {
+        const cssID = "cesium3DTilesInspector";
+
+        if (MetacatUI.loadedCSS?.includes(cssID)) {
+          return;
+        }
+
+        require([`text!${MetacatUI.root}/css/Cesium3DTilesInspector.css`], (
+          inspectorCSS,
+        ) => {
+          MetacatUI.appModel.addCSS(inspectorCSS, cssID);
+        });
+      },
+
+      /**
+       * Create and render Cesium's built-in 3D Tiles inspector widget.
+       * @returns {Cesium.Cesium3DTilesInspector|null} The inspector widget.
+       * @since 0.0.0
+       */
+      render3DTilesInspector() {
+        if (
+          !this.is3DTilesInspectorEnabled() ||
+          !this.el ||
+          !this.scene ||
+          typeof Cesium.Cesium3DTilesInspector !== "function"
+        ) {
+          return null;
+        }
+
+        this.load3DTilesInspectorCSS();
+
+        if (!this.tilesInspectorContainer) {
+          this.tilesInspectorContainer =
+            this.el.ownerDocument.createElement("div");
+          this.tilesInspectorContainer.className =
+            "cesium-3d-tiles-inspector-container";
+          this.el.appendChild(this.tilesInspectorContainer);
+        }
+
+        if (!this.tilesInspector) {
+          this.tilesInspector = new Cesium.Cesium3DTilesInspector(
+            this.tilesInspectorContainer,
+            this.scene,
+          );
+        }
+
+        return this.tilesInspector;
+      },
+
+      /**
+       * Destroy the 3D Tiles inspector widget and remove its container.
+       */
+      destroy3DTilesInspector() {
+        if (this.tilesInspector) {
+          const isDestroyed =
+            typeof this.tilesInspector.isDestroyed === "function" &&
+            this.tilesInspector.isDestroyed();
+          if (
+            !isDestroyed &&
+            typeof this.tilesInspector.destroy === "function"
+          ) {
+            this.tilesInspector.destroy();
+          }
+          this.tilesInspector = null;
+        }
+
+        if (this.tilesInspectorContainer) {
+          this.tilesInspectorContainer.remove();
+          this.tilesInspectorContainer = null;
+        }
       },
 
       /**
@@ -1799,6 +1889,7 @@ define([
 
       /** Remove nav and mouse listeners when the view is closed */
       onClose() {
+        this.destroy3DTilesInspector();
         this.removeMouseListeners();
         this.removeNavigationListeners();
       },

@@ -128,6 +128,12 @@ define([
 
         expect(map.get("debug")).to.equal(true);
       });
+
+      it("accepts show3DTilesInspector from config", () => {
+        const map = new Map({ show3DTilesInspector: true });
+
+        expect(map.get("show3DTilesInspector")).to.equal(true);
+      });
     });
 
     describe("getLayerGroups", () => {
