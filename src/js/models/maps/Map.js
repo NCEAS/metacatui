@@ -106,6 +106,12 @@ define([
        * feedback section. showFeedback must be true for this to be shown.
        * @property {string} [globeBaseColor=null] - The base color of the globe
        * when no layer is shown.
+       * @property {boolean} [debug=false] - Enables Cesium's built-in map
+       * debugging aids, such as tile coordinate overlays, terrain wireframes,
+       * and a camera position overlay. This does not automatically enable
+       * layer-specific debug flags like 3D Tiles `debugShowGeometricError`;
+       * those can still be passed directly through a layer's
+       * `cesiumOptions`.
        * @property {MapConfig#ZoomPresets} [zoomPresets=null] - A predefined
        * list of locations with an enabled list of layer IDs to be shown the
        * zoom presets UI, or an object with a URL to fetch the presets from.
@@ -238,6 +244,8 @@ define([
        * feedback section.
        * @property {string} [globeBaseColor=null] - The base color of the globe
        * when no layer is shown.
+       * @property {boolean} [debug=false] - Enables Cesium's built-in map
+       * debugging aids and overlays for development.
        * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
        * predefined list of locations with an enabled list of layer IDs to be
        * shown the zoom presets UI. Requires `showViewfinder` to be true as this
@@ -275,6 +283,7 @@ define([
           showFeedback: false,
           feedbackText: null,
           globeBaseColor: null,
+          debug: false,
           zoomPresets: null,
         };
       },

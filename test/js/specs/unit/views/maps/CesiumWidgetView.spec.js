@@ -219,6 +219,35 @@ define([
           roll: 340.4941155938977,
         });
       });
+
+      it("enables Cesium debug helpers when configured", () => {
+        state.view.model.set("debug", true);
+
+        state.view.render();
+
+        expect(state.view.scene.debugShowFramesPerSecond).to.equal(true);
+        expect(state.view.scene.globe.showSkirts).to.equal(false);
+        expect(state.view.scene.imageryLayers.length).to.equal(3);
+        const imageryProviders = Array.from(
+          { length: state.view.scene.imageryLayers.length },
+          (_, index) =>
+            state.view.scene.imageryLayers.get(index).imageryProvider,
+        );
+        expect(
+          imageryProviders.some(
+            (provider) => provider instanceof Cesium.GridImageryProvider,
+          ),
+        ).to.equal(true);
+        expect(
+          imageryProviders.some(
+            (provider) =>
+              provider instanceof Cesium.TileCoordinatesImageryProvider,
+          ),
+        ).to.equal(true);
+        expect(
+          state.view.el.querySelector(".cesium-debug-overlay")?.textContent,
+        ).to.contain("Camera");
+      });
     });
   });
 });

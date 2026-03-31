@@ -51,6 +51,22 @@ define(["../../../../../../src/js/common/Utilities"], function (EntityUtils) {
       });
     });
 
+    describe("formatFixedNumber", () => {
+      it("formats finite numbers using fixed decimal places", () => {
+        expect(EntityUtils.formatFixedNumber(1.2345, 2)).to.equal("1.23");
+        expect(EntityUtils.formatFixedNumber(1.2345, 0)).to.equal("1");
+      });
+
+      it("returns the fallback for non-finite values", () => {
+        expect(EntityUtils.formatFixedNumber(Number.NaN, 2, "n/a")).to.equal(
+          "n/a",
+        );
+        expect(EntityUtils.formatFixedNumber(Infinity, 2, "n/a")).to.equal(
+          "n/a",
+        );
+      });
+    });
+
     describe("deepEqual", () => {
       it("should return true if two objects are deeply equal", () => {
         const a = { a: 1, b: { c: 2 } };

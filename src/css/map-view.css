@@ -373,6 +373,24 @@
   height: 100%;
 }
 
+.cesium-debug-overlay {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: var(--map-z-index-base);
+  min-width: 11rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--map-border-radius-small);
+  background: rgba(19, 28, 43, 0.82);
+  box-shadow: var(--map-shadow-md);
+  color: #fff;
+  font-family: monospace;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  white-space: pre-line;
+  pointer-events: none;
+}
+
 /*****************************************************************************************
  *
  * Scale Bar

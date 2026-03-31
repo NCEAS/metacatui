@@ -33,6 +33,10 @@ define([
         expect(state.model).to.be.instanceof(Map);
       });
 
+      it("defaults debug to false", () => {
+        expect(state.model.get("debug")).to.equal(false);
+      });
+
       it("ignores layers if layerCategories exist", () => {
         const map = new Map({
           layerCategories: [{ layers: [{}] }],
@@ -117,6 +121,12 @@ define([
             .at(0)
             .get("enabledLayerIds"),
         ).to.eql(["layer1"]);
+      });
+
+      it("accepts debug from config", () => {
+        const map = new Map({ debug: true });
+
+        expect(map.get("debug")).to.equal(true);
       });
     });
 
