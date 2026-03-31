@@ -373,12 +373,9 @@
   height: 100%;
 }
 
-.cesium-debug-overlay {
-  position: absolute;
-  bottom: 1rem;
-  right: 1rem;
-  z-index: var(--map-z-index-base);
-  min-width: 11rem;
+.cesium-debug-overlay,
+.cesium-performanceDisplay {
+  min-width: 7rem;
   padding: 0.5rem 0.75rem;
   border-radius: var(--map-border-radius-small);
   background: rgba(19, 28, 43, 0.82);
@@ -389,6 +386,28 @@
   line-height: 1.45;
   white-space: pre-line;
   pointer-events: none;
+  text-align: left;
+  border: none;
+  color: #fff;
+}
+
+.cesium-debug-overlay,
+.cesium-performanceDisplay-defaultContainer {
+  z-index: var(--map-z-index-base);
+  position: absolute;
+  bottom: 1rem;
+}
+
+.cesium-debug-overlay {
+  right: 1rem;
+}
+
+.cesium-performanceDisplay-defaultContainer {
+  right: 12rem;
+}
+
+.cesium-performanceDisplay {
+  min-width: 7rem;
 }
 
 /*****************************************************************************************
