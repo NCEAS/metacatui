@@ -198,6 +198,56 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
       });
     });
 
+    describe("simple selector helpers", () => {
+      it("parses descendant and child combinators while ignoring prefixes", () => {
+        expect(
+          XMLUtilities.parseSimpleElementSelector("eml:dataset > eml:title"),
+        ).to.deep.equal([
+          { combinator: "descendant", name: "dataset" },
+          { combinator: "child", name: "title" },
+        ]);
+      });
+
+      it("rejects invalid simple selectors", () => {
+        expect(XMLUtilities.parseSimpleElementSelector("dataset[role=main]")).to.equal(
+          null,
+        );
+        expect(
+          XMLUtilities.parseSimpleElementSelector("dataset > title!"),
+        ).to.equal(null);
+      });
+
+      it("finds descendant and direct-child matches without relying on XML prefixes", () => {
+        const xml = new DOMParser().parseFromString(
+          [
+            '<root xmlns:d1="urn:test">',
+            "  <d1:dataset>",
+            "    <d1:title>Dataset title</d1:title>",
+            "    <wrapper><d1:title>Nested title</d1:title></wrapper>",
+            "  </d1:dataset>",
+            "</root>",
+          ].join(""),
+          "application/xml",
+        );
+
+        const descendantMatches = XMLUtilities.findElementsBySimpleSelector(
+          xml,
+          "dataset title",
+        );
+        const childMatches = XMLUtilities.findElementsBySimpleSelector(
+          xml,
+          "dataset > title",
+        );
+
+        expect(descendantMatches.map((element) => element.textContent)).to.deep.equal(
+          ["Dataset title", "Nested title"],
+        );
+        expect(childMatches.map((element) => element.textContent)).to.deep.equal([
+          "Dataset title",
+        ]);
+      });
+    });
+
     describe("findDirectChildElement", () => {
       it("finds the first direct child case-insensitively and ignores prefixes", () => {
         const xml = new DOMParser().parseFromString(

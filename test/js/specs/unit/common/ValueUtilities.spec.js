@@ -3,41 +3,41 @@ define(
   function (ValueUtilities, UrlUtilities) {
     var expect = chai.expect;
 
-  describe("ValueUtilities", function () {
-    describe("firstDefined", function () {
-      it("returns the first non-undefined value", function () {
-        expect(
-          ValueUtilities.firstDefined(undefined, null, false, "later"),
-        ).to.equal(null);
+    describe("ValueUtilities", function () {
+      describe("firstDefined", function () {
+        it("returns the first non-undefined value", function () {
+          expect(
+            ValueUtilities.firstDefined(undefined, null, false, "later"),
+          ).to.equal(null);
+        });
       });
-    });
 
-    describe("nullIfEmpty", function () {
-      it("collapses nullish and empty-string values to null", function () {
-        expect(ValueUtilities.nullIfEmpty(undefined)).to.equal(null);
-        expect(ValueUtilities.nullIfEmpty(null)).to.equal(null);
-        expect(ValueUtilities.nullIfEmpty("")).to.equal(null);
-        expect(ValueUtilities.nullIfEmpty(" ")).to.equal(" ");
-        expect(ValueUtilities.nullIfEmpty(false)).to.equal(false);
+      describe("nullIfEmpty", function () {
+        it("collapses nullish and empty-string values to null", function () {
+          expect(ValueUtilities.nullIfEmpty(undefined)).to.equal(null);
+          expect(ValueUtilities.nullIfEmpty(null)).to.equal(null);
+          expect(ValueUtilities.nullIfEmpty("")).to.equal(null);
+          expect(ValueUtilities.nullIfEmpty(" ")).to.equal(" ");
+          expect(ValueUtilities.nullIfEmpty(false)).to.equal(false);
+        });
       });
-    });
 
-    describe("normalizeBoolean", function () {
-      it("normalizes boolean-like values and preserves invalid input", function () {
-        expect(ValueUtilities.normalizeBoolean("true")).to.equal(true);
-        expect(ValueUtilities.normalizeBoolean("0")).to.equal(false);
-        expect(ValueUtilities.normalizeBoolean("")).to.equal(null);
-        expect(ValueUtilities.normalizeBoolean("maybe")).to.equal("maybe");
+      describe("normalizeBoolean", function () {
+        it("normalizes boolean-like values and preserves invalid input", function () {
+          expect(ValueUtilities.normalizeBoolean("true")).to.equal(true);
+          expect(ValueUtilities.normalizeBoolean("0")).to.equal(false);
+          expect(ValueUtilities.normalizeBoolean("")).to.equal(null);
+          expect(ValueUtilities.normalizeBoolean("maybe")).to.equal("maybe");
+        });
       });
-    });
 
-    describe("normalizeInteger", function () {
-      it("normalizes integer-like values and preserves invalid input", function () {
-        expect(ValueUtilities.normalizeInteger("7")).to.equal(7);
-        expect(ValueUtilities.normalizeInteger("")).to.equal(null);
-        expect(ValueUtilities.normalizeInteger("7.5")).to.equal("7.5");
+      describe("normalizeInteger", function () {
+        it("normalizes integer-like values and preserves invalid input", function () {
+          expect(ValueUtilities.normalizeInteger("7")).to.equal(7);
+          expect(ValueUtilities.normalizeInteger("")).to.equal(null);
+          expect(ValueUtilities.normalizeInteger("7.5")).to.equal("7.5");
+        });
       });
-    });
 
     describe("normalizeStringArray", function () {
       it("wraps single values and trims entries", function () {
@@ -60,12 +60,102 @@ define(
       });
     });
 
+    describe("dedupeBy", function () {
+      it("deduplicates by derived key while preserving the first item", function () {
+        const values = [
+          { id: "a", value: 1 },
+          { id: "b", value: 2 },
+          { id: "a", value: 3 },
+        ];
+
+        expect(
+          ValueUtilities.dedupeBy(values, function (value) {
+            return value.id;
+          }),
+        ).to.deep.equal([
+          { id: "a", value: 1 },
+          { id: "b", value: 2 },
+        ]);
+      });
+
+      it("falls back to array deduplication when keyFn is missing", function () {
+        expect(ValueUtilities.dedupeBy(["a", "b", "a"])).to.deep.equal([
+          "a",
+          "b",
+        ]);
+      });
+    });
+
+    describe("sorting helpers", function () {
+      it("sorts string-like values deterministically", function () {
+        expect(ValueUtilities.sortStrings(["b", "a", 10])).to.deep.equal([
+          10,
+          "a",
+          "b",
+        ]);
+      });
+
+      it("sorts values by derived key", function () {
+        expect(
+          ValueUtilities.sortBy(
+            [
+              { id: "b", value: 2 },
+              { id: "a", value: 1 },
+            ],
+            function (value) {
+              return value.id;
+            },
+          ),
+        ).to.deep.equal([
+          { id: "a", value: 1 },
+          { id: "b", value: 2 },
+        ]);
+      });
+
+      it("returns a shallow object copy with sorted keys", function () {
+        const source = { b: 2, a: 1 };
+        const sorted = ValueUtilities.sortObjectKeys(source);
+
+        expect(Object.keys(sorted)).to.deep.equal(["a", "b"]);
+        expect(sorted).to.deep.equal({ a: 1, b: 2 });
+        expect(sorted).to.not.equal(source);
+      });
+    });
+
     describe("predicates", function () {
       it("checks non-empty strings and unsigned integers", function () {
         expect(ValueUtilities.isNonEmptyString(" a ")).to.equal(true);
         expect(ValueUtilities.isNonEmptyString("   ")).to.equal(false);
         expect(ValueUtilities.isUnsignedInteger(0)).to.equal(true);
         expect(ValueUtilities.isUnsignedInteger(-1)).to.equal(false);
+      });
+    });
+
+    describe("requireNonEmptyString", function () {
+      it("returns normalized non-empty strings", function () {
+        expect(ValueUtilities.requireNonEmptyString("  alpha  ")).to.equal(
+          "alpha",
+        );
+      });
+
+      it("throws for empty string-like input", function () {
+        expect(function () {
+          ValueUtilities.requireNonEmptyString("   ", "Need text");
+        }).to.throw("Need text");
+      });
+    });
+
+    describe("safeDecodeURIComponent", function () {
+      it("decodes valid URI components and preserves invalid ones", function () {
+        expect(ValueUtilities.safeDecodeURIComponent("a%2Fb")).to.equal("a/b");
+        expect(ValueUtilities.safeDecodeURIComponent("%E0%A4%A")).to.equal(
+          "%E0%A4%A",
+        );
+      });
+
+      it("returns null for nullish values", function () {
+        expect(ValueUtilities.safeDecodeURIComponent(null)).to.equal(null);
+        expect(ValueUtilities.safeDecodeURIComponent(undefined)).to.equal(null);
       });
     });
 

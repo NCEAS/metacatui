@@ -34,6 +34,39 @@ define(["common/ValidationUtilities"], function (ValidationUtilities) {
           message: "Problem",
         });
       });
+
+      it("merges extra metadata into validation errors", function () {
+        expect(
+          ValidationUtilities.createValidationError("fieldA", "Problem", {
+            code: "badField",
+            severity: "warning",
+          }),
+        ).to.deep.equal({
+          field: "fieldA",
+          message: "Problem",
+          code: "badField",
+          severity: "warning",
+        });
+      });
+    });
+
+    describe("createValidationIssue", function () {
+      it("creates structured validation issues with defaults and extras", function () {
+        expect(
+          ValidationUtilities.createValidationIssue({
+            field: "fieldA",
+            message: "Problem",
+            code: "badField",
+            extra: true,
+          }),
+        ).to.deep.equal({
+          field: "fieldA",
+          message: "Problem",
+          severity: "error",
+          code: "badField",
+          extra: true,
+        });
+      });
     });
 
     describe("cloneValidationErrors", function () {
@@ -53,6 +86,47 @@ define(["common/ValidationUtilities"], function (ValidationUtilities) {
         expect(ValidationUtilities.cloneValidationErrors(null)).to.deep.equal(
           [],
         );
+      });
+    });
+
+    describe("createValidationReport", function () {
+      it("partitions warnings and errors and clones the issue list", function () {
+        const issues = [
+          { field: "fieldA", message: "Problem A", severity: "error" },
+          { field: "fieldB", message: "Problem B", severity: "warning" },
+          { field: "fieldC", message: "Problem C" },
+        ];
+
+        const report = ValidationUtilities.createValidationReport(issues);
+
+        expect(report.valid).to.equal(false);
+        expect(report.issues).to.deep.equal(issues);
+        expect(report.issues).to.not.equal(issues);
+        expect(report.errors.map((issue) => issue.field)).to.deep.equal([
+          "fieldA",
+          "fieldC",
+        ]);
+        expect(report.warnings.map((issue) => issue.field)).to.deep.equal([
+          "fieldB",
+        ]);
+      });
+    });
+
+    describe("createValidationException", function () {
+      it("attaches cloned validation errors and extra properties to the error", function () {
+        const validationErrors = [{ field: "fieldA", message: "Problem A" }];
+        const error = ValidationUtilities.createValidationException(
+          "Validation failed",
+          validationErrors,
+          { status: 400 },
+        );
+
+        expect(error).to.be.instanceof(Error);
+        expect(error.message).to.equal("Validation failed");
+        expect(error.status).to.equal(400);
+        expect(error.validationErrors).to.deep.equal(validationErrors);
+        expect(error.validationErrors).to.not.equal(validationErrors);
+        expect(error.validationErrors[0]).to.not.equal(validationErrors[0]);
       });
     });
   });

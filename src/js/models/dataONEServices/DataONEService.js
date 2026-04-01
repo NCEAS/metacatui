@@ -4,6 +4,7 @@ define([
   "models/PersistentStorage",
   "common/UrlUtilities",
   "common/Utilities",
+  "common/ValueUtilities",
 ], (
   md5,
   DataONEHttpClient,
@@ -12,7 +13,6 @@ define([
   Utilities,
   ValueUtilities,
 ) => {
-], (md5, DataONEHttpClient, PersistentStorage, Utilities, ValueUtilities) => {
   /**
    * Extensible base class for DataONE API services, e.g. the System Metadata
    * service. It includes in-memory and persistent caching scoped by user
@@ -40,7 +40,8 @@ define([
      * @param {Function} [options.getToken] A function that returns a Promise
      * that resolves to an auth token string.
      * @param {Function} [options.getUserName] A function that returns a Promise
-     * that resolves to the current username string.
+     * that resolves to the current username string, used by cache-scoped
+     * services.
      * @param {boolean} [options.defaultAuth] Whether or not to send requests
      * with authorization by default, when no auth option is provided, and when
      * a user token is available. Defaults to true.
@@ -70,10 +71,11 @@ define([
      */
     static normalizeOptions(options = {}) {
       const normalized = JSON.parse(JSON.stringify(options));
-      if (!normalized.baseUrl) {
-        throw new Error("DataONEService: baseUrl is required");
-      }
       normalized.baseUrl = UrlUtilities.normalizeUrl(normalized.baseUrl);
+      ValueUtilities.requireNonEmptyString(
+        normalized.baseUrl,
+        "DataONEService: baseUrl is required",
+      );
 
       normalized.clientConfig = {
         ...normalized.clientConfig,
@@ -98,6 +100,101 @@ define([
           ? normalized.defaultAuth
           : true;
       return normalized;
+    }
+
+    /**
+     * Merge client configuration with normalized required methods and response
+     * types.
+     * @param {object} [params] Client configuration params.
+     * @param {object} [params.defaults] Default client options.
+     * @param {object} [params.overrides] Caller-provided client options.
+     * @param {string} [params.baseUrl] Base URL for the client.
+     * @param {string[]} [params.requiredMethods] Required HTTP methods.
+     * @param {string[]} [params.requiredResponseTypes] Required response types.
+     * @param {string[]} [params.requiredHeaderNames] Required header names for
+     * dedupe.
+     * @returns {object} Normalized client configuration.
+     */
+    static buildClientConfig({
+      defaults = {},
+      overrides = {},
+      baseUrl,
+      requiredMethods = [],
+      requiredResponseTypes = [],
+      requiredHeaderNames = [],
+    } = {}) {
+      const normalizeArray = (value, mapper) =>
+        (Array.isArray(value) ? value : [])
+          .map((entry) => ValueUtilities.normalizeText(entry))
+          .filter(Boolean)
+          .map((entry) => mapper(entry));
+
+      const resolvedBaseUrl = UrlUtilities.normalizeUrl(
+        ValueUtilities.firstDefined(
+          baseUrl,
+          overrides.baseUrl,
+          defaults.baseUrl,
+        ),
+      );
+
+      return {
+        ...defaults,
+        ...overrides,
+        baseUrl: resolvedBaseUrl,
+        allowedHttpMethods: ValueUtilities.dedupeArray([
+          ...normalizeArray(defaults.allowedHttpMethods, (value) =>
+            value.toUpperCase(),
+          ),
+          ...normalizeArray(overrides.allowedHttpMethods, (value) =>
+            value.toUpperCase(),
+          ),
+          ...normalizeArray(requiredMethods, (value) => value.toUpperCase()),
+        ]),
+        responseTypes: ValueUtilities.dedupeArray([
+          ...normalizeArray(defaults.responseTypes, (value) =>
+            value.toLowerCase(),
+          ),
+          ...normalizeArray(overrides.responseTypes, (value) =>
+            value.toLowerCase(),
+          ),
+          ...normalizeArray(requiredResponseTypes, (value) =>
+            value.toLowerCase(),
+          ),
+        ]),
+        headerNamesForDedup: ValueUtilities.dedupeArray([
+          ...normalizeArray(defaults.headerNamesForDedup, (value) => value),
+          ...normalizeArray(overrides.headerNamesForDedup, (value) => value),
+          ...normalizeArray(requiredHeaderNames, (value) => value),
+        ]),
+      };
+    }
+
+    /**
+     * Pick defined request options from a candidate options object.
+     * @param {object} [options] Candidate options.
+     * @param {string[]} [keys] Keys to retain when defined.
+     * @returns {object} Selected options.
+     */
+    static pickRequestOptions(
+      options = {},
+      keys = [
+        "auth",
+        "signal",
+        "timeoutMs",
+        "retry",
+        "headers",
+        "transport",
+        "onUploadProgress",
+      ],
+    ) {
+      const source = options && typeof options === "object" ? options : {};
+      const picked = {};
+      (Array.isArray(keys) ? keys : []).forEach((key) => {
+        if (source[key] !== undefined) {
+          picked[key] = source[key];
+        }
+      });
+      return picked;
     }
 
     /**
@@ -194,6 +291,25 @@ define([
     }
 
     /**
+     * Send a request through a specific DataONEHttpClient instance.
+     * @param {DataONEHttpClient} client Client instance to use.
+     * @param {object} [options] Request options.
+     * @returns {Promise<DataONEHttpResponse>} Promise resolving to the response.
+     */
+    async requestWithClient(client, options = {}) {
+      if (!client || typeof client.request !== "function") {
+        throw new Error("DataONEService: client is required");
+      }
+
+      const { auth, ...clientOptions } = options;
+      const resolvedToken = await this.resolveToken(auth);
+      return client.request({
+        ...clientOptions,
+        token: resolvedToken,
+      });
+    }
+
+    /**
      * Use the path as the cache key by default, but allow an override if
      * desired.
      * @param {string} path Path relative to baseUrl.
@@ -242,14 +358,16 @@ define([
     /**
      * Apply a default Accept header when one is not already provided.
      * @param {object} [options] Request options.
-     * @param {string} [accept="text/xml"] Default Accept header value.
+     * @param {string} [accept] Default Accept header value.
      * @returns {object} Options object with merged headers.
      */
     static withDefaultAccept(options = {}, accept = "text/xml") {
       const normalizedOptions =
         options && typeof options === "object" ? { ...options } : {};
       const normalizedAccept =
-        typeof accept === "string" ? accept.trim() : String(accept || "").trim();
+        typeof accept === "string"
+          ? accept.trim()
+          : String(accept || "").trim();
       if (!normalizedAccept) {
         return normalizedOptions;
       }
@@ -289,12 +407,7 @@ define([
      * response.
      */
     async request(options = {}) {
-      const { auth, ...clientOptions } = options;
-      const resolvedToken = await this.resolveToken(auth);
-      return this.client.request({
-        ...clientOptions,
-        token: resolvedToken,
-      });
+      return this.requestWithClient(this.client, options);
     }
 
     /**

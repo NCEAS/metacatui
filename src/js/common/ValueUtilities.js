@@ -79,6 +79,25 @@ define(["md5"], (md5) => {
     },
 
     /**
+     * Normalize positive integer-like values while falling back when invalid.
+     * @param {*} value Value to normalize.
+     * @param {number} fallback Fallback returned for invalid input.
+     * @returns {number} Positive integer or fallback.
+     */
+    normalizePositiveInteger(value, fallback) {
+      if (Number.isInteger(value) && value > 0) {
+        return value;
+      }
+
+      const normalized = ValueUtilities.normalizeInteger(value);
+      if (Number.isInteger(normalized) && normalized > 0) {
+        return normalized;
+      }
+
+      return fallback;
+    },
+
+    /**
      * Normalize any value into an array of trimmed strings.
      * @param {*} value Value or array of values.
      * @returns {Array<string|null>} Normalized string array.
@@ -101,12 +120,95 @@ define(["md5"], (md5) => {
     },
 
     /**
+     * Deduplicate values by a derived key while preserving first-seen order.
+     * @param {Array<*>} values Values to dedupe.
+     * @param {Function} keyFn Function that returns a unique key per value.
+     * @returns {Array<*>} Deduplicated values.
+     */
+    dedupeBy(values, keyFn) {
+      const list = Array.isArray(values) ? values : [];
+      if (typeof keyFn !== "function") {
+        return ValueUtilities.dedupeArray(list);
+      }
+
+      const seen = new Set();
+      const deduped = [];
+      list.forEach((value) => {
+        const key = keyFn(value);
+        if (seen.has(key)) return;
+        seen.add(key);
+        deduped.push(value);
+      });
+
+      return deduped;
+    },
+
+    /**
+     * Return a sorted copy of string-like values.
+     * @param {Array<*>} values Values to sort as strings.
+     * @returns {Array<*>} Sorted values.
+     */
+    sortStrings(values) {
+      return [...(Array.isArray(values) ? values : [])].sort((a, b) =>
+        String(a).localeCompare(String(b)),
+      );
+    },
+
+    /**
+     * Return a sorted copy of values using a derived string key.
+     * @param {Array<*>} values Values to sort.
+     * @param {Function} keyFn Function that returns a comparable key.
+     * @returns {Array<*>} Sorted values.
+     */
+    sortBy(values, keyFn) {
+      const getKey = typeof keyFn === "function" ? keyFn : (value) => value;
+      return [...(Array.isArray(values) ? values : [])].sort((a, b) =>
+        String(getKey(a)).localeCompare(String(getKey(b))),
+      );
+    },
+
+    /**
+     * Return a shallow copy of an object with keys sorted alphabetically.
+     * @param {object} record Source object.
+     * @returns {object} Object copy with sorted keys.
+     */
+    sortObjectKeys(record) {
+      const source =
+        record && typeof record === "object" && !Array.isArray(record)
+          ? record
+          : {};
+      const sorted = {};
+      ValueUtilities.sortStrings(Object.keys(source)).forEach((key) => {
+        sorted[key] = source[key];
+      });
+      return sorted;
+    },
+
+    /**
      * Check whether a value is a non-empty string.
      * @param {*} value Candidate value.
      * @returns {boolean} True when value is a non-empty string.
      */
     isNonEmptyString(value) {
       return typeof value === "string" && value.trim().length > 0;
+    },
+
+    /**
+     * Require a non-empty string value and throw when missing.
+     * @param {*} value Candidate value.
+     * @param {string} [message] Error message to throw when invalid.
+     * @returns {string} Original value when valid.
+     * @throws {Error} When value is not a non-empty string.
+     */
+    requireNonEmptyString(
+      value,
+      message = "ValueUtilities: value must be a non-empty string",
+    ) {
+      const normalized = ValueUtilities.normalizeText(value);
+      if (!ValueUtilities.isNonEmptyString(value)) {
+        throw new Error(message);
+      }
+      return normalized;
     },
 
     /**
@@ -205,7 +307,9 @@ define(["md5"], (md5) => {
       if (Array.isArray(a) && Array.isArray(b)) {
         if (a.length === 0 && b.length === 0) return true;
         if (a.length !== b.length) return false;
-        return a.every((value, index) => ValueUtilities.deepEqual(value, b[index]));
+        return a.every((value, index) =>
+          ValueUtilities.deepEqual(value, b[index]),
+        );
       }
 
       if (
@@ -232,8 +336,8 @@ define(["md5"], (md5) => {
      * Deterministically stringify a value so order does not affect the result.
      * @param {*} val Value to stringify.
      * @param {object} [options] Stringification options.
-     * @param {boolean} [options.ignoreCase=true] Normalize strings to lowercase.
-     * @param {boolean} [options.orderMatters=false] Preserve array order.
+     * @param {boolean} [options.ignoreCase] Normalize strings to lowercase.
+     * @param {boolean} [options.orderMatters] Preserve array order.
      * @param {WeakSet} [options.processed] Internal set of seen objects.
      * @returns {string} Stable string representation.
      * @throws {Error} Throws on circular references.
@@ -423,6 +527,7 @@ define(["md5"], (md5) => {
       if (!ClassRef) {
         throw new Error("ValueUtilities.getSingleton: ClassRef is required");
       }
+      /* eslint-disable-next-line no-param-reassign */
       if (!ClassRef.instances) ClassRef.instances = new Map();
       if (!(ClassRef.instances instanceof Map)) {
         throw new Error("ValueUtilities.getSingleton: instances must be a Map");

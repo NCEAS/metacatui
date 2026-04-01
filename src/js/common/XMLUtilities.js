@@ -45,10 +45,10 @@ define([], () => {
     /**
      * Remove XML 1.0-invalid characters from text intended for XML text nodes.
      * This helper does not escape `&`, `<`, or other XML syntax characters;
-     * those are handled by XMLSerializer during DOM serialization.
-     * See https://www.w3.org/TR/xml/#charsets
-     * @param {*} textString Value to normalize. Non-null values are coerced to a
-     * string before invalid XML characters are removed.
+     * those are handled by XMLSerializer during DOM serialization. See
+     * https://www.w3.org/TR/xml/#charsets
+     * @param {*} textString Value to normalize. Non-null values are coerced to
+     * a string before invalid XML characters are removed.
      * @returns {string|null} The normalized string, or null for nullish values.
      * @since 0.0.0
      */
@@ -119,7 +119,9 @@ define([], () => {
     parseRequiredXmlString(xmlString, context = "XML response") {
       const xml = this.parseXmlString(xmlString, context);
       if (!xml) {
-        throw new ParseError(`${context}: response body must be non-empty XML text`);
+        throw new ParseError(
+          `${context}: response body must be non-empty XML text`,
+        );
       }
       return xml;
     },
@@ -170,28 +172,45 @@ define([], () => {
         .match(/(>|\S+)/g);
       if (!tokens?.length) return null;
 
-      const parts = [];
-      let combinator = "descendant";
+      const result = tokens.reduce(
+        (state, token) => {
+          if (!state.valid) return state;
 
-      for (const token of tokens) {
-        if (token === ">") {
-          combinator = "child";
-          continue;
-        }
+          if (token === ">") {
+            return {
+              ...state,
+              combinator: "child",
+            };
+          }
 
-        const normalizedToken = token.replace(/\\:/g, ":");
-        if (!/^([A-Za-z_][\w.-]*:)?[A-Za-z_][\w.-]*$/.test(normalizedToken)) {
-          return null;
-        }
+          const normalizedToken = token.replace(/\\:/g, ":");
+          if (!/^([A-Za-z_][\w.-]*:)?[A-Za-z_][\w.-]*$/.test(normalizedToken)) {
+            return {
+              ...state,
+              valid: false,
+            };
+          }
 
-        parts.push({
-          combinator,
-          name: normalizedToken.split(":").pop().toLowerCase(),
-        });
-        combinator = "descendant";
-      }
+          return {
+            valid: true,
+            combinator: "descendant",
+            parts: [
+              ...state.parts,
+              {
+                combinator: state.combinator,
+                name: normalizedToken.split(":").pop().toLowerCase(),
+              },
+            ],
+          };
+        },
+        {
+          valid: true,
+          combinator: "descendant",
+          parts: [],
+        },
+      );
 
-      return parts.length ? parts : null;
+      return result.valid && result.parts.length ? result.parts : null;
     },
 
     /**
@@ -211,42 +230,37 @@ define([], () => {
       let currentNodes = root?.documentElement
         ? [root.documentElement]
         : [root];
-      let isFirstPart = true;
 
-      for (const part of parts) {
-        const nextNodes = [];
+      parts.forEach((part, partIndex) => {
+        const isFirstPart = partIndex === 0;
 
-        currentNodes.forEach((node) => {
-          if (!node) return;
+        currentNodes = currentNodes.flatMap((node) => {
+          if (!node) return [];
 
-          const candidates = isFirstPart
-            ? [
-                ...(node.nodeType === 1 ? [node] : []),
-                ...Array.from(node.getElementsByTagName?.("*") || []),
-              ]
-            : part.combinator === "child"
-              ? this.getElementChildren(node)
-              : Array.from(node.getElementsByTagName?.("*") || []);
+          let candidates = [];
+          if (isFirstPart) {
+            candidates = [
+              ...(node.nodeType === 1 ? [node] : []),
+              ...Array.from(node.getElementsByTagName?.("*") || []),
+            ];
+          } else if (part.combinator === "child") {
+            candidates = this.getElementChildren(node);
+          } else {
+            candidates = Array.from(node.getElementsByTagName?.("*") || []);
+          }
 
-          candidates.forEach((candidate) => {
-            if (this.getNormalizedElementName(candidate) === part.name) {
-              nextNodes.push(candidate);
-            }
-          });
+          return candidates.filter(
+            (candidate) => this.getNormalizedElementName(candidate) === part.name,
+          );
         });
-
-        currentNodes = nextNodes;
-        isFirstPart = false;
-
-        if (!currentNodes.length) return [];
-      }
+      });
 
       return currentNodes;
     },
 
     /**
-     * Find the first direct child element with the given local name.
-     * Matching is case-insensitive and ignores namespace prefixes.
+     * Find the first direct child element with the given local name. Matching
+     * is case-insensitive and ignores namespace prefixes.
      * @param {Node} node The parent XML node.
      * @param {string} name Local child element name to match.
      * @returns {Element|null} The first matching child element, or null.
@@ -262,8 +276,8 @@ define([], () => {
     },
 
     /**
-     * Find all direct child elements with the given local name.
-     * Matching is case-insensitive and ignores namespace prefixes.
+     * Find all direct child elements with the given local name. Matching is
+     * case-insensitive and ignores namespace prefixes.
      * @param {Node} node The parent XML node.
      * @param {string} name Local child element name to match.
      * @returns {Element[]} Matching child elements.
@@ -344,10 +358,37 @@ define([], () => {
     },
 
     /**
+     * Build a namespace map from prefix-to-URI entries.
+     * @param {object} namespaceUris Prefix-to-URI map.
+     * @param {Function} [valueBuilder] Optional mapper for each namespace URI.
+     * @returns {object} Namespace map with the same keys as the input.
+     * @since 0.0.0
+     */
+    buildNamespaceMap(namespaceUris, valueBuilder = (value) => value) {
+      const source =
+        namespaceUris &&
+        typeof namespaceUris === "object" &&
+        !Array.isArray(namespaceUris)
+          ? namespaceUris
+          : {};
+      const buildValue =
+        typeof valueBuilder === "function" ? valueBuilder : (value) => value;
+
+      const keys = Object.keys(source);
+
+      const nsMap = {};
+      keys.forEach((key) => {
+        nsMap[key] = buildValue(source[key], key);
+      });
+
+      return nsMap;
+    },
+
+    /**
      * Require that an element uses one of the expected namespace URIs.
      * @param {Element} element XML element to inspect.
      * @param {string[]} allowedNamespaceUris Allowed namespace URIs.
-     * @param {string} [context="XML response"] Context label for errors.
+     * @param {string} [context] Context label for errors.
      * @returns {string} The matched namespace URI.
      * @throws {Error} Throws when the namespace URI is missing or unsupported.
      * @since 0.0.0
@@ -373,13 +414,13 @@ define([], () => {
     },
 
     /**
-     * Require that an element contains only allowed attribute names.
-     * Namespace declaration attributes are ignored by default.
+     * Require that an element contains only allowed attribute names. Namespace
+     * declaration attributes are ignored by default.
      * @param {Element} element XML element to inspect.
      * @param {string[]} allowedNames Allowed attribute names.
-     * @param {string} [context="XML response"] Context label for errors.
+     * @param {string} [context] Context label for errors.
      * @param {object} [options] Additional options.
-     * @param {boolean} [options.allowNamespaceDeclarations=true] Whether xmlns
+     * @param {boolean} [options.allowNamespaceDeclarations] Whether xmlns
      * attributes are ignored during validation.
      * @returns {string[]} Present non-namespace attribute names.
      * @throws {Error} Throws when an unexpected attribute is present.
@@ -398,8 +439,7 @@ define([], () => {
           if (!allowNamespaceDeclarations) return true;
           const attributeName = attribute?.name || "";
           return (
-            attributeName !== "xmlns" &&
-            !attributeName.startsWith("xmlns:")
+            attributeName !== "xmlns" && !attributeName.startsWith("xmlns:")
           );
         })
         .map((attribute) => attribute.name);
@@ -419,7 +459,7 @@ define([], () => {
      * Require a non-empty attribute value on an element.
      * @param {Element} element XML element to inspect.
      * @param {string} attributeName Attribute name to read.
-     * @param {string} [context="XML response"] Context label for errors.
+     * @param {string} [context] Context label for errors.
      * @returns {string} Trimmed attribute value.
      * @throws {Error} Throws when the attribute is missing or empty.
      * @since 0.0.0
@@ -435,12 +475,11 @@ define([], () => {
     },
 
     /**
-     * Require that direct child elements match an ordered schema-like
-     * sequence, including min/max occurrence constraints.
+     * Require that direct child elements match an ordered schema-like sequence,
+     * including min/max occurrence constraints.
      * @param {Node} node Parent XML node.
-     * @param {Array<{name:string,minOccurs?:number,maxOccurs?:number}>} definitions
-     * Ordered direct-child definitions.
-     * @param {string} [context="XML response"] Context label for errors.
+     * @param {Array<{name:string,minOccurs?:number,maxOccurs?:number}>} definitions Ordered direct-child definitions.
+     * @param {string} [context] Context label for errors.
      * @returns {Map<string, Element[]>} Matching child elements by local name.
      * @throws {Error} Throws on unexpected, out-of-order, duplicate, or missing
      * child elements.
@@ -511,9 +550,11 @@ define([], () => {
     /**
      * Require that the provided document or element has the expected root name.
      * Matching is case-insensitive and ignores namespace prefixes.
-     * @param {Document|Element} documentOrElement Parsed XML document or root element.
+     * @param {Document|Element} documentOrElement Parsed XML document or root
+     * element.
      * @param {string} expectedName Expected root local name.
-     * @param {string} [context="XML response"] Context label for error messages.
+     * @param {string} [context] Context label for error
+     * messages.
      * @returns {Element} The validated root element.
      * @throws {Error} Throws when the root is missing or has the wrong name.
      * @since 0.0.0
@@ -523,11 +564,12 @@ define([], () => {
       expectedName,
       context = "XML response",
     ) {
-      const root = documentOrElement?.documentElement
-        ? documentOrElement.documentElement
-        : documentOrElement?.nodeType === 1
-          ? documentOrElement
-          : null;
+      let root = null;
+      if (documentOrElement?.documentElement) {
+        root = documentOrElement.documentElement;
+      } else if (documentOrElement?.nodeType === 1) {
+        root = documentOrElement;
+      }
 
       if (!root) {
         throw new Error(`${context}: parsed XML document is required`);
@@ -536,7 +578,8 @@ define([], () => {
       const actualName = this.getNormalizedElementName(root);
       const normalizedExpected = String(expectedName || "").toLowerCase();
       if (actualName !== normalizedExpected) {
-        const actualLabel = root.tagName || root.nodeName || actualName || "unknown";
+        const actualLabel =
+          root.tagName || root.nodeName || actualName || "unknown";
         throw new Error(
           `${context}: expected root <${expectedName}> but found <${actualLabel}>`,
         );
@@ -552,7 +595,7 @@ define([], () => {
      * text value is empty.
      * @param {Document|Node} documentOrNode Parsed XML document or node.
      * @param {string} elementName Local element name to extract.
-     * @param {string} [context="XML response"] Context label for error
+     * @param {string} [context] Context label for error
      * messages.
      * @returns {string} The extracted non-empty text value.
      * @since 0.0.0
@@ -586,7 +629,7 @@ define([], () => {
      * requested element.
      * @param {string} xmlString XML response text.
      * @param {string} elementName Local element name to extract.
-     * @param {string} [context="XML response"] Context label for error
+     * @param {string} [context] Context label for error
      * messages.
      * @returns {{value:string, xml:Document}} Parsed XML and extracted value.
      * @since 0.0.0
@@ -685,7 +728,9 @@ define([], () => {
       return Array.from(element?.attributes || [])
         .filter((attribute) => {
           const attributeName = attribute?.name || "";
-          return attributeName === "xmlns" || attributeName.startsWith("xmlns:");
+          return (
+            attributeName === "xmlns" || attributeName.startsWith("xmlns:")
+          );
         })
         .map((attribute) => ({
           name: attribute.name,
@@ -696,7 +741,8 @@ define([], () => {
     /**
      * Serialize an XML document and optionally prepend an XML declaration.
      * @param {Document} doc XML document to serialize.
-     * @param {string|null} [xmlDeclaration] Optional XML declaration to prepend.
+     * @param {string|null} [xmlDeclaration] Optional XML declaration to
+     * prepend.
      * @returns {string} Serialized XML text.
      * @since 0.0.0
      */
@@ -761,7 +807,7 @@ define([], () => {
   /**
    * Custom error type for XML parsing errors.
    * @class ParseError
-   * @extends Error
+   * @augments Error
    * @memberof XMLUtilities
    * @since 0.0.0
    */

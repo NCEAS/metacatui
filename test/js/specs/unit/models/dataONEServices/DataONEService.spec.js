@@ -44,6 +44,14 @@ define([
         expect(() => DataONEService.normalizeOptions()).to.throw(/baseUrl/);
       });
 
+      it("rejects whitespace-only base URLs", () => {
+        expect(() =>
+          DataONEService.normalizeOptions({
+            baseUrl: "   ",
+          }),
+        ).to.throw(/baseUrl/);
+      });
+
       it("normalizes baseUrl and applies defaults", () => {
         const normalized = DataONEService.normalizeOptions({
           baseUrl: "https://example.org/",
@@ -124,6 +132,51 @@ define([
         });
         explicit.headers.accept.should.equal("application/xml");
         should.not.exist(explicit.headers.Accept);
+      });
+    });
+
+    describe("shared client helpers", () => {
+      it("buildClientConfig normalizes baseUrl and merges required client arrays", () => {
+        const config = DataONEService.buildClientConfig({
+          defaults: {
+            allowedHttpMethods: ["get"],
+            responseTypes: ["blob"],
+            headerNamesForDedup: ["Authorization"],
+          },
+          overrides: {
+            allowedHttpMethods: ["put", " "],
+            responseTypes: ["text"],
+            headerNamesForDedup: ["Accept"],
+          },
+          baseUrl: "https://example.org/",
+          requiredMethods: ["POST"],
+          requiredResponseTypes: ["json"],
+          requiredHeaderNames: ["Content-Type"],
+        });
+
+        config.baseUrl.should.equal("https://example.org");
+        config.allowedHttpMethods.should.deep.equal(["GET", "PUT", "POST"]);
+        config.responseTypes.should.deep.equal(["blob", "text", "json"]);
+        config.headerNamesForDedup.should.deep.equal([
+          "Authorization",
+          "Accept",
+          "Content-Type",
+        ]);
+      });
+
+      it("pickRequestOptions only forwards defined request keys", () => {
+        const options = DataONEService.pickRequestOptions({
+          auth: false,
+          signal: "sig",
+          headers: { Accept: "text/plain" },
+          ignored: true,
+        });
+
+        options.should.deep.equal({
+          auth: false,
+          signal: "sig",
+          headers: { Accept: "text/plain" },
+        });
       });
     });
 
@@ -340,6 +393,33 @@ define([
     });
 
     describe("request", () => {
+      it("requestWithClient passes resolved tokens to the provided client request", async () => {
+        const client = makeClient(state.sandbox);
+        state.sandbox.stub(state.service, "getToken").resolves("tok");
+
+        await state.service.requestWithClient(client, {
+          path: "/x",
+          method: "POST",
+        });
+
+        client.request.firstCall.args[0].token.should.equal("tok");
+        client.request.firstCall.args[0].path.should.equal("/x");
+        client.request.firstCall.args[0].method.should.equal("POST");
+      });
+
+      it("requestWithClient requires a client instance", async () => {
+        let caught = null;
+
+        try {
+          await state.service.requestWithClient(null, { path: "/x" });
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/client is required/i);
+      });
+
       it("passes resolved tokens to the client request", async () => {
         state.sandbox.stub(state.service, "getToken").resolves("tok");
 

@@ -3,7 +3,7 @@ define([
   "common/DataONEXmlUtilities",
   "common/UrlUtilities",
   "common/ValueUtilities",
-], (DataONEService, DataONEXmlUtilities, ValueUtilities) => {
+], (DataONEService, DataONEXmlUtilities, UrlUtilities, ValueUtilities) => {
   /**
    * Default DataONEHttpClient options for IdentifierService.
    * @type {DataONEHttpClient#DataONEHttpClientOptions}
@@ -27,22 +27,22 @@ define([
      * @param {object} [options] Service options.
      * @param {string} [options.baseUrl] CN DataONE API base URL (for example,
      * `https://cn.dataone.org/cn/v2`).
-     * @param {DataONEHttpClient#DataONEHttpClientOptions}
-     * [options.clientConfig] Client configuration.
+     * @param {DataONEHttpClient#DataONEHttpClientOptions} [options.clientConfig] Client configuration.
      * @param {Function} [options.getToken] Override token resolver function.
      */
     constructor({ baseUrl = "", clientConfig = {}, getToken } = {}) {
       const resolvedBaseUrl = IdentifierService.resolveBaseUrl(baseUrl);
 
-      const clientConfigWithDefaults = {
-        ...DEFAULT_CLIENT_OPTIONS,
-        ...clientConfig,
-        baseUrl: resolvedBaseUrl,
-      };
-
       super({
         baseUrl: resolvedBaseUrl,
-        clientConfig: clientConfigWithDefaults,
+        clientConfig: IdentifierService.buildClientConfig({
+          defaults: DEFAULT_CLIENT_OPTIONS,
+          overrides: clientConfig,
+          baseUrl: resolvedBaseUrl,
+          requiredMethods: ["POST"],
+          requiredResponseTypes: ["text"],
+          requiredHeaderNames: ["Authorization", "Content-Type", "Accept"],
+        }),
         persistPrivate: false,
         defaultAuth: true,
         getToken,
@@ -83,37 +83,9 @@ define([
     }
 
     /**
-     * Ensure a required string parameter is provided.
-     * @param {string} value Parameter value.
-     * @param {string} name Parameter name for error messages.
-     */
-    static requireString(value, name) {
-      if (!ValueUtilities.isNonEmptyString(value)) {
-        throw new Error(`IdentifierService: ${name} is required`);
-      }
-    }
-
-    /**
-     * Pick request options forwarded to DataONEService.request.
-     * @param {object} [options] Candidate options.
-     * @returns {object} Selected options.
-     */
-    static pickRequestOptions(options = {}) {
-      const picked = {};
-      ["signal", "timeoutMs", "retry", "headers", "transport"].forEach(
-        (key) => {
-          if (options[key] !== undefined) {
-            picked[key] = options[key];
-          }
-        },
-      );
-      return picked;
-    }
-
-    /**
      * Build FormData for the DataONE generateIdentifier request.
      * @param {object} [params] GenerateIdentifier params.
-     * @param {string} [params.scheme="UUID"] Identifier scheme.
+     * @param {string} [params.scheme] Identifier scheme.
      * @param {string} [params.fragment] Optional identifier fragment.
      * @returns {FormData} FormData payload.
      */
@@ -151,7 +123,10 @@ define([
      * @returns {FormData} FormData payload.
      */
     static buildReserveFormData(pid) {
-      this.requireString(pid, "pid");
+      ValueUtilities.requireNonEmptyString(
+        pid,
+        "IdentifierService: pid is required",
+      );
       const formData = new FormData();
       formData.append("pid", pid);
       return formData;
@@ -204,7 +179,7 @@ define([
     /**
      * Generate a new DataONE identifier.
      * @param {object} [params] Generation parameters.
-     * @param {string} [params.scheme="UUID"] Identifier scheme.
+     * @param {string} [params.scheme] Identifier scheme.
      * @param {object} [options] Request options.
      * @returns {Promise<DataONEHttpResponse>} Parsed XML response with
      * identifier.

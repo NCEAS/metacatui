@@ -77,6 +77,54 @@ define([
       });
     });
 
+    describe("static helpers", () => {
+      it("resolves the base URL from app settings even when the service path lacks a leading slash", () => {
+        globalThis.MetacatUI = {
+          appModel: {
+            get(key) {
+              if (key === "d1CNBaseUrl") {
+                return "https://fallback.example.org/";
+              }
+              if (key === "d1CNService") {
+                return "cn/v2";
+              }
+              return null;
+            },
+          },
+        };
+
+        IdentifierService.resolveBaseUrl().should.equal(
+          "https://fallback.example.org/cn/v2",
+        );
+      });
+
+      it("builds generate form data with defaults and rejects unsupported params", () => {
+        const formData = IdentifierService.buildGenerateFormData({
+          fragment: "abc",
+        });
+
+        formData.get("scheme").should.equal("UUID");
+        formData.get("fragment").should.equal("abc");
+
+        expect(() =>
+          IdentifierService.buildGenerateFormData({
+            scheme: "UUID",
+            extra: "bad",
+          }),
+        ).to.throw(/unsupported generateIdentifier params/i);
+      });
+
+      it("requires a non-empty pid when building reserve form data", () => {
+        IdentifierService.buildReserveFormData("urn:uuid:test.1")
+          .get("pid")
+          .should.equal("urn:uuid:test.1");
+
+        expect(() => IdentifierService.buildReserveFormData("   ")).to.throw(
+          /pid is required/i,
+        );
+      });
+    });
+
     describe("generateIdentifier", () => {
       it("posts to /generate with default scheme, optional fragment, forwards request options, and parses identifier XML", async () => {
         const service = new IdentifierService({

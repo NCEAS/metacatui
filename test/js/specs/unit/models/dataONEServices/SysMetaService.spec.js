@@ -86,6 +86,22 @@ define([
     });
 
     describe("download", () => {
+      it("validates required PIDs before fetching", async () => {
+        const service = new SysMetaService({
+          baseUrl: "https://example.org/sysmeta",
+        });
+
+        let caught = null;
+        try {
+          await service.download("");
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/download requires a pid/i);
+      });
+
       it("fetches XML and returns a SysMeta instance", async () => {
         state.sandbox
           .stub(globalThis, "fetch")
@@ -235,6 +251,22 @@ define([
     });
 
     describe("upload", () => {
+      it("validates sysmeta XML before posting", async () => {
+        const service = new SysMetaService({
+          baseUrl: "https://example.org/sysmeta",
+        });
+
+        let caught = null;
+        try {
+          await service.upload("");
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/upload requires sysmetaxml/i);
+      });
+
       it("posts XML with the correct headers", async () => {
         const service = new SysMetaService({
           baseUrl: "https://example.org/sysmeta",
@@ -255,6 +287,30 @@ define([
     });
 
     describe("update", () => {
+      it("validates required update inputs", async () => {
+        const service = new SysMetaService({
+          baseUrl: "https://example.org/sysmeta",
+        });
+
+        let missingPid = null;
+        try {
+          await service.update("", "<systemMetadata></systemMetadata>");
+        } catch (error) {
+          missingPid = error;
+        }
+        expect(missingPid).to.be.instanceof(Error);
+        expect(missingPid.message).to.match(/update requires a pid/i);
+
+        let missingXml = null;
+        try {
+          await service.update("pid.1", "");
+        } catch (error) {
+          missingXml = error;
+        }
+        expect(missingXml).to.be.instanceof(Error);
+        expect(missingXml.message).to.match(/update requires sysmetaxml/i);
+      });
+
       it("puts multipart sysmeta updates with XHR transport", async () => {
         const service = new SysMetaService({
           baseUrl: "https://example.org/sysmeta",

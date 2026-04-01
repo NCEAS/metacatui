@@ -68,15 +68,16 @@ define([
         instanceKeys,
       };
 
-      const clientConfigWithDefaults = {
-        ...DEFAULT_CLIENT_OPTIONS,
-        ...clientConfig,
-        baseUrl: urlNormalized,
-      };
-
       super({
         baseUrl: urlNormalized,
-        clientConfig: clientConfigWithDefaults,
+        clientConfig: SysMetaService.buildClientConfig({
+          defaults: DEFAULT_CLIENT_OPTIONS,
+          overrides: clientConfig,
+          baseUrl: urlNormalized,
+          requiredMethods: ["GET", "POST", "PUT"],
+          requiredResponseTypes: ["text"],
+          requiredHeaderNames: ["Authorization"],
+        }),
         storageConfig: storageConfigWithDefaults,
         persistPrivate,
         defaultAuth,
@@ -94,6 +95,10 @@ define([
      * XML can be found in the `fetchedXmlString` property.
      */
     async download(pid, options = {}) {
+      ValueUtilities.requireNonEmptyString(
+        pid,
+        "SysMetaService.download requires a PID",
+      );
       const { cacheKey } = options;
       const resolvedCacheKey = this.constructor.resolveCacheKey(pid, cacheKey);
 
@@ -121,7 +126,7 @@ define([
      * @returns {Promise<void>} Promise resolving when invalidation completes.
      */
     async invalidate(pid) {
-      if (!pid) return;
+      if (!ValueUtilities.isNonEmptyString(pid)) return;
       await this.removeCached(pid);
     }
 
@@ -132,6 +137,10 @@ define([
      * @returns {Promise<DataONEHttpResponse>} Promise resolving to the upload response.
      */
     async upload(sysMetaXml, options = {}) {
+      ValueUtilities.requireNonEmptyString(
+        sysMetaXml,
+        "SysMetaService.upload requires sysMetaXml",
+      );
       // TODO: accept pid?
       return super.upload("", {
         ...options,
@@ -152,12 +161,14 @@ define([
      * @returns {Promise<DataONEHttpResponse>} Promise resolving to the update response.
      */
     async update(pid, sysMetaXml, options = {}) {
-      if (typeof pid !== "string" || !pid.trim()) {
-        throw new Error("SysMetaService.update requires a PID");
-      }
-      if (typeof sysMetaXml !== "string" || !sysMetaXml.trim()) {
-        throw new Error("SysMetaService.update requires sysMetaXml");
-      }
+      ValueUtilities.requireNonEmptyString(
+        pid,
+        "SysMetaService.update requires a PID",
+      );
+      ValueUtilities.requireNonEmptyString(
+        sysMetaXml,
+        "SysMetaService.update requires sysMetaXml",
+      );
 
       const formData = new FormData();
       formData.append("pid", pid);

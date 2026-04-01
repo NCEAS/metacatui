@@ -49,13 +49,11 @@ define([
     isNonEmptyString,
     isUnsignedInteger,
   } = ValueUtilities;
-  const { createValidationError, cloneValidationErrors } = ValidationUtilities;
-  const SCALAR_NORMALIZERS = {
-    integer: normalizeInteger,
-    text: normalizeText,
-    boolean: normalizeBoolean,
-    date: normalizeDateValue,
-  };
+  const {
+    createValidationError,
+    cloneValidationErrors,
+    createValidationException,
+  } = ValidationUtilities;
   const SUPPORTED_ROOT_NAMESPACES = Object.values(SYSMETA_NAMESPACE_BY_VERSION);
 
   /**
@@ -67,6 +65,13 @@ define([
     if (nullIfEmpty(value) === null) return null;
     return DateUtility.toDate(value) || value;
   }
+
+  const SCALAR_NORMALIZERS = {
+    integer: normalizeInteger,
+    text: normalizeText,
+    boolean: normalizeBoolean,
+    date: normalizeDateValue,
+  };
 
   /**
    * Determine whether a value should count as present for serialization.
@@ -126,26 +131,8 @@ define([
   }
 
   /**
-   * Determine which SysMeta schema version should be used for serialization.
-   * @param {object} data Normalized SysMeta data.
-   * @param {object} xmlFormatState Current XML format state.
-   * @returns {"v1"|"v2"} Serialization version.
-   */
-  function getSerializationVersion(
-    data,
-    xmlFormatState = createXmlFormatState(),
-  ) {
-    const hasV2Values = V2_ONLY_FIELDS.some((field) =>
-      hasSerializableValue(data[field]),
-    );
-    if (hasV2Values) return "v2";
-
-    return getSysMetaVersion(xmlFormatState?.rootNamespaceURI) || "v2";
-  }
-
-  /**
    * Create the default namespace declarations used for serialized sysmeta XML.
-   * @param {"v1"|"v2"} [version="v2"] SysMeta schema version.
+   * @param {"v1"|"v2"} [version] SysMeta schema version.
    * @returns {Array<{name: string, value: string}>} Namespace attributes.
    */
   function createDefaultNamespaceAttributes(version = "v2") {
@@ -162,7 +149,7 @@ define([
   /**
    * Create per-instance XML format state for sysmeta output.
    * @param {object} [options] XML format options.
-   * @param {"v1"|"v2"} [options.version="v2"] SysMeta schema version.
+   * @param {"v1"|"v2"} [options.version] SysMeta schema version.
    * @returns {object} XML format state.
    */
   function createXmlFormatState({ version = "v2" } = {}) {
@@ -177,13 +164,31 @@ define([
   }
 
   /**
+   * Determine which SysMeta schema version should be used for serialization.
+   * @param {object} data Normalized SysMeta data.
+   * @param {object} [xmlFormatState] Current XML format state.
+   * @returns {"v1"|"v2"} Serialization version.
+   */
+  function getSerializationVersion(
+    data,
+    xmlFormatState = createXmlFormatState(),
+  ) {
+    const hasV2Values = V2_ONLY_FIELDS.some((field) =>
+      hasSerializableValue(data[field]),
+    );
+    if (hasV2Values) return "v2";
+
+    return getSysMetaVersion(xmlFormatState?.rootNamespaceURI) || "v2";
+  }
+
+  /**
    * Apply stored namespace declarations to a sysmeta root element.
    * @param {Element} root Root systemMetadata element.
    * @param {object} xmlFormatState XML format state.
    * @returns {Element} The same root element.
    */
   function applyRootAttributes(root, xmlFormatState = createXmlFormatState()) {
-    const namespaceAttributes = xmlFormatState.namespaceAttributes;
+    const { namespaceAttributes } = xmlFormatState;
 
     namespaceAttributes.forEach(({ name, value }) => {
       if (name === "xmlns" || name.startsWith("xmlns:")) {
@@ -218,14 +223,16 @@ define([
    * @returns {object} The same normalized object.
    */
   function normalizeScalarFields(normalized) {
+    const result = normalized;
     SCALAR_FIELD_DEFINITIONS.forEach(({ field, kind }) => {
       const normalize = SCALAR_NORMALIZERS[kind];
-      if (typeof normalize === "function")
-        normalized[field] = normalize(normalized[field]);
+      if (typeof normalize === "function") {
+        result[field] = normalize(result[field]);
+      }
     });
-    normalized.checksum = normalizeText(normalized.checksum);
-    normalized.checksumAlgorithm = normalizeText(normalized.checksumAlgorithm);
-    return normalized;
+    result.checksum = normalizeText(result.checksum);
+    result.checksumAlgorithm = normalizeText(result.checksumAlgorithm);
+    return result;
   }
 
   /**
@@ -638,9 +645,10 @@ define([
 
         const validationErrors = this.validate();
         if (validationErrors.length) {
-          const error = new Error("SystemMetadata XML failed validation");
-          error.validationErrors = cloneValidationErrors(validationErrors);
-          throw error;
+          throw createValidationException(
+            "SystemMetadata XML failed validation",
+            validationErrors,
+          );
         }
 
         return this.data;
@@ -706,9 +714,10 @@ define([
       if (validate) {
         const validationErrors = this.validate();
         if (validationErrors.length) {
-          const error = new Error("SystemMetadata validation failed");
-          error.validationErrors = cloneValidationErrors(validationErrors);
-          throw error;
+          throw createValidationException(
+            "SystemMetadata validation failed",
+            validationErrors,
+          );
         }
       }
 
