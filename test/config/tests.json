@@ -62,6 +62,7 @@
     "./js/specs/unit/models/dataONEServices/DataONEHttpClient.spec.js",
     "./js/specs/unit/models/dataONEServices/DataONEService.spec.js",
     "./js/specs/unit/models/dataONEServices/IdentifierService.spec.js",
+    "./js/specs/unit/models/dataONEServices/ObjectService.spec.js",
     "./js/specs/unit/models/dataONEServices/SysMetaService.spec.js",
     "./js/specs/unit/models/dataONEServices/UrlUtilities.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLAttributeList.spec.js",

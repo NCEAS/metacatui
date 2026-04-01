@@ -200,7 +200,7 @@ define([
     /**
      * Normalize and validate a PID-like identifier.
      * @param {*} pid Candidate identifier.
-     * @param {string} [label="pid"] Field label for error reporting.
+     * @param {string} [label] Field label for error reporting.
      * @param {string} [message] Error message override.
      * @returns {string} Trimmed PID.
      */
@@ -215,11 +215,11 @@ define([
     /**
      * Encode a PID as a single URL path segment.
      * @param {*} pid Candidate identifier.
-     * @param {string} [label="pid"] Field label for error reporting.
+     * @param {string} [label] Field label for error reporting.
      * @param {string} [message] Error message override.
      * @returns {string} Encoded PID path segment.
      */
-    static encodePidPath(pid, label = "pid", message) {
+    static encodePidPath(pid, label = "pid", message = undefined) {
       return UrlUtilities.encodePathSegment(
         this.normalizePid(pid, label, message),
       );
@@ -322,7 +322,8 @@ define([
      * Send a request through a specific DataONEHttpClient instance.
      * @param {DataONEHttpClient} client Client instance to use.
      * @param {object} [options] Request options.
-     * @returns {Promise<DataONEHttpResponse>} Promise resolving to the response.
+     * @returns {Promise<DataONEHttpResponse>} Promise resolving to the
+     * response.
      */
     async requestWithClient(client, options = {}) {
       if (!client || typeof client.request !== "function") {
@@ -349,8 +350,8 @@ define([
     }
 
     /**
-     * Merge request headers with defaults case-insensitively.
-     * Caller-provided headers always win, while preserving caller casing.
+     * Merge request headers with defaults case-insensitively. Caller-provided
+     * headers always win, while preserving caller casing.
      * @param {object} [requestHeaders] Request-specific headers.
      * @param {object} [defaultHeaders] Default headers to apply when missing.
      * @returns {object} Merged headers.
