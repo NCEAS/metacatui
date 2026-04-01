@@ -198,6 +198,34 @@ define([
     }
 
     /**
+     * Normalize and validate a PID-like identifier.
+     * @param {*} pid Candidate identifier.
+     * @param {string} [label="pid"] Field label for error reporting.
+     * @param {string} [message] Error message override.
+     * @returns {string} Trimmed PID.
+     */
+    static normalizePid(
+      pid,
+      label = "pid",
+      message = `${this?.name || "DataONEService"}: ${label} is required`,
+    ) {
+      return ValueUtilities.requireNonEmptyString(pid, message);
+    }
+
+    /**
+     * Encode a PID as a single URL path segment.
+     * @param {*} pid Candidate identifier.
+     * @param {string} [label="pid"] Field label for error reporting.
+     * @param {string} [message] Error message override.
+     * @returns {string} Encoded PID path segment.
+     */
+    static encodePidPath(pid, label = "pid", message) {
+      return UrlUtilities.encodePathSegment(
+        this.normalizePid(pid, label, message),
+      );
+    }
+
+    /**
      * If user is logged in, get a key based on their username; otherwise,
      * return a "public" scope key.
      * @returns {Promise<string>} Promise resolving to the scope key.

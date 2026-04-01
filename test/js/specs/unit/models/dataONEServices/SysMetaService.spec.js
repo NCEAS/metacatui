@@ -182,14 +182,16 @@ define([
         const fetchStub = state.sandbox
           .stub(globalThis, "fetch")
           .callsFake((url) => {
-            url.should.equal("https://example.org/sysmeta/doi%3A10.5063/abc");
+            url.should.equal(
+              "https://example.org/sysmeta/doi%3A10.5063%2Fabc",
+            );
             return Promise.resolve(makeResponse(SAMPLE_XML));
           });
 
         const service = new SysMetaService({
           baseUrl: "https://example.org/sysmeta",
         });
-        await service.download("doi:10.5063/abc", {
+        await service.download(" doi:10.5063/abc ", {
           auth: false,
           useCache: false,
         });
@@ -325,7 +327,7 @@ define([
         const onUploadProgress = state.sandbox.spy();
         const controller = new AbortController();
 
-        await service.update("pid.1", xml, {
+        await service.update(" pid.1 ", ` ${xml} `, {
           auth: false,
           signal: controller.signal,
           onUploadProgress,
@@ -340,9 +342,11 @@ define([
         opts.useCache.should.equal(false);
         opts.signal.should.equal(controller.signal);
         opts.onUploadProgress.should.equal(onUploadProgress);
+        opts.encodePath.should.equal(false);
         opts.body.should.be.instanceof(FormData);
         opts.body.get("pid").should.equal("pid.1");
         opts.body.get("sysmeta").should.be.instanceof(Blob);
+        (await opts.body.get("sysmeta").text()).should.equal(xml);
         setCachedStub.called.should.be.false;
       });
 
@@ -379,7 +383,7 @@ define([
 
         await service.update("doi:10.5063/abc", xml, { auth: false });
         requests[0].should.equal(
-          "https://example.org/sysmeta/doi%3A10.5063/abc",
+          "https://example.org/sysmeta/doi%3A10.5063%2Fabc",
         );
       });
     });

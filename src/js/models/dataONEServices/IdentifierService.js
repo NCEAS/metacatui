@@ -123,12 +123,13 @@ define([
      * @returns {FormData} FormData payload.
      */
     static buildReserveFormData(pid) {
-      ValueUtilities.requireNonEmptyString(
+      const normalizedPid = this.normalizePid(
         pid,
+        "pid",
         "IdentifierService: pid is required",
       );
       const formData = new FormData();
-      formData.append("pid", pid);
+      formData.append("pid", normalizedPid);
       return formData;
     }
 

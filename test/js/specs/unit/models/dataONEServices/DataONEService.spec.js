@@ -178,6 +178,23 @@ define([
           headers: { Accept: "text/plain" },
         });
       });
+
+      it("normalizes PIDs and encodes them as single path segments", () => {
+        DataONEService.normalizePid(" doi:10.5063/abc ").should.equal(
+          "doi:10.5063/abc",
+        );
+        DataONEService.encodePidPath(" doi:10.5063/abc ").should.equal(
+          "doi%3A10.5063%2Fabc",
+        );
+      });
+
+      it("uses the subclass name in default PID validation errors", () => {
+        class ExampleService extends DataONEService {}
+
+        expect(() => ExampleService.normalizePid("")).to.throw(
+          /ExampleService: pid is required/,
+        );
+      });
     });
 
     describe("construction", () => {

@@ -55,6 +55,9 @@ define([
       UrlUtilities.encodePathSegment("pid:abc%2F123").should.equal(
         "pid%3Aabc%2F123",
       );
+      UrlUtilities.encodePathSegment("doi:10.5063/abc").should.equal(
+        "doi%3A10.5063%2Fabc",
+      );
       UrlUtilities.encodePathSegment("file name.txt").should.equal(
         "file%20name.txt",
       );

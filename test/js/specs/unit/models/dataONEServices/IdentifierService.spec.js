@@ -115,7 +115,7 @@ define([
       });
 
       it("requires a non-empty pid when building reserve form data", () => {
-        IdentifierService.buildReserveFormData("urn:uuid:test.1")
+        IdentifierService.buildReserveFormData(" urn:uuid:test.1 ")
           .get("pid")
           .should.equal("urn:uuid:test.1");
 
@@ -277,7 +277,7 @@ define([
           .stub(service, "request")
           .resolves({ data: IDENTIFIER_XML, status: 200 });
 
-        const response = await service.reserveIdentifier("urn:uuid:pid.1", {
+        const response = await service.reserveIdentifier(" urn:uuid:pid.1 ", {
           auth: false,
         });
 

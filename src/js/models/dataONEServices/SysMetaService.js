@@ -95,17 +95,25 @@ define([
      * XML can be found in the `fetchedXmlString` property.
      */
     async download(pid, options = {}) {
-      ValueUtilities.requireNonEmptyString(
+      const normalizedPid = this.constructor.normalizePid(
         pid,
+        "pid",
         "SysMetaService.download requires a PID",
       );
       const { cacheKey } = options;
-      const resolvedCacheKey = this.constructor.resolveCacheKey(pid, cacheKey);
+      const resolvedCacheKey = this.constructor.resolveCacheKey(
+        normalizedPid,
+        cacheKey,
+      );
 
-      const xmlString = await super.download(pid, {
-        ...options,
-        cacheKey: resolvedCacheKey,
-      });
+      const xmlString = await super.download(
+        this.constructor.encodePidPath(normalizedPid),
+        {
+          ...options,
+          cacheKey: resolvedCacheKey,
+          encodePath: false,
+        },
+      );
 
       let sysMeta;
       try {
@@ -113,7 +121,7 @@ define([
       } catch (error) {
         // Remove from cache if parsing fails
         await this.removeCached(resolvedCacheKey);
-        error.message = `Failed to parse SysMeta XML for PID ${pid}: ${error.message}`;
+        error.message = `Failed to parse SysMeta XML for PID ${normalizedPid}: ${error.message}`;
         throw error;
       }
 
@@ -126,8 +134,9 @@ define([
      * @returns {Promise<void>} Promise resolving when invalidation completes.
      */
     async invalidate(pid) {
-      if (!ValueUtilities.isNonEmptyString(pid)) return;
-      await this.removeCached(pid);
+      const normalizedPid = ValueUtilities.normalizeText(pid);
+      if (!normalizedPid) return;
+      await this.removeCached(normalizedPid);
     }
 
     /**
@@ -137,7 +146,7 @@ define([
      * @returns {Promise<DataONEHttpResponse>} Promise resolving to the upload response.
      */
     async upload(sysMetaXml, options = {}) {
-      ValueUtilities.requireNonEmptyString(
+      const normalizedSysMetaXml = ValueUtilities.requireNonEmptyString(
         sysMetaXml,
         "SysMetaService.upload requires sysMetaXml",
       );
@@ -149,7 +158,7 @@ define([
           ...(options.headers || {}),
           "Content-Type": "application/xml",
         },
-        body: sysMetaXml,
+        body: normalizedSysMetaXml,
       });
     }
 
@@ -161,27 +170,31 @@ define([
      * @returns {Promise<DataONEHttpResponse>} Promise resolving to the update response.
      */
     async update(pid, sysMetaXml, options = {}) {
-      ValueUtilities.requireNonEmptyString(
+      const normalizedPid = this.constructor.normalizePid(
         pid,
+        "pid",
         "SysMetaService.update requires a PID",
       );
-      ValueUtilities.requireNonEmptyString(
+      const normalizedSysMetaXml = ValueUtilities.requireNonEmptyString(
         sysMetaXml,
         "SysMetaService.update requires sysMetaXml",
       );
 
       const formData = new FormData();
-      formData.append("pid", pid);
-      const xmlBlob = new Blob([sysMetaXml], { type: "application/xml" });
+      formData.append("pid", normalizedPid);
+      const xmlBlob = new Blob([normalizedSysMetaXml], {
+        type: "application/xml",
+      });
       formData.append("sysmeta", xmlBlob, "sysmeta.xml");
 
-      return super.upload(pid, {
+      return super.upload(this.constructor.encodePidPath(normalizedPid), {
         ...options,
         method: "PUT",
         useCache: false,
         dedupe: false,
         transport: "xhr",
         responseType: "text",
+        encodePath: false,
         body: formData,
       });
     }
