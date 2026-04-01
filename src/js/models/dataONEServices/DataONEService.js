@@ -2,8 +2,16 @@ define([
   "md5",
   "models/dataONEServices/DataONEHttpClient",
   "models/PersistentStorage",
+  "common/UrlUtilities",
   "common/Utilities",
-  "common/ValueUtilities",
+], (
+  md5,
+  DataONEHttpClient,
+  PersistentStorage,
+  UrlUtilities,
+  Utilities,
+  ValueUtilities,
+) => {
 ], (md5, DataONEHttpClient, PersistentStorage, Utilities, ValueUtilities) => {
   /**
    * Extensible base class for DataONE API services, e.g. the System Metadata
@@ -57,7 +65,7 @@ define([
 
     /**
      * Normalize the options used to construct a new instance.
-     * @param {object} options Options paseed to the constructor.
+     * @param {object} options Options passed to the constructor.
      * @returns {object} Normalized options.
      */
     static normalizeOptions(options = {}) {
@@ -65,7 +73,7 @@ define([
       if (!normalized.baseUrl) {
         throw new Error("DataONEService: baseUrl is required");
       }
-      normalized.baseUrl = ValueUtilities.normalizeUrl(normalized.baseUrl);
+      normalized.baseUrl = UrlUtilities.normalizeUrl(normalized.baseUrl);
 
       normalized.clientConfig = {
         ...normalized.clientConfig,

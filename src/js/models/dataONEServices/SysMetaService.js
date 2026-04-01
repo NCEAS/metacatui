@@ -1,8 +1,9 @@
 define([
   "models/dataONEServices/DataONEService",
   "models/sysmeta/SysMeta",
+  "common/UrlUtilities",
   "common/ValueUtilities",
-], (DataONEService, SysMeta, ValueUtilities) => {
+], (DataONEService, SysMeta, UrlUtilities, ValueUtilities) => {
   /**
    * Default DataONEHttpClient options for SysMetaService
    * @type {DataONEHttpClient#DataONEHttpClientOptions}
@@ -54,7 +55,7 @@ define([
     } = {}) {
       const url =
         baseUrl || globalThis.MetacatUI?.appModel?.get("metaServiceUrl");
-      const urlNormalized = ValueUtilities.normalizeUrl(url);
+      const urlNormalized = UrlUtilities.normalizeUrl(url);
 
       const instanceKeys = storageConfig.instanceKeys
         ? [...storageConfig.instanceKeys]

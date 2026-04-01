@@ -1,5 +1,7 @@
-define(["common/ValueUtilities"], function (ValueUtilities) {
-  var expect = chai.expect;
+define(
+  ["common/ValueUtilities", "common/UrlUtilities"],
+  function (ValueUtilities, UrlUtilities) {
+    var expect = chai.expect;
 
   describe("ValueUtilities", function () {
     describe("firstDefined", function () {
@@ -291,38 +293,6 @@ define(["common/ValueUtilities"], function (ValueUtilities) {
       });
     });
 
-    describe("normalizeUrl", function () {
-      it("trims whitespace and removes trailing slashes", function () {
-        const url = "  https://example.org/path///  ";
-        expect(ValueUtilities.normalizeUrl(url)).to.equal(
-          "https://example.org/path",
-        );
-      });
-
-      it("returns empty string for empty input", function () {
-        expect(ValueUtilities.normalizeUrl("")).to.equal("");
-        expect(ValueUtilities.normalizeUrl(null)).to.equal("");
-      });
-
-      it("uses fallback when url is empty", function () {
-        const fallback = "https://example.org/base/";
-        expect(ValueUtilities.normalizeUrl("", fallback)).to.equal(
-          "https://example.org/base",
-        );
-      });
-
-      it("coerces non-string input to string", function () {
-        expect(ValueUtilities.normalizeUrl(12345)).to.equal("12345");
-      });
-
-      it("preserves query parameters and hashes", function () {
-        const url = "  https://example.org/path/?query=1#section  ";
-        expect(ValueUtilities.normalizeUrl(url)).to.equal(
-          "https://example.org/path?query=1#section",
-        );
-      });
-    });
-
     describe("buildInstanceKey", function () {
       it("builds a raw key when encode is false", function () {
         const options = { baseUrl: " https://example.org/ ", ttlMs: 1000 };
@@ -330,7 +300,7 @@ define(["common/ValueUtilities"], function (ValueUtilities) {
           options,
           ["baseUrl", "ttlMs"],
           {
-            baseUrl: ValueUtilities.normalizeUrl,
+            baseUrl: UrlUtilities.normalizeUrl,
           },
           "|",
           false,

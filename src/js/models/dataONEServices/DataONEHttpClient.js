@@ -1,11 +1,10 @@
 define([
   "md5",
-  "models/dataONEServices/UrlBuilder",
+  "common/UrlUtilities",
   "models/dataONEServices/HttpRetryPolicy",
   "models/dataONEServices/DataONEHttpError",
   "common/ValueUtilities",
-], (md5, UrlBuilder, HttpRetryPolicy, DataONEHttpError, ValueUtilities) => {
-  const { buildUrl } = UrlBuilder;
+], (md5, UrlUtilities, HttpRetryPolicy, DataONEHttpError, ValueUtilities) => {
   const { getCaseInsensitive } = ValueUtilities;
 
   /**
@@ -276,7 +275,7 @@ define([
         ...DEFAULT_OPTIONS,
         ...source,
         baseUrl: source.baseUrl
-          ? ValueUtilities.normalizeUrl(source.baseUrl)
+          ? UrlUtilities.normalizeUrl(source.baseUrl)
           : DEFAULT_OPTIONS.baseUrl,
         timeoutMs,
         dedupe,
@@ -337,7 +336,7 @@ define([
         "responseTypes",
       ];
       const normalizers = {
-        baseUrl: ValueUtilities.normalizeUrl,
+        baseUrl: UrlUtilities.normalizeUrl,
         defaultHeaders: ValueUtilities.stableStringify,
         retry: ValueUtilities.stableStringify,
         allowedHttpMethods: ValueUtilities.stableStringify,
@@ -399,7 +398,7 @@ define([
         responseType,
         normalizedTransport,
       );
-      const url = buildUrl(this.baseUrl, path, encodePath);
+      const url = UrlUtilities.buildUrl(this.baseUrl, path, encodePath);
 
       const mergedHeaders = this.constructor.mergeHeaders(
         this.defaultHeaders,

@@ -357,25 +357,19 @@ define(["md5"], (md5) => {
     },
 
     /**
-     * Normalize a URL string by trimming whitespace and removing trailing slashes.
-     * @param {string} url URL to normalize.
-     * @param {string} [fallback] Fallback URL when input is empty.
-     * @returns {string} Normalized URL or empty string.
+     * Decode a URI component safely and fall back to the original value when
+     * decoding fails.
+     * @param {*} value Encoded value.
+     * @returns {string|null} Decoded value, original string, or null.
      */
-    normalizeUrl(url, fallback = "") {
-      let resolved = url;
-      if (typeof resolved === "string" && !resolved.trim()) {
-        resolved = "";
+    safeDecodeURIComponent(value) {
+      if (value === undefined || value === null) return null;
+      const normalized = String(value);
+      try {
+        return decodeURIComponent(normalized);
+      } catch (_error) {
+        return normalized;
       }
-      if (!resolved) {
-        resolved = fallback;
-      }
-      if (!resolved) return "";
-      let urlString =
-        typeof resolved === "string" ? resolved : String(resolved);
-      urlString = urlString.trim();
-      if (!urlString) return "";
-      return urlString.replace(/\/+(?=($|[?#]))/, "");
     },
 
     /**

@@ -1,9 +1,9 @@
 define([
   "/test/js/specs/shared/clean-state.js",
-  "models/dataONEServices/UrlBuilder",
+  "common/UrlUtilities",
   "models/dataONEServices/DataONEHttpClient",
   "models/dataONEServices/DataONEHttpError",
-], (cleanState, UrlBuilder, DataONEHttpClient, DataONEHttpError) => {
+], (cleanState, UrlUtilities, DataONEHttpClient, DataONEHttpError) => {
   const should = chai.should();
   const expect = chai.expect;
 
@@ -257,7 +257,11 @@ define([
           .resolves(buildResponse("ok"));
 
         const path = "/object/pid:abc%2F123";
-        const expected = UrlBuilder.buildUrl("https://example.org", path, true);
+        const expected = UrlUtilities.buildUrl(
+          "https://example.org",
+          path,
+          true,
+        );
 
         await state.client.request({ path });
 
@@ -552,7 +556,7 @@ define([
           .stub(window, "fetch")
           .resolves(buildResponse("ok"));
         const path = "/object/1?format=json";
-        const expected = UrlBuilder.buildUrl(
+        const expected = UrlUtilities.buildUrl(
           "https://example.org",
           path,
           false,

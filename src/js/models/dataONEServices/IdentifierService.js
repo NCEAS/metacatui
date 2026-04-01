@@ -1,6 +1,7 @@
 define([
   "models/dataONEServices/DataONEService",
   "common/DataONEXmlUtilities",
+  "common/UrlUtilities",
   "common/ValueUtilities",
 ], (DataONEService, DataONEXmlUtilities, ValueUtilities) => {
   /**
@@ -56,13 +57,13 @@ define([
      */
     static resolveBaseUrl(baseUrl = "") {
       const appModel = globalThis.MetacatUI?.appModel;
-      const normalizedBaseUrl = ValueUtilities.normalizeUrl(baseUrl);
+      const normalizedBaseUrl = UrlUtilities.normalizeUrl(baseUrl);
       if (normalizedBaseUrl) {
         return normalizedBaseUrl;
       }
 
       // e.g. "https://cn.dataone.org",
-      const normalizedCnBaseUrl = ValueUtilities.normalizeUrl(
+      const normalizedCnBaseUrl = UrlUtilities.normalizeUrl(
         appModel?.get?.("d1CNBaseUrl"),
       );
       // e.g. "/cn/v2"
@@ -73,9 +74,9 @@ define([
         : `/${normalizedCnService}`;
 
       if (normalizedCnBaseUrl && normalizedCnService) {
-        return ValueUtilities.normalizeUrl(
-          `${normalizedCnBaseUrl}${normalizedCnService}`,
-        );
+        return UrlUtilities.buildUrl(normalizedCnBaseUrl, normalizedCnService, {
+          encodePath: false,
+        });
       }
 
       throw new Error("IdentifierService: baseUrl is required");
