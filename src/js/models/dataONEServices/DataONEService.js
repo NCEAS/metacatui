@@ -220,7 +220,7 @@ define([
      * @returns {string} Encoded PID path segment.
      */
     static encodePidPath(pid, label = "pid", message = undefined) {
-      return UrlUtilities.encodePathSegment(
+      return UrlUtilities.encodeDataONEPidForPath(
         this.normalizePid(pid, label, message),
       );
     }

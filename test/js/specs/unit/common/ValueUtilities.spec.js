@@ -1,43 +1,44 @@
-define(
-  ["common/ValueUtilities", "common/UrlUtilities"],
-  function (ValueUtilities, UrlUtilities) {
-    var expect = chai.expect;
+define(["common/ValueUtilities", "common/UrlUtilities"], function (
+  ValueUtilities,
+  UrlUtilities,
+) {
+  var expect = chai.expect;
 
-    describe("ValueUtilities", function () {
-      describe("firstDefined", function () {
-        it("returns the first non-undefined value", function () {
-          expect(
-            ValueUtilities.firstDefined(undefined, null, false, "later"),
-          ).to.equal(null);
-        });
+  describe("ValueUtilities", function () {
+    describe("firstDefined", function () {
+      it("returns the first non-undefined value", function () {
+        expect(
+          ValueUtilities.firstDefined(undefined, null, false, "later"),
+        ).to.equal(null);
       });
+    });
 
-      describe("nullIfEmpty", function () {
-        it("collapses nullish and empty-string values to null", function () {
-          expect(ValueUtilities.nullIfEmpty(undefined)).to.equal(null);
-          expect(ValueUtilities.nullIfEmpty(null)).to.equal(null);
-          expect(ValueUtilities.nullIfEmpty("")).to.equal(null);
-          expect(ValueUtilities.nullIfEmpty(" ")).to.equal(" ");
-          expect(ValueUtilities.nullIfEmpty(false)).to.equal(false);
-        });
+    describe("nullIfEmpty", function () {
+      it("collapses nullish and empty-string values to null", function () {
+        expect(ValueUtilities.nullIfEmpty(undefined)).to.equal(null);
+        expect(ValueUtilities.nullIfEmpty(null)).to.equal(null);
+        expect(ValueUtilities.nullIfEmpty("")).to.equal(null);
+        expect(ValueUtilities.nullIfEmpty(" ")).to.equal(" ");
+        expect(ValueUtilities.nullIfEmpty(false)).to.equal(false);
       });
+    });
 
-      describe("normalizeBoolean", function () {
-        it("normalizes boolean-like values and preserves invalid input", function () {
-          expect(ValueUtilities.normalizeBoolean("true")).to.equal(true);
-          expect(ValueUtilities.normalizeBoolean("0")).to.equal(false);
-          expect(ValueUtilities.normalizeBoolean("")).to.equal(null);
-          expect(ValueUtilities.normalizeBoolean("maybe")).to.equal("maybe");
-        });
+    describe("normalizeBoolean", function () {
+      it("normalizes boolean-like values and preserves invalid input", function () {
+        expect(ValueUtilities.normalizeBoolean("true")).to.equal(true);
+        expect(ValueUtilities.normalizeBoolean("0")).to.equal(false);
+        expect(ValueUtilities.normalizeBoolean("")).to.equal(null);
+        expect(ValueUtilities.normalizeBoolean("maybe")).to.equal("maybe");
       });
+    });
 
-      describe("normalizeInteger", function () {
-        it("normalizes integer-like values and preserves invalid input", function () {
-          expect(ValueUtilities.normalizeInteger("7")).to.equal(7);
-          expect(ValueUtilities.normalizeInteger("")).to.equal(null);
-          expect(ValueUtilities.normalizeInteger("7.5")).to.equal("7.5");
-        });
+    describe("normalizeInteger", function () {
+      it("normalizes integer-like values and preserves invalid input", function () {
+        expect(ValueUtilities.normalizeInteger("7")).to.equal(7);
+        expect(ValueUtilities.normalizeInteger("")).to.equal(null);
+        expect(ValueUtilities.normalizeInteger("7.5")).to.equal("7.5");
       });
+    });
 
     describe("normalizeStringArray", function () {
       it("wraps single values and trims entries", function () {
@@ -47,6 +48,14 @@ define(
         expect(
           ValueUtilities.normalizeStringArray([" a ", null, "b"]),
         ).to.deep.equal(["a", "b"]);
+      });
+    });
+
+    describe("listify", function () {
+      it("wraps non-array values and preserves arrays", function () {
+        expect(ValueUtilities.listify("a")).to.deep.equal(["a"]);
+        expect(ValueUtilities.listify(["a", "b"])).to.deep.equal(["a", "b"]);
+        expect(ValueUtilities.listify(null)).to.deep.equal([]);
       });
     });
 
@@ -120,14 +129,37 @@ define(
         expect(sorted).to.deep.equal({ a: 1, b: 2 });
         expect(sorted).to.not.equal(source);
       });
+
+      it("clones array values while preserving non-array values", function () {
+        const source = {
+          prov_usedByProgram: ["script.1"],
+          atLocation: "data/file.csv",
+        };
+
+        const cloned = ValueUtilities.cloneObjectWithArrayValues(source);
+
+        expect(cloned).to.deep.equal(source);
+        expect(cloned).to.not.equal(source);
+        expect(cloned.prov_usedByProgram).to.not.equal(
+          source.prov_usedByProgram,
+        );
+        expect(cloned.atLocation).to.equal(source.atLocation);
+      });
     });
 
     describe("predicates", function () {
-      it("checks non-empty strings and unsigned integers", function () {
+      it("checks non-empty strings and non-negative integers", function () {
         expect(ValueUtilities.isNonEmptyString(" a ")).to.equal(true);
         expect(ValueUtilities.isNonEmptyString("   ")).to.equal(false);
-        expect(ValueUtilities.isUnsignedInteger(0)).to.equal(true);
-        expect(ValueUtilities.isUnsignedInteger(-1)).to.equal(false);
+        expect(ValueUtilities.isNonNegativeInteger(0)).to.equal(true);
+        expect(ValueUtilities.isNonNegativeInteger(-1)).to.equal(false);
+      });
+
+      it("checks plain objects without treating arrays as plain objects", function () {
+        expect(ValueUtilities.isPlainObject({ a: 1 })).to.equal(true);
+        expect(ValueUtilities.isPlainObject([])).to.equal(false);
+        expect(ValueUtilities.isPlainObject(null)).to.equal(false);
+        expect(ValueUtilities.isPlainObject("x")).to.equal(false);
       });
     });
 
@@ -142,6 +174,132 @@ define(
         expect(function () {
           ValueUtilities.requireNonEmptyString("   ", "Need text");
         }).to.throw("Need text");
+      });
+    });
+
+    describe("requireNonNegativeInteger", function () {
+      it("returns non-negative integer indexes", function () {
+        expect(ValueUtilities.requireNonNegativeInteger(0)).to.equal(0);
+        expect(ValueUtilities.requireNonNegativeInteger(3)).to.equal(3);
+      });
+
+      it("throws for negative or non-integer indexes", function () {
+        expect(function () {
+          ValueUtilities.requireNonNegativeInteger(-1, "Need index");
+        }).to.throw("Need index");
+        expect(function () {
+          ValueUtilities.requireNonNegativeInteger(1.5, "Need index");
+        }).to.throw("Need index");
+      });
+    });
+
+    describe("arrayToString", function () {
+      it("formats normalized lists with configurable separators", function () {
+        expect(ValueUtilities.arrayToString([" a ", "b", null])).to.equal(
+          "a and b",
+        );
+        expect(
+          ValueUtilities.arrayToString(["a", "b", "c"], {
+            finalSeparator: "or",
+            quoteStrings: true,
+          }),
+        ).to.equal('"a", "b", or "c"');
+      });
+    });
+
+    describe("requireStringChoice", function () {
+      it("returns the canonical allowed value after trimming and case normalization", function () {
+        expect(
+          ValueUtilities.requireStringChoice(
+            " Sources ",
+            ["sources", "derivations"],
+            { fieldName: "chartType" },
+          ),
+        ).to.equal("sources");
+      });
+
+      it("throws with a readable allowed-values list when invalid", function () {
+        expect(function () {
+          ValueUtilities.requireStringChoice("metadata", ["data", "program"], {
+            fieldName: "entityType",
+          });
+        }).to.throw(
+          '"metadata" is not a valid entityType. Must be "data" or "program".',
+        );
+      });
+
+      it("supports longer allowed-value lists", function () {
+        expect(function () {
+          ValueUtilities.requireStringChoice(
+            "unknown",
+            ["data", "program", "metadata"],
+            { fieldName: "entityType" },
+          );
+        }).to.throw(
+          '"unknown" is not a valid entityType. Must be "data", "program", or "metadata".',
+        );
+      });
+
+      it("returns the fallback when the input is empty after normalization", function () {
+        expect(
+          ValueUtilities.requireStringChoice(
+            "   ",
+            ["sources", "derivations"],
+            {
+              fieldName: "chartType",
+              fallback: "derivations",
+            },
+          ),
+        ).to.equal("derivations");
+      });
+
+      it("returns the fallback when the input does not match an allowed value", function () {
+        expect(
+          ValueUtilities.requireStringChoice(
+            "unknown",
+            ["sources", "derivations"],
+            {
+              fieldName: "chartType",
+              fallback: "sources",
+            },
+          ),
+        ).to.equal("sources");
+      });
+
+      it("normalizes the fallback before returning it", function () {
+        expect(
+          ValueUtilities.requireStringChoice(
+            "unknown",
+            ["sources", "derivations"],
+            {
+              fieldName: "chartType",
+              fallback: "Sources",
+            },
+          ),
+        ).to.equal("sources");
+      });
+
+      it("throws if the fallback is invalid", function () {
+        expect(function () {
+          ValueUtilities.requireStringChoice(
+            "unknown",
+            ["sources", "derivations"],
+            {
+              fieldName: "chartType",
+              fallback: "invalid",
+            },
+          );
+        }).to.throw(
+          'Invalid Fallback: "invalid" is not a valid chartType. Must be "sources" or "derivations".',
+        );
+      });
+
+      it("throws when no allowed values are provided", function () {
+        expect(function () {
+          ValueUtilities.requireStringChoice("unknown", []);
+        }).to.throw(
+          "ValueUtilities.requireStringChoice: allowedValues must include at least one non-empty string",
+        );
       });
     });
 
@@ -519,9 +677,9 @@ define(
         expect(ValueUtilities.bytesToSize(2 * 1024 * 1024, 3)).to.equal(
           "2.000 MiB",
         );
-        expect(
-          ValueUtilities.bytesToSize(2 * 1024 * 1024 * 1024, 4),
-        ).to.equal("2.0000 GiB");
+        expect(ValueUtilities.bytesToSize(2 * 1024 * 1024 * 1024, 4)).to.equal(
+          "2.0000 GiB",
+        );
         expect(
           ValueUtilities.bytesToSize(2 * 1024 * 1024 * 1024 * 1024, 5),
         ).to.equal("2.00000 TiB");

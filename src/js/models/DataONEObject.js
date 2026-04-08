@@ -9,7 +9,18 @@ define([
   "common/ValueUtilities",
   "md5",
   "common/QueryService",
-], ($, _, Backbone, uuid, he, AccessPolicy, Utilities, ValueUtilities, md5, QueryService) => {
+], (
+  $,
+  _,
+  Backbone,
+  uuid,
+  he,
+  AccessPolicy,
+  Utilities,
+  ValueUtilities,
+  md5,
+  QueryService,
+) => {
   /**
    * @class DataONEObject
    * @classdesc A DataONEObject represents a DataONE object, such as a data file,
@@ -165,7 +176,7 @@ define([
         this.setPossibleAuthMNs();
 
         // Ensure the object formats are cached for this model's use
-        Utilities.getObjectFormats();
+        Utilities.awaitObjectFormats();
       },
 
       /**

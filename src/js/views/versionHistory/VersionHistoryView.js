@@ -14,7 +14,7 @@ define([
   "views/CitationView",
   "views/uiElements/ToggleView",
   "common/Utilities",
-  "common/DateUtility",
+  "common/DateUtilities",
   "semantic",
   // CSS
   `text!${MetacatUI.root}/css/version-history/version-history.css`,
@@ -29,7 +29,7 @@ define([
   CitationView,
   ToggleView,
   Utilities,
-  DateUtility,
+  DateUtilities,
   Semantic,
   VersionHistoryCSS,
 ) => {
@@ -554,7 +554,7 @@ define([
         const dateRange = this.collection.getDateRange();
         let dateStr = "";
         if (dateRange) {
-          dateStr = DateUtility.getRelativeDateString(
+          dateStr = DateUtilities.getRelativeDateString(
             dateRange.minDate,
             dateRange.maxDate,
             { newerWord: "", olderWord: "", currentWord: "" },

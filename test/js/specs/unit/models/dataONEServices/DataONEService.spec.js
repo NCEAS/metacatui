@@ -184,7 +184,7 @@ define([
           "doi:10.5063/abc",
         );
         DataONEService.encodePidPath(" doi:10.5063/abc ").should.equal(
-          "doi%3A10.5063%2Fabc",
+          "doi:10.5063%2Fabc",
         );
       });
 

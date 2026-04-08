@@ -52,6 +52,35 @@ define(["common/Utilities"], function (Utilities) {
 
         expect(result).to.equal(appUserModel);
       });
+
+      it("waits for a requested property instead of returning undefined", async function () {
+        window.MetacatUI = {};
+
+        try {
+          await Utilities.awaitMetacatUI({
+            property: "appUserModel",
+            maxAttempts: 1,
+            delay: 0,
+          });
+          throw new Error("Expected awaitMetacatUI to reject");
+        } catch (error) {
+          expect(error.message).to.equal(
+            "Unable to retrieve MetacatUI.appUserModel",
+          );
+        }
+      });
+
+      it("returns falsy property values when they are explicitly defined", async function () {
+        window.MetacatUI = { showBetaBanner: false };
+
+        const result = await Utilities.awaitMetacatUI({
+          property: "showBetaBanner",
+          maxAttempts: 1,
+          delay: 0,
+        });
+
+        expect(result).to.equal(false);
+      });
     });
   });
 });

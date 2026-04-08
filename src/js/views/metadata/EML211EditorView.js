@@ -134,7 +134,7 @@ define([
       /** @inheritdoc */
       initialize(options = {}) {
         // Ensure the object formats are cached for the editor's use
-        Utilities.getObjectFormats();
+        Utilities.awaitObjectFormats();
         this.pid = options?.pid || null;
         return this;
       },

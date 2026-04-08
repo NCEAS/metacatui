@@ -43,7 +43,7 @@ define(["views/searchSelect/SearchSelectView", "common/Utilities"], (
       async getObjectFormats() {
         let formatIds = {};
         try {
-          formatIds = await Utilities.getObjectFormats();
+          formatIds = await Utilities.awaitObjectFormats();
         } catch (error) {
           /* eslint-disable no-console */
           console.error("Error fetching object formats:", error);

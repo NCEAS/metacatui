@@ -4,7 +4,7 @@ define([
   "common/ValueUtilities",
   "common/ValidationUtilities",
   "models/sysmeta/SysMetaSchema",
-], (XMLUtilities, DateUtility, ValueUtilities, ValidationUtilities, SysMetaSchema) => {
+], (XMLUtilities, DateUtilities, ValueUtilities, ValidationUtilities, SysMetaSchema) => {
   const {
     normalizeText,
     isNonEmptyString,
@@ -30,7 +30,7 @@ define([
    */
   function normalizeReplicaVerified(value) {
     if (value === undefined || value === null || value === "") return null;
-    return DateUtility.toDate(value) || value;
+    return DateUtilities.toDate(value) || value;
   }
 
   /**
@@ -165,7 +165,7 @@ define([
         doc,
         element,
         "replicaVerified",
-        DateUtility.toXmlDateTimeString(this.replicaVerified) || null,
+        DateUtilities.toXmlDateTimeString(this.replicaVerified) || null,
       );
 
       return element.childNodes.length ? element : null;

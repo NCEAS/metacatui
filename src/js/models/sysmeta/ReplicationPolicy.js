@@ -8,7 +8,7 @@ define([
     normalizeInteger,
     normalizeStringArray,
     isNonEmptyString,
-    isUnsignedInteger,
+    isNonNegativeInteger,
   } = ValueUtilities;
   const {
     createValidationError,
@@ -126,7 +126,7 @@ define([
 
       if (
         this.numberReplicas !== null &&
-        !isUnsignedInteger(this.numberReplicas)
+        !isNonNegativeInteger(this.numberReplicas)
       ) {
         errors.push(
           createValidationError(

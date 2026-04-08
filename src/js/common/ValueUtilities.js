@@ -62,52 +62,15 @@ define(["md5"], (md5) => {
     },
 
     /**
-     * Normalize integer-like values while preserving invalid non-empty input.
-     * @param {*} value Value to normalize.
-     * @returns {number|null|*} Integer, `null`, or original invalid value.
-     */
-    normalizeInteger(value) {
-      if (ValueUtilities.nullIfEmpty(value) === null) return null;
-      if (typeof value === "number") return value;
-
-      const normalized = ValueUtilities.normalizeText(value);
-      if (/^-?\d+$/.test(normalized)) {
-        return Number.parseInt(normalized, 10);
-      }
-
-      return value;
-    },
-
-    /**
-     * Normalize positive integer-like values while falling back when invalid.
-     * @param {*} value Value to normalize.
-     * @param {number} fallback Fallback returned for invalid input.
-     * @returns {number} Positive integer or fallback.
-     */
-    normalizePositiveInteger(value, fallback) {
-      if (Number.isInteger(value) && value > 0) {
-        return value;
-      }
-
-      const normalized = ValueUtilities.normalizeInteger(value);
-      if (Number.isInteger(normalized) && normalized > 0) {
-        return normalized;
-      }
-
-      return fallback;
-    },
-
-    /**
      * Normalize any value into an array of trimmed strings.
      * @param {*} value Value or array of values.
      * @returns {Array<string|null>} Normalized string array.
      */
     normalizeStringArray(value) {
-      if (value === undefined || value === null) return [];
-      const list = Array.isArray(value) ? value : [value];
+      const list = ValueUtilities.listify(value);
       return list
-        .filter((entry) => entry !== undefined && entry !== null)
-        .map((entry) => ValueUtilities.normalizeText(entry));
+        .map((entry) => ValueUtilities.normalizeText(entry))
+        .filter((entry) => entry !== null);
     },
 
     /**
@@ -173,15 +136,182 @@ define(["md5"], (md5) => {
      * @returns {object} Object copy with sorted keys.
      */
     sortObjectKeys(record) {
-      const source =
-        record && typeof record === "object" && !Array.isArray(record)
-          ? record
-          : {};
-      const sorted = {};
-      ValueUtilities.sortStrings(Object.keys(source)).forEach((key) => {
-        sorted[key] = source[key];
-      });
-      return sorted;
+      const source = ValueUtilities.isPlainObject(record) ? record : {};
+      return Object.fromEntries(
+        ValueUtilities.sortStrings(Object.keys(source)).map((key) => [
+          key,
+          source[key],
+        ]),
+      );
+    },
+
+    /**
+     * Return a shallow copy of an object, cloning any array values.
+     * @param {object} record Source object whose array values should be copied.
+     * @returns {object} Shallow object copy with cloned arrays.
+     */
+    cloneObjectWithArrayValues(record) {
+      const source = ValueUtilities.isPlainObject(record) ? record : {};
+      return Object.fromEntries(
+        Object.entries(source).map(([key, value]) => [
+          key,
+          Array.isArray(value) ? [...value] : value,
+        ]),
+      );
+    },
+
+    /**
+     * Ensure a value is an array, wrapping it if necessary.
+     * @param {*} value Value or array of values.
+     * @returns {Array<*>} Array of values, or empty array for nullish input.
+     * @example
+     * ValueUtilities.listify("a"); // ["a"]
+     * ValueUtilities.listify(["a", "b"]); // ["a", "b"]
+     * ValueUtilities.listify(null); // []
+     * ValueUtilities.listify(undefined); // []
+     */
+    listify(value) {
+      if (value === undefined || value === null) return [];
+      if (Array.isArray(value)) return value;
+      return [value];
+    },
+
+    /**
+     * Convert an array of strings into a human-readable list with separators.
+     * @param {Array<*>} array Values to format as a list.
+     * @param {object} [options] Formatting options.
+     * @param {string} [options.separator] Separator between items (default: ",
+     * ").
+     * @param {string} [options.finalSeparator] Separator before the last item
+     * (default: " and ").
+     * @param {boolean} [options.oxfordComma] Whether to include a separator
+     * before the final separator in lists of 3 or more items (default: true).
+     * @param {boolean} [options.quoteStrings] Whether to wrap items in quotes
+     * @returns {string} Formatted list string.
+     */
+    arrayToString(
+      array,
+      {
+        separator = ",",
+        finalSeparator = "and",
+        oxfordComma = true,
+        quoteStrings = false,
+      } = {},
+    ) {
+      const list = ValueUtilities.normalizeStringArray(array);
+      const displayList = quoteStrings ? list.map((item) => `"${item}"`) : list;
+
+      if (displayList.length === 0) return "";
+      if (displayList.length === 1) return String(displayList[0]);
+      if (displayList.length === 2) {
+        return `${displayList[0]} ${finalSeparator} ${displayList[1]}`;
+      }
+      const allButLast = displayList.slice(0, -1).join(`${separator} `);
+      const last = displayList[displayList.length - 1];
+      const oxford = oxfordComma ? "," : "";
+      return `${allButLast}${oxford} ${finalSeparator} ${last}`;
+    },
+
+    /**
+     * Normalize a string-like value and require that it matches one allowed
+     * choice.
+     * @param {*} value Candidate value.
+     * @param {string[]} allowedValues Canonical allowed string values.
+     * @param {object} [options] Validation options.
+     * @param {string} [options.fieldName] Field name used in error messages.
+     * @param {boolean} [options.caseInsensitive] Whether to match choices
+     * case-insensitively.
+     * @param {*} [options.fallback] Optional fallback value returned when input
+     * is empty or invalid, after normalization. Must be one of the allowed
+     * values when defined.
+     * @returns {string} Matching canonical allowed value.
+     * @throws {Error} When the value is missing or not one of the allowed
+     * choices.
+     * @example
+     * ValueUtilities.requireStringChoice(
+     *   " Sources ",
+     *   ["sources", "derivations"],
+     *   { fieldName: "chartType" }
+     * );
+     * // "sources"
+     */
+    requireStringChoice(
+      value,
+      allowedValues,
+      {
+        fieldName = "value",
+        caseInsensitive = true,
+        fallback = undefined,
+      } = {},
+    ) {
+      const normalizedAllowedValues =
+        ValueUtilities.normalizeStringArray(allowedValues);
+      if (!normalizedAllowedValues.length) {
+        throw new Error(
+          "ValueUtilities.requireStringChoice: allowedValues must include at least one non-empty string",
+        );
+      }
+
+      const allowedText = ValueUtilities.arrayToString(
+        normalizedAllowedValues,
+        { finalSeparator: "or", quoteStrings: true },
+      );
+      const normalizeChoice = (entry) =>
+        caseInsensitive ? entry.toLowerCase() : entry;
+
+      let normalizedFallback = null;
+
+      // Fallback must also be an allowed value when defined
+      if (fallback !== undefined) {
+        try {
+          normalizedFallback = ValueUtilities.requireStringChoice(
+            fallback,
+            normalizedAllowedValues,
+            { fieldName, caseInsensitive, fallback: undefined },
+          );
+        } catch (error) {
+          throw new Error(`Invalid Fallback: ${error.message}`);
+        }
+      }
+
+      let normalizedValue;
+      try {
+        normalizedValue = ValueUtilities.requireNonEmptyString(value);
+      } catch (error) {
+        if (fallback !== undefined) {
+          normalizedValue = normalizedFallback;
+        } else {
+          throw error;
+        }
+      }
+
+      const comparableValue = normalizeChoice(normalizedValue);
+      const matchedValue = normalizedAllowedValues.find(
+        (allowedValue) => normalizeChoice(allowedValue) === comparableValue,
+      );
+
+      if (matchedValue !== undefined) {
+        return matchedValue;
+      }
+
+      if (normalizedFallback !== null) {
+        return normalizedFallback;
+      }
+
+      throw new Error(
+        `"${value}" is not a valid ${fieldName}. Must be ${allowedText}.`,
+      );
+    },
+
+    /**
+     * Check whether a value is a plain non-array object.
+     * @param {*} value Candidate value.
+     * @returns {boolean} True when the value is a plain object.
+     */
+    isPlainObject(value) {
+      return (
+        value !== null && typeof value === "object" && !Array.isArray(value)
+      );
     },
 
     /**
@@ -212,12 +342,65 @@ define(["md5"], (md5) => {
     },
 
     /**
-     * Check whether a value is an unsigned integer.
+     * Check whether a value is a non-negative integer (aka unsigned integer).
      * @param {*} value Candidate value.
      * @returns {boolean} True when value is an unsigned integer.
      */
-    isUnsignedInteger(value) {
+    isNonNegativeInteger(value) {
       return Number.isInteger(value) && value >= 0;
+    },
+
+    /**
+     * Require a non-negative integer and throw when invalid.
+     * @param {*} value Candidate index value.
+     * @param {string} [message] Error message to throw when invalid.
+     * @returns {number} Original integer index when valid.
+     * @throws {Error} When the value is not a non-negative integer.
+     */
+    requireNonNegativeInteger(
+      value,
+      message = "Value must be a non-negative integer index",
+    ) {
+      if (!ValueUtilities.isNonNegativeInteger(value)) {
+        throw new Error(message);
+      }
+      return value;
+    },
+
+    /**
+     * Normalize integer-like values while preserving invalid non-empty input.
+     * @param {*} value Value to normalize.
+     * @returns {number|null|*} Integer, `null`, or original invalid value.
+     */
+    normalizeInteger(value) {
+      if (ValueUtilities.nullIfEmpty(value) === null) return null;
+      if (typeof value === "number") return value;
+
+      const normalized = ValueUtilities.normalizeText(value);
+      if (/^-?\d+$/.test(normalized)) {
+        return Number.parseInt(normalized, 10);
+      }
+
+      return value;
+    },
+
+    /**
+     * Normalize positive integer-like values while falling back when invalid.
+     * @param {*} value Value to normalize.
+     * @param {number} fallback Fallback returned for invalid input.
+     * @returns {number} Positive integer or fallback.
+     */
+    normalizePositiveInteger(value, fallback) {
+      if (Number.isInteger(value) && value > 0) {
+        return value;
+      }
+
+      const normalized = ValueUtilities.normalizeInteger(value);
+      if (Number.isInteger(normalized) && normalized > 0) {
+        return normalized;
+      }
+
+      return fallback;
     },
 
     /**
@@ -233,7 +416,6 @@ define(["md5"], (md5) => {
       if (typeof range !== "number") {
         return value.toString();
       }
-
       const numDecimalPlaces = ValueUtilities.getNumDecimalPlaces(range);
       if (numDecimalPlaces !== null) {
         return value.toFixed(numDecimalPlaces);

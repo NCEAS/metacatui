@@ -63,6 +63,51 @@ define([
       );
     });
 
+    it("encodes RFC3986 path segments with the full pchar safe set", () => {
+      UrlUtilities.encodeRFC3986PathSegment("doi:10.5063/abc").should.equal(
+        "doi:10.5063%2Fabc",
+      );
+      UrlUtilities.encodeRFC3986PathSegment("urn:uuid:member.1").should.equal(
+        "urn:uuid:member.1",
+      );
+      UrlUtilities.encodeRFC3986PathSegment("pid+with plus/segment~").should.equal(
+        "pid+with%20plus%2Fsegment~",
+      );
+    });
+
+    it("encodes DataONE PID path segments using RFC3986 path-segment rules plus plus-sign escaping", () => {
+      UrlUtilities.encodeDataONEPidForPath("doi:10.5063/abc").should.equal(
+        "doi:10.5063%2Fabc",
+      );
+      UrlUtilities.encodeDataONEPidForPath("urn:uuid:member.1").should.equal(
+        "urn:uuid:member.1",
+      );
+      UrlUtilities.encodeDataONEPidForPath("pid+with plus/segment~").should.equal(
+        "pid%2Bwith%20plus%2Fsegment~",
+      );
+    });
+
+    it("decodes RFC3986 path segments and preserves DataONE plus-sign handling", () => {
+      UrlUtilities.decodeRFC3986PathSegment("pid+with%20plus%2Fsegment~").should.equal(
+        "pid+with plus/segment~",
+      );
+      UrlUtilities.decodeDataONEPidFromPath("pid+with%20plus%2Fsegment~").should.equal(
+        "pid+with plus/segment~",
+      );
+      UrlUtilities.decodeDataONEPidFromPath("pid%2Bwith%20plus%2Fsegment~").should.equal(
+        "pid+with plus/segment~",
+      );
+    });
+
+    it("decodes over-escaped encodeURIComponent output for DataONE PIDs", () => {
+      UrlUtilities.decodeDataONEPidFromPath("doi%3A10.5063%2Fabc").should.equal(
+        "doi:10.5063/abc",
+      );
+      UrlUtilities.decodeDataONEPidFromPath("urn%3Auuid%3Amember.1").should.equal(
+        "urn:uuid:member.1",
+      );
+    });
+
     it("encodes individual path segments", () => {
       const encoded = UrlUtilities.encodePathSegments("pid:abc/123");
       encoded.should.equal("pid%3Aabc/123");
@@ -177,6 +222,14 @@ define([
         true,
       );
       url.should.equal("https://example.org/object/pid%3Aabc%20123");
+    });
+
+    it("builds URLs for minimally encoded relative paths that begin with a scheme-like prefix", () => {
+      UrlUtilities.buildUrl(
+        "https://example.org/object/read",
+        "doi:10.5063%2Fabc",
+        false,
+      ).should.equal("https://example.org/object/read/doi:10.5063%2Fabc");
     });
 
     it("maintains the full url when baseUrl includes path", () => {

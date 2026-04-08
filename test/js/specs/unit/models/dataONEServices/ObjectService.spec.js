@@ -170,7 +170,7 @@ define([
 
         fetchStub.calledOnce.should.be.true;
         fetchStub.firstCall.args[0].should.equal(
-          "https://example.org/object/read/doi%3A10.5063%2Fabc",
+          "https://example.org/object/read/doi:10.5063%2Fabc",
         );
         response.status.should.equal(200);
         response.data.should.be.instanceof(Blob);
@@ -446,7 +446,7 @@ define([
         const client = reqStub.firstCall.args[0];
         const opts = reqStub.firstCall.args[1];
         client.baseUrl.should.equal("https://example.org/object/write");
-        opts.path.should.equal("doi%3A10.5063%2Fold");
+        opts.path.should.equal("doi:10.5063%2Fold");
         opts.encodePath.should.equal(false);
         opts.method.should.equal("PUT");
         opts.transport.should.equal("fetch");
@@ -484,7 +484,7 @@ define([
 
         fetchStub.calledOnce.should.be.true;
         fetchStub.firstCall.args[0].should.equal(
-          "https://example.org/object/write/doi%3A10.5063%2Fold",
+          "https://example.org/object/write/doi:10.5063%2Fold",
         );
         response.data.identifier.should.equal("urn:uuid:generated.1");
       });

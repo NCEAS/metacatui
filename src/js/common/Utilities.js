@@ -1,6 +1,6 @@
 "use strict";
 
-define(["collections/ObjectFormats"], (ObjectFormats) => {
+define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
   /**
    * @namespace Utilities
    * @description Miscellaneous app/browser helpers that do not yet fit better
@@ -25,7 +25,6 @@ define(["collections/ObjectFormats"], (ObjectFormats) => {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/'/g, "&apos;")
-        .replace(/\//g, "/")
         .replace(/"/g, "&quot;");
     },
 
@@ -54,7 +53,6 @@ define(["collections/ObjectFormats"], (ObjectFormats) => {
      * Attempt to parse the header/column names from a chunk of a CSV file
      *
      * Doesn't handle:
-     * - UTF BOM (garbles first col name)
      * - Commas inside quoted headers
      * @param {string} text - A chunk of a file
      * @returns {Array} A list of names
@@ -93,6 +91,27 @@ define(["collections/ObjectFormats"], (ObjectFormats) => {
     },
 
     /**
+     * Read a MetacatUI property directly or via Backbone's `get`.
+     * @param {string} property Property name to retrieve.
+     * @param {object} [app] MetacatUI object.
+     * @returns {*} Property value, or `undefined` when not present.
+     */
+    getMetacatUIProperty(property, app) {
+      const normalizedApp = app || globalThis.MetacatUI;
+      if (!normalizedApp || !property) return undefined;
+
+      if (normalizedApp[property] !== undefined) {
+        return normalizedApp[property];
+      }
+
+      if (typeof normalizedApp.get === "function") {
+        return normalizedApp.get(property);
+      }
+
+      return undefined;
+    },
+
+    /**
      * Wait for the global MetacatUI object to be available, and optionally for
      * a specific property on it to be defined. Useful when needing to access
      * the app user model or other properties that may not be available
@@ -104,8 +123,9 @@ define(["collections/ObjectFormats"], (ObjectFormats) => {
      * the MetacatUI object. If provided, the Promise won't resolve until that
      * property is available and not undefined. Otherwise, just waits for the
      * global MetacatUI object itself.
-     * @returns {Promise<object>} Promise resolving to the app user model.
-     * @throws {Error} If the user model is not available in time.
+     * @returns {Promise<*>} Promise resolving to the requested global object or
+     * property value.
+     * @throws {Error} If the requested value is not available in time.
      * @since 0.0.0
      */
     async awaitMetacatUI({
@@ -116,16 +136,18 @@ define(["collections/ObjectFormats"], (ObjectFormats) => {
       let attempts = 0;
       while (attempts < maxAttempts) {
         attempts += 1;
-        if (typeof MetacatUI !== "undefined" && MetacatUI !== null) {
+        const app = globalThis.MetacatUI;
+
+        if (app != null) {
           // If we're just waiting for the global object, return it now
           if (!property) {
-            return MetacatUI;
+            return app;
           }
-          const value =
-            MetacatUI[property] || (MetacatUI.get && MetacatUI.get(property));
+
+          const value = Utilities.getMetacatUIProperty(property, app);
           // If we're waiting for a specific property, check if it's defined
           // yet and if not, continue waiting
-          if (value !== "undefined") {
+          if (value !== undefined) {
             return value;
           }
         }
@@ -136,7 +158,7 @@ define(["collections/ObjectFormats"], (ObjectFormats) => {
         });
       }
 
-      // If we reach here, we failed to get the appUserModel
+      // If we reach here, we failed to get the requested MetacatUI value.
       let message = "Unable to retrieve MetacatUI";
       if (property) {
         message += `.${property}`;
@@ -152,42 +174,42 @@ define(["collections/ObjectFormats"], (ObjectFormats) => {
      * @throws {Error} If the object formats cannot be retrieved.
      * @since 0.0.0
      */
-    async getObjectFormats() {
-      const MetacatUI = await this.awaitMetacatUI();
+    async awaitObjectFormats() {
+      const app = await this.awaitMetacatUI();
       // Ensure the object formats are cached
-      if (!MetacatUI.objectFormats) {
-        MetacatUI.objectFormats = new ObjectFormats();
+      if (!app.objectFormats) {
+        app.objectFormats = new ObjectFormats();
+      }
+
+      if (app.objectFormats.length) {
+        return app.objectFormats.toJSON();
       }
 
       const listener = new Backbone.Model();
-
       const fetchFormats = new Promise((resolve, reject) => {
-        if (MetacatUI.objectFormats.length) {
-          resolve();
-        }
-        listener.listenToOnce(MetacatUI.objectFormats, "sync", () => {
+        listener.listenToOnce(app.objectFormats, "sync", () => {
           listener.stopListening();
           resolve();
         });
         listener.listenToOnce(
-          MetacatUI.objectFormats,
+          app.objectFormats,
           "error",
           (_collection, response) => {
             listener.stopListening();
             reject(
               new Error(
-                `Failed to fetch object formats: ${response.status} ${response.statusText}`,
+                `Failed to fetch object formats: ${response?.status || ""} ${response?.statusText || ""}`.trim(),
               ),
             );
           },
         );
         // eslint-disable-next-line no-underscore-dangle
-        if (!MetacatUI.objectFormats._events?.sync) {
-          MetacatUI.objectFormats.fetch();
+        if (!app.objectFormats._events?.sync) {
+          app.objectFormats.fetch();
         }
       });
       await fetchFormats;
-      return MetacatUI.objectFormats.toJSON();
+      return app.objectFormats.toJSON();
     },
   };
 

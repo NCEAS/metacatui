@@ -1,10 +1,29 @@
 "use strict";
 
 define(["common/ValueUtilities"], (ValueUtilities) => {
-  const { normalizeText, safeDecodeURIComponent } = ValueUtilities;
+  const { normalizeText, safeDecodeURIComponent, requireStringChoice } =
+    ValueUtilities;
+  const RFC3986_PCHAR_ESCAPES = {
+    "%21": "!",
+    "%24": "$",
+    "%26": "&",
+    "%27": "'",
+    "%28": "(",
+    "%29": ")",
+    "%2A": "*",
+    "%2B": "+",
+    "%2C": ",",
+    "%3A": ":",
+    "%3B": ";",
+    "%3D": "=",
+    "%40": "@",
+    "%7E": "~",
+  };
+  const RFC3986_PCHAR_ESCAPE_PATTERN =
+    /%(21|24|26|27|28|29|2A|2B|2C|3A|3B|3D|40|7E)/gi;
 
   /**
-   * @typedef {String|URL|Location|null|undefined} UrlLikeValue A value that can
+   * @typedef {string | URL | Location | null | undefined} UrlLikeValue A value that can
    * be coerced into a URL string.
    */
 
@@ -15,6 +34,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
    * - "ensure": Add a slash if not already present.
    * - "remove": Remove all slashes.
    */
+  const SlashMode = ["preserve", "ensure", "remove"];
 
   /**
    * Generic helpers for normalizing and composing URLs.
@@ -25,11 +45,14 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     /**
      * Normalize a slash-mode option.
      * @param {*} mode Requested slash mode.
-     * @param {SlashMode} [fallback="preserve"] Fallback mode.
+     * @param {SlashMode} [fallback] Fallback mode.
      * @returns {SlashMode} Normalized slash mode.
      */
     normalizeSlashMode(mode, fallback = "preserve") {
-      return ["preserve", "ensure", "remove"].includes(mode) ? mode : fallback;
+      return requireStringChoice(mode, SlashMode, {
+        fallback,
+        fieldName: "slash mode",
+      });
     },
 
     /**
@@ -104,8 +127,8 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
      * origin.
      * @param {*} value Path-like value.
      * @param {object} [options] Slash options.
-     * @param {SlashMode} [options.leadingSlash="preserve"] Leading slash mode.
-     * @param {SlashMode} [options.trailingSlash="preserve"] Trailing slash
+     * @param {SlashMode} [options.leadingSlash] Leading slash mode.
+     * @param {SlashMode} [options.trailingSlash] Trailing slash
      * mode.
      * @returns {string} Path-like string with normalized boundaries.
      */
@@ -121,13 +144,20 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
       const leadingMode = UrlUtilities.normalizeSlashMode(leadingSlash);
       const trailingMode = UrlUtilities.normalizeSlashMode(trailingSlash);
 
+      // If there is a prefix, then this is an absolute URL. Only apply trailing
+      // slash normalization to the path portion, and preserve leading slashes
+      // as they are part of the absolute URL structure.
       if (prefix) {
-        const normalizedPath =
-          trailingMode === "remove"
-            ? path.replace(/\/+$/, "")
-            : trailingMode === "ensure"
-              ? `${path.replace(/\/+$/, "")}/`
-              : path;
+        const pathWithoutTrailing = path.replace(/\/+$/, "");
+        let normalizedPath = pathWithoutTrailing;
+
+        if (trailingMode === "ensure") {
+          normalizedPath = `${pathWithoutTrailing}/`;
+        } else if (trailingMode === "remove") {
+          normalizedPath = pathWithoutTrailing;
+        } else {
+          normalizedPath = path;
+        }
 
         return `${prefix}${normalizedPath}${suffix}`;
       }
@@ -136,34 +166,42 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
       const trailingRun = base.match(/\/+$/)?.[0] || "";
       const body = base.replace(/^\/+|\/+$/g, "");
 
+      // If there is no body, then the value is made up of only slashes (and
+      // possibly a query/hash suffix). In this case, preserve a single slash if
+      // either mode is "preserve", otherwise return just the suffix.
       if (!body) {
         if (leadingMode === "preserve" && trailingMode === "preserve") {
           return `${base}${suffix}`;
         }
-
-        return `${
-          leadingMode === "remove" && trailingMode === "remove" ? "" : "/"
-        }${suffix}`;
+        const hasSlash =
+          leadingMode !== "remove" || trailingMode !== "remove" ? "/" : "";
+        return `${hasSlash}${suffix}`;
       }
 
-      const normalizedLeading =
-        leadingMode === "preserve"
-          ? leadingRun
-          : leadingMode === "ensure"
-            ? "/"
-            : "";
-      const normalizedTrailing =
-        trailingMode === "preserve"
-          ? trailingRun
-          : trailingMode === "ensure"
-            ? "/"
-            : "";
+      let normalizedLeading;
+      if (leadingMode === "preserve") {
+        normalizedLeading = leadingRun;
+      } else if (leadingMode === "ensure") {
+        normalizedLeading = "/";
+      } else {
+        normalizedLeading = "";
+      }
+
+      let normalizedTrailing;
+      if (trailingMode === "preserve") {
+        normalizedTrailing = trailingRun;
+      } else if (trailingMode === "ensure") {
+        normalizedTrailing = "/";
+      } else {
+        normalizedTrailing = "";
+      }
 
       return `${normalizedLeading}${body}${normalizedTrailing}${suffix}`;
     },
 
     /**
-     * Encode a single URL path segment while avoiding double-encoding.
+     * Encode a single URL path segment while avoiding double-encoding. Trims
+     * whitespace.
      * @param {*} segment URL path segment.
      * @returns {string} Encoded segment.
      */
@@ -171,6 +209,66 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
       const normalized = normalizeText(segment) || "";
       if (!normalized) return "";
       return encodeURIComponent(safeDecodeURIComponent(normalized));
+    },
+
+    /**
+     * Encode a value as a minimally escaped RFC3986 URI path segment. This
+     * preserves the RFC3986 `pchar` set in a single segment, so reserved path
+     * delimiters such as `/` and `?` remain percent-escaped. This is the
+     * baseline rule DataONE references for identifier serialization in URL
+     * paths:
+     * https://dataone-architecture-documentation.readthedocs.io/en/latest/design/PIDs.html#serializing
+     * @param {string} segment Candidate path-segment value.
+     * @returns {string} Minimally escaped RFC3986 path segment.
+     */
+    encodeRFC3986PathSegment(segment = "") {
+      return UrlUtilities.encodePathSegment(segment).replace(
+        RFC3986_PCHAR_ESCAPE_PATTERN,
+        (match) => RFC3986_PCHAR_ESCAPES[match.toUpperCase()] || match,
+      );
+    },
+
+    /**
+     * Decode a percent-escaped RFC3986 path segment.
+     * @param {string} segment Candidate path-segment value.
+     * @returns {string} Decoded path segment.
+     */
+    decodeRFC3986PathSegment(segment = "") {
+      const normalized = normalizeText(segment) || "";
+      if (!normalized) return "";
+      return safeDecodeURIComponent(normalized);
+    },
+
+    /**
+     * Encode a DataONE PID for use in a URL path segment. DataONE follows
+     * RFC3986 path-segment encoding, but additionally requires `+` to be
+     * percent-escaped as `%2B` to avoid ambiguity with legacy URL-decoder
+     * behavior. See the DataONE serializing guidance:
+     * https://dataone-architecture-documentation.readthedocs.io/en/latest/design/PIDs.html#serializing
+     * @param {string} segment Candidate PID/path segment.
+     * @returns {string} DataONE-safe path segment.
+     */
+    encodeDataONEPidForPath(segment = "") {
+      return UrlUtilities.encodeRFC3986PathSegment(segment).replace(
+        /\+/g,
+        "%2B",
+      );
+    },
+
+    /**
+     * Decode a DataONE PID from a URL path segment. Literal `+` characters are
+     * preserved before percent-decoding because older clients may have treated
+     * `+` as a space. DataONE documents this as part of its identifier
+     * serializing guidance.
+     * @param {string} segment Candidate DataONE path-segment value.
+     * @returns {string} Decoded DataONE PID.
+     */
+    decodeDataONEPidFromPath(segment = "") {
+      const normalized = normalizeText(segment) || "";
+      if (!normalized) return "";
+      return UrlUtilities.decodeRFC3986PathSegment(
+        normalized.replace(/\+/g, "%2B"),
+      );
     },
 
     /**
@@ -218,8 +316,8 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
      * @param {UrlLikeValue} url Value to normalize.
      * @param {UrlLikeValue} [fallback] Fallback URL when the input is empty.
      * @param {object} [options] Normalization options.
-     * @param {SlashMode} [options.leadingSlash="preserve"] Leading slash mode.
-     * @param {SlashMode} [options.trailingSlash="remove"] Trailing slash mode.
+     * @param {SlashMode} [options.leadingSlash] Leading slash mode.
+     * @param {SlashMode} [options.trailingSlash] Trailing slash mode.
      * @returns {string} Normalized URL/path-like string or an empty string.
      */
     normalizeUrl(
@@ -247,7 +345,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
      * @param {*} value URL-like value.
      * @param {object} [options] Extraction options.
      * @param {string} [options.requiredPathSegment] Required substring.
-     * @param {SlashMode} [options.trailingSlash="ensure"] Trailing slash mode
+     * @param {SlashMode} [options.trailingSlash] Trailing slash mode
      * for the returned base URL.
      * @returns {string} Extracted base URL or empty string.
      */
@@ -341,9 +439,13 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
         trailingSlash: "ensure",
       });
 
-      return UrlUtilities.normalizeUrl(
-        new URL(correctedPath, correctedBaseUrl),
-      );
+      const urlPath =
+        !correctedPath.startsWith("/") &&
+        /^[A-Za-z][A-Za-z0-9+.-]*:/.test(correctedPath)
+          ? `./${correctedPath}`
+          : correctedPath;
+
+      return UrlUtilities.normalizeUrl(new URL(urlPath, correctedBaseUrl));
     },
   };
 

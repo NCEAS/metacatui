@@ -1,42 +1,49 @@
-define(["common/DateUtility"], function (DateUtility) {
+define(["common/DateUtilities"], function (DateUtilities) {
   var expect = chai.expect;
 
   const pad2 = (value) => String(value).padStart(2, "0");
 
-  describe("DateUtility", function () {
+  describe("DateUtilities", function () {
     describe("isValidDate", function () {
       it("returns true for valid Date instances", function () {
-        DateUtility.isValidDate(new Date()).should.equal(true);
+        DateUtilities.isValidDate(new Date()).should.equal(true);
       });
 
       it("returns false for invalid dates and non-date values", function () {
-        DateUtility.isValidDate(new Date("not-a-date")).should.equal(false);
-        DateUtility.isValidDate("2024-01-01").should.equal(false);
+        DateUtilities.isValidDate(new Date("not-a-date")).should.equal(false);
+        DateUtilities.isValidDate("2024-01-01").should.equal(false);
       });
     });
 
     describe("toDate", function () {
       it("returns null for missing or invalid values", function () {
-        expect(DateUtility.toDate(null)).to.equal(null);
-        expect(DateUtility.toDate(undefined)).to.equal(null);
-        expect(DateUtility.toDate("")).to.equal(null);
-        expect(DateUtility.toDate("not-a-date")).to.equal(null);
+        expect(DateUtilities.toDate(null)).to.equal(null);
+        expect(DateUtilities.toDate(undefined)).to.equal(null);
+        expect(DateUtilities.toDate("")).to.equal(null);
+        expect(DateUtilities.toDate("not-a-date")).to.equal(null);
       });
 
       it("returns a cloned Date for Date input", function () {
         const source = new Date("2024-01-02T03:04:05.000Z");
-        const parsed = DateUtility.toDate(source);
+        const parsed = DateUtilities.toDate(source);
 
         expect(parsed).to.be.instanceof(Date);
         expect(parsed).to.not.equal(source);
         expect(parsed.getTime()).to.equal(source.getTime());
+      });
+
+      it("accepts numeric timestamps including zero", function () {
+        const parsed = DateUtilities.toDate(0);
+
+        expect(parsed).to.be.instanceof(Date);
+        expect(parsed.getTime()).to.equal(0);
       });
     });
 
     describe("toMidnightDate", function () {
       it("returns local midnight when groupingTimeZone is local", function () {
         const source = new Date(2024, 4, 10, 16, 45, 22);
-        const midnight = DateUtility.toMidnightDate(source);
+        const midnight = DateUtilities.toMidnightDate(source);
 
         expect(midnight).to.be.instanceof(Date);
         expect(midnight.getFullYear()).to.equal(source.getFullYear());
@@ -48,7 +55,7 @@ define(["common/DateUtility"], function (DateUtility) {
       });
 
       it("returns UTC midnight when groupingTimeZone is UTC", function () {
-        const midnight = DateUtility.toMidnightDate(
+        const midnight = DateUtilities.toMidnightDate(
           "2024-05-10T16:45:22.000Z",
           "UTC",
         );
@@ -56,8 +63,16 @@ define(["common/DateUtility"], function (DateUtility) {
         expect(midnight.toISOString()).to.equal("2024-05-10T00:00:00.000Z");
       });
 
+      it("falls back to local grouping for invalid timezone values", function () {
+        const source = new Date(2024, 4, 10, 16, 45, 22);
+
+        expect(
+          DateUtilities.toMidnightDate(source, "invalid").getTime(),
+        ).to.equal(DateUtilities.toMidnightDate(source, "local").getTime());
+      });
+
       it("returns null for invalid input", function () {
-        expect(DateUtility.toMidnightDate("bad-date")).to.equal(null);
+        expect(DateUtilities.toMidnightDate("bad-date")).to.equal(null);
       });
     });
 
@@ -68,32 +83,32 @@ define(["common/DateUtility"], function (DateUtility) {
           source.getMonth() + 1,
         )}-${pad2(source.getDate())}`;
 
-        expect(DateUtility.toISODateOnly(source)).to.equal(expected);
+        expect(DateUtilities.toISODateOnly(source)).to.equal(expected);
       });
 
       it("returns UTC date-only strings when requested", function () {
         expect(
-          DateUtility.toISODateOnly("2024-05-10T23:30:00-05:00", "UTC"),
+          DateUtilities.toISODateOnly("2024-05-10T23:30:00-05:00", "UTC"),
         ).to.equal("2024-05-11");
       });
 
       it("returns empty string for invalid values", function () {
-        expect(DateUtility.toISODateOnly("bad-date")).to.equal("");
+        expect(DateUtilities.toISODateOnly("bad-date")).to.equal("");
       });
     });
 
     describe("toDayId", function () {
       it("returns stable day identifiers", function () {
-        expect(DateUtility.toDayId("2024-01-02T03:04:05.000Z", "UTC")).to.equal(
-          "date:2024-01-02",
-        );
+        expect(
+          DateUtilities.toDayId("2024-01-02T03:04:05.000Z", "UTC"),
+        ).to.equal("date:2024-01-02");
       });
 
-      it("supports custom prefixes and invalid dates", function () {
+      it("supports custom prefixes, trims them, and marks invalid dates", function () {
         expect(
-          DateUtility.toDayId("2024-01-02T03:04:05.000Z", "UTC", "group"),
+          DateUtilities.toDayId("2024-01-02T03:04:05.000Z", "UTC", " group "),
         ).to.equal("group:2024-01-02");
-        expect(DateUtility.toDayId("bad-date", "UTC", "group")).to.equal(
+        expect(DateUtilities.toDayId("bad-date", "UTC", "group")).to.equal(
           "group:invalid",
         );
       });
@@ -109,7 +124,7 @@ define(["common/DateUtility"], function (DateUtility) {
         };
 
         expect(
-          DateUtility.toLocaleDateString(date, {
+          DateUtilities.toLocaleDateString(date, {
             locale: "en-US",
             formatOptions: options,
           }),
@@ -117,58 +132,57 @@ define(["common/DateUtility"], function (DateUtility) {
       });
 
       it("returns empty string for invalid values", function () {
-        expect(DateUtility.toLocaleDateString("bad-date")).to.equal("");
+        expect(DateUtilities.toLocaleDateString("bad-date")).to.equal("");
       });
     });
 
     describe("toLocalTimestampWithZone", function () {
-      it("returns a local timestamp with zone token", function () {
+      it("returns a local timestamp with zero-padded hours and a zone token", function () {
         const date = new Date(2024, 0, 2, 5, 7, 0);
         const prefix = `${date.getFullYear()}-${pad2(
           date.getMonth() + 1,
-        )}-${pad2(date.getDate())} ${date.getHours()}:${pad2(
+        )}-${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(
           date.getMinutes(),
-        )} `;
-        const zone = date
-          .toLocaleTimeString(undefined, { timeZoneName: "short" })
-          .split(" ")
-          .pop();
+        )}`;
+        const zone = new Intl.DateTimeFormat(undefined, {
+          hour: "numeric",
+          timeZoneName: "short",
+        })
+          .formatToParts(date)
+          .find(({ type }) => type === "timeZoneName")?.value;
 
-        expect(DateUtility.toLocalTimestampWithZone(date)).to.equal(
-          `${prefix}${zone}`,
+        expect(DateUtilities.toLocalTimestampWithZone(date)).to.equal(
+          zone ? `${prefix} ${zone}` : prefix,
         );
       });
 
       it("returns empty string for invalid values", function () {
-        expect(DateUtility.toLocalTimestampWithZone("bad-date")).to.equal("");
+        expect(DateUtilities.toLocalTimestampWithZone("bad-date")).to.equal("");
       });
     });
 
     describe("toISOString", function () {
       it("returns ISO timestamps for valid values", function () {
-        expect(DateUtility.toISOString("2024-01-02T03:04:05.678Z")).to.equal(
+        expect(DateUtilities.toISOString("2024-01-02T03:04:05.678Z")).to.equal(
           "2024-01-02T03:04:05.678Z",
         );
       });
 
       it("returns empty string for invalid values", function () {
-        expect(DateUtility.toISOString("bad-date")).to.equal("");
+        expect(DateUtilities.toISOString("bad-date")).to.equal("");
       });
 
       it("returns empty string when Date#toISOString throws", function () {
-        const warnStub = sinon.stub(console, "warn");
         const isoStub = sinon
           .stub(Date.prototype, "toISOString")
           .throws(new Error("boom"));
 
         try {
-          expect(DateUtility.toISOString("2024-01-02T03:04:05.678Z")).to.equal(
+          expect(DateUtilities.toISOString("2024-01-02T03:04:05.678Z")).to.equal(
             "",
           );
-          warnStub.calledOnce.should.equal(true);
         } finally {
           isoStub.restore();
-          warnStub.restore();
         }
       });
     });
@@ -176,12 +190,12 @@ define(["common/DateUtility"], function (DateUtility) {
     describe("toXmlDateTimeString", function () {
       it("returns XML timestamps with an explicit UTC offset", function () {
         expect(
-          DateUtility.toXmlDateTimeString("2024-01-02T03:04:05.678Z"),
+          DateUtilities.toXmlDateTimeString("2024-01-02T03:04:05.678Z"),
         ).to.equal("2024-01-02T03:04:05.678+00:00");
       });
 
       it("returns empty string for invalid values", function () {
-        expect(DateUtility.toXmlDateTimeString("bad-date")).to.equal("");
+        expect(DateUtilities.toXmlDateTimeString("bad-date")).to.equal("");
       });
     });
 
@@ -190,38 +204,48 @@ define(["common/DateUtility"], function (DateUtility) {
 
       it("returns empty string when either value is invalid", function () {
         expect(
-          DateUtility.getRelativeDateString("bad-date", reference),
+          DateUtilities.getRelativeDateString("bad-date", reference),
         ).to.equal("");
         expect(
-          DateUtility.getRelativeDateString(reference, "bad-date"),
+          DateUtilities.getRelativeDateString(reference, "bad-date"),
         ).to.equal("");
       });
 
       it("returns current when the values are the same", function () {
         expect(
-          DateUtility.getRelativeDateString(reference, reference),
+          DateUtilities.getRelativeDateString(reference, reference),
         ).to.equal("current");
       });
 
       it("returns relative newer and older strings", function () {
         expect(
-          DateUtility.getRelativeDateString(
+          DateUtilities.getRelativeDateString(
             "2024-01-01T00:00:01.000Z",
             reference,
           ),
         ).to.equal("1 second newer");
         expect(
-          DateUtility.getRelativeDateString(
+          DateUtilities.getRelativeDateString(
             "2023-12-31T23:58:00.000Z",
             reference,
           ),
         ).to.equal("2 minutes older");
       });
 
-      it("returns less than 1 second newer/older for sub-second differences", function () {
+      it("supports custom labels and sub-second differences", function () {
         expect(
-          DateUtility.getRelativeDateString(1704067200400, 1704067200000),
-        ).to.equal("less than 1 second newer");
+          DateUtilities.getRelativeDateString(1704067200400, 1704067200000, {
+            newerWord: "after",
+            olderWord: "before",
+            currentWord: "same time",
+          }),
+        ).to.equal("less than 1 second after");
+
+        expect(
+          DateUtilities.getRelativeDateString(reference, reference, {
+            currentWord: "same time",
+          }),
+        ).to.equal("same time");
       });
     });
   });

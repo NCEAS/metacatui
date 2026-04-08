@@ -2,8 +2,8 @@ define([
   "backbone",
   "models/dataONEServices/SysMetaService",
   "common/UrlUtilities",
-  "common/DateUtility",
-], (Backbone, SysMetaService, UrlUtilities, DateUtility) => {
+  "common/DateUtilities",
+], (Backbone, SysMetaService, UrlUtilities, DateUtilities) => {
   /**
    * @constant {number} DEFAULT_TTL_MS Default Time-To-Live for cached data
    * object to resource map PID mappings, in milliseconds.
@@ -370,8 +370,8 @@ define([
 
       const prevSysMeta = forward ? sysMeta : adjSysMeta;
       const nextSysMeta = forward ? adjSysMeta : sysMeta;
-      const prevDate = DateUtility.toDate(prevSysMeta.data?.dateUploaded);
-      const nextDate = DateUtility.toDate(nextSysMeta.data?.dateUploaded);
+      const prevDate = DateUtilities.toDate(prevSysMeta.data?.dateUploaded);
+      const nextDate = DateUtilities.toDate(nextSysMeta.data?.dateUploaded);
 
       if (!prevDate || !nextDate) {
         return false;

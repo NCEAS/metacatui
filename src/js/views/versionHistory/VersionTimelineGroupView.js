@@ -5,9 +5,9 @@
 define([
   "backbone",
   "collections/DataONEObjects",
-  "common/DateUtility",
+  "common/DateUtilities",
   "views/versionHistory/ObjectVersionsView",
-], (Backbone, DataONEObjects, DateUtility, ObjectVersionsView) => {
+], (Backbone, DataONEObjects, DateUtilities, ObjectVersionsView) => {
   "use strict";
 
   const DATE_NOTE_ICON_LABEL =
@@ -95,7 +95,7 @@ define([
       template({ date, label }) {
         let displayDate =
           label ||
-          DateUtility.toLocaleDateString(date, {
+          DateUtilities.toLocaleDateString(date, {
             formatOptions: {
               year: "numeric",
               month: "long",
@@ -103,8 +103,8 @@ define([
             },
           });
         // If it's a date and not e.g. "unknown" label, wrap it in <time>
-        if (DateUtility.isValidDate(date)) {
-          const dateAttr = DateUtility.toISODateOnly(date);
+        if (DateUtilities.isValidDate(date)) {
+          const dateAttr = DateUtilities.toISODateOnly(date);
           displayDate = `<time datetime="${dateAttr}">${displayDate}</time>`;
         }
 
@@ -150,7 +150,7 @@ define([
        * this group.
        */
       getDateKey() {
-        const dateKey = DateUtility.isValidDate(this.date)
+        const dateKey = DateUtilities.isValidDate(this.date)
           ? this.date.getTime()
           : "nodate";
         return `${dateKey}|${this.label || ""}`;

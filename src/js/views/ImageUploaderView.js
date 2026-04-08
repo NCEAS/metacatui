@@ -174,7 +174,7 @@ define([
           }
 
           // Ensure the object formats are cached for uploader's use
-          Utilities.getObjectFormats();
+          Utilities.awaitObjectFormats();
 
           // Bug fix: Overwrite a dropzone function that causes a bug in Edge 16 &
           // 17 browser. If we update our dropzone with a fallback, this function

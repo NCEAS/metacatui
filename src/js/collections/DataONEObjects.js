@@ -1,9 +1,9 @@
 "use strict";
 
-define(["backbone", "models/DataONEObject", "common/DateUtility"], (
+define(["backbone", "models/DataONEObject", "common/DateUtilities"], (
   Backbone,
   DataONEObject,
-  DateUtility,
+  DateUtilities,
 ) => {
   /**
    * @class DataONEObjects
@@ -127,7 +127,7 @@ define(["backbone", "models/DataONEObject", "common/DateUtility"], (
       // Pluck the date & id for all models
       this.each((model) => {
         const dateValue = model.get(dateProp);
-        const date = DateUtility.toDate(dateValue);
+        const date = DateUtilities.toDate(dateValue);
         if (date) {
           if (!minDate || date < minDate) {
             minDate = date;
@@ -178,11 +178,11 @@ define(["backbone", "models/DataONEObject", "common/DateUtility"], (
 
         if (rawDate) {
           try {
-            const parsedDate = DateUtility.toDate(rawDate);
+            const parsedDate = DateUtilities.toDate(rawDate);
             if (!parsedDate) {
               throw new Error("Invalid Date");
             }
-            groupDate = DateUtility.toMidnightDate(
+            groupDate = DateUtilities.toMidnightDate(
               parsedDate,
               normalizedTimeZone,
             );

@@ -1,4 +1,4 @@
-define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
+define(["backbone", "common/DateUtilities"], (Backbone, DateUtilities) => {
   "use strict";
 
   const NO_DATE_LABEL = "Unknown Date";
@@ -12,7 +12,7 @@ define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
    */
   const toSegmentDateInfo = (model, groupingTimeZone = "local") => {
     const rawDate = model.get("dateUploaded");
-    const parsedDate = DateUtility.toDate(rawDate);
+    const parsedDate = DateUtilities.toDate(rawDate);
     if (!parsedDate) {
       return {
         key: "unknown",
@@ -21,12 +21,12 @@ define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
       };
     }
 
-    const normalizedDate = DateUtility.toMidnightDate(
+    const normalizedDate = DateUtilities.toMidnightDate(
       parsedDate,
       groupingTimeZone,
     );
     return {
-      key: DateUtility.toDayId(normalizedDate, groupingTimeZone, "date"),
+      key: DateUtilities.toDayId(normalizedDate, groupingTimeZone, "date"),
       date: normalizedDate,
       label: null,
     };
