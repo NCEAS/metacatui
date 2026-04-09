@@ -94,6 +94,43 @@ define(["common/DataONEXmlUtilities"], (DataONEXmlUtilities) => {
       });
     });
 
+    describe("parseRequiredDocument", () => {
+      it("parses XML text and returns the document", () => {
+        const xml = DataONEXmlUtilities.parseRequiredDocument(
+          "<identifier>urn:uuid:test.2</identifier>",
+          "reserve",
+        );
+
+        expect(xml).to.be.instanceof(Document);
+        expect(xml.documentElement.localName).to.equal("identifier");
+      });
+
+      it("accepts an existing Document instance", () => {
+        const source = new DOMParser().parseFromString(
+          "<identifier>urn:uuid:test.5</identifier>",
+          "application/xml",
+        );
+        const xml = DataONEXmlUtilities.parseRequiredDocument(source, "reserve");
+
+        expect(xml).to.equal(source);
+      });
+
+      it("throws parsed DataONE service errors", () => {
+        let caught = null;
+
+        try {
+          DataONEXmlUtilities.parseRequiredDocument(ERROR_XML, "reserve");
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.name).to.equal("NotAuthorized");
+        expect(caught.message).to.equal("READ not allowed");
+        expect(caught.status).to.equal("401");
+      });
+    });
+
     describe("parseIdentifierResponse", () => {
       it("returns the normalized identifier response payload", () => {
         const result = DataONEXmlUtilities.parseIdentifierResponse(

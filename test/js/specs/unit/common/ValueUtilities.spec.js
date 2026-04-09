@@ -32,6 +32,26 @@ define(["common/ValueUtilities", "common/UrlUtilities"], function (
       });
     });
 
+    describe("normalizeStringChoice", function () {
+      it("canonicalizes known values and preserves unknown normalized input", function () {
+        expect(
+          ValueUtilities.normalizeStringChoice(" Read ", {
+            read: "read",
+            write: "write",
+          }),
+        ).to.equal("read");
+        expect(
+          ValueUtilities.normalizeStringChoice(" custom ", {
+            read: "read",
+            write: "write",
+          }),
+        ).to.equal("custom");
+        expect(
+          ValueUtilities.normalizeStringChoice(null, { read: "read" }),
+        ).to.equal(null);
+      });
+    });
+
     describe("normalizeInteger", function () {
       it("normalizes integer-like values and preserves invalid input", function () {
         expect(ValueUtilities.normalizeInteger("7")).to.equal(7);
@@ -204,6 +224,22 @@ define(["common/ValueUtilities", "common/UrlUtilities"], function (
             quoteStrings: true,
           }),
         ).to.equal('"a", "b", or "c"');
+      });
+    });
+
+    describe("serialize helpers", function () {
+      it("serializes booleans to XML text while preserving invalid bypassed values", function () {
+        expect(ValueUtilities.serializeBoolean(true)).to.equal("true");
+        expect(ValueUtilities.serializeBoolean("FALSE")).to.equal("false");
+        expect(ValueUtilities.serializeBoolean("maybe")).to.equal("maybe");
+        expect(ValueUtilities.serializeBoolean(null)).to.equal(null);
+      });
+
+      it("serializes integers and text values to XML text", function () {
+        expect(ValueUtilities.serializeInteger(7)).to.equal("7");
+        expect(ValueUtilities.serializeInteger(" 7 ")).to.equal("7");
+        expect(ValueUtilities.serializeInteger("abc")).to.equal("abc");
+        expect(ValueUtilities.serializeText("  hello  ")).to.equal("hello");
       });
     });
 

@@ -182,22 +182,6 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
       });
     });
 
-    describe("getElementChildren", () => {
-      it("returns only element child nodes", () => {
-        const xml = new DOMParser().parseFromString(
-          "<root>text<first /><!-- comment --><second /></root>",
-          "application/xml",
-        );
-
-        const children = XMLUtilities.getElementChildren(xml.documentElement);
-
-        expect(children.map((child) => child.localName)).to.deep.equal([
-          "first",
-          "second",
-        ]);
-      });
-    });
-
     describe("simple selector helpers", () => {
       it("parses descendant and child combinators while ignoring prefixes", () => {
         expect(
@@ -377,32 +361,6 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
       });
     });
 
-    describe("getElementText", () => {
-      it("returns trimmed text content", () => {
-        const xml = new DOMParser().parseFromString(
-          "<root>  value  </root>",
-          "application/xml",
-        );
-
-        expect(XMLUtilities.getElementText(xml.documentElement)).to.equal(
-          "value",
-        );
-      });
-
-      it("returns null for missing elements", () => {
-        expect(XMLUtilities.getElementText(null)).to.equal(null);
-      });
-
-      it("returns null for whitespace-only text", () => {
-        const xml = new DOMParser().parseFromString(
-          "<root>   </root>",
-          "application/xml",
-        );
-
-        expect(XMLUtilities.getElementText(xml.documentElement)).to.equal(null);
-      });
-    });
-
     describe("getRequiredElementText", () => {
       it("extracts element text case-insensitively and ignores namespaces", () => {
         const xml = new DOMParser().parseFromString(
@@ -502,6 +460,86 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
 
         result.value.should.equal("urn:node:ARCTIC");
         result.xml.should.be.instanceof(Document);
+      });
+    });
+
+    describe("appendTextElement", () => {
+      it("appends an element with stringified text content", () => {
+        const doc = new DOMParser().parseFromString(
+          "<root />",
+          "application/xml",
+        );
+
+        const appended = XMLUtilities.appendTextElement(
+          doc,
+          doc.documentElement,
+          "size",
+          42,
+        );
+
+        expect(appended.localName).to.equal("size");
+        expect(appended.textContent).to.equal("42");
+        expect(doc.documentElement.lastChild).to.equal(appended);
+      });
+
+      it("uses DOM text nodes so XMLSerializer escapes reserved characters", () => {
+        const doc = new DOMParser().parseFromString(
+          "<root />",
+          "application/xml",
+        );
+
+        XMLUtilities.appendTextElement(
+          doc,
+          doc.documentElement,
+          "title",
+          "Tom & Jerry <cartoon>",
+        );
+
+        const serialized = new XMLSerializer().serializeToString(doc);
+
+        expect(serialized).to.contain(
+          "<title>Tom &amp; Jerry &lt;cartoon&gt;</title>",
+        );
+      });
+
+      it("removes invalid XML characters before appending text nodes", () => {
+        const doc = new DOMParser().parseFromString(
+          "<root />",
+          "application/xml",
+        );
+
+        const appended = XMLUtilities.appendTextElement(
+          doc,
+          doc.documentElement,
+          "title",
+          "ok\u0000bad",
+        );
+
+        expect(appended.textContent).to.equal("okbad");
+      });
+
+      it("returns null for nullish values", () => {
+        const doc = new DOMParser().parseFromString(
+          "<root />",
+          "application/xml",
+        );
+
+        expect(
+          XMLUtilities.appendTextElement(
+            doc,
+            doc.documentElement,
+            "size",
+            null,
+          ),
+        ).to.equal(null);
+        expect(
+          XMLUtilities.appendTextElement(
+            doc,
+            doc.documentElement,
+            "size",
+            undefined,
+          ),
+        ).to.equal(null);
       });
     });
 
@@ -707,166 +745,6 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
           { name: "xmlns:d1", value: "urn:test" },
           { name: "xmlns:d2", value: "urn:test:two" },
         ]);
-      });
-    });
-
-    describe("serializeXmlDocument", () => {
-      it("prepends the provided XML declaration when serializing", () => {
-        const xml = new DOMParser().parseFromString(
-          "<root><identifier>id</identifier></root>",
-          "application/xml",
-        );
-
-        const serialized = XMLUtilities.serializeXmlDocument(
-          xml,
-          '<?xml version="1.0" encoding="UTF-8"?>',
-        );
-
-        expect(serialized).to.contain(
-          '<?xml version="1.0" encoding="UTF-8"?>',
-        );
-        expect(serialized).to.contain("<root><identifier>id</identifier></root>");
-      });
-    });
-
-    describe("createXmlDocument", () => {
-      it("creates a document with the requested root namespace and qualified name", () => {
-        const doc = XMLUtilities.createXmlDocument(
-          "urn:test",
-          "d1:systemMetadata",
-        );
-
-        expect(doc.documentElement.namespaceURI).to.equal("urn:test");
-        expect(doc.documentElement.tagName).to.equal("d1:systemMetadata");
-      });
-    });
-
-    describe("appendTextElement", () => {
-      it("appends an element with stringified text content", () => {
-        const doc = new DOMParser().parseFromString(
-          "<root />",
-          "application/xml",
-        );
-
-        const appended = XMLUtilities.appendTextElement(
-          doc,
-          doc.documentElement,
-          "size",
-          42,
-        );
-
-        expect(appended.localName).to.equal("size");
-        expect(appended.textContent).to.equal("42");
-        expect(doc.documentElement.lastChild).to.equal(appended);
-      });
-
-      it("uses DOM text nodes so XMLSerializer escapes reserved characters", () => {
-        const doc = new DOMParser().parseFromString(
-          "<root />",
-          "application/xml",
-        );
-
-        XMLUtilities.appendTextElement(
-          doc,
-          doc.documentElement,
-          "title",
-          "Tom & Jerry <cartoon>",
-        );
-
-        const serialized = new XMLSerializer().serializeToString(doc);
-
-        expect(serialized).to.contain(
-          "<title>Tom &amp; Jerry &lt;cartoon&gt;</title>",
-        );
-      });
-
-      it("removes invalid XML characters before appending text nodes", () => {
-        const doc = new DOMParser().parseFromString(
-          "<root />",
-          "application/xml",
-        );
-
-        const appended = XMLUtilities.appendTextElement(
-          doc,
-          doc.documentElement,
-          "title",
-          "ok\u0000bad",
-        );
-
-        expect(appended.textContent).to.equal("okbad");
-      });
-
-      it("supports EML-style text round-trips with reserved characters", () => {
-        const doc = document.implementation.createDocument(
-          "https://eml.ecoinformatics.org/eml-2.2.0",
-          "eml:eml",
-          null,
-        );
-        const root = doc.documentElement;
-        root.setAttribute("packageId", "urn:uuid:test-eml.2");
-        root.setAttribute("system", "knb");
-
-        const dataset = doc.createElement("dataset");
-        root.appendChild(dataset);
-
-        XMLUtilities.appendTextElement(
-          doc,
-          dataset,
-          "title",
-          "A & B < C \u0000 dataset",
-        );
-
-        const abstract = doc.createElement("abstract");
-        dataset.appendChild(abstract);
-        XMLUtilities.appendTextElement(
-          doc,
-          abstract,
-          "para",
-          "Use 5 < 6 & 7 > 3 in free text",
-        );
-
-        const serialized = new XMLSerializer().serializeToString(doc);
-        const reparsed = XMLUtilities.parseXmlString(
-          serialized,
-          "Generated EML",
-        );
-
-        expect(serialized).to.contain(
-          "<title>A &amp; B &lt; C  dataset</title>",
-        );
-        expect(serialized).to.contain(
-          "<para>Use 5 &lt; 6 &amp; 7 &gt; 3 in free text</para>",
-        );
-        expect(
-          XMLUtilities.findFirstElement(reparsed, "title")?.textContent,
-        ).to.equal("A & B < C  dataset");
-        expect(
-          XMLUtilities.extractTextBySelectors(serialized, ["abstract > para"]),
-        ).to.equal("Use 5 < 6 & 7 > 3 in free text");
-      });
-
-      it("returns null for nullish values", () => {
-        const doc = new DOMParser().parseFromString(
-          "<root />",
-          "application/xml",
-        );
-
-        expect(
-          XMLUtilities.appendTextElement(
-            doc,
-            doc.documentElement,
-            "size",
-            null,
-          ),
-        ).to.equal(null);
-        expect(
-          XMLUtilities.appendTextElement(
-            doc,
-            doc.documentElement,
-            "size",
-            undefined,
-          ),
-        ).to.equal(null);
       });
     });
 

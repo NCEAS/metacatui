@@ -105,6 +105,24 @@ define([
     },
 
     /**
+     * Parse required XML and throw parsed DataONE service errors when present.
+     * @param {string|Document} xmlInput XML text or parsed document.
+     * @param {string} [context="DataONE XML response"] Context label for parse
+     * errors.
+     * @returns {Document} Parsed XML document.
+     */
+    parseRequiredDocument(xmlInput, context = "DataONE XML response") {
+      const xml = xmlInput?.documentElement
+        ? xmlInput
+        : XMLUtilities.parseRequiredXmlString(xmlInput, context);
+      const parsedError = this.parseErrorXml(xml, context);
+      if (parsedError) {
+        throw this.toError(parsedError);
+      }
+      return xml;
+    },
+
+    /**
      * Parse a DataONE XML response and extract required element text. Throws a
      * parsed DataONE service error when the response body contains `<error>`.
      * @param {string} xmlString XML response text.
@@ -118,11 +136,7 @@ define([
       elementName,
       context = "DataONE XML response",
     ) {
-      const xml = XMLUtilities.parseRequiredXmlString(xmlString, context);
-      const parsedError = this.parseErrorXml(xml, context);
-      if (parsedError) {
-        throw this.toError(parsedError);
-      }
+      const xml = this.parseRequiredDocument(xmlString, context);
 
       return {
         value: XMLUtilities.getRequiredElementText(xml, elementName, context),

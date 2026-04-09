@@ -139,18 +139,6 @@ define([], () => {
     },
 
     /**
-     * Return only element children for the given XML node.
-     * @param {Node} node The parent XML node.
-     * @returns {Element[]} Direct child elements.
-     * @since 0.0.0
-     */
-    getElementChildren(node) {
-      return Array.from(node?.childNodes || []).filter(
-        (child) => child.nodeType === 1,
-      );
-    },
-
-    /**
      * Parses a simple CSS-like selector string into an array of selector parts,
      * each with a combinator and a tag name. Supports descendant combinators
      * (space) and child combinators (>), as well as optional namespace prefixes
@@ -244,13 +232,14 @@ define([], () => {
               ...Array.from(node.getElementsByTagName?.("*") || []),
             ];
           } else if (part.combinator === "child") {
-            candidates = this.getElementChildren(node);
+            candidates = Array.from(node?.children || []);
           } else {
             candidates = Array.from(node.getElementsByTagName?.("*") || []);
           }
 
           return candidates.filter(
-            (candidate) => this.getNormalizedElementName(candidate) === part.name,
+            (candidate) =>
+              this.getNormalizedElementName(candidate) === part.name,
           );
         });
       });
@@ -267,12 +256,21 @@ define([], () => {
      * @since 0.0.0
      */
     findDirectChildElement(node, name) {
-      const normalized = String(name || "").toLowerCase();
-      return (
-        this.getElementChildren(node).find(
-          (child) => this.getNormalizedElementName(child) === normalized,
-        ) || null
-      );
+      const nodes = this.findDirectChildElements(node, name);
+      return nodes.length ? nodes[0] : null;
+    },
+
+    /**
+     * Find the last direct child element with the given local name. Matching is
+     * case-insensitive and ignores namespace prefixes.
+     * @param {Node} node The parent XML node.
+     * @param {string} name Local child element name to match.
+     * @returns {Element|null} The last matching child element, or null.
+     * @since 0.0.0
+     */
+    findLastDirectChildElement(node, name) {
+      const nodes = this.findDirectChildElements(node, name);
+      return nodes.length ? nodes[nodes.length - 1] : null;
     },
 
     /**
@@ -285,7 +283,7 @@ define([], () => {
      */
     findDirectChildElements(node, name) {
       const normalized = String(name || "").toLowerCase();
-      return this.getElementChildren(node).filter(
+      return Array.from(node?.children || []).filter(
         (child) => this.getNormalizedElementName(child) === normalized,
       );
     },
@@ -322,26 +320,9 @@ define([], () => {
       );
     },
 
-    /**
-     * Return trimmed text content from an XML element.
-     * @param {Element} element The XML element.
-     * @returns {string|null} The trimmed text content, or null.
-     * @since 0.0.0
-     */
-    getElementText(element) {
-      if (!element) return null;
-      return element.textContent.trim() || null;
-    },
-
-    /**
-     * Extract trimmed text from the first matching direct child element.
-     * @param {Node} node The parent XML node.
-     * @param {string} name Local child element name to match.
-     * @returns {string|null} The trimmed child text, or null.
-     * @since 0.0.0
-     */
     getDirectChildText(node, name) {
-      return this.getElementText(this.findDirectChildElement(node, name));
+      const element = this.findDirectChildElement(node, name);
+      return element?.textContent?.trim() || null;
     },
 
     /**
@@ -353,7 +334,7 @@ define([], () => {
      */
     getDirectChildTexts(node, name) {
       return this.findDirectChildElements(node, name).map((child) =>
-        this.getElementText(child),
+        child?.textContent?.trim() || null,
       );
     },
 
@@ -486,7 +467,7 @@ define([], () => {
      * @since 0.0.0
      */
     requireDirectChildSequence(node, definitions, context = "XML response") {
-      const childElements = this.getElementChildren(node);
+      const childElements = Array.from(node?.children || []);
       const parentLabel = node?.tagName || node?.nodeName || "element";
       const normalizedDefinitions = Array.isArray(definitions)
         ? definitions.map((definition) => ({
@@ -613,7 +594,7 @@ define([], () => {
       }
 
       const element = this.findFirstElement(documentOrNode, elementName);
-      const value = this.getElementText(element);
+      const value = element?.textContent?.trim() || null;
 
       if (value) {
         return value;
@@ -648,62 +629,22 @@ define([], () => {
     },
 
     /**
-     * Replace an element's text content using a DOM text node so XML escaping
-     * is handled later by XMLSerializer. Invalid XML 1.0 characters are removed
-     * first.
-     * @param {Document} doc The owning XML document.
-     * @param {Element} element The element to update.
-     * @param {*} value The text value to insert.
-     * @returns {Element|null} The updated element, or null if value is nullish.
-     * @since 0.0.0
-     */
-    setElementText(doc, element, value) {
-      if (!doc || !element || value === undefined || value === null)
-        return null;
-
-      while (element.firstChild) {
-        element.removeChild(element.firstChild);
-      }
-
-      const normalizedValue = this.removeInvalidXmlCharacters(value);
-      element.appendChild(doc.createTextNode(normalizedValue));
-
-      return element;
-    },
-
-    /**
-     * Creates an element with the given text content and appends it to a parent
-     * XML node using a DOM text node so XML escaping is deferred to
-     * XMLSerializer. Invalid XML 1.0 characters are removed first.
-     * @param {Document} doc The owning XML document
-     * @param {Element} parent The parent XML element
-     * @param {string} name The child element name
-     * @param {*} value The text value to insert
-     * @returns {Element|null} The appended element, if created
+     * Append a child element with XML-safe text content.
+     * @param {XMLDocument} doc XML document used to create elements.
+     * @param {Element} parent Parent element that receives the child.
+     * @param {string} name Child element name.
+     * @param {*} value Text value to append.
+     * @returns {Element|null} The appended child element, or null for nullish
+     * values.
      * @since 0.0.0
      */
     appendTextElement(doc, parent, name, value) {
-      if (value === undefined || value === null) return null;
+      if (value === null || value === undefined) return null;
+
       const element = doc.createElement(name);
-      this.setElementText(doc, element, value);
+      element.textContent = this.removeInvalidXmlCharacters(value);
       parent.appendChild(element);
       return element;
-    },
-
-    /**
-     * Create an XML document with the requested root namespace URI and
-     * qualified name.
-     * @param {string|null} namespaceUri Root namespace URI.
-     * @param {string} qualifiedName Root qualified name.
-     * @returns {Document} Newly created XML document.
-     * @since 0.0.0
-     */
-    createXmlDocument(namespaceUri, qualifiedName) {
-      return document.implementation.createDocument(
-        namespaceUri || null,
-        qualifiedName,
-        null,
-      );
     },
 
     /**
@@ -736,22 +677,6 @@ define([], () => {
           name: attribute.name,
           value: attribute.value,
         }));
-    },
-
-    /**
-     * Serialize an XML document and optionally prepend an XML declaration.
-     * @param {Document} doc XML document to serialize.
-     * @param {string|null} [xmlDeclaration] Optional XML declaration to
-     * prepend.
-     * @returns {string} Serialized XML text.
-     * @since 0.0.0
-     */
-    serializeXmlDocument(doc, xmlDeclaration = null) {
-      const xmlString = new XMLSerializer().serializeToString(doc);
-      if (xmlDeclaration) {
-        return `${xmlDeclaration}\n${xmlString}`;
-      }
-      return xmlString;
     },
 
     /**

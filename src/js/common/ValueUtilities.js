@@ -62,6 +62,57 @@ define(["md5"], (md5) => {
     },
 
     /**
+     * Normalize known string choices while preserving unknown non-empty input.
+     * @param {*} value Value to normalize.
+     * @param {Object<string, string>} canonicalByLowercase Canonical lookup
+     * keyed by lowercase text.
+     * @returns {string|null} Canonical known value, normalized unknown value,
+     * or `null` for nullish input.
+     */
+    normalizeStringChoice(value, canonicalByLowercase = {}) {
+      const normalized = ValueUtilities.normalizeText(value);
+      if (normalized === null) return null;
+
+      return canonicalByLowercase[normalized.toLowerCase()] || normalized;
+    },
+
+    /**
+     * Serialize a boolean to canonical XML text.
+     * @param {*} value Value to serialize.
+     * @returns {string|null} `"true"`, `"false"`, or `null` when invalid.
+     */
+    serializeBoolean(value) {
+      if (value === null || value === undefined) return null;
+
+      const normalized = ValueUtilities.normalizeBoolean(value);
+      if (normalized === true) return "true";
+      if (normalized === false) return "false";
+
+      return String(value);
+    },
+
+    /**
+     * Serialize an integer-like value to XML text.
+     * @param {*} value Value to serialize.
+     * @returns {string|null} Integer text, or `null` when invalid.
+     */
+    serializeInteger(value) {
+      const normalized = ValueUtilities.normalizeInteger(value);
+      if (Number.isInteger(normalized)) return String(normalized);
+      if (value === null || value === undefined) return null;
+      return String(value);
+    },
+
+    /**
+     * Serialize text-like values to XML text.
+     * @param {*} value Value to serialize.
+     * @returns {string|null} Trimmed text, or `null` for nullish input.
+     */
+    serializeText(value) {
+      return ValueUtilities.normalizeText(value);
+    },
+
+    /**
      * Normalize any value into an array of trimmed strings.
      * @param {*} value Value or array of values.
      * @returns {Array<string|null>} Normalized string array.

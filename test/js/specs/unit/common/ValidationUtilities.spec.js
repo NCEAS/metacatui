@@ -8,9 +8,7 @@ define(["common/ValidationUtilities"], function (ValidationUtilities) {
           true,
         );
         expect(
-          ValidationUtilities.isValidDOI(
-            "https://doi.org/10.18739/A2CJ87N8D",
-          ),
+          ValidationUtilities.isValidDOI("https://doi.org/10.18739/A2CJ87N8D"),
         ).to.equal(true);
         expect(ValidationUtilities.isValidDOI("doi:10.1234/example")).to.equal(
           true,
@@ -66,6 +64,138 @@ define(["common/ValidationUtilities"], function (ValidationUtilities) {
           code: "badField",
           extra: true,
         });
+      });
+    });
+
+    describe("typed validators", function () {
+      it("validates text values with required and optional modes", function () {
+        expect(
+          ValidationUtilities.validateText(" hello ", {
+            field: "title",
+            required: true,
+          }),
+        ).to.deep.equal([]);
+        expect(
+          ValidationUtilities.validateText("", {
+            field: "title",
+            required: true,
+          }).map(function (issue) {
+            return issue.field;
+          }),
+        ).to.deep.equal(["title"]);
+        expect(
+          ValidationUtilities.validateText("", {
+            field: "subtitle",
+            nonEmptyWhenPresent: true,
+          }).map(function (issue) {
+            return issue.field;
+          }),
+        ).to.deep.equal(["subtitle"]);
+      });
+
+      it("validates boolean values", function () {
+        expect(
+          ValidationUtilities.validateBoolean(true, { field: "archived" }),
+        ).to.deep.equal([]);
+        expect(
+          ValidationUtilities.validateBoolean("maybe", {
+            field: "archived",
+          }).map(function (issue) {
+            return issue.field;
+          }),
+        ).to.deep.equal(["archived"]);
+      });
+
+      it("validates integer values", function () {
+        expect(
+          ValidationUtilities.validateInteger(7, { field: "size" }),
+        ).to.deep.equal([]);
+        expect(
+          ValidationUtilities.validateInteger(-1, {
+            field: "size",
+          }).map(function (issue) {
+            return issue.field;
+          }),
+        ).to.deep.equal(["size"]);
+      });
+
+      it("validates date values", function () {
+        expect(
+          ValidationUtilities.validateDate(new Date("2025-01-01T00:00:00Z"), {
+            field: "dateUploaded",
+          }),
+        ).to.deep.equal([]);
+        expect(
+          ValidationUtilities.validateDate("not-a-date", {
+            field: "dateUploaded",
+          }).map(function (issue) {
+            return issue.field;
+          }),
+        ).to.deep.equal(["dateUploaded"]);
+      });
+    });
+
+    describe("parse warning helpers", function () {
+      it("pushes parse warnings in the validation-error shape", function () {
+        const warnings = [];
+        const warning = ValidationUtilities.addParseWarning(
+          warnings,
+          "mediaType",
+          "Ignored invalid mediaType content while parsing system metadata.",
+        );
+
+        expect(warning).to.deep.equal({
+          field: "mediaType",
+          message:
+            "Ignored invalid mediaType content while parsing system metadata.",
+        });
+        expect(warnings).to.deep.equal([warning]);
+      });
+
+      it("salvages parsed values by warning once and returning the fallback", function () {
+        const warnings = [];
+        const result = ValidationUtilities.fixParsedValue({
+          value: { bad: true },
+          path: "replica",
+          parseWarnings: warnings,
+          invalidMessage:
+            "Ignored invalid replica while parsing system metadata.",
+          validate: function () {
+            return [{ field: "replica.replicaMemberNode", message: "Bad" }];
+          },
+          fallback: function () {
+            return null;
+          },
+        });
+
+        expect(result).to.equal(null);
+        expect(warnings).to.deep.equal([
+          {
+            field: "replica",
+            message: "Ignored invalid replica while parsing system metadata.",
+          },
+        ]);
+      });
+
+      it("returns the original value when salvage validation passes", function () {
+        const warnings = [];
+        const value = { good: true };
+        const result = ValidationUtilities.fixParsedValue({
+          value: value,
+          path: "replica",
+          parseWarnings: warnings,
+          invalidMessage:
+            "Ignored invalid replica while parsing system metadata.",
+          validate: function () {
+            return [];
+          },
+          fallback: function () {
+            return null;
+          },
+        });
+
+        expect(result).to.equal(value);
+        expect(warnings).to.deep.equal([]);
       });
     });
 
