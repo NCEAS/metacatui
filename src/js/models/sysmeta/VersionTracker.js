@@ -47,12 +47,14 @@ define([
 
   /**
    * @typedef {object} DateConflict
-   * @property {SysMeta} prevSysMeta The SysMeta of the version that appears
-   * earlier in the obsolsence chain, i.e. the obsoleted version
+   * @property {SystemMetadata} prevSysMeta The System Metadata record of the
+   * version that appears earlier in the obsolsence chain, i.e. the obsoleted
+   * version
    * @property {Date} prevDate The dateUploaded of the previous version
    * @property {string} prevPid The PID of the previous version
-   * @property {SysMeta} nextSysMeta The SysMeta of the version that appears
-   * later in the obsolescence chain, i.e. the obsoleting version
+   * @property {SystemMetadata} nextSysMeta The System Metadata record of the
+   * version that appears later in the obsolescence chain, i.e. the obsoleting
+   * version
    * @property {Date} nextDate The dateUploaded of the next version
    * @property {string} nextPid The PID of the next version
    * @property {number} timeDiffMs The time difference between the two
@@ -132,20 +134,22 @@ define([
     }
 
     /**
-     * Get the SysMeta for a given PID. SysMetaService handles caching, token
-     * management, and duplicate fetch prevention.
-     * @param {string} pid the PID to get SysMeta for
+     * Get the System Metadata for a given PID. SysMetaService handles caching,
+     * token management, and duplicate fetch prevention.
+     * @param {string} pid the PID to get System Metadata for
      * @param {object} [options] options to pass to SysMetaService.download
-     * @returns {Promise<SysMeta>} resolves to the SysMeta object for the PID
+     * @returns {Promise<SystemMetadata>} resolves to the System Metadata object
+     * for the PID
      */
     async getSysMeta(pid, options = {}) {
       return this.sysMetaService.download(pid, options);
     }
 
     /**
-     * Check if the SysMeta for a given PID is cached.
+     * Check if the System Metadata for a given PID is cached.
      * @param {string} pid the PID to check
-     * @returns {Promise<boolean>} resolves to true if the SysMeta is cached
+     * @returns {Promise<boolean>} resolves to true if the System Metadata is
+     * cached
      */
     async sysMetaIsCached(pid) {
       return this.sysMetaService.isCached(pid);
@@ -190,7 +194,7 @@ define([
       }
       const getAdjacentPid = async () => {
         const sysMeta = await this.getSysMeta(pid, options);
-        return sysMeta?.data?.[NEXT_OR_PREV(forward)] || null;
+        return sysMeta?.[NEXT_OR_PREV(forward)] || null;
       };
       const adjacentPid = await getAdjacentPid();
       // Force re-check in case end of chain has changed
@@ -355,23 +359,23 @@ define([
      * version chain. A conflict occurs when the dateUploaded of an obsoleting
      * version is earlier than that of the obsoleted version, which breaks the
      * expected chronological order.
-     * @param {SysMeta} sysMeta The SysMeta of the version to check for
-     * conflicts.
-     * @param {SysMeta} adjSysMeta The SysMeta of the adjacent version to
-     * compare against.
+     * @param {SystemMetadata} sysMeta The System Metadata of the version to
+     * check for conflicts.
+     * @param {SystemMetadata} adjSysMeta The System Metadata of the adjacent
+     * version to compare against.
      * @param {boolean} forward True if adjSysMeta is the obsoleting (newer)
      * version, false if adjSysMeta is the obsoleted (older) version.
      * @returns {DateConflict|false} A DateConflict object if a conflict is
-     * detected, or false if no conflict is found or if either SysMeta is
-     * missing necessary date information.
+     * detected, or false if no conflict is found or if either System Metadata
+     * record is missing necessary date information.
      */
     static detectDateConflict(sysMeta, adjSysMeta, forward) {
       if (!sysMeta || !adjSysMeta) return false;
 
       const prevSysMeta = forward ? sysMeta : adjSysMeta;
       const nextSysMeta = forward ? adjSysMeta : sysMeta;
-      const prevDate = DateUtilities.toDate(prevSysMeta.data?.dateUploaded);
-      const nextDate = DateUtilities.toDate(nextSysMeta.data?.dateUploaded);
+      const prevDate = DateUtilities.toDate(prevSysMeta?.dateUploaded);
+      const nextDate = DateUtilities.toDate(nextSysMeta?.dateUploaded);
 
       if (!prevDate || !nextDate) {
         return false;
@@ -382,10 +386,10 @@ define([
         return {
           prevSysMeta,
           prevDate,
-          prevPid: prevSysMeta.data?.identifier,
+          prevPid: prevSysMeta?.identifier,
           nextSysMeta,
           nextDate,
-          nextPid: nextSysMeta.data?.identifier,
+          nextPid: nextSysMeta?.identifier,
           timeDiffMs: Math.abs(prevDate - nextDate),
         };
       }
@@ -456,7 +460,7 @@ define([
      */
     async isEndOfChain(pid, forward = true, options = {}) {
       const sysMeta = await this.getSysMeta(pid, options);
-      return !sysMeta?.data?.[NEXT_OR_PREV(forward)];
+      return !sysMeta?.[NEXT_OR_PREV(forward)];
     }
 
     /**
@@ -505,7 +509,9 @@ define([
         } catch (e) {
           if (e.status === 404 || e.status === 401) {
             errors.push(e.status);
-            sysMeta = new SysMetaService.SysMeta({ identifier: foundPid });
+            sysMeta = new SysMetaService.SystemMetadata({
+              identifier: foundPid,
+            });
           } else if (e.name === "AbortError") {
             // Stop processing if the request was aborted by the caller
             return;
@@ -515,7 +521,7 @@ define([
         }
       }
       if (!sysMeta) {
-        sysMeta = new SysMetaService.SysMeta();
+        sysMeta = new SysMetaService.SystemMetadata();
       }
       sysMeta.versionHistory = {};
       sysMeta.versionHistory[pid] = steps;
@@ -559,7 +565,7 @@ define([
   }
 
   VersionTracker.SysMetaService = SysMetaService;
-  VersionTracker.SysMeta = SysMetaService.SysMeta;
+  VersionTracker.SystemMetadata = SysMetaService.SystemMetadata;
 
   return VersionTracker;
 });

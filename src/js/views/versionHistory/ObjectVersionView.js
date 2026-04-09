@@ -6,7 +6,7 @@ define([
   "common/Utilities",
   "common/DateUtilities",
   "semantic",
-], ($, Backbone, Utilities, DateUtility, Semantic) => {
+], ($, Backbone, Utilities, DateUtilities, Semantic) => {
   // SVG for the star icon used in the DOI badge
   const starIcon = `<i class="icon-star"></i>`;
 

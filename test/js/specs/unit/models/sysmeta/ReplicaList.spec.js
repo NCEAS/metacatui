@@ -4,6 +4,9 @@ define([
 ], (ReplicaList, Replica) => {
   const expect = chai.expect;
 
+  const summarizeIssues = (issues) =>
+    issues.map(({ field, message }) => ({ field, message }));
+
   describe("ReplicaList", () => {
     describe("construction and mutation", () => {
       it("clones Replica instances and normalizes plain objects", () => {
@@ -41,6 +44,34 @@ define([
         expect(replicas[0]).to.be.instanceof(Replica);
         expect(replicas[0].replicaMemberNode).to.equal("urn:node:mnA");
       });
+
+      it("supports add, replace, remove, and clear", () => {
+        const replicas = new ReplicaList();
+
+        replicas
+          .add({
+            replicaMemberNode: "urn:node:mnA",
+            replicationStatus: "requested",
+            replicaVerified: "2025-06-25T00:00:00Z",
+          })
+          .add({
+            replicaMemberNode: "urn:node:mnB",
+            replicationStatus: "completed",
+            replicaVerified: "2025-06-26T00:00:00Z",
+          })
+          .replace(1, {
+            replicaMemberNode: "urn:node:mnC",
+            replicationStatus: "invalidated",
+            replicaVerified: "2025-06-27T00:00:00Z",
+          })
+          .remove(0);
+
+        expect(replicas).to.have.length(1);
+        expect(replicas[0].replicaMemberNode).to.equal("urn:node:mnC");
+
+        replicas.clear();
+        expect(replicas).to.have.length(0);
+      });
     });
 
     describe("validate()", () => {
@@ -53,7 +84,7 @@ define([
           },
         ]).validate();
 
-        expect(errors).to.deep.equal([
+        expect(summarizeIssues(errors)).to.deep.equal([
           {
             field: "replica[0].replicaMemberNode",
             message:

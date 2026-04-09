@@ -7,6 +7,9 @@ define(["models/sysmeta/Replica"], (Replica) => {
   const createDoc = () =>
     new DOMParser().parseFromString("<root />", "application/xml");
 
+  const summarizeIssues = (issues) =>
+    issues.map(({ field, message }) => ({ field, message }));
+
   describe("Replica", () => {
     describe("construction", () => {
       it("normalizes member node, status, and verified dates", () => {
@@ -62,7 +65,7 @@ define(["models/sysmeta/Replica"], (Replica) => {
 
     describe("validate()", () => {
       it("requires the core replica fields", () => {
-        expect(new Replica().validate()).to.deep.equal([
+        expect(summarizeIssues(new Replica().validate())).to.deep.equal([
           {
             field: "replica.replicaMemberNode",
             message:
@@ -86,7 +89,7 @@ define(["models/sysmeta/Replica"], (Replica) => {
           replicaVerified: "not-a-date",
         }).validate("replica[1]");
 
-        expect(errors).to.deep.equal([
+        expect(summarizeIssues(errors)).to.deep.equal([
           {
             field: "replica[1].replicationStatus",
             message:
@@ -121,7 +124,7 @@ define(["models/sysmeta/Replica"], (Replica) => {
     });
 
     describe("toJSON()", () => {
-      it("returns plain replica data", () => {
+      it("returns JSON-safe replica data", () => {
         const verified = new Date("2025-06-25T00:00:00Z");
         const json = new Replica({
           replicaMemberNode: "urn:node:mnA",
@@ -131,8 +134,7 @@ define(["models/sysmeta/Replica"], (Replica) => {
 
         expect(json.replicaMemberNode).to.equal("urn:node:mnA");
         expect(json.replicationStatus).to.equal("completed");
-        expect(json.replicaVerified).to.be.instanceof(Date);
-        expect(json.replicaVerified.getTime()).to.equal(verified.getTime());
+        expect(json.replicaVerified).to.equal("2025-06-25T00:00:00.000Z");
       });
     });
   });

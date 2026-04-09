@@ -399,7 +399,8 @@ define([
           const signal = controller?.signal;
 
           // Mock a record update for the current PID to show initial progress
-          const thisSysMeta = new VersionTracker.SysMeta({ identifier: pid });
+          const thisSysMeta = new VersionTracker.SystemMetadata();
+          thisSysMeta.identifier = pid;
           thisSysMeta.versionHistory = { [pid]: 0 };
           this.onVersionFound(thisSysMeta);
 
@@ -624,7 +625,7 @@ define([
        * version.
        */
       onVersionFound(sysMeta) {
-        if (!sysMeta || !sysMeta?.data?.identifier) {
+        if (!sysMeta || !sysMeta?.identifier) {
           return;
         }
 
@@ -632,14 +633,14 @@ define([
         // version in that series. The returned sysmeta still carries the
         // requested SID in the schema's seriesId field.
         if (
-          sysMeta.data.seriesId === this.pid &&
-          sysMeta.data.identifier !== this.pid
+          sysMeta.seriesId === this.pid &&
+          sysMeta.identifier !== this.pid
         ) {
           // Delete the record with the series ID because we don't want it to
           // appear as a separate version in the timeline
           this.collection.remove(this.pid);
-          if (this.pid !== sysMeta.data.identifier) {
-            this.pid = sysMeta.data.identifier;
+          if (this.pid !== sysMeta.identifier) {
+            this.pid = sysMeta.identifier;
             this.render();
           }
           return;
@@ -651,7 +652,7 @@ define([
         } else if (index < 0) {
           this.numPrev = Math.abs(index);
         }
-        const sysMetaData = sysMeta.toJSON(true, ["versionHistory", "errors"]);
+        const sysMetaData = sysMeta.toJSON();
         // For merging purposes, ensure id is set to identifier
         sysMetaData.id = sysMetaData.identifier;
         this.collection.add(sysMetaData, { merge: true });

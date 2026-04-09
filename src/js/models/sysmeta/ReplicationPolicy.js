@@ -9,14 +9,18 @@ define([
     normalizeStringArray,
     isNonEmptyString,
     isNonNegativeInteger,
+    normalizeText,
+    requireNonNegativeInteger,
   } = ValueUtilities;
-  const {
-    createValidationError,
-  } = ValidationUtilities;
+  const { fixParsedValue, createValidationIssue } = ValidationUtilities;
   const REPLICATION_POLICY_CHILD_SEQUENCE = [
     { name: "preferredMemberNode", minOccurs: 0, maxOccurs: Infinity },
     { name: "blockedMemberNode", minOccurs: 0, maxOccurs: Infinity },
   ];
+  const NODE_TYPE_TO_FIELD = {
+    preferred: "preferredNodes",
+    blocked: "blockedNodes",
+  };
 
   /**
    * Replication policy value object for System Metadata.
@@ -39,6 +43,119 @@ define([
       this.numberReplicas = normalizeInteger(data.numberReplicas);
       this.preferredNodes = normalizeStringArray(data.preferredNodes);
       this.blockedNodes = normalizeStringArray(data.blockedNodes);
+    }
+
+    /**
+     * Normalize and validate a replication-node type.
+     * @param {string} type Node-list type.
+     * @returns {"preferred"|"blocked"} Canonical node-list type.
+     * @private
+     */
+    static requireNodeType(type) {
+      const normalizedType = normalizeText(type)?.toLowerCase() || null;
+      if (
+        !Object.prototype.hasOwnProperty.call(
+          NODE_TYPE_TO_FIELD,
+          normalizedType,
+        )
+      ) {
+        throw new Error(
+          `ReplicationPolicy node type must be "preferred" or "blocked", got "${type}".`,
+        );
+      }
+      return normalizedType;
+    }
+
+    /**
+     * Resolve the array field for a replication-node type.
+     * @param {"preferred"|"blocked"} type Node-list type.
+     * @returns {"preferredNodes"|"blockedNodes"} Backing array field.
+     * @private
+     */
+    static getNodeField(type) {
+      return NODE_TYPE_TO_FIELD[this.requireNodeType(type)];
+    }
+
+    /**
+     * Append one preferred or blocked member node.
+     * @param {string} node Member node identifier.
+     * @param {"preferred"|"blocked"} type Node-list type.
+     * @returns {ReplicationPolicy} The same policy instance.
+     */
+    add(node, type) {
+      this[ReplicationPolicy.getNodeField(type)].push(node);
+      this[ReplicationPolicy.getNodeField(type)] = normalizeStringArray(
+        this[ReplicationPolicy.getNodeField(type)],
+      );
+      return this;
+    }
+
+    /**
+     * Replace one preferred or blocked member node.
+     * @param {number} index Node index to replace.
+     * @param {string} node Replacement member node.
+     * @param {"preferred"|"blocked"} type Node-list type.
+     * @returns {ReplicationPolicy} The same policy instance.
+     */
+    replace(index, node, type) {
+      const normalizedIndex = requireNonNegativeInteger(index);
+      const field = ReplicationPolicy.getNodeField(type);
+      if (normalizedIndex >= this[field].length) {
+        throw new Error(
+          `ReplicationPolicy.replace could not find ${type} node at index ${normalizedIndex}.`,
+        );
+      }
+      this[field][normalizedIndex] = node;
+      this[field] = normalizeStringArray(this[field]);
+      return this;
+    }
+
+    /**
+     * Remove one preferred or blocked member node.
+     * @param {number} index Node index to remove.
+     * @param {"preferred"|"blocked"} type Node-list type.
+     * @returns {ReplicationPolicy} The same policy instance.
+     */
+    remove(index, type) {
+      const normalizedIndex = requireNonNegativeInteger(index);
+      const field = ReplicationPolicy.getNodeField(type);
+      if (normalizedIndex >= this[field].length) {
+        throw new Error(
+          `ReplicationPolicy.remove could not find ${type} node at index ${normalizedIndex}.`,
+        );
+      }
+      this[field].splice(normalizedIndex, 1);
+      return this;
+    }
+
+    /**
+     * Clear one or both preferred/blocked node lists and optionally the
+     * scalar policy values.
+     * @param {"preferred"|"blocked"} [type] Node-list type to clear.
+     * @returns {ReplicationPolicy} The same policy instance.
+     */
+    clear(type) {
+      if (type === undefined) {
+        this.replicationAllowed = null;
+        this.numberReplicas = null;
+        this.preferredNodes = [];
+        this.blockedNodes = [];
+        return this;
+      }
+      this[ReplicationPolicy.getNodeField(type)] = [];
+      return this;
+    }
+
+    /**
+     * Normalize the policy in place.
+     * @returns {ReplicationPolicy} The same policy instance.
+     */
+    normalize() {
+      this.replicationAllowed = normalizeBoolean(this.replicationAllowed);
+      this.numberReplicas = normalizeInteger(this.numberReplicas);
+      this.preferredNodes = normalizeStringArray(this.preferredNodes);
+      this.blockedNodes = normalizeStringArray(this.blockedNodes);
+      return this;
     }
 
     /**
@@ -74,20 +191,51 @@ define([
     }
 
     /**
+     * Parse a `replicationPolicy` XML element, dropping it when invalid.
+     * Unknown child nodes and ordering issues are ignored silently.
+     * @param {Element|null} element XML element to parse.
+     * @param {Array<object>} [parseWarnings] Lossy parse warnings.
+     * @param {string} [path] Field path used in warnings and validation.
+     * @returns {ReplicationPolicy} Parsed policy or an empty policy when
+     * invalid.
+     */
+    static parse(element, parseWarnings = [], path = "replicationPolicy") {
+      if (!element) return new ReplicationPolicy();
+
+      const policy = ReplicationPolicy.fromValue({
+        replicationAllowed: element.getAttribute("replicationAllowed"),
+        numberReplicas: element.getAttribute("numberReplicas"),
+        preferredNodes: XMLUtilities.getDirectChildTexts(
+          element,
+          "preferredMemberNode",
+        ),
+        blockedNodes: XMLUtilities.getDirectChildTexts(
+          element,
+          "blockedMemberNode",
+        ),
+      });
+      return fixParsedValue({
+        value: policy,
+        path,
+        parseWarnings,
+        invalidMessage:
+          "Ignored invalid replicationPolicy content while parsing system metadata.",
+        validate: (candidate) => candidate.validate(path),
+        fallback: () => new ReplicationPolicy(),
+      });
+    }
+
+    /**
      * Coerce unknown input into a ReplicationPolicy instance.
      * @param {ReplicationPolicy|object|null|undefined} value Replication
      * policy-like input.
-     * @returns {ReplicationPolicy|null} Normalized policy or `null` when empty.
+     * @returns {ReplicationPolicy} Normalized policy.
      */
     static fromValue(value) {
-      if (value === undefined || value === null) return null;
-
-      const policy =
-        value instanceof ReplicationPolicy
-          ? new ReplicationPolicy(value.toJSON())
-          : new ReplicationPolicy(value);
-
-      return policy.hasValues() ? policy : null;
+      if (value === undefined || value === null) return new ReplicationPolicy();
+      return value instanceof ReplicationPolicy
+        ? new ReplicationPolicy(value.toJSON())
+        : new ReplicationPolicy(value);
     }
 
     /**
@@ -117,10 +265,10 @@ define([
         typeof this.replicationAllowed !== "boolean"
       ) {
         errors.push(
-          createValidationError(
-            `${path}.replicationAllowed`,
-            "replicationAllowed must be a boolean when present.",
-          ),
+          createValidationIssue({
+            field: `${path}.replicationAllowed`,
+            message: "replicationAllowed must be a boolean when present.",
+          }),
         );
       }
 
@@ -129,20 +277,21 @@ define([
         !isNonNegativeInteger(this.numberReplicas)
       ) {
         errors.push(
-          createValidationError(
-            `${path}.numberReplicas`,
-            "numberReplicas must be an unsigned integer when present.",
-          ),
+          createValidationIssue({
+            field: `${path}.numberReplicas`,
+            message:
+              "numberReplicas must be a non-negative integer when present.",
+          }),
         );
       }
 
       this.preferredNodes.forEach((node, index) => {
         if (!isNonEmptyString(node)) {
           errors.push(
-            createValidationError(
-              `${path}.preferredNodes[${index}]`,
-              "preferredMemberNode values must be non-empty strings.",
-            ),
+            createValidationIssue({
+              field: `${path}.preferredNodes[${index}]`,
+              message: "preferredMemberNode values must be non-empty strings.",
+            }),
           );
         }
       });
@@ -150,10 +299,10 @@ define([
       this.blockedNodes.forEach((node, index) => {
         if (!isNonEmptyString(node)) {
           errors.push(
-            createValidationError(
-              `${path}.blockedNodes[${index}]`,
-              "blockedMemberNode values must be non-empty strings.",
-            ),
+            createValidationIssue({
+              field: `${path}.blockedNodes[${index}]`,
+              message: "blockedMemberNode values must be non-empty strings.",
+            }),
           );
         }
       });
@@ -183,7 +332,12 @@ define([
       }
 
       this.preferredNodes.forEach((node) => {
-        XMLUtilities.appendTextElement(doc, element, "preferredMemberNode", node);
+        XMLUtilities.appendTextElement(
+          doc,
+          element,
+          "preferredMemberNode",
+          node,
+        );
       });
 
       this.blockedNodes.forEach((node) => {

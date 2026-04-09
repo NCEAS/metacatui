@@ -7,8 +7,11 @@ define(["models/sysmeta/ReplicationPolicy"], (ReplicationPolicy) => {
   const createDoc = () =>
     new DOMParser().parseFromString("<root />", "application/xml");
 
+  const summarizeIssues = (issues) =>
+    issues.map(({ field, message }) => ({ field, message }));
+
   describe("ReplicationPolicy", () => {
-    describe("construction", () => {
+    describe("construction and mutation", () => {
       it("normalizes booleans, integers, and node lists", () => {
         const policy = new ReplicationPolicy({
           replicationAllowed: "true",
@@ -24,6 +27,29 @@ define(["models/sysmeta/ReplicationPolicy"], (ReplicationPolicy) => {
           "urn:node:mnB",
         ]);
         expect(policy.blockedNodes).to.deep.equal(["urn:node:mnZ"]);
+      });
+
+      it("supports add, replace, remove, and clear", () => {
+        const policy = new ReplicationPolicy({
+          replicationAllowed: true,
+          numberReplicas: 2,
+        });
+
+        policy
+          .add("urn:node:mnA", "preferred")
+          .add("urn:node:mnZ", "blocked")
+          .replace(0, "urn:node:mnB", "preferred")
+          .remove(0, "blocked");
+
+        expect(policy.preferredNodes).to.deep.equal(["urn:node:mnB"]);
+        expect(policy.blockedNodes).to.deep.equal([]);
+
+        policy.clear("preferred");
+        expect(policy.preferredNodes).to.deep.equal([]);
+        expect(policy.replicationAllowed).to.equal(true);
+
+        policy.clear();
+        expect(policy.hasValues()).to.equal(false);
       });
     });
 
@@ -78,7 +104,7 @@ define(["models/sysmeta/ReplicationPolicy"], (ReplicationPolicy) => {
     });
 
     describe("fromValue()", () => {
-      it("coerces plain input and returns null for empty policies", () => {
+      it("coerces plain input and returns an empty policy for empty values", () => {
         const source = new ReplicationPolicy({
           replicationAllowed: true,
           numberReplicas: 2,
@@ -97,7 +123,10 @@ define(["models/sysmeta/ReplicationPolicy"], (ReplicationPolicy) => {
         expect(fromPolicy).to.be.instanceof(ReplicationPolicy);
         expect(fromPolicy).to.not.equal(source);
         expect(fromPolicy.toJSON()).to.deep.equal(source.toJSON());
-        expect(ReplicationPolicy.fromValue({})).to.equal(null);
+        expect(ReplicationPolicy.fromValue({})).to.be.instanceof(
+          ReplicationPolicy,
+        );
+        expect(ReplicationPolicy.fromValue({}).hasValues()).to.equal(false);
       });
     });
 
@@ -110,14 +139,15 @@ define(["models/sysmeta/ReplicationPolicy"], (ReplicationPolicy) => {
           blockedNodes: [""],
         }).validate();
 
-        expect(errors).to.deep.equal([
+        expect(summarizeIssues(errors)).to.deep.equal([
           {
             field: "replicationPolicy.replicationAllowed",
             message: "replicationAllowed must be a boolean when present.",
           },
           {
             field: "replicationPolicy.numberReplicas",
-            message: "numberReplicas must be an unsigned integer when present.",
+            message:
+              "numberReplicas must be a non-negative integer when present.",
           },
           {
             field: "replicationPolicy.preferredNodes[0]",

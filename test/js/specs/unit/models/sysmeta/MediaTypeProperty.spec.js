@@ -7,6 +7,9 @@ define(["models/sysmeta/MediaTypeProperty"], (MediaTypeProperty) => {
   const createDoc = () =>
     new DOMParser().parseFromString("<root />", "application/xml");
 
+  const summarizeIssues = (issues) =>
+    issues.map(({ field, message }) => ({ field, message }));
+
   describe("MediaTypeProperty", () => {
     describe("construction", () => {
       it("normalizes name and value text", () => {
@@ -41,7 +44,9 @@ define(["models/sysmeta/MediaTypeProperty"], (MediaTypeProperty) => {
 
     describe("validate()", () => {
       it("requires a non-empty property name", () => {
-        expect(new MediaTypeProperty({ name: "" }).validate()).to.deep.equal([
+        expect(
+          summarizeIssues(new MediaTypeProperty({ name: "" }).validate()),
+        ).to.deep.equal([
           {
             field: "mediaType.property.name",
             message: "Media type property names are required.",

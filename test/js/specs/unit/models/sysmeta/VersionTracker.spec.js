@@ -7,10 +7,8 @@ define([
   const expect = chai.expect;
 
   const makeSysMeta = (nextPid = null, prevPid = null) => ({
-    data: {
-      obsoletedBy: nextPid,
-      obsoletes: prevPid,
-    },
+    obsoletedBy: nextPid,
+    obsoletes: prevPid,
   });
 
   const makeDatedSysMeta = ({
@@ -19,12 +17,10 @@ define([
     nextPid = null,
     prevPid = null,
   }) => ({
-    data: {
-      identifier,
-      dateUploaded,
-      obsoletedBy: nextPid,
-      obsoletes: prevPid,
-    },
+    identifier,
+    dateUploaded,
+    obsoletedBy: nextPid,
+    obsoletes: prevPid,
   });
 
   describe("VersionTracker", () => {
@@ -764,7 +760,7 @@ define([
 
         await state.vt.notify("pid.1", "pid.2", 1);
         const sysMeta = updateSpy.firstCall.args[0];
-        sysMeta.data.identifier.should.equal("pid.2");
+        sysMeta.identifier.should.equal("pid.2");
         sysMeta.errors.should.deep.equal([401]);
         sysMeta.versionHistory["pid.1"].should.equal(1);
       });
@@ -779,7 +775,7 @@ define([
         await state.vt.notify("pid.1", "pid.2", -1);
 
         const sysMeta = updateSpy.firstCall.args[0];
-        sysMeta.data.identifier.should.equal("pid.2");
+        sysMeta.identifier.should.equal("pid.2");
         sysMeta.errors.should.deep.equal([404]);
         sysMeta.versionHistory["pid.1"].should.equal(-1);
       });

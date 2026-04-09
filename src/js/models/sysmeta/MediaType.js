@@ -3,14 +3,10 @@ define([
   "models/sysmeta/MediaTypeProperty",
   "common/ValueUtilities",
   "common/ValidationUtilities",
-], (
-  XMLUtilities,
-  MediaTypeProperty,
-  ValueUtilities,
-  ValidationUtilities,
-) => {
-  const { normalizeText, isNonEmptyString } = ValueUtilities;
-  const { createValidationError } = ValidationUtilities;
+], (XMLUtilities, MediaTypeProperty, ValueUtilities, ValidationUtilities) => {
+  const { normalizeText, isNonEmptyString, requireNonNegativeInteger } =
+    ValueUtilities;
+  const { fixParsedValue, createValidationIssue } = ValidationUtilities;
   const MEDIA_TYPE_CHILD_SEQUENCE = [
     { name: "property", minOccurs: 0, maxOccurs: Infinity },
   ];
@@ -44,6 +40,90 @@ define([
     }
 
     /**
+     * Append one media-type property.
+     * @param {MediaTypeProperty|object} property Media-type property to append.
+     * @returns {MediaType} The same media type instance.
+     */
+    add(property) {
+      this.properties.push(
+        property instanceof MediaTypeProperty
+          ? property
+          : new MediaTypeProperty(property),
+      );
+      return this;
+    }
+
+    /**
+     * Replace one media-type property.
+     * @param {number} index Property index to replace.
+     * @param {MediaTypeProperty|object} property Replacement property.
+     * @returns {MediaType} The same media type instance.
+     */
+    replace(index, property) {
+      const normalizedIndex = requireNonNegativeInteger(index);
+      if (normalizedIndex >= this.properties.length) {
+        throw new Error(
+          `MediaType.replace could not find property at index ${normalizedIndex}.`,
+        );
+      }
+      this.properties[normalizedIndex] =
+        property instanceof MediaTypeProperty
+          ? property
+          : new MediaTypeProperty(property);
+      return this;
+    }
+
+    /**
+     * Remove one media-type property.
+     * @param {number} index Property index to remove.
+     * @returns {MediaType} The same media type instance.
+     */
+    remove(index) {
+      const normalizedIndex = requireNonNegativeInteger(index);
+      if (normalizedIndex >= this.properties.length) {
+        throw new Error(
+          `MediaType.remove could not find property at index ${normalizedIndex}.`,
+        );
+      }
+      this.properties.splice(normalizedIndex, 1);
+      return this;
+    }
+
+    /**
+     * Clear the full media type or only the properties list.
+     * @param {"properties"} [scope] Optional scope to clear.
+     * @returns {MediaType} The same media type instance.
+     */
+    clear(scope) {
+      if (scope === undefined) {
+        this.name = null;
+        this.properties = [];
+        return this;
+      }
+      if (scope !== "properties") {
+        throw new Error(
+          `MediaType.clear only supports scope "properties", got "${scope}".`,
+        );
+      }
+      this.properties = [];
+      return this;
+    }
+
+    /**
+     * Normalize the media type in place.
+     * @returns {MediaType} The same media type instance.
+     */
+    normalize() {
+      this.name = normalizeText(this.name);
+      this.properties = Array.from(this.properties || []).map((property) =>
+        property instanceof MediaTypeProperty
+          ? new MediaTypeProperty(property.toJSON())
+          : new MediaTypeProperty(property),
+      );
+      return this;
+    }
+
+    /**
      * Create a MediaType from a `mediaType` XML element.
      * @param {Element} element XML element to parse.
      * @returns {MediaType} Parsed media type instance.
@@ -60,9 +140,45 @@ define([
 
       return new MediaType({
         name: element.getAttribute("name"),
-        properties: XMLUtilities.findDirectChildElements(element, "property").map(
-          (property) => MediaTypeProperty.fromElement(property),
-        ),
+        properties: XMLUtilities.findDirectChildElements(
+          element,
+          "property",
+        ).map((property) => MediaTypeProperty.fromElement(property)),
+      });
+    }
+
+    /**
+     * Parse a `mediaType` XML element while salvaging valid properties.
+     * Unknown child nodes and ordering issues are ignored silently.
+     * @param {Element|null} element XML element to parse.
+     * @param {Array<object>} [parseWarnings] Lossy parse warnings.
+     * @param {string} [path] Field path used in warnings and validation.
+     * @returns {MediaType} Parsed media type or an empty media type when
+     * invalid.
+     */
+    static parse(element, parseWarnings = [], path = "mediaType") {
+      if (!element) return new MediaType();
+
+      const mediaType = new MediaType({
+        name: element.getAttribute("name"),
+        properties: XMLUtilities.findDirectChildElements(element, "property")
+          .map((propertyElement, index) =>
+            MediaTypeProperty.parse(
+              propertyElement,
+              parseWarnings,
+              `${path}.properties[${index}]`,
+            ),
+          )
+          .filter(Boolean),
+      });
+      return fixParsedValue({
+        value: mediaType,
+        path,
+        parseWarnings,
+        invalidMessage:
+          "Ignored invalid mediaType content while parsing system metadata.",
+        validate: (candidate) => candidate.validate(path),
+        fallback: () => new MediaType(),
       });
     }
 
@@ -70,17 +186,13 @@ define([
      * Coerce unknown input into a MediaType instance.
      * @param {MediaType|object|string|null|undefined} value Media type-like
      * input.
-     * @returns {MediaType|null} Normalized media type or `null` when empty.
+     * @returns {MediaType} Normalized media type.
      */
     static fromValue(value) {
-      if (value === undefined || value === null) return null;
-
-      const mediaType =
-        value instanceof MediaType
-          ? new MediaType(value.toJSON())
-          : new MediaType(value);
-
-      return mediaType.isEmpty() ? null : mediaType;
+      if (value === undefined || value === null) return new MediaType();
+      return value instanceof MediaType
+        ? new MediaType(value.toJSON())
+        : new MediaType(value);
     }
 
     /**
@@ -110,10 +222,10 @@ define([
 
       if (!isNonEmptyString(this.name)) {
         errors.push(
-          createValidationError(
-            `${path}.name`,
-            "mediaType requires a non-empty name attribute.",
-          ),
+          createValidationIssue({
+            field: `${path}.name`,
+            message: "mediaType requires a non-empty name attribute.",
+          }),
         );
       }
 

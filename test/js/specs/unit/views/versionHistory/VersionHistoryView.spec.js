@@ -162,10 +162,8 @@ define([
       state.sandbox.stub(state.view, "render");
 
       state.view.onVersionFound({
-        data: {
-          identifier: "pid.2",
-          seriesId: "ref.1",
-        },
+        identifier: "pid.2",
+        seriesId: "ref.1",
         toJSON() {
           return {
             identifier: "pid.2",
@@ -191,10 +189,8 @@ define([
       state.sandbox.stub(state.view, "render");
 
       state.view.onVersionFound({
-        data: {
-          identifier: "pid.2",
-          seriesId: "ref.2",
-        },
+        identifier: "pid.2",
+        seriesId: "ref.2",
         versionHistory: { "ref.1": 1 },
         toJSON() {
           return {

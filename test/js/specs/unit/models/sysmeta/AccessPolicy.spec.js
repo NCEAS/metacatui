@@ -10,6 +10,9 @@ define([
   const createDoc = () =>
     new DOMParser().parseFromString("<root />", "application/xml");
 
+  const summarizeIssues = (issues) =>
+    issues.map(({ field, message }) => ({ field, message }));
+
   describe("AccessPolicy", () => {
     describe("construction and mutation", () => {
       it("clones AccessRule instances and normalizes plain objects", () => {
@@ -40,6 +43,28 @@ define([
 
         expect(policy[0]).to.be.instanceof(AccessRule);
         expect(policy[0].permissions).to.deep.equal(["read"]);
+      });
+
+      it("supports add, replace, remove, and clear", () => {
+        const policy = new AccessPolicy();
+
+        policy
+          .add({ subjects: ["public"], permissions: ["read"] })
+          .add({ subjects: ["userA"], permissions: ["write"] })
+          .replace(1, {
+            subjects: ["userB"],
+            permissions: ["changePermission"],
+          })
+          .remove(0);
+
+        expect(policy).to.have.length(1);
+        expect(policy[0].toJSON()).to.deep.equal({
+          subjects: ["userB"],
+          permissions: ["changePermission"],
+        });
+
+        policy.clear();
+        expect(policy).to.have.length(0);
       });
     });
 
@@ -112,7 +137,7 @@ define([
           { subjects: [""], permissions: ["bogus"] },
         ]).validate();
 
-        expect(errors).to.deep.equal([
+        expect(summarizeIssues(errors)).to.deep.equal([
           {
             field: "accessPolicy[0].subjects[0]",
             message: "Subjects must be non-empty strings.",

@@ -10,7 +10,7 @@ define(["models/sysmeta/SysMetaSchema"], (SysMetaSchema) => {
         expect(SysMetaSchema.XML_NS_V2).to.equal(
           "http://ns.dataone.org/service/types/v2.0",
         );
-        expect(SysMetaSchema.SYSMETA_NAMESPACE_BY_VERSION).to.deep.equal({
+        expect(SysMetaSchema.NAMESPACE_BY_VERSION).to.deep.equal({
           v1: "http://ns.dataone.org/service/types/v1",
           v2: "http://ns.dataone.org/service/types/v2.0",
         });
@@ -26,7 +26,7 @@ define(["models/sysmeta/SysMetaSchema"], (SysMetaSchema) => {
           "failed",
           "invalidated",
         ]);
-        expect(SysMetaSchema.ROOT_NODE_ORDER).to.deep.equal([
+        expect(SysMetaSchema.NODE_ORDER).to.deep.equal([
           "serialVersion",
           "identifier",
           "formatId",
@@ -73,37 +73,40 @@ define(["models/sysmeta/SysMetaSchema"], (SysMetaSchema) => {
           "mediaType",
           "fileName",
         ]);
-        expect(SysMetaSchema.SCALAR_FIELD_DEFINITIONS[0]).to.deep.equal({
+        expect(SysMetaSchema.SIMPLE_FIELD_DEFINITIONS[0]).to.deep.equal({
           field: "serialVersion",
-          kind: "integer",
+          type: "integer",
           defaultValue: null,
           minOccurs: 0,
           maxOccurs: 1,
         });
         expect(
-          SysMetaSchema.SCALAR_FIELD_DEFINITIONS.find(
+          SysMetaSchema.SIMPLE_FIELD_DEFINITIONS.find(
             ({ field }) => field === "identifier",
           ),
         ).to.deep.equal({
           field: "identifier",
-          kind: "text",
+          type: "text",
           defaultValue: null,
           requiredNonEmpty: true,
           minOccurs: 1,
           maxOccurs: 1,
         });
         expect(
-          SysMetaSchema.FIELD_DEFINITIONS.find(({ field }) => field === "replica"),
+          SysMetaSchema.FIELD_DEFINITIONS.find(
+            ({ field }) => field === "replica",
+          ),
         ).to.deep.include({
           field: "replica",
-          kind: "complex",
+          type: "complex",
           minOccurs: 0,
         });
         expect(
-          SysMetaSchema.FIELD_DEFINITIONS.find(({ field }) => field === "replica")
-            .maxOccurs,
+          SysMetaSchema.FIELD_DEFINITIONS.find(
+            ({ field }) => field === "replica",
+          ).maxOccurs,
         ).to.equal(Infinity);
-        expect(SysMetaSchema.DEFAULT_SCALAR_FIELD_VALUES).to.deep.equal({
+        expect(SysMetaSchema.DEFAULT_SIMPLE_FIELD_VALUES).to.deep.equal({
           serialVersion: null,
           identifier: null,
           formatId: null,
@@ -174,9 +177,9 @@ define(["models/sysmeta/SysMetaSchema"], (SysMetaSchema) => {
 
     describe("normalizeReplicationStatus()", () => {
       it("normalizes known statuses and preserves unknown values", () => {
-        expect(SysMetaSchema.normalizeReplicationStatus(" COMPLETED ")).to.equal(
-          "completed",
-        );
+        expect(
+          SysMetaSchema.normalizeReplicationStatus(" COMPLETED "),
+        ).to.equal("completed");
         expect(SysMetaSchema.normalizeReplicationStatus("requested")).to.equal(
           "requested",
         );

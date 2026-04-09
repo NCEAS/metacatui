@@ -1,8 +1,8 @@
 define([
   "/test/js/specs/shared/clean-state.js",
   "models/dataONEServices/SysMetaService",
-  "models/sysmeta/SysMeta",
-], (cleanState, SysMetaService, SysMeta) => {
+  "models/sysmeta/SystemMetadata",
+], (cleanState, SysMetaService, SystemMetadata) => {
   const should = chai.should();
   const expect = chai.expect;
   const XML_NS_V2 = "http://ns.dataone.org/service/types/v2.0";
@@ -102,7 +102,7 @@ define([
         expect(caught.message).to.match(/download requires a pid/i);
       });
 
-      it("fetches XML and returns a SysMeta instance", async () => {
+      it("fetches XML and returns a SystemMetadata instance", async () => {
         state.sandbox
           .stub(globalThis, "fetch")
           .resolves(makeResponse(SAMPLE_XML));
@@ -115,8 +115,8 @@ define([
           useCache: false,
         });
 
-        result.should.be.instanceof(SysMeta);
-        result.data.identifier.should.equal("sample.1");
+        result.should.be.instanceof(SystemMetadata);
+        result.identifier.should.equal("sample.1");
       });
 
       it("returns the schema seriesId when a SID request resolves to a PID", async () => {
@@ -132,8 +132,8 @@ define([
           useCache: false,
         });
 
-        result.data.identifier.should.equal("sample.1");
-        expect(result.data.seriesId).to.equal("series.1");
+        result.identifier.should.equal("sample.1");
+        expect(result.seriesId).to.equal("series.1");
       });
 
       it("returns cached XML when available", async () => {
@@ -153,7 +153,7 @@ define([
           useCache: true,
         });
 
-        result.data.identifier.should.equal("sample.1");
+        result.identifier.should.equal("sample.1");
         reqStub.called.should.be.false;
       });
 
@@ -183,7 +183,7 @@ define([
           .stub(globalThis, "fetch")
           .callsFake((url) => {
             url.should.equal(
-              "https://example.org/sysmeta/doi%3A10.5063%2Fabc",
+              "https://example.org/sysmeta/doi:10.5063%2Fabc",
             );
             return Promise.resolve(makeResponse(SAMPLE_XML));
           });
@@ -209,7 +209,9 @@ define([
         const removeCachedStub = state.sandbox
           .stub(service, "removeCached")
           .resolves();
-        state.sandbox.stub(SysMeta, "fromXml").throws(new Error("Bad XML"));
+        state.sandbox
+          .stub(SystemMetadata, "fromXml")
+          .throws(new Error("Bad XML"));
 
         try {
           await service.download("pid.bad", { auth: false, cacheKey: "k.bad" });
@@ -218,7 +220,7 @@ define([
           );
         } catch (err) {
           err.message.should.match(
-            /Failed to parse SysMeta XML for PID pid\.bad: Bad XML/,
+            /Failed to parse SystemMetadata XML for PID pid\.bad: Bad XML/,
           );
         }
 
@@ -383,7 +385,7 @@ define([
 
         await service.update("doi:10.5063/abc", xml, { auth: false });
         requests[0].should.equal(
-          "https://example.org/sysmeta/doi%3A10.5063%2Fabc",
+          "https://example.org/sysmeta/doi:10.5063%2Fabc",
         );
       });
     });

@@ -6,13 +6,10 @@ define([
 ], (XMLUtilities, ValueUtilities, ValidationUtilities, SysMetaSchema) => {
   const { normalizeStringArray, dedupeArray, isNonEmptyString } =
     ValueUtilities;
-  const {
-    PERMISSIONS,
-    normalizePermission,
-  } = SysMetaSchema;
-  const {
-    createValidationError,
-  } = ValidationUtilities;
+  const { PERMISSIONS, normalizePermission } = SysMetaSchema;
+  const { fixParsedValue, createValidationIssue } = ValidationUtilities;
+  // Define the expected child element sequence for an `allow` element in the
+  // access policy XML.
   const ACCESS_RULE_CHILD_SEQUENCE = [
     { name: "subject", minOccurs: 1, maxOccurs: Infinity },
     { name: "permission", minOccurs: 1, maxOccurs: Infinity },
@@ -61,6 +58,32 @@ define([
     }
 
     /**
+     * Parse an `allow` XML element, dropping it when invalid.
+     * Unknown child nodes and ordering issues are ignored silently.
+     * @param {Element|null} element XML element to parse.
+     * @param {Array<object>} [parseWarnings] Lossy parse warnings.
+     * @param {string} [path] Field path used in warnings and validation.
+     * @returns {AccessRule|null} Parsed access rule or null when invalid.
+     */
+    static parse(element, parseWarnings = [], path = "accessPolicy") {
+      if (!element) return null;
+
+      const rule = new AccessRule({
+        subjects: XMLUtilities.getDirectChildTexts(element, "subject"),
+        permissions: XMLUtilities.getDirectChildTexts(element, "permission"),
+      });
+      return fixParsedValue({
+        value: rule,
+        path,
+        parseWarnings,
+        invalidMessage:
+          "Ignored invalid accessPolicy rule while parsing system metadata.",
+        validate: (candidate) => candidate.validate(path),
+        fallback: () => null,
+      });
+    }
+
+    /**
      * Return the first subject in the rule.
      * @returns {string|null} First subject value, if present.
      */
@@ -103,40 +126,40 @@ define([
 
       if (!this.subjects.length) {
         errors.push(
-          createValidationError(
-            `${path}.subjects`,
-            "At least one subject is required.",
-          ),
+          createValidationIssue({
+            field: `${path}.subjects`,
+            message: "At least one subject is required.",
+          }),
         );
       }
 
       this.subjects.forEach((subject, index) => {
         if (!isNonEmptyString(subject)) {
           errors.push(
-            createValidationError(
-              `${path}.subjects[${index}]`,
-              "Subjects must be non-empty strings.",
-            ),
+            createValidationIssue({
+              field: `${path}.subjects[${index}]`,
+              message: "Subjects must be non-empty strings.",
+            }),
           );
         }
       });
 
       if (!this.permissions.length) {
         errors.push(
-          createValidationError(
-            `${path}.permissions`,
-            "At least one permission is required.",
-          ),
+          createValidationIssue({
+            field: `${path}.permissions`,
+            message: "At least one permission is required.",
+          }),
         );
       }
 
       this.permissions.forEach((permission, index) => {
         if (!PERMISSIONS.includes(permission)) {
           errors.push(
-            createValidationError(
-              `${path}.permissions[${index}]`,
-              `Permissions must be one of: ${PERMISSIONS.join(", ")}.`,
-            ),
+            createValidationIssue({
+              field: `${path}.permissions[${index}]`,
+              message: `Permissions must be one of: ${PERMISSIONS.join(", ")}.`,
+            }),
           );
         }
       });
@@ -155,15 +178,11 @@ define([
       const element = doc.createElement("allow");
 
       this.subjects.forEach((subject) => {
-        const subjectElement = doc.createElement("subject");
-        XMLUtilities.setElementText(doc, subjectElement, subject);
-        element.appendChild(subjectElement);
+        XMLUtilities.appendTextElement(doc, element, "subject", subject);
       });
 
       this.permissions.forEach((permission) => {
-        const permissionElement = doc.createElement("permission");
-        XMLUtilities.setElementText(doc, permissionElement, permission);
-        element.appendChild(permissionElement);
+        XMLUtilities.appendTextElement(doc, element, "permission", permission);
       });
 
       return element;

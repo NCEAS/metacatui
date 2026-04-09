@@ -1,9 +1,9 @@
 define([
   "models/dataONEServices/DataONEService",
-  "models/sysmeta/SysMeta",
+  "models/sysmeta/SystemMetadata",
   "common/UrlUtilities",
   "common/ValueUtilities",
-], (DataONEService, SysMeta, UrlUtilities, ValueUtilities) => {
+], (DataONEService, SystemMetadata, UrlUtilities, ValueUtilities) => {
   /**
    * Default DataONEHttpClient options for SysMetaService
    * @type {DataONEHttpClient#DataONEHttpClientOptions}
@@ -87,12 +87,11 @@ define([
     }
 
     /**
-     * Fetch SysMeta for a PID. Returns the raw sysmeta response text.
-     * @param {string} pid The PID of the object to fetch SysMeta for.
+     * Fetch System Metadata for a PID. Returns the raw sysmeta response text.
+     * @param {string} pid The PID of the object to fetch System Metadata for.
      * @param {object} [options] Options passed to
      * {@link DataONEService#download}
-     * @returns {Promise<SysMeta>} The SysMeta object for the requested PID. Raw
-     * XML can be found in the `fetchedXmlString` property.
+     * @returns {Promise<SystemMetadata>} Parsed System Metadata model.
      */
     async download(pid, options = {}) {
       const normalizedPid = this.constructor.normalizePid(
@@ -117,11 +116,11 @@ define([
 
       let sysMeta;
       try {
-        sysMeta = SysMeta.fromXml(xmlString);
+        sysMeta = SystemMetadata.fromXml(xmlString);
       } catch (error) {
         // Remove from cache if parsing fails
         await this.removeCached(resolvedCacheKey);
-        error.message = `Failed to parse SysMeta XML for PID ${normalizedPid}: ${error.message}`;
+        error.message = `Failed to parse SystemMetadata XML for PID ${normalizedPid}: ${error.message}`;
         throw error;
       }
 
@@ -129,7 +128,7 @@ define([
     }
 
     /**
-     * Remove a cached SysMeta record for a PID.
+     * Remove a cached System Metadata record for a PID.
      * @param {string} pid PID to invalidate.
      * @returns {Promise<void>} Promise resolving when invalidation completes.
      */
@@ -140,8 +139,8 @@ define([
     }
 
     /**
-     * Upload SysMeta XML to the service.
-     * @param {string} sysMetaXml SysMeta XML string.
+     * Upload System Metadata XML to the service.
+     * @param {string} sysMetaXml System Metadata XML string.
      * @param {object} [options] Options passed to {@link DataONEService#upload}.
      * @returns {Promise<DataONEHttpResponse>} Promise resolving to the upload response.
      */
@@ -163,9 +162,9 @@ define([
     }
 
     /**
-     * Update SysMeta XML for an existing object.
+     * Update System Metadata XML for an existing object.
      * @param {string} pid PID to update system metadata for.
-     * @param {string} sysMetaXml SysMeta XML string.
+     * @param {string} sysMetaXml System Metadata XML string.
      * @param {object} [options] Options passed to {@link DataONEService#upload}.
      * @returns {Promise<DataONEHttpResponse>} Promise resolving to the update response.
      */
@@ -201,7 +200,7 @@ define([
   }
 
   SysMetaService.endpoint = "sysmeta";
-  SysMetaService.SysMeta = SysMeta;
+  SysMetaService.SystemMetadata = SystemMetadata;
 
   return SysMetaService;
 });

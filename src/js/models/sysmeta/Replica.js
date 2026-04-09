@@ -1,37 +1,24 @@
 define([
   "common/XMLUtilities",
-  "common/DateUtility",
+  "common/DateUtilities",
   "common/ValueUtilities",
   "common/ValidationUtilities",
   "models/sysmeta/SysMetaSchema",
-], (XMLUtilities, DateUtilities, ValueUtilities, ValidationUtilities, SysMetaSchema) => {
-  const {
-    normalizeText,
-    isNonEmptyString,
-  } = ValueUtilities;
-  const {
-    normalizeReplicationStatus,
-    REPLICATION_STATUSES,
-  } = SysMetaSchema;
-  const {
-    createValidationError,
-  } = ValidationUtilities;
+], (
+  XMLUtilities,
+  DateUtilities,
+  ValueUtilities,
+  ValidationUtilities,
+  SysMetaSchema,
+) => {
+  const { nullIfEmpty, normalizeText, isNonEmptyString } = ValueUtilities;
+  const { normalizeReplicationStatus, REPLICATION_STATUSES } = SysMetaSchema;
+  const { fixParsedValue, createValidationIssue } = ValidationUtilities;
   const REPLICA_CHILD_SEQUENCE = [
     { name: "replicaMemberNode", minOccurs: 1, maxOccurs: 1 },
     { name: "replicationStatus", minOccurs: 1, maxOccurs: 1 },
     { name: "replicaVerified", minOccurs: 1, maxOccurs: 1 },
   ];
-
-  /**
-   * Normalize replica verification input to a Date when possible.
-   * @param {string|Date|null|undefined} value Replica verification value to
-   * normalize.
-   * @returns {Date|string|null} Normalized verification value.
-   */
-  function normalizeReplicaVerified(value) {
-    if (value === undefined || value === null || value === "") return null;
-    return DateUtilities.toDate(value) || value;
-  }
 
   /**
    * Replica entry value object for System Metadata.
@@ -50,8 +37,12 @@ define([
      */
     constructor(data = {}) {
       this.replicaMemberNode = normalizeText(data.replicaMemberNode);
-      this.replicationStatus = normalizeReplicationStatus(data.replicationStatus);
-      this.replicaVerified = normalizeReplicaVerified(data.replicaVerified);
+      this.replicationStatus = normalizeReplicationStatus(
+        data.replicationStatus,
+      );
+      this.replicaVerified =
+        DateUtilities.toDate(nullIfEmpty(data.replicaVerified)) ||
+        nullIfEmpty(data.replicaVerified);
     }
 
     /**
@@ -85,6 +76,42 @@ define([
     }
 
     /**
+     * Parse a `replica` XML element, dropping it when invalid.
+     * Unknown child nodes and ordering issues are ignored silently.
+     * @param {Element|null} element XML element to parse.
+     * @param {Array<object>} [parseWarnings] Lossy parse warnings.
+     * @param {string} [path] Field path used in warnings and validation.
+     * @returns {Replica|null} Parsed replica or null when invalid.
+     */
+    static parse(element, parseWarnings = [], path = "replica") {
+      if (!element) return null;
+
+      const replica = new Replica({
+        replicaMemberNode: XMLUtilities.getDirectChildText(
+          element,
+          "replicaMemberNode",
+        ),
+        replicationStatus: XMLUtilities.getDirectChildText(
+          element,
+          "replicationStatus",
+        ),
+        replicaVerified: XMLUtilities.getDirectChildText(
+          element,
+          "replicaVerified",
+        ),
+      });
+      return fixParsedValue({
+        value: replica,
+        path,
+        parseWarnings,
+        invalidMessage:
+          "Ignored invalid replica while parsing system metadata.",
+        validate: (candidate) => candidate.validate(path),
+        fallback: () => null,
+      });
+    }
+
+    /**
      * Validate the replica state.
      * @param {string} [path] Base path used in validation errors. Defaults to
      * `replica`.
@@ -95,46 +122,47 @@ define([
 
       if (!isNonEmptyString(this.replicaMemberNode)) {
         errors.push(
-          createValidationError(
-            `${path}.replicaMemberNode`,
-            "replicaMemberNode is required and must be a non-empty string.",
-          ),
+          createValidationIssue({
+            field: `${path}.replicaMemberNode`,
+            message:
+              "replicaMemberNode is required and must be a non-empty string.",
+          }),
         );
       }
 
       if (!isNonEmptyString(this.replicationStatus)) {
         errors.push(
-          createValidationError(
-            `${path}.replicationStatus`,
-            "replicationStatus is required.",
-          ),
+          createValidationIssue({
+            field: `${path}.replicationStatus`,
+            message: "replicationStatus is required.",
+          }),
         );
       } else if (
         !REPLICATION_STATUSES.includes(this.replicationStatus.toLowerCase())
       ) {
         errors.push(
-          createValidationError(
-            `${path}.replicationStatus`,
-            `replicationStatus must be one of: ${REPLICATION_STATUSES.join(
+          createValidationIssue({
+            field: `${path}.replicationStatus`,
+            message: `replicationStatus must be one of: ${REPLICATION_STATUSES.join(
               ", ",
             )}.`,
-          ),
+          }),
         );
       }
 
       if (!this.replicaVerified) {
         errors.push(
-          createValidationError(
-            `${path}.replicaVerified`,
-            "replicaVerified is required.",
-          ),
+          createValidationIssue({
+            field: `${path}.replicaVerified`,
+            message: "replicaVerified is required.",
+          }),
         );
-      } else if (!DateUtility.isValidDate(this.replicaVerified)) {
+      } else if (!DateUtilities.isValidDate(this.replicaVerified)) {
         errors.push(
-          createValidationError(
-            `${path}.replicaVerified`,
-            "replicaVerified must be a valid date.",
-          ),
+          createValidationIssue({
+            field: `${path}.replicaVerified`,
+            message: "replicaVerified must be a valid date.",
+          }),
         );
       }
 
@@ -148,7 +176,6 @@ define([
      */
     toElement(doc) {
       const element = doc.createElement("replica");
-
       XMLUtilities.appendTextElement(
         doc,
         element,
@@ -176,10 +203,11 @@ define([
      * @returns {object} Plain replica data.
      */
     toJSON() {
+      const { replicaMemberNode, replicationStatus, replicaVerified } = this;
       return {
-        replicaMemberNode: this.replicaMemberNode,
-        replicationStatus: this.replicationStatus,
-        replicaVerified: this.replicaVerified,
+        replicaMemberNode,
+        replicationStatus,
+        replicaVerified: DateUtilities.toISOString(replicaVerified) || null,
       };
     }
   }

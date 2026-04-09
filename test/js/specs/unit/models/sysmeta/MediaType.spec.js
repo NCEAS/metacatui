@@ -10,8 +10,11 @@ define([
   const createDoc = () =>
     new DOMParser().parseFromString("<root />", "application/xml");
 
+  const summarizeIssues = (issues) =>
+    issues.map(({ field, message }) => ({ field, message }));
+
   describe("MediaType", () => {
-    describe("construction", () => {
+    describe("construction and mutation", () => {
       it("accepts a string shorthand and clones nested properties", () => {
         const sourceProperty = new MediaTypeProperty({
           name: "charset",
@@ -31,6 +34,29 @@ define([
           sourceProperty.toJSON(),
         );
         expect(shorthand.name).to.equal("text/plain");
+      });
+
+      it("supports add, replace, remove, and clear", () => {
+        const mediaType = new MediaType({ name: "text/csv" });
+
+        mediaType
+          .add({ name: "charset", value: "utf-8" })
+          .add({ name: "profile", value: "tabular" })
+          .replace(1, { name: "delimiter", value: "comma" })
+          .remove(0);
+
+        expect(mediaType.properties).to.have.length(1);
+        expect(mediaType.properties[0].toJSON()).to.deep.equal({
+          name: "delimiter",
+          value: "comma",
+        });
+
+        mediaType.clear("properties");
+        expect(mediaType.name).to.equal("text/csv");
+        expect(mediaType.properties).to.have.length(0);
+
+        mediaType.clear();
+        expect(mediaType.isEmpty()).to.equal(true);
       });
     });
 
@@ -80,7 +106,7 @@ define([
     });
 
     describe("fromValue()", () => {
-      it("coerces plain input and returns null for empty media types", () => {
+      it("coerces plain input and returns an empty media type for empty values", () => {
         const source = new MediaType({
           name: "text/csv",
           properties: [{ name: "charset", value: "utf-8" }],
@@ -94,7 +120,8 @@ define([
         expect(fromMediaType).to.be.instanceof(MediaType);
         expect(fromMediaType).to.not.equal(source);
         expect(fromMediaType.toJSON()).to.deep.equal(source.toJSON());
-        expect(MediaType.fromValue({})).to.equal(null);
+        expect(MediaType.fromValue({})).to.be.instanceof(MediaType);
+        expect(MediaType.fromValue({}).isEmpty()).to.equal(true);
       });
     });
 
@@ -105,7 +132,7 @@ define([
           properties: [{ name: "", value: "utf-8" }],
         }).validate();
 
-        expect(errors).to.deep.equal([
+        expect(summarizeIssues(errors)).to.deep.equal([
           {
             field: "mediaType.name",
             message: "mediaType requires a non-empty name attribute.",

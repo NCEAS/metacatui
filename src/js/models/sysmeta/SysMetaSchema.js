@@ -1,14 +1,34 @@
 define(["common/ValueUtilities"], (ValueUtilities) => {
-  const { normalizeText } = ValueUtilities;
+  // Shared text normalizer used by schema value helpers.
+  const { normalizeStringChoice } = ValueUtilities;
 
+  // XML namespace URI for the DataONE v1 system metadata schema.
   const XML_NS_V1 = "http://ns.dataone.org/service/types/v1";
+
+  // XML namespace URI for the DataONE v2 system metadata schema.
   const XML_NS_V2 = "http://ns.dataone.org/service/types/v2.0";
-  const SYSMETA_NAMESPACE_BY_VERSION = {
+
+  // Canonical namespace URI lookup keyed by schema version.
+  const NAMESPACE_BY_VERSION = {
     v1: XML_NS_V1,
     v2: XML_NS_V2,
   };
 
+  // Canonical XML output settings for serialized System Metadata.
+  const CANONICAL_XML = {
+    version: "v2",
+    rootNamespaceUri: XML_NS_V2,
+    rootQualifiedName: "ns3:systemMetadata",
+    namespaceAttributes: [
+      { name: "xmlns:ns2", value: XML_NS_V1 },
+      { name: "xmlns:ns3", value: XML_NS_V2 },
+    ],
+  };
+
+  // Supported canonical permission values.
   const PERMISSIONS = ["read", "write", "changePermission"];
+
+  // Supported canonical replication-status values.
   const REPLICATION_STATUSES = [
     "queued",
     "requested",
@@ -17,19 +37,38 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     "invalidated",
   ];
 
+  // Reverse lookup from namespace URI to schema version.
+  const VERSION_BY_NAMESPACE = Object.fromEntries(
+    Object.entries(NAMESPACE_BY_VERSION).map(([version, namespace]) => [
+      namespace,
+      version,
+    ]),
+  );
+
+  // Canonical permission lookup keyed by lowercase text.
+  const PERMISSION_BY_LOWERCASE = {
+    read: "read",
+    write: "write",
+    changepermission: "changePermission",
+  };
+
+  // Canonical replication-status lookup keyed by lowercase text.
+  const REPLICATION_STATUS_BY_LOWERCASE = Object.fromEntries(
+    REPLICATION_STATUSES.map((status) => [status, status]),
+  );
+
+  // Ordered schema field definitions used for parsing, validation, and output.
   const FIELD_DEFINITIONS = [
     {
       field: "serialVersion",
-      kind: "integer",
-      scalar: true,
+      type: "integer",
       defaultValue: null,
       minOccurs: 0,
       maxOccurs: 1,
     },
     {
       field: "identifier",
-      kind: "text",
-      scalar: true,
+      type: "text",
       defaultValue: null,
       requiredNonEmpty: true,
       minOccurs: 1,
@@ -37,8 +76,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     },
     {
       field: "formatId",
-      kind: "text",
-      scalar: true,
+      type: "text",
       defaultValue: null,
       requiredNonEmpty: true,
       minOccurs: 1,
@@ -46,23 +84,21 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     },
     {
       field: "size",
-      kind: "integer",
-      scalar: true,
+      type: "integer",
       defaultValue: null,
       minOccurs: 1,
       maxOccurs: 1,
     },
     {
       field: "checksum",
-      kind: "checksum",
+      type: "checksum",
       defaultValue: null,
       minOccurs: 1,
       maxOccurs: 1,
     },
     {
       field: "submitter",
-      kind: "text",
-      scalar: true,
+      type: "text",
       defaultValue: null,
       optionalNonEmpty: true,
       minOccurs: 0,
@@ -70,8 +106,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     },
     {
       field: "rightsHolder",
-      kind: "text",
-      scalar: true,
+      type: "text",
       defaultValue: null,
       requiredNonEmpty: true,
       minOccurs: 1,
@@ -79,20 +114,19 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     },
     {
       field: "accessPolicy",
-      kind: "complex",
+      type: "complex",
       minOccurs: 0,
       maxOccurs: 1,
     },
     {
       field: "replicationPolicy",
-      kind: "complex",
+      type: "complex",
       minOccurs: 0,
       maxOccurs: 1,
     },
     {
       field: "obsoletes",
-      kind: "text",
-      scalar: true,
+      type: "text",
       defaultValue: null,
       optionalNonEmpty: true,
       minOccurs: 0,
@@ -100,8 +134,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     },
     {
       field: "obsoletedBy",
-      kind: "text",
-      scalar: true,
+      type: "text",
       defaultValue: null,
       optionalNonEmpty: true,
       minOccurs: 0,
@@ -109,32 +142,28 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     },
     {
       field: "archived",
-      kind: "boolean",
-      scalar: true,
+      type: "boolean",
       defaultValue: false,
       minOccurs: 0,
       maxOccurs: 1,
     },
     {
       field: "dateUploaded",
-      kind: "date",
-      scalar: true,
+      type: "date",
       defaultValue: null,
       minOccurs: 0,
       maxOccurs: 1,
     },
     {
       field: "dateSysMetadataModified",
-      kind: "date",
-      scalar: true,
+      type: "date",
       defaultValue: null,
       minOccurs: 0,
       maxOccurs: 1,
     },
     {
       field: "originMemberNode",
-      kind: "text",
-      scalar: true,
+      type: "text",
       defaultValue: null,
       optionalNonEmpty: true,
       minOccurs: 0,
@@ -142,8 +171,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     },
     {
       field: "authoritativeMemberNode",
-      kind: "text",
-      scalar: true,
+      type: "text",
       defaultValue: null,
       optionalNonEmpty: true,
       minOccurs: 0,
@@ -151,14 +179,13 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     },
     {
       field: "replica",
-      kind: "complex",
+      type: "complex",
       minOccurs: 0,
       maxOccurs: Infinity,
     },
     {
       field: "seriesId",
-      kind: "text",
-      scalar: true,
+      type: "text",
       defaultValue: null,
       optionalNonEmpty: true,
       minOccurs: 0,
@@ -167,15 +194,14 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     },
     {
       field: "mediaType",
-      kind: "complex",
+      type: "complex",
       minOccurs: 0,
       maxOccurs: 1,
       versions: ["v2"],
     },
     {
       field: "fileName",
-      kind: "text",
-      scalar: true,
+      type: "text",
       defaultValue: null,
       optionalNonEmpty: true,
       minOccurs: 0,
@@ -184,114 +210,169 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     },
   ];
 
-  const ROOT_NODE_ORDER = FIELD_DEFINITIONS.map(({ field }) => field);
+  // Basic field types that share simple normalization/validation rules.
+  const SIMPLE_TYPES = ["integer", "text", "date", "boolean"];
 
-  const SCALAR_FIELD_DEFINITIONS = FIELD_DEFINITIONS.filter(
-    ({ scalar }) => scalar,
-  ).map(({ scalar, ...definition }) => definition);
+  // Ordered node field names derived from the schema definitions.
+  const NODE_ORDER = FIELD_DEFINITIONS.map(({ field }) => field);
 
-  const DATE_FIELDS = SCALAR_FIELD_DEFINITIONS.filter(
-    ({ kind }) => kind === "date",
+  // Mapping from XML/root field names to owned property names on SystemMetadata.
+  const FIELD_TO_PROPERTY_NAME = {
+    replica: "replicas",
+  };
+
+  /**
+   * Convert an XML field name to the owned SystemMetadata property name.
+   * @param {string|null|undefined} field XML field name.
+   * @returns {string|null|undefined} Owned property name.
+   */
+  function getPropertyName(field) {
+    return FIELD_TO_PROPERTY_NAME[field] || field;
+  }
+
+  // Ordered owned-property names derived from the schema definitions.
+  const PROPERTY_ORDER = NODE_ORDER.map((field) => getPropertyName(field));
+
+  // Field definitions limited to simple types.
+  const SIMPLE_FIELD_DEFINITIONS = FIELD_DEFINITIONS.filter(({ type }) =>
+    SIMPLE_TYPES.includes(type),
+  );
+
+  // Scalar date-field names.
+  const DATE_FIELDS = SIMPLE_FIELD_DEFINITIONS.filter(
+    ({ type }) => type === "date",
   ).map(({ field }) => field);
 
-  const OPTIONAL_NON_EMPTY_TEXT_FIELDS = SCALAR_FIELD_DEFINITIONS.filter(
-    ({ kind, optionalNonEmpty }) => kind === "text" && optionalNonEmpty,
+  // Optional text fields that must be non-empty when present.
+  const OPTIONAL_NON_EMPTY_TEXT_FIELDS = SIMPLE_FIELD_DEFINITIONS.filter(
+    ({ type, optionalNonEmpty }) => type === "text" && optionalNonEmpty,
   ).map(({ field }) => field);
 
+  // Required non-empty fields, including checksum metadata.
   const REQUIRED_NON_EMPTY_FIELDS = [
-    ...SCALAR_FIELD_DEFINITIONS.filter(
+    ...SIMPLE_FIELD_DEFINITIONS.filter(
       ({ requiredNonEmpty }) => requiredNonEmpty,
     ).map(({ field }) => field),
     "checksum",
     "checksumAlgorithm",
   ];
 
-  const DEFAULT_SCALAR_FIELD_VALUES = FIELD_DEFINITIONS.reduce(
+  // Default values for simple fields in normalized data objects.
+  const DEFAULT_SIMPLE_FIELD_VALUES = FIELD_DEFINITIONS.reduce(
     (defaults, { field, defaultValue }) => {
+      const newDefaults = { ...defaults };
       if (defaultValue !== undefined) {
-        defaults[field] = defaultValue;
+        newDefaults[field] = defaultValue;
       }
-      return defaults;
+      return newDefaults;
     },
     { checksumAlgorithm: null },
   );
 
+  // Required owned-property names derived from schema cardinality.
+  const REQUIRED_PROPERTIES = [
+    ...new Set(
+      FIELD_DEFINITIONS.filter(({ minOccurs }) => minOccurs > 0).map(
+        ({ field }) => getPropertyName(field),
+      ),
+    ),
+  ];
+
+  // Optional owned-property names derived from schema cardinality.
+  const OPTIONAL_PROPERTIES = [
+    ...new Set(
+      FIELD_DEFINITIONS.filter(({ minOccurs }) => !minOccurs).map(({ field }) =>
+        getPropertyName(field),
+      ),
+    ),
+  ];
+
+  // Fields only available in the v2 schema.
   const V2_ONLY_FIELDS = FIELD_DEFINITIONS.filter(
-    ({ versions }) => Array.isArray(versions) && versions.length === 1 && versions[0] === "v2",
+    ({ versions }) =>
+      Array.isArray(versions) && versions.length === 1 && versions[0] === "v2",
   ).map(({ field }) => field);
 
   /**
-   * Get the SysMeta schema version associated with a namespace URI.
-   * @param {string|null|undefined} namespaceUri XML namespace URI.
-   * @returns {"v1"|"v2"|null} Schema version or null when unsupported.
+   * Normalize a string value against a canonical lowercase lookup table while
+   * preserving unknown values.
+   * @param {string|null|undefined} value Candidate text value.
+   * @param {Object<string, string>} canonicalByLowercase Canonical value lookup
+   * keyed by lowercase text.
+   * @returns {string|null} Canonical known value, original normalized text, or
+   * null for nullish input.
    */
-  function getSysMetaVersion(namespaceUri) {
-    if (namespaceUri === XML_NS_V1) return "v1";
-    if (namespaceUri === XML_NS_V2) return "v2";
-    return null;
+  function normalizeCanonicalChoice(value, canonicalByLowercase) {
+    return normalizeStringChoice(value, canonicalByLowercase);
   }
 
   /**
-   * Return ordered field definitions for the requested SysMeta version.
-   * @param {"v1"|"v2"} version SysMeta schema version.
-   * @returns {Array<object>} Ordered field definitions for that version.
+   * Shared schema constants and helpers for DataONE System Metadata.
+   * @namespace SysMetaSchema
+   * @since 0.0.0
    */
-  function getFieldDefinitionsForVersion(version) {
-    return FIELD_DEFINITIONS.filter(({ versions }) => {
-      if (!Array.isArray(versions) || !versions.length) return true;
-      return versions.includes(version);
-    });
-  }
-
-  /**
-   * Normalize a permission string to the canonical DataONE value.
-   * @param {string|null|undefined} value Permission value to normalize.
-   * @returns {string|null} Normalized permission value.
-   */
-  function normalizePermission(value) {
-    const normalized = normalizeText(value);
-    if (normalized === null) return null;
-
-    const lower = normalized.toLowerCase();
-    if (lower === "read" || lower === "write") return lower;
-    if (lower === "changepermission") return "changePermission";
-
-    return normalized;
-  }
-
-  /**
-   * Normalize a replication status string to the canonical DataONE value.
-   * @param {string|null|undefined} value Replication status value to
-   * normalize.
-   * @returns {string|null} Normalized replication status value.
-   */
-  function normalizeReplicationStatus(value) {
-    const normalized = normalizeText(value);
-    if (normalized === null) return null;
-
-    const lower = normalized.toLowerCase();
-    if (REPLICATION_STATUSES.includes(lower)) return lower;
-
-    return normalized;
-  }
-
-  return {
+  const SysMetaSchema = {
     XML_NS_V1,
     XML_NS_V2,
-    SYSMETA_NAMESPACE_BY_VERSION,
+    NAMESPACE_BY_VERSION,
+    CANONICAL_XML,
     PERMISSIONS,
     REPLICATION_STATUSES,
     FIELD_DEFINITIONS,
-    ROOT_NODE_ORDER,
-    SCALAR_FIELD_DEFINITIONS,
+    NODE_ORDER,
+    FIELD_TO_PROPERTY_NAME,
+    PROPERTY_ORDER,
+    SIMPLE_TYPES,
+    SIMPLE_FIELD_DEFINITIONS,
     DATE_FIELDS,
     OPTIONAL_NON_EMPTY_TEXT_FIELDS,
     REQUIRED_NON_EMPTY_FIELDS,
-    DEFAULT_SCALAR_FIELD_VALUES,
+    DEFAULT_SIMPLE_FIELD_VALUES,
+    REQUIRED_PROPERTIES,
+    OPTIONAL_PROPERTIES,
     V2_ONLY_FIELDS,
-    getSysMetaVersion,
-    getFieldDefinitionsForVersion,
-    normalizePermission,
-    normalizeReplicationStatus,
+    getPropertyName,
+
+    /**
+     * Get the SysMeta schema version associated with a namespace URI.
+     * @param {string|null|undefined} namespaceUri XML namespace URI.
+     * @returns {"v1"|"v2"|null} Schema version or null when unsupported.
+     */
+    getSysMetaVersion(namespaceUri) {
+      return VERSION_BY_NAMESPACE[namespaceUri] || null;
+    },
+
+    /**
+     * Return ordered field definitions for the requested SysMeta version.
+     * @param {"v1"|"v2"} version SysMeta schema version.
+     * @returns {Array<object>} Ordered field definitions for that version.
+     */
+    getFieldDefinitionsForVersion(version) {
+      return FIELD_DEFINITIONS.filter(({ versions }) => {
+        if (!Array.isArray(versions) || !versions.length) return true;
+        return versions.includes(version);
+      });
+    },
+
+    /**
+     * Normalize a permission string to the canonical DataONE value.
+     * @param {string|null|undefined} value Permission value to normalize.
+     * @returns {string|null} Normalized permission value.
+     */
+    normalizePermission(value) {
+      return normalizeCanonicalChoice(value, PERMISSION_BY_LOWERCASE);
+    },
+
+    /**
+     * Normalize a replication status string to the canonical DataONE value.
+     * @param {string|null|undefined} value Replication status value to
+     * normalize.
+     * @returns {string|null} Normalized replication status value.
+     */
+    normalizeReplicationStatus(value) {
+      return normalizeCanonicalChoice(value, REPLICATION_STATUS_BY_LOWERCASE);
+    },
   };
+
+  return SysMetaSchema;
 });

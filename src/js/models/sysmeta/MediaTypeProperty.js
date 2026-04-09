@@ -4,7 +4,8 @@ define([
   "common/ValidationUtilities",
 ], (XMLUtilities, ValueUtilities, ValidationUtilities) => {
   const { normalizeText, isNonEmptyString } = ValueUtilities;
-  const { createValidationError } = ValidationUtilities;
+  const { fixParsedValue, addParseWarning, createValidationIssue } =
+    ValidationUtilities;
   const MEDIA_TYPE_PROPERTY_CHILD_SEQUENCE = [];
 
   /**
@@ -41,7 +42,42 @@ define([
 
       return new MediaTypeProperty({
         name: element.getAttribute("name"),
-        value: XMLUtilities.getElementText(element),
+        value: element?.textContent?.trim() || null,
+      });
+    }
+
+    /**
+     * Parse a `property` XML element, dropping it when invalid.
+     * Nested child elements are not supported and are treated as lossy input.
+     * @param {Element|null} element XML element to parse.
+     * @param {Array<object>} [parseWarnings] Lossy parse warnings.
+     * @param {string} [path] Field path used in warnings and validation.
+     * @returns {MediaTypeProperty|null} Parsed property or null when invalid.
+     */
+    static parse(element, parseWarnings = [], path = "mediaType.properties") {
+      if (!element) return null;
+
+      if (Array.from(element?.children || []).length > 0) {
+        addParseWarning(
+          parseWarnings,
+          path,
+          "Ignored invalid mediaType property while parsing system metadata.",
+        );
+        return null;
+      }
+
+      const property = new MediaTypeProperty({
+        name: element.getAttribute("name"),
+        value: element?.textContent?.trim() || null,
+      });
+      return fixParsedValue({
+        value: property,
+        path,
+        parseWarnings,
+        invalidMessage:
+          "Ignored invalid mediaType property while parsing system metadata.",
+        validate: (candidate) => candidate.validate(path),
+        fallback: () => null,
       });
     }
 
@@ -55,10 +91,10 @@ define([
       const errors = [];
       if (!isNonEmptyString(this.name)) {
         errors.push(
-          createValidationError(
-            `${path}.name`,
-            "Media type property names are required.",
-          ),
+          createValidationIssue({
+            field: `${path}.name`,
+            message: "Media type property names are required.",
+          }),
         );
       }
       return errors;
@@ -75,7 +111,7 @@ define([
         element.setAttribute("name", this.name);
       }
       if (this.value !== null) {
-        XMLUtilities.setElementText(doc, element, this.value);
+        element.textContent = XMLUtilities.removeInvalidXmlCharacters(this.value);
       }
       return element;
     }

@@ -7,6 +7,9 @@ define(["models/sysmeta/AccessRule"], (AccessRule) => {
   const createDoc = () =>
     new DOMParser().parseFromString("<root />", "application/xml");
 
+  const summarizeIssues = (issues) =>
+    issues.map(({ field, message }) => ({ field, message }));
+
   describe("AccessRule", () => {
     describe("construction", () => {
       it("normalizes subjects and deduplicates canonical permissions", () => {
@@ -76,7 +79,7 @@ define(["models/sysmeta/AccessRule"], (AccessRule) => {
 
     describe("validate()", () => {
       it("reports missing subjects and permissions", () => {
-        expect(new AccessRule().validate()).to.deep.equal([
+        expect(summarizeIssues(new AccessRule().validate())).to.deep.equal([
           {
             field: "accessPolicy.subjects",
             message: "At least one subject is required.",
@@ -94,7 +97,7 @@ define(["models/sysmeta/AccessRule"], (AccessRule) => {
           permissions: ["bogus"],
         }).validate("accessPolicy[1]");
 
-        expect(errors).to.deep.equal([
+        expect(summarizeIssues(errors)).to.deep.equal([
           {
             field: "accessPolicy[1].subjects[0]",
             message: "Subjects must be non-empty strings.",
