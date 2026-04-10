@@ -129,8 +129,6 @@ define([
      * @returns {ReplicaList} Parsed replica list instance.
      */
     static parse(elements, parseWarnings = [], path = "replica") {
-      console.log("rep parse", elements);
-
       const replicas = Array.from(elements || [])
         .map((element, index) =>
           Replica.parse(element, parseWarnings, `${path}[${index}]`),

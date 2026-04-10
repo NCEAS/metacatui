@@ -596,7 +596,7 @@ define([
     async getPidForSid(sid) {
       try {
         const sysMeta = await this.versionTracker.getSysMeta(sid);
-        return sysMeta?.data?.identifier || null;
+        return sysMeta?.identifier || null;
       } catch (error) {
         if (error?.status) {
           this.eventLog.consoleLog(

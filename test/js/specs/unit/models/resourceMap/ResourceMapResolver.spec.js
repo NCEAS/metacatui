@@ -1,7 +1,7 @@
 define([
   "/test/js/specs/shared/clean-state.js",
   "models/resourceMap/ResourceMapResolver",
-  "models/sysmeta/SysMeta",
+  "models/sysmeta/SystemMetadata",
   "collections/SolrResults",
   "common/QueryService",
 ], (cleanState, ResourceMapResolver, SysMeta, SolrResults, QueryService) => {
@@ -428,8 +428,12 @@ define([
           rm: "rm.fromMeta",
         });
 
-        ResourceMapResolver.searchIndex.firstCall.args[0].should.equal("data.1");
-        ResourceMapResolver.searchIndex.secondCall.args[0].should.equal("meta.1");
+        ResourceMapResolver.searchIndex.firstCall.args[0].should.equal(
+          "data.1",
+        );
+        ResourceMapResolver.searchIndex.secondCall.args[0].should.equal(
+          "meta.1",
+        );
       });
     });
 
