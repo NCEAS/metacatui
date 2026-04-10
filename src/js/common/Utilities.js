@@ -1,15 +1,10 @@
 "use strict";
 
-define([], () => {
-  const KIBIBYTE = 1024;
-  const MEBIBYTE = KIBIBYTE * 1024;
-  const GIBIBYTE = MEBIBYTE * 1024;
-  const TEBIBYTE = GIBIBYTE * 1024;
-
+define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
   /**
    * @namespace Utilities
-   * @description A generic utility object that contains functions used throughout MetacatUI to perform useful functions,
-   * but not used to store or manipulate any state about the application.
+   * @description Miscellaneous app/browser helpers that do not yet fit better
+   * specialized common modules.
    * @type {object}
    * @since 2.14.0
    */
@@ -30,22 +25,7 @@ define([], () => {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/'/g, "&apos;")
-        .replace(/\//g, "/")
         .replace(/"/g, "&quot;");
-    },
-
-    /**
-     * Validates that the given string is a valid DOI
-     * @param {string} identifier String to be validated.
-     * @returns {boolean} True if identifier is a valid DOI.
-     * @since 2.15.0
-     */
-    isValidDOI(identifier) {
-      // generate doi regex
-      const doiRGEX =
-        /^\s*(http:\/\/|https:\/\/)?(doi.org\/|dx.doi.org\/)?(doi: ?|DOI: ?)?(10\.\d{4,}(\.\d)*)\/(\w+).*$/gi;
-
-      return doiRGEX.test(identifier);
     },
 
     /**
@@ -73,7 +53,6 @@ define([], () => {
      * Attempt to parse the header/column names from a chunk of a CSV file
      *
      * Doesn't handle:
-     * - UTF BOM (garbles first col name)
      * - Commas inside quoted headers
      * @param {string} text - A chunk of a file
      * @returns {Array} A list of names
@@ -112,153 +91,125 @@ define([], () => {
     },
 
     /**
-     * Format the number into a string with better readability, based on the manitude of a
-     * range this number falls in.
-     * @param {number} value The number value to be formatted.
-     * @param {number} range The range of numerics this value can fall in.
-     * @returns {string} A formatted number based on the magnitude of `range`.
-     * @since 2.30.0
+     * Read a MetacatUI property directly or via Backbone's `get`.
+     * @param {string} property Property name to retrieve.
+     * @param {object} [app] MetacatUI object.
+     * @returns {*} Property value, or `undefined` when not present.
      */
-    formatNumber(value, range) {
-      if (typeof value !== "number") {
-        return "";
-      }
-      if (typeof range !== "number") {
-        return value.toString();
+    getMetacatUIProperty(property, app) {
+      const normalizedApp = app || globalThis.MetacatUI;
+      if (!normalizedApp || !property) return undefined;
+
+      if (normalizedApp[property] !== undefined) {
+        return normalizedApp[property];
       }
 
-      const numDecimalPlaces = Utilities.getNumDecimalPlaces(range);
-      if (numDecimalPlaces !== null) {
-        return value.toFixed(numDecimalPlaces);
+      if (typeof normalizedApp.get === "function") {
+        return normalizedApp.get(property);
       }
-      return value.toExponential(2).toString();
+
+      return undefined;
     },
 
     /**
-     * Calculate the number of decimal places we should use based on the range of the data.
-     * @param {number} range The range of data values.
-     * @returns {number} The number of decimal places we should use.
-     * @since 2.30.0
+     * Wait for the global MetacatUI object to be available, and optionally for
+     * a specific property on it to be defined. Useful when needing to access
+     * the app user model or other properties that may not be available
+     * immediately when a module is loaded.
+     * @param {object} [options] Options object.
+     * @param {number} [options.maxAttempts] Maximum number of attempts.
+     * @param {number} [options.delay] Delay between attempts in ms.
+     * @param {string} [options.property] Optional property name to wait for on
+     * the MetacatUI object. If provided, the Promise won't resolve until that
+     * property is available and not undefined. Otherwise, just waits for the
+     * global MetacatUI object itself.
+     * @returns {Promise<*>} Promise resolving to the requested global object or
+     * property value.
+     * @throws {Error} If the requested value is not available in time.
+     * @since 0.0.0
      */
-    getNumDecimalPlaces(range) {
-      if (range < 0.0001 || range > 100000) {
-        return null; // Will use scientific notation
+    async awaitMetacatUI({
+      maxAttempts = 20,
+      delay = 200,
+      property = "",
+    } = {}) {
+      let attempts = 0;
+      while (attempts < maxAttempts) {
+        attempts += 1;
+        const app = globalThis.MetacatUI;
+
+        if (app != null) {
+          // If we're just waiting for the global object, return it now
+          if (!property) {
+            return app;
+          }
+
+          const value = Utilities.getMetacatUIProperty(property, app);
+          // If we're waiting for a specific property, check if it's defined
+          // yet and if not, continue waiting
+          if (value !== undefined) {
+            return value;
+          }
+        }
+        // Otherwise, wait the attempt delay and try again.
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((resolve) => {
+          setTimeout(resolve, delay);
+        });
       }
-      if (range < 0.001) {
-        return 5; // Allow 5 decimal places
+
+      // If we reach here, we failed to get the requested MetacatUI value.
+      let message = "Unable to retrieve MetacatUI";
+      if (property) {
+        message += `.${property}`;
       }
-      if (range < 0.01) {
-        return 4; // Allow 4 decimal places
-      }
-      if (range < 0.1) {
-        return 3; // Allow 3 decimal places
-      }
-      if (range < 1) {
-        return 2; // Allow 2 decimal places
-      }
-      if (range <= 100) {
-        return 1; // Allow 1 decimal places
-      }
-      return 0; // No decimal places
+      throw new Error(message);
     },
 
     /**
-     * Checks if two objects are deeply equal. Simpler than the _.isEqual function.
-     * @param {object} a - The first object to compare
-     * @param {object} b - The second object to compare
-     * @returns {boolean} True if the objects are deeply equal
-     * @since 2.31.0
+     * Get the list of object formats from the Coordinating Node, which can be
+     * used to validate media types against known formats.
+     * @returns {Promise<Array>} Promise resolving to the list of object
+     *  formats.
+     * @throws {Error} If the object formats cannot be retrieved.
+     * @since 0.0.0
      */
-    deepEqual(a, b) {
-      if (a === b) return true;
-
-      if (Array.isArray(a) && Array.isArray(b)) {
-        // Quick check for empty arrays
-        if (a.length === 0 && b.length === 0) return true;
-        if (a.length !== b.length) return false;
-        return a.every((value, index) => this.deepEqual(value, b[index]));
+    async awaitObjectFormats() {
+      const app = await this.awaitMetacatUI();
+      // Ensure the object formats are cached
+      if (!app.objectFormats) {
+        app.objectFormats = new ObjectFormats();
       }
 
-      if (
-        typeof a === "object" &&
-        a !== null &&
-        typeof b === "object" &&
-        b !== null
-      ) {
-        const keysA = Object.keys(a);
-        const keysB = Object.keys(b);
+      if (app.objectFormats.length) {
+        return app.objectFormats.toJSON();
+      }
 
-        if (keysA.length !== keysB.length) return false;
-
-        return keysA.every(
-          (key) => keysB.includes(key) && this.deepEqual(a[key], b[key]),
+      const listener = new Backbone.Model();
+      const fetchFormats = new Promise((resolve, reject) => {
+        listener.listenToOnce(app.objectFormats, "sync", () => {
+          listener.stopListening();
+          resolve();
+        });
+        listener.listenToOnce(
+          app.objectFormats,
+          "error",
+          (_collection, response) => {
+            listener.stopListening();
+            reject(
+              new Error(
+                `Failed to fetch object formats: ${response?.status || ""} ${response?.statusText || ""}`.trim(),
+              ),
+            );
+          },
         );
-      }
-
-      return false;
-    },
-
-    /**
-     * Removes default values from a model's JSON representation
-     * @param {Backbone.Model} model - The model to remove defaults from
-     * @param {string[]} [removeProps] - An array of additional properties to remove from the model
-     * @returns {object} The JSON representation of the model with defaults removed
-     * @since 2.31.0
-     */
-    toJSONWithoutDefaults(model, removeProps = []) {
-      const json = model.toJSON();
-      const defaults = model.defaults();
-
-      Object.keys(defaults).forEach((key) => {
-        if (removeProps.includes(key)) {
-          delete json[key];
-        } else if (this.deepEqual(json[key], defaults[key])) {
-          delete json[key];
+        // eslint-disable-next-line no-underscore-dangle
+        if (!app.objectFormats._events?.sync) {
+          app.objectFormats.fetch();
         }
       });
-
-      return json;
-    },
-
-    /**
-     * Convert number of bytes into human readable format
-     * @param {number} bytes - The number of bytes
-     * @param {number} [precision] - The number of decimal places to include
-     * @returns {string} The formatted size string
-     */
-    bytesToSize(bytes, precision = 0) {
-      if (typeof bytes === "undefined") return `0 B`;
-
-      if (bytes >= 0 && bytes < KIBIBYTE) {
-        return `${bytes} B`;
-      }
-      if (bytes >= KIBIBYTE && bytes < MEBIBYTE) {
-        return `${(bytes / KIBIBYTE).toFixed(precision)} KiB`;
-      }
-      if (bytes >= MEBIBYTE && bytes < GIBIBYTE) {
-        return `${(bytes / MEBIBYTE).toFixed(precision)} MiB`;
-      }
-      if (bytes >= GIBIBYTE && bytes < TEBIBYTE) {
-        return `${(bytes / GIBIBYTE).toFixed(precision)} GiB`;
-      }
-      if (bytes >= TEBIBYTE) {
-        return `${(bytes / TEBIBYTE).toFixed(precision)} TiB`;
-      }
-      return `${bytes} B`;
-    },
-
-    /**
-     * Convert a wildcard pattern (e.g. "eml*", "*iso*") to a safe RegExp.
-     * Escapes all regex special chars except '*' which becomes '.*'
-     * @param {string} pattern - A simple wildcard pattern
-     * @returns {RegExp} Regex for case-insensitive matching
-     */
-    wildcardToRegex(pattern) {
-      // Escape regex special characters, except "*"
-      const escaped = pattern.replace(/[-/\\^$+?.()|[\]{}]/g, "\\$&");
-      // Replace "*" with ".*" for multi-character wildcard
-      const regexString = `^${escaped.replace(/\*/g, ".*")}$`;
-      return new RegExp(regexString, "i"); // "i" = case-insensitive, if desired
+      await fetchFormats;
+      return app.objectFormats.toJSON();
     },
   };
 

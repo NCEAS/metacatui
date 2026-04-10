@@ -1,13 +1,21 @@
 "use strict";
 
-define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
+// get the non-theme, base router, so we can extend it or at least use methods
+// from it
+
+define(["jquery", "underscore", "backbone", "routers/BaseRouter"], (
+  $,
+  _,
+  Backbone,
+  BaseRouter,
+) => {
   /**
    * @class UIRouter
    * @classdesc MetacatUI Router
    * @extends Backbone.Router
    * @constructor
    */
-  var UIRouter = Backbone.Router.extend(
+  const UIRouter = Backbone.Router.extend(
     /** @lends UIRouter.prototype */ {
       routes: {
         "": "renderData", // the default route
@@ -27,6 +35,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         "edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)":
           "renderPortalEditor",
         drafts: "renderDrafts",
+        "versionHistory(/*pid)(/)": "renderVersionHistory",
       },
 
       helpPages: {
@@ -110,6 +119,11 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
             MetacatUI.appView.showView(MetacatUI.appView.textView, options);
           });
         } else MetacatUI.appView.showView(MetacatUI.appView.textView, options);
+      },
+
+      /** @inheritdoc */
+      renderVersionHistory(pid) {
+        BaseRouter.prototype.renderVersionHistory.call(this, pid);
       },
 
       renderData: function (mode, query, page) {

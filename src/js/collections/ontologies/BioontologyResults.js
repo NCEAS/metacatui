@@ -3,10 +3,10 @@
 define([
   "backbone",
   "underscore",
-  "common/Utilities",
+  "common/ValueUtilities",
   "models/ontologies/BioontologyClass",
   "models/ontologies/BioontologyOntology",
-], (Backbone, _, Utilities, BioontologyClass, BioontologyOntology) => {
+], (Backbone, _, ValueUtilities, BioontologyClass, BioontologyOntology) => {
   // The type that defines an ontology in the BioPortal API
   const ONTOLOGY_TYPE = "http://data.bioontology.org/metadata/Ontology";
   // The number of items to remove from the cache if it is full
@@ -166,7 +166,7 @@ define([
         // Keep cache storage small by removing unnecessary properties
         const removeProps = ["@context", "links"];
         const newItems = newModels.map((model) =>
-          Utilities.toJSONWithoutDefaults(model, removeProps),
+          ValueUtilities.toJSONWithoutDefaults(model, removeProps),
         );
         const cache = currentCache.concat(newItems);
         this.cacheWithRetry(cache);

@@ -1,4 +1,4 @@
-define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
+define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
   "use strict";
 
   // Remove any trailing slashes from a URL
@@ -8,11 +8,11 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
    * @class AppModel
    * @classdesc A utility model that contains top-level configuration and storage for the application
    * @name AppModel
-   * @extends Backbone.Model
-   * @constructor
+   * @augments Backbone.Model
+   * @class
    * @classcategory Models
    */
-  var AppModel = Backbone.Model.extend(
+  const AppModel = Backbone.Model.extend(
     /** @lends AppModel.prototype */ {
       defaults: _.extend(
         /** @lends AppConfig.prototype */ {
@@ -718,6 +718,13 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @type {string}
            */
           reserveServiceUrl: null,
+          /**
+           * The URL for the DataONE generateIdentifier() API. This URL is contructed dynamically when the
+           * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+           * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#CNCore.generateIdentifier)
+           * @type {string}
+           */
+          generateServiceUrl: null,
           /**
            * The URL for the DataONE system metadata API. This URL is contructed dynamically when the
            * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
@@ -2484,6 +2491,14 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @since 2.32.1
            */
           fileDownloadTimeout: 0,
+
+          /**
+           * Whether to show or hide the version history view for each dataset.
+           * @type {boolean}
+           * @default true
+           * @since 0.0.0
+           */
+          showVersionHistory: true,
         },
         MetacatUI.AppConfig,
       ),
@@ -2561,6 +2576,10 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           this.set(
             "reserveServiceUrl",
             d1CNBaseUrl + this.get("d1CNService") + "/reserve",
+          );
+          this.set(
+            "generateServiceUrl",
+            d1CNBaseUrl + this.get("d1CNService") + "/generate",
           );
 
           //Token URLs
@@ -2705,6 +2724,10 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
 
         if (d1Service.indexOf("mn") > 0) {
           urls.objectServiceUrl = baseUrl + "/object/";
+        }
+        if (/\/cn\/v\d+$/i.test(baseUrl)) {
+          urls.generateServiceUrl = baseUrl + "/generate";
+          urls.reserveServiceUrl = baseUrl + "/reserve";
         }
 
         if (this.get("enableMonitorStatus")) {

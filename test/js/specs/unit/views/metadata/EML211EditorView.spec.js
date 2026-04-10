@@ -1,14 +1,20 @@
-define(["jquery", "backbone", "views/metadata/EML211EditorView"], function (
+define([
+  "jquery",
+  "backbone",
+  "models/dataONEServices/SysMetaService",
+  "views/metadata/EML211EditorView",
+], function (
   $,
   Backbone,
+  SysMetaService,
   EML211EditorView,
 ) {
   describe("EML211EditorView", function () {
-    let view, model, sandbox;
+    let view, model, sandbox, originalMetacatUI;
 
     beforeEach(function () {
       sandbox = sinon.createSandbox();
-      console.log("beforeEach called");
+      originalMetacatUI = globalThis.MetacatUI;
       // Create a mock model with validation errors
       model = new Backbone.Model();
       model.validationError = {
@@ -28,11 +34,11 @@ define(["jquery", "backbone", "views/metadata/EML211EditorView"], function (
     });
 
     afterEach(function () {
+      globalThis.MetacatUI = originalMetacatUI;
       sandbox.restore();
     });
 
     it("should log validation errors correctly", function () {
-      console.log("Test: should log validation errors correctly");
       // Call the showValidation method
       view.showValidation();
 
@@ -46,9 +52,6 @@ define(["jquery", "backbone", "views/metadata/EML211EditorView"], function (
     });
 
     it("should handle string error messages correctly in showError", function () {
-      console.log(
-        "Test: should handle string error messages correctly in showError",
-      );
       // Mock the category elements
       view.$ = sandbox.stub().returns({
         addClass: sandbox.stub().returnsThis(),
@@ -68,10 +71,6 @@ define(["jquery", "backbone", "views/metadata/EML211EditorView"], function (
     });
 
     it("should handle nested error objects correctly in showLeafErrors", function () {
-      console.log(
-        "Test: should handle nested error objects correctly in showLeafErrors",
-      );
-
       // Call the showLeafErrors method
       view.showLeafErrors("methodSteps.step2", {
         subStep1: "Error in sub-step 1",
@@ -89,6 +88,67 @@ define(["jquery", "backbone", "views/metadata/EML211EditorView"], function (
         "methodSteps.step2",
         "Error in sub-step 2",
       );
+    });
+
+    it("uses SysMetaService for metadata-not-found sysmeta lookups", async function () {
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        appModel: {
+          get: sandbox.stub().callsFake((key) => {
+            if (key === "metaServiceUrl") {
+              return "https://example.org/meta";
+            }
+            return null;
+          }),
+        },
+        appUserModel: {
+          get: sandbox.stub().returns(null),
+          getTokenPromise: sandbox.stub().resolves(null),
+        },
+      };
+
+      view.pid = "pid.1";
+      sandbox.stub(view, "updateLoadingText");
+      sandbox.stub(view, "showNotIndexed");
+      sandbox.stub(view, "showNotFound");
+      const downloadStub = sandbox
+        .stub(SysMetaService.prototype, "download")
+        .resolves({});
+
+      await view.handleMetadataNotFound();
+
+      sinon.assert.calledOnceWithExactly(downloadStub, "pid.1");
+      sinon.assert.calledOnce(view.showNotIndexed);
+      sinon.assert.notCalled(view.showNotFound);
+    });
+
+    it("shows not found when SysMetaService lookup fails", async function () {
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        appModel: {
+          get: sandbox.stub().callsFake((key) => {
+            if (key === "metaServiceUrl") {
+              return "https://example.org/meta";
+            }
+            return null;
+          }),
+        },
+        appUserModel: {
+          get: sandbox.stub().returns(null),
+          getTokenPromise: sandbox.stub().resolves(null),
+        },
+      };
+
+      view.pid = "pid.1";
+      sandbox.stub(view, "updateLoadingText");
+      sandbox.stub(view, "showNotIndexed");
+      sandbox.stub(view, "showNotFound");
+      sandbox.stub(SysMetaService.prototype, "download").rejects(new Error("404"));
+
+      await view.handleMetadataNotFound();
+
+      sinon.assert.notCalled(view.showNotIndexed);
+      sinon.assert.calledOnce(view.showNotFound);
     });
   });
 });

@@ -10,7 +10,10 @@ define([
   "models/DataONEObject",
   "models/PackageModel",
   "models/SolrResult",
+  "models/dataONEServices/SysMetaService",
+  "models/resourceMap/ResourceMapResolver",
   "models/metadata/ScienceMetadata",
+  "common/QueryService",
   "common/Utilities",
   "views/DataPackageView",
   "views/DownloadButtonView",
@@ -44,7 +47,10 @@ define([
   DataONEObject,
   Package,
   SolrResult,
+  SysMetaService,
+  ResourceMapResolver,
   ScienceMetadata,
+  QueryService,
   Utilities,
   DataPackageView,
   DownloadButtonView,
@@ -152,6 +158,7 @@ define([
         this.pid =
           options.pid || options.id || MetacatUI.appModel.get("pid") || null;
         this.dataPackage = null;
+        this.resourceMapResolver = null;
 
         if (typeof options.el !== "undefined") this.setElement(options.el);
       },
@@ -216,7 +223,6 @@ define([
         });
 
         this.getModel();
-
         return this;
       },
 
@@ -308,154 +314,202 @@ define([
         this.model.set({ id: pid, seriesId: sid });
         const { model } = this;
 
-        this.listenToOnce(model, "sync", () => {
-          if (
-            this.model.get("formatType") === "METADATA" ||
-            !this.model.get("formatType")
-          ) {
-            this.model = model;
-            this.renderMetadata();
-          } else if (this.model.get("formatType") === "DATA") {
-            // Get the metadata pids that document this data object
-            const isDocBy = this.model.get("isDocumentedBy");
-
-            // If there is only one metadata pid that documents this data
-            // object, then get that metadata model for this view.
-            if (isDocBy && isDocBy.length === 1) {
-              this.navigateWithFragment(_.first(isDocBy), this.pid);
-
-              return;
-            }
-            // If more than one metadata doc documents this data object, it is
-            // most likely multiple versions of the same metadata. So we need to
-            // find the latest version.
-            if (isDocBy && isDocBy.length > 1) {
-              const view = this;
-
-              // eslint-disable-next-line import/no-dynamic-require
-              require(["collections/Filters", "collections/SolrResults"], (
-                Filters,
-                SolrResults,
-              ) => {
-                // Create a search for the metadata docs that document this data
-                // object
-                const searchFilters = new Filters([
-                  {
-                    values: isDocBy,
-                    fields: ["id", "seriesId"],
-                    operator: "OR",
-                    fieldsOperator: "OR",
-                    matchSubstring: false,
-                  },
-                ]);
-                // Create a list of search results
-                const searchResults = new SolrResults([], {
-                  rows: isDocBy.length,
-                  query: searchFilters.getQuery(),
-                  fields: "obsoletes,obsoletedBy,id",
-                });
-
-                // When the search results are returned, process those results
-                view.listenToOnce(searchResults, "sync", () => {
-                  // Keep track of the latest version of the metadata doc(s)
-                  const latestVersions = [];
-
-                  // Iterate over each search result and find the latest version
-                  // of each metadata version chain
-                  searchResults.each((searchResult) => {
-                    // If this metadata isn't obsoleted by another object, it is
-                    // the latest version
-                    if (!searchResult.get("obsoletedBy")) {
-                      latestVersions.push(searchResult.get("id"));
-                    }
-                    // If it is obsoleted by another object but that newer
-                    // object does not document this data, then this is the
-                    // latest version
-                    else if (
-                      !_.contains(isDocBy, searchResult.get("obsoletedBy"))
-                    ) {
-                      latestVersions.push(searchResult.get("id"));
-                    }
-                  }, view);
-
-                  // If at least one latest version was found (should always be
-                  // the case),
-                  if (latestVersions.length) {
-                    // Set that metadata pid as this view's pid and get that
-                    // metadata model. TODO: Support navigation to multiple
-                    // metadata docs. This should be a rare occurence, but it is
-                    // possible that more than one metadata version chain
-                    // documents a data object, and we need to show the user
-                    // that the data is involved in multiple datasets.
-                    view.navigateWithFragment(latestVersions[0], view.pid);
-                  }
-                  // If a latest version wasn't found, which should never
-                  // happen, but just in case, default to the last metadata pid
-                  // in the isDocumentedBy field (most liekly to be the most
-                  // recent since it was indexed last).
-                  else {
-                    view.navigateWithFragment(_.last(isDocBy), view.pid);
-                  }
-                });
-
-                // Send the query to the Solr search service
-                searchResults.query();
-              });
-
-              return;
-            }
-            this.noMetadata(this.model);
-          } else if (this.model.get("formatType") === "RESOURCE") {
-            const packageModel = new Package({ id: this.model.get("id") });
-            packageModel.on(
-              "complete",
-              () => {
-                const metadata = packageModel.getMetadata();
-
-                if (!metadata) {
-                  this.noMetadata(packageModel);
-                } else {
-                  this.model = metadata;
-                  this.pid = this.model.get("id");
-                  this.renderMetadata();
-                  if (this.model.get("resourceMap"))
-                    this.getPackageDetails(this.model.get("resourceMap"));
-                }
-              },
-              this,
-            );
-            packageModel.getMembers();
-            return;
-          }
-
-          // Get the package information
-          this.getPackageDetails(model.get("resourceMap"));
-        });
-
-        // Listen to 404 and 401 errors when we get the metadata object
-        this.listenToOnce(model, "getInfoError error", (status, message) => {
-          if (status === 404) {
-            this.showNotFound();
-          } else if (status === 401) {
-            this.showIsPrivate();
-          } else {
-            // other error, e.g. CORS issue
-            let msg = "<h4>Error retrieving metadata.</h4>";
-            if (message) {
-              msg += `<p>The following error occurred: ${Utilities.encodeHTML(
-                message,
-              )}</p>`;
-            }
-            if (status) {
-              msg += `<p>Error code: ${status}</p>`;
-            }
-            this.hideLoading();
-            this.showError(msg);
-          }
-        });
-
+        this.stopListeningToModelGetInfo();
+        this.listenToOnce(model, "sync", this.onModelSync);
+        this.listenToOnce(model, "error getInfoError", this.onModelError);
         // Fetch the model
         model.getInfo();
+      },
+
+      stopListeningToModelGetInfo() {
+        const { model } = this;
+        this.stopListening(model, "sync", this.onModelSync);
+        this.stopListening(model, "error", this.onModelError);
+        this.stopListening(model, "getInfoError", this.onModelError);
+      },
+
+      /**
+       * When there is an error retrieving the metadata from Solr, check the
+       * status code. If it's a 404, check if the object exists in the system
+       * and is just indexing. If it's a 401, show a message that this dataset
+       * is private. For other errors, show a generic error message with the
+       * status code and message if they exist.
+       * @param {string|number} status The status code of the error
+       * @param {string} message The error message
+       * @since 0.0.0
+       */
+      onModelError(status, message) {
+        this.stopListeningToModelGetInfo();
+        // coerce status to a string for easier comparison
+        const strStatus = String(status);
+        if (strStatus === "404") {
+          this.showIndexingOrNotFound();
+        } else if (strStatus === "401") {
+          this.showIsPrivate();
+        } else {
+          let msg = "<h4>Error retrieving metadata.</h4>";
+          if (message) {
+            msg += `<p>The following error occurred: ${Utilities.encodeHTML(
+              message,
+            )}</p>`;
+          }
+          if (status) {
+            msg += `<p>Error code: ${Utilities.encodeHTML(strStatus)}</p>`;
+          }
+          this.hideLoading();
+          this.showError(msg);
+        }
+      },
+
+      /**
+       * When the Solr model results are syced (via getInfo), check the format
+       * type of the object and render the view accordingly. If the format type
+       * is data or a resource map, then attempt to find the metadata that
+       * describes the object.
+       * @since 0.0.0
+       */
+      onModelSync() {
+        this.stopListeningToModelGetInfo();
+        const formatType = this.model.get("formatType");
+        if (formatType === "METADATA" || !formatType) {
+          this.renderMetadata();
+          // Get the package information
+          this.getPackageDetails(this.model.get("resourceMap"));
+        } else if (formatType === "DATA") {
+          this.resolveMetadataForData();
+        } else if (formatType === "RESOURCE") {
+          this.resolveMetadataForResMap();
+        } else {
+          // TODO: test....
+          // If the format type is something other than metadata or data, then
+          // show an error message since we don't know how to handle it
+          const msg = `<h4>Unknown format type.</h4><p>The format type of this object is '${Utilities.encodeHTML(formatType)}', which is not recognized. This view can only display objects with a format type of 'METADATA' or 'DATA'.</p>`;
+          this.hideLoading();
+          this.showError(msg);
+        }
+      },
+
+      /**
+       * When a resource map is being viewed, this function will attempt to find
+       * the metadata that describes this resource map and navigate to that
+       * metadata view. If no metadata doc is found, it will show a message to
+       * the user.
+       * @since 0.0.0
+       */
+      async resolveMetadataForResMap() {
+        const resMapId = this.model.get("id");
+        if (!resMapId) {
+          this.model.set("notFound", true);
+          this.showNotFound();
+          return;
+        }
+        const packageModel = new Package({ id: resMapId });
+        const onPackageComplete = () => {
+          this.stopListening(packageModel, "complete", onPackageComplete);
+          const metadata = packageModel.getMetadata();
+          if (!metadata) {
+            this.noMetadata(packageModel);
+          } else {
+            this.model = metadata;
+            this.pid = this.model.get("id");
+            this.renderMetadata();
+            const resMap = this.model.get("resourceMap");
+            if (resMap) {
+              this.getPackageDetails(resMap);
+            }
+          }
+        };
+        const onPackageError = () => {
+          this.stopListening(packageModel, "complete", onPackageComplete);
+          this.stopListening(packageModel, "error", onPackageError);
+          this.model.set("notFound", true);
+          this.showNotFound();
+        };
+        this.listenToOnce(packageModel, "complete", onPackageComplete, this);
+        this.listenToOnce(packageModel, "error", onPackageError, this);
+        packageModel.getMembers();
+      },
+
+      /**
+       * When a data object is being viewed, this function will attempt to find
+       * the metadata that documents this data object and navigate to that
+       * metadata view. If there are multiple metadata docs that document this
+       * data object, it will attempt to find the latest version of the metadata
+       * and navigate to that metadata view. If no metadata docs are found, it
+       * will show a message to the user.
+       * TODO: move to a model or service.
+       * @since 0.0.0
+       */
+      async resolveMetadataForData() {
+        // Get the metadata pids that document this data object
+        const isDocBy = this.model.get("isDocumentedBy");
+
+        // Show error if no metadata doc found for this data object
+        if (!isDocBy?.length) {
+          this.noMetadata(this.model);
+          return;
+        }
+
+        // If there is only one metadata pid that documents this data object,
+        // then get that metadata model for this view.
+        if (isDocBy?.length === 1) {
+          this.navigateWithFragment(isDocBy[0], this.pid);
+          return;
+        }
+
+        // If more than one metadata doc documents this data object, it is most
+        // likely multiple versions of the same metadata. So we need to find the
+        // latest version.
+        const queryParts = [];
+        isDocBy.forEach((pid) => {
+          queryParts.push(QueryService.getQueryPart("id", pid));
+          queryParts.push(QueryService.getQueryPart("seriesId", pid));
+        });
+        const query = queryParts.join(" OR ");
+
+        let docs = [];
+        try {
+          const response = await QueryService.queryWithFetch({
+            q: query,
+            rows: isDocBy.length,
+            fields: "obsoletes,obsoletedBy,id",
+          });
+          docs = QueryService.parseResponse(response);
+        } catch (error) {
+          docs = [];
+        }
+
+        if (!docs?.length) {
+          // If we don't get any docs back, then we can't find the latest
+          // version, so default to the last metadata pid (likely most recent).
+          const lastPid = isDocBy[isDocBy.length - 1];
+          this.navigateWithFragment(lastPid, this.pid);
+          return;
+        }
+
+        // Find the latest version of each metadata version chain.
+        const latestVersions = docs
+          .filter(
+            (doc) => !doc.obsoletedBy || !isDocBy.includes(doc.obsoletedBy),
+          )
+          .map((doc) => doc.id);
+
+        // If at least one latest version was found (should always be the case).
+        // Set the metadata pid as this view's pid and get that metadata model.
+        if (latestVersions.length) {
+          // TODO: Support navigation to multiple metadata docs. This should be a
+          // rare occurence, but it is possible that more than one metadata
+          // version chain documents a data object, and we need to show the user
+          // that the data is involved in multiple datasets.
+          this.navigateWithFragment(latestVersions[0], this.pid);
+          return;
+        }
+        // If a latest version wasn't found, which should never
+        // happen, but just in case, default to the last metadata pid
+        // in the isDocumentedBy field (most liekly to be the most
+        // recent since it was indexed last).
+        const lastPid = isDocBy[isDocBy.length - 1];
+        this.navigateWithFragment(lastPid, this.pid);
       },
 
       /**
@@ -808,6 +862,41 @@ define([
         );
       },
 
+      /**
+       * Check if a PID exists via SysMeta when Solr returns a 404. If SysMeta
+       * exists, this object may still be indexing.
+       * @since 0.0.0
+       */
+      async showIndexingOrNotFound() {
+        const pid = this.model.get("id") || this.pid;
+        let sysMeta = null;
+        try {
+          sysMeta = await this.getSysMeta(pid);
+        } catch (error) {
+          this.hideLoading();
+          const message =
+            error?.message ||
+            "An error occurred while checking if this dataset exists.";
+          this.showError(Utilities.encodeHTML(message));
+          return;
+        }
+
+        if (!sysMeta) {
+          this.model.set("notFound", true);
+          this.showNotFound();
+          return;
+        }
+
+        const msg =
+          `<h4>This dataset is being indexed.</h4>` +
+          `<p id='metadata-view-indexing-message'>The dataset identifier '${Utilities.encodeHTML(
+            pid,
+          )}' was found, but its metadata has not finished indexing yet. Please try again shortly.</p>`;
+
+        this.hideLoading();
+        this.showError(msg);
+      },
+
       /** When the metadata object is private, display a message to the user */
       showIsPrivate() {
         // If we haven't checked the logged-in status of the user yet, wait a
@@ -862,17 +951,89 @@ define([
       },
 
       /**
+       * Get or create a ResourceMapResolver for this view.
+       * @returns {Promise<ResourceMapResolver|null>} A ResourceMapResolver
+       * instance, or null if it can't be initialized
+       */
+      async getResourceMapResolver() {
+        if (this.resourceMapResolver) return this.resourceMapResolver;
+
+        try {
+          const metaServiceUrl =
+            MetacatUI?.appModel?.get("metaServiceUrl") ||
+            (await Utilities.awaitMetacatUI({
+              property: "metaServiceUrl",
+            }));
+          this.resourceMapResolver = new ResourceMapResolver({
+            metaServiceUrl,
+          });
+        } catch (error) {
+          this.resourceMapResolver = null;
+          MetacatUI.analytics?.trackException(
+            `Unable to initialize ResourceMapResolver in MetadataView: ${error}`,
+            this.pid,
+            false,
+          );
+        }
+
+        return this.resourceMapResolver;
+      },
+
+      /**
+       * Resolve a single authoritative resource map PID when Solr returns none
+       * or multiple candidate resource maps.
+       * @param {string[]|string|null} packageIDs Package IDs from Solr.
+       * @returns {Promise<string[]>} Resource map PID candidates.
+       */
+      async resolvePackageIDs(packageIDs) {
+        let normalizedPackageIDs = Array.isArray(packageIDs)
+          ? packageIDs
+          : [packageIDs];
+        normalizedPackageIDs = normalizedPackageIDs.filter(Boolean);
+        normalizedPackageIDs = Array.from(new Set(normalizedPackageIDs)); // Remove duplicates
+
+        // Solr already returned a single RM; no extra resolution needed.
+        if (normalizedPackageIDs.length === 1) return normalizedPackageIDs;
+
+        // Can only resolve if we have a metadata PID to work with.
+        const metadataPid = this.model.get("id") || this.pid;
+        if (!metadataPid && !normalizedPackageIDs.length) return [];
+        if (!metadataPid) return normalizedPackageIDs;
+
+        // If we found multiple RMs or no RMs, try to resolve the authoritative
+        // RM with resource map resolver.
+        try {
+          const resolver = await this.getResourceMapResolver();
+          if (!resolver) return normalizedPackageIDs;
+          const result = await resolver.resolve(metadataPid);
+
+          if (result?.success && result.rm) {
+            return [result.rm];
+          }
+          return normalizedPackageIDs;
+        } catch (error) {
+          MetacatUI.analytics?.trackException(
+            `Could not resolve resource map for metadata PID ${metadataPid}: ${error}`,
+            metadataPid,
+            false,
+          );
+          return normalizedPackageIDs;
+        }
+      },
+
+      /**
        * Retrieves and processes the details of the specified data packages.
        * @param {string[]} packageIDs - An array of package IDs to retrieve
        * details for. If the array is empty or not provided, it processes the
        * current metadata document as a standalone package.
        */
-      getPackageDetails(packageIDs) {
+      async getPackageDetails(packageIDs) {
+        const packageIds = (await this.resolvePackageIDs(packageIDs)) || [];
         const view = this;
         let completePackages = 0;
 
         // This isn't a package, but just a lonely metadata doc...
-        if (!packageIDs || !packageIDs.length) {
+        if (!packageIds.length) {
           const thisPackage = new Package({ id: null, members: [this.model] });
           thisPackage.flagComplete();
           this.packageModels = [thisPackage];
@@ -881,7 +1042,7 @@ define([
           });
         } else {
           _.each(
-            packageIDs,
+            packageIds,
             (thisPackageID, _i) => {
               // Create a model representing the data package
               const thisPackage = new Package({ id: thisPackageID });
@@ -897,10 +1058,10 @@ define([
               view.listenToOnce(thisPackage, "complete", () => {
                 // When all packages are fully retrieved
                 completePackages += 1;
-                if (completePackages >= packageIDs.length) {
+                if (completePackages >= packageIds.length) {
                   const latestPackages = _.filter(
                     view.packageModels,
-                    (m) => !_.contains(packageIDs, m.get("obsoletedBy")),
+                    (m) => !_.contains(packageIds, m.get("obsoletedBy")),
                   );
 
                   // Set those packages as the most recent package
@@ -921,6 +1082,32 @@ define([
             },
             this,
           );
+        }
+      },
+
+      /**
+       * Get system metadata for an object (metadata, resource map, etc). This
+       * can be used to determine if an object is currently indexing, e.g. it's
+       * not in solr but the object exists.
+       * @param {string} pid - The PID of the object to get sysmeta for
+       * @returns {Promise<object>} The system metadata for the object, or null
+       * if it can't be retrieved
+       * @since 0.0.0
+       */
+      async getSysMeta(pid) {
+        if (!pid) return null;
+        if (!this.sysMetaService) {
+          this.sysMetaService = new SysMetaService();
+        }
+        try {
+          const sysMeta = await this.sysMetaService.download(pid);
+          return sysMeta;
+        } catch (error) {
+          const status = String(error?.status);
+          if (status === "404" || status === "401") {
+            return null;
+          }
+          throw error;
         }
       },
 
@@ -1631,6 +1818,8 @@ define([
        * Check whether the user has write permissions on the resource map and
        * the EML. Once the permission checks have finished, continue with the
        * functions that depend on them.
+       * @returns {Promise<boolean>} A promise that resolves to true if the user
+       * has write permissions, false otherwise.
        */
       async checkWritePermissions() {
         const resourceMap = this.dataPackage?.packageModel;
@@ -2794,7 +2983,7 @@ define([
           const responseText = await response.text();
 
           if (!response.ok) {
-            const description = XMLUtilities.extractText(responseText, [
+            const description = XMLUtilities.extractTextBySelectors(responseText, [
               "description",
               "d1\\:description",
             ]);
@@ -2805,7 +2994,7 @@ define([
             );
           }
 
-          const identifier = XMLUtilities.extractText(responseText, [
+          const identifier = XMLUtilities.extractTextBySelectors(responseText, [
             "identifier",
             "d1\\:identifier",
           ]);

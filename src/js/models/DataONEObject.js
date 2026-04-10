@@ -5,8 +5,8 @@ define([
   "uuid",
   "he",
   "collections/AccessPolicy",
-  "collections/ObjectFormats",
   "common/Utilities",
+  "common/ValueUtilities",
   "md5",
   "common/QueryService",
 ], (
@@ -16,8 +16,8 @@ define([
   uuid,
   he,
   AccessPolicy,
-  ObjectFormats,
   Utilities,
+  ValueUtilities,
   md5,
   QueryService,
 ) => {
@@ -139,11 +139,11 @@ define([
 
         const model = this;
         this.on("change:size", () => {
-          const size = Utilities.bytesToSize(model.get("size"));
+          const size = ValueUtilities.bytesToSize(model.get("size"));
           model.set("sizeStr", size);
         });
         if (attrs.size) {
-          const size = Utilities.bytesToSize(model.get("size"));
+          const size = ValueUtilities.bytesToSize(model.get("size"));
           model.set("sizeStr", size);
         }
 
@@ -174,6 +174,9 @@ define([
         // Find Member Node object that might be the authoritative MN
         // This is helpful when MetacatUI may be displaying content from multiple MNs
         this.setPossibleAuthMNs();
+
+        // Ensure the object formats are cached for this model's use
+        Utilities.awaitObjectFormats();
       },
 
       /**
@@ -2489,6 +2492,15 @@ define([
        * @returns {boolean} True if it is a DOI
        */
       isDOI(customString) {
+        const isDOI = globalThis.MetacatUI?.appModel?.isDOI.bind(
+          MetacatUI.appModel,
+        );
+        if (!isDOI) {
+          console.warn(
+            "The isDOI function is not defined on the appModel. Please define this function to check if an identifier is a DOI.",
+          );
+          return false;
+        }
         return (
           isDOI(customString) ||
           isDOI(this.get("id")) ||

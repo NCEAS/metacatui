@@ -6,15 +6,14 @@ define([
   "models/metadata/eml211/EML211",
   "models/metadata/eml211/EMLOtherEntity",
   "models/metadata/ScienceMetadata",
-  "models/sysmeta/VersionTracker",
   "models/resourceMap/ResourceMapResolver",
-  "models/sysmeta/SysMeta",
+  "models/dataONEServices/SysMetaService",
   "views/EditorView",
   "views/CitationView",
   "views/DataPackageView",
   "views/metadata/EML211View",
   "views/metadata/EMLEntityView",
-  "collections/ObjectFormats",
+  "common/Utilities",
 ], (
   $,
   Backbone,
@@ -23,15 +22,14 @@ define([
   EML,
   EMLOtherEntity,
   ScienceMetadata,
-  VersionTracker,
   ResourceMapResolver,
-  SysMeta,
+  SysMetaService,
   EditorView,
   CitationView,
   DataPackageView,
   EMLView,
   EMLEntityView,
-  ObjectFormats,
+  Utilities,
 ) => {
   /**
    * @class EML211EditorView
@@ -136,10 +134,7 @@ define([
       /** @inheritdoc */
       initialize(options = {}) {
         // Ensure the object formats are cached for the editor's use
-        if (typeof MetacatUI.objectFormats === "undefined") {
-          MetacatUI.objectFormats = new ObjectFormats();
-          MetacatUI.objectFormats.fetch();
-        }
+        Utilities.awaitObjectFormats();
         this.pid = options?.pid || null;
         return this;
       },
@@ -308,19 +303,17 @@ define([
        */
       async handleMetadataNotFound() {
         this.updateLoadingText("Looking for metadata document...");
-        const token = await MetacatUI.appUserModel.getTokenPromise();
-        const sysMeta = new SysMeta({ identifier: this.pid });
-        sysMeta
-          .fetch(token)
-          .then(() => {
-            this.showNotIndexed();
-            // TODO: we can get the formatType from the sysMeta and download
-            // metadata if it's EML so indexing status doesn't matter. However,
-            // the editor needs to be refactored to handle this.
-          })
-          .catch(() => {
-            this.showNotFound();
-          });
+        const sysMetaService = new SysMetaService();
+
+        try {
+          await sysMetaService.download(this.pid);
+          this.showNotIndexed();
+          // TODO: we can get the formatType from the sysMeta and download
+          // metadata if it's EML so indexing status doesn't matter. However,
+          // the editor needs to be refactored to handle this.
+        } catch (_error) {
+          this.showNotFound();
+        }
       },
 
       /**
@@ -423,7 +416,13 @@ define([
        */
       async getDataPackage(model) {
         const metaModel = model || this.model;
-        const versionTracker = VersionTracker.get(); // One tracker per metaservice url
+        const metaServiceUrl = await Utilities.awaitMetacatUI({
+          property: "sysMetaModel",
+        });
+        const resolver = new ResourceMapResolver({
+          metaServiceUrl,
+        });
+        const { versionTracker } = resolver;
         const metaPid =
           metaModel.get("id") ||
           metaModel.get("identifier") ||
@@ -440,7 +439,7 @@ define([
         }
 
         // TODO - get latest version should happen in DataONE object.
-        const latestPid = await versionTracker.getLatestVersion(metaPid, true);
+        const latestPid = await versionTracker.getLatestVersion(metaPid);
         if (latestPid !== metaPid) {
           // MetacatUI.rootDataPackage.packageModel.set("sysMetaXML", null);
           metaModel.set("latestVersion", latestPid);
@@ -448,7 +447,6 @@ define([
           return;
         }
 
-        const resolver = ResourceMapResolver.get();
         const result = await resolver.resolve(metaPid);
 
         // Because we're checking metadata doc write permission asynchronously,
@@ -946,7 +944,7 @@ define([
         const newPid = this.model.get("id");
         const resourceMapId = MetacatUI.rootDataPackage.packageModel.get("id");
         if (resourceMapId && newPid) {
-          const resMapResolver = ResourceMapResolver.get();
+          const resMapResolver = new ResourceMapResolver();
           resMapResolver.addToStorage(newPid, resourceMapId);
         }
 

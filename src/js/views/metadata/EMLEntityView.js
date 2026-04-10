@@ -7,7 +7,6 @@ define([
   "views/DataPreviewView",
   "views/metadata/EMLAttributesView",
   "text!templates/metadata/eml-entity.html",
-  "common/XMLUtilities",
 ], (
   _,
   $,
@@ -17,7 +16,6 @@ define([
   DataPreviewView,
   EMLAttributesView,
   EMLEntityTemplate,
-  XMLUtilities,
 ) => {
   /**
    * @class EMLEntityView
@@ -155,7 +153,11 @@ define([
         const changedAttr = $(e.target).attr("data-category");
 
         if (!changedAttr) return;
-        const newValue = XMLUtilities.cleanXMLText($(e.target).val());
+        const emlModel = this.model.get("parentModel");
+        const rawValue = $(e.target).val();
+        const newValue = emlModel?.cleanXMLText
+          ? emlModel.cleanXMLText(rawValue)
+          : rawValue;
         this.model.set(changedAttr, newValue);
         this.model.trickleUpChange();
       },

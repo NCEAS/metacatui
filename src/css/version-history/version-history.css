@@ -1,0 +1,338 @@
+/* Version History View */
+
+.version-history {
+  --timeline-point-height: 2.4rem;
+  --border-color-muted: var(--color-neutral-1, #e3e3e3);
+  --info-color: #1f5f95;
+  --info-background: #edf6fc;
+  --info-border-color: #c7e0f3;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 2rem;
+
+  .alert-warning {
+    /* darker than bootstrap default */
+    color: #9d742d;
+  }
+}
+
+/* for any element hidden within version history */
+.version-history--hidden {
+  display: none !important;
+}
+
+.version-history__header .citation {
+  font-size: 1.2rem;
+}
+
+.object-versions {
+  --border-color-muted: #e3e3e3;
+  border: 1px solid var(--border-color-muted);
+  border-radius: 6px;
+  margin-block-start: 0;
+  margin-block-end: 0;
+  padding-inline-start: 0;
+  margin: 0;
+}
+
+.object-version {
+  --border-color-muted: #e3e3e3;
+  list-style: none;
+  border-bottom: 1px solid var(--border-color-muted);
+  min-height: 2rem;
+  padding: 0.5rem 0.9rem 0.6rem 0.9rem;
+
+  display: grid;
+  grid-template-columns: 1fr max-content;
+  grid-template-rows: auto auto auto;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "date badge"
+    "pid badge"
+    "note note";
+  align-items: center;
+}
+
+.object-version--doi .object-version__date {
+  font-weight: 600;
+}
+
+.object-version__date {
+  grid-area: date;
+}
+
+.object-version__badges {
+  grid-area: badge;
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+.object-version__badge {
+  --badge-border-color: white;
+  --badge-background-color: black;
+  --badge-text-color: white;
+  border-color: var(--badge-border-color);
+  background-color: var(--badge-background-color);
+  color: var(--badge-text-color);
+  border-style: solid;
+  border-width: 1px;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0.95;
+  font-weight: 700;
+  line-height: 14px;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
+.object-version__badge--latest {
+  --badge-border-color: #cdebd8;
+  --badge-background-color: #eefbec;
+  --badge-text-color: #028a50;
+}
+
+.object-version__badge--newer {
+  --badge-border-color: #c5f0f2;
+  --badge-background-color: #ebf9f5;
+  --badge-text-color: #009098;
+}
+
+.object-version__badge--current {
+  --badge-border-color: #bfdbee;
+  --badge-background-color: #d6ecfc;
+  --badge-text-color: #005e9d;
+}
+
+.object-version__badge--older {
+  --badge-border-color: #d6e5e7;
+  --badge-background-color: #edf2f3;
+  --badge-text-color: #61848a;
+}
+
+.object-version__badge--first {
+  --badge-border-color: #dadeea;
+  --badge-background-color: #e4e7ec;
+  --badge-text-color: #5a6671;
+}
+
+.object-version__badge--private {
+  /* yellow */
+  --badge-border-color: #fbeed5;
+  --badge-background-color: #fcf8e3;
+  --badge-text-color: #c09853;
+}
+
+.object-version__badge--not-found {
+  /* red */
+  --badge-border-color: #f4c7c3;
+  --badge-background-color: #f9e2e0;
+  --badge-text-color: #d9534f;
+}
+
+.object-version__badge--doi {
+  --badge-border-color: #e0c3fc;
+  --badge-background-color: #f3e8fe;
+  --badge-text-color: #a569e0;
+}
+
+.object-version__date-note {
+  grid-area: note;
+  margin: 0.4rem 0 0 0;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.45rem;
+  color: var(--info-color, #1f5f95);
+  background: var(--info-background, #edf6fc);
+  border-color: var(--info-border-color, #c7e0f3);
+}
+
+.object-version:last-child {
+  border-bottom: none;
+}
+
+.version-history__history h3 {
+  color: var(--color-neutral-6, #333333);
+  font-size: 0.95rem;
+  font-weight: 400;
+  padding: 0 0.2rem;
+  margin: 0;
+}
+
+.object-version__title {
+  font-size: 1rem;
+  line-height: 1.4rem;
+  font-weight: 600;
+  overflow-wrap: break-word;
+  text-wrap-mode: wrap;
+  margin: 0;
+  grid-area: pid;
+}
+
+.version-history-group {
+  position: relative;
+  margin-left: 2rem;
+  position: relative;
+  padding-bottom: 0.2rem;
+  display: flex;
+  width: 100%;
+}
+
+/* timeline vertical line */
+.version-history-group:before {
+  background-color: var(--color-neutral-3, #ccc);
+  bottom: 0;
+  content: "";
+  display: block;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 1.5px;
+  margin-top: var(--timeline-point-height);
+}
+
+.version-history-group__timeline-point {
+  position: relative;
+  height: var(--timeline-point-height);
+  width: var(--timeline-point-height);
+  margin-left: -1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  pointer-events: none;
+  color: var(--color-neutral-6, #ccc);
+}
+
+.version-history-group__point-note-icon {
+  display: none;
+  position: absolute;
+  right: -0.22rem;
+  top: 0.02rem;
+  width: 0.92rem;
+  height: 0.92rem;
+  border-radius: 999px;
+  background: var(--info-background, #edf6fc);
+  border: 1px solid var(--info-border-color, #c7e0f3);
+  color: var(--info-color, #1f5f95);
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.version-history-group__point-note-icon .icon {
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+.version-history-group--date-note .version-history-group__timeline-point {
+  color: var(--info-color, #1f5f95);
+}
+
+.version-history-group--date-note .version-history-group__point-note-icon {
+  display: inline-flex;
+}
+
+.version-history-group__timeline-content {
+  width: 100%;
+  padding-right: 2rem;
+  padding-left: 0.8rem;
+}
+
+.version-history-group__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.version-history-group__date-title {
+  margin: 0;
+}
+
+.version-history-group__timeline-content h3 {
+  font-weight: 600;
+  color: var(--color-neutral-7, #333333);
+}
+
+/* doi only toggle */
+
+.version-history__controls {
+  --toggle-border-color: var(--border-color-muted);
+  width: 100%;
+  margin-left: auto;
+  display: flex;
+  justify-content: end;
+  gap: 1rem;
+}
+
+.version-history__toggle {
+  width: 19rem;
+  .toggle-container {
+    padding: 1rem 0 0 0;
+  }
+  .toggle-option:last-child.toggle-option--active {
+    --toggle-background-color-active: #f3e8fe;
+    --toggle-color-active: #a569e0;
+  }
+  .toggle-option:first-child.toggle-option--active {
+    --toggle-background-color-active: #d6ecfc;
+    --toggle-color-active: #333333;
+  }
+}
+
+.version-history__refresh-button {
+  /* mimic styles from toggle view */
+  background: none;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1;
+  padding: 0.5em 0.6em;
+  margin: 1rem 0 0.5rem 0;
+  border-radius: 5px;
+  font-weight: 500;
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--color-neutral-3, #ccc);
+  color: #555;
+}
+
+.version-history__refresh-button:hover {
+  --toggle-background-color-active: #d6ecfc;
+  --toggle-color-active: #333333;
+  background: var(--toggle-background-color-active);
+  color: var(--toggle-color-active);
+  border-color: var(--toggle-color-active);
+}
+
+/* more compact for small screens */
+@media (max-width: 600px) {
+  .object-version__badges {
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    max-width: 9.5rem;
+  }
+  .object-version__title {
+    word-wrap: break-word;
+    font-size: 0.95rem;
+  }
+  .object-version--doi .object-version__date {
+    font-size: 0.85rem;
+  }
+  .object-version__link {
+    align-self: flex-start;
+  }
+  .version-history-group {
+    margin-left: 1rem;
+  }
+  .version-history-group__timeline-content {
+    padding-left: 0.3rem;
+    padding-right: 1.2rem;
+  }
+}
