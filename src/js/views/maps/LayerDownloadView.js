@@ -3,7 +3,6 @@
 define(["underscore", "backbone"], (_, Backbone) => {
   // HTML classes used inside this view
   const CLASS_NAMES = {
-    ƒ: "download-expansion-panel__checkbox",
     dropdown: "downloads-dropdown",
     resolutionDropdown: "resolution-dropdown",
     fileTypeDropdown: "fileType-downloads-dropdown",
@@ -74,7 +73,6 @@ define(["underscore", "backbone"], (_, Backbone) => {
         // the layer is included in the next download.
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
-        checkbox.classList.add(CLASS_NAMES.checkbox);
 
         // Attach all layer attributes for use in getRawFileSize / updateTextbox
         checkbox.dataset.layerId = item.layerID;
@@ -179,8 +177,16 @@ define(["underscore", "backbone"], (_, Backbone) => {
           "Select resolution and file format to download...";
         this.fileSizeInfoBox = fileSizeInfoBox;
 
+        // ── Checkbox row (indented to match dropdown row) ─────────────────────
+        const checkboxRow = document.createElement("div");
+        checkboxRow.classList.add("layer-download__select-row");
+        const checkboxLabel = document.createElement("label");
+        checkboxLabel.textContent = "Select Product";
+        checkboxLabel.prepend(checkbox);
+        checkboxRow.appendChild(checkboxLabel);
+
         // ── Assemble ──────────────────────────────────────────────────────────
-        this.el.appendChild(checkbox);
+        this.el.appendChild(checkboxRow);
         this.el.appendChild(dropdownContainer);
         this.el.appendChild(fileSizeInfoBox);
 

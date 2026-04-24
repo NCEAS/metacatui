@@ -1675,92 +1675,59 @@ other class: .ui-slider-range */
   opacity: 0.6; /* Reduce opacity to make it look disabled */
 }
 
-.download-expansion-panel__title {
-  font-size: 13px; /* Adjust font size */
-  color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
-  flex-grow: 1; /* Allow it to take up all available space */
-  width: 100%; /* Ensure it takes the full width of the parent */
-  text-align: left; /* Adjust text alignment as needed */
-  white-space: nowrap; /* Prevent text from wrapping */
-  overflow: hidden; /* Hide overflow */
-  text-overflow: ellipsis; /* Show "..." if text overflows */
-  padding: 0; /* Ensure no extra padding */
-  margin: 0; /* Ensure it starts from the same left edge */
-}
-
-.download-expansion-panel {
+/* Download-panel-specific overrides for ExpansionPanelView instances inside
+   the download data list. These replace the old hand-rolled
+   download-expansion-panel__* classes. */
+.download-data-list .expansion-panel {
   margin-top: 10px;
-  .download-expansion-panel__toggle {
-    display: grid;
-    align-items: center;
-    cursor: pointer;
-    grid-template-columns: min-content auto;
+  box-shadow: none;
+  border-bottom: none;
+
+  /* No layer icon is shown in the download panel */
+  .expansion-panel__icon {
+    display: none;
+  }
+
+  /* Tighter toggle: title + caret only, no side padding */
+  .expansion-panel__toggle {
+    grid-template-columns: auto min-content;
     padding: 0;
-    border: none;
     gap: 8px;
     margin-top: 3px;
-
-    &:hover {
-      background-color: var(--portal-col-primary-1, #15324e);
-      transition: background-color 0.3s ease-in-out;
-    }
-
-    input[type="checkbox"] {
-      margin: 0;
-    }
+    border: none;
   }
 
-  &.show-content {
-    .download-expansion-panel__content {
-      display: block;
-    }
-
-    .icon-caret-down {
-      display: block;
-    }
-
-    .icon-caret-up {
-      display: none;
-    }
-  }
-
-  .icon-caret-down {
-    display: none;
-  }
-
-  .icon-caret-up {
-    display: block;
-  }
-  .download-expansion-panel__icon {
-    fill: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
-    color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
-    height: 2rem;
-    width: 2rem;
-    margin: 0.25rem;
-    margin-right: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .download-expansion-panel__icon > svg {
-    height: 1rem;
-  }
-
-  .download-expansion-panel__icon-toggle {
-    width: 2rem;
-    display: flex;
-    justify-content: center;
-    color: var(--portal-col-neutral-6);
-  }
-
-  .download-expansion-panel__content {
-    display: none;
-    animation: fadeIn 0.3s ease-in-out;
+  /* Compact title with ellipsis overflow */
+  .expansion-panel__title {
+    font-size: 13px;
+    width: 100%;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0;
+    margin: 0;
   }
 }
-.download-expansion-panel__checkbox {
-  margin-right: 8px; /* Adjust spacing as needed */
+
+
+
+.layer-download__select-row {
+  padding-left: 20px;
+  padding-top: 5px;
+  display: flex;
+  align-items: center;
+
+  label {
+    font-size: 12px;
+    white-space: nowrap;
+    margin-bottom: 0;
+    color: var(--portal-col-neutral-7);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
 }
 
 .downloads-dropdown-container {
