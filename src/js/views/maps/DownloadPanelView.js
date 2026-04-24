@@ -8,6 +8,8 @@ define([
   "models/connectors/GeoPoints-CesiumPolygon",
   "models/connectors/GeoPoints-CesiumPoints",
   "collections/maps/GeoPoints",
+  "views/maps/ExpansionPanelView",
+  "views/maps/LayerDownloadView",
 ], (
   _,
   Backbone,
@@ -16,13 +18,14 @@ define([
   GeoPointsVectorData,
   GeoPointsCesiumPoints,
   GeoPoints,
+  ExpansionPanelView,
+  LayerDownloadView,
 ) => {
   // Classes used in the view
   const CLASS_NAMES = {
     button: "draw__button",
     buttonFocus: "draw__button--active",
     buttonDisable: "draw__button--disable",
-    layerItemPanelToggle: "download-expansion-panel__toggle",
     layerItemCheckbox: "download-expansion-panel__checkbox",
     dropdown: "downloads-dropdown",
     resolutionDropdown: "resolution-dropdown",
@@ -139,7 +142,6 @@ define([
         const events = {};
         const CN = CLASS_NAMES;
         events[`click .${CN.button}`] = "handleButtonClick";
-        events[`click .${CN.layerItemPanelToggle}`] = "toggleLayerSection";
         return events;
       },
 
@@ -244,12 +246,6 @@ define([
         toolbarLink: ".toolbar__links",
         toolbarLinkActive: "toolbar__link--active",
         toolbarContentActive: "toolbar__content--active",
-        layerItemPanel: "download-expansion-panel",
-        layerItemTitle: "download-expansion-panel__title",
-        layerItemContent: "download-expansion-panel__content",
-        dropdownWrapper: "downloads-dropdown-wrapper",
-        dropdownContainer: "downloads-dropdown-container",
-        fileSizeBox: "downloads-textbox",
       },
 
       /**
@@ -708,7 +704,6 @@ define([
        */
       generatePreviewPanel() {
         const view = this;
-        let selectedResolution;
         this.clearButtonEl = this.buttonEls.clearButton;
         this.saveButtonEl = this.buttonEls.saveButton;
         this.drawButtonEl = this.buttonEls.drawButton;
@@ -806,8 +801,11 @@ define([
 
         if (!downloadDataPanel) return;
 
-        // Clear any previously added layer items in case of a rerender
+        // Clear any previously added layer items in case of a rerender.
+        // Also clean up tracked panels/views from the previous render.
         downloadDataPanel.innerHTML = "";
+        this.layerPanels = [];
+        this.layerDownloadViews = [];
 
         // If there is no polygon on the map, quit here.
         if (!this.points.length) return;
@@ -830,181 +828,37 @@ define([
         } else {
           // Loop through selected data layers
           selectedLayersList.forEach((item) => {
-            const fileTypeOptions = {
-              tif: "Geotiff",
-              png: "PNG",
-              wmts: "WMTS file",
-              gpkg: "Geopackage",
+            // Create a LayerDownloadView for this layer's controls
+            const layerDownloadView = new LayerDownloadView({
+              item,
+              downloadPanelView: view,
+            });
+
+            // Create an ExpansionPanelView to wrap the layer controls with a
+            // collapsible header showing the layer name
+            const panel = new ExpansionPanelView({
+              title: item.layerName,
+              contentViewInstance: layerDownloadView,
+            });
+
+            // Hook into open/collapse so the checkbox and dropdowns are kept in
+            // sync with the panel's expanded state
+            const originalOpen = panel.open.bind(panel);
+            const originalCollapse = panel.collapse.bind(panel);
+            panel.open = function open() {
+              originalOpen();
+              layerDownloadView.onPanelOpen();
+            };
+            panel.collapse = function collapse() {
+              originalCollapse();
+              layerDownloadView.onPanelClose();
             };
 
-            // Create panel container for each layer that intersects the
-            // bounding box
-            const downloadDataPanelContainer = document.createElement("div");
-            downloadDataPanelContainer.classList.add(
-              this.classes.layerItemPanel,
-            );
-            const layerItem = document.createElement("div");
-            layerItem.classList.add(CLASS_NAMES.layerItemPanelToggle);
+            panel.render();
+            downloadDataPanel.appendChild(panel.el);
 
-            // Create checkbox that allows user to select the layer
-            const layerItemSelectBox = document.createElement("input");
-            layerItemSelectBox.type = "checkbox";
-            layerItemSelectBox.classList.add(CLASS_NAMES.layerItemCheckbox);
-
-            // Attach layer attributes to the checkbox
-            layerItemSelectBox.dataset.layerId = item.layerID;
-            layerItemSelectBox.dataset.downloadLink = item.downloadLink;
-            layerItemSelectBox.dataset.layerName = item.layerName;
-            layerItemSelectBox.dataset.fullDownloadLink = item.fullDownloadLink;
-            layerItemSelectBox.dataset.pngDownloadLink = item.pngDownloadLink;
-            layerItemSelectBox.dataset.id = item.ID;
-            layerItemSelectBox.dataset.wmtsDownloadLink = item.wmtsDownloadLink;
-            layerItemSelectBox.dataset.gpkgDownloadLink = item.gpkgDownloadLink;
-            layerItemSelectBox.dataset.tiffDownloadLink = item.tiffDownloadLink;
-            layerItemSelectBox.dataset.metadataPid = item.metadataPid;
-
-            const layerItemSpan = document.createElement("span");
-            layerItemSpan.classList.add(this.classes.layerItemTitle);
-            layerItemSpan.textContent = item.layerName;
-
-            layerItem.appendChild(layerItemSelectBox);
-            layerItem.appendChild(layerItemSpan);
-
-            const layerItemSelectContent = document.createElement("div");
-            layerItemSelectContent.classList.add(this.classes.layerItemContent);
-
-            // Create the "Resolution" dropdown
-            const resolutionDropdownWrapper = document.createElement("div");
-            resolutionDropdownWrapper.classList.add(
-              this.classes.dropdownWrapper,
-            );
-            const resolutionLabel = document.createElement("label");
-            resolutionLabel.textContent = this.dropdownOptions.resolution.label;
-
-            const resolutionDropdown = document.createElement("select");
-            resolutionDropdown.classList.add(CLASS_NAMES.dropdown);
-            resolutionDropdown.classList.add(CLASS_NAMES.resolutionDropdown);
-
-            // Add a default select option
-            const defaultResolutionOption = document.createElement("option");
-            defaultResolutionOption.value =
-              this.dropdownOptions.resolution.defaultValue;
-            defaultResolutionOption.textContent =
-              this.dropdownOptions.resolution.defaultText;
-            defaultResolutionOption.disabled = true; // Make it non-selectable
-            defaultResolutionOption.selected = true; // Make it the default selection
-            resolutionDropdown.appendChild(defaultResolutionOption);
-
-            Object.entries(this.zoomLevels).forEach(
-              ([zoomLevel, pixelResolution]) => {
-                const option = document.createElement("option");
-                option.value = zoomLevel;
-                option.textContent = `${zoomLevel} - ${pixelResolution}`;
-                resolutionDropdown.appendChild(option);
-              },
-            );
-
-            resolutionDropdownWrapper.appendChild(resolutionLabel);
-            resolutionDropdownWrapper.appendChild(resolutionDropdown);
-
-            // Create the "File Type" dropdown
-            const fileTypeDropdownWrapper = document.createElement("div");
-            fileTypeDropdownWrapper.classList.add(this.classes.dropdownWrapper);
-            const fileTypeLabel = document.createElement("label");
-            fileTypeLabel.textContent = this.dropdownOptions.fileType.label;
-
-            const fileTypeDropdown = document.createElement("select");
-            fileTypeDropdown.classList.add(CLASS_NAMES.dropdown);
-            fileTypeDropdown.classList.add(CLASS_NAMES.fileTypeDropdown);
-
-            if (item.tiffDownloadLink == null) {
-              delete fileTypeOptions.tif;
-            }
-
-            if (item.gpkgDownloadLink == null) {
-              delete fileTypeOptions.gpkg;
-            }
-            // Add a default select option
-            const defaultFileTypeOption = document.createElement("option");
-            defaultFileTypeOption.value =
-              this.dropdownOptions.fileType.defaultValue;
-            defaultFileTypeOption.textContent =
-              this.dropdownOptions.fileType.defaultText;
-            defaultFileTypeOption.disabled = true; // Make it non-selectable
-            defaultFileTypeOption.selected = true; // Make it the default selection
-            fileTypeDropdown.appendChild(defaultFileTypeOption);
-
-            Object.entries(fileTypeOptions).forEach(
-              ([fileType, fileTypeName]) => {
-                const option = document.createElement("option");
-                option.value = fileType;
-                option.textContent = fileTypeName;
-                fileTypeDropdown.appendChild(option);
-              },
-            );
-
-            fileTypeDropdownWrapper.appendChild(fileTypeLabel);
-            fileTypeDropdownWrapper.appendChild(fileTypeDropdown);
-            fileTypeDropdown.disabled = true; // initially setting it to true
-
-            const dropdownContainer = document.createElement("div");
-            dropdownContainer.classList.add(this.classes.dropdownContainer);
-
-            // Append both dropdown wrappers
-            dropdownContainer.appendChild(resolutionDropdownWrapper);
-            dropdownContainer.appendChild(fileTypeDropdownWrapper);
-            layerItemSelectContent.appendChild(dropdownContainer);
-
-            // Textbox to display file size
-            const fileSizeInfoBox = document.createElement("label");
-            fileSizeInfoBox.classList.add(this.classes.fileSizeBox);
-            fileSizeInfoBox.textContent =
-              "Select resolution and file format to download...";
-            layerItemSelectContent.appendChild(fileSizeInfoBox);
-
-            // Handle change event for "Resolution" dropdown
-            resolutionDropdown.addEventListener("change", () => {
-              selectedResolution = resolutionDropdown.value;
-              if (selectedResolution !== "") {
-                fileTypeDropdown.disabled = false; // Enable the fileTypeDropdown
-              }
-              fileTypeDropdown.value = defaultFileTypeOption.value;
-            });
-
-            // Update approximate file size when a file type is selected in
-            // fileTypeDropdown
-            fileTypeDropdown.addEventListener("change", () => {
-              view.fileTypeSelection(layerItemSelectBox.dataset.layerId); // Update Save button state -- moved from layer check-box change event
-              const fileSize = view.getRawFileSize(
-                resolutionDropdown.value,
-                fileTypeDropdown.value,
-                layerItemSelectBox.dataset.layerId,
-                layerItemSelectBox.dataset.fullDownloadLink,
-                layerItemSelectBox.dataset.pngDownloadLink,
-                layerItemSelectBox.dataset.gpkgDownloadLink,
-                layerItemSelectBox.dataset.id,
-                layerItemSelectBox.dataset.layerName,
-                layerItemSelectBox.dataset.wmtsDownloadLink,
-                layerItemSelectBox.dataset.metadataPid,
-                layerItemSelectBox.dataset.tiffDownloadLink,
-              );
-              view.updateTextbox(
-                fileSizeInfoBox,
-                fileSize,
-                fileTypeDropdown.value,
-                layerItemSelectBox.dataset.layerId,
-              );
-            });
-
-            // Append elements
-            downloadDataPanelContainer.appendChild(layerItem);
-            downloadDataPanelContainer.appendChild(layerItemSelectContent);
-            downloadDataPanel.appendChild(downloadDataPanelContainer);
-
-            // Toggle the expansion panel content on click
-            layerItem.addEventListener("click", () => {
-              downloadDataPanelContainer.classList.toggle("show-content");
-            });
+            view.layerPanels.push(panel);
+            view.layerDownloadViews.push(layerDownloadView);
           });
           // Update the text of download-data-list__panel
           document.querySelector(".download-data-list__panel").textContent =
@@ -1033,46 +887,6 @@ define([
           view.downloadStatusContainer = downloadStatusContainer;
           view.progressBar = progressBar;
         }
-      },
-
-      /**
-       * Open or close the data/layer item in the list of downloadable layers.
-       * @param {Event} event - The click event that triggered this function.
-       */
-      toggleLayerSection(event) {
-        // TODO: Use the accordion view to handle this
-        const view = this;
-        const itemToggle = event.currentTarget;
-        const itemContent = itemToggle.nextElementSibling;
-        const checkbox = itemToggle.querySelector(
-          `.${CLASS_NAMES.layerItemCheckbox}`,
-        );
-        const resolutionDropdown = itemContent.querySelector(
-          `.${CLASS_NAMES.resolutionDropdown}`,
-        );
-        const fileTypeDropdown = itemContent.querySelector(
-          `.${CLASS_NAMES.fileTypeDropdown}`,
-        );
-
-        const isOpen = itemToggle.classList.contains("show-content");
-
-        // If it's open, close it
-        if (isOpen) {
-          // Close it
-          itemToggle.classList.remove("show-content");
-          itemContent.style.display = "none";
-          checkbox.checked = false; // Uncheck the checkbox
-        } else {
-          itemToggle.classList.add("show-content");
-          itemContent.style.display = "block";
-          checkbox.checked = true; // Check the checkbox
-          // Reset resolution dropdown to the default value
-          resolutionDropdown.value =
-            this.dropdownOptions.resolution.defaultValue;
-          // Disable fileTypeDropdown if necessary
-          fileTypeDropdown.disabled = true;
-        }
-        view.layerSelection(); // Update Save button state
       },
 
       /**
