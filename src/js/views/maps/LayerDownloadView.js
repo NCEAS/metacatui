@@ -269,6 +269,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
           fileSizeInfoBox.textContent = "Select file format to download...";
           fileSizeInfoBox.classList.add("downloads-textbox--warning");
           fileSizeInfoBox.classList.remove("error", "wmts-copy");
+          downloadPanelView.layerSelection();
         });
 
         // File-type change: recalculate file size and notify parent
