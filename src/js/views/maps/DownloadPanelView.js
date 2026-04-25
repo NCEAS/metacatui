@@ -8,7 +8,6 @@ define([
   "models/connectors/GeoPoints-CesiumPolygon",
   "models/connectors/GeoPoints-CesiumPoints",
   "collections/maps/GeoPoints",
-  "views/maps/ExpansionPanelView",
   "views/maps/LayerDownloadView",
 ], (
   _,
@@ -18,7 +17,6 @@ define([
   GeoPointsVectorData,
   GeoPointsCesiumPoints,
   GeoPoints,
-  ExpansionPanelView,
   LayerDownloadView,
 ) => {
   // Classes used in the view
@@ -26,7 +24,6 @@ define([
     button: "draw__button",
     buttonFocus: "draw__button--active",
     buttonDisable: "draw__button--disable",
-    layerItemCheckbox: "download-expansion-panel__checkbox",
     dropdown: "downloads-dropdown",
     resolutionDropdown: "resolution-dropdown",
     fileTypeDropdown: "fileType-downloads-dropdown",
@@ -804,7 +801,6 @@ define([
         // Clear any previously added layer items in case of a rerender.
         // Also clean up tracked panels/views from the previous render.
         downloadDataPanel.innerHTML = "";
-        this.layerPanels = [];
         this.layerDownloadViews = [];
 
         // If there is no polygon on the map, quit here.
@@ -834,30 +830,9 @@ define([
               downloadPanelView: view,
             });
 
-            // Create an ExpansionPanelView to wrap the layer controls with a
-            // collapsible header showing the layer name
-            const panel = new ExpansionPanelView({
-              title: item.layerName,
-              contentViewInstance: layerDownloadView,
-            });
+            layerDownloadView.render();
+            downloadDataPanel.appendChild(layerDownloadView.el);
 
-            // Hook into open/collapse so the checkbox and dropdowns are kept in
-            // sync with the panel's expanded state
-            const originalOpen = panel.open.bind(panel);
-            const originalCollapse = panel.collapse.bind(panel);
-            panel.open = function open() {
-              originalOpen();
-              layerDownloadView.onPanelOpen();
-            };
-            panel.collapse = function collapse() {
-              originalCollapse();
-              layerDownloadView.onPanelClose();
-            };
-
-            panel.render();
-            downloadDataPanel.appendChild(panel.el);
-
-            view.layerPanels.push(panel);
             view.layerDownloadViews.push(layerDownloadView);
           });
           // Update the text of download-data-list__panel
@@ -896,21 +871,16 @@ define([
        */
       layerSelection() {
         const view = this;
-        const checkboxes = document.querySelectorAll(
-          ".download-expansion-panel__checkbox",
+        const isAnyChecked = view.layerDownloadViews.some(
+          (ldv) => ldv.isSelected,
         );
-        const isAnyChecked = Array.from(checkboxes).some(
-          (checkbox) => checkbox.checked,
-        );
-        const dropdowns = document.querySelectorAll(
-          ".downloads-dropdown-container .fileType-downloads-dropdown",
-        );
-
-        const isanyFileTypeSelected = Array.from(dropdowns).some((dropdown) =>
-          ["png", "tif", "gpkg"].includes(dropdown.value.toLowerCase()),
+        const isAnyFileTypeSelected = view.layerDownloadViews.some(
+          (ldv) =>
+            ldv.isSelected &&
+            ["png", "tif", "gpkg"].includes(ldv.selectedFileType),
         );
 
-        if (isAnyChecked && isanyFileTypeSelected) {
+        if (isAnyChecked && isAnyFileTypeSelected) {
           view.setButtonStatuses({
             draw: "deactivated",
             save: "enabled",
@@ -924,13 +894,11 @@ define([
           });
         }
 
-        const uncheckedLayerIds = Array.from(checkboxes)
-          .filter((checkbox) => !checkbox.checked)
-          .map((checkbox) => checkbox.dataset.layerId);
-
-        uncheckedLayerIds.forEach((layerID) => {
-          delete view.dataDownloadLinks[layerID];
-        });
+        view.layerDownloadViews
+          .filter((ldv) => !ldv.isSelected)
+          .forEach((ldv) => {
+            delete view.dataDownloadLinks[ldv.item.layerID];
+          });
       },
 
       /**
@@ -942,14 +910,12 @@ define([
        */
       fileTypeSelection(layerID) {
         const view = this;
-        const dropdowns = document.querySelectorAll(
-          ".downloads-dropdown-container .fileType-downloads-dropdown",
+        const isAnyFileTypeSelected = view.layerDownloadViews.some(
+          (ldv) =>
+            ldv.isSelected &&
+            ["png", "tif", "gpkg"].includes(ldv.selectedFileType),
         );
-
-        const isPNGorTIFSelected = Array.from(dropdowns).some((dropdown) =>
-          ["png", "tif", "gpkg"].includes(dropdown.value.toLowerCase()),
-        );
-        if (!isPNGorTIFSelected) {
+        if (!isAnyFileTypeSelected) {
           view.setButtonStatuses({
             draw: "deactivated",
             save: "deactivated",
@@ -964,7 +930,6 @@ define([
         }
         if (layerID in view.dataDownloadLinks) {
           delete view.dataDownloadLinks[layerID];
-          // alert("Deleted download links for " + layerID);
         }
       },
 

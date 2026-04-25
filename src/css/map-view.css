@@ -1675,59 +1675,34 @@ other class: .ui-slider-range */
   opacity: 0.6; /* Reduce opacity to make it look disabled */
 }
 
-/* Download-panel-specific overrides for ExpansionPanelView instances inside
-   the download data list. These replace the old hand-rolled
-   download-expansion-panel__* classes. */
-.download-data-list .expansion-panel {
+/* Layer download panel: header row and collapsible content */
+.layer-download__header {
+  display: grid;
+  grid-template-columns: min-content auto min-content;
+  align-items: center;
+  gap: 8px;
   margin-top: 10px;
-  box-shadow: none;
-  border-bottom: none;
-
-  /* No layer icon is shown in the download panel */
-  .expansion-panel__icon {
-    display: none;
-  }
-
-  /* Tighter toggle: title + caret only, no side padding */
-  .expansion-panel__toggle {
-    grid-template-columns: auto min-content;
-    padding: 0;
-    gap: 8px;
-    margin-top: 3px;
-    border: none;
-  }
-
-  /* Compact title with ellipsis overflow */
-  .expansion-panel__title {
-    font-size: 13px;
-    width: 100%;
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0;
-    margin: 0;
-  }
 }
 
+.layer-download__checkbox {
+  margin: 0 !important;
+  vertical-align: middle;
+}
 
+.layer-download__title {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
+}
 
-.layer-download__select-row {
-  padding-left: 20px;
-  padding-top: 5px;
-  display: flex;
-  align-items: center;
+.layer-download__content {
+  display: none;
+}
 
-  label {
-    font-size: 12px;
-    white-space: nowrap;
-    margin-bottom: 0;
-    color: var(--portal-col-neutral-7);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-  }
+.layer-download.show-content .layer-download__content {
+  display: block;
 }
 
 .downloads-dropdown-container {
@@ -1778,6 +1753,14 @@ other class: .ui-slider-range */
   font-size: 10px;
   min-height: 12px;
   display: block;
+}
+
+.downloads-textbox--warning {
+  color: var(--portal-col-warning, #b45309);
+}
+
+.downloads-textbox--warning::before {
+  content: "\26A0\FE0F  "; /* ⚠ warning sign */
 }
 
 .wmts-copy {
