@@ -53,8 +53,7 @@
     "./js/specs/unit/models/dataONEServices/DataONEHttpClient.spec.js",
     "./js/specs/unit/models/dataONEServices/DataONEService.spec.js",
     "./js/specs/unit/models/dataONEServices/UrlBuilder.spec.js",
-    "./js/specs/unit/models/sysmeta/SysMeta.spec.js",
-    "./js/specs/unit/models/sysmeta/VersionTracker.spec.js",
+
     "./js/specs/unit/models/metadata/eml211/EMLAttributeList.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLReferences.spec.js",
     "./js/specs/unit/models/maps/ExpansionPanelsModel.spec.js",
@@ -92,7 +91,6 @@
     "./js/specs/unit/views/maps/LayerItemView.spec.js",
     "./js/specs/unit/views/maps/SearchInputView.spec.js",
     "./js/specs/unit/views/maps/ShareUrlView.spec.js",
-    "./js/specs/unit/models/Search.spec.js",
     "./js/specs/unit/models/SolrResult.spec.js",
     "./js/specs/unit/models/DataONEObject.spec.js",
     "./js/specs/unit/views/maps/MapView.spec.js",
@@ -117,7 +115,7 @@
     "./js/specs/unit/views/DataItemView.spec.js",
     "./js/specs/unit/views/uiElements/ToggleView.spec.js",
     "./js/specs/unit/views/metadata/EML211EditorView.spec.js",
-    "./js/specs/unit/models/dataONEServices/UrlBuilder.spec.js",
+    "./js/specs/unit/models/UserModel.spec.js",
     "./js/specs/unit/models/dataONEServices/DataONEHttpError.spec.js",
     "./js/specs/unit/models/dataONEServices/HttpRetryPolicy.spec.js"
   ],

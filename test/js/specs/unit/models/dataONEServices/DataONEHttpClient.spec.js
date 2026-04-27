@@ -241,11 +241,14 @@ define([
           timeoutMs: 25,
         });
 
-        client.normalizeRequestOptions({ path: "/object/1" }).timeoutMs.should
-          .equal(25);
-        client.normalizeRequestOptions({ path: "/object/1", timeoutMs: null })
+        client
+          .normalizeRequestOptions({ path: "/object/1" })
           .timeoutMs.should.equal(25);
-        client.normalizeRequestOptions({ path: "/object/1", timeoutMs: 0 })
+        client
+          .normalizeRequestOptions({ path: "/object/1", timeoutMs: null })
+          .timeoutMs.should.equal(25);
+        client
+          .normalizeRequestOptions({ path: "/object/1", timeoutMs: 0 })
           .timeoutMs.should.equal(0);
       });
 
