@@ -1,60 +1,45 @@
-define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
-  Backbone,
-  SysMeta,
-  localforage,
-  md5,
-) => {
-  const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000; // 1 day
-  const { DEFAULT_META_SERVICE_URL } = SysMeta;
-  const DEFAULT_MAX_CHAIN_HOPS = 200;
-  const DEFAULT_MAX_CACHE_RECORDS = 5000;
-
-  // Fields to persist from SysMeta in the cache
-  const PERSISTED_SYS_META_FIELDS = [
-    "formatId",
-    "size",
-    "checksum",
-    "checksumAlgorithm",
-    "rightsHolder",
-    "dateUploaded",
-    "dateSysMetadataModified",
-    "fileName",
-  ];
-
-  const IS_LOCAL_FORAGE = (store) =>
-    store &&
-    typeof store.setItem === "function" &&
-    typeof store.getItem === "function";
-
-  const NORMALIZE_METASERVICE_URL = (url) => {
-    let normalUrl = typeof url !== "string" ? DEFAULT_META_SERVICE_URL : url;
-    normalUrl = normalUrl.trim();
-    return normalUrl.endsWith("/") ? normalUrl : `${normalUrl}/`;
-  };
+define([
+  "backbone",
+  "models/dataONEServices/SysMetaService",
+  "common/Utilities",
+], (Backbone, SysMetaService, Utilities) => {
+  /**
+   * @constant {number} DEFAULT_TTL_MS Default Time-To-Live for cached data
+   * object to resource map PID mappings, in milliseconds.
+   */
+  const DEFAULT_TTL_MS = 1000 * 60 * 60; // 1 hour
 
   /**
-   * @typedef {object} VersionResult
-   * @property {string} pid - The PID of the version at the requested offset.
-   * @property {SysMeta|null} sysMeta - SysMeta object for the PID, or null if
-   * not fetched yet. If `withMeta` is true, this will always be populated.
+   * @constant {number} DEFAULT_MAX_CHAIN_HOPS Default maximum number of hops in
+   * the version chain to cache. Defaults to 200 hops.
    */
+  const DEFAULT_MAX_CHAIN_HOPS = 200;
+
+  /**
+   * Get the field name for the next or previous version link.
+   * @param {boolean} forward True for next version, false for previous version
+   * @returns {string} the field name
+   */
+  function NEXT_OR_PREV(forward = true) {
+    return forward ? "obsoletedBy" : "obsoletes";
+  }
 
   /**
    * @typedef {object} VersionRecord
-   * @property {string[]|VersionResult[]} next - List of PIDs that are newer.
-   * May be either strings (PIDs) or objects with { pid, sysMeta } if `withMeta`
-   * is true.
-   * @property {string[]|VersionResult[]} prev - List of PIDs that are older.
-   * May be either strings (PIDs) or objects with { pid, sysMeta } if `withMeta`
-   * is true.
-   * @property {boolean} endNext - true if there are no newer versions detected
-   * from the SysMeta service. This is not a guarantee that no newer versions
-   * exist, just that the chain is complete up to the last known version.
-   * @property {boolean} endPrev - true if there are no older versions detected
-   * from the SysMeta service. This is not a guarantee that no older versions
-   * exist, just that the chain is complete up to the first known version.
-   * @property {SysMeta|null} sysMeta - SysMeta object for the PID, or null if
-   * not fetched yet. If `withMeta` is true, this will always be populated.
+   * @property {string} pid The starting PID
+   * @property {number} requestedSteps The number of versions requested from the
+   * starting PID (positive for newer, negative for older)
+   * @property {number} completedSteps The number of versions successfully found
+   * @property {string[]} versions Array of version PIDs found, in order from
+   * the starting PID to the oldest/newest found
+   * @property {boolean} chainComplete Whether the end of the version chain was
+   * reached (NOT whether the number of requested steps was completed). In other
+   * words, whether the last version found has no further versions in the given
+   * direction.
+   * @property {boolean} endIsPrivate Whether the fetching stopped because a
+   * private version was encountered
+   * @property {boolean} endNotFound Whether the fetching stopped because a
+   * version was not found (404)
    */
 
   /**
@@ -63,631 +48,429 @@ define(["backbone", "models/sysmeta/SysMeta", "localforage", "md5"], (
    * @since 2.34.0
    * @classdesc VersionTracker walks sysmeta version chains and caches them in
    * memory and in localForage for fast access. It allows getting PIDs at
-   * arbitrary offsets from a given PID, fetching full version chains, and
-   * listening for updates. It also supports manually adding a new version to
-   * the chain (e.g. when a document has been updated in the editor and the new
-   * version is known). A store is created for each unique SysMeta service URL,
-   * so multiple VersionTracker instances can coexist without conflicts.
+   * arbitrary stepss from a given PID, fetching full version chains, and
+   * listening for updates. A store is created for each unique SysMeta service
+   * URL, so multiple VersionTracker instances can coexist without conflicts.
    * @example
    * const vt = new VersionTracker({
    *  metaServiceUrl: "https://example.com/sysmeta",
    * })
-   * vt.getNth("pid123", 1).then((result) => {
-   *  console.log("Next version PID:", result.pid);
+   * vt.getNth("pid123", 1).then((pid) => {
+   *  console.log("Next version PID:", pid);
    * });
-   * const fullChain = await vt.getFullChain("pid123");
-   * console.log("All versions in chain:", fullChain.prev, fullChain.next);
-   * @example
-   * // Get a singleton instance for a specific SysMeta service URL
-   * // This will create a new instance if it doesn't exist yet.
-   * const vt = VersionTracker.get("https://example.com/sysmeta");
+   * const allVersions = await vt.getAllVersions("pid123");
+   * console.log("All versions in chain:", allVersions.prev.versions,
+   *  allVersions.next.versions);
    */
   class VersionTracker {
     /**
      * Create a new VersionTracker instance.
      * @param {object} options - configuration options
-     * @param {string} options.metaServiceUrl - URL of the SysMeta service
-     * @param {localforage} [options.store] - optional localForage instance for
-     * persistent caching. If not provided, a new instance will be created
-     * @param {number} [options.ttlMs] - Time-To-Live for cached records in
-     * milliseconds. Defaults to 24 hours (1 day).
+     * @param {string} [options.metaServiceUrl] - URL of the SysMeta service
      * @param {number} [options.maxChainHops] - Maximum number of hops in the
      * version chain to cache. Defaults to 200 hops.
-     * @param {number} [options.maxCacheRecords] - Maximum number of in-memory
-     * cache records. Defaults to 5000.
+     * @param {number|null} [options.ttlMs] - Time-To-Live for cached records in
+     * milliseconds. Defaults to 1 hour. Set to null to disable expiration.
      */
     constructor({
       metaServiceUrl,
-      store = null,
-      ttlMs = DEFAULT_TTL_MS,
       maxChainHops = DEFAULT_MAX_CHAIN_HOPS,
-      maxCacheRecords = DEFAULT_MAX_CACHE_RECORDS,
+      ttlMs = DEFAULT_TTL_MS,
     } = {}) {
-      // metaServiceUrl may be undefined or invalid
-      this.metaServiceUrl = NORMALIZE_METASERVICE_URL(metaServiceUrl);
+      const url =
+        metaServiceUrl || globalThis.MetacatUI?.appModel?.get("metaServiceUrl");
+      const normalizedUrl = Utilities.normalizeUrl(url);
+      if (!normalizedUrl) {
+        throw new Error("VersionTracker: metaServiceUrl is required");
+      }
+      this.metaServiceUrl = normalizedUrl;
 
       // TTL for cached records in milliseconds
-      if (typeof ttlMs !== "number" || ttlMs <= 0) {
-        throw new Error("Invalid TTL provided to VersionTracker");
+      if ((!Number.isFinite(ttlMs) || ttlMs <= 0) && ttlMs !== null) {
+        throw new Error(
+          `VersionTracker: ttlMs must be a positive number or null, got ${ttlMs}`,
+        );
       }
-      this.TTL_MS = ttlMs;
+      this.ttlMs = ttlMs;
 
-      // avoid unbounded chain growth
+      // Avoid excessively long chains
       if (typeof maxChainHops !== "number" || maxChainHops <= 0) {
         throw new Error("Invalid maxChainHops provided to VersionTracker");
       }
+
       this.MAX_CHAIN_HOPS = maxChainHops;
-      // limit in‑memory cache size (simple LRU)
-      if (typeof maxCacheRecords !== "number" || maxCacheRecords <= 0) {
-        throw new Error("Invalid maxCacheRecords provided to VersionTracker");
-      }
-      this.MAX_CACHE_RECORDS = maxCacheRecords;
 
-      // dedup in‑flight SysMeta fetches
-      this.inFlight = new Map();
+      // Get a SysMetaService instance for this metaServiceUrl (singleton per
+      // URL and config)
+      this.sysMetaService = new SysMetaService({
+        baseUrl: this.metaServiceUrl,
+        storageConfig: {
+          ttlMs: this.ttlMs,
+        },
+        persistPrivate: true,
+      });
 
-      // locks for concurrent fillVersionChain calls (e.g. when multiple getNth
-      // calls are made for the same PID)
-      this.locks = new Map();
-
-      // in-memory cache
-      this.cache = new Map();
-
-      // store - persistent cache (IndexedDB | localStorage)
-      if (store && !IS_LOCAL_FORAGE(store)) {
-        throw new Error(
-          "Invalid store provided to VersionTracker. Must be a localforage instance.",
-        );
-      }
-      // use a name based on the SysMeta service URL to avoid conflicts with
-      // other instances that might use different URLs
-      const storeName = `vt_${md5(this.metaServiceUrl)}`;
-      this.store =
-        store || localforage.createInstance({ name: storeName, storeName });
+      // To make compatible with Backbone views, event handling
+      this.events = { ...Backbone.Events };
     }
 
     /**
-     * Get the PID that is `offset` earlier or later in the version chain
-     * relative to the given `pid`.
-     * @param {string}  pid - the PID to start from
-     * @param {number}  offset - the number of steps to move in the chain. 0 =
-     * same PID, +n newer, -n older
-     * @param {boolean} [ignoreEnd] Set to true to allow walking beyond cached
-     * chain end (e.g. to re-check whether there's a newer version)
-     * @param {boolean} [withMeta] - If true, return arrays of { pid, sysMeta }
-     * instead of bare PIDs.
-     * @returns {Promise<VersionResult|string|null>} - resolves to the requested
-     * PID at the given offset, or null if no such version exists. If `withMeta`
-     * is true, resolves to an object with { pid, sysMeta }.
+     * Get the SysMeta for a given PID. SysMetaService handles caching, token
+     * management, and duplicate fetch prevention.
+     * @param {string} pid the PID to get SysMeta for
+     * @param {object} [options] options to pass to SysMetaService.download
+     * @returns {Promise<SysMeta>} resolves to the SysMeta object for the PID
      */
-    async getNth(pid, offset, ignoreEnd = false, withMeta = false) {
-      // Validate inputs
+    async getSysMeta(pid, options = {}) {
+      return this.sysMetaService.download(pid, options);
+    }
+
+    /**
+     * Check if the SysMeta for a given PID is cached.
+     * @param {string} pid the PID to check
+     * @returns {Promise<boolean>} resolves to true if the SysMeta is cached
+     */
+    async sysMetaIsCached(pid) {
+      return this.sysMetaService.isCached(pid);
+    }
+
+    /**
+     * Get the next most recent version after the given PID.
+     * @param {string} pid The PID that is obsoleted by the next version
+     * @returns {Promise<string>} resolves to the next version PID, or null if
+     * there is no next version.
+     * @since 2.34.1
+     */
+    async getNext(pid) {
+      return this.getAdjacent(pid, true);
+    }
+
+    /**
+     * Get the previous version before the given PID.
+     * @param {string} pid The PID that obsoletes the previous version
+     * @returns {Promise<string>} resolves to the previous version PID, or null
+     * if there is no previous version.
+     * @since 2.34.1
+     */
+    async getPrev(pid) {
+      return this.getAdjacent(pid, false);
+    }
+
+    /**
+     * Get the PID that is one version older or newer than the given PID.
+     * @param {string} pid The starting PID
+     * @param {boolean} forward True to get the next (newer) version, false for
+     * the previous (older) version.
+     * @param {object} [options] options to pass to SysMetaService.download
+     * @returns {Promise<string|null>} resolves to the adjacent version PID, or
+     * null if no such version exists.
+     */
+    async getAdjacent(pid, forward = true, options = {}) {
       if (typeof pid !== "string" || !pid) {
-        throw new Error("Invalid PID provided to getNth");
+        throw new Error("Invalid PID provided");
       }
-      if (typeof offset !== "number") {
-        throw new Error("Invalid offset provided to getNth");
+      const getAdjacentPid = async () => {
+        const sysMeta = await this.getSysMeta(pid, options);
+        return sysMeta?.data?.[NEXT_OR_PREV(forward)] || null;
+      };
+      const adjacentPid = await getAdjacentPid();
+      // Force re-check in case end of chain has changed
+      const cacheKey = options?.cacheKey ?? pid;
+      if (
+        !adjacentPid &&
+        options?.useCache !== false &&
+        (await this.sysMetaIsCached(cacheKey))
+      ) {
+        await this.sysMetaService.removeCached(cacheKey);
+        return getAdjacentPid();
       }
-      if (Math.abs(offset) > this.MAX_CHAIN_HOPS) {
-        throw new Error(
-          `Offset ${offset} exceeds maximum chain hops limit of ${this.MAX_CHAIN_HOPS}`,
-        );
+      return adjacentPid;
+    }
+
+    /**
+     * Get version information for a given PID and number of steps.
+     * @param {string} startPid The starting PID
+     * @param {number} steps Number of versions away from the starting PID.
+     * Positive values indicate newer versions, negative values indicate older
+     * versions. For example, a step of 1 gets the next version, -1 gets the
+     * previous version.
+     * @param {object} [options] options to pass to SysMetaService.download
+     * @returns {Promise<VersionRecord>} resolves to a record that includes
+     * versions found, number of completed steps, and flags for chain
+     * completion, privacy, and not-found status.
+     */
+    async getVersions(startPid, steps, options = {}) {
+      if (typeof startPid !== "string" || !startPid) {
+        throw new Error("Invalid PID provided");
       }
 
-      // If offset is 0, just return the PID itself but make sure it's cached
-      if (offset === 0) {
-        const rec = await this.record(pid);
-        if (withMeta) {
-          if (!rec.sysMeta) await this.getSysMeta(pid);
-          return { pid, sysMeta: rec.sysMeta };
+      const record = {
+        pid: startPid,
+        requestedSteps: steps,
+        completedSteps: 0,
+        versions: [],
+        chainComplete: false,
+        endIsPrivate: false,
+        endNotFound: false,
+      };
+
+      if (typeof steps !== "number" || !Number.isInteger(steps)) {
+        throw new Error("Steps must be an integer");
+      }
+
+      const cappedSteps = this.capSteps(steps);
+      const absSteps = Math.abs(cappedSteps);
+      const forward = steps > 0;
+      let currentPid = startPid;
+      let traversalError = null;
+      const notifyQueue = [];
+
+      // Queue notifications so version-chain traversal can continue without
+      // blocking, but still surface async notify failures to callers.
+      const queueNotify = (pid, foundPid, step, status) => {
+        notifyQueue.push(this.notify(pid, foundPid, step, status, options));
+      };
+
+      try {
+        // Send notice for sysMeta found for starting PID for consistency for UIs
+        queueNotify(startPid, startPid, 0, null);
+
+        /* eslint-disable no-await-in-loop */
+        for (let step = 0; step < absSteps; step += 1) {
+          let adjPid;
+          let status = null;
+          const currentStep = forward ? step + 1 : -(step + 1);
+          try {
+            adjPid = await this.getAdjacent(currentPid, forward, options);
+          } catch (error) {
+            status = error.status;
+            adjPid = null;
+            // Stop if we hit an error fetching the adjacent version
+            if (error.status === 401) {
+              record.endIsPrivate = true;
+            } else if (error.status === 404) {
+              record.endNotFound = true;
+            } else {
+              throw error;
+            }
+          }
+
+          queueNotify(startPid, adjPid, currentStep, status);
+
+          // Stop if there is no adjacent version
+          if (!adjPid) break;
+
+          // Update record and continue to next version
+          record.completedSteps = currentStep;
+          record.versions.push(adjPid);
+          currentPid = adjPid;
         }
-        return pid;
+        /* eslint-enable no-await-in-loop */
+
+        const { versions } = record;
+
+        if (!record.endIsPrivate && !record.endNotFound) {
+          const lastPid = versions.length
+            ? versions[versions.length - 1]
+            : startPid;
+          record.chainComplete = await this.isEndOfChain(
+            lastPid,
+            forward,
+            options,
+          );
+        }
+      } catch (error) {
+        traversalError = error;
       }
 
-      // Ensure the chain is long enough in the requested direction & cache it
-      const steps = Math.abs(offset);
-      const forward = offset > 0;
-      await this.fillVersionChain(pid, steps, forward, ignoreEnd);
+      // Always drain queued notify promises to avoid unhandled rejections. If
+      // notifications failed, throw the first rejection explicitly.
+      const notifyResults = await Promise.allSettled(notifyQueue);
+      const firstNotifyFailure = notifyResults.find(
+        (result) => result.status === "rejected",
+      );
 
-      // Get the record from the cached chain and return the requested PID and
-      // sysMeta
-      const rec = await this.record(pid);
-
-      const list = forward ? rec.next : rec.prev;
-      const targetPid = list[steps - 1] ?? null;
-      if (!targetPid) return null;
-
-      const targetRec = await this.record(targetPid);
-      if (withMeta) {
-        if (!targetRec.sysMeta) await this.getSysMeta(targetPid);
-        return { pid: targetPid, sysMeta: targetRec.sysMeta };
+      if (traversalError) {
+        throw traversalError;
       }
-      return targetPid;
+      if (firstNotifyFailure) {
+        throw firstNotifyFailure.reason;
+      }
+
+      return record;
+    }
+
+    /**
+     * Get all versions in one direction (newer or older) from a starting PID.
+     * @param {string} startPid The starting PID
+     * @param {boolean} forward True to get newer versions, false for older
+     * @param {object} [options] options to pass to SysMetaService.download
+     * @returns {Promise<object>} resolves to a record with the following
+     */
+    async getAllVersionsOneDirection(startPid, forward = true, options = {}) {
+      const max = this.MAX_CHAIN_HOPS;
+      const steps = forward ? max : -max;
+      return this.getVersions(startPid, steps, options);
+    }
+
+    /**
+     * Get the PID that is n number of versions newer or older than the a PID.
+     * @param {string}  pid The starting PID
+     * @param {number}  steps Number of versions away from the starting PID.
+     * Positive values indicate newer versions, negative values indicate older
+     * versions. For example, a step of 1 gets the next version, -1 gets the
+     * previous version. A step of 0 returns the original PID.
+     * @returns {Promise<string|null>} resolves to the PID at the given number
+     * of steps, or null if no such version exists.
+     */
+    async getNth(pid, steps) {
+      if (typeof pid !== "string" || !pid) {
+        throw new Error("Invalid PID provided");
+      }
+      if (steps === 0) return pid;
+      const record = await this.getVersions(pid, steps);
+      const { versions, completedSteps } = record;
+      if (Math.abs(completedSteps) < Math.abs(steps)) {
+        return null;
+      }
+      return versions[versions.length - 1];
     }
 
     /**
      * Get the complete version chain for the given PID.
      * @param {string}  pid - PID to get the chain for
-     * @param {boolean} [ignoreEnd] - Re‑probe past cached end flags
-     * @param {boolean} [withMeta] - If true, return arrays of { pid, sysMeta }
-     * instead of bare PIDs.
-     * @returns {Promise<VersionRecord>} - resolves to an object with `prev`,
-     * `next`, `sysMeta`, `endPrev`, and `endNext` properties.
+     * @param {object} [options] options to pass to SysMetaService.download
+     * @returns {Promise<{prev: VersionRecord, next: VersionRecord}>} resolves
+     * to an object with 'prev' and 'next' VersionRecords
      */
-    async getFullChain(pid, ignoreEnd = false, withMeta = false) {
-      await this.fillVersionChain(pid, Infinity, true, ignoreEnd); // walk → newest
-      await this.fillVersionChain(pid, Infinity, false, ignoreEnd); // walk → oldest
-      const cached = this.cache.get(pid);
-      const chain = {
-        prev: cached.prev,
-        next: cached.next,
-        sysMeta: cached.sysMeta,
-        endPrev: cached.endPrev,
-        endNext: cached.endNext,
-      };
-      if (withMeta) {
-        const withMetaMap = async (list) =>
-          Promise.all(
-            list.map(async (p) => {
-              const r = await this.record(p);
-              return { pid: p, sysMeta: r.sysMeta };
-            }),
-          );
-
-        chain.prev = await withMetaMap(chain.prev);
-        chain.next = await withMetaMap(chain.next);
-      }
-      return chain;
+    async getAllVersions(pid, options = {}) {
+      const results = await Promise.all([
+        this.getAllVersionsOneDirection(pid, false, options),
+        this.getAllVersionsOneDirection(pid, true, options),
+      ]);
+      return { prev: results[0], next: results[1] };
     }
 
     /**
-     * Get the latest version PID in the version chain for the given PID.
-     * @param {string} pid - the PID to get the latest version for
-     * @param {boolean} [ignoreEnd] - If true, ignore end flags and continue
-     * walking the chain even if it appears complete. This is useful for
-     * re-checking if a newer version exists.
-     * @param {boolean} [withMeta] - If true, the SysMeta will be fetched if not
-     * already available in the cache.
-     * @returns {Promise<string|VersionResult>} - resolves to the latest PID in
-     * the chain, or an object with { pid, sysMeta } if `withMeta` is true. If
-     * no versions are found, resolves to the original PID.
+     * Check if the given PID is at the end of its version chain in the given
+     * direction.
+     * @param {string} pid PID to check
+     * @param {boolean} forward True to check for next version, false for
+     * previous
+     * @param {object} [options] options to pass to SysMetaService.download
+     * @returns {Promise<boolean>} resolves to true if the PID is at the end of
+     * the chain in the given direction
+     * @throws {Error} if the PID is invalid or SysMeta cannot be retrieved
      */
-    async getLatestVersion(pid, ignoreEnd = false, withMeta = false) {
-      await this.fillVersionChain(pid, Infinity, true, ignoreEnd); // walk → newest
-      const rec = await this.record(pid);
-      const nextPids = rec.next;
-      if (nextPids.length === 0) return pid;
-      const latestPid = nextPids[nextPids.length - 1];
-      if (withMeta) {
-        const latestRec = await this.record(latestPid);
-        if (!latestRec.sysMeta) await this.getSysMeta(latestPid);
-        return { pid: latestPid, sysMeta: latestRec.sysMeta };
-      }
-      return latestPid;
+    async isEndOfChain(pid, forward = true, options = {}) {
+      const sysMeta = await this.getSysMeta(pid, options);
+      return !sysMeta?.data?.[NEXT_OR_PREV(forward)];
     }
 
     /**
-     * Refresh the version chain for the given PID by removing it from the cache
-     * and re-fetching the full chain from the SysMeta service.
-     * @param {string} pid - the PID to refresh
-     * @returns {Promise<object>} - resolves to the refreshed chain object
+     * Get the latest version in the version chain for the given PID. If the
+     * newest versions are private or not found, this will return the last
+     * available version.
+     * @param {string} pid PID to get the latest version for
+     * @param {object} [options] options to pass to SysMetaService.download
+     * @returns {Promise<string>} resolves to the latest version PID, or the
+     * original PID if no newer versions exist or are accessible.
      */
-    async refresh(pid) {
-      await this.store.removeItem(pid);
-      this.cache.delete(pid);
-      await this.getFullChain(pid);
-      return this.cache.get(pid);
+    async getLatestVersion(pid, options = {}) {
+      const record = await this.getAllVersionsOneDirection(pid, true, options);
+      const { versions, completedSteps } = record;
+      if (completedSteps === 0) return pid;
+      return versions[versions.length - 1];
     }
 
     /**
      * Clear the entire cache, including in-memory and persistent store.
-     * @returns {Promise<boolean>} - resolves to true if the cache was cleared
+     * @returns {Promise<boolean>} resolves to true if the cache was cleared
      */
-    async clear() {
-      await this.store.clear();
-      this.cache.clear();
-      this.inFlight.clear();
-      this.locks.clear();
-      // remove all listeners
-      this.off();
-      return true;
+    async clearCache() {
+      return this.sysMetaService.clearCache();
     }
 
     /**
-     * Set the Time-To-Live (TTL) for cached records.
-     * @param {number} ms - the TTL in milliseconds
+     * Notify listeners that a version was found (or not) for the given PID.
+     * @param {string} pid The PID whose chain is being updated.
+     * @param {string|null} foundPid The PID that was found, or null.
+     * @param {number} steps Offset from the original PID (positive/negative).
+     * @param {404|401|null} [status] Status code explaining why foundPid is null.
+     * @param {object} [options] Options passed to SysMetaService.download.
+     * @private
+     * @fires Backbone.Events#versionFound
      */
-    setTTL(ms) {
-      if (typeof ms !== "number" || ms <= 0) {
-        throw new Error("Invalid TTL provided to VersionTracker");
+    async notify(pid, foundPid, steps, status, options = {}) {
+      if (!pid) return;
+      const errors = status ? [status] : [];
+      let sysMeta = null;
+
+      // If we have the SysMeta cached for the foundPid, get it
+      if (!errors.length && foundPid) {
+        try {
+          sysMeta = await this.getSysMeta(foundPid, options);
+        } catch (e) {
+          if (e.status === 404 || e.status === 401) {
+            errors.push(e.status);
+            sysMeta = new SysMetaService.SysMeta({ identifier: foundPid });
+          } else {
+            throw e;
+          }
+        }
       }
-      this.TTL_MS = Number(ms) || this.TTL_MS;
-    }
+      if (sysMeta) {
+        sysMeta.versionHistory = {};
+        sysMeta.versionHistory[pid] = steps;
+        if (!sysMeta.errors) {
+          sysMeta.errors = [];
+        }
+        sysMeta.errors.push(...errors);
+      } else if (errors.length) {
+        // If no adjacent SysMeta but there are errors, use placeholder SysMeta
+        // to pass on error info.
+        sysMeta = new SysMetaService.SysMeta();
+        sysMeta.errors = errors;
+      }
+      try {
+        this.events.trigger("versionFound", sysMeta);
+        this.events.trigger(`versionFound:${pid}`, sysMeta);
+      } catch (e) {
+        // Failure to notify is not critical, so just log the error. This allows
+        // callers to fire and forget without worrying about listener errors.
 
-    /**
-     * Manually register that `newPid` obsoletes (comes after) `prevPid`. Useful
-     * when an external editor just created a brand‑new revision so the chain
-     * can be updated immediately without refetching SysMeta. If `sysMeta` for
-     * the new PID is already available, pass it to avoid a network round‑trip;
-     * otherwise the tracker will fetch it lazily when first requested.
-     * @param {string} prevPid - the PID of the previous version
-     * @param {string} newPid - the PID of the new version
-     * @param {SysMeta} [sysMeta] - optional SysMeta object for the new version.
-     */
-    async addVersion(prevPid, newPid, sysMeta = null) {
-      await this.fillVersionChain(prevPid, 1, true);
-      await this.fillVersionChain(newPid, 1, false);
-
-      const prevRec = await this.record(prevPid);
-      const newRec = await this.record(newPid);
-
-      // newPid must not be in the chain of prevPid
-      if (prevRec.next.includes(newPid) || prevRec.prev.includes(newPid)) {
-        throw new Error(
-          `Cannot add version: ${newPid} is already in the chain of ${prevPid}`,
+        // eslint-disable-next-line no-console
+        console.error(
+          `VersionTracker.notify: Error triggering update event for PID ${pid}:`,
+          e,
         );
       }
-
-      // prevRec must be tip, newRec must be isolated
-      const prevIsTip = prevRec.endNext && prevRec.next.length === 0;
-      const newIsIsolated =
-        newRec.endPrev && newRec.prev.length === 0 && newRec.next.length === 0;
-      if (!prevIsTip || !newIsIsolated) {
-        let msg = `Cannot add version: ${newPid} as a new version of ${prevPid}`;
-        if (!prevIsTip)
-          msg += ` prevPid (${prevPid}) already has a newer version.`;
-        if (!newIsIsolated)
-          msg += ` newPid (${newPid}) already version history.`;
-        throw new Error(msg);
-      }
-
-      // link the two
-      prevRec.next[0] = newPid;
-      prevRec.endNext = true;
-
-      newRec.prev[0] = prevPid;
-      newRec.endNext = true;
-      if (sysMeta) newRec.sysMeta = sysMeta;
-
-      await this.persist(prevPid, prevRec);
-      await this.persist(newPid, newRec);
-
-      this.notify(prevPid);
-      this.notify(newPid);
     }
 
     /**
-     * Get the next most recent version after the given PID.
-     * @param {string} pid - the PID to get the next version for
-     * @param {boolean} [ignoreEnd] - If true, ignore end flags and continue
-     * walking the chain even if it appears complete.
-     * @param {boolean} [withMeta] - If true, the SysMeta will be fetched if not
-     * already available in the cache.
-     * @returns {Promise<VersionResult>} - resolves to the next version PID or
-     * an object with { pid, sysMeta } if `withMeta` is true. If no next version
-     * is found, resolves to the original PID.
-     * @since 2.34.1
-     */
-    getNext(pid, ignoreEnd = false, withMeta = false) {
-      return this.getNth(pid, 1, ignoreEnd, withMeta);
-    }
-
-    /**
-     * Get the previous version before the given PID.
-     * @param {string} pid - the PID to get the previous version for
-     * @param {boolean} [ignoreEnd] - If true, ignore end flags and continue
-     * walking the chain even if it appears complete.
-     * @param {boolean} [withMeta] - If true, the SysMeta will be fetched if not
-     * already available in the cache.
-     * @returns {Promise<VersionResult>} - resolves to the previous version PID
-     * or an object with { pid, sysMeta } if `withMeta` is true. If no previous
-     * version is found, resolves to the original PID.
-     * @since 2.34.1
-     */
-    getPrev(pid, ignoreEnd = false, withMeta = false) {
-      return this.getNth(pid, -1, ignoreEnd, withMeta);
-    }
-
-    /**
-     * Get the version before and after the given PID, if available.
-     * @param {string} pid - the PID to get adjacent versions for
-     * @param {boolean} [ignoreEnd] - If true, ignore end flags and continue
-     * walking the chain even if it appears complete.
-     * @param {boolean} [withMeta] - If true, the SysMeta will be fetched if not
-     * already available in the cache.
-     * @returns {Promise<{pid: string, prev: VersionResult, next:
-     * VersionResult}>}
-     * - resolves to an object with `pid`, `prev`, and `next` properties. `prev`
-     *   and `next` are either PIDs or objects with { pid, sysMeta } if
-     *   `withMeta` is true. If no previous or next version is found, the
-     *   respective property will be null.
-     * @since 2.34.1
-     */
-    async getAdjacent(pid, ignoreEnd = false, withMeta = false) {
-      return Promise.all([
-        this.getPrev(pid, ignoreEnd, withMeta),
-        this.getNext(pid, ignoreEnd, withMeta),
-      ]).then(([prev, next]) => ({
-        pid,
-        prev,
-        next,
-      }));
-    }
-
-    /**
-     * Notify that a specific the chain for a specific PID has been updated.
-     * This is called internally after a new version is added or the chain is
-     * updated.
-     * @param {string} pid - the PID to notify about
+     * Cap the number of steps to the maximum allowed chain hops.
+     * @param {number} steps The requested number of steps.
+     * @returns {number} The capped number of steps.
      * @private
+     * @fires console.warn if the steps exceed the maximum chain hops.
      */
-    notify(pid) {
-      const rec = this.cache.get(pid);
-      this.trigger("update", rec);
-      this.trigger(`update:${pid}`, rec);
-    }
-
-    /**
-     * Ensure we have at least `stepsNeeded` hops cached in `direction` starting
-     * from `startPid` (not counting the start itself).
-     * @param {string} startPid - the PID to start from
-     * @param {number} stepsNeeded - how many hops to fill in the chain
-     * @param {boolean} forward - true to fill next versions, false for prev
-     * @param {boolean} [ignoreEnd] - if true, ignore end flags and continue
-     * filling the chain even if it appears complete.
-     * @returns {Promise<void>} - resolves when the chain is filled
-     * @private
-     */
-    async fillVersionChain(startPid, stepsNeeded, forward, ignoreEnd = false) {
-      const steps =
-        stepsNeeded === Infinity ? this.MAX_CHAIN_HOPS : stepsNeeded;
-
-      const rec = await this.record(startPid);
-      const list = forward ? rec.next : rec.prev;
-      const endFlag = forward ? "endNext" : "endPrev";
-
-      if (ignoreEnd) {
-        rec[endFlag] = false;
-        rec.errors = []; // reset errors if we're ignoring end
-        rec.sysMeta = null; // reset SysMeta to force re-fetch
-        // re-save
-        await this.persist(startPid, rec);
+    capSteps(steps) {
+      const max = this.MAX_CHAIN_HOPS;
+      if (max === Infinity) return steps;
+      if (Math.abs(steps) > max) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Requested steps ${steps} exceeds max chain hops of ${max}.
+           Capping to ${max}.`,
+        );
+        return steps < 0 ? -max : max;
       }
-      // --- simple per‑PID/dir lock to avoid concurrent mutation ---
-      const lockKey = `${startPid}`;
-      /* eslint-disable no-await-in-loop */
-      while (this.locks.get(lockKey)) await this.locks.get(lockKey);
-      let resolveLock;
-      this.locks.set(
-        lockKey,
-        new Promise((r) => {
-          resolveLock = r;
-        }),
-      );
-      try {
-        // already long enough
-        if (list.length >= steps) {
-          this.notify(startPid);
-          return;
-        }
-
-        let currentPid = list.length > 0 ? list[list.length - 1] : startPid;
-
-        // Walk until we fill `stepsNeeded` slots or hit chain end
-        while (
-          list.length < steps &&
-          currentPid &&
-          (!rec[endFlag] || ignoreEnd)
-        ) {
-          let sysMeta;
-          try {
-            sysMeta = await this.getSysMeta(currentPid);
-          } catch (e) {
-            if (!rec.errors) rec.errors = [];
-            rec.errors.push({
-              pid: currentPid,
-              error: e.message || "Unknown error fetching SysMeta",
-              status: e.status ?? "UNKNOWN",
-            });
-            if (e.status === 401 || e.status === 403) {
-              rec.unauthorized = true;
-            }
-            break; // stop if we can't fetch SysMeta
-          }
-          const adjacentPid = forward
-            ? sysMeta?.data?.obsoletedBy
-            : sysMeta?.data?.obsoletes;
-          if (!adjacentPid) {
-            rec[endFlag] = true; // mark end reached
-            this.notify(startPid);
-            break; // no more versions in this direction
-          } else {
-            list.push(adjacentPid);
-            this.notify(startPid);
-
-            // also populate the reverse link on the neighbour record
-            const adjRec = await this.record(adjacentPid);
-            const reverseList = forward ? adjRec.prev : adjRec.next;
-            const idx = list.length - 1;
-            if (reverseList[idx] !== startPid) {
-              reverseList[idx] = startPid;
-              await this.persist(adjacentPid, adjRec);
-              this.notify(adjacentPid);
-            }
-
-            currentPid = adjacentPid;
-          }
-          /* eslint-enable no-await-in-loop */
-        }
-      } finally {
-        await this.persist(startPid, rec);
-        // always resolve the lock to allow other calls to proceed
-        if (resolveLock) resolveLock();
-        this.locks.delete(lockKey);
-      }
-    }
-
-    /**
-     * Ensure the user is authenticated and has a valid token.
-     * @returns {Promise<string>} - resolves to the user's token
-     */
-    static async getToken() {
-      return MetacatUI.appUserModel.getTokenPromise();
-    }
-
-    /**
-     * Get the SysMeta for a given PID. Prevents duplicate fetches for the same
-     * PID and token by caching in-flight requests.
-     * @param {string} pid - the PID to get SysMeta for
-     * @returns {Promise<SysMeta>} - resolves to the SysMeta object for the PID
-     * @private
-     */
-    async getSysMeta(pid) {
-      const token = await VersionTracker.getToken();
-      const cacheKey = `${pid}:${token || ""}`;
-      if (this.inFlight.has(cacheKey)) return this.inFlight.get(cacheKey);
-
-      const fetchPromise = (async () => {
-        const rec = await this.record(pid);
-        if (rec.sysMeta) return rec.sysMeta;
-
-        const sysMeta = new SysMeta({
-          identifier: pid,
-          metaServiceUrl: this.metaServiceUrl,
-        });
-        await sysMeta.fetch(token);
-        rec.sysMeta = sysMeta;
-        return rec.sysMeta;
-      })();
-
-      this.inFlight.set(cacheKey, fetchPromise);
-
-      try {
-        return await fetchPromise;
-      } finally {
-        this.inFlight.delete(cacheKey);
-      }
-    }
-
-    /**
-     * Get or create a record for the given PID, ensuring it is cached. If the
-     * record is not found in the cache, it will be fetched from localForage. If
-     * it doesn't exist in localForage, a new record will be created.
-     * @param {string} pid - the PID to get the record for
-     * @returns {Promise<VersionRecord>} - resolves to the record object with
-     * `next`, `prev`, `endNext`, `endPrev`, and `sysMeta` properties.
-     * @private
-     */
-    async record(pid) {
-      // First check the in-memory cache
-      let rec = this.cache.get(pid);
-      if (rec) return rec;
-
-      // the rec obj will be updated with next/prev links if saved in
-      // localForage
-      rec = {
-        next: [],
-        prev: [],
-        endNext: false,
-        endPrev: false,
-        sysMeta: null,
-      };
-      this.cache.set(pid, rec);
-      // move to the end on (re)access
-      const bump = () => {
-        this.cache.delete(pid);
-        this.cache.set(pid, rec);
-      };
-      bump();
-      // Trim oldest if over limit
-      while (this.cache.size > this.MAX_CACHE_RECORDS) {
-        const oldestKey = this.cache.keys().next().value;
-        this.cache.delete(oldestKey);
-      }
-
-      // async resurrect
-      const saved = await this.load(pid);
-      if (saved) {
-        rec.next = (saved.next || []).filter(Boolean);
-        rec.prev = (saved.prev || []).filter(Boolean);
-        rec.endNext = !!saved.endNext;
-        rec.endPrev = !!saved.endPrev;
-        if (saved.sysMeta) {
-          const sm = new SysMeta({
-            identifier: pid,
-            metaServiceUrl: this.metaServiceUrl,
-          });
-          sm.data = { identifier: pid, ...saved.sysMeta };
-          sm.fetched = true; // mark as fetched to skip network
-          rec.sysMeta = sm;
-        }
-      }
-      return rec;
-    }
-
-    /**
-     * Persist the record for the given PID to localForage. This will store the
-     * next/prev links, end flags, and lean SysMeta data.
-     * @param {string} pid - the PID to persist
-     * @param {VersionRecord} rec - the record to persist
-     * @returns {Promise<void>} - resolves when the record is persisted
-     * @private
-     */
-    async persist(pid, rec) {
-      // Extract lean SysMeta data if available
-      let leanMeta = null;
-
-      if (rec.sysMeta && rec.sysMeta.data) {
-        leanMeta = {};
-        PERSISTED_SYS_META_FIELDS.forEach((k) => {
-          if (rec.sysMeta.data[k] !== undefined)
-            leanMeta[k] = rec.sysMeta.data[k];
-        });
-      }
-      await this.store.setItem(pid, {
-        next: rec.next,
-        prev: rec.prev,
-        endNext: rec.endNext,
-        endPrev: rec.endPrev,
-        sysMeta: leanMeta,
-        ts: Date.now(),
-      });
-    }
-
-    /**
-     * Load a record for the given PID from localForage. If the record is older
-     * than the TTL, it will be removed from the store and null will be
-     * returned.
-     * @param {string} pid - the PID to load
-     * @returns {Promise<VersionRecord|null>} resolves to the record object or
-     * null if not found or expired
-     * @private
-     */
-    async load(pid) {
-      const saved = await this.store.getItem(pid);
-      if (!saved) return null;
-      if (Date.now() - saved.ts > this.TTL_MS) {
-        await this.store.removeItem(pid);
-        return null;
-      }
-      return saved;
+      return steps;
     }
   }
 
-  // Allow the class to trigger Backbone events
-  Object.assign(VersionTracker.prototype, Backbone.Events);
-
-  // static map & accessor for singleton instances
-  VersionTracker.instances = new Map();
-
-  VersionTracker.get = function get(metaServiceUrl) {
-    const msUrl = NORMALIZE_METASERVICE_URL(metaServiceUrl);
-
-    if (!VersionTracker.instances.has(msUrl)) {
-      VersionTracker.instances.set(msUrl, new VersionTracker({ msUrl }));
-    }
-    return VersionTracker.instances.get(msUrl);
-  };
+  VersionTracker.SysMetaService = SysMetaService;
+  VersionTracker.SysMeta = SysMetaService.SysMeta;
 
   return VersionTracker;
 });
