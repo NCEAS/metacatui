@@ -140,7 +140,8 @@ define([
        * @param {object} options Object containing the view's options
        * @param {pid} options.pid The PID of the metadata document
        * @param {boolean} [options.showAllVersionsLink] Whether to show a link
-       * to view all versions of the document
+       * to view all versions of the document. This will be always be false if
+       * the AppModel's showVersionHistory setting is false.
        * @param {object} [options.descriptions] An object containing custom
        * descriptions for the tooltips
        * @param {string} [options.documentType] The type of document (e.g.
@@ -149,6 +150,12 @@ define([
       initialize(options = {}) {
         this.pid = options.pid;
         this.showAllVersionsLink = options.showAllVersionsLink !== false;
+        if (
+          MetacatUI.appModel &&
+          MetacatUI.appModel.get("showVersionHistory") === false
+        ) {
+          this.showAllVersionsLink = false;
+        }
         if (options.descriptions) {
           this.descriptions = { ...this.descriptions, ...options.descriptions };
         } else if (options.documentType) {
@@ -204,7 +211,7 @@ define([
           prev.innerHTML = this.prevNextBtnTemplate(prevUrl, "prev");
           this.addTooltip(prev, this.descriptions.prev);
         }
-        if (this.showAllVersionsLink && (prevPid || nextPid)) {
+        if (prevPid || nextPid) {
           const allUrl = this.getAllVersionsUrl(this.pid);
           allVersionsLink.innerHTML = this.allVersionsTemplate(allUrl);
           this.addTooltip(allVersionsLink, this.descriptions.allVersions);
@@ -238,11 +245,14 @@ define([
         return `${MetacatUI.root}/view/${encodeURIComponent(pid)}`;
       },
 
-      // TODO: Implement version history page
-      getAllVersionsUrl(_pid) {
-        return "";
-        // if (!pid) return "";
-        // return `${MetacatUI.root}/versionHistory/${encodeURIComponent(pid)}`;
+      /**
+       * Get the URL to view all versions of a metadata document by its PID
+       * @param {string} pid The PID of the metadata document
+       * @returns {string} The URL to view all versions of the metadata document
+       */
+      getAllVersionsUrl(pid) {
+        if (!pid || !this.showAllVersionsLink) return "";
+        return `${MetacatUI.root}/versionHistory/${encodeURIComponent(pid)}`;
       },
 
       /** Clean up tasks before the view is closed */

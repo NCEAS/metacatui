@@ -13,6 +13,20 @@ define([
     },
   });
 
+  const makeDatedSysMeta = ({
+    identifier,
+    dateUploaded,
+    nextPid = null,
+    prevPid = null,
+  }) => ({
+    data: {
+      identifier,
+      dateUploaded,
+      obsoletedBy: nextPid,
+      obsoletes: prevPid,
+    },
+  });
+
   describe("VersionTracker", () => {
     const state = cleanState(
       () => {
@@ -20,7 +34,18 @@ define([
         const originalMetacatUI = globalThis.MetacatUI;
         if (!originalMetacatUI) {
           globalThis.MetacatUI = {
-            appModel: { get: sandbox.stub().returns("https://example.org") },
+            root: "",
+            appModel: {
+              get: sandbox.stub().callsFake((key) => {
+                if (key === "metaServiceUrl") return "https://example.org";
+                if (key === "alternateRepositories") return [];
+                return null;
+              }),
+              getActiveAltRepo: sandbox.stub().returns(null),
+              isDOI: sandbox.stub().returns(false),
+            },
+            appUserModel: { get: sandbox.stub().returns(false) },
+            nodeModel: { get: sandbox.stub(), length: 0 },
           };
         }
         const vt = new VersionTracker({
@@ -87,13 +112,31 @@ define([
         vt.sysMetaService.persistPrivate.should.equal(true);
       });
 
+      it("defaults maxChainHops to 200 when not provided", () => {
+        const vt = new VersionTracker({
+          metaServiceUrl: "https://example.org/sysmeta",
+        });
+        vt.MAX_CHAIN_HOPS.should.equal(200);
+      });
+
       it("falls back to appModel metaServiceUrl when option is omitted", () => {
         const originalMetacatUI = globalThis.MetacatUI;
         globalThis.MetacatUI = {
+          ...(originalMetacatUI || {}),
           appModel: {
             get: state.sandbox
               .stub()
               .returns("https://fallback.example.org/meta///"),
+            getActiveAltRepo: state.sandbox.stub().returns(null),
+            isDOI: state.sandbox.stub().returns(false),
+          },
+          appUserModel: (originalMetacatUI &&
+            originalMetacatUI.appUserModel) || {
+            get: state.sandbox.stub().returns(false),
+          },
+          nodeModel: (originalMetacatUI && originalMetacatUI.nodeModel) || {
+            get: state.sandbox.stub(),
+            length: 0,
           },
         };
         try {
@@ -107,7 +150,20 @@ define([
       it("throws when no metaServiceUrl is available", () => {
         const originalMetacatUI = globalThis.MetacatUI;
         globalThis.MetacatUI = {
-          appModel: { get: state.sandbox.stub().returns("") },
+          ...(originalMetacatUI || {}),
+          appModel: {
+            get: state.sandbox.stub().returns(""),
+            getActiveAltRepo: state.sandbox.stub().returns(null),
+            isDOI: state.sandbox.stub().returns(false),
+          },
+          appUserModel: (originalMetacatUI &&
+            originalMetacatUI.appUserModel) || {
+            get: state.sandbox.stub().returns(false),
+          },
+          nodeModel: (originalMetacatUI && originalMetacatUI.nodeModel) || {
+            get: state.sandbox.stub(),
+            length: 0,
+          },
         };
         try {
           expect(() => new VersionTracker()).to.throw(
@@ -143,18 +199,23 @@ define([
         state.service.isCached.calledOnceWith("pid.1").should.be.true;
       });
 
-      it("getNext and getPrev delegate to getAdjacent", async () => {
+      it("getNext and getPrev delegate to getAdjacent and forward options", async () => {
         const adjacentStub = state.sandbox.stub(state.vt, "getAdjacent");
+        const options = { useCache: false, cacheKey: "pid.1-test" };
         adjacentStub.onCall(0).resolves("pid.2");
         adjacentStub.onCall(1).resolves("pid.0");
 
-        const next = await state.vt.getNext("pid.1");
-        const prev = await state.vt.getPrev("pid.1");
+        const next = await state.vt.getNext("pid.1", options);
+        const prev = await state.vt.getPrev("pid.1", options);
 
         next.should.equal("pid.2");
         prev.should.equal("pid.0");
-        adjacentStub.firstCall.args.should.deep.equal(["pid.1", true]);
-        adjacentStub.secondCall.args.should.deep.equal(["pid.1", false]);
+        adjacentStub.firstCall.args.should.deep.equal(["pid.1", true, options]);
+        adjacentStub.secondCall.args.should.deep.equal([
+          "pid.1",
+          false,
+          options,
+        ]);
       });
     });
 
@@ -470,6 +531,43 @@ define([
         notifyStub.callCount.should.equal(2);
       });
 
+      it("records a date conflict when the first adjacent version is chronologically earlier", async () => {
+        const notifyStub = state.sandbox.stub(state.vt, "notify").resolves();
+        state.sandbox.stub(state.vt, "isEndOfChain").resolves(true);
+        state.sandbox
+          .stub(state.vt, "getAdjacent")
+          .onCall(0)
+          .resolves("pid.2")
+          .onCall(1)
+          .resolves(null);
+
+        state.sandbox.stub(state.vt, "getSysMeta").callsFake(async (pid) => {
+          if (pid === "pid.1") {
+            return makeDatedSysMeta({
+              identifier: "pid.1",
+              dateUploaded: "2024-01-02T00:00:00Z",
+              nextPid: "pid.2",
+            });
+          }
+          if (pid === "pid.2") {
+            return makeDatedSysMeta({
+              identifier: "pid.2",
+              dateUploaded: "2024-01-01T00:00:00Z",
+              prevPid: "pid.1",
+            });
+          }
+          throw new Error(`Unexpected PID ${pid}`);
+        });
+
+        const record = await state.vt.getVersions("pid.1", 2);
+
+        notifyStub.callCount.should.equal(3);
+        record.versions.should.deep.equal(["pid.2"]);
+        record.dateConflicts.should.have.length(1);
+        record.dateConflicts[0].prevPid.should.equal("pid.1");
+        record.dateConflicts[0].nextPid.should.equal("pid.2");
+      });
+
       it("prefers traversal errors over notify rejections", async () => {
         const traversalError = new Error("boom");
         traversalError.status = 500;
@@ -491,6 +589,41 @@ define([
     });
 
     describe("helpers and accessors", () => {
+      it("detectDateConflict returns a conflict when chain order and dates disagree", () => {
+        const conflict = VersionTracker.detectDateConflict(
+          makeDatedSysMeta({
+            identifier: "older",
+            dateUploaded: "2024-01-03T00:00:00Z",
+          }),
+          makeDatedSysMeta({
+            identifier: "newer",
+            dateUploaded: "2024-01-02T00:00:00Z",
+          }),
+          true,
+        );
+
+        expect(conflict).to.be.an("object");
+        conflict.prevPid.should.equal("older");
+        conflict.nextPid.should.equal("newer");
+        conflict.timeDiffMs.should.be.greaterThan(0);
+      });
+
+      it("detectDateConflict returns false when dates are chronological", () => {
+        const conflict = VersionTracker.detectDateConflict(
+          makeDatedSysMeta({
+            identifier: "older",
+            dateUploaded: "2024-01-01T00:00:00Z",
+          }),
+          makeDatedSysMeta({
+            identifier: "newer",
+            dateUploaded: "2024-01-02T00:00:00Z",
+          }),
+          true,
+        );
+
+        expect(conflict).to.equal(false);
+      });
+
       it("getAllVersionsOneDirection uses max chain hops", async () => {
         const stub = state.sandbox.stub(state.vt, "getVersions").resolves({});
 
@@ -686,7 +819,7 @@ define([
         logStub.firstCall.args[1].should.equal(listenerError);
       });
 
-      it("emits null payload when there is no adjacent PID and no status", async () => {
+      it("emits placeholder sysmeta when there is no adjacent PID and no status", async () => {
         const updateSpy = sinon.spy();
         const getStub = state.sandbox.stub(state.vt, "getSysMeta");
         state.vt.events.on("versionFound", updateSpy);
@@ -695,7 +828,10 @@ define([
 
         getStub.called.should.be.false;
         updateSpy.calledOnce.should.be.true;
-        expect(updateSpy.firstCall.args[0]).to.equal(null);
+        const sysMeta = updateSpy.firstCall.args[0];
+        expect(sysMeta).to.exist;
+        sysMeta.versionHistory["pid.1"].should.equal(1);
+        sysMeta.errors.should.deep.equal([]);
       });
 
       it("emits placeholder sysmeta payload when status is provided without adjacent sysmeta", async () => {

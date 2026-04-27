@@ -587,7 +587,8 @@ define([
             status: response.status,
           });
         } catch (err) {
-          // If performFetch guarantees TimeoutError vs AbortError vs other, this is simple:
+          // Stop all processing and throw immediately if the request was
+          // aborted by the caller
           if (signal?.aborted && err?.name !== "TimeoutError") {
             throw abortError(signal.reason);
           }
