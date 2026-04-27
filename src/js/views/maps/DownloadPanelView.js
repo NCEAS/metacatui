@@ -88,7 +88,7 @@ define([
        * this size, the download will be blocked.
        * @type {number}
        */
-      downloadSizeLimit: 1050000, // 1 GB
+      downloadSizeLimit: 1000000000, // 1 GB
 
       /**
        * @typedef {object} DrawToolButtonOptions
