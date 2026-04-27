@@ -618,6 +618,23 @@ define([
        */
       getTokenPromise(timeout = 7500) {
         const model = this;
+        const numTimeouts = model.get("tokenTimeoutCounter") || 0;
+        if (numTimeouts > 3) {
+          // If the request is continually timing out, stop trying
+          this.set("tokenChecked", true);
+          // Assuming a server error could resolve itself, allow rechecking
+          // after a reasonable amount of time
+          const fiveMins = 5 * 60 * 1000;
+          setTimeout(() => {
+            model.set("tokenChecked", false);
+            this.set("tokenTimeoutCounter", 0);
+          }, fiveMins);
+          return Promise.reject(new Error("token check failed too many times"));
+        } else if (numTimeouts > 0) {
+          // Give more time for the next request to resolve if we've already had
+          // some timeouts
+          timeout = timeout * Math.pow(2, numTimeouts);
+        }
         return new Promise((resolve, reject) => {
           const listenModel = new Backbone.Model();
           const stopListenModel = () => {
@@ -636,6 +653,10 @@ define([
             setTimeout(() => {
               stopListenModel();
               reject(new Error("token check timed out"));
+              model.set(
+                "tokenTimeoutCounter",
+                (model.get("tokenTimeoutCounter") || 0) + 1,
+              );
             }, timeout);
           }
           model.getToken();
