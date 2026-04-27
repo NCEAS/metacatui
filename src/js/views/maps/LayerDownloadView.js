@@ -108,6 +108,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
        * @returns {LayerDownloadView} this
        */
       render() {
+        this.$el.empty();
         const view = this;
         const { item, downloadPanelView } = this;
 
@@ -118,18 +119,6 @@ define(["underscore", "backbone"], (_, Backbone) => {
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.classList.add(CLASS_NAMES.checkbox);
-        // Store layer data attributes for use in getRawFileSize / updateTextbox
-        checkbox.dataset.layerId = item.layerID;
-        checkbox.dataset.downloadLink = item.downloadLink;
-        checkbox.dataset.layerName = item.layerName;
-        checkbox.dataset.fullDownloadLink = item.fullDownloadLink;
-        checkbox.dataset.pngDownloadLink = item.pngDownloadLink;
-        checkbox.dataset.id = item.ID;
-        checkbox.dataset.wmtsDownloadLink = item.wmtsDownloadLink;
-        checkbox.dataset.gpkgDownloadLink = item.gpkgDownloadLink;
-        checkbox.dataset.tiffDownloadLink = item.tiffDownloadLink;
-        checkbox.dataset.metadataPid = item.metadataPid;
-        this.checkbox = checkbox;
 
         const titleSpan = document.createElement("span");
         titleSpan.classList.add(CLASS_NAMES.title);
@@ -276,25 +265,25 @@ define(["underscore", "backbone"], (_, Backbone) => {
         fileTypeDropdown.addEventListener("change", () => {
           view.selectedFileType = fileTypeDropdown.value;
           fileSizeInfoBox.classList.remove("downloads-textbox--warning");
-          downloadPanelView.fileTypeSelection(checkbox.dataset.layerId);
+          downloadPanelView.fileTypeSelection(item.layerID);
           const fileSize = downloadPanelView.getRawFileSize(
             resolutionDropdown.value,
             fileTypeDropdown.value,
-            checkbox.dataset.layerId,
-            checkbox.dataset.fullDownloadLink,
-            checkbox.dataset.pngDownloadLink,
-            checkbox.dataset.gpkgDownloadLink,
-            checkbox.dataset.id,
-            checkbox.dataset.layerName,
-            checkbox.dataset.wmtsDownloadLink,
-            checkbox.dataset.metadataPid,
-            checkbox.dataset.tiffDownloadLink,
+            item.layerID,
+            item.fullDownloadLink,
+            item.pngDownloadLink,
+            item.gpkgDownloadLink,
+            item.ID,
+            item.layerName,
+            item.wmtsDownloadLink,
+            item.metadataPid,
+            item.tiffDownloadLink,
           );
           downloadPanelView.updateTextbox(
             fileSizeInfoBox,
             fileSize,
             fileTypeDropdown.value,
-            checkbox.dataset.layerId,
+            item.layerID,
           );
         });
 

@@ -798,8 +798,10 @@ define([
 
         if (!downloadDataPanel) return;
 
-        // Clear any previously added layer items in case of a rerender.
-        // Also clean up tracked panels/views from the previous render.
+        // Clean up tracked view instances from the previous render.
+        if (this.layerDownloadViews) {
+          this.layerDownloadViews.forEach((ldv) => ldv.remove());
+        }
         downloadDataPanel.innerHTML = "";
         this.layerDownloadViews = [];
 
@@ -1037,13 +1039,6 @@ define([
         metadataURL,
         tiffDownloadLink,
       ) {
-        const layerSelectBoxes = document.querySelectorAll(
-          ".download-expansion-panel__checkbox",
-        );
-        const selectedLayerSelectBoxes = Array.from(layerSelectBoxes).filter(
-          (checkbox) => checkbox.checked,
-        );
-
         this.polygon = this.getPolygon(this.points.toJSON());
         this.boundingBox = this.getBoundingBox(this.polygon);
         let totalFileSize;
@@ -1082,16 +1077,14 @@ define([
           totalFileSize = wmtsDownloadLink;
         }
 
-        // Update this.dataDownloadLinks - If the layerID in dataDownloadLinks
-        // is not in the selectedLayerIDs list, remove it
-        if (selectedLayerSelectBoxes.length > 1) {
-          const selectedLayerIDs = Array.from(selectedLayerSelectBoxes).map(
-            (checkbox) => checkbox.dataset.layerId,
-          );
+        // Sync dataDownloadLinks: remove entries for layers no longer selected.
+        const selectedLayerIDs = (this.layerDownloadViews || [])
+          .filter((ldv) => ldv.isSelected)
+          .map((ldv) => ldv.item.layerID);
+        if (selectedLayerIDs.length > 1) {
           Object.keys(this.dataDownloadLinks).forEach((downloadLink) => {
             if (!selectedLayerIDs.includes(downloadLink)) {
               delete this.dataDownloadLinks[downloadLink];
-              // alert("Successfully deleted" + layerID);
             }
           });
         }
