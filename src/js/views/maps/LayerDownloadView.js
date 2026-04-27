@@ -28,7 +28,8 @@ define(["underscore", "backbone"], (_, Backbone) => {
    * @classcategory Views/Maps
    * @name LayerDownloadView
    * @augments Backbone.View
-   * @since 2.33.0
+   * @since 0.0.0
+   * @screenshot views/maps/LayerDownloadView.png
    * @constructs LayerDownloadView
    */
   const LayerDownloadView = Backbone.View.extend(
