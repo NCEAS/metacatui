@@ -1,8 +1,7 @@
-﻿define(["jquery", "underscore", "backbone", "models/DataONEObject"], function (
-  $,
+﻿define(["underscore", "models/DataONEObject", "common/QueryService"], function (
   _,
-  Backbone,
   DataONEObject,
+  QueryService,
 ) {
   /**
         @class ScienceMetadata
@@ -121,42 +120,41 @@
         );
       },
 
-      /* Construct the Solr query URL to be called */
-      url: function () {
-        // Build the URL to include default fields in ScienceMetadata
-        var fieldList = "*", //Object.keys(this.defaults),
-          lastField = _.last(fieldList),
-          searchFields = "",
-          query = "q=",
-          queryOptions = "&wt=json&fl=",
-          url = "";
-
-        // Make a list of the search fields
-        _.each(fieldList, function (value, key, list) {
-          if (value === lastField) {
-            searchFields += value;
-          } else {
-            searchFields += value;
-            searchFields += ",";
-          }
-        });
-
-        queryOptions += searchFields;
-        query += 'id:"' + encodeURIComponent(this.get("id")) + '"';
-
-        url = MetacatUI.appModel.get("queryServiceUrl") + query + queryOptions;
-        return url;
-      },
-
-      /* Fetch the ScienceMetadata from the MN Solr service */
+      /**
+       * Fetch the ScienceMetadata from the MN Solr service
+       * @param {Object} options A map of options to pass to jQuery.ajax
+       */
       fetch: function (options) {
-        if (!options) var options = {};
+        options = options ? _.clone(options) : {};
 
-        //Add the authorization options
-        _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
+        const pid = this.get("id");
+        if (!pid) {
+          this.trigger(
+            "error",
+            this,
+            "Cannot fetch a ScienceMetadata model without an id",
+          );
+          return;
+        }
 
-        //Call Backbone.Model.fetch to retrieve the info
-        return Backbone.Model.prototype.fetch.call(this, options);
+        const opts = {
+          q: `id:"${pid}"`,
+          fields: "*",
+          useAuth: options.useAuth !== false,
+        };
+
+        const model = this;
+        QueryService.queryWithFetch(opts)
+          .then((docs) => {
+            model.parse(docs, options);
+            if (options.success) options.success(model, docs, options);
+            model.trigger("sync", model, docs, options);
+          })
+          .catch((e) => {
+            console.log(e);
+            if (options.failure) options.failure(model, null, options);
+            model.trigger("error", model, e, options);
+          });
       },
 
       /*

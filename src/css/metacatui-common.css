@@ -3,6 +3,12 @@
 
   --loading-background-color: #f1f1f19e;
   --loading-background-color-darker: #e6e4e49e;
+
+  --color-private: #ff7600;
+  --color-info: #3a87ad;
+
+  --color-neutral-2: #cccccc;
+  --color-neutral-6: #656565;
 }
 /******************************************
 ** General Styling ***
@@ -82,7 +88,7 @@ a:hover {
   color: #ffbc00;
 }
 .icon.info {
-  color: #3a87ad;
+  color: var(--color-info);
 }
 .list-group-item.success {
   background-color: #dff0d8;
@@ -96,7 +102,7 @@ a:hover {
 }
 .list-group-item.info {
   background-color: #d9edf7;
-  color: #3a87ad;
+  color: var(--color-info);
 }
 .tooltip {
   font-size: 12px;
@@ -319,6 +325,22 @@ header .citation {
   display: block;
   max-width: 30%;
 }
+/* many themes have overwritten btn colours, without accounting for the
+  bootstrap btn-link style being border & bkg free. */
+.btn-link {
+  border: none !important;
+  background-color: transparent !important;
+}
+.btn-link.btn-link--neutral {
+  color: var(--color-neutral-6, #656565);
+}
+.btn-link.btn-link--neutral:hover,
+.btn-link.btn-link--neutral:focus {
+  filter: brightness(75%);
+  > i {
+    text-decoration: none;
+  }
+}
 .orcid-signin.btn-large.center {
   max-width: 45%;
   margin-bottom: 0px;
@@ -471,6 +493,8 @@ header .citation {
   max-width: 90%;
   margin-left: 5%;
   margin-top: 2rem;
+  /* so the close button (position:absolute) is relative to this container */
+  position: relative;
 }
 body > .alert-container.important-app-message {
   bottom: 0px;
@@ -497,7 +521,7 @@ body > .alert-container.important-app-message > .alert {
 /******************************************
 ** Icons ***
 ******************************************/
-.btn > i {
+.btn > i:not(.icon-on-left) {
   margin-left: 5px;
 }
 h3 > .icon,
@@ -548,14 +572,6 @@ svg.icon {
   font-family: inherit;
   font-weight: bold;
   font-size: 0.9em;
-}
-.private.icon-stack .icon-circle {
-  color: #ff7600;
-}
-.private.icon-stack .icon-stack-top {
-  color: #fff;
-  margin-top: -1px;
-  font-size: 1.1em;
 }
 .icon.hidden {
   display: none;
@@ -707,8 +723,8 @@ svg.icon {
 .result-row .info-icons img.icon {
   height: 1em;
 }
-.info-icons .icon.private {
-  color: #ff7600;
+.result-row .icon.private {
+  color: var(--color-private);
 }
 .result-row .info-icons .label {
   background-color: #5e8497;
@@ -1422,7 +1438,7 @@ svg.icon {
   font-size: 0.9em;
 }
 .check.info-check .icon {
-  color: #3a87ad;
+  color: var(--color-info);
 }
 .check.info-check .icon-info {
   font-size: 0.8em;
@@ -1629,9 +1645,6 @@ svg.icon {
 #signInPopup .orcid-signin {
   margin-top: 10%;
 }
-.sign-in-ldap select {
-  width: 220px;
-}
 .modal.container {
   padding: 20px 20px 40px 20px;
 }
@@ -1820,19 +1833,6 @@ svg.icon {
   margin-right: 0px;
   margin-left: 0px;
 }
-.metadata-view .controls-container {
-  margin-bottom: 20px;
-  padding: 10px;
-}
-.metadata-view .controls-container > .controls {
-  float: right;
-  margin-top: 0px;
-  margin-bottom: 0px;
-}
-.metadata-view .controls-container > .controls .inline-buttons {
-  margin-top: 0px;
-  margin-bottom: 0px;
-}
 .controls-well.annotations-container {
   box-shadow: none;
   border: 0px;
@@ -1939,38 +1939,6 @@ body > .alert-container {
   margin-left: 0px;
 }
 
-/* ---- Analyze Button ---- */
-div.dropdown.btn.btn-secondary.dropdown-toggle .icon-bar-chart {
-  margin-right: 10px;
-}
-#metadata-controls-container
-  > div.controls.btn-toolbar
-  > div
-  > button
-  > span.analyze-text {
-  margin-right: 10px;
-  font-weight: 600;
-}
-div.analyze.dropdown {
-  display: inline-block;
-}
-div.analyze.dropdown.open button.dropdown.btn.btn-secondary.dropdown-toggle {
-  display: inline-block;
-  color: white;
-  text-shadow: 0;
-  background-color: #1c6e84;
-  border-width: 0px;
-}
-.controls.btn-toolbar {
-  font-size: 1em;
-}
-.analyze.dropdown-menu {
-  border: none;
-  border-radius: 4px;
-  padding: 0px;
-  margin: 0px;
-}
-
 /**----------------------------------------**/
 .metadata-view .citation {
   margin-bottom: 20px;
@@ -1983,38 +1951,26 @@ div.analyze.dropdown.open button.dropdown.btn.btn-secondary.dropdown-toggle {
   float: right;
   margin-bottom: 10px;
 }
-.controls-container .info-icons {
-  display: inline-block;
-  margin-left: 10px;
-  margin-right: 20px;
-  vertical-align: top;
-  position: relative;
-  font-size: 30px;
+.dataset-info-icons-container {
+  margin-left: 0.6rem;
+  font-size: 0.9rem;
+  vertical-align: middle;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 0.3rem;
+  line-height: 1;
+  color: white;
+  .private .icon-circle {
+    color: var(--color-private);
+  }
+  .icon-stack {
+    /* overwrite font awesome styles to minimize padding */
+    --icon-size: 1.5rem;
+    height: var(--icon-size);
+    width: var(--icon-size);
+    line-height: var(--icon-size);
+  }
 }
-.controls-container .info-icons .icon-stack {
-  width: 1.25em;
-  height: 1.25em;
-  vertical-align: top;
-}
-.controls-container .info-icons .icon-stack .icon {
-  margin-top: -15px;
-}
-.controls-container .info-icons .icon-stack .icon-stack-top {
-  color: #fff;
-  font-size: 0.7em;
-}
-.controls-container .info-icons .icon-stack .icon-stack-base {
-  font-size: 1.5em;
-}
-.metadata-controls-container {
-  position: relative;
-}
-/* .metadata-controls-container>.copy-success{
-	position: absolute;
-    top: -24px;
-    left: 17px;
-    font-size: .9em;
-} */
 .citation-container ~ .data-source .ORNLDAAC,
 .citation-container ~ .data-source .CDL,
 .citation-container ~ .data-source .PISCO,
@@ -2037,75 +1993,6 @@ div.analyze.dropdown.open button.dropdown.btn.btn-secondary.dropdown-toggle {
   display: inline-block;
   margin-top: 0px;
   margin-bottom: 0px;
-}
-
-/***********
-Defult button styling for Metrics views
-***********/
-a.btn.metrics {
-  min-width: 164px;
-  margin-bottom: 0px;
-}
-.metric-value > .icon.metric-icon {
-  font-size: 18px;
-}
-.metric-value.badge {
-  float: right;
-  background-color: #333;
-  margin-top: 2px;
-  margin-left: 10px;
-}
-.metric-icon {
-  margin-right: 10px;
-  float: left;
-  padding-top: 1px;
-}
-.metric-name {
-  float: left;
-}
-.metric-value {
-  float: right;
-}
-i.icon.icon-cloud-download {
-  font-size: 1.2em !important;
-}
-i.icon.icon-eye-open {
-  font-size: 1.2em !important;
-}
-.btn-group + .btn-group,
-.btn-toolbar > .btn + .btn,
-.btn-toolbar > .btn + .btn-group,
-.btn-toolbar > .btn-group + .btn {
-  margin-left: 15px;
-}
-
-i.icon.metric-icon.icon-spinner.icon-spin {
-  margin-top: 2px;
-  margin-right: 15px;
-}
-
-/* Style for the toolbars that contains buttons in the well on either side. */
-.metric-toolbar {
-  float: left;
-  width: auto;
-}
-.controls-container .controls {
-  border-left: 1px solid #e3e3e3;
-  float: right;
-  padding-left: 10px;
-}
-.controls .btn {
-  margin-bottom: 0px;
-}
-/* Making the publish button consistent size as the downloads all*/
-#owner-controls-container > .btn {
-  margin-right: 10px;
-}
-#owner-controls-container > .btn[disabled] {
-  cursor: not-allowed;
-}
-.edit-toolbar > #owner-controls-container #publish {
-  width: 138px;
 }
 
 #metric-modal {
@@ -2203,6 +2090,17 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 }
 #publication-identifier.register-citation-doi-validation {
   border: 1px solid red;
+}
+
+.metric.btn {
+  font-weight: 500;
+  font-size: 1.1em;
+}
+
+.btn.metrics .metric-value {
+  font-weight: 700;
+  color: #333333;
+  margin-right: 0.15rem;
 }
 /******************************************
 * Search Page / Data Catalog Page Metrics
@@ -2519,44 +2417,6 @@ i.catalog-metric-icon {
 button.modal-btn.btn.btn-default {
   all: unset;
   cursor: pointer;
-}
-
-/***********
-Non-clickable (Disabled) button styling for metrics views
-***********/
-a.btn.metrics-button-disabled {
-  width: 164px;
-  color: #777;
-  border-color: #ccc;
-  background-color: #efefef;
-  cursor: default;
-}
-a.btn.metrics-button-disabled:hover {
-  background-color: transparent;
-}
-.metrics-button-disabled > .metric-value.badge {
-  float: right;
-  color: #fff;
-  margin-left: 20px;
-  background-color: #777;
-  margin-top: 2px;
-}
-.metrics-button-disabled.metric-icon {
-  margin-right: 10px;
-  float: left;
-}
-.metrics-button-disabled.metric-name {
-  float: left;
-  margin-right: 10px;
-}
-.metrics-button-disabled.metric-value {
-  float: right;
-}
-.metrics-button-disabled:hover,
-.metrics-button-disabled:click {
-  color: #888888;
-  background-color: #f5f5f5;
-  border-color: #c3c3c3;
 }
 
 /******************************************
@@ -6003,19 +5863,8 @@ textarea.token {
 .form-group {
   clear: both;
 }
-.list-group-item .remove-identity-btn {
-  float: right;
-  line-height: 2.7em;
-}
-.list-group-item.identity.pending .details {
-  margin-left: 52px;
-}
 .list-group-item.identity .details .orcid-logo {
   margin-left: 0px;
-}
-.list-group-item .confirm-request-btn,
-.list-group-item .reject-request-btn {
-  margin-right: 5px;
 }
 .icon.is-owner {
   color: #ffd700;
@@ -8088,7 +7937,8 @@ ul.side-nav-items {
 }
 
 .data-package-item td.error > [contenteditable] {
-  border: 2px solid red;
+  border: 1.5px solid red;
+  border-radius: 6px;
 }
 /* Editor package table column 1 */
 .data-package-item td:first-of-type {
@@ -8132,14 +7982,6 @@ ul.side-nav-items {
 }
 .data-package-item .sharing .disabled {
   opacity: 0.5;
-}
-
-/* Editor package table column 5 */
-.data-package-item td:last-of-type {
-  text-align: right;
-  padding-right: 10px;
-  padding-left: 0px;
-  width: 100px;
 }
 
 /* Editor package table buttons */
@@ -9553,12 +9395,25 @@ body > #extension-is-installed {
   margin-bottom: 3px;
 }
 
-.citation.header .top-info > *:not(.id) {
-  text-transform: uppercase;
+.top-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.1rem;
+  width: 100%;
+}
+
+.citation.header .top-info > * {
   font-size: 13px;
-  letter-spacing: 0.02em;
   line-height: 1;
-  margin-top: 20px;
+  font-size: 14px;
+}
+
+.citation.header .top-info > *:not(.id) {
+  /* id should remain in original case */
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 13px;
 }
 
 .citation.header .type {
@@ -9658,18 +9513,18 @@ body > #extension-is-installed {
   border-radius: 50%;
   height: 15px;
   width: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  > i {
+    margin: 0;
+  }
 }
 
-.btn.btn-rounded.action.downloadAction {
-  border: none;
-}
-
-.btn.btn-rounded.action.downloadAction > i {
-  margin-left: -4px;
-}
-
-.btn.btn-rounded.action.viewAction > i {
-  margin-left: -2px;
+.file-actions {
+  display: flex;
+  gap: 0.5em;
+  justify-content: flex-end;
 }
 
 /* Data Package Item */
@@ -9864,5 +9719,62 @@ body > #extension-is-installed {
     font-size: 0.9em;
     padding-left: 0.1rem;
     opacity: 0.9;
+  }
+}
+
+/******************************************
+* Dataset Controls View
+********************************************/
+.controls-container {
+  display: flex;
+  /* space between */
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 1.3rem;
+  gap: 0.8rem;
+  width: 100%;
+
+  .btn {
+    /* reduce padding from bootstrap default */
+    padding: 4px 9px;
+  }
+  .btn .caret {
+    margin-left: 0.3rem;
+  }
+
+  .btn .i {
+    margin-right: 0.4rem;
+    font-size: 1.1em;
+  }
+}
+
+.dataset-actions-container {
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.dataset-metrics-container,
+.dataset-actions-container {
+  display: flex;
+}
+
+.dataset-metrics-actions-separator {
+  border-left: 1px solid var(--color-neutral-2, #ccc);
+  margin: 0.5rem;
+  max-height: 1rem;
+}
+
+/* VersionNavigationView */
+.version-navigation-view {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  text-transform: uppercase;
+  margin-left: 1rem;
+  a {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0.1rem 0.3rem 0.1rem;
+    letter-spacing: 0.02em;
   }
 }

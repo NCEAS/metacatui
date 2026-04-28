@@ -13,7 +13,6 @@ MetacatUI.AppConfig = Object.assign(
     d1Service: "/cn/v2",
     metacatContext: "",
     enableMonitorStatus: false,
-    enableCILogonSignIn: false,
     showSignInHelp: false,
 
     // Cesium map for portals
@@ -166,6 +165,7 @@ MetacatUI.AppConfig = Object.assign(
       "https://*arcticdata.io",
       "https://cosima.nceas.ucsb.edu*",
       "https://sasap-data.shinyapps.io/board_of_fisheries/",
+      "https://shirlysteph.github.io/salmon-storymap/",
     ],
   },
   MetacatUI.AppConfig || {},

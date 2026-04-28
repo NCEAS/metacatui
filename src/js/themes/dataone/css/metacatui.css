@@ -634,6 +634,11 @@ input[type="text"][disabled="disabled"] {
   text-shadow: none;
 }
 
+.metadata-header .btn,
+.controls-container .btn {
+  margin-bottom: 0;
+}
+
 .btn:hover,
 .annotator-editor a:focus,
 .annotator-editor a:hover {
@@ -2493,17 +2498,6 @@ dt {
   stroke: var(--c-major-accent-6);
 }
 
-.metrics .metric-value.badge {
-  background-color: #1c6e84;
-  background-color: var(--c-major-accent-6);
-}
-
-.metrics:hover .metric-value.badge {
-  background-color: #ffffff;
-  color: #1c6e84;
-  color: var(--c-major-accent-6);
-}
-
 /****************************************************************
 * Styles for compatibility with the d1website styles
 *****************************************************************/
@@ -2608,4 +2602,8 @@ input.form-control:focus:invalid:focus {
 #data-package-table-head > .file-header > th {
   background-color: inherit;
   z-index: 2;
+}
+
+.temporary-message {
+  z-index: 101;
 }

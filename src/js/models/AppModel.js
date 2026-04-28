@@ -1,6 +1,9 @@
 define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
   "use strict";
 
+  // Remove any trailing slashes from a URL
+  const NORMALIZE_URL = (url) => url.replace(/\/+$/, "");
+
   /**
    * @class AppModel
    * @classdesc A utility model that contains top-level configuration and storage for the application
@@ -248,9 +251,13 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           displayDownloadButtonInSearchResults: false,
 
           /**
-           * If set to false, some parts of the app will send POST HTTP requests to the
-           * Solr search index via the `/query/solr` DataONE API.
-           * Set this configuration to true if using Metacat 2.10.2 or earlier
+           * If set to false, some parts of the app will send POST HTTP requests
+           * to the Solr search index via the `/query/solr` DataONE API. Set
+           * this configuration to true if using Metacat 2.10.2 or earlier.
+           *
+           * IMPORTANT: this option will be removed in a future release. POST
+           * requests to Solr will be used by default to avoid URL length
+           * limitations and to allow more complex queries.
            * @type {boolean}
            */
           disableQueryPOSTs: false,
@@ -435,10 +442,14 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           editorSerializationFormat: "https://eml.ecoinformatics.org/eml-2.2.0",
 
           /**
-           * The XML schema location the dataset editor will use when creating new EML. This should
-           * correspond with {@link AppConfig#editorSerializationFormat}
+           * The XML schema location the dataset editor will use when creating
+           * new EML. This should correspond with
+           * {@link AppConfig#editorSerializationFormat}. Note there must be an
+           * even number of values in this string, with each pair consisting of
+           * a namespace URI and the schema location URL for that namespace.
            * @type {string}
-           * @default "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd"
+           * @default "https://eml.ecoinformatics.org/eml-2.2.0
+           * https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd"
            * @readonly
            * @since 2.13.0
            */
@@ -757,9 +768,9 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           /**
            * The base URL for the ORCID REST services
            * @type {string}
-           * @default "https:/orcid.org"
+           * @default "https://pub.orcid.org/"
            */
-          orcidBaseUrl: "https:/orcid.org",
+          orcidBaseUrl: "https://pub.orcid.org/",
 
           /**
            * The URL for the ORCID search API, which can be used to search for information
@@ -806,19 +817,11 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @since 2.13.3
            */
           showSignInHelp: true,
-          /**
-           * If true, users can sign in using CILogon as the identity provider.
-           * ORCID is the only recommended identity provider. CILogon may be deprecated
-           * in the future.
-           * @type {boolean}
-           * @default false
-           */
+
+          /** @deprecated since 2.36.0 */
           enableCILogonSignIn: false,
-          /**
-           * The URL for the DataONE Sign In API using CILogon as the identity provider
-           * This URL is constructed dynamically once the {@link AppModel} is initialized.
-           * @type {string}
-           */
+
+          /** @deprecated since 2.36.0*/
           signInUrl: null,
           /**
            * The URL for the DataONE Sign Out API
@@ -833,20 +836,10 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            */
           signInUrlOrcid: null,
 
-          /**
-           * Enable DataONE LDAP authentication. If true, users can sign in from an LDAP account that is in the DataONE CN LDAP directory.
-           * This is not recommended, as DataONE is moving towards supporting only ORCID logins for users.
-           * This LDAP authentication is separate from the File-based authentication for the Metacat Admin interface.
-           * @type {boolean}
-           * @default false
-           * @since 2.11.0
-           */
+          /** @deprecated since 2.36.0 */
           enableLdapSignIn: false,
-          /**
-           * The URL for the DataONE Sign In API using LDAP as the identity provider
-           * This URL is constructed dynamically once the {@link AppModel} is initialized.
-           * @type {string}
-           */
+
+          /** @deprecated since 2.36.0 */
           signInUrlLdap: null,
 
           /**
@@ -899,33 +892,38 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           /**
            * Metadata Assessment Suite IDs for the dataset assessment reports.
            * @type {string[]}
-           * @default ["FAIR-suite-0.4.0"]
+           * @default ["FAIR-suite-0.5.0"]
            */
-          mdqSuiteIds: ["FAIR-suite-0.4.0"],
+          mdqSuiteIds: ["FAIR-suite-0.5.0"],
           /**
            * Metadata Assessment Suite labels for the dataset assessment reports
            * @type {string[]}
-           * @default ["FAIR Suite v0.4.0"]
+           * @default ["FAIR Suite v0.5.0"]
            */
-          mdqSuiteLabels: ["FAIR Suite v0.4.0"],
+          mdqSuiteLabels: ["FAIR Suite v0.5.0"],
           /**
            * Metadata Assessment Suite IDs for the aggregated assessment charts
            * @type {string[]}
-           * @default ["FAIR-suite-0.4.0"]
+           * @default ["FAIR-suite-0.5.0"]
            */
-          mdqAggregatedSuiteIds: ["FAIR-suite-0.4.0"],
+          mdqAggregatedSuiteIds: ["FAIR-suite-0.5.0"],
           /**
            * Metadata Assessment Suite labels for the aggregated assessment charts
            * @type {string[]}
-           * @default ["FAIR Suite v0.4.0"]
+           * @default ["FAIR Suite v0.5.0"]
            */
-          mdqAggregatedSuiteLabels: ["FAIR Suite v0.4.0"],
+          mdqAggregatedSuiteLabels: ["FAIR Suite v0.5.0"],
           /**
            * The metadata formats for which to display metadata assessment reports
            * @type {string[]}
            * @default ["eml*", "https://eml*", "*isotc211*"]
            */
-          mdqFormatIds: ["eml*", "https://eml*", "*isotc211*"],
+          mdqFormatIds: [
+            "eml*",
+            "https://eml*",
+            "*isotc211*",
+            "science-on-schema.org/Dataset;ld+json",
+          ],
 
           /**
            * Metrics endpoint url
@@ -2604,39 +2602,14 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
               d1CNBaseUrl + this.get("d1CNService") + "/diag/subject",
             );
 
-            //The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
-            if (
-              this.get("enableCILogonSignIn") ||
-              typeof this.get("signInUrl") !== "undefined"
-            )
-              this.set(
-                "signInUrl",
-                d1CNBaseUrl + "/portal/" + "startRequest?target=",
-              );
-            if (typeof this.get("signInUrlOrcid") !== "undefined")
+            //The sign-in and out URLs
+            if (typeof this.get("signInUrlOrcid") != "undefined") {
               this.set(
                 "signInUrlOrcid",
                 d1CNBaseUrl + "/portal/" + "oauth?action=start&target=",
               );
-
-            if (this.get("enableLdapSignIn") && !this.get("signInUrlLdap")) {
-              this.set(
-                "signInUrlLdap",
-                d1CNBaseUrl + "/portal/" + "ldap?target=",
-              );
-            }
-
-            if (this.get("orcidBaseUrl"))
-              this.set(
-                "orcidSearchUrl",
-                this.get("orcidBaseUrl") + "/v1.1/search/orcid-bio?q=",
-              );
-
-            if (
-              typeof this.get("signInUrl") !== "undefined" ||
-              typeof this.get("signInUrlOrcid") !== "undefined"
-            )
               this.set("signOutUrl", d1CNBaseUrl + "/portal/" + "logout");
+            }
           }
 
           // Object format list
@@ -2646,13 +2619,13 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
               d1CNBaseUrl + this.get("d1CNService") + this.get("formatsUrl"),
             );
           }
+        }
 
-          //ORCID search
-          if (typeof this.get("orcidBaseUrl") != "undefined")
-            this.set(
-              "orcidSearchUrl",
-              this.get("orcidBaseUrl") + "/search/orcid-bio?q=",
-            );
+        // ORCID search
+        const orcidBaseUrl = this.get("orcidBaseUrl");
+        if (orcidBaseUrl) {
+          const searchUrl = `${NORMALIZE_URL(orcidBaseUrl)}/v3.0/expanded-search/?q=`;
+          this.set("orcidSearchUrl", searchUrl);
         }
 
         // Metadata quality report services

@@ -7,6 +7,19 @@ define([
 ], function ($, _, Backbone, SolrResult, Filters) {
   "use strict";
 
+  const DEFAULT_FACET_FIELDS = [
+    "keywords",
+    "origin",
+    "family",
+    "species",
+    "genus",
+    "kingdom",
+    "phylum",
+    "order",
+    "class",
+    "site",
+  ];
+
   /**
    * @class Search
    * @classdesc Search filters can be either plain text or a filter object with the following options:
@@ -1047,8 +1060,7 @@ define([
 
         //Get the list of fields
         if (!fields) {
-          var fields =
-            "keywords,origin,family,species,genus,kingdom,phylum,order,class,site";
+          var fields = DEFAULT_FACET_FIELDS.join(",");
           if (this.filterIsAvailable("annotation")) {
             fields += "," + this.facetNameMap["annotation"];
           }
@@ -1057,21 +1069,65 @@ define([
           }
         }
 
-        var model = this;
-        //Add the fields to the query string
-        _.each(fields.split(","), function (f) {
-          var fieldNames = model.facetNameMap[f] || f;
-
-          if (typeof fieldNames == "string") {
-            fieldNames = [fieldNames];
-          }
-
-          _.each(fieldNames, function (fName) {
-            facetQuery += "&facet.field=" + fName;
-          });
-        });
+        // Add the fields to the query string
+        const facetFields = this.getFacetFields(fields);
+        facetFields.forEach((f) => (facetQuery += `&facet.field=${f}`));
 
         return facetQuery;
+      },
+
+      /**
+       * Returns an array of facet field names based on the given fields or the
+       * default facet fields and the available filters in this search model
+       * @param {string[]} fields An array or comma-separated list of field
+       * names to get the facet field names for. If not given, the default facet
+       * fields will be used.
+       * @returns {string[]} An array of facet field names
+       * @since 2.36.0
+       */
+      getFacetFields(fields) {
+        if (!fields) {
+          fields = [...DEFAULT_FACET_FIELDS];
+          if (this.filterIsAvailable("annotation")) {
+            fields.push(this.facetNameMap["annotation"]);
+          }
+          if (this.filterIsAvailable("attribute")) {
+            fields.push("attributeName", "attributeLabel");
+          }
+        }
+        let facetFields = [];
+        const model = this;
+        fields.forEach((f) => {
+          const fieldNames = model.facetNameMap[f] || f;
+          if (typeof fieldNames == "string") {
+            facetFields.push(fieldNames);
+          } else if (Array.isArray(fieldNames)) {
+            facetFields = [...facetFields, ...fieldNames];
+          }
+        });
+        return facetFields;
+      },
+
+      /**
+       * Returns an object with the facet parameters to send to the Query
+       * Service
+       * @param {string[]|string} fields An array or comma-separated list of
+       * field names to get the facet field names for. If not given, the default
+       * facet fields will be used.
+       * @returns {object} An object with the facet parameters
+       * @since 2.36.0
+       */
+      getFacetQueryForQueryService: function (fields) {
+        const facetFields = this.getFacetFields(fields);
+        return {
+          facet: true,
+          facetMincount: 1,
+          facetLimit: -1,
+          facets: facetFields,
+          extraParams: {
+            "facet.sort": "count",
+          },
+        };
       },
 
       //Check for spaces in a string - we'll use this to url encode the query
@@ -1096,16 +1152,6 @@ define([
 
         //Check for a space character
         if (value.indexOf(" ") > -1) {
-          return true;
-        }
-
-        //Check if this is an account subject string
-        var LDAPSubjectRegEx =
-            /(uid=|UID=|cn=|CN=).+([a-zA-Z]=).+([a-zA-Z]=).*/,
-          ORCIDRegEx =
-            /^http\:\/\/orcid\.org\/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9X]{4}/;
-
-        if (LDAPSubjectRegEx.exec(value) || ORCIDRegEx.exec(value)) {
           return true;
         }
 

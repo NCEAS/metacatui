@@ -71,7 +71,7 @@ define([
         try {
           MapAsset.prototype.initialize.call(this, attributes, options);
 
-          this.createCesiumModel();
+          this.createCesiumModelWhenVisible();
         } catch (error) {
           console.log(
             "There was an error initializing a CesiumTerrain model" +

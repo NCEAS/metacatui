@@ -1185,6 +1185,8 @@ define([
           emlString += this.formatXML(rootEMLNode);
         });
 
+        emlString = this.revertSourcedToSource(emlString);
+
         return emlString;
       },
 
@@ -2167,10 +2169,7 @@ define([
         // Set base attributes
         eml.attr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         eml.attr("xmlns:stmml", "http://www.xml-cml.org/schema/stmml-1.1");
-        eml.attr(
-          "xsi:schemaLocation",
-          "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd",
-        );
+        this.setSchemaLocation(eml);
         eml.attr("packageId", this.get("id"));
         eml.attr("system", emlSystem);
 
@@ -2187,14 +2186,29 @@ define([
 
       /**
        * Replace elements named "source" with "sourced" due to limitations with
-       * using $.parseHTML() rather than $.parseXML()
+       * using $.parseHTML() rather than $.parseXML(). In HTML <source> is
+       * treated as a void element a closing tag so any <source>…</source> will
+       * have the closing tag removed upon parsing. To avoid this problem, we
+       * replace <source> with <sourced> before parsing, and then revert it back
+       * to <source> before saving to the server.
        * @param {string} xmlString The XML string to make the replacement in
        * @returns {string} The cleaned up XML string
        */
       cleanUpXML(xmlString) {
-        xmlString.replace("<source>", "<sourced>");
-        xmlString.replace("</source>", "</sourced>");
+        xmlString = xmlString.replace(/<source>/g, "<sourced>");
+        xmlString = xmlString.replace(/<\/source>/g, "</sourced>");
+        return xmlString;
+      },
 
+      /**
+       * Revert elements named "sourced" back to "source" before saving to the
+       * server. See cleanUpXML() for more info.
+       * @param {string} xmlString The XML string in which to make the replacement
+       * @returns {string} The cleaned up XML string
+       */
+      revertSourcedToSource(xmlString) {
+        xmlString = xmlString.replace(/<sourced>/g, "<source>");
+        xmlString = xmlString.replace(/<\/sourced>/g, "</source>");
         return xmlString;
       },
 
@@ -2373,33 +2387,31 @@ define([
        * @returns {Element} The element, possibly modified
        */
       setSchemaLocation(eml) {
-        if (!MetacatUI || !MetacatUI.appModel) {
-          return eml;
-        }
+        if (!MetacatUI || !MetacatUI.appModel) return eml;
 
-        const current = $(eml).attr("xsi:schemaLocation");
-        const format = MetacatUI.appModel.get("editorSerializationFormat");
         const location = MetacatUI.appModel.get("editorSchemaLocation");
 
         // Return now if we can't do anything anyway
-        if (!format || !location) {
+        if (!location) return eml;
+
+        const format = MetacatUI.appModel.get("editorSerializationFormat");
+        const current = $(eml).attr("xsi:schemaLocation")?.trim();
+        const isString = current && typeof current === "string";
+        // Must be even: a namespace URI plus the schema location
+        const hasEvenNumber = current?.split(/\s+/).length % 2 === 0 || false;
+
+        // Don't append if it's already present and valid
+        if (isString && hasEvenNumber && current?.includes(format)) return eml;
+
+        // If there is already a valid location but is missing this format,
+        // append it
+        if (current && isString && hasEvenNumber) {
+          $(eml).attr("xsi:schemaLocation", `${current} ${location}`);
           return eml;
         }
 
-        // Simply add if the attribute isn't present to begin with
-        if (!current || typeof current !== "string") {
-          $(eml).attr("xsi:schemaLocation", `${format} ${location}`);
-
-          return eml;
-        }
-
-        // Don't append if it's already present
-        if (current.indexOf(format) >= 0) {
-          return eml;
-        }
-
-        $(eml).attr("xsi:schemaLocation", `${current} ${location}`);
-
+        // In all other cases, set the schema location to just this format
+        $(eml).attr("xsi:schemaLocation", location);
         return eml;
       },
 

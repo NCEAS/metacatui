@@ -367,11 +367,10 @@ define([
         chartContainer.className = "metric-chart";
         // Prepend to modal-body
         this.$el.find(".modal-body").prepend(chartContainer);
-        var metricCount = MetacatUI.appView.currentView.metricsModel.get(
-          this.metricName.toLowerCase(),
-        );
-        var metricMonths =
-          MetacatUI.appView.currentView.metricsModel.get("months");
+        const metricsModel =
+          MetacatUI.appView.currentView.metricsModel || this.metricsModel;
+        var metricCount = metricsModel.get(this.metricName.toLowerCase());
+        var metricMonths = metricsModel.get("months");
         var metricName = this.metricName;
 
         //Draw a metric chart

@@ -16,23 +16,7 @@
 						<span>Sign in with ORCID</span>
 					</a>
 				</div>
-		<% } if(MetacatUI.appModel.get("enableLdapSignIn")) { %>
-
-			<div class="accordion" id="advanced-login">
-				<div class="accordion-heading center">
-					<a class="accordion-toggle" data-toggle="collapse" data-parent="#advanced-login" href="#signinLdap">
-	        			Have an existing account?
-	      			</a>
-				</div>
-				<div id="signinLdap" class="accordion-body <% if(collapseLdap) { %> collapse <% } %>">
-					 <div class="accordion-inner center">
-
-						 <%=ldapLoginForm%>
-
-					</div>
-				</div>
-			</div>
-		<% } %>
+		 <% } %>
 	</div>
   <% if( MetacatUI.appModel.get("showSignInHelp") ){ %>
   <div class="modal-footer center">

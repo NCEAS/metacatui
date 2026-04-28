@@ -6,6 +6,7 @@ define([
   "models/Search",
   "models/MetricsModel",
   "common/Utilities",
+  "common/QueryService",
   "views/SearchResultView",
   "views/searchSelect/BioontologySelectView",
   "text!templates/search.html",
@@ -24,6 +25,7 @@ define([
   SearchModel,
   MetricsModel,
   Utilities,
+  QueryService,
   SearchResultView,
   BioontologySelectView,
   CatalogTemplate,
@@ -75,12 +77,6 @@ define([
       mainContentTemplate: _.template(MainContentTemplate),
       currentFilterTemplate: _.template(CurrentFilterTemplate),
       loadingTemplate: _.template(LoadingTemplate),
-      metricStatTemplate: _.template(
-        "<span class='metric-icon'> <i class='icon" +
-          " <%=metricIcon%>'></i> </span>" +
-          "<span class='metric-value'> <i class='icon metric-icon'>" +
-          "</i> </span>",
-      ),
 
       // Search mode
       mode: "map",
@@ -1710,50 +1706,39 @@ define([
 
         const viewRef = this;
 
-        // Create the facet query by using our current search query
-        const facetQuery = `q=${
-          this.searchResults.currentquery
-        }&rows=0${this.searchModel.getFacetQuery(category)}&wt=json&`;
+        const facetQuery = this.searchModel.getFacetQueryForQueryService();
+        const solrOpts = { ...facetQuery, rows: 0, q: facetQuery };
 
-        // If we've cached these filter results, then use the cache instead of sending a new request
+        // Use cached results if available
+        const cacheKey = QueryService.toQueryString(solrOpts);
         if (!MetacatUI.appSearchModel.autocompleteCache)
           MetacatUI.appSearchModel.autocompleteCache = {};
-        else if (MetacatUI.appSearchModel.autocompleteCache[facetQuery]) {
+        else if (MetacatUI.appSearchModel.autocompleteCache[cacheKey]) {
           this.setupAutocomplete(
             input,
-            MetacatUI.appSearchModel.autocompleteCache[facetQuery],
+            MetacatUI.appSearchModel.autocompleteCache[cacheKey],
           );
           return;
         }
 
-        // Get the facet counts for the autocomplete
-        const requestSettings = {
-          url: MetacatUI.appModel.get("queryServiceUrl") + facetQuery,
-          type: "GET",
-          dataType: "json",
-          success(data, textStatus, xhr) {
+        // save the fields we want to get facets for
+        const facetFields = [...facetQuery.facets];
+
+        // Query facets using QueryService
+        QueryService.queryWithFetch(solrOpts)
+          .then((data) => {
             let suggestions = [];
             const facetLimit = 999;
 
-            // Get all the facet counts
-            _.each(category.split(","), (c) => {
-              if (typeof c === "string") c = [c];
-              _.each(c, (thisCategory) => {
-                // Get the field name(s)
-                let fieldNames =
-                  MetacatUI.appSearchModel.facetNameMap[thisCategory];
-                if (typeof fieldNames === "string") fieldNames = [fieldNames];
-
-                // Get the facet counts
-                _.each(fieldNames, (fieldName) => {
-                  suggestions.push(data.facet_counts.facet_fields[fieldName]);
-                });
-              });
+            // Collect facet arrays in the same order as fields
+            facetFields.forEach((fieldName) => {
+              const arr = data?.facet_counts?.facet_fields?.[fieldName];
+              if (Array.isArray(arr)) suggestions.push(arr);
             });
             suggestions = _.flatten(suggestions);
 
-            // Format the suggestions
-            const rankedSuggestions = new Array();
+            // Format suggestions: [value, count, value, count, ...]
+            const rankedSuggestions = [];
             for (
               let i = 0;
               i < Math.min(suggestions.length - 1, facetLimit);
@@ -1768,26 +1753,19 @@ define([
               }
 
               // Push the autocomplete item to the array
-              rankedSuggestions.push({
-                value: suggestions[i],
-                label,
-              });
+              rankedSuggestions.push({ value: suggestions[i], label });
             }
 
             // Save these facets in the app so we don't have to send another query
-            MetacatUI.appSearchModel.autocompleteCache[facetQuery] =
+            MetacatUI.appSearchModel.autocompleteCache[cacheKey] =
               rankedSuggestions;
-
             // Now setup the actual autocomplete menu
             viewRef.setupAutocomplete(input, rankedSuggestions);
-          },
-        };
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
+          })
+          .catch((err) => {
+            // Fail silently for autocomplete
+            console.warn("Autocomplete facet query failed", err);
+          });
       },
 
       setupAutocomplete(input, rankedSuggestions) {
@@ -2732,24 +2710,27 @@ define([
         searchModelClone.set("geohashes", this.markerGeohashes);
 
         // Now run a query to get a list of documents that are represented by our markers
-        const query =
-          `q=${searchModelClone.getQuery()}&fl=id,title,geohash_9,abstract,geohash_${geohashLevel}&rows=1000` +
-          `&wt=json`;
-
-        const requestSettings = {
-          url: MetacatUI.appModel.get("queryServiceUrl") + query,
-          success(data, textStatus, xhr) {
-            const { docs } = data.response;
+        QueryService.queryWithFetch({
+          q: searchModelClone.getQuery(),
+          fields: [
+            "id",
+            "title",
+            "geohash_9",
+            "abstract",
+            `geohash_${geohashLevel}`,
+          ],
+          rows: 1000,
+        })
+          .then((data) => {
+            const docs = QueryService.parseResponse(data);
             let uniqueGeohashes = viewRef.markerGeohashes;
 
             // Create a marker and infoWindow for each document
-            _.each(docs, (doc, key, list) => {
-              let marker;
+            docs.forEach((doc) => {
               const drawMarkersAt = [];
 
-              // Find the tile place that this document belongs to
               // For each geohash value at the current geohash level for this document,
-              _.each(doc.geohash_9, (geohash, key, list) => {
+              doc.geohash_9.forEach((geohash) => {
                 // Loop through each unique tile location to find its match
                 for (let i = 0; i <= uniqueGeohashes.length; i++) {
                   if (uniqueGeohashes[i] == geohash.substr(0, geohashLevel)) {
@@ -2759,7 +2740,7 @@ define([
                 }
               });
 
-              _.each(drawMarkersAt, function (markerGeohash, key, list) {
+              _.each(drawMarkersAt, (markerGeohash) => {
                 const decodedGeohash = nGeohash.decode(markerGeohash);
                 const latLng = new google.maps.LatLng(
                   decodedGeohash.latitude,
@@ -2769,23 +2750,19 @@ define([
                 // Set up the options for each marker
                 const markerOptions = {
                   position: latLng,
-                  icon: this.mapModel.get("markerImage"),
+                  icon: viewRef.mapModel.get("markerImage"),
                   zIndex: 99999,
                   map: viewRef.map,
                 };
 
                 // Create the marker and add to the map
-                const marker = new google.maps.Marker(markerOptions);
+                new google.maps.Marker(markerOptions);
               });
             });
-          },
-        };
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
+          })
+          .catch((err) => {
+            console.warn("Marker query failed", err);
+          });
       },
 
       /**
@@ -2810,21 +2787,20 @@ define([
         searchModelClone.set("geohashes", this.tileGeohashes);
 
         // Now run a query to get a list of documents that are represented by our tiles
-        const query =
-          `q=${searchModelClone.getQuery()}&fl=id,title,geohash_9,${geohashName}&rows=1000` +
-          `&wt=json`;
-
-        const requestSettings = {
-          url: MetacatUI.appModel.get("queryServiceUrl") + query,
-          success(data, textStatus, xhr) {
+        QueryService.queryWithFetch({
+          q: searchModelClone.getQuery(),
+          fields: `id,title,geohash_9,${geohashName}`,
+          rows: 1000,
+        })
+          .then((data) => {
             // Make an infoWindow for each doc
             const { docs } = data.response;
 
             // For each tile, loop through the docs to find which ones to include in its infoWindow
-            _.each(viewRef.tiles, (tile, key, list) => {
+            _.each(viewRef.tiles, (tile) => {
               let infoWindowContent = "";
 
-              _.each(docs, (doc, key, list) => {
+              _.each(docs, (doc) => {
                 const docGeohashes = doc[geohashName];
 
                 if (docGeohashes) {
@@ -2871,7 +2847,7 @@ define([
                 "click",
                 function (clickEvent) {
                   // --- We are at max zoom, display an infowindow ----//
-                  if (this.mapModel.isMaxZoom(viewRef.map)) {
+                  if (viewRef.mapModel.isMaxZoom(viewRef.map)) {
                     // Find the infowindow that belongs to this tile in the view
                     infoWindow.open(viewRef.map);
                     infoWindow.isOpen = true;
@@ -2904,14 +2880,10 @@ define([
             });
 
             viewRef.infoWindows = infoWindows;
-          },
-        };
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
+          })
+          .catch((err) => {
+            console.warn("Tile info windows query failed", err);
+          });
       },
 
       /**
@@ -3003,7 +2975,7 @@ define([
         }
 
         // After all the results are loaded, query for our facet counts in the background
-        // this.getAutocompletes();
+        this.getAutocompletes();
       },
 
       renderAll() {

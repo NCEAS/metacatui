@@ -434,6 +434,43 @@ define([
       },
 
       /**
+       * Fetches the system metadata for all member models that are marked as
+       * placeholder documents (i.e., isPlaceHolder_b === true). This property
+       * is retrieved from Solr and indicates that the file ID is referenced in
+       * a resource map, but has either not yet been indexed or is missing from
+       * the repository.
+       * @returns {Promise} A promise that resolves when all placeholder member
+       * models have been fetched.
+       * @since 2.36.2
+       */
+      async fetchSysMetaForPlaceholders() {
+        const placeholder_prop = "isPlaceHolder_b";
+        const placeholder_models = this.filter(
+          (model) => model.get(placeholder_prop) === true,
+        );
+        await this.fetchMemberModels(placeholder_models);
+      },
+
+      /**
+       * Checks whether any member models are missing files
+       * @returns {boolean} True if any member models are missing files
+       * @since 2.36.2
+       */
+      missingFilesDetected() {
+        return this.some((model) => model.fileDoesNotExist());
+      },
+
+      /**
+       * Returns an array of member models that are missing files
+       * @returns {Backbone.Model[]} An array of member models that are missing
+       * files
+       * @since 2.36.2
+       */
+      getMissingFileModels() {
+        return this.filter((model) => model.fileDoesNotExist());
+      },
+
+      /**
        * Fetches member models in batches to avoid fetching all members
        * simultaneously.
        * @param {Backbone.Model[]} models The array of member models to fetch.
@@ -555,8 +592,13 @@ define([
           // Wait for whichever finishes first
           return await Promise.race([fetchPromise, timerPromise]);
         } catch (err) {
-          // Retry if we still have attempts left
-          if (attempt >= maxRetries - 1) {
+          // Retry if we still have attempts left and the type of error makes
+          // sense to retry
+          const dontRetryErrors = [401, 403, 404, 410];
+          if (
+            attempt >= maxRetries - 1 ||
+            dontRetryErrors.includes(memberModel.get("errorStatus"))
+          ) {
             throw err;
           }
           // Recursively call ourselves with an incremented attempt count
@@ -681,8 +723,12 @@ define([
                 resolve(model);
               });
             },
-            error: (m, response) => {
-              reject(new Error(response?.statusText || "Model fetch failed"));
+            error: (_m, response) => {
+              model.set("errorStatus", response.status);
+              model.set("errorMessage", response.statusText);
+              reject(new Error(response.statusText || "Fetch failed"), {
+                cause: response,
+              });
             },
           });
         });
@@ -752,35 +798,31 @@ define([
           const fetchOptions = _.extend({ dataType: "text" }, options);
 
           const thisPackage = this;
-
-          // Function to retry fetching with user login details if the initial
-          // fetch fails
-          const retryFetch = () => {
+          // If the initial fetch fails, retry with user login details
+          fetchOptions.error = () => {
             // Add the authorization options
             const authFetchOptions = _.extend(
               fetchOptions,
               MetacatUI.appUserModel.createAjaxSettings(),
             );
-
+            authFetchOptions.error = () => {
+              // If the fetch fails even with user login details, trigger a
+              // fetchFailed event on this package
+              thisPackage.trigger("fetchFailed", thisPackage);
+              reject();
+            };
+            authFetchOptions.success = () => {
+              resolve();
+            };
             // Fetch the resource map RDF XML with user login details
-            return Backbone.Collection.prototype.fetch
-              .call(thisPackage, authFetchOptions)
-              .fail(() => {
-                thisPackage.trigger("fetchFailed", thisPackage);
-                reject();
-              });
+            return Backbone.Collection.prototype.fetch.call(
+              thisPackage,
+              authFetchOptions,
+            );
           };
 
           // Fetch the resource map RDF XML
-          Backbone.Collection.prototype.fetch
-            .call(this, fetchOptions)
-            .done(() => resolve())
-            .fail(() => {
-              // If the initial fetch fails, retry with user login details
-              retryFetch()
-                .done(() => resolve())
-                .fail(() => reject());
-            });
+          Backbone.Collection.prototype.fetch.call(this, fetchOptions);
         });
       },
 

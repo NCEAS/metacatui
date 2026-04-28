@@ -79,9 +79,6 @@ define([
        * visibility value according to the portal configuration and ignoring any
        * search query parameters in the URL which can affect the layer's initial
        * visibility.
-       * @property {boolean} [originalVisibility = true] Tracks the original
-       * visibility value according to search query parameters and portal
-       * configuration.
        * @property {AssetColorPalette} [colorPalette] The color or colors mapped to
        * attributes of this asset. This applies to raster/imagery and vector assets. For
        * imagery, the colorPalette will be used to create a legend. For vector assets
@@ -126,7 +123,6 @@ define([
           saturation: 1,
           visible: true,
           configuredVisibility: true,
-          originalVisibility: true,
           colorPalette: null,
           customProperties: {},
           featureTemplate: {},
@@ -368,22 +364,30 @@ define([
           }
         }
 
-        this.on("change:visible", () => {
-          if (!this.get("mapModel")?.get("showShareUrl")) return;
-
-          this.get("mapModel")
-            .get("allLayers")
-            .forEach((layer) => {
-              const layerId = layer.get("layerId");
-              if (layerId && layer.get("visible")) {
-                SearchParams.addEnabledLayer(layerId);
-              } else {
-                SearchParams.removeEnabledLayer(layerId);
-              }
-            });
-        });
-
         this.setListeners();
+      },
+
+      /**
+       * Create the Cesium model for this asset, if it doesn't already exist and
+       * the asset is visible. If not visible, then wait until it becomes
+       * visible to create the model.
+       * @since 2.36.0
+       */
+      createCesiumModelWhenVisible() {
+        if (this.get("visible") && !this.get("cesiumModel")) {
+          this.createCesiumModel();
+        } else {
+          let visibilityListener = new Backbone.Model();
+          visibilityListener.listenToOnce(this, "change:visible", () => {
+            if (!this.get("cesiumModel")) {
+              this.createCesiumModel();
+              if (visibilityListener) {
+                visibilityListener.stopListening(this);
+                visibilityListener = null;
+              }
+            }
+          });
+        }
       },
 
       /**
@@ -423,8 +427,18 @@ define([
        * @since 2.27.0
        */
       handleError() {
-        this.set("visible", false);
+        const visibilityBeforeError = this.get("visible");
         this.stopListening(this, "change:visible");
+        this.set({ visible: false, visibilityBeforeError });
+        let errorListener = new Backbone.Model();
+        errorListener.listenTo(this, "change:status", () => {
+          if (this.get("status") !== "error") {
+            this.set("visible", this.get("visibilityBeforeError"));
+            this.setListeners();
+            errorListener.stopListening(this);
+            errorListener = null;
+          }
+        });
       },
 
       /**
@@ -432,21 +446,45 @@ define([
        * @since 2.27.0
        */
       setListeners() {
-        const status = this.get("status");
-        if (status === "error") {
-          this.handleError();
-          return;
-        }
+        const model = this;
 
-        const vis = this.get("originalVisibility");
-        if (typeof vis === "boolean") {
-          this.set("visible", vis);
-        }
-
-        // The map asset cannot be visible on the map if there was an error
-        // loading the asset
+        // Listen for changes to the status
         this.stopListening(this, "change:status");
-        this.listenTo(this, "change:status", this.setListeners);
+        this.listenTo(this, "change:status", () => {
+          const status = this.get("status");
+          if (status === "error") {
+            this.handleError();
+          }
+        });
+
+        if (this.get("status") === "error") return;
+
+        // Create a model for only listening to visibility changes, since we
+        // alter the main model's visibility listener in other cases.
+        let existingListener = this.get("visibilityListener");
+        if (existingListener) {
+          existingListener.stopListening(model);
+          this.set("visibilityListener", null);
+          existingListener = null;
+        }
+        const visibilityListener = new Backbone.Model();
+        this.set("visibilityListener", visibilityListener);
+        // When the visibility of the layer changes, update the search params
+        // (for URL sharing)
+        visibilityListener.listenTo(model, "change:visible", () => {
+          if (!model.get("mapModel")?.get("showShareUrl")) return;
+          model
+            .get("mapModel")
+            .get("allLayers")
+            .forEach((layer) => {
+              const layerId = layer.get("layerId");
+              if (layerId && layer.get("visible")) {
+                SearchParams.addEnabledLayer(layerId);
+              } else {
+                SearchParams.removeEnabledLayer(layerId);
+              }
+            });
+        });
 
         // Listen for changes to the cesiumOptions object
         this.stopListening(this, "change:cesiumOptions");

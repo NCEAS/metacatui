@@ -14,12 +14,21 @@ MetacatUI.AppConfig = Object.assign(
     nodeId: "urn:node:ARCTIC",
 
     //Metadata quality
-    mdqSuiteIds: ["arctic.data.center.suite-1.2.0", "FAIR-suite-0.4.0"],
+    mdqSuiteIds: [
+      "arctic.data.center.suite-1.2.0",
+      "FAIR-suite-0.5.0",
+      "data-suite-0.2.0",
+    ],
     mdqSuiteLabels: [
       "Arctic Data Center Conformance Suite v1.2",
-      "FAIR Suite v0.4.0",
+      "FAIR Suite v0.5.0",
+      "Data Suite v0.2.0",
     ],
-    mdqFormatIds: ["eml*", "https://eml*"],
+    mdqFormatIds: [
+      "eml*",
+      "https://eml*",
+      "science-on-schema.org/Dataset;ld+json",
+    ],
     displayDatasetQualityMetric: true,
 
     //Portals
@@ -269,6 +278,7 @@ MetacatUI.AppConfig = Object.assign(
     trustedContentSources: [
       "https://*arcticdata.io",
       "https://cosima.nceas.ucsb.edu*",
+      "https://shirlysteph.github.io/salmon-storymap/",
     ],
   },
   MetacatUI.AppConfig || {},

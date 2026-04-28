@@ -70,6 +70,7 @@
     "./js/specs/unit/common/IconUtilities.spec.js",
     "./js/specs/unit/common/SearchParams.spec.js",
     "./js/specs/unit/common/EventLog.spec.js",
+    "./js/specs/unit/common/QueryService.spec.js",
     "./js/specs/unit/models/maps/AssetCategory.spec.js",
     "./js/specs/unit/collections/maps/AssetCategories.spec.js",
     "./js/specs/unit/models/maps/Map.spec.js",
@@ -101,7 +102,8 @@
     "./js/specs/unit/models/accordion/Accordion.spec.js",
     "./js/specs/unit/models/accordion/AccordionItem.spec.js",
     "./js/specs/unit/views/DataItemView.spec.js",
-    "./js/specs/unit/views/metadata/EML211EditorView.spec.js"
+    "./js/specs/unit/views/metadata/EML211EditorView.spec.js",
+    "./js/specs/unit/models/UserModel.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",

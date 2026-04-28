@@ -181,7 +181,7 @@ define(["jquery", "underscore", "backbone", "d3"], function (
         .axis()
         .scale(this.y)
         .orient("left")
-        .innerTickSize(["-" + this.width]);
+        .innerTickSize([-this.width]);
 
       if (log) yAxis.ticks(0, ".1s");
 

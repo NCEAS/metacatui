@@ -35,7 +35,6 @@ define([
           searchModel: null,
           searchResults: null,
           loggedIn: false,
-          ldapError: false, // Was there an error logging in to LDAP
           registered: false,
           isMemberOf: [],
           isOwnerOf: [],
@@ -486,36 +485,6 @@ define([
         this.set("checked", true);
       },
 
-      loginLdap(formData, success, error) {
-        if (!formData || !appModel.get("signInUrlLdap")) return false;
-
-        const model = this;
-
-        const requestSettings = {
-          type: "POST",
-          url: MetacatUI.appModel.get("signInUrlLdap") + window.location.href,
-          data: formData,
-          success(data, textStatus, xhr) {
-            if (success) success(this);
-
-            model.getToken();
-          },
-          error() {
-            /* if(error)
-						error(this);
-					*/
-            model.getToken();
-          },
-        };
-
-        $.ajax(
-          _.extend(
-            requestSettings,
-            MetacatUI.appUserModel.createAjaxSettings(),
-          ),
-        );
-      },
-
       logout() {
         // Construct the sign out url and redirect
         let signOutUrl = MetacatUI.appModel.get("signOutUrl");
@@ -649,6 +618,23 @@ define([
        */
       getTokenPromise(timeout = 5000) {
         const model = this;
+        const numTimeouts = model.get("tokenTimeoutCounter") || 0;
+        if (numTimeouts > 3) {
+          // If the request is continually timing out, stop trying
+          this.set("tokenChecked", true);
+          // Assuming a server error could resolve itself, allow rechecking
+          // after a reasonable amount of time
+          const fiveMins = 5 * 60 * 1000;
+          setTimeout(() => {
+            model.set("tokenChecked", false);
+            this.set("tokenTimeoutCounter", 0);
+          }, fiveMins);
+          return Promise.reject(new Error("token check failed too many times"));
+        } else if (numTimeouts > 0) {
+          // Give more time for the next request to resolve if we've already had
+          // some timeouts
+          timeout = timeout * Math.pow(2, numTimeouts);
+        }
         return new Promise((resolve, reject) => {
           const listenModel = new Backbone.Model();
           const stopListenModel = () => {
@@ -667,6 +653,10 @@ define([
             setTimeout(() => {
               stopListenModel();
               reject(new Error("token check timed out"));
+              model.set(
+                "tokenTimeoutCounter",
+                (model.get("tokenTimeoutCounter") || 0) + 1,
+              );
             }, timeout);
           }
           model.getToken();
@@ -906,54 +896,9 @@ define([
           success(data, textStatus, xhr) {
             if (typeof onSuccess === "function")
               onSuccess(data, textStatus, xhr);
-
             model.getInfo();
           },
-          error(xhr, textStatus, error) {
-            // Check if the username might have been spelled or formatted incorrectly
-            // ORCIDs, in particular, have different formats that we should account for
-            if (
-              xhr.responseText.indexOf("LDAP: error code 32 - No Such Object") >
-                -1 &&
-              model.isOrcid(otherUsername)
-            ) {
-              if (otherUsername.length == 19)
-                model.addMap(
-                  `http://orcid.org/${otherUsername}`,
-                  onSuccess,
-                  onError,
-                );
-              else if (otherUsername.indexOf("https://orcid.org") == 0)
-                model.addMap(
-                  otherUsername.replace("https", "http"),
-                  onSuccess,
-                  onError,
-                );
-              else if (otherUsername.indexOf("orcid.org") == 0)
-                model.addMap(`http://${otherUsername}`, onSuccess, onError);
-              else if (otherUsername.indexOf("www.orcid.org") == 0)
-                model.addMap(
-                  otherUsername.replace("www.", "http://"),
-                  onSuccess,
-                  onError,
-                );
-              else if (otherUsername.indexOf("http://www.orcid.org") == 0)
-                model.addMap(
-                  otherUsername.replace("www.", ""),
-                  onSuccess,
-                  onError,
-                );
-              else if (otherUsername.indexOf("https://www.orcid.org") == 0)
-                model.addMap(
-                  otherUsername.replace("https://www.", "http://"),
-                  onSuccess,
-                  onError,
-                );
-              else if (typeof onError === "function")
-                onError(xhr, textStatus, error);
-            } else if (typeof onError === "function")
-              onError(xhr, textStatus, error);
-          },
+          error: onError,
         };
 
         $.ajax(
@@ -992,12 +937,6 @@ define([
             MetacatUI.appUserModel.createAjaxSettings(),
           ),
         );
-      },
-
-      failedLdapLogin() {
-        this.set("loggedIn", false);
-        this.set("checked", true);
-        this.set("ldapError", true);
       },
 
       pluckIdentityUsernames() {

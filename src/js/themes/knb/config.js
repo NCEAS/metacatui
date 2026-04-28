@@ -14,7 +14,6 @@ MetacatUI.AppConfig = Object.assign(
     googleAnalyticsKey: "G-JK039KFNBC",
     repositoryName: "KNB",
     nodeId: "urn:node:KNB",
-    enableLdapSignIn: true,
 
     //Editor
     emlEditorRequiredFields: {
@@ -80,9 +79,11 @@ MetacatUI.AppConfig = Object.assign(
 
     //Metadata assessments
     displayDatasetQualityMetric: true,
-    mdqSuiteIds: ["FAIR-suite-0.4.0"],
-    mdqSuiteLabels: ["FAIR Suite v0.4.0"],
-    mdqFormatIds: ["eml*", "https://eml*"],
+    mdqFormatIds: [
+      "eml*",
+      "https://eml*",
+      "science-on-schema.org/Dataset;ld+json",
+    ],
 
     //Portals
     hideSummaryCitationsChart: false,

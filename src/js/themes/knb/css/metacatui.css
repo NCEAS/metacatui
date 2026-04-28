@@ -3117,15 +3117,6 @@ iframe classes
 * Metrics Controller Styling
 ********************************************/
 
-.edit-toolbar
-  > #metadata-controls-container
-  > .metadata-controls-container
-  > a {
-  margin-left: 0px;
-  margin-right: 15px;
-  width: 138px;
-}
-
 /******************************************
 * Metric Modal Chart (Views, Downloads, Citations)
 ********************************************/

@@ -264,120 +264,86 @@ define(["jquery", "jqueryui", "underscore", "backbone"], function (
         });
       },
 
-      orcidGetConcepts: function (uri, callback) {
-        var people = this.get("concepts")[uri];
+      /** @deprecated since 0.0.0 */
+      orcidGetConcepts: function () {},
 
-        if (people) {
-          callback(people);
-          return;
-        } else {
-          people = [];
+      /**
+       * Supplies search results for ORCiDs to autocomplete UI elements
+       * @param {jQuery} request - The jQuery UI autocomplete request object
+       * @param {function} response - The jQuery UI autocomplete response function
+       * @param {Array} [more=[]] - An array of additional results to include
+       * @param {Array} [ignore=[]] - An array of ORCiD IDs to ignore in the
+       * search results
+       * @param {number} [numResults=10] - The number of results to return
+       * @returns {Promise<void>}
+       */
+      async orcidSearch(
+        request,
+        response,
+        more = [],
+        ignore = [],
+        numResults = 10,
+      ) {
+        const baseUrl = MetacatUI.appModel.get("orcidSearchUrl");
+        const searchTerm = request.term?.trim();
+        const rowQuery = `&rows=${numResults || 10}&start=0`;
+
+        if (!baseUrl || !searchTerm) return response(more);
+
+        let ignoreQuery = "";
+
+        if (ignore.length > 0) {
+          const orcidRegex = /^(https?:\/\/orcid\.org\/)?/i;
+          // Expected format: +-orcid:(0000-0002-0879-455X+0000-0001-6238-4490)
+          const ignoreIds = ignore.map((id) =>
+            id.replace(orcidRegex, "").trim(),
+          );
+          ignoreQuery = `+-orcid:(${ignoreIds.join("+")})`;
         }
 
-        var query =
-          MetacatUI.appModel.get("orcidBaseUrl") +
-          uri.substring(uri.lastIndexOf("/"));
-        var model = this;
-        $.get(query, function (data, status, xhr) {
-          // get the orcid info
-          var profile = $(data).find("orcid-profile");
+        const url = `${baseUrl}${searchTerm}${ignoreQuery}${rowQuery}`;
 
-          _.each(profile, function (obj) {
-            var choice = {};
-            choice.label =
-              $(obj).find("orcid-bio > personal-details > given-names").text() +
-              " " +
-              $(obj).find("orcid-bio > personal-details > family-name").text();
-            choice.value = $(obj).find("orcid-identifier > uri").text();
-            choice.desc = $(obj).find("orcid-bio > personal-details").text();
-            people.push(choice);
+        let data;
+
+        try {
+          const orcidResponse = await fetch(url, {
+            headers: { "Content-Type": "application/json" },
           });
-
-          model.get("concepts")[uri] = people;
-
-          // callback with answers
-          callback(people);
-        });
-      },
-
-      /*
-       * Supplies search results for ORCiDs to autocomplete UI elements
-       */
-      orcidSearch: function (request, response, more, ignore) {
-        var people = [];
-
-        if (!ignore) var ignore = [];
-
-        var query = MetacatUI.appModel.get("orcidSearchUrl") + request.term;
-        $.get(query, function (data, status, xhr) {
-          // get the orcid info
-          var profile = $(data).find("orcid-profile");
-
-          _.each(profile, function (obj) {
-            var choice = {};
-            choice.value = $(obj).find("orcid-identifier > uri").text();
-
-            if (_.contains(ignore, choice.value.toLowerCase())) return;
-
-            choice.label =
-              $(obj).find("orcid-bio > personal-details > given-names").text() +
-              " " +
-              $(obj).find("orcid-bio > personal-details > family-name").text();
-            choice.desc = $(obj).find("orcid-bio > personal-details").text();
-            people.push(choice);
-          });
-
-          // add more if called that way
-          if (more) {
-            people = more.concat(people);
+          if (!orcidResponse?.ok) {
+            const reason = await orcidResponse.text();
+            throw new Error(
+              `ORCiD search request failed: ${orcidResponse.status} ${orcidResponse.statusText} - ${reason}`,
+            );
           }
+          data = await orcidResponse.json();
+        } catch (error) {
+          console.error("Error fetching ORCID data: ", error);
+          return response(more);
+        }
 
-          // callback with answers
-          response(people);
+        if ((data["num-found"] || 0) === 0) return response(more);
+
+        const peopleFound = data["expanded-result"] || [];
+
+        const choices = peopleFound.map((result) => {
+          const orcidId = result["orcid-id"];
+          const givenNames = result["given-names"];
+          const familyNames = result["family-names"];
+          const institutionNames = result["institution-name"];
+          return {
+            value: `https://orcid.org/${orcidId}`,
+            label: `${givenNames} ${familyNames}`,
+            desc: institutionNames.join(", "),
+            fullName: `${givenNames} ${familyNames}`,
+          };
         });
+
+        const allResults = more ? more.concat(choices) : choices;
+        response(allResults);
       },
 
-      /*
-       * Gets the bio of a person given an ORCID Updates the given user model
-       * with the bio info from ORCID
-       */
-      orcidGetBio: function (options) {
-        if (!options || !options.userModel) return;
-
-        var orcid = options.userModel.get("username"),
-          onSuccess = options.success || function () {},
-          onError = options.error || function () {};
-
-        $.ajax({
-          url: MetacatUI.appModel.get("orcidSearchUrl") + orcid,
-          type: "GET",
-          //accepts: "application/orcid+json",
-          success: function (data, textStatus, xhr) {
-            // get the orcid info
-            var orcidNode = $(data).find("path:contains(" + orcid + ")"),
-              profile = orcidNode.length
-                ? $(orcidNode).parents("orcid-profile")
-                : [];
-
-            if (!profile.length) return;
-
-            var fullName =
-              $(profile)
-                .find("orcid-bio > personal-details > given-names")
-                .text() +
-              " " +
-              $(profile)
-                .find("orcid-bio > personal-details > family-name")
-                .text();
-            options.userModel.set("fullName", fullName);
-
-            onSuccess(data, textStatus, xhr);
-          },
-          error: function (xhr, textStatus, error) {
-            onError(xhr, textStatus, error);
-          },
-        });
-      },
+      /** @deprecated since 2.36.0 */
+      orcidGetBio: () => {},
 
       /**
        * Using the NSF Award Search API, get a list of grants that match the

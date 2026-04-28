@@ -18,11 +18,11 @@ print(my_string)
 ```
 
 Here is how to make a table:
-| Tables | Are | Cool  |
+| Tables | Are | Cool |
 | ------ | --- | ----- |
-| x      | a   | $1600 |
-| y      | b   | $12   |
-| z      | c   | $1600 |
+| x | a | $1600 |
+| y | b | $12 |
+| z | c | $1600 |
 
 The following is an unordered list:
 
