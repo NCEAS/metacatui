@@ -1578,8 +1578,6 @@ other class: .ui-slider-range */
   width: calc(100% - 60px);
   padding-top: 0;
   color: black;
-  border-bottom: 1px solid
-    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   font-size: 0.825rem;
   font-weight: 400;
   margin: 0 0.5rem;
@@ -1595,8 +1593,6 @@ other class: .ui-slider-range */
   margin: 5px 0 15px 0;
   padding-top: 0;
   color: black;
-  border-bottom: 1px solid
-    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   overflow-y: auto; /* Enable vertical scrolling */
   max-height: 150px; /* Fixed height for the list */
   /* Styling the scrollbar */
