@@ -120,6 +120,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.classList.add(CLASS_NAMES.checkbox);
+        this.checkbox = checkbox;
 
         const titleSpan = document.createElement("span");
         titleSpan.classList.add(CLASS_NAMES.title);
@@ -140,17 +141,22 @@ define(["underscore", "backbone"], (_, Backbone) => {
           gpkg: "Geopackage",
         };
         if (item.tiffDownloadLink == null) delete fileTypeOptions.tif;
+        if (item.pngDownloadLink == null) delete fileTypeOptions.png;
+        if (item.wmtsDownloadLink == null) delete fileTypeOptions.wmts;
         if (item.gpkgDownloadLink == null) delete fileTypeOptions.gpkg;
 
         // Resolution dropdown
         const resolutionDropdownWrapper = document.createElement("div");
         resolutionDropdownWrapper.classList.add(CLASS_NAMES.dropdownWrapper);
 
+        const resolutionDropdownId = `resolution-dropdown-${item.layerID}`;
         const resolutionLabel = document.createElement("label");
         resolutionLabel.textContent =
           downloadPanelView.dropdownOptions.resolution.label;
+        resolutionLabel.htmlFor = resolutionDropdownId;
 
         const resolutionDropdown = document.createElement("select");
+        resolutionDropdown.id = resolutionDropdownId;
         resolutionDropdown.classList.add(
           CLASS_NAMES.dropdown,
           CLASS_NAMES.resolutionDropdown,
@@ -182,11 +188,14 @@ define(["underscore", "backbone"], (_, Backbone) => {
         const fileTypeDropdownWrapper = document.createElement("div");
         fileTypeDropdownWrapper.classList.add(CLASS_NAMES.dropdownWrapper);
 
+        const fileTypeDropdownId = `fileType-dropdown-${item.layerID}`;
         const fileTypeLabel = document.createElement("label");
         fileTypeLabel.textContent =
           downloadPanelView.dropdownOptions.fileType.label;
+        fileTypeLabel.htmlFor = fileTypeDropdownId;
 
         const fileTypeDropdown = document.createElement("select");
+        fileTypeDropdown.id = fileTypeDropdownId;
         fileTypeDropdown.classList.add(
           CLASS_NAMES.dropdown,
           CLASS_NAMES.fileTypeDropdown,
@@ -252,6 +261,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
 
         // Resolution change: enable file-type dropdown, clear its value, update hint
         resolutionDropdown.addEventListener("change", () => {
+          const hadFileTypeSelected = !!view.selectedFileType;
           view.selectedResolution = resolutionDropdown.value;
           fileTypeDropdown.disabled = false;
           fileTypeDropdown.value = defaultFileTypeOption.value;
@@ -259,7 +269,13 @@ define(["underscore", "backbone"], (_, Backbone) => {
           fileSizeInfoBox.textContent = "Select file format to download...";
           fileSizeInfoBox.classList.add("downloads-textbox--warning");
           fileSizeInfoBox.classList.remove("error", "wmts-copy");
-          downloadPanelView.layerSelection();
+          // Only notify the parent if a file type was previously selected —
+          // that's the only case where the save-button state can change (from
+          // enabled back to deactivated). If no file type was selected before,
+          // the save button is already deactivated and no update is needed.
+          if (hadFileTypeSelected) {
+            downloadPanelView.layerSelection();
+          }
         });
 
         // File-type change: recalculate file size and notify parent
