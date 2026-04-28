@@ -20,6 +20,7 @@ define(["backbone", "dataoneNotifications"], (
        * @param {object} [options] View options.
        * @param {string} [options.prefixUrl] Override for the Notification
        * Service URL.
+       * @param {string|false} [options.apiVersion] Override for the API version.
        * @param {string[]} [options.resourceTypes] Override for available
        * resource types.
        */
@@ -34,7 +35,7 @@ define(["backbone", "dataoneNotifications"], (
         this.stopListening(MetacatUI.appModel);
         this.listenTo(
           MetacatUI.appModel,
-          "change:notificationServiceUrl change:notificationServiceResourceTypes",
+          "change:notificationServiceUrl change:notificationServiceApiVersion change:notificationServiceResourceTypes",
           this.resetClient,
         );
         this.listenTo(
@@ -103,9 +104,12 @@ define(["backbone", "dataoneNotifications"], (
           );
         }
 
+        const apiVersion = this.getApiVersion();
+
         const view = this;
         this.client = new DataONENotifications.NotificationClient({
           prefixUrl,
+          apiVersion,
           resourceTypes,
           getToken: () => MetacatUI.appUserModel.getTokenPromise(),
           validatePID: (pid) => view.validatePid(pid),
@@ -142,7 +146,8 @@ define(["backbone", "dataoneNotifications"], (
         event.preventDefault();
         const pid = "pid"; // TODO: Get the PID
         const resourceType = "datasetChanges"; // Fixed resource type for now
-        await this.client.subscribe(pid, resourceType);
+        const client = await this.ensureClient();
+        await client.subscribe({ pid, resourceType });
       },
 
       /**
@@ -153,7 +158,8 @@ define(["backbone", "dataoneNotifications"], (
         event.preventDefault();
         const pid = "pid"; // TODO: Get the PID
         const resourceType = "datasetChanges"; // Fixed resource type for now
-        await this.client.unsubscribe(pid, resourceType);
+        const client = await this.ensureClient();
+        await client.unsubscribe({ pid, resourceType });
       },
 
       /**
@@ -163,7 +169,8 @@ define(["backbone", "dataoneNotifications"], (
       async submitList(event) {
         event.preventDefault();
         const resourceType = "datasetChanges"; // Fixed resource type for now
-        await this.client.getSubscriptions(resourceType);
+        const client = await this.ensureClient();
+        await client.getSubscriptionsByType({ resourceType });
       },
 
       /**
@@ -200,6 +207,18 @@ define(["backbone", "dataoneNotifications"], (
         const override = this.options.prefixUrl;
         const configured = MetacatUI.appModel.get("notificationServiceUrl");
         return override || configured || null;
+      },
+
+      /**
+       * Retrieve the Notification Service API version.
+       * @returns {string|false|undefined} The configured API version. Undefined
+       * allows the notification client to use its default version.
+       */
+      getApiVersion() {
+        if (this.options.apiVersion !== undefined) {
+          return this.options.apiVersion;
+        }
+        return MetacatUI.appModel.get("notificationServiceApiVersion");
       },
 
       /**

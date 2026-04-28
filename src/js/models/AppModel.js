@@ -2327,6 +2327,16 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           notificationServiceUrl: null,
 
           /**
+           * The version of the Notification Service API to use when making
+           * requests.
+           * {@link AppConfig#notificationServiceUrl}.
+           * @type {string}
+           * @default "v1"
+           * @since 0.0.0
+           */
+          notificationServiceApiVersion: "v1",
+
+          /**
            * The set of resource types supported by the Notification Service for this
            * repository. These values are typically the lowercase enum names exposed by the
            * service (for example `datasetChanges`).
