@@ -259,23 +259,20 @@ define(["underscore", "backbone"], (_, Backbone) => {
           downloadPanelView.layerSelection();
         });
 
-        // Resolution change: enable file-type dropdown, clear its value, update hint
+        // Resolution change: enable file-type dropdown, clear its value,
+        // delete stale download links, update hint, recalculate button state
         resolutionDropdown.addEventListener("change", () => {
-          const hadFileTypeSelected = !!view.selectedFileType;
           view.selectedResolution = resolutionDropdown.value;
           fileTypeDropdown.disabled = false;
           fileTypeDropdown.value = defaultFileTypeOption.value;
           view.selectedFileType = "";
+
+          delete downloadPanelView.dataDownloadLinks[item.layerID];
+
           fileSizeInfoBox.textContent = "Select file format to download...";
           fileSizeInfoBox.classList.add("downloads-textbox--warning");
           fileSizeInfoBox.classList.remove("error", "wmts-copy");
-          // Only notify the parent if a file type was previously selected —
-          // that's the only case where the save-button state can change (from
-          // enabled back to deactivated). If no file type was selected before,
-          // the save button is already deactivated and no update is needed.
-          if (hadFileTypeSelected) {
-            downloadPanelView.layerSelection();
-          }
+          downloadPanelView.layerSelection();
         });
 
         // File-type change: recalculate file size and notify parent
