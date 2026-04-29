@@ -4,6 +4,7 @@ define([
   "underscore",
   "backbone",
   "jszip",
+  "common/Utilities",
   "text!templates/maps/download-panel.html",
   "models/connectors/GeoPoints-CesiumPolygon",
   "models/connectors/GeoPoints-CesiumPoints",
@@ -13,6 +14,7 @@ define([
   _,
   Backbone,
   JSZip,
+  Utilities,
   Template,
   GeoPointsVectorData,
   GeoPointsCesiumPoints,
@@ -218,14 +220,14 @@ define([
       tileMatrixSet: "WGS1984Quad",
 
       /**
-       * The file size for tiled data in geotiff format (in KB).
-       * @type {number}
+       * The estimated file size per tile for each format, in bytes.
+       * @type {object}
        */
       fileSizes: {
-        tif: 513,
-        png: 2.7,
-        wmts: 15,
-        gpkg: 180,
+        tif: 525312,  // ~513 KiB per tile
+        png: 2765,    // ~2.7 KiB per tile
+        wmts: 15360,  // ~15 KiB per tile
+        gpkg: 184320, // ~180 KiB per tile
       },
 
       /**
@@ -940,8 +942,8 @@ define([
        * details and file type information.
        * @param {HTMLElement} infoBox - The HTML element where the file size
        * information will be displayed.
-       * @param {number} fileSizeDetails - The size of the file in kilobytes
-       * (KB).
+       * @param {number} fileSizeDetails - The estimated size of the file in
+       * bytes.
        * @param {string} fileType - The type of the file (e.g., "wmts").
        * @param {string} layerID - The ID of the map layer being interacted
        * with.
@@ -984,12 +986,12 @@ define([
         } else {
           const optionalComment =
             "Use WMTS for accessing large data volume or re-draw AOI.";
-          const maxSizeGB = `${(view.downloadSizeLimit / 1e9).toFixed(2)} GB`;
+          const maxSize = Utilities.bytesToSize(view.downloadSizeLimit, 2);
           if (fileSizeDetails > view.downloadSizeLimit) {
-            fileSizeInfoBox.textContent = `Download size is too big ( > ${maxSizeGB}). ${optionalComment}.`;
+            fileSizeInfoBox.textContent = `Download size is too big ( > ${maxSize}). ${optionalComment}.`;
             fileSizeInfoBox.classList.add(CLASS_NAMES.error);
           } else {
-            fileSizeInfoBox.textContent = `Estimated download file size is ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB.`;
+            fileSizeInfoBox.textContent = `Estimated download file size is ≤ ${Utilities.bytesToSize(fileSizeDetails, 2)}.`;
           }
         }
 
@@ -1024,7 +1026,8 @@ define([
        * @param {string} metadataURL - The metadata URL for the layer.
        * @param {string} tiffDownloadLink - The template URL for downloading
        * TIFF tiles.
-       * @returns {number} The total file size for the specified layer in bytes.
+       * @returns {number} The estimated total file size for the specified layer
+       * in bytes.
        */
       getRawFileSize(
         resolution,
@@ -1276,10 +1279,10 @@ define([
 
             // If file size is approximately over a GB then do not download
             if (data.fileSize >= view.downloadSizeLimit) {
-              const maxSizeGB = `${(view.downloadSizeLimit / 1e9).toFixed(2)} GB`;
+              const maxSize = Utilities.bytesToSize(view.downloadSizeLimit, 2);
               view.updateStatusBar({
                 error: true,
-                message: `File size for ${data.layerName} > the max download size, ${maxSizeGB}. Select lower resolution/ draw smaller AOI.`,
+                message: `File size for ${data.layerName} > the max download size, ${maxSize}. Select lower resolution/ draw smaller AOI.`,
               });
               return;
             }
