@@ -2337,14 +2337,32 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           notificationServiceApiVersion: "v1",
 
           /**
-           * The set of resource types supported by the Notification Service for this
-           * repository. These values are typically the lowercase enum names exposed by the
-           * service (for example `datasetChanges`).
-           * @type {string[]}
-           * @default ["datasetChanges", "citations"]
+           * The set of resource types supported by the Notification Service for
+           * this repository, as well as the user-facing label and description
+           * for each resource type.
+           * @type {Array.<{type: string, label: string, description: string}>}
            * @since 0.0.0
            */
-          notificationServiceResourceTypes: ["datasetChanges", "citations"],
+          notificationServiceResourceTypes: [
+            {
+              type: "datasetChanges",
+              label: "Dataset Changes",
+              description:
+                "Get notified when the metadata changes or when files are added, removed, or replaced",
+            },
+            {
+              type: "citations",
+              label: "Citations",
+              description: "Get notified when someone cites the dataset",
+            },
+            // Not yet supported:
+            // {
+            //   type: "downloads",
+            //   label: "Downloads",
+            //   description:
+            //     "Get notified when the dataset or any files within it are downloaded",
+            // },
+          ],
 
           /**
            * The name of the DataONE Plus membership plan, which is used in messaging throughout the UI.

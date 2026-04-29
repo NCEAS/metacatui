@@ -5,6 +5,7 @@ define([
   "models/MetricsModel",
   "views/MetricView",
   "views/citations/CitationModalView",
+  "views/NotificationServiceView",
   "common/Utilities",
 ], (
   $,
@@ -13,6 +14,7 @@ define([
   MetricsModel,
   MetricView,
   CitationModalView,
+  NotificationServiceView,
   Utilities,
 ) => {
   "use strict";
@@ -168,6 +170,7 @@ define([
         // placeholder for future implementation
         notifications: {
           container: CLASS_NAMES.notificationsContainer,
+          id: "notifications-btn",
           render: "renderNotifications",
           text: "Watch",
           icon: "bell",
@@ -234,6 +237,8 @@ define([
       events() {
         const events = {};
         events[`click #${this.buttons.cite.id}`] = "openCitationModal";
+        events[`click #${this.buttons.notifications.id}`] =
+          "openNotificationsModal";
         events[`click #${this.buttons.publish.id}`] = "publish";
         return events;
       },
@@ -325,6 +330,7 @@ define([
           subview.remove();
         });
         this.subviews = [];
+        this.notificationsModal = null;
 
         // Remove all the buttons
         Object.entries(this.buttons).forEach(([name]) =>
@@ -567,11 +573,27 @@ define([
         return dropdownMenu;
       },
 
-      // placeholder for future implementation
+      /**
+       * Render the notifications button when the feature is enabled.
+       * @returns {HTMLElement|null} The rendered button, or null if skipped.
+       */
       renderNotifications() {
-        // Don't render yet
-        return null;
-        // this.renderButton("notifications");
+        if (!APP_GET("enableNotificationService")) return null;
+
+        const button = this.renderButton("notifications");
+        if (!button) return null;
+
+        if (!this.notificationsModal) {
+          const notificationView = new NotificationServiceView({
+            pid: this.viewModel.get("pid"),
+            metadataModel: this.viewModel.get("metadataModel"),
+            buttonEl: button,
+          }).render();
+          this.subviews.push(notificationView);
+          this.notificationsModal = notificationView;
+        }
+
+        return button;
       },
 
       /**
@@ -712,14 +734,18 @@ define([
         if (state === "progress") buttonEl.disabled = true;
       },
 
-      // --------------------------------------------------------
-      // MODEL LOGIC: Methods below belong in a model (TODO)
-      // --------------------------------------------------------
-
       /** Open the citation modal, creating and rendering it if needed. */
       openCitationModal() {
         this.citationModal?.show();
       },
+
+      openNotificationsModal() {
+        this.notificationsModal?.show();
+      },
+
+      // --------------------------------------------------------
+      // MODEL LOGIC: Methods below belong in a model (TODO)
+      // --------------------------------------------------------
 
       /**
        * Check if the current formatId is supported by the metadata quality

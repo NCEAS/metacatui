@@ -621,13 +621,13 @@ define([
         const numTimeouts = model.get("tokenTimeoutCounter") || 0;
         if (numTimeouts > 3) {
           // If the request is continually timing out, stop trying
-          this.set("tokenChecked", true);
+          model.set("tokenChecked", true);
           // Assuming a server error could resolve itself, allow rechecking
           // after a reasonable amount of time
           const fiveMins = 5 * 60 * 1000;
           setTimeout(() => {
             model.set("tokenChecked", false);
-            this.set("tokenTimeoutCounter", 0);
+            model.set("tokenTimeoutCounter", 0);
           }, fiveMins);
           return Promise.reject(new Error("token check failed too many times"));
         } else if (numTimeouts > 0) {
@@ -637,29 +637,58 @@ define([
         }
         return new Promise((resolve, reject) => {
           const listenModel = new Backbone.Model();
+          let timeoutID = null;
+          let settled = false;
+
           const stopListenModel = () => {
             listenModel.stopListening();
             listenModel.destroy();
           };
-          listenModel.listenToOnce(model, "change:error", () => {
+
+          const finish = (callback) => {
+            if (settled) return;
+            settled = true;
+            if (timeoutID !== null) clearTimeout(timeoutID);
             stopListenModel();
-            reject(model.get("error"));
+            callback();
+          };
+
+          listenModel.listenTo(model, "change:error", () => {
+            const error = model.get("error");
+            if (!error) return;
+
+            finish(() => {
+              model.set("tokenTimeoutCounter", 0);
+              reject(error instanceof Error ? error : new Error(error));
+            });
           });
-          listenModel.listenToOnce(model, "change:tokenChecked", () => {
-            stopListenModel();
-            resolve(model.get("token"));
+
+          listenModel.listenTo(model, "change:tokenChecked", () => {
+            if (!model.get("tokenChecked")) return;
+
+            finish(() => {
+              model.set("tokenTimeoutCounter", 0);
+              resolve(model.get("token"));
+            });
           });
+
           if (timeout) {
-            setTimeout(() => {
-              stopListenModel();
-              reject(new Error("token check timed out"));
-              model.set(
-                "tokenTimeoutCounter",
-                (model.get("tokenTimeoutCounter") || 0) + 1,
-              );
+            timeoutID = setTimeout(() => {
+              finish(() => {
+                model.set(
+                  "tokenTimeoutCounter",
+                  (model.get("tokenTimeoutCounter") || 0) + 1,
+                );
+                reject(new Error("token check timed out"));
+              });
             }, timeout);
           }
-          model.getToken();
+
+          if (model.getToken() === false) {
+            finish(() => {
+              reject(new Error("token URL is not configured"));
+            });
+          }
         });
       },
 
