@@ -1578,8 +1578,6 @@ other class: .ui-slider-range */
   width: calc(100% - 60px);
   padding-top: 0;
   color: black;
-  border-bottom: 1px solid
-    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   font-size: 0.825rem;
   font-weight: 400;
   margin: 0 0.5rem;
@@ -1595,8 +1593,6 @@ other class: .ui-slider-range */
   margin: 5px 0 15px 0;
   padding-top: 0;
   color: black;
-  border-bottom: 1px solid
-    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   overflow-y: auto; /* Enable vertical scrolling */
   max-height: 150px; /* Fixed height for the list */
   /* Styling the scrollbar */
@@ -1675,92 +1671,34 @@ other class: .ui-slider-range */
   opacity: 0.6; /* Reduce opacity to make it look disabled */
 }
 
-.download-expansion-panel__title {
-  font-size: 13px; /* Adjust font size */
-  color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
-  flex-grow: 1; /* Allow it to take up all available space */
-  width: 100%; /* Ensure it takes the full width of the parent */
-  text-align: left; /* Adjust text alignment as needed */
-  white-space: nowrap; /* Prevent text from wrapping */
-  overflow: hidden; /* Hide overflow */
-  text-overflow: ellipsis; /* Show "..." if text overflows */
-  padding: 0; /* Ensure no extra padding */
-  margin: 0; /* Ensure it starts from the same left edge */
-}
-
-.download-expansion-panel {
+/* Layer download panel: header row and collapsible content */
+.layer-download__header {
+  display: grid;
+  grid-template-columns: min-content auto min-content;
+  align-items: center;
+  gap: 8px;
   margin-top: 10px;
-  .download-expansion-panel__toggle {
-    display: grid;
-    align-items: center;
-    cursor: pointer;
-    grid-template-columns: min-content auto;
-    padding: 0;
-    border: none;
-    gap: 8px;
-    margin-top: 3px;
-
-    &:hover {
-      background-color: var(--portal-col-primary-1, #15324e);
-      transition: background-color 0.3s ease-in-out;
-    }
-
-    input[type="checkbox"] {
-      margin: 0;
-    }
-  }
-
-  &.show-content {
-    .download-expansion-panel__content {
-      display: block;
-    }
-
-    .icon-caret-down {
-      display: block;
-    }
-
-    .icon-caret-up {
-      display: none;
-    }
-  }
-
-  .icon-caret-down {
-    display: none;
-  }
-
-  .icon-caret-up {
-    display: block;
-  }
-  .download-expansion-panel__icon {
-    fill: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
-    color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
-    height: 2rem;
-    width: 2rem;
-    margin: 0.25rem;
-    margin-right: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .download-expansion-panel__icon > svg {
-    height: 1rem;
-  }
-
-  .download-expansion-panel__icon-toggle {
-    width: 2rem;
-    display: flex;
-    justify-content: center;
-    color: var(--portal-col-neutral-6);
-  }
-
-  .download-expansion-panel__content {
-    display: none;
-    animation: fadeIn 0.3s ease-in-out;
-  }
 }
-.download-expansion-panel__checkbox {
-  margin-right: 8px; /* Adjust spacing as needed */
+
+.layer-download__checkbox {
+  margin: 0 !important;
+  vertical-align: middle;
+}
+
+.layer-download__title {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
+}
+
+.layer-download__content {
+  display: none;
+}
+
+.layer-download.show-content .layer-download__content {
+  display: block;
 }
 
 .downloads-dropdown-container {
@@ -1811,6 +1749,14 @@ other class: .ui-slider-range */
   font-size: 10px;
   min-height: 12px;
   display: block;
+}
+
+.downloads-textbox--warning {
+  color: var(--portal-col-warning, #b45309);
+}
+
+.downloads-textbox--warning::before {
+  content: "\26A0\FE0F  "; /* ⚠ warning sign */
 }
 
 .wmts-copy {

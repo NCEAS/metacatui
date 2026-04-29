@@ -291,7 +291,7 @@ consultation with the designated MetacatUI product owner.
 especially if it may be disruptive to other developers working on the main
 `develop` branch, feature branches should be created.
 
-Feature branches are named as `feature-` + `#{issue}` + `-{short-description}-`.
+Feature branches are named as `feature-` + `{issue}` + `-{short-description}-`.
 With `{issue}` being the Github issue number related to that new feature. e.g.
 `feature-#1456-new-search`.
 
