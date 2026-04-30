@@ -6,7 +6,6 @@ define([
   "models/metadata/eml211/EML211",
   "models/metadata/eml211/EMLOtherEntity",
   "models/metadata/ScienceMetadata",
-  "models/sysmeta/VersionTracker",
   "models/resourceMap/ResourceMapResolver",
   "models/sysmeta/SysMeta",
   "views/EditorView",
@@ -15,6 +14,7 @@ define([
   "views/metadata/EML211View",
   "views/metadata/EMLEntityView",
   "collections/ObjectFormats",
+  "common/Utilities",
 ], (
   $,
   Backbone,
@@ -23,7 +23,6 @@ define([
   EML,
   EMLOtherEntity,
   ScienceMetadata,
-  VersionTracker,
   ResourceMapResolver,
   SysMeta,
   EditorView,
@@ -32,6 +31,7 @@ define([
   EMLView,
   EMLEntityView,
   ObjectFormats,
+  Utilities,
 ) => {
   /**
    * @class EML211EditorView
@@ -423,7 +423,13 @@ define([
        */
       async getDataPackage(model) {
         const metaModel = model || this.model;
-        const versionTracker = VersionTracker.get(); // One tracker per metaservice url
+        const metaServiceUrl = await Utilities.awaitMetacatUI({
+          property: "sysMetaModel",
+        });
+        const resolver = new ResourceMapResolver({
+          metaServiceUrl,
+        });
+        const { versionTracker } = resolver;
         const metaPid =
           metaModel.get("id") ||
           metaModel.get("identifier") ||
@@ -440,7 +446,7 @@ define([
         }
 
         // TODO - get latest version should happen in DataONE object.
-        const latestPid = await versionTracker.getLatestVersion(metaPid, true);
+        const latestPid = await versionTracker.getLatestVersion(metaPid);
         if (latestPid !== metaPid) {
           // MetacatUI.rootDataPackage.packageModel.set("sysMetaXML", null);
           metaModel.set("latestVersion", latestPid);
@@ -448,7 +454,6 @@ define([
           return;
         }
 
-        const resolver = ResourceMapResolver.get();
         const result = await resolver.resolve(metaPid);
 
         // Because we're checking metadata doc write permission asynchronously,
@@ -946,7 +951,7 @@ define([
         const newPid = this.model.get("id");
         const resourceMapId = MetacatUI.rootDataPackage.packageModel.get("id");
         if (resourceMapId && newPid) {
-          const resMapResolver = ResourceMapResolver.get();
+          const resMapResolver = new ResourceMapResolver();
           resMapResolver.addToStorage(newPid, resourceMapId);
         }
 

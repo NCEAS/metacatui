@@ -1,12 +1,15 @@
 /* eslint-disable no-console */
 
 define(["models/analytics/Analytics"], (Analytics) => {
+  // TODO: Implement singletons for different log contexts to avoid
+  // creating multiple EventLog instances throughout the app...
+
   const DEFAULT_MAX_EVENTS = 500;
   const DEFAULT_CONSOLE_LEVEL = "info";
   // The entire Analytics.js file can be blocked by privacy extensions, so
   // we need to check if it exists before using it.
   const DEFAULT_ANALYTICS =
-    MetacatUI?.analytics || Analytics ? new Analytics() : null;
+    globalThis.MetacatUI?.analytics || Analytics ? new Analytics() : null;
 
   const LEVELS = {
     INFO: "info",
@@ -44,6 +47,7 @@ define(["models/analytics/Analytics"], (Analytics) => {
       maxEvents = DEFAULT_MAX_EVENTS,
       analyticsModel = DEFAULT_ANALYTICS,
     } = {}) {
+      this.id = `EventLog_${Date.now()}`;
       this.logs = new Map();
       this.analytics =
         analyticsModel && analyticsModel instanceof Analytics
@@ -203,3 +207,4 @@ define(["models/analytics/Analytics"], (Analytics) => {
 
   return EventLog;
 });
+/* eslint-enable no-console */

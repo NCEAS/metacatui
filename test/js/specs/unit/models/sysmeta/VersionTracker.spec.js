@@ -1,482 +1,886 @@
 define([
   "/test/js/specs/shared/clean-state.js",
   "models/sysmeta/VersionTracker",
-  "models/sysmeta/SysMeta",
-  "localforage",
-], (cleanState, VersionTracker, SysMeta, localforage) => {
+  "models/dataONEServices/SysMetaService",
+], (cleanState, VersionTracker, SysMetaService) => {
   const should = chai.should();
   const expect = chai.expect;
 
-  describe("VersionTracker Test Suite", () => {
+  const makeSysMeta = (nextPid = null, prevPid = null) => ({
+    data: {
+      obsoletedBy: nextPid,
+      obsoletes: prevPid,
+    },
+  });
+
+  const makeDatedSysMeta = ({
+    identifier,
+    dateUploaded,
+    nextPid = null,
+    prevPid = null,
+  }) => ({
+    data: {
+      identifier,
+      dateUploaded,
+      obsoletedBy: nextPid,
+      obsoletes: prevPid,
+    },
+  });
+
+  describe("VersionTracker", () => {
     const state = cleanState(
       () => {
         const sandbox = sinon.createSandbox();
+        const originalMetacatUI = globalThis.MetacatUI;
+        if (!originalMetacatUI) {
+          globalThis.MetacatUI = {
+            root: "",
+            appModel: {
+              get: sandbox.stub().callsFake((key) => {
+                if (key === "metaServiceUrl") return "https://example.org";
+                if (key === "alternateRepositories") return [];
+                return null;
+              }),
+              getActiveAltRepo: sandbox.stub().returns(null),
+              isDOI: sandbox.stub().returns(false),
+            },
+            appUserModel: { get: sandbox.stub().returns(false) },
+            nodeModel: { get: sandbox.stub(), length: 0 },
+          };
+        }
         const vt = new VersionTracker({
           metaServiceUrl: "https://example.org/sysmeta/",
         });
-        // Only stub if not already stubbed
-        if (!SysMeta.prototype.fetch.restore) {
-          sandbox.stub(SysMeta.prototype, "fetch").resolves();
-        }
-        return { vt, sandbox };
+        const service = vt.sysMetaService;
+        sandbox.stub(service, "download");
+        sandbox.stub(service, "isCached").resolves(false);
+        sandbox.stub(service, "removeCached").resolves();
+        sandbox.stub(service, "clearCache").resolves(true);
+        return { sandbox, vt, service, originalMetacatUI };
       },
       beforeEach,
       afterEach,
     );
 
-    after(() => {
-      // Clean up the localforage store after all tests
-      return localforage.clear();
-    });
     afterEach(() => {
-      // Restore the sandbox after each test
       state.sandbox.restore();
-      // Clear the VersionTracker instance
-      state.vt.clear();
-      // Clear the localforage store
-      return localforage.clear();
+      if (typeof state.originalMetacatUI !== "undefined") {
+        globalThis.MetacatUI = state.originalMetacatUI;
+      }
     });
 
-    describe("VersionTracker instantiation", () => {
+    describe("construction and singleton", () => {
       it("throws on invalid TTL", () => {
         expect(() => {
-          new VersionTracker({ ttlMs: -1 });
-        }).to.throw("Invalid TTL provided to VersionTracker");
+          new VersionTracker({ ttlMs: 0, metaServiceUrl: "https://x" });
+        }).to.throw(/ttlMs/i);
+      });
+
+      it("throws on non-finite TTL values", () => {
+        expect(() => {
+          new VersionTracker({ ttlMs: Infinity, metaServiceUrl: "https://x" });
+        }).to.throw(/ttlMs/i);
+        expect(() => {
+          new VersionTracker({ ttlMs: NaN, metaServiceUrl: "https://x" });
+        }).to.throw(/ttlMs/i);
+      });
+
+      it("allows null TTL for non-expiring cache", () => {
+        const vt = new VersionTracker({
+          ttlMs: null,
+          metaServiceUrl: "https://example.org/sysmeta",
+        });
+        expect(vt.ttlMs).to.equal(null);
+        expect(vt.sysMetaService.storageConfig.ttlMs).to.equal(null);
       });
 
       it("throws on invalid maxChainHops", () => {
         expect(() => {
-          new VersionTracker({ maxChainHops: -1 });
+          new VersionTracker({ maxChainHops: 0, metaServiceUrl: "https://x" });
         }).to.throw("Invalid maxChainHops provided to VersionTracker");
       });
 
-      it("throws on invalid maxCacheRecords", () => {
-        expect(() => {
-          new VersionTracker({ maxCacheRecords: -1 });
-        }).to.throw("Invalid maxCacheRecords provided to VersionTracker");
-      });
-
-      it("throws on invalid store", () => {
-        expect(() => {
-          new VersionTracker({ store: {} });
-        }).to.throw(
-          "Invalid store provided to VersionTracker. Must be a localforage instance.",
-        );
-      });
-
-      it("sets up inFlight, locks, and cache", () => {
-        state.vt.inFlight.should.be.instanceof(Map);
-        state.vt.locks.should.be.instanceof(Map);
-        state.vt.cache.should.be.instanceof(Map);
-      });
-
-      it("sets up a persistent store with a unique name", () => {
-        state.vt.store._config.name.should.match(/^vt_[a-f0-9]{32}$/);
-        state.vt.store._config.storeName.should.match(/^vt_[a-f0-9]{32}$/);
-      });
-
-      it("instantiates correctly with valid config", () => {
-        state.vt.should.be.instanceof(VersionTracker);
-        state.vt.metaServiceUrl.should.equal("https://example.org/sysmeta/");
-      });
-
-      it("returns the same instance from VersionTracker.get", () => {
-        const vt1 = VersionTracker.get("https://example.org/sysmeta/");
-        const vt2 = VersionTracker.get("https://example.org/sysmeta/");
-        vt1.should.equal(vt2);
-      });
-    });
-
-    describe("VersionTracker private methods", () => {
-      // fillVersionChain
-      it("fills the version chain with next versions", async () => {
-        const chain = ["chain-pid.1", "chain-pid.2", "chain-pid.3"];
-        const pid0 = chain[0];
-        // mock sysmeta responses
-        state.vt.getSysMeta = sinon.stub().callsFake((pid) => {
-          const i = chain.indexOf(pid);
-          const nextPid = chain[i + 1];
-          const prevPid = chain[i - 1];
-          const data = {
-            data: {
-              obsoletedBy: nextPid || null,
-              obsoletes: prevPid || null,
-            },
-            identifier: pid,
-          };
-          return Promise.resolve(data);
-        });
-
-        // fill the chain
-        await state.vt.fillVersionChain(pid0, 3, true, true);
-        const rec = await state.vt.record(pid0);
-
-        rec.next.should.deep.equal(chain.slice(1));
-        rec.endNext.should.be.true;
-        rec.prev.should.be.empty;
-        rec.endPrev.should.be.false;
-      });
-
-      it("fills the version chain with previous versions", async () => {
-        const chain = ["rev-chain-pid.1", "rev-chain-pid.2", "rev-chain-pid.3"];
-        const pid3 = chain[2];
-        // mock sysmeta responses
-        state.vt.getSysMeta = sinon.stub().callsFake((pid) => {
-          const i = chain.indexOf(pid);
-          const nextPid = chain[i + 1];
-          const prevPid = chain[i - 1];
-          const data = {
-            data: {
-              obsoletedBy: nextPid || null,
-              obsoletes: prevPid || null,
-            },
-            identifier: pid,
-          };
-          return Promise.resolve(data);
-        });
-
-        // fill the chain
-        await state.vt.fillVersionChain(pid3, 3, false, true);
-        const rec = await state.vt.record(pid3);
-
-        rec.prev.should.deep.equal(chain.slice(0, 2).reverse());
-        rec.endPrev.should.be.true;
-        rec.next.should.be.empty;
-        rec.endNext.should.be.false;
-      });
-
-      it("fills the version chain, ignoring end flags", async () => {
-        const chain = ["ignore-end-pid.1", "ignore-end-pid.2"];
-        const pid0 = chain[0];
-        // mock sysmeta responses
-        state.vt.getSysMeta = sinon.stub().callsFake((pid) => {
-          const i = chain.indexOf(pid);
-          const nextPid = chain[i + 1];
-          const prevPid = chain[i - 1];
-          const data = {
-            data: {
-              obsoletedBy: nextPid || null,
-              obsoletes: prevPid || null,
-            },
-            identifier: pid,
-          };
-          return Promise.resolve(data);
-        });
-
-        // Add a record with an endNext flag set to true
-        await state.vt.persist(pid0, {
-          next: [],
-          prev: [],
-          endNext: true,
-          endPrev: false,
-        });
-
-        // fill the chain
-        await state.vt.fillVersionChain(pid0, 3, true, true);
-        const rec = await state.vt.record(pid0);
-        rec.next.should.deep.equal(chain.slice(1));
-        rec.endNext.should.be.true; // should not be set
-        rec.prev.should.be.empty;
-        rec.endPrev.should.be.false;
-      });
-
-      it("sets and releases a lock during fillVersionChain", async () => {
-        const pid = "lock.1";
-        state.sandbox.stub(state.vt, "getSysMeta").callsFake(async (pid) => {
-          // A method with a delay to simulate network fetch
-          await new Promise((resolve) => setTimeout(resolve, 20));
-          return {
-            identifier: pid,
-            data: {
-              obsoletedBy: null,
-              obsoletes: null,
-            },
-          };
-        });
-        // Ensure the lock is acquired before the promise resolves
-        const promise = state.vt.fillVersionChain(pid, 2, true);
-        await new Promise((resolve) => setTimeout(resolve, 5));
-        state.vt.locks.has(pid).should.be.true;
-        await promise;
-        state.vt.locks.has(pid).should.be.false;
-      });
-
-      it("fetches SysMeta for a PID", async () => {
-        const pid = "test-pid.1";
-        const sysMetaData = {
-          identifier: pid,
-          data: {
-            obsoletedBy: "test-pid.2",
-            obsoletes: null,
-          },
-        };
-
-        // Mock the SysMeta fetch
-        state.sandbox.restore();
-        state.sandbox
-          .stub(SysMeta.prototype, "fetch")
-          .callsFake(async function () {
-            this.data = sysMetaData.data;
-            return sysMetaData;
-          });
-        const sysMeta = await state.vt.getSysMeta(pid);
-        sysMeta.data.should.have.property("obsoletedBy", "test-pid.2");
-        sysMeta.data.should.have.property("obsoletes", null);
-      });
-
-      it("caches in-flight SysMeta requests", async () => {
-        const pid = "test-pid.2";
-        const sysMetaData = {
-          identifier: pid,
-          data: {
-            obsoletedBy: "test-pid.3",
-            obsoletes: null,
-          },
-        };
-
-        // Mock the SysMeta fetch
-        state.sandbox.restore();
-        state.sandbox
-          .stub(SysMeta.prototype, "fetch")
-          .callsFake(async function () {
-            this.data = sysMetaData.data;
-            return sysMetaData;
-          });
-
-        // First call should fetch and cache
-        const firstCall = await state.vt.getSysMeta(pid);
-        firstCall.data.should.have.property("obsoletedBy", "test-pid.3");
-
-        // Second call should return cached result
-        const secondCall = await state.vt.getSysMeta(pid);
-        secondCall.should.equal(firstCall);
-      });
-
-      it("deduplicates concurrent getSysMeta requests", async () => {
-        const pid = "concurrent.1";
-        state.sandbox.restore();
-        const fetchSpy = state.sandbox
-          .stub(SysMeta.prototype, "fetch")
-          .resolves({ identifier: pid, data: {} });
-
-        await Promise.all([state.vt.getSysMeta(pid), state.vt.getSysMeta(pid)]);
-        fetchSpy.calledOnce.should.be.true;
-      });
-
-      it("handles errors when fetching SysMeta", async () => {
-        const pid = "error-pid.1";
-        const errorMessage = "Network error";
-
-        // Mock the SysMeta fetch to throw an error
-        state.sandbox.restore();
-        state.sandbox
-          .stub(SysMeta.prototype, "fetch")
-          .rejects(new Error(errorMessage));
-
-        try {
-          await state.vt.getSysMeta(pid);
-          throw new Error("Expected error was not thrown");
-        } catch (err) {
-          err.message.should.equal(errorMessage);
-        }
-      });
-
-      it("gets or creates a record for a PID", async () => {
-        const pid = "test-record-pid.1";
-        const rec = await state.vt.record(pid);
-
-        rec.should.have.property("next").that.is.an("array").that.is.empty;
-        rec.should.have.property("prev").that.is.an("array").that.is.empty;
-        rec.should.have.property("endNext", false);
-        rec.should.have.property("endPrev", false);
-        rec.should.have.property("sysMeta", null);
-
-        // Check if the record is cached
-        state.vt.cache.has(pid).should.be.true;
-
-        // Fetch the same record again
-        const cachedRec = await state.vt.record(pid);
-        cachedRec.should.equal(rec); // should return the same instance
-      });
-
-      it("persists and loads a record from localForage", async () => {
-        const pid = "load-record-pid.1";
-        const recData = {
-          next: ["next-pid.1"],
-          prev: ["prev-pid.1"],
-          endNext: false,
-          endPrev: true,
-          sysMeta: { data: { size: 100, formatId: "text/csv" } },
-        };
-
-        // Save the record to localForage
-        await state.vt.persist(pid, recData);
-
-        // Load the record
-        const loadedRec = await state.vt.load(pid);
-        loadedRec.ts.should.be.a("number");
-        loadedRec.next.should.deep.equal(recData.next);
-        loadedRec.prev.should.deep.equal(recData.prev);
-        loadedRec.endNext.should.equal(recData.endNext);
-        loadedRec.endPrev.should.equal(recData.endPrev);
-        loadedRec.sysMeta.should.deep.equal(recData.sysMeta.data);
-      });
-
-      it("treats a stale record (older than TTL) as stale and refetches", async () => {
-        const pid = "ttl-expire.1";
-        await state.vt.persist(pid, {
-          next: [],
-          prev: [],
-          endNext: false,
-          endPrev: false,
-        });
-        // Set a short TTL for testing
-        state.vt.setTTL(10);
-        // pause to ensure the record is stale
-        await new Promise((resolve) => setTimeout(resolve, 11));
-        // state.vt.load should be null
-        const loaded = await state.vt.load(pid);
-        should.not.exist(loaded);
-      });
-
-      it("evicts least‑recently‑used entries when maxCacheRecords is exceeded", async () => {
-        const smallVT = new VersionTracker({
-          metaServiceUrl: "https://x",
-          maxCacheRecords: 3,
-        });
-        state.sandbox
-          .stub(smallVT, "getSysMeta")
-          .callsFake((pid) => Promise.resolve({ identifier: pid, data: {} }));
-
-        for (const p of ["a", "b", "c", "d"]) {
-          await smallVT.record(p);
-        }
-        smallVT.cache.size.should.equal(3);
-        smallVT.cache.has("a").should.be.false;
-        await smallVT.clear();
-      });
-
-      it("honours maxChainHops and stops traversal", async () => {
-        const MAX_HOPS = 2;
+      it("normalizes metaServiceUrl and configures SysMetaService", () => {
         const vt = new VersionTracker({
-          metaServiceUrl: "https://x",
-          maxChainHops: MAX_HOPS,
-        });
-        state.sandbox.stub(vt, "getSysMeta").callsFake((pid) => {
-          const n = Number(pid.split(".")[1]);
-          return Promise.resolve({
-            identifier: pid,
-            data: {
-              obsoletedBy: n < 4 ? `h.${n + 1}` : null,
-              obsoletes: n > 1 ? `h.${n - 1}` : null,
-            },
-          });
+          metaServiceUrl: "https://example.org/sysmeta///",
+          ttlMs: 123,
+          maxChainHops: 3,
         });
 
-        await vt.fillVersionChain("h.1", 10, true, true);
-        const rec = await vt.record("h.1");
-        // +1 because the final record comes from previous sys meta fetch, so
-        // only 2 fetches total.
-        rec.next.length.should.equal(MAX_HOPS + 1);
-      });
-    });
-
-    describe("VersionTracker API", () => {
-      it("returns the 0th version (self)", async () => {
-        const pid = "abc.1";
-        const result = await state.vt.getNth(pid, 0);
-        result.should.equal(pid);
+        vt.metaServiceUrl.should.equal("https://example.org/sysmeta");
+        vt.sysMetaService.storageConfig.ttlMs.should.equal(123);
+        vt.sysMetaService.persistPrivate.should.equal(true);
       });
 
-      it("clears the cache", async () => {
-        const cleared = await state.vt.clear();
-        cleared.should.be.true;
+      it("defaults maxChainHops to 200 when not provided", () => {
+        const vt = new VersionTracker({
+          metaServiceUrl: "https://example.org/sysmeta",
+        });
+        vt.MAX_CHAIN_HOPS.should.equal(200);
       });
 
-      it("sets TTL dynamically", () => {
-        state.vt.setTTL(10000);
-        state.vt.TTL_MS.should.equal(10000);
-      });
-
-      it("triggers an update event when a record is updated", async () => {
-        const pid = "update-test.1";
-        const updateSpy = sinon.spy();
-        state.vt.off(`update:${pid}`);
-        state.vt.on(`update:${pid}`, updateSpy);
-
-        // Add a new version to trigger an update
-        await state.vt.addVersion(pid, "update-test.2");
-
-        updateSpy.called.should.be.true;
-      });
-
-      it("adds a new version link between two isolated records", async () => {
-        const prevPid = "abc.1";
-        const newPid = "abc.2";
-
-        await state.vt.addVersion(prevPid, newPid);
-
-        const prev = await state.vt.getFullChain(prevPid);
-        const next = await state.vt.getFullChain(newPid);
-
-        prev.next[0].should.equal(newPid);
-        next.prev[0].should.equal(prevPid);
-      });
-
-      it("throws if trying to add an existing link", async () => {
-        const prevPid = "abc.3";
-        const newPid = "abc.4";
-
-        await state.vt.addVersion(prevPid, newPid);
-
+      it("falls back to appModel metaServiceUrl when option is omitted", () => {
+        const originalMetacatUI = globalThis.MetacatUI;
+        globalThis.MetacatUI = {
+          ...(originalMetacatUI || {}),
+          appModel: {
+            get: state.sandbox
+              .stub()
+              .returns("https://fallback.example.org/meta///"),
+            getActiveAltRepo: state.sandbox.stub().returns(null),
+            isDOI: state.sandbox.stub().returns(false),
+          },
+          appUserModel: (originalMetacatUI &&
+            originalMetacatUI.appUserModel) || {
+            get: state.sandbox.stub().returns(false),
+          },
+          nodeModel: (originalMetacatUI && originalMetacatUI.nodeModel) || {
+            get: state.sandbox.stub(),
+            length: 0,
+          },
+        };
         try {
-          await state.vt.addVersion(prevPid, newPid);
-          throw new Error("Expected error was not thrown");
-        } catch (err) {
-          err.message.should.equal(
-            `Cannot add version: ${newPid} is already in the chain of ${prevPid}`,
-          );
+          const vt = new VersionTracker();
+          vt.metaServiceUrl.should.equal("https://fallback.example.org/meta");
+        } finally {
+          globalThis.MetacatUI = originalMetacatUI;
         }
       });
 
-      it("navigates forward and backward correctly with getNth", async () => {
-        const chain = ["g.1", "g.2", "g.3"];
-        state.sandbox.stub(state.vt, "getSysMeta").callsFake((pid) => {
-          const i = chain.indexOf(pid);
-          return Promise.resolve({
-            identifier: pid,
-            data: {
-              obsoletedBy: chain[i + 1] || null,
-              obsoletes: chain[i - 1] || null,
-            },
-          });
-        });
-
-        await state.vt.fillVersionChain("g.2", 3, true, true);
-        (await state.vt.getNth("g.2", +1)).should.equal("g.3");
-        (await state.vt.getNth("g.2", -1)).should.equal("g.1");
+      it("throws when no metaServiceUrl is available", () => {
+        const originalMetacatUI = globalThis.MetacatUI;
+        globalThis.MetacatUI = {
+          ...(originalMetacatUI || {}),
+          appModel: {
+            get: state.sandbox.stub().returns(""),
+            getActiveAltRepo: state.sandbox.stub().returns(null),
+            isDOI: state.sandbox.stub().returns(false),
+          },
+          appUserModel: (originalMetacatUI &&
+            originalMetacatUI.appUserModel) || {
+            get: state.sandbox.stub().returns(false),
+          },
+          nodeModel: (originalMetacatUI && originalMetacatUI.nodeModel) || {
+            get: state.sandbox.stub(),
+            length: 0,
+          },
+        };
+        try {
+          expect(() => new VersionTracker()).to.throw(
+            "VersionTracker: metaServiceUrl is required",
+          );
+        } finally {
+          globalThis.MetacatUI = originalMetacatUI;
+        }
       });
 
-      it("keeps singleton instances separated by metaServiceUrl", () => {
-        VersionTracker.get("url1").should.not.equal(VersionTracker.get("url2"));
+      it("exposes Backbone-style events", () => {
+        state.vt.events.should.have.property("trigger");
+        state.vt.events.should.have.property("on");
+      });
+    });
+
+    describe("service passthroughs", () => {
+      it("getSysMeta forwards options to SysMetaService.download", async () => {
+        const options = { useCache: false, cacheKey: "pid.1-nocache" };
+        const sysMeta = makeSysMeta("pid.2", "pid.0");
+        state.service.download.resolves(sysMeta);
+
+        const result = await state.vt.getSysMeta("pid.1", options);
+
+        expect(result).to.equal(sysMeta);
+        state.service.download.calledOnceWith("pid.1", options).should.be.true;
       });
 
-      it("loads data persisted by a previous VersionTracker instance", async () => {
-        const pid = "persisted.1";
-        await state.vt.persist(pid, {
-          next: ["x"],
-          prev: [],
-          endNext: false,
-          endPrev: false,
+      it("sysMetaIsCached delegates to SysMetaService.isCached", async () => {
+        state.service.isCached.resolves(true);
+        const isCached = await state.vt.sysMetaIsCached("pid.1");
+        isCached.should.equal(true);
+        state.service.isCached.calledOnceWith("pid.1").should.be.true;
+      });
+
+      it("getNext and getPrev delegate to getAdjacent and forward options", async () => {
+        const adjacentStub = state.sandbox.stub(state.vt, "getAdjacent");
+        const options = { useCache: false, cacheKey: "pid.1-test" };
+        adjacentStub.onCall(0).resolves("pid.2");
+        adjacentStub.onCall(1).resolves("pid.0");
+
+        const next = await state.vt.getNext("pid.1", options);
+        const prev = await state.vt.getPrev("pid.1", options);
+
+        next.should.equal("pid.2");
+        prev.should.equal("pid.0");
+        adjacentStub.firstCall.args.should.deep.equal(["pid.1", true, options]);
+        adjacentStub.secondCall.args.should.deep.equal([
+          "pid.1",
+          false,
+          options,
+        ]);
+      });
+    });
+
+    describe("getAdjacent", () => {
+      it("throws on invalid PID", async () => {
+        let caught;
+        try {
+          await state.vt.getAdjacent("", true);
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/Invalid PID/i);
+      });
+
+      it("returns the next PID when forward is true", async () => {
+        state.service.download.resolves(makeSysMeta("next.1", "prev.1"));
+
+        const next = await state.vt.getAdjacent("pid.1", true);
+        next.should.equal("next.1");
+        state.service.isCached.called.should.be.false;
+        state.service.removeCached.called.should.be.false;
+      });
+
+      it("returns the previous PID when forward is false", async () => {
+        state.service.download.resolves(makeSysMeta("next.1", "prev.1"));
+
+        const prev = await state.vt.getAdjacent("pid.1", false);
+        prev.should.equal("prev.1");
+      });
+
+      it("re-fetches when cached and no adjacent PID", async () => {
+        state.service.download
+          .onCall(0)
+          .resolves(makeSysMeta(null, null))
+          .onCall(1)
+          .resolves(makeSysMeta("pid.2", null));
+        state.service.isCached.resolves(true);
+
+        const next = await state.vt.getAdjacent("pid.1", true);
+        next.should.equal("pid.2");
+        state.service.removeCached.calledOnceWith("pid.1").should.be.true;
+        state.service.download.callCount.should.equal(2);
+      });
+
+      it("does not invalidate cache when not cached and no adjacent PID", async () => {
+        const options = { useCache: false };
+        state.service.download.resolves(makeSysMeta(null, null));
+
+        const result = await state.vt.getAdjacent("pid.1", true, options);
+
+        expect(result).to.equal(null);
+        state.service.download.calledOnceWith("pid.1", options).should.be.true;
+        state.service.isCached.called.should.be.false;
+        state.service.removeCached.called.should.be.false;
+      });
+
+      it("passes options to both fetches when re-checking stale cache", async () => {
+        const options = { cacheKey: "pid.1-key" };
+        state.service.download
+          .onCall(0)
+          .resolves(makeSysMeta(null, null))
+          .onCall(1)
+          .resolves(makeSysMeta("pid.2", null));
+        state.service.isCached.resolves(true);
+
+        const result = await state.vt.getAdjacent("pid.1", true, options);
+
+        result.should.equal("pid.2");
+        state.service.download.callCount.should.equal(2);
+        state.service.download.firstCall.args.should.deep.equal([
+          "pid.1",
+          options,
+        ]);
+        state.service.download.secondCall.args.should.deep.equal([
+          "pid.1",
+          options,
+        ]);
+      });
+
+      it("propagates cache invalidation errors", async () => {
+        const cacheError = new Error("cache remove failed");
+        state.service.download.resolves(makeSysMeta(null, null));
+        state.service.isCached.resolves(true);
+        state.service.removeCached.rejects(cacheError);
+
+        let caught;
+        try {
+          await state.vt.getAdjacent("pid.1", true);
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.equal(cacheError);
+        state.service.download.callCount.should.equal(1);
+      });
+    });
+
+    describe("getVersions", () => {
+      it("collects versions and marks chainComplete", async () => {
+        const adjacentStub = state.sandbox.stub(state.vt, "getAdjacent");
+        const notifyStub = state.sandbox.stub(state.vt, "notify").resolves();
+        state.sandbox.stub(state.vt, "isEndOfChain").resolves(true);
+
+        adjacentStub.onCall(0).resolves("pid.2");
+        adjacentStub.onCall(1).resolves("pid.3");
+        adjacentStub.onCall(2).resolves(null);
+
+        const record = await state.vt.getVersions("pid.1", 3);
+
+        record.versions.should.deep.equal(["pid.2", "pid.3"]);
+        record.completedSteps.should.equal(2);
+        record.chainComplete.should.equal(true);
+        notifyStub.callCount.should.equal(4);
+      });
+
+      it("supports negative steps", async () => {
+        const adjacentStub = state.sandbox.stub(state.vt, "getAdjacent");
+        state.sandbox.stub(state.vt, "notify").resolves();
+        state.sandbox.stub(state.vt, "isEndOfChain").resolves(false);
+
+        adjacentStub.onCall(0).resolves("pid.0");
+        adjacentStub.onCall(1).resolves(null);
+
+        const record = await state.vt.getVersions("pid.1", -2);
+
+        record.versions.should.deep.equal(["pid.0"]);
+        record.completedSteps.should.equal(-1);
+      });
+
+      it("throws when startPid is invalid", async () => {
+        let caught;
+        try {
+          await state.vt.getVersions("", 1);
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        caught.message.should.match(/Invalid PID/i);
+      });
+
+      it("throws when steps is not an integer", async () => {
+        let caught;
+        try {
+          await state.vt.getVersions("pid.1", 1.5);
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        caught.message.should.match(/Steps must be an integer/);
+      });
+
+      it("marks endIsPrivate on 401 errors", async () => {
+        const error = new Error("private");
+        error.status = 401;
+        state.sandbox.stub(state.vt, "getAdjacent").rejects(error);
+
+        const record = await state.vt.getVersions("pid.1", 2);
+        record.endIsPrivate.should.equal(true);
+        record.endNotFound.should.equal(false);
+        record.chainComplete.should.equal(false);
+      });
+
+      it("marks endNotFound on 404 errors", async () => {
+        const error = new Error("missing");
+        error.status = 404;
+        state.sandbox.stub(state.vt, "getAdjacent").rejects(error);
+
+        const record = await state.vt.getVersions("pid.1", 2);
+        record.endNotFound.should.equal(true);
+        record.endIsPrivate.should.equal(false);
+        record.chainComplete.should.equal(false);
+      });
+
+      it("rethrows unknown errors", async () => {
+        const error = new Error("boom");
+        error.status = 500;
+        state.sandbox.stub(state.vt, "getAdjacent").rejects(error);
+
+        let caught;
+        try {
+          await state.vt.getVersions("pid.1", 2);
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.equal(error);
+      });
+
+      it("handles zero steps without fetching adjacent versions", async () => {
+        const options = { useCache: false, cacheKey: "zero-steps" };
+        const adjacentStub = state.sandbox
+          .stub(state.vt, "getAdjacent")
+          .resolves("pid.2");
+        const notifyStub = state.sandbox.stub(state.vt, "notify").resolves();
+        const endStub = state.sandbox
+          .stub(state.vt, "isEndOfChain")
+          .resolves(true);
+
+        const record = await state.vt.getVersions("pid.1", 0, options);
+
+        record.versions.should.deep.equal([]);
+        record.completedSteps.should.equal(0);
+        record.chainComplete.should.equal(true);
+        adjacentStub.called.should.be.false;
+        notifyStub.calledOnceWith("pid.1", "pid.1", 0, null, options).should.be
+          .true;
+        endStub.calledOnceWith("pid.1", false, options).should.be.true;
+      });
+
+      it("passes status codes from traversal errors to notify", async () => {
+        const error = new Error("missing");
+        error.status = 404;
+        state.sandbox.stub(state.vt, "getAdjacent").rejects(error);
+        const notifyStub = state.sandbox.stub(state.vt, "notify").resolves();
+
+        await state.vt.getVersions("pid.1", 2);
+
+        notifyStub.callCount.should.equal(2);
+        notifyStub.firstCall.args.should.deep.equal([
+          "pid.1",
+          "pid.1",
+          0,
+          null,
+          {},
+        ]);
+        notifyStub.secondCall.args[0].should.equal("pid.1");
+        should.equal(notifyStub.secondCall.args[1], null);
+        notifyStub.secondCall.args[2].should.equal(1);
+        notifyStub.secondCall.args[3].should.equal(404);
+      });
+
+      it("passes options to getAdjacent, notify, and isEndOfChain", async () => {
+        const options = { useCache: false, signal: { aborted: false } };
+        const adjacentStub = state.sandbox
+          .stub(state.vt, "getAdjacent")
+          .resolves(null);
+        const notifyStub = state.sandbox.stub(state.vt, "notify").resolves();
+        const endStub = state.sandbox
+          .stub(state.vt, "isEndOfChain")
+          .resolves(true);
+
+        await state.vt.getVersions("pid.1", 1, options);
+
+        adjacentStub.calledOnceWith("pid.1", true, options).should.be.true;
+        notifyStub.firstCall.args.should.deep.equal([
+          "pid.1",
+          "pid.1",
+          0,
+          null,
+          options,
+        ]);
+        notifyStub.secondCall.args.should.deep.equal([
+          "pid.1",
+          null,
+          1,
+          null,
+          options,
+        ]);
+        endStub.calledOnceWith("pid.1", true, options).should.be.true;
+      });
+
+      it("does not check chainComplete after private/not-found endpoints", async () => {
+        const error = new Error("private");
+        error.status = 401;
+        state.sandbox.stub(state.vt, "getAdjacent").rejects(error);
+        state.sandbox.stub(state.vt, "notify").resolves();
+        const endStub = state.sandbox
+          .stub(state.vt, "isEndOfChain")
+          .resolves(true);
+
+        await state.vt.getVersions("pid.1", 1);
+        endStub.called.should.be.false;
+      });
+
+      it("caps steps according to MAX_CHAIN_HOPS", async () => {
+        state.vt.MAX_CHAIN_HOPS = 1;
+        const adjacentStub = state.sandbox
+          .stub(state.vt, "getAdjacent")
+          .resolves("pid.2");
+        state.sandbox.stub(state.vt, "notify").resolves();
+        state.sandbox.stub(state.vt, "isEndOfChain").resolves(true);
+        state.sandbox.stub(console, "warn");
+
+        const record = await state.vt.getVersions("pid.1", 3);
+
+        adjacentStub.calledOnce.should.be.true;
+        record.requestedSteps.should.equal(3);
+        record.completedSteps.should.equal(1);
+        record.versions.should.deep.equal(["pid.2"]);
+      });
+
+      it("throws the first queued notify rejection", async () => {
+        const firstError = new Error("first notify failure");
+        const secondError = new Error("second notify failure");
+        state.sandbox.stub(state.vt, "getAdjacent").resolves(null);
+        state.sandbox.stub(state.vt, "isEndOfChain").resolves(true);
+        const notifyStub = state.sandbox.stub(state.vt, "notify");
+        notifyStub.onCall(0).rejects(firstError);
+        notifyStub.onCall(1).rejects(secondError);
+
+        let caught;
+        try {
+          await state.vt.getVersions("pid.1", 1);
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.equal(firstError);
+        notifyStub.callCount.should.equal(2);
+      });
+
+      it("records a date conflict when the first adjacent version is chronologically earlier", async () => {
+        const notifyStub = state.sandbox.stub(state.vt, "notify").resolves();
+        state.sandbox.stub(state.vt, "isEndOfChain").resolves(true);
+        state.sandbox
+          .stub(state.vt, "getAdjacent")
+          .onCall(0)
+          .resolves("pid.2")
+          .onCall(1)
+          .resolves(null);
+
+        state.sandbox.stub(state.vt, "getSysMeta").callsFake(async (pid) => {
+          if (pid === "pid.1") {
+            return makeDatedSysMeta({
+              identifier: "pid.1",
+              dateUploaded: "2024-01-02T00:00:00Z",
+              nextPid: "pid.2",
+            });
+          }
+          if (pid === "pid.2") {
+            return makeDatedSysMeta({
+              identifier: "pid.2",
+              dateUploaded: "2024-01-01T00:00:00Z",
+              prevPid: "pid.1",
+            });
+          }
+          throw new Error(`Unexpected PID ${pid}`);
         });
 
-        const fresh = new VersionTracker({
-          metaServiceUrl: state.vt.metaServiceUrl,
-          store: state.vt.store,
+        const record = await state.vt.getVersions("pid.1", 2);
+
+        notifyStub.callCount.should.equal(3);
+        record.versions.should.deep.equal(["pid.2"]);
+        record.dateConflicts.should.have.length(1);
+        record.dateConflicts[0].prevPid.should.equal("pid.1");
+        record.dateConflicts[0].nextPid.should.equal("pid.2");
+      });
+
+      it("prefers traversal errors over notify rejections", async () => {
+        const traversalError = new Error("boom");
+        traversalError.status = 500;
+        const notifyError = new Error("notify failed");
+        state.sandbox.stub(state.vt, "getAdjacent").rejects(traversalError);
+        const notifyStub = state.sandbox.stub(state.vt, "notify");
+        notifyStub.rejects(notifyError);
+
+        let caught;
+        try {
+          await state.vt.getVersions("pid.1", 2);
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.equal(traversalError);
+        notifyStub.calledOnce.should.be.true;
+      });
+    });
+
+    describe("helpers and accessors", () => {
+      it("detectDateConflict returns a conflict when chain order and dates disagree", () => {
+        const conflict = VersionTracker.detectDateConflict(
+          makeDatedSysMeta({
+            identifier: "older",
+            dateUploaded: "2024-01-03T00:00:00Z",
+          }),
+          makeDatedSysMeta({
+            identifier: "newer",
+            dateUploaded: "2024-01-02T00:00:00Z",
+          }),
+          true,
+        );
+
+        expect(conflict).to.be.an("object");
+        conflict.prevPid.should.equal("older");
+        conflict.nextPid.should.equal("newer");
+        conflict.timeDiffMs.should.be.greaterThan(0);
+      });
+
+      it("detectDateConflict returns false when dates are chronological", () => {
+        const conflict = VersionTracker.detectDateConflict(
+          makeDatedSysMeta({
+            identifier: "older",
+            dateUploaded: "2024-01-01T00:00:00Z",
+          }),
+          makeDatedSysMeta({
+            identifier: "newer",
+            dateUploaded: "2024-01-02T00:00:00Z",
+          }),
+          true,
+        );
+
+        expect(conflict).to.equal(false);
+      });
+
+      it("getAllVersionsOneDirection uses max chain hops", async () => {
+        const stub = state.sandbox.stub(state.vt, "getVersions").resolves({});
+
+        await state.vt.getAllVersionsOneDirection("pid.1", false);
+        stub.calledOnceWith("pid.1", -state.vt.MAX_CHAIN_HOPS).should.be.true;
+      });
+
+      it("getNth returns null when chain is too short", async () => {
+        state.sandbox.stub(state.vt, "getVersions").resolves({
+          versions: ["pid.2"],
+          completedSteps: 1,
         });
-        const loaded = await fresh.load(pid);
-        loaded.next[0].should.equal("x");
-        await fresh.clear();
+
+        const result = await state.vt.getNth("pid.1", 2);
+        expect(result).to.equal(null);
+      });
+
+      it("getNth returns the final PID when chain is long enough", async () => {
+        state.sandbox.stub(state.vt, "getVersions").resolves({
+          versions: ["pid.2", "pid.3"],
+          completedSteps: 2,
+        });
+
+        const result = await state.vt.getNth("pid.1", 2);
+        expect(result).to.equal("pid.3");
+      });
+
+      it("getNth returns the same PID for zero steps without traversal", async () => {
+        const versionsStub = state.sandbox.stub(state.vt, "getVersions");
+        const result = await state.vt.getNth("pid.1", 0);
+        result.should.equal("pid.1");
+        versionsStub.called.should.be.false;
+      });
+
+      it("getNth throws on invalid PID", async () => {
+        let caught;
+        try {
+          await state.vt.getNth("", 1);
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        caught.message.should.match(/Invalid PID/i);
+      });
+
+      it("getAllVersions returns prev and next records", async () => {
+        const stub = state.sandbox.stub(state.vt, "getAllVersionsOneDirection");
+        stub.onCall(0).resolves({ direction: "prev" });
+        stub.onCall(1).resolves({ direction: "next" });
+
+        const result = await state.vt.getAllVersions("pid.1");
+        result.prev.direction.should.equal("prev");
+        result.next.direction.should.equal("next");
+      });
+
+      it("getAllVersions forwards options to both traversals", async () => {
+        const options = { useCache: false };
+        const stub = state.sandbox.stub(state.vt, "getAllVersionsOneDirection");
+        stub.onCall(0).resolves({ direction: "prev" });
+        stub.onCall(1).resolves({ direction: "next" });
+
+        await state.vt.getAllVersions("pid.1", options);
+
+        stub.firstCall.args.should.deep.equal(["pid.1", false, options]);
+        stub.secondCall.args.should.deep.equal(["pid.1", true, options]);
+      });
+
+      it("isEndOfChain inspects sysmeta links", async () => {
+        state.service.download.resolves(makeSysMeta("pid.2", null));
+
+        const isEnd = await state.vt.isEndOfChain("pid.1", true);
+        isEnd.should.equal(false);
+      });
+
+      it("isEndOfChain returns true when no adjacent link exists", async () => {
+        state.service.download.resolves(makeSysMeta(null, null));
+        const isEnd = await state.vt.isEndOfChain("pid.1", true);
+        isEnd.should.equal(true);
+      });
+
+      it("getLatestVersion returns the last accessible PID", async () => {
+        state.sandbox.stub(state.vt, "getAllVersionsOneDirection").resolves({
+          versions: ["pid.2", "pid.3"],
+          completedSteps: 2,
+        });
+
+        const latest = await state.vt.getLatestVersion("pid.1");
+        latest.should.equal("pid.3");
+      });
+
+      it("returns self when no newer versions exist", async () => {
+        state.sandbox.stub(state.vt, "getAllVersionsOneDirection").resolves({
+          versions: [],
+          completedSteps: 0,
+        });
+
+        const latest = await state.vt.getLatestVersion("pid.1");
+        latest.should.equal("pid.1");
+      });
+
+      it("clears cache via SysMetaService", async () => {
+        const cleared = await state.vt.clearCache();
+        cleared.should.equal(true);
+        state.service.clearCache.calledOnce.should.be.true;
+      });
+    });
+
+    describe("notify", () => {
+      it("returns early when pid is missing", async () => {
+        const triggerSpy = state.sandbox.spy(state.vt.events, "trigger");
+        const getStub = state.sandbox.stub(state.vt, "getSysMeta");
+
+        await state.vt.notify("", "pid.2", 1);
+
+        triggerSpy.called.should.be.false;
+        getStub.called.should.be.false;
+      });
+
+      it("emits update events with sysmeta", async () => {
+        const updateSpy = sinon.spy();
+        const updatePidSpy = sinon.spy();
+        state.vt.events.on("versionFound", updateSpy);
+        state.vt.events.on("versionFound:pid.1", updatePidSpy);
+        state.sandbox
+          .stub(state.vt, "getSysMeta")
+          .resolves(makeSysMeta("pid.2", "pid.0"));
+
+        await state.vt.notify("pid.1", "pid.2", 1);
+
+        updateSpy.calledOnce.should.be.true;
+        updatePidSpy.calledOnce.should.be.true;
+        const sysMeta = updateSpy.firstCall.args[0];
+        sysMeta.versionHistory["pid.1"].should.equal(1);
+        sysMeta.errors.should.deep.equal([]);
+      });
+
+      it("sets status for private or missing sysmeta", async () => {
+        const error = new Error("private");
+        error.status = 401;
+        state.sandbox.stub(state.vt, "getSysMeta").rejects(error);
+        const updateSpy = sinon.spy();
+        state.vt.events.on("versionFound", updateSpy);
+
+        await state.vt.notify("pid.1", "pid.2", 1);
+        const sysMeta = updateSpy.firstCall.args[0];
+        sysMeta.data.identifier.should.equal("pid.2");
+        sysMeta.errors.should.deep.equal([401]);
+        sysMeta.versionHistory["pid.1"].should.equal(1);
+      });
+
+      it("sets status for missing (404) sysmeta", async () => {
+        const error = new Error("missing");
+        error.status = 404;
+        state.sandbox.stub(state.vt, "getSysMeta").rejects(error);
+        const updateSpy = sinon.spy();
+        state.vt.events.on("versionFound", updateSpy);
+
+        await state.vt.notify("pid.1", "pid.2", -1);
+
+        const sysMeta = updateSpy.firstCall.args[0];
+        sysMeta.data.identifier.should.equal("pid.2");
+        sysMeta.errors.should.deep.equal([404]);
+        sysMeta.versionHistory["pid.1"].should.equal(-1);
+      });
+
+      it("forwards options to getSysMeta when fetching notify payload", async () => {
+        const options = { useCache: false, cacheKey: "notify" };
+        const sysMeta = makeSysMeta("pid.3", "pid.1");
+        const getStub = state.sandbox
+          .stub(state.vt, "getSysMeta")
+          .resolves(sysMeta);
+
+        await state.vt.notify("pid.1", "pid.2", 1, null, options);
+
+        getStub.calledOnceWith("pid.2", options).should.be.true;
+      });
+
+      it("logs and suppresses listener errors", async () => {
+        const listenerError = new Error("listener failed");
+        const logStub = state.sandbox.stub(console, "error");
+        state.sandbox
+          .stub(state.vt, "getSysMeta")
+          .resolves(makeSysMeta("pid.3", "pid.1"));
+        state.vt.events.on("versionFound", () => {
+          throw listenerError;
+        });
+
+        await state.vt.notify("pid.1", "pid.2", 1);
+
+        logStub.calledOnce.should.be.true;
+        logStub.firstCall.args[0].should.match(/VersionTracker\.notify/);
+        logStub.firstCall.args[1].should.equal(listenerError);
+      });
+
+      it("emits placeholder sysmeta when there is no adjacent PID and no status", async () => {
+        const updateSpy = sinon.spy();
+        const getStub = state.sandbox.stub(state.vt, "getSysMeta");
+        state.vt.events.on("versionFound", updateSpy);
+
+        await state.vt.notify("pid.1", null, 1, null);
+
+        getStub.called.should.be.false;
+        updateSpy.calledOnce.should.be.true;
+        const sysMeta = updateSpy.firstCall.args[0];
+        expect(sysMeta).to.exist;
+        sysMeta.versionHistory["pid.1"].should.equal(1);
+        sysMeta.errors.should.deep.equal([]);
+      });
+
+      it("emits placeholder sysmeta payload when status is provided without adjacent sysmeta", async () => {
+        const updateSpy = sinon.spy();
+        const getStub = state.sandbox.stub(state.vt, "getSysMeta");
+        state.vt.events.on("versionFound", updateSpy);
+
+        await state.vt.notify("pid.1", null, 1, 404);
+
+        getStub.called.should.be.false;
+        updateSpy.calledOnce.should.be.true;
+        const sysMeta = updateSpy.firstCall.args[0];
+        sysMeta.errors.should.deep.equal([404]);
+      });
+
+      it("rethrows unexpected errors", async () => {
+        const error = new Error("boom");
+        error.status = 500;
+        state.sandbox.stub(state.vt, "getSysMeta").rejects(error);
+
+        let caught;
+        try {
+          await state.vt.notify("pid.1", "pid.2", 1);
+        } catch (err) {
+          caught = err;
+        }
+
+        expect(caught).to.equal(error);
+      });
+    });
+
+    describe("capSteps", () => {
+      it("caps steps and preserves sign", () => {
+        state.vt.MAX_CHAIN_HOPS = 2;
+        state.sandbox.stub(console, "warn");
+
+        state.vt.capSteps(5).should.equal(2);
+        state.vt.capSteps(-5).should.equal(-2);
+      });
+
+      it("returns steps when max hops is Infinity", () => {
+        state.vt.MAX_CHAIN_HOPS = Infinity;
+        state.vt.capSteps(5).should.equal(5);
+      });
+
+      it("returns steps unchanged when under the cap", () => {
+        state.vt.MAX_CHAIN_HOPS = 5;
+        state.vt.capSteps(3).should.equal(3);
+        state.vt.capSteps(-3).should.equal(-3);
       });
     });
   });
