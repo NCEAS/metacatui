@@ -1455,18 +1455,14 @@ other class: .ui-slider-range */
     --portal-col-primary-6,
     var(--map-col-highlight__deprecate)
   );
-  color: var(--portal-col-neutral-00);
+  color: var(--portal-col-neutral-00, var(--map-col-text__deprecate));
 }
 
 .draw-tool__button--disable {
-  /* background-color: gray; */
-  color: gray;
+  color: var(--portal-col-neutral-4);
   cursor: not-allowed;
   trash {
-    color: var(
-      --portal-col-primary-6,
-      var(--map-col-text__deprecate)
-    ) !important;
+    color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
   }
 }
 
@@ -1481,7 +1477,8 @@ other class: .ui-slider-range */
   background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
   font-size: 20px;
-  border: 1px solid var(--portal-col-primary-2);
+  border: 1px solid
+    var(--portal-col-primary-2, var(--map-col-bkg-lightest__deprecate));
 }
 
 .draw-tool__button-label {
@@ -1489,9 +1486,12 @@ other class: .ui-slider-range */
   position: absolute;
   background-color: var(
     --portal-col-neutral-7,
-    rgba(0, 0, 0, 0.7)
+    var(--map-col-bkg-lightest__deprecate)
   ); /* Optional: Add a semi-transparent background */
-  color: var(--portal-col-neutral-00, #fff); /* Label text color */
+  color: var(
+    --portal-col-neutral-00,
+    var(--map-col-text__deprecate)
+  ); /* Label text color */
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -1610,7 +1610,7 @@ other class: .ui-slider-range */
   height: 18px;
   background-color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
   text-align: center;
-  color: white;
+  color: var(--portal-col-neutral-00);
   line-height: 18px;
   font-size: 10px;
   border-radius: 5px;
@@ -1620,12 +1620,12 @@ other class: .ui-slider-range */
   width: 0%;
   height: 18px;
   text-align: center;
-  color: rgb(3, 3, 3);
+  color: var(--portal-col-neutral-8);
   line-height: 18px;
   font-size: 10px;
   border-radius: 5px;
   transition: width 0.4s;
-  background-color: rgba(255, 255, 0, 0.172);
+  background-color: var(--portal-col-highlight-1, #fffcf4);
 }
 
 .download-panel__data-list {
@@ -1767,7 +1767,10 @@ other class: .ui-slider-range */
 }
 
 .layer-download__information--wmts {
-  background: var(--portal-col-neutral-1, var(--map-col-text__deprecate));
+  background: var(
+    --portal-col-neutral-1,
+    var(--map-col-bkg-lightest__deprecate)
+  );
   border-radius: 5px;
   border: 1px solid
     var(--portal-col-primary-2, var(--map-col-bkg-lightest__deprecate));
@@ -1781,7 +1784,7 @@ other class: .ui-slider-range */
 }
 
 .layer-download__copy-icon:hover {
-  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
 }
 
 /*****************************************************************************************
