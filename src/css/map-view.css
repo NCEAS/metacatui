@@ -492,7 +492,8 @@ represents 1 unit of the given distance measurement. */
 
 .toolbar__content {
   /* TODO: remove temp styles */
-  height: 100%;
+  flex: 1 1 0;
+  min-height: 0;
   width: 100%;
   justify-content: center;
   /* hide unless the content section is active */
@@ -511,6 +512,15 @@ represents 1 unit of the given distance measurement. */
 .toolbar__content--active {
   display: flex;
   position: relative;
+}
+
+/* The download panel is in-flow at the bottom of the flex column. It should
+   only take as much vertical space as its content needs — not stretch to fill
+   the remaining height the way sibling toolbar__content panels do. */
+.toolbar__content:has(.download-panel) {
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow: visible;
 }
 
 .toolbar__link {
@@ -1524,16 +1534,12 @@ other class: .ui-slider-range */
 
 .download-panel {
   display: flex;
-  position: fixed;
-  width: var(--map-width-toolbar-wide);
-  left: 0;
+  width: 100%;
   flex-direction: column;
   padding-bottom: 1rem;
-  z-index: 2;
   align-items: center;
   justify-content: space-between; /* Pushes elements apart */
   gap: 0.1rem;
-  bottom: 0;
   border-width: 1px 0;
   border-top: 1px solid
     var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
