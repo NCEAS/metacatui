@@ -10,7 +10,12 @@
   --nsv-text-disabled: #999;
   --nsv-radius: 4px;
   --nsv-space: 24px;
-
+  --nsv-header-footer-block-space: 22px;
+  --nsv-header-close-reserved-space: 36px;
+  --nsv-header-close-top: 18px;
+  --nsv-type-row-gap: 16px;
+  --nsv-type-row-block-space: 22px;
+  --nsv-type-checkbox-size: 15px;
   border-radius: var(--nsv-radius);
   color: var(--nsv-text);
   overflow: hidden;
@@ -26,21 +31,45 @@
   align-items: center;
   display: flex;
   gap: 15px;
-  padding: 22px var(--nsv-space);
+  padding: var(--nsv-header-footer-block-space) var(--nsv-space);
 }
 
 .notification-modal__header {
   border-bottom: 1px solid var(--nsv-border);
+  padding-right: calc(
+    var(--nsv-space) + var(--nsv-header-close-reserved-space)
+  );
+  position: relative;
 }
 
 .notification-modal__title {
   color: var(--nsv-text);
   flex: 1 1 auto;
-  font-size: 1.7em;
+  font-size: 1.1em;
   font-weight: 700;
   letter-spacing: 0;
   line-height: 1.25;
   margin: 0;
+}
+
+.notification-modal__title-prefix {
+  color: var(--nsv-text-muted);
+  display: block;
+  font-size: 0.82em;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.notification-modal__title-dataset {
+  display: block;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.notification-modal__close-button {
+  position: absolute;
+  right: var(--nsv-space);
+  top: var(--nsv-header-close-top);
 }
 
 .notification-modal__body {
@@ -85,9 +114,10 @@
   align-items: flex-start;
   background: #fff;
   border-bottom: 1px solid var(--nsv-border-soft);
+  cursor: pointer;
   display: flex;
-  gap: 16px;
-  padding: 22px 24px;
+  gap: var(--nsv-type-row-gap);
+  padding: var(--nsv-type-row-block-space) var(--nsv-space);
   transition:
     background-color 120ms ease,
     opacity 120ms ease;
@@ -108,17 +138,15 @@
   opacity: 0.72;
 }
 
-.notification-modal__type-checkbox {
+/* must compete with specificity of bootstrap classes */
+input[type="checkbox"].notification-modal__type-checkbox {
   flex: 0 0 auto;
-  height: 22px;
-  margin: 2px 0 0;
-  width: 22px;
+  margin-top: 0.2em;
+  height: var(--nsv-type-checkbox-size);
+  width: var(--nsv-type-checkbox-size);
 }
 
-.notification-modal__type-checkbox:not(:disabled),
-.notification-modal__type-checkbox:not(:disabled)
-  + .notification-modal__type-content
-  .notification-modal__type-label {
+.notification-modal__type-checkbox:not(:disabled) {
   cursor: pointer;
 }
 

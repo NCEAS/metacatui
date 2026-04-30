@@ -5,7 +5,7 @@ define([
   "models/MetricsModel",
   "views/MetricView",
   "views/citations/CitationModalView",
-  "views/NotificationModalView",
+  "views/notifications/NotificationModalView",
   "common/Utilities",
 ], (
   $,

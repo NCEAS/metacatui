@@ -1,8 +1,8 @@
 define([
   "jquery",
   "backbone",
-  "models/ObjectNotification",
-  "views/NotificationModalView",
+  "models/notifications/ObjectNotification",
+  "views/notifications/NotificationModalView",
 ], ($, Backbone, ObjectNotification, NotificationModalView) => {
   const expect = chai.expect;
 
@@ -116,6 +116,17 @@ define([
 
       expect(view.checkboxes.citations.checked).to.equal(true);
       expect(view.checkboxes.datasetChanges.checked).to.equal(false);
+    });
+
+    it("toggles a checkbox when its notification type row is clicked", () => {
+      view.render();
+      const row = view.checkboxes.datasetChanges.closest(
+        ".notification-modal__type-row",
+      );
+
+      row.click();
+
+      expect(view.checkboxes.datasetChanges.checked).to.equal(true);
     });
 
     it("saves selected resource types through the model", async () => {

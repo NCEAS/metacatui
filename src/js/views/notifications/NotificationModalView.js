@@ -1,10 +1,9 @@
 define([
   "jquery",
   "backbone",
-  "models/ObjectNotification",
-  "common/Utilities",
+  "models/notifications/ObjectNotification",
   `text!${MetacatUI.root}/css/notification-modal.css`,
-], ($, Backbone, ObjectNotification, Utilities, NotificationModalViewCSS) => {
+], ($, Backbone, ObjectNotification, NotificationModalViewCSS) => {
   "use strict";
 
   const BASE_CLASS = "notification-modal";
@@ -36,6 +35,8 @@ define([
     modalContent: `${BASE_CLASS}__content`,
     modalHeader: `${BASE_CLASS}__header`,
     modalTitle: `${BASE_CLASS}__title`,
+    modalTitlePrefix: `${BASE_CLASS}__title-prefix`,
+    modalTitleDataset: `${BASE_CLASS}__title-dataset`,
     modalBody: `${BASE_CLASS}__body`,
     status: `${BASE_CLASS}__status`,
     statusInfo: `${BASE_CLASS}__status--info`,
@@ -61,6 +62,7 @@ define([
   };
 
   const { ERROR_CODES } = ObjectNotification;
+  const MAX_DATASET_TITLE_LENGTH = 120;
 
   const MESSAGES = {
     ACCOUNT_SETTINGS_LINK_TEXT: "account settings page",
@@ -98,6 +100,7 @@ define([
    * @classcategory Views
    * @augments Backbone.View
    * @since 0.0.0
+   * @screenshot views/notifications/NotificationModalView.png
    */
   const NotificationModalView = Backbone.View.extend(
     /** @lends NotificationModalView.prototype */ {
@@ -131,9 +134,13 @@ define([
        * Render the modal shell.
        * @param {object} options Template options.
        * @param {string} options.title Modal title.
+       * @param {string} [options.datasetTitle] Full dataset title for tooltip
+       * display.
+       * @param {string} [options.displayDatasetTitle] Dataset title for display
+       * in the modal header.
        * @returns {HTMLElement} Modal element.
        */
-      template({ title }) {
+      template({ title, datasetTitle, displayDatasetTitle }) {
         const template = document.createElement("template");
         const BC = BOOTSTRAP_CLASS_NAMES;
         const C = CLASS_NAMES;
@@ -145,7 +152,7 @@ define([
                 <button type="button" class="${BC.close} ${C.closeButton}" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
-                <h5 class="${BC.modalTitle} ${C.modalTitle}" id="${titleId}">${Utilities.encodeHTML(title)}</h5>
+                <h5 class="${BC.modalTitle} ${C.modalTitle}" id="${titleId}"></h5>
               </div>
               <div class="${BC.modalBody} ${C.modalBody}">
                 <div class="${C.status}" role="status" aria-live="polite"></div>
@@ -161,6 +168,12 @@ define([
             </div>
           </div>
         `;
+        const titleEl = template.content.querySelector(`#${titleId}`);
+        this.renderModalTitle(titleEl, {
+          title,
+          datasetTitle,
+          displayDatasetTitle,
+        });
         return template.content.querySelector(`.${C.modalDialog}`);
       },
 
@@ -173,6 +186,7 @@ define([
         events[`click .${CLASS_NAMES.saveButton}`] = "saveChanges";
         events[`click .${CLASS_NAMES.cancelButton}`] = "cancelChanges";
         events[`click .${CLASS_NAMES.closeButton}`] = "cancelChanges";
+        events[`click .${CLASS_NAMES.typeRow}`] = "toggleNotificationType";
         return events;
       },
 
@@ -225,11 +239,7 @@ define([
       render() {
         this.model.refreshResourceTypes();
         this.el.innerHTML = "";
-        this.el.appendChild(
-          this.template({
-            title: this.getModalTitle(),
-          }),
-        );
+        this.el.appendChild(this.template(this.getModalTitleOptions()));
 
         this.statusEl = this.el.querySelector(`.${CLASS_NAMES.status}`);
         this.form = this.el.querySelector(`.${CLASS_NAMES.form}`);
@@ -296,7 +306,7 @@ define([
 
         this.showStatus(MESSAGES.LOADING);
         const loadPromise = this.model.loadSubscriptions();
-        const loadRequestId = this.model.loadRequestId;
+        const { loadRequestId } = this.model;
         const isCurrentLoad = () => loadRequestId === this.model.loadRequestId;
         this.updateControlState();
 
@@ -369,6 +379,21 @@ define([
         container.appendChild(content);
 
         return container;
+      },
+
+      /**
+       * Toggle a notification type when its row is clicked.
+       * @param {Event} event Click event.
+       */
+      toggleNotificationType(event) {
+        const row = event.currentTarget;
+        const checkbox = row?.querySelector(`.${CLASS_NAMES.typeCheckbox}`);
+        if (!checkbox || checkbox.disabled) return;
+
+        const label = event.target.closest?.(`.${CLASS_NAMES.typeLabel}`);
+        if (event.target !== checkbox && !label) {
+          checkbox.checked = !checkbox.checked;
+        }
       },
 
       /**
@@ -631,6 +656,50 @@ define([
       },
 
       /**
+       * Render the modal title as a prefix plus emphasized dataset title.
+       * @param {HTMLElement} titleEl Title element.
+       * @param {object} options Title options.
+       * @param {string} options.title Full fallback title.
+       * @param {string} [options.datasetTitle] Full dataset title.
+       * @param {string} [options.displayDatasetTitle] Truncated dataset title.
+       */
+      renderModalTitle(titleEl, { title, datasetTitle, displayDatasetTitle }) {
+        if (!titleEl) return;
+        const titleElEdited = titleEl;
+
+        titleElEdited.innerHTML = "";
+        if (!datasetTitle) {
+          titleElEdited.textContent = title;
+          return;
+        }
+
+        const prefix = document.createElement("span");
+        prefix.className = CLASS_NAMES.modalTitlePrefix;
+        prefix.textContent = MESSAGES.MODAL_TITLE_PREFIX.trim();
+
+        const dataset = document.createElement("span");
+        dataset.className = CLASS_NAMES.modalTitleDataset;
+        dataset.textContent = displayDatasetTitle;
+        dataset.setAttribute("title", datasetTitle);
+
+        titleElEdited.append(prefix, dataset);
+      },
+
+      /**
+       * Build template data for the modal title.
+       * @returns {{title: string, datasetTitle: string, displayDatasetTitle: string}}
+       * Modal title template data.
+       */
+      getModalTitleOptions() {
+        const datasetTitle = this.model.getDatasetTitle();
+        return {
+          title: this.getModalTitle(),
+          datasetTitle,
+          displayDatasetTitle: this.truncateDatasetTitle(datasetTitle),
+        };
+      },
+
+      /**
        * Get the modal title.
        * @returns {string} Modal title.
        */
@@ -639,6 +708,16 @@ define([
         return datasetTitle
           ? `${MESSAGES.MODAL_TITLE_PREFIX}${datasetTitle}`
           : MESSAGES.MODAL_TITLE_DEFAULT;
+      },
+
+      /**
+       * Truncate long dataset titles in the modal header.
+       * @param {string} title Dataset title.
+       * @returns {string} Display title.
+       */
+      truncateDatasetTitle(title) {
+        if (!title || title.length <= MAX_DATASET_TITLE_LENGTH) return title;
+        return `${title.slice(0, MAX_DATASET_TITLE_LENGTH - 3).trimEnd()}...`;
       },
 
       /**

@@ -1,4 +1,4 @@
-define(["backbone", "models/ObjectNotification"], (
+define(["backbone", "models/notifications/ObjectNotification"], (
   Backbone,
   ObjectNotification,
 ) => {
