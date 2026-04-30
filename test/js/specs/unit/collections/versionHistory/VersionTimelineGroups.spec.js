@@ -45,14 +45,34 @@ define([
     describe("Updating via set", function () {
       it("uses the idAttribute to merge updates", function () {
         groups.set([
-          { id: "segment:0:a", sequence: 0, date: new Date(2024, 3, 1), models: ["initial"] },
-          { id: "segment:1:b", sequence: 1, date: new Date(2024, 2, 1), models: ["older"] },
+          {
+            id: "segment:0:a",
+            sequence: 0,
+            date: new Date(2024, 3, 1),
+            models: ["initial"],
+          },
+          {
+            id: "segment:1:b",
+            sequence: 1,
+            date: new Date(2024, 2, 1),
+            models: ["older"],
+          },
         ]);
 
         groups.set(
           [
-            { id: "segment:0:a", sequence: 0, date: new Date(2024, 3, 1), models: ["updated"] },
-            { id: "segment:2:c", sequence: 2, date: new Date(2024, 4, 1), models: ["new"] },
+            {
+              id: "segment:0:a",
+              sequence: 0,
+              date: new Date(2024, 3, 1),
+              models: ["updated"],
+            },
+            {
+              id: "segment:2:c",
+              sequence: 2,
+              date: new Date(2024, 4, 1),
+              models: ["new"],
+            },
           ],
           { remove: true },
         );
@@ -110,18 +130,26 @@ define([
         groups.length.should.equal(4);
         groups.pluck("sequence").should.deep.equal([0, 1, 2, 3]);
 
-        groups.at(0).get("models").map((m) => m.get("identifier")).should.deep.equal([
-          "newest",
-        ]);
-        groups.at(1).get("models").map((m) => m.get("identifier")).should.deep.equal([
-          "newer",
-        ]);
-        groups.at(2).get("models").map((m) => m.get("identifier")).should.deep.equal([
-          "ref",
-        ]);
-        groups.at(3).get("models").map((m) => m.get("identifier")).should.deep.equal([
-          "older",
-        ]);
+        groups
+          .at(0)
+          .get("models")
+          .map((m) => m.get("identifier"))
+          .should.deep.equal(["newest"]);
+        groups
+          .at(1)
+          .get("models")
+          .map((m) => m.get("identifier"))
+          .should.deep.equal(["newer"]);
+        groups
+          .at(2)
+          .get("models")
+          .map((m) => m.get("identifier"))
+          .should.deep.equal(["ref"]);
+        groups
+          .at(3)
+          .get("models")
+          .map((m) => m.get("identifier"))
+          .should.deep.equal(["older"]);
       });
 
       it("creates repeated date buckets when the same day is non-contiguous in chain order", function () {
@@ -153,9 +181,11 @@ define([
         groups.at(0).get("date").should.be.instanceof(Date);
         groups.at(1).get("date").should.be.instanceof(Date);
         groups.at(2).get("date").should.be.instanceof(Date);
-        groups.at(0).get("date").getTime().should.equal(
-          groups.at(2).get("date").getTime(),
-        );
+        groups
+          .at(0)
+          .get("date")
+          .getTime()
+          .should.equal(groups.at(2).get("date").getTime());
       });
 
       it("creates contiguous unknown-date buckets instead of global future/past buckets", function () {
@@ -209,11 +239,13 @@ define([
 
         groups.fromDataONEObjects(collection, { referencePid });
 
-        groups.at(0)
+        groups
+          .at(0)
           .get("models")[0]
           .get("identifier")
           .should.equal("older-date-but-newer-chain");
-        groups.at(1)
+        groups
+          .at(1)
           .get("models")[0]
           .get("identifier")
           .should.equal("newer-date-but-older-chain");

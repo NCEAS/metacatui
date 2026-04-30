@@ -176,7 +176,9 @@ define([
 
         try {
           await service.download("pid.bad", { auth: false, cacheKey: "k.bad" });
-          should.fail("Expected SysMetaService.download to reject on parse failure");
+          should.fail(
+            "Expected SysMetaService.download to reject on parse failure",
+          );
         } catch (err) {
           err.message.should.match(
             /Failed to parse SysMeta XML for PID pid\.bad: Bad XML/,

@@ -130,7 +130,8 @@ define([
             getActiveAltRepo: state.sandbox.stub().returns(null),
             isDOI: state.sandbox.stub().returns(false),
           },
-          appUserModel: (originalMetacatUI && originalMetacatUI.appUserModel) || {
+          appUserModel: (originalMetacatUI &&
+            originalMetacatUI.appUserModel) || {
             get: state.sandbox.stub().returns(false),
           },
           nodeModel: (originalMetacatUI && originalMetacatUI.nodeModel) || {
@@ -155,7 +156,8 @@ define([
             getActiveAltRepo: state.sandbox.stub().returns(null),
             isDOI: state.sandbox.stub().returns(false),
           },
-          appUserModel: (originalMetacatUI && originalMetacatUI.appUserModel) || {
+          appUserModel: (originalMetacatUI &&
+            originalMetacatUI.appUserModel) || {
             get: state.sandbox.stub().returns(false),
           },
           nodeModel: (originalMetacatUI && originalMetacatUI.nodeModel) || {
@@ -209,7 +211,11 @@ define([
         next.should.equal("pid.2");
         prev.should.equal("pid.0");
         adjacentStub.firstCall.args.should.deep.equal(["pid.1", true, options]);
-        adjacentStub.secondCall.args.should.deep.equal(["pid.1", false, options]);
+        adjacentStub.secondCall.args.should.deep.equal([
+          "pid.1",
+          false,
+          options,
+        ]);
       });
     });
 

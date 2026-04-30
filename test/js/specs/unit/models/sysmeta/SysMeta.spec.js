@@ -209,7 +209,9 @@ define(["/test/js/specs/shared/clean-state.js", "models/sysmeta/SysMeta"], (
 
         const json = s.toJSON(true);
         json.errors.should.be.an("array");
-        json.errors[0].message.should.equal("Failed to parse SystemMetadata XML");
+        json.errors[0].message.should.equal(
+          "Failed to parse SystemMetadata XML",
+        );
       });
 
       it("omits errors when includeErrors is false", () => {
