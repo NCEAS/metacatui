@@ -1427,7 +1427,10 @@ other class: .ui-slider-range */
   }
 
   .draw-tool__button--disable .icon {
-    color: var(--portal-col-neutral-4, var(--map-col-text__deprecate));
+    color: var(
+      --portal-col-neutral-4,
+      var(--portal-col-text-subtle__deprecate)
+    );
   }
 }
 
@@ -1459,7 +1462,7 @@ other class: .ui-slider-range */
 }
 
 .draw-tool__button--disable {
-  color: var(--portal-col-neutral-4);
+  color: var(--portal-col-neutral-4, var(--portal-col-text-subtle__deprecate));
   cursor: not-allowed;
   trash {
     color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
@@ -1599,7 +1602,10 @@ other class: .ui-slider-range */
 
 .download-panel__progress-container {
   width: 100%;
-  background-color: var(--portal-col-neutral-2, rgba(200, 199, 199, 0.77));
+  background-color: var(
+    --portal-col-neutral-2,
+    var(--map-col-bkg-lightest__deprecate)
+  );
   border-radius: 5px;
   margin-top: 10px;
   overflow: hidden;
@@ -1608,9 +1614,12 @@ other class: .ui-slider-range */
 .download-panel__progress-bar {
   width: 0%;
   height: 18px;
-  background-color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
+  background-color: var(
+    --portal-col-primary-6,
+    var(--map-col-highlight__deprecate)
+  );
   text-align: center;
-  color: var(--portal-col-neutral-00);
+  color: var(--portal-col-neutral-00, var(--map-col-text__deprecate));
   line-height: 18px;
   font-size: 10px;
   border-radius: 5px;
@@ -1620,7 +1629,7 @@ other class: .ui-slider-range */
   width: 0%;
   height: 18px;
   text-align: center;
-  color: var(--portal-col-neutral-8);
+  color: var(--portal-col-neutral-8, var(--map-col-bkg__deprecate));
   line-height: 18px;
   font-size: 10px;
   border-radius: 5px;
