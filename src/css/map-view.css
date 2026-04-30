@@ -1515,7 +1515,7 @@ other class: .ui-slider-range */
  * Contains:
  *   - a header
  *   - instructions
- *   - a list of downloadable data layers (download-data-list)
+ *   - a list of downloadable data layers (download-panel__data-list)
  *   - the draw-tool for selecting a custom area to download
  */
 
@@ -1628,15 +1628,7 @@ other class: .ui-slider-range */
   background-color: rgba(255, 255, 0, 0.172);
 }
 
-/*****************************************************************************************
- *
- * Download Data List
- *
- * A list of data layers (layer-download blocks) that can be downloaded.
- * 
- */
-
-.download-data-list {
+.download-panel__data-list {
   display: block;
   width: calc(100% - 60px);
   margin: 5px 0 15px 0;
@@ -1651,18 +1643,18 @@ other class: .ui-slider-range */
 }
 
 /* For Chrome, Edge, and Safari */
-.download-data-list::-webkit-scrollbar {
+.download-panel__data-list::-webkit-scrollbar {
   width: 12px; /* Width of the scrollbar */
 }
 
-.download-data-list::-webkit-scrollbar-track {
+.download-panel__data-list::-webkit-scrollbar-track {
   background: var(
     --portal-col-neutral-1,
     #f0f0f0
   ); /* Background of the scrollbar track */
 }
 
-.download-data-list::-webkit-scrollbar-thumb {
+.download-panel__data-list::-webkit-scrollbar-thumb {
   background-color: var(
     --portal-col-neutral-4,
     #888
@@ -1671,7 +1663,7 @@ other class: .ui-slider-range */
   border: 2px solid var(--portal-col-neutral-1, #f0f0f0); /* Adds some space between thumb and track */
 }
 
-.download-data-list::-webkit-scrollbar-thumb:hover {
+.download-panel__data-list::-webkit-scrollbar-thumb:hover {
   background-color: var(
     --portal-col-neutral-5,
     #555

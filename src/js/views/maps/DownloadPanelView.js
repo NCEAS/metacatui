@@ -33,7 +33,7 @@ define([
     title: "download-panel__title",
     closeButton: "download-panel__close-button",
     // Data list elements (referenced by querySelector)
-    dataList: "download-data-list",
+    dataList: "download-panel__data-list",
     instructions: "download-panel__instructions",
     drawTool: "draw-tool",
     // Shared toolbar classes (used for coordinating with ToolbarView)
@@ -805,7 +805,7 @@ define([
         });
 
         if (!selectedLayersList.length) {
-          // Update the text of download-data-list__panel
+          // Update the text of download-panel__instructions
           this.el.querySelector(`.${CLASS_NAMES.instructions}`).textContent =
             "No layers are available for download. Click on layers in the list above to make them visible on the Map and available for download. Only select layers have data products available for download.";
           view.setButtonStatuses({
@@ -827,7 +827,7 @@ define([
 
             view.layerDownloadViews.push(layerDownloadView);
           });
-          // Update the text of download-data-list__panel
+          // Update the text of download-panel__instructions
           this.el.querySelector(`.${CLASS_NAMES.instructions}`).textContent =
             "Select products below and click the download button. To download full datasets (including original shapefiles) please use the Layers panel above. ";
 
