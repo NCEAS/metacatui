@@ -1650,7 +1650,7 @@ other class: .ui-slider-range */
   padding-top: 0;
   color: var(--portal-col-neutral-7);
   overflow-y: auto; /* Enable vertical scrolling */
-  max-height: 150px; /* Fixed height for the list */
+  max-height: 200px; /* Fixed height for the list */
   /* Styling the scrollbar */
   scrollbar-width: thin; /* For Firefox */
   scrollbar-color: var(--portal-col-neutral-4, #888)
