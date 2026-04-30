@@ -73,6 +73,7 @@ define(["backbone", "dataoneNotifications"], (
         this.userModel = options.userModel || null;
         this.NotificationClient = options.NotificationClient || null;
         this.loadRequestId = 0;
+        this.saveRequestId = 0;
 
         this.refreshResourceTypes();
 
@@ -139,8 +140,8 @@ define(["backbone", "dataoneNotifications"], (
       /**
        * Save selected resource types by subscribing and unsubscribing as needed.
        * @param {string[]} selectedResourceTypes Selected resource type names.
-       * @returns {Promise<{changed: boolean, resourceTypes: string[]}>} Save
-       * result.
+       * @returns {Promise<{changed: boolean, resourceTypes: string[], stale?: boolean}>}
+       * Save result.
        */
       async saveSubscriptions(selectedResourceTypes) {
         const setupError = this.getSetupError();
@@ -164,6 +165,13 @@ define(["backbone", "dataoneNotifications"], (
           };
         }
 
+        const requestId = this.saveRequestId + 1;
+        this.saveRequestId = requestId;
+        const staleResult = () => ({
+          changed: false,
+          resourceTypes: this.get("savedResourceTypes").slice(),
+          stale: true,
+        });
         this.set({ savingSubscriptions: true });
 
         try {
@@ -178,6 +186,10 @@ define(["backbone", "dataoneNotifications"], (
 
           await Promise.all([...subscribeRequests, ...unsubscribeRequests]);
 
+          if (requestId !== this.saveRequestId) {
+            return staleResult();
+          }
+
           const savedResourceTypes = this.setSavedResourceTypes(selected);
           const payload = {
             pid: this.get("pid"),
@@ -188,8 +200,15 @@ define(["backbone", "dataoneNotifications"], (
             changed: true,
             resourceTypes: savedResourceTypes,
           };
+        } catch (error) {
+          if (requestId !== this.saveRequestId) {
+            return staleResult();
+          }
+          throw error;
         } finally {
-          this.set({ savingSubscriptions: false });
+          if (requestId === this.saveRequestId) {
+            this.set({ savingSubscriptions: false });
+          }
         }
       },
 
@@ -230,6 +249,7 @@ define(["backbone", "dataoneNotifications"], (
       /** Reset the cached NotificationClient and loaded state */
       resetClient() {
         this.loadRequestId += 1;
+        this.saveRequestId += 1;
         this.set({
           client: null,
           loadedSubscriptions: false,

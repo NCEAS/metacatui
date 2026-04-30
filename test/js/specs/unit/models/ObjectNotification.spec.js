@@ -11,6 +11,15 @@ define(["backbone", "models/ObjectNotification"], (
     let model;
     let OriginalMetacatUI;
 
+    const defer = () => {
+      const deferred = {};
+      deferred.promise = new Promise((resolve, reject) => {
+        deferred.resolve = resolve;
+        deferred.reject = reject;
+      });
+      return deferred;
+    };
+
     const resourceTypes = [
       {
         type: "datasetChanges",
@@ -155,6 +164,54 @@ define(["backbone", "models/ObjectNotification"], (
       expect(model.get("client")).to.equal(null);
       expect(model.get("loadedSubscriptions")).to.equal(false);
       expect(model.get("savedResourceTypes")).to.deep.equal([]);
+    });
+
+    it("ignores save completions after the client is reset", async () => {
+      const subscribeDeferred = defer();
+      client.subscribe = sinon.stub().returns(subscribeDeferred.promise);
+      createModel();
+      model.set({
+        loadedSubscriptions: true,
+        savedResourceTypes: ["citations"],
+      });
+      const savedSpy = sinon.spy();
+      model.on("subscriptions:saved", savedSpy);
+
+      const savePromise = model.saveSubscriptions(["datasetChanges"]);
+      await Promise.resolve();
+      appModel.set("notificationServiceUrl", "https://new.example.com");
+      subscribeDeferred.resolve();
+
+      const result = await savePromise;
+
+      expect(result.stale).to.equal(true);
+      expect(model.get("savedResourceTypes")).to.deep.equal([]);
+      expect(savedSpy.notCalled).to.equal(true);
+      expect(model.get("savingSubscriptions")).to.equal(false);
+    });
+
+    it("ignores save failures after the client is reset", async () => {
+      const subscribeDeferred = defer();
+      client.subscribe = sinon.stub().returns(subscribeDeferred.promise);
+      createModel();
+      model.set({
+        loadedSubscriptions: true,
+        savedResourceTypes: ["citations"],
+      });
+      const savedSpy = sinon.spy();
+      model.on("subscriptions:saved", savedSpy);
+
+      const savePromise = model.saveSubscriptions(["datasetChanges"]);
+      await Promise.resolve();
+      appModel.set("notificationServiceUrl", "https://new.example.com");
+      subscribeDeferred.reject(new Error("service failed"));
+
+      const result = await savePromise;
+
+      expect(result.stale).to.equal(true);
+      expect(model.get("savedResourceTypes")).to.deep.equal([]);
+      expect(savedSpy.notCalled).to.equal(true);
+      expect(model.get("savingSubscriptions")).to.equal(false);
     });
   });
 });

@@ -14,6 +14,15 @@ define([
     let OriginalMetacatUI;
     let originalModal;
 
+    const defer = () => {
+      const deferred = {};
+      deferred.promise = new Promise((resolve, reject) => {
+        deferred.resolve = resolve;
+        deferred.reject = reject;
+      });
+      return deferred;
+    };
+
     const resourceTypes = [
       {
         type: "datasetChanges",
@@ -137,6 +146,24 @@ define([
       model.trigger("subscriptions:saved", payload);
 
       expect(savedSpy.calledOnceWith(payload)).to.be.true;
+    });
+
+    it("ignores stale load completions after a model reset", async () => {
+      const loadDeferred = defer();
+      sinon.stub(model, "loadSubscriptions").callsFake(() => {
+        model.loadRequestId += 1;
+        return loadDeferred.promise;
+      });
+      view.render();
+
+      const loadPromise = view.loadSubscriptions();
+      userModel.set("email", "");
+      loadDeferred.resolve();
+      await loadPromise;
+
+      expect(view.el.textContent).to.contain(
+        "Enter an email address on your account settings page before managing notifications.",
+      );
     });
   });
 });

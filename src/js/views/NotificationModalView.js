@@ -296,16 +296,22 @@ define([
 
         this.showStatus(MESSAGES.LOADING);
         const loadPromise = this.model.loadSubscriptions();
+        const loadRequestId = this.model.loadRequestId;
+        const isCurrentLoad = () => loadRequestId === this.model.loadRequestId;
         this.updateControlState();
 
         try {
           await loadPromise;
+          if (!isCurrentLoad()) return;
           this.setCheckboxes(this.model.get("savedResourceTypes"));
           this.removeError();
         } catch (error) {
+          if (!isCurrentLoad()) return;
           this.showError(error, "LOAD_FAILED");
         } finally {
-          this.updateControlState();
+          if (isCurrentLoad()) {
+            this.updateControlState();
+          }
         }
       },
 
@@ -389,6 +395,7 @@ define([
 
         try {
           const result = await savePromise;
+          if (result.stale) return;
           this.setCheckboxes(this.model.get("savedResourceTypes"));
           this.removeError();
           this.hide();
