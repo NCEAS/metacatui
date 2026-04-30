@@ -1,4 +1,4 @@
-.notification-service-view {
+.notification-modal {
   --nsv-bg-subtle: #f9f7f7;
   --nsv-bg-hover: #fbfbfb;
   --nsv-bg-disabled: #f1f1f1;
@@ -16,24 +16,24 @@
   overflow: hidden;
 }
 
-.notification-service-view__content {
+.notification-modal__content {
   border-radius: var(--nsv-radius);
   overflow: hidden;
 }
 
-.notification-service-view__header,
-.notification-service-view__footer {
+.notification-modal__header,
+.notification-modal__footer {
   align-items: center;
   display: flex;
   gap: 15px;
   padding: 22px var(--nsv-space);
 }
 
-.notification-service-view__header {
+.notification-modal__header {
   border-bottom: 1px solid var(--nsv-border);
 }
 
-.notification-service-view__title {
+.notification-modal__title {
   color: var(--nsv-text);
   flex: 1 1 auto;
   font-size: 1.7em;
@@ -43,11 +43,11 @@
   margin: 0;
 }
 
-.notification-service-view__body {
+.notification-modal__body {
   padding: var(--nsv-space);
 }
 
-.notification-service-view__status {
+.notification-modal__status {
   border: 1px solid transparent;
   border-radius: var(--nsv-radius);
   font-size: 1em;
@@ -56,32 +56,32 @@
   padding: 14px 18px;
 }
 
-.notification-service-view__status--info {
+.notification-modal__status--info {
   background: #d9edf7;
   border-color: #bce8f1;
   color: var(--color-info, #3a87ad);
 }
 
-.notification-service-view__status--error {
+.notification-modal__status--error {
   background: #f2dede;
   border-color: #ebccd1;
   color: #a94442;
 }
 
-.notification-service-view__status a {
+.notification-modal__status a {
   color: inherit;
   font-weight: 700;
   text-decoration: underline;
 }
 
-.notification-service-view__form {
+.notification-modal__form {
   border: 1px solid var(--nsv-border-soft);
   border-radius: var(--nsv-radius);
   margin: 0;
   overflow: hidden;
 }
 
-.notification-service-view__type-row {
+.notification-modal__type-row {
   align-items: flex-start;
   background: #fff;
   border-bottom: 1px solid var(--nsv-border-soft);
@@ -93,50 +93,50 @@
     opacity 120ms ease;
 }
 
-.notification-service-view__type-row:last-child {
+.notification-modal__type-row:last-child {
   border-bottom: 0;
 }
 
-.notification-service-view__type-row:hover {
+.notification-modal__type-row:hover {
   background: var(--nsv-bg-hover);
 }
 
-.notification-service-view__type-row--disabled {
+.notification-modal__type-row--disabled {
   background: var(--nsv-bg-disabled);
   color: var(--nsv-text-disabled);
   cursor: not-allowed;
   opacity: 0.72;
 }
 
-.notification-service-view__type-checkbox {
+.notification-modal__type-checkbox {
   flex: 0 0 auto;
   height: 22px;
   margin: 2px 0 0;
   width: 22px;
 }
 
-.notification-service-view__type-checkbox:not(:disabled),
-.notification-service-view__type-checkbox:not(:disabled)
-  + .notification-service-view__type-content
-  .notification-service-view__type-label {
+.notification-modal__type-checkbox:not(:disabled),
+.notification-modal__type-checkbox:not(:disabled)
+  + .notification-modal__type-content
+  .notification-modal__type-label {
   cursor: pointer;
 }
 
-.notification-service-view__type-checkbox:disabled {
+.notification-modal__type-checkbox:disabled {
   cursor: not-allowed;
 }
 
-.notification-service-view__type-checkbox:focus {
+.notification-modal__type-checkbox:focus {
   outline: 2px solid var(--nsv-focus);
   outline-offset: 2px;
 }
 
-.notification-service-view__type-content {
+.notification-modal__type-content {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.notification-service-view__type-label {
+.notification-modal__type-label {
   color: var(--nsv-text);
   display: block;
   font-size: 1.2em;
@@ -145,73 +145,73 @@
   margin: 0 0 6px;
 }
 
-.notification-service-view__type-description,
-.notification-service-view__footer-message {
+.notification-modal__type-description,
+.notification-modal__footer-message {
   color: var(--nsv-text-muted);
   line-height: 1.4;
   margin: 0;
 }
 
-.notification-service-view__type-description {
+.notification-modal__type-description {
   font-size: 1em;
 }
 
-.notification-service-view__footer {
+.notification-modal__footer {
   background: var(--nsv-bg-subtle);
   border-top: 1px solid var(--nsv-border);
   justify-content: flex-end;
 }
 
-.notification-service-view__footer-actions {
+.notification-modal__footer-actions {
   display: flex;
   gap: 12px;
 }
 
-.notification-service-view__footer-message {
+.notification-modal__footer-message {
   flex: 1 1 auto;
   font-size: 0.9em;
   font-weight: 600;
   text-align: right;
 }
 
-.notification-service-view__cancel-button,
-.notification-service-view__save-button {
+.notification-modal__cancel-button,
+.notification-modal__save-button {
   min-width: 96px;
 }
 
-.notification-service-view__cancel-button:disabled,
-.notification-service-view__cancel-button.disabled,
-.notification-service-view__save-button:disabled,
-.notification-service-view__save-button.disabled {
+.notification-modal__cancel-button:disabled,
+.notification-modal__cancel-button.disabled,
+.notification-modal__save-button:disabled,
+.notification-modal__save-button.disabled {
   box-shadow: none;
   cursor: not-allowed;
   opacity: 0.55;
 }
 
 @media (max-width: 767px) {
-  .notification-service-view {
+  .notification-modal {
     --nsv-space: 20px;
   }
 
-  .notification-service-view__title {
+  .notification-modal__title {
     font-size: 1.4em;
   }
 
-  .notification-service-view__type-row {
+  .notification-modal__type-row {
     padding: 18px;
   }
 
-  .notification-service-view__footer {
+  .notification-modal__footer {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .notification-service-view__footer-actions {
+  .notification-modal__footer-actions {
     justify-content: flex-end;
     width: 100%;
   }
 
-  .notification-service-view__footer-message {
+  .notification-modal__footer-message {
     text-align: left;
   }
 }

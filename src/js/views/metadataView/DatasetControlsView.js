@@ -5,7 +5,7 @@ define([
   "models/MetricsModel",
   "views/MetricView",
   "views/citations/CitationModalView",
-  "views/NotificationServiceView",
+  "views/NotificationModalView",
   "common/Utilities",
 ], (
   $,
@@ -14,7 +14,7 @@ define([
   MetricsModel,
   MetricView,
   CitationModalView,
-  NotificationServiceView,
+  NotificationModalView,
   Utilities,
 ) => {
   "use strict";
@@ -275,11 +275,13 @@ define([
         /**
          * @typedef {object} DatasetControlsViewModel
          * @property {string} [pid] - The dataset identifier for this page.
-         * @property {SolrResults|EML211} [metadataModel] - The associated metadata model.
+         * @property {SolrResults|EML211} [metadataModel] - The associated
+         * metadata model.
          * @property {Function} [publishMethod] - Method to publish the dataset.
-         * @property {boolean} [hasWritePermission] - Whether the current user has
-         * write permission for the dataset.
-         * @property {MetricsModel} [metricsModel] - The metrics model for this dataset.
+         * @property {boolean} [hasWritePermission] - Whether the current user
+         * has write permission for the dataset.
+         * @property {MetricsModel} [metricsModel] - The metrics model for this
+         * dataset.
          */
         this.viewModel = new Backbone.Model({
           pid,
@@ -587,7 +589,7 @@ define([
         if (!button) return null;
 
         if (!this.notificationsModal) {
-          const notificationView = new NotificationServiceView({
+          const notificationView = new NotificationModalView({
             pid: this.viewModel.get("pid"),
             metadataModel: this.viewModel.get("metadataModel"),
             buttonEl: button,
@@ -731,7 +733,7 @@ define([
           error: {
             icon: "exclamation-triangle",
             text: text || "Error",
-            buttonClass: "error",
+            buttonClass: "danger",
           },
           default: { restore: true },
         };
@@ -930,8 +932,8 @@ define([
        * the view during initialization. Updates the button to show progress,
        * success, or error states.
        * @param {Event} event - The click event
-       * @returns {Promise|null} A promise that resolves/rejects when
-       * publishing is complete, or undefined if publishing did not start.
+       * @returns {Promise|null} A promise that resolves/rejects when publishing
+       * is complete, or undefined if publishing did not start.
        */
       publish(event) {
         event?.preventDefault?.();
