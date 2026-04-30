@@ -1,22 +1,39 @@
-define(["jquery", "backbone", "dataoneNotifications", "common/Utilities"], (
+define([
+  "jquery",
+  "backbone",
+  "dataoneNotifications",
+  "common/Utilities",
+  `text!${MetacatUI.root}/css/notification-service-view.css`,
+], (
   $,
   Backbone,
   DataONENotifications,
   Utilities,
+  NotificationServiceViewCSS,
 ) => {
   "use strict";
 
   const BASE_CLASS = "notification-service-view";
+  const CSS_ID = "notificationServiceView";
 
   const CLASS_NAMES = {
+    modalDialog: `${BASE_CLASS}__dialog`,
+    modalContent: `${BASE_CLASS}__content`,
+    modalHeader: `${BASE_CLASS}__header`,
+    modalTitle: `${BASE_CLASS}__title`,
     modalBody: `${BASE_CLASS}__body`,
     status: `${BASE_CLASS}__status`,
+    statusInfo: `${BASE_CLASS}__status--info`,
+    statusError: `${BASE_CLASS}__status--error`,
     form: `${BASE_CLASS}__form`,
     typeRow: `${BASE_CLASS}__type-row`,
+    typeRowDisabled: `${BASE_CLASS}__type-row--disabled`,
     typeCheckbox: `${BASE_CLASS}__type-checkbox`,
     typeContent: `${BASE_CLASS}__type-content`,
     typeLabel: `${BASE_CLASS}__type-label`,
     typeDescription: `${BASE_CLASS}__type-description`,
+    modalFooter: `${BASE_CLASS}__footer`,
+    footerActions: `${BASE_CLASS}__footer-actions`,
     footerMessage: `${BASE_CLASS}__footer-message`,
     closeButton: `${BASE_CLASS}__close-button`,
     cancelButton: `${BASE_CLASS}__cancel-button`,
@@ -29,6 +46,7 @@ define(["jquery", "backbone", "dataoneNotifications", "common/Utilities"], (
   };
 
   const MESSAGES = {
+    SIGN_IN: "Sign in to manage notifications.",
     MISSING_EMAIL: "An email address is required to manage notifications.",
   };
 
@@ -109,22 +127,24 @@ define(["jquery", "backbone", "dataoneNotifications", "common/Utilities"], (
       template({ title }) {
         const titleId = `${IDS.TITLE}-${this.cid}`;
         return `
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
+          <div class="modal-dialog ${CLASS_NAMES.modalDialog}" role="document">
+            <div class="modal-content ${CLASS_NAMES.modalContent}">
+              <div class="modal-header ${CLASS_NAMES.modalHeader}">
                 <button type="button" class="close ${CLASS_NAMES.closeButton}" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
-                <h5 class="modal-title" id="${titleId}">${Utilities.encodeHTML(title)}</h5>
+                <h5 class="modal-title ${CLASS_NAMES.modalTitle}" id="${titleId}">${Utilities.encodeHTML(title)}</h5>
               </div>
               <div class="modal-body ${CLASS_NAMES.modalBody}">
                 <div class="${CLASS_NAMES.status}" role="status" aria-live="polite"></div>
                 <form class="${CLASS_NAMES.form}"></form>
               </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary ${CLASS_NAMES.cancelButton}">Cancel</button>
-                <button type="button" class="btn btn-primary ${CLASS_NAMES.saveButton}">Save</button>
+              <div class="modal-footer ${CLASS_NAMES.modalFooter}">
                 <div class="${CLASS_NAMES.footerMessage}"></div>
+                <div class="${CLASS_NAMES.footerActions}">
+                  <button type="button" class="btn btn-secondary ${CLASS_NAMES.cancelButton}">Cancel</button>
+                  <button type="button" class="btn btn-primary ${CLASS_NAMES.saveButton}">Save</button>
+                </div>
               </div>
             </div>
           </div>
@@ -168,6 +188,8 @@ define(["jquery", "backbone", "dataoneNotifications", "common/Utilities"], (
         this.modalInitialized = false;
         this.rendered = false;
         this.loadRequestId = 0;
+
+        MetacatUI.appModel.addCSS(NotificationServiceViewCSS, CSS_ID);
 
         this.stopListening(GET_APP_MODEL());
         this.listenTo(
@@ -591,6 +613,9 @@ define(["jquery", "backbone", "dataoneNotifications", "common/Utilities"], (
           busy || !this.loadedSubscriptions || !!setupError;
 
         Object.values(this.checkboxes).forEach((checkbox) => {
+          const row = checkbox.closest(`.${CLASS_NAMES.typeRow}`);
+          row?.classList.toggle(CLASS_NAMES.typeRowDisabled, disableCheckboxes);
+
           if (disableCheckboxes) {
             checkbox.setAttribute("disabled", "disabled");
           } else {
@@ -620,7 +645,7 @@ define(["jquery", "backbone", "dataoneNotifications", "common/Utilities"], (
        * @param {string|HTMLElement} message Status message.
        * @param {string} [classes] Alert classes.
        */
-      showStatus(message, classes = "alert-info") {
+      showStatus(message, classes = CLASS_NAMES.statusInfo) {
         if (!this.statusEl) return;
 
         if (!message) {
@@ -629,7 +654,7 @@ define(["jquery", "backbone", "dataoneNotifications", "common/Utilities"], (
           return;
         }
 
-        this.statusEl.className = `${CLASS_NAMES.status} alert ${classes}`;
+        this.statusEl.className = `${CLASS_NAMES.status} ${classes}`;
         this.statusEl.innerHTML = "";
         if (typeof message === "string") {
           this.statusEl.textContent = message;
@@ -644,12 +669,25 @@ define(["jquery", "backbone", "dataoneNotifications", "common/Utilities"], (
        * @param {string} message The error message to display.
        */
       showError(message) {
+        if (message === MESSAGES.SIGN_IN) {
+          this.showStatus(message, CLASS_NAMES.statusInfo);
+          this.updateTooltip(message);
+          return;
+        }
+
         if (message === MESSAGES.MISSING_EMAIL) {
           this.showMissingEmailPrompt();
           return;
         }
 
-        this.showStatus(message, "alert-error alert-danger");
+        const messagePrefix =
+          "The notification service is unavailable. " +
+          "Please try again later or contact support if the issue persists.";
+
+        this.showStatus(
+          `${messagePrefix} (${message})`,
+          CLASS_NAMES.statusError,
+        );
         this.updateTooltip(message);
       },
 
@@ -668,7 +706,7 @@ define(["jquery", "backbone", "dataoneNotifications", "common/Utilities"], (
           " before managing notifications.",
         );
 
-        this.showStatus(prompt, "alert-error alert-danger");
+        this.showStatus(prompt, CLASS_NAMES.statusInfo);
         this.updateTooltip(MESSAGES.MISSING_EMAIL);
       },
 
@@ -729,7 +767,7 @@ define(["jquery", "backbone", "dataoneNotifications", "common/Utilities"], (
         }
 
         if (!GET_USER_MODEL().get("loggedIn")) {
-          return "Sign in to manage notifications.";
+          return MESSAGES.SIGN_IN;
         }
 
         if (!this.getEmailAddress()) {
