@@ -474,6 +474,10 @@ define([
           this.savedResourceTypes = selectedResourceTypes.slice();
           this.setCheckboxes(this.savedResourceTypes);
           this.removeError();
+          this.trigger("subscriptions:saved", {
+            pid: this.pid,
+            resourceTypes: this.savedResourceTypes.slice(),
+          });
           this.hide();
         } catch (error) {
           this.showError(
