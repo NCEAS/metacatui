@@ -1439,7 +1439,7 @@ other class: .ui-slider-range */
   .draw-tool__button--disable .icon {
     color: var(
       --portal-col-neutral-4,
-      var(--portal-col-text-subtle__deprecate)
+      var(--portal-col-text-subtle__deprecate, #6b7280)
     );
   }
 }
@@ -1472,8 +1472,15 @@ other class: .ui-slider-range */
 }
 
 .draw-tool__button--disable {
-  color: var(--portal-col-neutral-4, var(--portal-col-text-subtle__deprecate));
+  color: var(
+    --portal-col-neutral-4,
+    var(--portal-col-text-subtle__deprecate, #6b7280)
+  );
   cursor: not-allowed;
+
+  .draw-tool__button-icon-wrap {
+    opacity: 0.75;
+  }
   trash {
     color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
   }
@@ -1795,11 +1802,11 @@ other class: .ui-slider-range */
 
 .layer-download__copy-icon {
   cursor: pointer;
-  color: var(--portal-col-neutral-7);
+  color: var(--portal-col-neutral-7, var(--map-col-text__deprecate));
 }
 
 .layer-download__copy-icon:hover {
-  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
+  color: var(--portal-col-primary-6, #0087b5);
 }
 
 /*****************************************************************************************
