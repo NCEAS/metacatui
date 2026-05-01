@@ -1497,7 +1497,7 @@ other class: .ui-slider-range */
   background-color: var(
     --portal-col-neutral-7,
     var(--map-col-bkg-lightest__deprecate)
-  ); /* Optional: Add a semi-transparent background */
+  );
   color: var(
     --portal-col-neutral-00,
     var(--map-col-text__deprecate)
@@ -1513,6 +1513,8 @@ other class: .ui-slider-range */
   margin-top: 5px;
 }
 
+/* :hover triggering a descendant is the only pure-CSS way to implement a tooltip. */
+/* The JS alternative (toggling a --visible BEM modifier on mouseenter/mouseleave) adds unnecessary complexity */
 .draw-tool__button:hover .draw-tool__button-label {
   display: block;
 }
@@ -1738,26 +1740,50 @@ other class: .ui-slider-range */
   font-size: 12px;
   white-space: nowrap;
   margin-bottom: 0;
-  color: var(--portal-col-neutral-7);
+  color: var(--portal-col-neutral-7, var(--map-col-text__deprecate));
 }
 
 .layer-download__dropdown {
   margin-bottom: 0;
-  padding: 0px 2px; /* Add padding for better appearance */
+  padding: 0px 2px;
   font-size: 10px;
   width: 65%; /* Adjust based on container */
-  max-width: 120px; /* Prevents it from getting too wide */
+  max-width: 120px;
   height: 18px;
-  background-color: var(--portal-col-neutral-00, #faf9f6);
-  color: var(--portal-col-neutral-7);
-  border: 1px solid var(--portal-col-neutral-4, #ccc); /* Light border for the dropdown */
-  border-radius: 4px; /* Rounded corners */
+  background-color: var(
+    --portal-col-neutral-1,
+    var(--map-col-bkg-lightest__deprecate)
+  );
+  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
+  border: 1px solid
+    var(--portal-col-neutral-4, var(--map-col-bkg-lightest__deprecate));
+  border-radius: 4px;
   margin-left: 5px;
 }
 
+/* It seems native <option> elements inside a <select> cannot be given BEM classes in most browsers */
 .layer-download__dropdown option {
-  font-size: 12px; /* Adjust option font size */
-  color: var(--portal-col-neutral-7);
+  font-size: 12px;
+  color: var(--portal-col-neutral-7, var(--map-col-text__deprecate));
+}
+
+/* Cancel browser-default opacity on disabled selects so we can set explicit
+   muted-but-legible colours ourselves on both light and dark themes. */
+.layer-download__dropdown:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+  color: var(
+    --portal-col-neutral-5,
+    var(--portal-col-text-subtle__deprecate, #6b7280)
+  );
+  background-color: var(
+    --portal-col-neutral-2,
+    var(--map-col-bkg-lightest__deprecate)
+  );
+  border-color: var(
+    --portal-col-neutral-3,
+    var(--map-col-bkg-lightest__deprecate)
+  );
 }
 
 .layer-download__information {
@@ -1785,6 +1811,7 @@ other class: .ui-slider-range */
   border-radius: 5px;
   border: 1px solid
     var(--portal-col-primary-2, var(--map-col-bkg-lightest__deprecate));
+  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
   display: flex;
   justify-content: space-between;
 }
