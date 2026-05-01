@@ -1431,17 +1431,6 @@ other class: .ui-slider-range */
   display: flex;
   justify-content: center;
   align-items: center;
-
-  .icon {
-    color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
-  }
-
-  .draw-tool__button--disable .icon {
-    color: var(
-      --portal-col-neutral-4,
-      var(--portal-col-text-subtle__deprecate, #6b7280)
-    );
-  }
 }
 
 .draw-tool__button {
@@ -1477,10 +1466,6 @@ other class: .ui-slider-range */
     var(--portal-col-text-subtle__deprecate, #6b7280)
   );
   cursor: not-allowed;
-
-  .draw-tool__button-icon-wrap {
-    opacity: 0.75;
-  }
 }
 
 .draw-tool__button-icon-wrap {
@@ -1496,6 +1481,14 @@ other class: .ui-slider-range */
   font-size: 20px;
   border: 1px solid
     var(--portal-col-primary-2, var(--map-col-bkg-lightest__deprecate));
+}
+
+.draw-tool__button-icon-wrap--disabled {
+  opacity: 0.75;
+  color: var(
+    --portal-col-neutral-4,
+    var(--portal-col-text-subtle__deprecate, #6b7280)
+  );
 }
 
 .draw-tool__button-label {

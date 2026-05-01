@@ -27,6 +27,10 @@ define([
     button: "draw-tool__button",
     buttonFocus: "draw-tool__button--active",
     buttonDisable: "draw-tool__button--disable",
+    // Draw toolbar button internals
+    buttonIconWrap: "draw-tool__button-icon-wrap",
+    buttonIconWrapDisabled: "draw-tool__button-icon-wrap--disabled",
+    buttonLabel: "draw-tool__button-label",
     // Header elements
     header: "download-panel__header",
     titleGroup: "download-panel__title-group",
@@ -40,9 +44,6 @@ define([
     toolbarLink: "toolbar__links",
     toolbarLinkActive: "toolbar__link--active",
     toolbarContentActive: "toolbar__content--active",
-    // Draw toolbar button internals
-    buttonIconWrap: "draw-tool__button-icon-wrap",
-    buttonLabel: "draw-tool__button-label",
     // Info box states (used in updateTextbox)
     error: "error",
     wmtsCopy: "layer-download__information--wmts",
@@ -512,14 +513,23 @@ define([
       setButtonStatus(name, status) {
         const buttonEl = this.buttonEls[`${name}Button`];
         if (!buttonEl || buttonEl.dataset.status === status) return;
+        const iconWrapEl = buttonEl.querySelector(
+          `.${CLASS_NAMES.buttonIconWrap}`,
+        );
 
         // Reset all button styles - default to enabled
         buttonEl.classList.remove(CLASS_NAMES.buttonFocus);
         buttonEl.classList.remove(CLASS_NAMES.buttonDisable);
+        if (iconWrapEl) {
+          iconWrapEl.classList.remove(CLASS_NAMES.buttonIconWrapDisabled);
+        }
         buttonEl.dataset.status = status;
 
         if (status === "deactivated") {
           buttonEl.classList.add(CLASS_NAMES.buttonDisable);
+          if (iconWrapEl) {
+            iconWrapEl.classList.add(CLASS_NAMES.buttonIconWrapDisabled);
+          }
         } else if (status === "focused") {
           buttonEl.classList.add(CLASS_NAMES.buttonFocus);
         }
