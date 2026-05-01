@@ -1575,18 +1575,16 @@ other class: .ui-slider-range */
   margin-bottom: 3px;
 }
 
-/* Two-class specificity (0,2,0) is needed to beat portal-theme rules like
-   `.portal-view h3` (0,1,1) that would otherwise force the h3 to white. */
-.download-panel__title-group .download-panel__title {
-  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
-}
-
-.icon-download-alt {
-  font-size: 20px; /* Adjust icon size */
-  vertical-align: bottom; /* Ensures inline alignment */
+/* !important is required to override portal-theme rules such as `.portal-view h3`
+   (specificity 0,1,1) which would otherwise force the colour to white regardless
+   of the BEM modifier. No structural selector relationship is implied. */
+.download-panel__title {
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
 }
 
 .download-panel__icon {
+  font-size: 20px;
+  vertical-align: bottom;
   color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
 }
 
@@ -1716,7 +1714,7 @@ other class: .ui-slider-range */
   display: none;
 }
 
-.layer-download.show-content .layer-download__content {
+.layer-download__content--visible {
   display: block;
 }
 
@@ -1736,7 +1734,7 @@ other class: .ui-slider-range */
   height: 100%; /* Ensure the container has height to align */
 }
 
-.layer-download__dropdown-wrapper label {
+.layer-download__dropdown-label {
   font-size: 12px;
   white-space: nowrap;
   margin-bottom: 0;
@@ -1752,7 +1750,7 @@ other class: .ui-slider-range */
   height: 18px;
   background-color: var(--portal-col-neutral-00, #faf9f6);
   color: var(--portal-col-neutral-7);
-  border: 1px solid var(--portal-col-neutral-2, #ccc); /* Light border for the dropdown */
+  border: 1px solid var(--portal-col-neutral-4, #ccc); /* Light border for the dropdown */
   border-radius: 4px; /* Rounded corners */
   margin-left: 5px;
 }
