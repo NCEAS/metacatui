@@ -1481,9 +1481,6 @@ other class: .ui-slider-range */
   .draw-tool__button-icon-wrap {
     opacity: 0.75;
   }
-  trash {
-    color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
-  }
 }
 
 .draw-tool__button-icon-wrap {
