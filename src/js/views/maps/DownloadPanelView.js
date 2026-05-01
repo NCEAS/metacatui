@@ -968,6 +968,8 @@ define([
             `.${CLASS_NAMES.copyIcon}`,
           );
 
+          if (!wmtsText || !copyIcon) return;
+
           // Use .onclick (not addEventListener) so re-calling updateTextbox for
           // the same box replaces rather than stacks the handler.
           copyIcon.onclick = () => {
