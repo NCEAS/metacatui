@@ -23,6 +23,18 @@ define([
 ) => {
   // Classes used in the view
   const CLASS_NAMES = {
+    // Block
+    block: "download-panel",
+    // Header elements
+    header: "download-panel__header",
+    titleGroup: "download-panel__title-group",
+    title: "download-panel__title",
+    closeButton: "download-panel__close-button",
+    // Body elements
+    instructions: "download-panel__instructions",
+    dataList: "download-panel__data-list",
+    // Draw tool block
+    drawTool: "draw-tool",
     // Draw toolbar buttons
     button: "draw-tool__button",
     buttonFocus: "draw-tool__button--active",
@@ -31,15 +43,6 @@ define([
     buttonIconWrap: "draw-tool__button-icon-wrap",
     buttonIconWrapDisabled: "draw-tool__button-icon-wrap--disabled",
     buttonLabel: "draw-tool__button-label",
-    // Header elements
-    header: "download-panel__header",
-    titleGroup: "download-panel__title-group",
-    title: "download-panel__title",
-    closeButton: "download-panel__close-button",
-    // Data list elements (referenced by querySelector)
-    dataList: "download-panel__data-list",
-    instructions: "download-panel__instructions",
-    drawTool: "draw-tool",
     // Shared toolbar classes (used for coordinating with ToolbarView)
     toolbarLink: "toolbar__links",
     toolbarLinkActive: "toolbar__link--active",
@@ -81,7 +84,7 @@ define([
        * The HTML classes to use for this view's element
        * @type {string}
        */
-      className: "download-panel",
+      className: CLASS_NAMES.block,
 
       /**
        * The maximum size of the download in bytes. If download is estimated to exceed
