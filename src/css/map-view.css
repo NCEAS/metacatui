@@ -517,7 +517,7 @@ represents 1 unit of the given distance measurement. */
 /* The download panel is in-flow at the bottom of the flex column. It should
    only take as much vertical space as its content needs — not stretch to fill
    the remaining height the way sibling toolbar__content panels do. */
-.toolbar__content:has(.download-panel) {
+.toolbar__content--download {
   flex: 0 0 auto;
   min-height: 0;
   overflow: visible;
@@ -1735,6 +1735,7 @@ other class: .ui-slider-range */
   justify-content: flex-end; /* Align items at the bottom */
   height: 100%; /* Ensure the container has height to align */
 }
+
 .layer-download__dropdown-wrapper label {
   font-size: 12px;
   white-space: nowrap;
