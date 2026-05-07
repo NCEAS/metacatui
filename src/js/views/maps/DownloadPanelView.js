@@ -392,10 +392,10 @@ define([
         this.clearPoints();
         this.removeClickListeners();
 
-        this.el.querySelector(`.${CLASS_NAMES.instructions}`).textContent =
+        this.instructionsEl.textContent =
           "Draw Area of Interest: Single-click to add vertices, double-click to complete.";
 
-        this.el.querySelector(`.${CLASS_NAMES.dataList}`).innerHTML = "";
+        this.dataListEl.innerHTML = "";
         this.setButtonStatuses({
           draw: "enabled",
           clear: "deactivated",
@@ -428,6 +428,11 @@ define([
           return this;
         }
         this.$el.html(this.template());
+        this.instructionsEl = this.el.querySelector(
+          `.${CLASS_NAMES.instructions}`,
+        );
+        this.dataListEl = this.el.querySelector(`.${CLASS_NAMES.dataList}`);
+        this.drawToolEl = this.el.querySelector(`.${CLASS_NAMES.drawTool}`);
 
         this.renderToolbar();
         return this;
@@ -678,8 +683,7 @@ define([
        */
       renderToolbar() {
         const view = this;
-        const drawContainer = this.el.querySelector(`.${CLASS_NAMES.drawTool}`);
-        if (!drawContainer) return;
+        if (!this.drawToolEl) return;
         // Create the buttons
         view.buttons.forEach((options) => {
           const button = document.createElement("button");
@@ -692,7 +696,7 @@ define([
           button.dataset.name = options.name;
           if (!view.buttonEls) view.buttonEls = {};
           view.buttonEls[`${options.name}Button`] = button;
-          drawContainer.appendChild(button);
+          this.drawToolEl.appendChild(button);
         });
 
         // Set the buttons to the default state
@@ -820,17 +824,13 @@ define([
             index === self.findIndex((l) => l.layerID === layer.layerID),
         );
         // Create download tool panel
-        const downloadDataPanel = this.el.querySelector(
-          `.${CLASS_NAMES.dataList}`,
-        );
-
-        if (!downloadDataPanel) return;
+        if (!this.dataListEl) return;
 
         // Clean up tracked view instances from the previous render.
         if (this.layerDownloadViews) {
           this.layerDownloadViews.forEach((ldv) => ldv.remove());
         }
-        downloadDataPanel.innerHTML = "";
+        this.dataListEl.innerHTML = "";
         this.layerDownloadViews = [];
 
         // If there is no polygon on the map, quit here.
@@ -844,7 +844,7 @@ define([
 
         if (!selectedLayersList.length) {
           // Update the text of download-panel__instructions
-          this.el.querySelector(`.${CLASS_NAMES.instructions}`).textContent =
+          this.instructionsEl.textContent =
             "No layers are available for download. Click on layers in the list above to make them visible on the Map and available for download. Only select layers have data products available for download.";
           view.setButtonStatuses({
             save: "deactivated",
@@ -861,18 +861,15 @@ define([
             });
 
             layerDownloadView.render();
-            downloadDataPanel.appendChild(layerDownloadView.el);
+            this.dataListEl.appendChild(layerDownloadView.el);
 
             view.layerDownloadViews.push(layerDownloadView);
           });
           // Update the text of download-panel__instructions
-          this.el.querySelector(`.${CLASS_NAMES.instructions}`).textContent =
+          this.instructionsEl.textContent =
             "Select products below and click the download button. To download full datasets (including original shapefiles) please use the Layers panel above. ";
 
           // Progress Bar
-          const dataListPanel = this.el.querySelector(
-            `.${CLASS_NAMES.instructions}`,
-          );
           // Create the download status bar container
           const downloadStatusContainer = document.createElement("div");
           downloadStatusContainer.classList.add(CLASS_NAMES.progressContainer);
@@ -885,7 +882,7 @@ define([
           progressBar.textContent = "0%"; // Initial text
 
           downloadStatusContainer.appendChild(progressBar);
-          dataListPanel.appendChild(downloadStatusContainer);
+          this.instructionsEl.appendChild(downloadStatusContainer);
 
           // Save reference to the progress bar and related elements for
           // updating later.
