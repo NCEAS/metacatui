@@ -34,11 +34,23 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
 
   /**
    * @class LayerDownloadView
-   * @classdesc A self-contained panel row for a single downloadable map layer.
-   * Renders a header with a checkbox (for selection) and the layer name, plus
-   * a content area with resolution and file-format dropdowns and a file-size
-   * label. The label shows an orange warning when dropdowns are incomplete and
-   * switches to a success state once a format is chosen.
+   * @classdesc A component of {@link DownloadPanelView}. Renders an expandable
+   * row for a single downloadable map layer: a header with a checkbox and layer
+   * name, and a collapsible content area with resolution and file-format
+   * dropdowns and an informational label with instructions and an estimated
+   * file size.
+   *
+   * This view is tightly coupled to its parent by design — it reads
+   * `dropdownOptions` and `zoomLevels` from the parent to populate its
+   * dropdowns, and calls back into parent methods (`layerSelection`,
+   * `fileTypeSelection`, `getRawFileSize`, `updateTextbox`) to update
+   * panel-level state. It is not intended for use outside of
+   * `DownloadPanelView`.
+   *
+   * When the resolution selection is invalidated, this view triggers a
+   * `"resolution:reset"` event (with `layerID` as the argument) rather than
+   * mutating the parent's `dataDownloadLinks` directly. The parent is
+   * responsible for listening to that event and cleaning up its own state.
    * @classcategory Views/Maps
    * @name LayerDownloadView
    * @augments Backbone.View
@@ -83,6 +95,18 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
       initialize({ item, downloadPanelView }) {
         this.item = item;
         this.downloadPanelView = downloadPanelView;
+
+        // State is stored as plain instance properties rather than a Backbone
+        // model. A model would add testability and reactivity (change events),
+        // but the cost outweighs the benefit here: these three properties are
+        // only consumed by one parent view in a single synchronous loop, and
+        // there is no async lifecycle or cross-view reactivity requirement.
+        // If the parent ever needs to react to individual layer state changes
+        // (e.g. recompute a running total the moment a file type is chosen)
+        // rather than polling all views at once, switching to a model-backed
+        // approach with listenTo(layerModel, "change:selectedFileType", ...)
+        // would become worthwhile.
+
         /** Whether the layer is currently selected for download. */
         this.isSelected = false;
         /** The currently selected resolution zoom level (string). */
@@ -163,7 +187,8 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
         this.fileTypeDropdownEl.value =
           this.downloadPanelView.dropdownOptions.fileType.defaultValue;
         this.selectedFileType = "";
-        delete this.downloadPanelView.dataDownloadLinks[this.item.layerID];
+        // Notify the parent to remove the stale download link for this layer
+        this.trigger("resolution:reset", this.item.layerID);
         this.informationEl.textContent = MESSAGES.selectFormat;
         this.informationEl.classList.add(CLASS_NAMES.informationWarning);
         this.informationEl.classList.remove(
