@@ -58,6 +58,40 @@ define([
     progressBarNoData: "download-panel__progress-bar--no-data",
   };
 
+  const MESSAGES = {
+    // Plain strings
+    downloadComplete: "Download Complete!",
+    downloadFailed:
+      "Failed to download data files for selected data layer(s) within area of interest. ",
+    drawInstructions:
+      "Draw Area of Interest: Single-click to add vertices, double-click to complete.",
+    noDataAvailable:
+      "No data available for selected data layer(s) within area of interest.",
+    noLayersAvailable:
+      "No layers are available for download. Click on layers in the list above to make them visible on the Map and available for download. Only select layers have data products available for download.",
+    noMapModel: "No map model was provided.",
+    selectProducts:
+      "Select products below and click the download button. To download full datasets (including original shapefiles) please use the Layers panel above. ",
+    wmtsComment: "Use WMTS for accessing large data volume or re-draw AOI",
+    // Functions
+    downloading: (layerName, progress) =>
+      `Downloading data for ${layerName} (${progress}%)`,
+    downloadSizeTooLarge: (maxSize, comment) =>
+      `Download size is too big ( > ${maxSize}). ${comment}.`,
+    drawToolUnavailable: (detail) =>
+      `The draw tool is not available. ${detail}`,
+    estimatedFileSize: (size) =>
+      `Estimated download file size is \u2264 ${size}.`,
+    fileSizeExceedsLimit: (layerName, maxSize) =>
+      `File size for ${layerName} > the max download size, ${maxSize}. Select lower resolution/ draw smaller AOI.`,
+    generatingZip: (layerName, numFiles) =>
+      `Generating ZIP file for ${layerName} (${numFiles} files)...`,
+    metadataError: (layerID) => `Error fetching metadata for ${layerID}`,
+    metadataFetchFailed: (layerID, statusText) =>
+      `Failed to fetch metadata for ${layerID}: ${statusText}`,
+    progress: (pct) => `Progress: ${pct}%`,
+  };
+
   /**
    * @class DownloadPanelView
    * @classdesc The DownloadPanelView allows a user to draw an arbitrary polygon
@@ -392,8 +426,7 @@ define([
         this.clearPoints();
         this.removeClickListeners();
 
-        this.instructionsEl.textContent =
-          "Draw Area of Interest: Single-click to add vertices, double-click to complete.";
+        this.instructionsEl.textContent = MESSAGES.drawInstructions;
 
         this.dataListEl.innerHTML = "";
         this.setButtonStatuses({
@@ -424,7 +457,7 @@ define([
       render() {
         // Insert the template into the view
         if (!this.mapModel) {
-          this.showError("No map model was provided.");
+          this.showError(MESSAGES.noMapModel);
           return this;
         }
         this.$el.html(this.template());
@@ -446,7 +479,7 @@ define([
       showError(message) {
         const str =
           `<i class="icon-warning-sign icon-left"></i>` +
-          `<span> The draw tool is not available. ${message}</span>`;
+          `<span> ${MESSAGES.drawToolUnavailable(message)}</span>`;
         this.el.innerHTML = str;
       },
 
@@ -844,8 +877,7 @@ define([
 
         if (!selectedLayersList.length) {
           // Update the text of download-panel__instructions
-          this.instructionsEl.textContent =
-            "No layers are available for download. Click on layers in the list above to make them visible on the Map and available for download. Only select layers have data products available for download.";
+          this.instructionsEl.textContent = MESSAGES.noLayersAvailable;
           view.setButtonStatuses({
             save: "deactivated",
             draw: "deactivated",
@@ -866,8 +898,7 @@ define([
             view.layerDownloadViews.push(layerDownloadView);
           });
           // Update the text of download-panel__instructions
-          this.instructionsEl.textContent =
-            "Select products below and click the download button. To download full datasets (including original shapefiles) please use the Layers panel above. ";
+          this.instructionsEl.textContent = MESSAGES.selectProducts;
 
           // Progress Bar
           // Create the download status bar container
@@ -983,14 +1014,17 @@ define([
           `;
           fileSizeInfoBox.classList.add(CLASS_NAMES.wmtsCopy);
         } else {
-          const optionalComment =
-            "Use WMTS for accessing large data volume or re-draw AOI.";
           const maxSize = Utilities.bytesToSize(this.downloadSizeLimit, 2);
           if (fileSizeDetails > this.downloadSizeLimit) {
-            fileSizeInfoBox.textContent = `Download size is too big ( > ${maxSize}). ${optionalComment}.`;
+            fileSizeInfoBox.textContent = MESSAGES.downloadSizeTooLarge(
+              maxSize,
+              MESSAGES.wmtsComment,
+            );
             fileSizeInfoBox.classList.add(CLASS_NAMES.error);
           } else {
-            fileSizeInfoBox.textContent = `Estimated download file size is ≤ ${Utilities.bytesToSize(fileSizeDetails, 2)}.`;
+            fileSizeInfoBox.textContent = MESSAGES.estimatedFileSize(
+              Utilities.bytesToSize(fileSizeDetails, 2),
+            );
           }
         }
 
@@ -1281,7 +1315,7 @@ define([
               const maxSize = Utilities.bytesToSize(view.downloadSizeLimit, 2);
               view.updateStatusBar({
                 error: true,
-                message: `File size for ${data.layerName} > the max download size, ${maxSize}. Select lower resolution/ draw smaller AOI.`,
+                message: MESSAGES.fileSizeExceedsLimit(data.layerName, maxSize),
               });
               return;
             }
@@ -1290,8 +1324,7 @@ define([
             if (!data.urls?.length) {
               view.updateStatusBar({
                 error: true,
-                message:
-                  "No data available for selected data layer(s) within area of interest.",
+                message: MESSAGES.noDataAvailable,
               });
               return;
             }
@@ -1300,7 +1333,7 @@ define([
             const updateStatusBar = (progress) => {
               view.updateStatusBar({
                 progress,
-                message: `Downloading data for ${data.layerName} (${progress}%)`,
+                message: MESSAGES.downloading(data.layerName, progress),
               });
             };
             // Start progress tracking
@@ -1321,8 +1354,7 @@ define([
               // Stop if no data
               if (!Object.keys(layerZip.files).length) {
                 view.updateStatusBar({
-                  message:
-                    "No data available for selected data layer(s) within area of interest.",
+                  message: MESSAGES.noDataAvailable,
                   error: true,
                 });
                 return;
@@ -1330,7 +1362,7 @@ define([
 
               const numFiles = Object.keys(layerZip.files).length;
               view.updateStatusBar({
-                message: `Generating ZIP file for ${data.layerName} (${numFiles} files)...`,
+                message: MESSAGES.generatingZip(data.layerName, numFiles),
               });
 
               if (data.metadataPid) {
@@ -1339,7 +1371,10 @@ define([
                   .then((response) => {
                     if (!response.ok) {
                       throw new Error(
-                        `Failed to fetch metadata for ${layerID}: ${response.statusText}`,
+                        MESSAGES.metadataFetchFailed(
+                          layerID,
+                          response.statusText,
+                        ),
                       );
                     }
                     return response.blob();
@@ -1348,7 +1383,7 @@ define([
                     layerZip.file(`${layerID}_metadata.xml`, metadataBlob);
                   })
                   .catch((error) => {
-                    let message = `Error fetching metadata for ${layerID}`;
+                    let message = MESSAGES.metadataError(layerID);
                     if (error.message) {
                       message += `: ${error.message}`;
                     }
@@ -1362,7 +1397,7 @@ define([
                     // Always generate the ZIP, regardless of metadata result
                     layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
                       view.updateStatusBar({
-                        message: "Download Complete!",
+                        message: MESSAGES.downloadComplete,
                         progress: 100,
                       });
                       const link = document.createElement("a");
@@ -1375,7 +1410,7 @@ define([
                 // No metadata to fetch, just generate the ZIP
                 layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
                   view.updateStatusBar({
-                    message: "Download Complete!",
+                    message: MESSAGES.downloadComplete,
                     progress: 100,
                   });
                   const link = document.createElement("a");
@@ -1385,8 +1420,7 @@ define([
                 });
               }
             } catch (error) {
-              let message =
-                "Failed to download data files for selected data layer(s) within area of interest. ";
+              let message = MESSAGES.downloadFailed;
               if (error.message) {
                 message += error.message;
               }
@@ -1440,7 +1474,7 @@ define([
         if (typeof progress === "number") {
           progressBar.style.width = `${progress}%`;
           if (progress > 0) {
-            progressBar.textContent = `Progress: ${progress}%`;
+            progressBar.textContent = MESSAGES.progress(progress);
           } else {
             progressBar.textContent = "";
           }

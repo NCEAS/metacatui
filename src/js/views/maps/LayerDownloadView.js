@@ -22,6 +22,12 @@ define(["underscore", "backbone"], (_, Backbone) => {
     error: "error",
   };
 
+  const MESSAGES = {
+    selectResolutionAndFormat:
+      "Select resolution and file format to download...",
+    selectFormat: "Select file format to download...",
+  };
+
   /**
    * @class LayerDownloadView
    * @classdesc A self-contained panel row for a single downloadable map layer.
@@ -113,8 +119,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
         this.selectedResolution = "";
         this.selectedFileType = "";
         if (this.fileSizeInfoBox) {
-          this.fileSizeInfoBox.textContent =
-            "Select resolution and file format to download...";
+          this.fileSizeInfoBox.textContent = MESSAGES.selectResolutionAndFormat;
           this.fileSizeInfoBox.classList.remove(
             CLASS_NAMES.error,
             CLASS_NAMES.informationBoxWmts,
@@ -152,7 +157,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
           this.downloadPanelView.dropdownOptions.fileType.defaultValue;
         this.selectedFileType = "";
         delete this.downloadPanelView.dataDownloadLinks[this.item.layerID];
-        this.fileSizeInfoBox.textContent = "Select file format to download...";
+        this.fileSizeInfoBox.textContent = MESSAGES.selectFormat;
         this.fileSizeInfoBox.classList.add(CLASS_NAMES.informationBoxWarning);
         this.fileSizeInfoBox.classList.remove(
           CLASS_NAMES.error,
@@ -323,8 +328,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
           CLASS_NAMES.informationBox,
           CLASS_NAMES.informationBoxWarning,
         );
-        fileSizeInfoBox.textContent =
-          "Select resolution and file format to download...";
+        fileSizeInfoBox.textContent = MESSAGES.selectResolutionAndFormat;
         this.fileSizeInfoBox = fileSizeInfoBox;
 
         content.appendChild(dropdownContainer);
