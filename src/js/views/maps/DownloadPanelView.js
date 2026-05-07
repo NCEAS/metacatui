@@ -37,7 +37,7 @@ define([
     drawTool: "draw-tool",
     // Draw toolbar buttons
     button: "draw-tool__button",
-    buttonFocus: "draw-tool__button--active",
+    buttonActive: "draw-tool__button--active",
     buttonDisable: "draw-tool__button--disable",
     // Draw toolbar button internals
     buttonIconWrap: "draw-tool__button-icon-wrap",
@@ -49,7 +49,7 @@ define([
     toolbarContentActive: "toolbar__content--active",
     // Info box states (used in updateTextbox)
     error: "error",
-    wmtsCopy: "layer-download__information--wmts",
+    informationWmts: "layer-download__information--wmts",
     wmtsText: "layer-download__wmts-text",
     copyIcon: "layer-download__copy-icon",
     // Progress bar (created in initializeDownloadPanel)
@@ -510,14 +510,16 @@ define([
       /**
        * Handles a click on the copy icon in the WMTS info box. Copies the WMTS
        * URL text to the clipboard and briefly shows a confirmation message.
-       * Because this handler is registered via the delegated events hash, it
-       * replaces the previous `.onclick` assignment and never stacks.
        * @param {Event} event - The click event.
        */
       handleCopyIconClick(event) {
-        const infoBox = event.currentTarget.closest(`.${CLASS_NAMES.wmtsCopy}`);
-        if (!infoBox) return;
-        const wmtsText = infoBox.querySelector(`.${CLASS_NAMES.wmtsText}`);
+        const informationEl = event.currentTarget.closest(
+          `.${CLASS_NAMES.informationWmts}`,
+        );
+        if (!informationEl) return;
+        const wmtsText = informationEl.querySelector(
+          `.${CLASS_NAMES.wmtsText}`,
+        );
         if (!wmtsText) return;
         const text = wmtsText.textContent;
         navigator.clipboard
@@ -566,7 +568,7 @@ define([
           // Turn on drawing mode
           this.draw = true;
           this.setClickListeners();
-          this.setButtonStatus("draw", "focused");
+          this.setButtonStatus("draw", "active");
         } else {
           // Turn off drawing mode
           this.draw = false;
@@ -577,9 +579,9 @@ define([
 
       /**
        * Sets the status of the button to either "enabled", "deactivated", or
-       * "focused".
+       * "active".
        * @param {string} name - The name of the button to set the status for.
-       * @param {"enabled"|"deactivated"|"focused"} status - The status to set
+       * @param {"enabled"|"deactivated"|"active"} status - The status to set
        * the button to.
        */
       setButtonStatus(name, status) {
@@ -590,7 +592,7 @@ define([
         );
 
         // Reset all button styles - default to enabled
-        buttonEl.classList.remove(CLASS_NAMES.buttonFocus);
+        buttonEl.classList.remove(CLASS_NAMES.buttonActive);
         buttonEl.classList.remove(CLASS_NAMES.buttonDisable);
         if (iconWrapEl) {
           iconWrapEl.classList.remove(CLASS_NAMES.buttonIconWrapDisabled);
@@ -602,13 +604,13 @@ define([
           if (iconWrapEl) {
             iconWrapEl.classList.add(CLASS_NAMES.buttonIconWrapDisabled);
           }
-        } else if (status === "focused") {
-          buttonEl.classList.add(CLASS_NAMES.buttonFocus);
+        } else if (status === "active") {
+          buttonEl.classList.add(CLASS_NAMES.buttonActive);
         }
 
         // Special case for the draw button, which sets the draw mode
         if (name === "draw") {
-          const turnOnDraw = status === "focused";
+          const turnOnDraw = status === "active";
           this.toggleDraw(turnOnDraw, status);
         }
       },
@@ -764,9 +766,6 @@ define([
        */
       generatePreviewPanel() {
         const view = this;
-        this.clearButtonEl = this.buttonEls.clearButton;
-        this.saveButtonEl = this.buttonEls.saveButton;
-        this.drawButtonEl = this.buttonEls.drawButton;
 
         // Get the selected layers from the Layer Panel View and retreive the
         // following information
@@ -902,23 +901,23 @@ define([
 
           // Progress Bar
           // Create the download status bar container
-          const downloadStatusContainer = document.createElement("div");
-          downloadStatusContainer.classList.add(CLASS_NAMES.progressContainer);
-          downloadStatusContainer.style.display = "none"; // Hidden by default
+          const progressContainerEl = document.createElement("div");
+          progressContainerEl.classList.add(CLASS_NAMES.progressContainer);
+          progressContainerEl.style.display = "none"; // Hidden by default
 
           // Create the progress bar element
-          const progressBar = document.createElement("div");
-          progressBar.classList.add(CLASS_NAMES.progressBar);
-          progressBar.style.width = "0%"; // Initial width
-          progressBar.textContent = "0%"; // Initial text
+          const progressBarEl = document.createElement("div");
+          progressBarEl.classList.add(CLASS_NAMES.progressBar);
+          progressBarEl.style.width = "0%"; // Initial width
+          progressBarEl.textContent = "0%"; // Initial text
 
-          downloadStatusContainer.appendChild(progressBar);
-          this.instructionsEl.appendChild(downloadStatusContainer);
+          progressContainerEl.appendChild(progressBarEl);
+          this.instructionsEl.appendChild(progressContainerEl);
 
           // Save reference to the progress bar and related elements for
           // updating later.
-          view.downloadStatusContainer = downloadStatusContainer;
-          view.progressBar = progressBar;
+          view.progressContainerEl = progressContainerEl;
+          view.progressBarEl = progressBarEl;
         }
       },
 
@@ -1006,13 +1005,13 @@ define([
         const fileSizeInfoBox = infoBox;
         if (!fileSizeInfoBox) return;
         fileSizeInfoBox.classList.remove(CLASS_NAMES.error);
-        fileSizeInfoBox.classList.remove(CLASS_NAMES.wmtsCopy);
+        fileSizeInfoBox.classList.remove(CLASS_NAMES.informationWmts);
         if (fileType === "wmts") {
           fileSizeInfoBox.innerHTML = `
             <span class="${CLASS_NAMES.wmtsText}">${fileSizeDetails}</span>
             <i class="${CLASS_NAMES.copyIcon} icon-copy" title="Copy to Clipboard"></i>
           `;
-          fileSizeInfoBox.classList.add(CLASS_NAMES.wmtsCopy);
+          fileSizeInfoBox.classList.add(CLASS_NAMES.informationWmts);
         } else {
           const maxSize = Utilities.bytesToSize(this.downloadSizeLimit, 2);
           if (fileSizeDetails > this.downloadSizeLimit) {
@@ -1454,38 +1453,38 @@ define([
         error = false,
       }) {
         const view = this;
-        const { downloadStatusContainer, progressBar } = view;
+        const { progressContainerEl, progressBarEl } = view;
 
         if (show) {
-          downloadStatusContainer.style.display = "block";
+          progressContainerEl.style.display = "block";
         } else {
-          downloadStatusContainer.style.display = "none";
+          progressContainerEl.style.display = "none";
           return;
         }
 
         if (error) {
-          progressBar.classList.remove(CLASS_NAMES.progressBar);
-          progressBar.classList.add(CLASS_NAMES.progressBarNoData);
+          progressBarEl.classList.remove(CLASS_NAMES.progressBar);
+          progressBarEl.classList.add(CLASS_NAMES.progressBarNoData);
         } else {
-          progressBar.classList.remove(CLASS_NAMES.progressBarNoData);
-          progressBar.classList.add(CLASS_NAMES.progressBar);
+          progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
+          progressBarEl.classList.add(CLASS_NAMES.progressBar);
         }
 
         if (typeof progress === "number") {
-          progressBar.style.width = `${progress}%`;
+          progressBarEl.style.width = `${progress}%`;
           if (progress > 0) {
-            progressBar.textContent = MESSAGES.progress(progress);
+            progressBarEl.textContent = MESSAGES.progress(progress);
           } else {
-            progressBar.textContent = "";
+            progressBarEl.textContent = "";
           }
-          progressBar.classList.remove(CLASS_NAMES.progressBarNoData);
-          progressBar.classList.add(CLASS_NAMES.progressBar);
+          progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
+          progressBarEl.classList.add(CLASS_NAMES.progressBar);
         } else {
-          progressBar.style.width = "100%";
+          progressBarEl.style.width = "100%";
         }
 
         if (message) {
-          progressBar.textContent = message;
+          progressBarEl.textContent = message;
         }
       },
 
