@@ -1,6 +1,10 @@
 "use strict";
 
-define(["underscore", "backbone"], (_, Backbone) => {
+define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
+  _,
+  Backbone,
+  Template,
+) => {
   const BASE_CLASS = "layer-download";
 
   // HTML classes used inside this view
@@ -56,14 +60,17 @@ define(["underscore", "backbone"], (_, Backbone) => {
        */
       className: BASE_CLASS,
 
+      /**
+       * The primary HTML template for this view.
+       * @type {Underscore.template}
+       */
+      template: _.template(Template),
+
       /** @inheritdoc */
-      events() {
-        const CN = CLASS_NAMES;
-        return {
-          [`change .${CN.checkbox}`]: "handleCheckboxChange",
-          [`change .${CN.resolutionDropdown}`]: "handleResolutionChange",
-          [`change .${CN.fileTypeDropdown}`]: "handleFileTypeChange",
-        };
+      events: {
+        [`change .${CLASS_NAMES.checkbox}`]: "handleCheckboxChange",
+        [`change .${CLASS_NAMES.resolutionDropdown}`]: "handleResolutionChange",
+        [`change .${CLASS_NAMES.fileTypeDropdown}`]: "handleFileTypeChange",
       },
 
       /**
@@ -197,145 +204,63 @@ define(["underscore", "backbone"], (_, Backbone) => {
       },
 
       /**
-       * Render the complete panel: a header row with [checkbox] [title] [caret]
-       * and a collapsible content section with the download controls.
+       * Render the complete panel: a header row with [checkbox] [title] and
+       * a collapsible content section with the download controls.
        * @returns {LayerDownloadView} this
        */
       render() {
-        this.$el.empty();
         const { item, downloadPanelView } = this;
-
-        // ── Header row ────────────────────────────────────────────────────────
-        const headerEl = document.createElement("div");
-        headerEl.classList.add(CLASS_NAMES.header);
-
-        const checkboxEl = document.createElement("input");
-        checkboxEl.type = "checkbox";
-        checkboxEl.classList.add(CLASS_NAMES.checkbox);
-
-        const titleEl = document.createElement("span");
-        titleEl.classList.add(CLASS_NAMES.title);
-        titleEl.textContent = item.layerName;
-
-        headerEl.appendChild(checkboxEl);
-        headerEl.appendChild(titleEl);
-
-        // ── Content section ───────────────────────────────────────────────────
-        const contentEl = document.createElement("div");
-        contentEl.classList.add(CLASS_NAMES.content);
-
-        // Pruned file-type options per layer configuration
-        const fileTypeOptions = {
-          tif: "Geotiff",
-          png: "PNG",
-          wmts: "WMTS file",
-          gpkg: "Geopackage",
-        };
-        if (item.tiffDownloadLink == null) delete fileTypeOptions.tif;
-        if (item.pngDownloadLink == null) delete fileTypeOptions.png;
-        if (item.wmtsDownloadLink == null) delete fileTypeOptions.wmts;
-        if (item.gpkgDownloadLink == null) delete fileTypeOptions.gpkg;
-
-        // Resolution dropdown
-        const resolutionDropdownWrapperEl = document.createElement("div");
-        resolutionDropdownWrapperEl.classList.add(CLASS_NAMES.dropdownWrapper);
-
+        const { dropdownOptions, zoomLevels } = downloadPanelView;
         const resolutionDropdownId = `resolution-dropdown-${item.layerID}`;
-        const resolutionLabelEl = document.createElement("label");
-        resolutionLabelEl.classList.add(CLASS_NAMES.dropdownLabel);
-        resolutionLabelEl.textContent =
-          downloadPanelView.dropdownOptions.resolution.label;
-        resolutionLabelEl.htmlFor = resolutionDropdownId;
-
-        const resolutionDropdownEl = document.createElement("select");
-        resolutionDropdownEl.id = resolutionDropdownId;
-        resolutionDropdownEl.classList.add(
-          CLASS_NAMES.dropdown,
-          CLASS_NAMES.resolutionDropdown,
-        );
-
-        const defaultResolutionOptionEl = document.createElement("option");
-        defaultResolutionOptionEl.value =
-          downloadPanelView.dropdownOptions.resolution.defaultValue;
-        defaultResolutionOptionEl.textContent =
-          downloadPanelView.dropdownOptions.resolution.defaultText;
-        defaultResolutionOptionEl.disabled = true;
-        defaultResolutionOptionEl.selected = true;
-        resolutionDropdownEl.appendChild(defaultResolutionOptionEl);
-
-        Object.entries(downloadPanelView.zoomLevels).forEach(
-          ([zoomLevel, pixelResolution]) => {
-            const option = document.createElement("option");
-            option.value = zoomLevel;
-            option.textContent = `${zoomLevel} - ${pixelResolution}`;
-            resolutionDropdownEl.appendChild(option);
-          },
-        );
-
-        resolutionDropdownWrapperEl.appendChild(resolutionLabelEl);
-        resolutionDropdownWrapperEl.appendChild(resolutionDropdownEl);
-
-        // File-type dropdown
-        const fileTypeDropdownWrapperEl = document.createElement("div");
-        fileTypeDropdownWrapperEl.classList.add(CLASS_NAMES.dropdownWrapper);
-
         const fileTypeDropdownId = `fileType-dropdown-${item.layerID}`;
-        const fileTypeLabelEl = document.createElement("label");
-        fileTypeLabelEl.classList.add(CLASS_NAMES.dropdownLabel);
-        fileTypeLabelEl.textContent =
-          downloadPanelView.dropdownOptions.fileType.label;
-        fileTypeLabelEl.htmlFor = fileTypeDropdownId;
 
-        const fileTypeDropdownEl = document.createElement("select");
-        fileTypeDropdownEl.id = fileTypeDropdownId;
-        fileTypeDropdownEl.classList.add(
-          CLASS_NAMES.dropdown,
-          CLASS_NAMES.fileTypeDropdown,
-        );
-        fileTypeDropdownEl.disabled = true; // enabled only once a resolution is chosen
-
-        const defaultFileTypeOptionEl = document.createElement("option");
-        defaultFileTypeOptionEl.value =
-          downloadPanelView.dropdownOptions.fileType.defaultValue;
-        defaultFileTypeOptionEl.textContent =
-          downloadPanelView.dropdownOptions.fileType.defaultText;
-        defaultFileTypeOptionEl.disabled = true;
-        defaultFileTypeOptionEl.selected = true;
-        fileTypeDropdownEl.appendChild(defaultFileTypeOptionEl);
-
-        Object.entries(fileTypeOptions).forEach(([fileType, fileTypeName]) => {
-          const option = document.createElement("option");
-          option.value = fileType;
-          option.textContent = fileTypeName;
-          fileTypeDropdownEl.appendChild(option);
+        this.el.innerHTML = this.template({
+          layerName: item.layerName,
+          resolutionDropdownId,
+          resolutionLabel: dropdownOptions.resolution.label,
+          resolutionDefaultValue: dropdownOptions.resolution.defaultValue,
+          resolutionDefaultText: dropdownOptions.resolution.defaultText,
+          fileTypeDropdownId,
+          fileTypeLabel: dropdownOptions.fileType.label,
+          fileTypeDefaultValue: dropdownOptions.fileType.defaultValue,
+          fileTypeDefaultText: dropdownOptions.fileType.defaultText,
+          initialMessage: MESSAGES.selectResolutionAndFormat,
         });
 
-        fileTypeDropdownWrapperEl.appendChild(fileTypeLabelEl);
-        fileTypeDropdownWrapperEl.appendChild(fileTypeDropdownEl);
-
-        const dropdownContainerEl = document.createElement("div");
-        dropdownContainerEl.classList.add(CLASS_NAMES.dropdownContainer);
-        dropdownContainerEl.appendChild(resolutionDropdownWrapperEl);
-        dropdownContainerEl.appendChild(fileTypeDropdownWrapperEl);
-
-        const informationEl = document.createElement("span");
-        informationEl.classList.add(
-          CLASS_NAMES.information,
-          CLASS_NAMES.informationWarning,
+        // Cache element references for use in event handlers and helper methods
+        this.checkboxEl = this.el.querySelector(`.${CLASS_NAMES.checkbox}`);
+        this.resolutionDropdownEl = this.el.querySelector(
+          `.${CLASS_NAMES.resolutionDropdown}`,
         );
-        informationEl.textContent = MESSAGES.selectResolutionAndFormat;
+        this.fileTypeDropdownEl = this.el.querySelector(
+          `.${CLASS_NAMES.fileTypeDropdown}`,
+        );
+        this.informationEl = this.el.querySelector(
+          `.${CLASS_NAMES.information}`,
+        );
+        this.contentEl = this.el.querySelector(`.${CLASS_NAMES.content}`);
 
-        contentEl.appendChild(dropdownContainerEl);
-        contentEl.appendChild(informationEl);
+        // Append zoom-level options to the resolution dropdown
+        Object.entries(zoomLevels).forEach(([zoomLevel, pixelResolution]) => {
+          const option = document.createElement("option");
+          option.value = zoomLevel;
+          option.textContent = `${zoomLevel} - ${pixelResolution}`;
+          this.resolutionDropdownEl.appendChild(option);
+        });
 
-        // ── Assemble ──────────────────────────────────────────────────────────
-        this.checkboxEl = checkboxEl;
-        this.resolutionDropdownEl = resolutionDropdownEl;
-        this.fileTypeDropdownEl = fileTypeDropdownEl;
-        this.informationEl = informationEl;
-        this.contentEl = contentEl;
-        this.el.appendChild(headerEl);
-        this.el.appendChild(contentEl);
+        // Append only file-type options that have a corresponding download link
+        [
+          [item.tiffDownloadLink, "tif", "Geotiff"],
+          [item.pngDownloadLink, "png", "PNG"],
+          [item.wmtsDownloadLink, "wmts", "WMTS file"],
+          [item.gpkgDownloadLink, "gpkg", "Geopackage"],
+        ].forEach(([link, value, text]) => {
+          if (link == null) return;
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = text;
+          this.fileTypeDropdownEl.appendChild(option);
+        });
 
         return this;
       },
