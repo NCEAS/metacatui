@@ -429,7 +429,10 @@ define([
         this.instructionsEl.textContent = MESSAGES.drawInstructions;
 
         if (this.layerDownloadViews) {
-          this.layerDownloadViews.forEach((ldv) => ldv.remove());
+          this.layerDownloadViews.forEach((ldv) => {
+            this.stopListening(ldv);
+            ldv.remove();
+          });
           this.layerDownloadViews = [];
         }
         this.dataDownloadLinks = {};
@@ -458,7 +461,10 @@ define([
         this.removeLayer();
         this.removeClickListeners();
         if (this.layerDownloadViews) {
-          this.layerDownloadViews.forEach((ldv) => ldv.remove());
+          this.layerDownloadViews.forEach((ldv) => {
+            this.stopListening(ldv);
+            ldv.remove();
+          });
           this.layerDownloadViews = [];
         }
         Backbone.View.prototype.remove.call(this);
@@ -474,7 +480,10 @@ define([
         // Clean up any previously rendered child views before rebuilding the
         // DOM, so their event listeners and references are properly torn down.
         if (this.layerDownloadViews) {
-          this.layerDownloadViews.forEach((ldv) => ldv.remove());
+          this.layerDownloadViews.forEach((ldv) => {
+            this.stopListening(ldv);
+            ldv.remove();
+          });
           this.layerDownloadViews = [];
         }
         this.buttonEls = {};
@@ -882,7 +891,10 @@ define([
 
         // Clean up tracked view instances from the previous render.
         if (this.layerDownloadViews) {
-          this.layerDownloadViews.forEach((ldv) => ldv.remove());
+          this.layerDownloadViews.forEach((ldv) => {
+            this.stopListening(ldv);
+            ldv.remove();
+          });
         }
         this.dataListEl.innerHTML = "";
         this.layerDownloadViews = [];
