@@ -456,6 +456,14 @@ define([
        * @returns {DownloadPanelView} This view
        */
       render() {
+        // Clean up any previously rendered child views before rebuilding the
+        // DOM, so their event listeners and references are properly torn down.
+        if (this.layerDownloadViews) {
+          this.layerDownloadViews.forEach((ldv) => ldv.remove());
+          this.layerDownloadViews = [];
+        }
+        this.buttonEls = {};
+
         // Insert the template into the view
         if (!this.mapModel) {
           this.showError(MESSAGES.noMapModel);

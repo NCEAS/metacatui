@@ -197,6 +197,8 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
           CLASS_NAMES.error,
           CLASS_NAMES.informationWmts,
         );
+        // Re-evaluate save-button state across all layers: another layer may
+        // still have a valid file type selected, so we can't simply disable.
         this.downloadPanelView.layerSelection();
       },
 
