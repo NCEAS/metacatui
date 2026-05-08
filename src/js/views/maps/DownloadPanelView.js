@@ -429,6 +429,11 @@ define([
 
         this.instructionsEl.textContent = MESSAGES.drawInstructions;
 
+        if (this.layerDownloadViews) {
+          this.layerDownloadViews.forEach((ldv) => ldv.remove());
+          this.layerDownloadViews = [];
+        }
+        this.dataDownloadLinks = {};
         this.dataListEl.innerHTML = "";
         this.setButtonStatuses({
           draw: "enabled",
