@@ -541,23 +541,23 @@ define([
           `.${CLASS_NAMES.informationWmts}`,
         );
         if (!informationEl) return;
-        const wmtsText = informationEl.querySelector(
+        const wmtsTextEl = informationEl.querySelector(
           `.${CLASS_NAMES.wmtsText}`,
         );
-        if (!wmtsText) return;
-        const text = wmtsText.textContent;
+        if (!wmtsTextEl) return;
+        const wmtsUrl = wmtsTextEl.textContent;
         navigator.clipboard
-          .writeText(text)
+          .writeText(wmtsUrl)
           .then(() => {
-            wmtsText.textContent = "Copied to clipboard!";
+            wmtsTextEl.textContent = "Copied to clipboard!";
             setTimeout(() => {
-              wmtsText.textContent = text;
+              wmtsTextEl.textContent = wmtsUrl;
             }, 2000);
           })
           .catch(() => {
-            wmtsText.textContent = "Copy failed!";
+            wmtsTextEl.textContent = "Copy failed!";
             setTimeout(() => {
-              wmtsText.textContent = text;
+              wmtsTextEl.textContent = wmtsUrl;
             }, 2000);
           });
       },
@@ -745,16 +745,16 @@ define([
         if (!this.drawToolEl) return;
         // Create the buttons
         view.buttons.forEach((options) => {
-          const button = document.createElement("button");
-          button.className = CLASS_NAMES.button;
-          button.innerHTML = `
+          const buttonEl = document.createElement("button");
+          buttonEl.className = CLASS_NAMES.button;
+          buttonEl.innerHTML = `
               <span class="${CLASS_NAMES.buttonIconWrap}">
                 <i class="icon icon-${options.icon}"></i>
               </span> 
               <span class="${CLASS_NAMES.buttonLabel}">${options.label}</span> `;
-          button.dataset.name = options.name;
-          view.buttonEls[`${options.name}Button`] = button;
-          this.drawToolEl.appendChild(button);
+          buttonEl.dataset.name = options.name;
+          view.buttonEls[`${options.name}Button`] = buttonEl;
+          this.drawToolEl.appendChild(buttonEl);
         });
 
         // Set the buttons to the default state
@@ -878,7 +878,6 @@ define([
           (layer, index, self) =>
             index === self.findIndex((l) => l.layerID === layer.layerID),
         );
-        // Create download tool panel
         if (!this.dataListEl) return;
 
         // Clean up tracked view instances from the previous render.
@@ -1024,39 +1023,40 @@ define([
       },
 
       /**
-       * Updates the text content of the provided info box with file size
-       * details and file type information.
-       * @param {HTMLElement} infoBox - The HTML element where the file size
+       * Updates the text content of the provided HTML element with file size
+       * details or a wmts link to copy.
+       * @param {HTMLElement} informationEl - The HTML element where the file size
        * information will be displayed.
-       * @param {number|null} fileSizeDetails - The estimated size of the file
+       * @param {number|null} fileSizeBytes - The estimated size of the file
        * in bytes, or null for WMTS layers.
        * @param {string} fileType - The type of the file (e.g., "wmts").
        * @param {string} layerID - The ID of the map layer being interacted
        * with.
        */
-      updateTextbox(infoBox, fileSizeDetails, fileType, layerID) {
-        const fileSizeInfoBox = infoBox;
-        if (!fileSizeInfoBox) return;
-        fileSizeInfoBox.classList.remove(CLASS_NAMES.error);
-        fileSizeInfoBox.classList.remove(CLASS_NAMES.informationWmts);
+      updateLayerInfoEl(informationEl, fileSizeBytes, fileType, layerID) {
+        // Satisfies assignment to property of function parameter eslint rule
+        const infoEl = informationEl;
+        if (!infoEl) return;
+        infoEl.classList.remove(CLASS_NAMES.error);
+        infoEl.classList.remove(CLASS_NAMES.informationWmts);
         if (fileType === "wmts") {
           const wmtsUrl = this.dataDownloadLinks[layerID]?.wmtsUrl ?? "";
-          fileSizeInfoBox.innerHTML = `
+          infoEl.innerHTML = `
             <span class="${CLASS_NAMES.wmtsText}">${wmtsUrl}</span>
             <i class="${CLASS_NAMES.copyIcon} icon-copy" title="Copy to Clipboard"></i>
           `;
-          fileSizeInfoBox.classList.add(CLASS_NAMES.informationWmts);
+          infoEl.classList.add(CLASS_NAMES.informationWmts);
         } else {
           const maxSize = Utilities.bytesToSize(this.downloadSizeLimit, 2);
-          if (fileSizeDetails > this.downloadSizeLimit) {
-            fileSizeInfoBox.textContent = MESSAGES.downloadSizeTooLarge(
+          if (fileSizeBytes > this.downloadSizeLimit) {
+            infoEl.textContent = MESSAGES.downloadSizeTooLarge(
               maxSize,
               MESSAGES.wmtsComment,
             );
-            fileSizeInfoBox.classList.add(CLASS_NAMES.error);
+            infoEl.classList.add(CLASS_NAMES.error);
           } else {
-            fileSizeInfoBox.textContent = MESSAGES.estimatedFileSize(
-              Utilities.bytesToSize(fileSizeDetails, 2),
+            infoEl.textContent = MESSAGES.estimatedFileSize(
+              Utilities.bytesToSize(fileSizeBytes, 2),
             );
           }
         }

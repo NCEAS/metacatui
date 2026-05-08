@@ -234,7 +234,7 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
           item.metadataPid,
           item.tiffDownloadLink,
         );
-        downloadPanelView.updateTextbox(
+        downloadPanelView.updateLayerInfoEl(
           this.informationEl,
           fileSize,
           this.fileTypeDropdownEl.value,
