@@ -1155,9 +1155,9 @@ define([
           .filter((ldv) => ldv.isSelected)
           .map((ldv) => ldv.item.layerID);
         if (selectedLayerIDs.length > 1) {
-          Object.keys(this.dataDownloadLinks).forEach((downloadLink) => {
-            if (!selectedLayerIDs.includes(downloadLink)) {
-              delete this.dataDownloadLinks[downloadLink];
+          Object.keys(this.dataDownloadLinks).forEach((existingLayerID) => {
+            if (!selectedLayerIDs.includes(existingLayerID)) {
+              delete this.dataDownloadLinks[existingLayerID];
             }
           });
         }
