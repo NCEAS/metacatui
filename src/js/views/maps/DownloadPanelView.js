@@ -1005,8 +1005,8 @@ define([
        * details and file type information.
        * @param {HTMLElement} infoBox - The HTML element where the file size
        * information will be displayed.
-       * @param {number} fileSizeDetails - The estimated size of the file in
-       * bytes.
+       * @param {number|null} fileSizeDetails - The estimated size of the file
+       * in bytes, or null for WMTS layers.
        * @param {string} fileType - The type of the file (e.g., "wmts").
        * @param {string} layerID - The ID of the map layer being interacted
        * with.
@@ -1017,8 +1017,9 @@ define([
         fileSizeInfoBox.classList.remove(CLASS_NAMES.error);
         fileSizeInfoBox.classList.remove(CLASS_NAMES.informationWmts);
         if (fileType === "wmts") {
+          const wmtsUrl = this.dataDownloadLinks[layerID]?.wmtsUrl ?? "";
           fileSizeInfoBox.innerHTML = `
-            <span class="${CLASS_NAMES.wmtsText}">${fileSizeDetails}</span>
+            <span class="${CLASS_NAMES.wmtsText}">${wmtsUrl}</span>
             <i class="${CLASS_NAMES.copyIcon} icon-copy" title="Copy to Clipboard"></i>
           `;
           fileSizeInfoBox.classList.add(CLASS_NAMES.informationWmts);
@@ -1037,10 +1038,12 @@ define([
           }
         }
 
-        // Instead of disabling the Download button for large file sizes simply
-        // remove the layer from the the download list variable (i.e.,
-        // dataDownloadLinks)
+        // fileSize is always numeric or null, so this comparison is safe for
+        // all file types including WMTS (null > limit is false).
         if (this.dataDownloadLinks[layerID].fileSize > this.downloadSizeLimit) {
+          // Instead of disabling the Download button for large file sizes simply
+          // remove the layer from the the download list variable (i.e.,
+          // dataDownloadLinks)
           delete this.dataDownloadLinks[layerID];
         }
       },
@@ -1117,9 +1120,9 @@ define([
           const urlCount = urls.length;
           totalFileSize = urlCount * this.fileSizes[fileFormat];
         } else {
-          // Instead of downloading the WMTS file, just provide the URL (below
-          // the dropdowns)
-          totalFileSize = wmtsDownloadLink;
+          // WMTS: no tile download, just surface the service URL to the user.
+          // fileSize remains undefined; wmtsUrl is stored separately.
+          totalFileSize = null;
         }
 
         // Sync dataDownloadLinks: remove entries for layers no longer selected.
@@ -1143,7 +1146,9 @@ define([
           baseURL: baseURL || null,
           layerName,
           fileType: fileFormat,
+          // fileSize is always a byte count (number) or null
           fileSize: totalFileSize,
+          wmtsUrl: fileFormat === "wmts" ? wmtsDownloadLink : null,
           metadataPid: metadataURL,
         };
         return totalFileSize;
@@ -1299,8 +1304,10 @@ define([
        * data layer.
        * @property {string} dataDownloadLinks.data.fileType - The file type of
        * the data (e.g., "zip").
-       * @property {number} dataDownloadLinks.data.fileSize - The size of the
-       * data file in bytes.
+       * @property {number|null} dataDownloadLinks.data.fileSize - The size of
+       * the data file in bytes, or null for WMTS layers.
+       * @property {string|null} dataDownloadLinks.data.wmtsUrl - The WMTS
+       * service URL for the layer, or null for non-WMTS layers.
        * @property {string} dataDownloadLinks.data.layerName - The name of the
        * data layer.
        * @property {string} dataDownloadLinks.data.metadataPid - The metadata
