@@ -423,7 +423,6 @@ define([
        * Resets the draw tool to its initial state.
        */
       reset() {
-        this.toggleDraw(true);
         this.clearPoints();
         this.removeClickListeners();
 
@@ -743,7 +742,6 @@ define([
               </span> 
               <span class="${CLASS_NAMES.buttonLabel}">${options.label}</span> `;
           button.dataset.name = options.name;
-          if (!view.buttonEls) view.buttonEls = {};
           view.buttonEls[`${options.name}Button`] = button;
           this.drawToolEl.appendChild(button);
         });
@@ -1054,7 +1052,7 @@ define([
 
         // fileSize is always numeric or null, so this comparison is safe for
         // all file types including WMTS (null > limit is false).
-        if (this.dataDownloadLinks[layerID].fileSize > this.downloadSizeLimit) {
+        if (this.dataDownloadLinks[layerID]?.fileSize > this.downloadSizeLimit) {
           // Instead of disabling the Download button for large file sizes simply
           // remove the layer from the the download list variable (i.e.,
           // dataDownloadLinks)
