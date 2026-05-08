@@ -806,7 +806,7 @@ define([
             if (value.attributes && Array.isArray(value.attributes.services)) {
               pngDownloadLink = value.attributes.services.find(
                 (service) => service.type === "png",
-              ).endpoint;
+              )?.endpoint;
             } else {
               pngDownloadLink = null;
             }
