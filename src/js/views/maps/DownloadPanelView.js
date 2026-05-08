@@ -184,10 +184,11 @@ define([
       /**
        * The buttons that have been rendered in the toolbar. Formatted as an
        * object with the button name as the key and the button element as the
-       * value.
+       * value. Initialized in initialize() to avoid shared state across
+       * instances.
        * @type {object}
        */
-      buttonEls: {},
+      buttonEls: undefined,
 
       /**
        * The current mode of the draw tool. This can be "draw", "move",
@@ -269,10 +270,11 @@ define([
 
       /**
        * The array that store the list of URLs for each data layer that is
-       * selected for partial download.
-       * @type {Array}
+       * selected for partial download. Initialized in initialize() to avoid
+       * shared state across instances.
+       * @type {object}
        */
-      dataDownloadLinks: {},
+      dataDownloadLinks: undefined,
 
       /**
        * The z levels available for download along with their approximate pixel
@@ -337,6 +339,8 @@ define([
        * @param {string} [options.mode] - The initial mode of the draw tool.
        */
       initialize(options) {
+        this.dataDownloadLinks = {};
+        this.buttonEls = {};
         this.mapModel = options.model || new Map();
         this.objectServiceUrl = MetacatUI.appModel.get("objectServiceUrl");
         // Add models & collections, interactions, layer, connector, points
