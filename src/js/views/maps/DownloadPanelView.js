@@ -382,7 +382,6 @@ define([
        * Sets up the connector to connect the GeoPoints collection to the
        * CesiumVectorData model. Adds the connector and points properties to
        * this view.
-       * @returns {GeoPointsVectorData} The connector
        */
       setUpConnectors() {
         const points = new GeoPoints();
@@ -397,8 +396,6 @@ define([
         });
         this.polygonConnector.connect();
         this.pointsConnector.connect();
-
-        return this.connector;
       },
 
       /**
