@@ -1053,10 +1053,16 @@ define([
         infoEl.classList.remove(CLASS_NAMES.informationWmts);
         if (fileType === "wmts") {
           const wmtsUrl = this.dataDownloadLinks[layerID]?.wmtsUrl ?? "";
-          infoEl.innerHTML = `
-            <span class="${CLASS_NAMES.wmtsText}">${wmtsUrl}</span>
-            <i class="${CLASS_NAMES.copyIcon} icon-copy" title="Copy to Clipboard"></i>
-          `;
+          infoEl.textContent = "";
+          const wmtsTextEl = document.createElement("span");
+          wmtsTextEl.className = CLASS_NAMES.wmtsText;
+          wmtsTextEl.textContent = wmtsUrl;
+
+          const copyIconEl = document.createElement("i");
+          copyIconEl.className = `${CLASS_NAMES.copyIcon} icon-copy`;
+          copyIconEl.title = "Copy to Clipboard";
+
+          infoEl.replaceChildren(wmtsTextEl, copyIconEl);
           infoEl.classList.add(CLASS_NAMES.informationWmts);
         } else {
           const maxSize = Utilities.bytesToSize(this.downloadSizeLimit, 2);
