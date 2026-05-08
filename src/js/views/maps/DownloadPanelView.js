@@ -1164,7 +1164,7 @@ define([
           totalFileSize = urlCount * this.fileSizes[fileFormat];
         } else {
           // WMTS: no tile download, just surface the service URL to the user.
-          // fileSize remains undefined; wmtsUrl is stored separately.
+          // fileSize is stored as null for WMTS; wmtsUrl is stored separately.
           totalFileSize = null;
         }
 
