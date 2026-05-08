@@ -1159,11 +1159,9 @@ define([
        * @returns {number[][]} An array of arrays representing the polygon.
        */
       getPolygon(jsonData) {
-        // this.jsonData = this.points.toJSON();
-        const polygon = jsonData
-          .reverse()
-          .map((i) => [i.longitude, i.latitude]);
-        polygon.push([jsonData[0].longitude, jsonData[0].latitude]);
+        const reversed = [...jsonData].reverse();
+        const polygon = reversed.map((i) => [i.longitude, i.latitude]);
+        polygon.push([reversed[0].longitude, reversed[0].latitude]);
         // Return a polygon
         return polygon;
       },
