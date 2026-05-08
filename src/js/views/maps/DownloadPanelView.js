@@ -453,6 +453,17 @@ define([
         this.mapModel.removeAsset(this.layer);
       },
 
+      /** @inheritdoc */
+      remove() {
+        this.removeLayer();
+        this.removeClickListeners();
+        if (this.layerDownloadViews) {
+          this.layerDownloadViews.forEach((ldv) => ldv.remove());
+          this.layerDownloadViews = [];
+        }
+        Backbone.View.prototype.remove.call(this);
+      },
+
       /**
        * Render the view by updating the HTML of the element. The new HTML is
        * computed from an HTML template that is passed an object with relevant
@@ -1052,7 +1063,9 @@ define([
 
         // fileSize is always numeric or null, so this comparison is safe for
         // all file types including WMTS (null > limit is false).
-        if (this.dataDownloadLinks[layerID]?.fileSize > this.downloadSizeLimit) {
+        if (
+          this.dataDownloadLinks[layerID]?.fileSize > this.downloadSizeLimit
+        ) {
           // Instead of disabling the Download button for large file sizes simply
           // remove the layer from the the download list variable (i.e.,
           // dataDownloadLinks)

@@ -79,10 +79,13 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
       template: _.template(Template),
 
       /** @inheritdoc */
-      events: {
-        [`change .${CLASS_NAMES.checkbox}`]: "handleCheckboxChange",
-        [`change .${CLASS_NAMES.resolutionDropdown}`]: "handleResolutionChange",
-        [`change .${CLASS_NAMES.fileTypeDropdown}`]: "handleFileTypeChange",
+      events() {
+        const CN = CLASS_NAMES;
+        return {
+          [`change .${CN.checkbox}`]: "handleCheckboxChange",
+          [`change .${CN.resolutionDropdown}`]: "handleResolutionChange",
+          [`change .${CN.fileTypeDropdown}`]: "handleFileTypeChange",
+        };
       },
 
       /**
@@ -113,6 +116,12 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
         this.selectedResolution = "";
         /** The currently selected file type (e.g. "png", "tif"). */
         this.selectedFileType = "";
+      },
+
+      /** @inheritdoc */
+      remove() {
+        this.downloadPanelView = null;
+        Backbone.View.prototype.remove.call(this);
       },
 
       /** @returns {boolean} Whether the content section is currently visible. */
@@ -197,9 +206,10 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
           CLASS_NAMES.error,
           CLASS_NAMES.informationWmts,
         );
-        // Re-evaluate save-button state across all layers: another layer may
-        // still have a valid file type selected, so we can't simply disable.
-        this.downloadPanelView.layerSelection();
+
+        this.downloadPanelView.setButtonStatuses({
+          save: "deactivated",
+        });
       },
 
       /**
