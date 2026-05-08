@@ -48,7 +48,7 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
    * `DownloadPanelView`.
    *
    * When the resolution selection is invalidated, this view triggers a
-   * `"resolution:reset"` event (with `layerID` as the argument) rather than
+   * `"download:invalidated"` event (with `layerID` as the argument) rather than
    * mutating the parent's `dataDownloadLinks` directly. The parent is
    * responsible for listening to that event and cleaning up its own state.
    * @classcategory Views/Maps
@@ -149,6 +149,8 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
         }
         this.selectedResolution = "";
         this.selectedFileType = "";
+        // Notify the parent to remove any stale download link for this layer,
+        this.trigger("download:invalidated", this.item.layerID);
         if (this.informationEl) {
           this.informationEl.textContent = MESSAGES.selectResolutionAndFormat;
           this.informationEl.classList.remove(
@@ -188,7 +190,7 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
           this.downloadPanelView.dropdownOptions.fileType.defaultValue;
         this.selectedFileType = "";
         // Notify the parent to remove the stale download link for this layer
-        this.trigger("resolution:reset", this.item.layerID);
+        this.trigger("download:invalidated", this.item.layerID);
         this.informationEl.textContent = MESSAGES.selectFormat;
         this.informationEl.classList.add(CLASS_NAMES.informationWarning);
         this.informationEl.classList.remove(
@@ -240,6 +242,9 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
         const fileTypeDropdownId = `fileType-dropdown-${item.layerID}`;
 
         this.el.innerHTML = this.template({
+          // Note: the template also contains hardcoded BEM class strings for
+          // header, title, dropdown, dropdownLabel, dropdownWrapper, and
+          // dropdownContainer that must stay in sync with CLASS_NAMES above.
           layerName: item.layerName,
           resolutionDropdownId,
           resolutionLabel: dropdownOptions.resolution.label,

@@ -896,9 +896,13 @@ define([
 
             // When the resolution is changed, the previously calculated
             // download link for this layer is no longer valid.
-            view.listenTo(layerDownloadView, "resolution:reset", (layerID) => {
-              delete view.dataDownloadLinks[layerID];
-            });
+            view.listenTo(
+              layerDownloadView,
+              "download:invalidated",
+              (layerID) => {
+                delete view.dataDownloadLinks[layerID];
+              },
+            );
 
             view.layerDownloadViews.push(layerDownloadView);
           });
