@@ -90,6 +90,12 @@ define([
     metadataFetchFailed: (layerID, statusText) =>
       `Failed to fetch metadata for ${layerID}: ${statusText}`,
     progress: (pct) => `Progress: ${pct}%`,
+    downloadingAggregate: (pct, completedTiles, totalTiles) =>
+      `Downloading... ${pct}% (${completedTiles} / ${totalTiles} tiles)`,
+    downloadSummary: (succeeded, total) =>
+      `Download complete (${succeeded} of ${total} layer${total !== 1 ? "s" : ""})`,
+    downloadSummaryWithErrors: (succeeded, total, failed) =>
+      `${succeeded} of ${total} layer${total !== 1 ? "s" : ""} downloaded (${failed} failed)`,
   };
 
   /**
@@ -427,6 +433,7 @@ define([
         this.removeClickListeners();
 
         this.instructionsEl.textContent = MESSAGES.drawInstructions;
+        this.updateStatusBar({ show: false });
 
         if (this.layerDownloadViews) {
           this.layerDownloadViews.forEach((ldv) => {
@@ -499,6 +506,12 @@ define([
         );
         this.dataListEl = this.el.querySelector(`.${CLASS_NAMES.dataList}`);
         this.drawToolEl = this.el.querySelector(`.${CLASS_NAMES.drawTool}`);
+        this.progressContainerEl = this.el.querySelector(
+          `.${CLASS_NAMES.progressContainer}`,
+        );
+        this.progressBarEl = this.el.querySelector(
+          `.${CLASS_NAMES.progressBar}`,
+        );
 
         this.renderToolbar();
         return this;
@@ -942,26 +955,6 @@ define([
           });
           // Update the text of download-panel__instructions
           this.instructionsEl.textContent = MESSAGES.selectProducts;
-
-          // Progress Bar
-          // Create the download status bar container
-          const progressContainerEl = document.createElement("div");
-          progressContainerEl.classList.add(CLASS_NAMES.progressContainer);
-          progressContainerEl.style.display = "none"; // Hidden by default
-
-          // Create the progress bar element
-          const progressBarEl = document.createElement("div");
-          progressBarEl.classList.add(CLASS_NAMES.progressBar);
-          progressBarEl.style.width = "0%"; // Initial width
-          progressBarEl.textContent = "0%"; // Initial text
-
-          progressContainerEl.appendChild(progressBarEl);
-          this.instructionsEl.appendChild(progressContainerEl);
-
-          // Save reference to the progress bar and related elements for
-          // updating later.
-          view.progressContainerEl = progressContainerEl;
-          view.progressBarEl = progressBarEl;
         }
       },
 
@@ -1328,167 +1321,159 @@ define([
       },
 
       /**
-       * Downloads data for each layer specified in `dataDownloadLinks` and
-       * provides progress updates. This function iterates through the
-       * `dataDownloadLinks` object, retrieves data for each layer, and
-       * generates a ZIP file for download. It updates a progress bar to reflect
-       * the download status and handles errors or cases where no data is
-       * available.
-       * @returns {Promise} Resolves when all data layers have been processed.
-       * @property {object} dataDownloadLinks - An object containing data layer
-       * information.
-       * @property {string} dataDownloadLinks.layerID - The unique identifier
-       * for the data layer.
-       * @property {object} dataDownloadLinks.data - Metadata for the data
-       * layer.
-       * @property {string[]} dataDownloadLinks.data.urls - Array of URLs to
-       * retrieve data from.
-       * @property {string} dataDownloadLinks.data.baseURL - Base URL for the
-       * data layer.
-       * @property {string} dataDownloadLinks.data.fileType - The file type of
-       * the data (e.g., "zip").
-       * @property {number|null} dataDownloadLinks.data.fileSize - The size of
-       * the data file in bytes, or null for WMTS layers.
-       * @property {string|null} dataDownloadLinks.data.wmtsUrl - The WMTS
-       * service URL for the layer, or null for non-WMTS layers.
-       * @property {string} dataDownloadLinks.data.layerName - The name of the
-       * data layer.
-       * @property {string} dataDownloadLinks.data.metadataPid - The metadata
-       * pid of the data layer.
+       * Downloads data for all eligible layers in `dataDownloadLinks` and
+       * shows aggregate tile-count progress. All layers download in parallel;
+       * a single shared counter increments as individual tiles complete across
+       * all layers, driving one aggregate progress bar.
+       * @returns {Promise<void>} Resolves when all layers have been processed.
        */
       async downloadData() {
         const view = this;
-        // Loop through each layerID in dataDownloadLinks and process them
-        // individually
-        Object.entries(this.dataDownloadLinks).forEach(
-          async ([layerID, data]) => {
-            // WMTS files - provide a service url instead of a download
-            if (data.fileType === "wmts") {
-              return;
-            }
 
-            // If file size is approximately over a GB then do not download
+        // Filter to layers that are eligible for download, showing immediate
+        // errors for any that are not.
+        const allEntries = Object.entries(this.dataDownloadLinks);
+        const layers = allEntries.filter(
+          ([, data]) => {
+            if (data.fileType === "wmts") return false;
             if (data.fileSize >= view.downloadSizeLimit) {
               const maxSize = Utilities.bytesToSize(view.downloadSizeLimit, 2);
               view.updateStatusBar({
                 error: true,
                 message: MESSAGES.fileSizeExceedsLimit(data.layerName, maxSize),
               });
-              return;
+              return false;
             }
-
-            // If no URL for the layers, nothing to download
             if (!data.urls?.length) {
               view.updateStatusBar({
                 error: true,
                 message: MESSAGES.noDataAvailable,
               });
-              return;
+              return false;
             }
-
-            // Show the progress bar for the current layer
-            const updateStatusBar = (progress) => {
-              view.updateStatusBar({
-                progress,
-                message: MESSAGES.downloading(data.layerName, progress),
-              });
-            };
-            // Start progress tracking
-            updateStatusBar(0);
-
-            try {
-              const layerZip = await view.retrieveDataFromURL(
-                layerID,
-                data.urls,
-                data.baseURL,
-                data.fileType,
-                (progress) => {
-                  // Progress tracking callback function
-                  updateStatusBar(progress);
-                },
-              );
-
-              // Stop if no data
-              if (!Object.keys(layerZip.files).length) {
-                view.updateStatusBar({
-                  message: MESSAGES.noDataAvailable,
-                  error: true,
-                });
-                return;
-              }
-
-              const numFiles = Object.keys(layerZip.files).length;
-              view.updateStatusBar({
-                message: MESSAGES.generatingZip(data.layerName, numFiles),
-              });
-
-              if (data.metadataPid) {
-                const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
-                fetch(metadataUrl)
-                  .then((response) => {
-                    if (!response.ok) {
-                      throw new Error(
-                        MESSAGES.metadataFetchFailed(
-                          layerID,
-                          response.statusText,
-                        ),
-                      );
-                    }
-                    return response.blob();
-                  })
-                  .then((metadataBlob) => {
-                    layerZip.file(`${layerID}_metadata.xml`, metadataBlob);
-                  })
-                  .catch((error) => {
-                    let message = MESSAGES.metadataError(layerID);
-                    if (error.message) {
-                      message += `: ${error.message}`;
-                    }
-
-                    view.updateStatusBar({
-                      error: true,
-                      message,
-                    });
-                  })
-                  .finally(() => {
-                    // Always generate the ZIP, regardless of metadata result
-                    layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
-                      view.updateStatusBar({
-                        message: MESSAGES.downloadComplete,
-                        progress: 100,
-                      });
-                      const link = document.createElement("a");
-                      link.href = URL.createObjectURL(zipBlob);
-                      link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
-                      link.click();
-                    });
-                  });
-              } else {
-                // No metadata to fetch, just generate the ZIP
-                layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
-                  view.updateStatusBar({
-                    message: MESSAGES.downloadComplete,
-                    progress: 100,
-                  });
-                  const link = document.createElement("a");
-                  link.href = URL.createObjectURL(zipBlob);
-                  link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
-                  link.click();
-                });
-              }
-            } catch (error) {
-              let message = MESSAGES.downloadFailed;
-              if (error.message) {
-                message += error.message;
-              }
-
-              view.updateStatusBar({
-                message,
-                error: true,
-              });
-            }
+            return true;
           },
         );
+
+        if (!layers.length) {
+          if (!allEntries.length) {
+            // dataDownloadLinks was empty — oversized layers were pre-removed
+            // by updateLayerInfoEl before downloadData ran. Show an error so
+            // the user gets feedback instead of nothing happening.
+            view.updateStatusBar({
+              error: true,
+              message: MESSAGES.downloadSizeTooLarge(
+                Utilities.bytesToSize(view.downloadSizeLimit, 2),
+                MESSAGES.wmtsComment,
+              ),
+            });
+          }
+          // When allEntries was non-empty, the filter already surfaced errors
+          // via updateStatusBar for each ineligible layer.
+          return;
+        }
+
+        // Aggregate tile count across all layers
+        const totalTiles = layers.reduce(
+          (sum, [, data]) => sum + data.urls.length,
+          0,
+        );
+        let completedTiles = 0;
+
+        // Show bar at 0% before any fetching starts
+        view.updateStatusBar({
+          progress: 0,
+          message: MESSAGES.downloadingAggregate(0, 0, totalTiles),
+        });
+
+        // Called once per completed tile from any layer
+        const onTileComplete = () => {
+          completedTiles += 1;
+          const pct = Math.round((completedTiles / totalTiles) * 100);
+          view.updateStatusBar({
+            progress: pct,
+            message: MESSAGES.downloadingAggregate(
+              pct,
+              completedTiles,
+              totalTiles,
+            ),
+          });
+        };
+
+        // Download all layers in parallel, collecting settled results
+        const results = await Promise.allSettled(
+          layers.map(([layerID, data]) =>
+            view.downloadLayer(layerID, data, onTileComplete),
+          ),
+        );
+
+        const succeeded = results.filter(
+          (r) => r.status === "fulfilled",
+        ).length;
+        const failed = results.length - succeeded;
+
+        if (failed === 0) {
+          view.updateStatusBar({
+            progress: 100,
+            message: MESSAGES.downloadSummary(succeeded, layers.length),
+          });
+        } else {
+          view.updateStatusBar({
+            error: true,
+            message: MESSAGES.downloadSummaryWithErrors(
+              succeeded,
+              layers.length,
+              failed,
+            ),
+          });
+        }
+      },
+
+      /**
+       * Downloads a single layer's tiles, optionally appends a metadata file,
+       * and triggers a ZIP download. Called by `downloadData` in parallel for
+       * each eligible layer.
+       * @param {string} layerID - The unique identifier for the data layer.
+       * @param {object} data - The layer entry from `dataDownloadLinks`.
+       * @param {Function} onTileComplete - Called once each time any tile fetch
+       * completes, used to advance the aggregate progress bar.
+       * @returns {Promise<void>} Resolves when the ZIP has been saved.
+       * @throws {Error} If the fetched tiles contain no usable data.
+       */
+      async downloadLayer(layerID, data, onTileComplete) {
+        const zip = await this.retrieveDataFromURL(
+          layerID,
+          data.urls,
+          data.baseURL,
+          data.fileType,
+          onTileComplete,
+        );
+
+        if (!Object.keys(zip.files).length) {
+          throw new Error(MESSAGES.noDataAvailable);
+        }
+
+        if (data.metadataPid) {
+          const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
+          try {
+            const response = await fetch(metadataUrl);
+            if (!response.ok) {
+              throw new Error(
+                MESSAGES.metadataFetchFailed(layerID, response.statusText),
+              );
+            }
+            const metadataBlob = await response.blob();
+            zip.file(`${layerID}_metadata.xml`, metadataBlob);
+          } catch (_e) {
+            // Metadata fetch failure is non-fatal; proceed without it
+          }
+        }
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(zipBlob);
+        link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
+        link.click();
       },
 
       /**
@@ -1510,8 +1495,8 @@ define([
         show = true,
         error = false,
       }) {
-        const view = this;
-        const { progressContainerEl, progressBarEl } = view;
+        const { progressContainerEl, progressBarEl } = this;
+        if (!progressContainerEl || !progressBarEl) return;
 
         if (show) {
           progressContainerEl.style.display = "block";
@@ -1521,24 +1506,15 @@ define([
         }
 
         if (error) {
-          progressBarEl.classList.remove(CLASS_NAMES.progressBar);
           progressBarEl.classList.add(CLASS_NAMES.progressBarNoData);
-        } else {
-          progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
-          progressBarEl.classList.add(CLASS_NAMES.progressBar);
-        }
-
-        if (typeof progress === "number") {
-          progressBarEl.style.width = `${progress}%`;
-          if (progress > 0) {
-            progressBarEl.textContent = MESSAGES.progress(progress);
-          } else {
-            progressBarEl.textContent = "";
-          }
-          progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
-          progressBarEl.classList.add(CLASS_NAMES.progressBar);
-        } else {
+          progressBarEl.classList.remove(CLASS_NAMES.progressBar);
           progressBarEl.style.width = "100%";
+        } else {
+          progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
+          progressBarEl.classList.add(CLASS_NAMES.progressBar);
+          if (typeof progress === "number") {
+            progressBarEl.style.width = `${progress}%`;
+          }
         }
 
         if (message) {
@@ -1555,14 +1531,21 @@ define([
        * file paths.
        * @param {string} fileType - The type of file being processed (e.g.,
        * "wmts").
-       * @param {function(number): void} [onProgress] - Optional callback
-       * function to report download progress as a percentage.
+       * @param {function(): void} [onTileComplete] - Optional callback invoked
+       * once each time a tile fetch completes, used to advance the aggregate
+       * progress bar.
        * @returns {Promise<JSZip>} A promise that resolves to a JSZip instance
        * containing the downloaded files.
        * @throws {Error} If there is an issue with fetching or processing the
        * data.
        */
-      async retrieveDataFromURL(layerID, urls, baseURL, fileType, onProgress) {
+      async retrieveDataFromURL(
+        layerID,
+        urls,
+        baseURL,
+        fileType,
+        onTileComplete,
+      ) {
         // Initialize JSZip
         const zip = new JSZip();
 
@@ -1573,15 +1556,12 @@ define([
             if (response.status === 404) {
               // We can safely skip 404 errors because we don't expect all URLs
               // to be valid
+              onTileComplete?.();
               return null;
             }
             // Other errors should be handled
             throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
           }
-
-          const contentLength = response.headers.get("Content-Length");
-          const totalBytes = contentLength ? parseInt(contentLength, 10) : null;
-          let loadedBytes = 0;
 
           const reader = response.body.getReader();
           const chunks = [];
@@ -1594,14 +1574,11 @@ define([
             done = isDone;
             if (value) {
               chunks.push(value);
-              loadedBytes += value.length;
-
-              if (onProgress && totalBytes) {
-                const progress = Math.floor((loadedBytes / totalBytes) * 100);
-                onProgress(progress); // Update progress
-              }
             }
           }
+
+          // Tile fully fetched — advance the aggregate progress bar
+          onTileComplete?.();
 
           const blob = new Blob(chunks);
           const urlParts = url.split(baseURL).filter((part) => part !== "");

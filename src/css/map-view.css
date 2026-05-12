@@ -1604,7 +1604,7 @@ other class: .ui-slider-range */
 }
 
 .download-panel__progress-container {
-  width: 100%;
+  width: calc(100% - 60px);
   background-color: var(
     --portal-col-neutral-2,
     var(--map-col-bkg-lightest__deprecate)
