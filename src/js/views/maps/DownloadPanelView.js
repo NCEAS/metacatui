@@ -60,9 +60,6 @@ define([
 
   const MESSAGES = {
     // Plain strings
-    downloadComplete: "Download Complete!",
-    downloadFailed:
-      "Failed to download data files for selected data layer(s) within area of interest. ",
     drawInstructions:
       "Draw Area of Interest: Single-click to add vertices, double-click to complete.",
     noDataAvailable:
@@ -74,18 +71,14 @@ define([
       "Select products below and click the download button. To download full datasets (including original shapefiles) please use the Layers panel above. ",
     wmtsComment: "Use WMTS for accessing large data volume or re-draw AOI",
     // Functions
-    downloading: (layerName, progress) =>
-      `Downloading data for ${layerName} (${progress}%)`,
     downloadSizeTooLarge: (maxSize, comment) =>
       `Download size is too big ( > ${maxSize}). ${comment}.`,
     drawToolUnavailable: (detail) =>
       `The draw tool is not available. ${detail}`,
     estimatedFileSize: (size) =>
       `Estimated download file size is \u2264 ${size}.`,
-    metadataError: (layerID) => `Error fetching metadata for ${layerID}`,
     metadataFetchFailed: (layerID, statusText) =>
       `Failed to fetch metadata for ${layerID}: ${statusText}`,
-    progress: (pct) => `Progress: ${pct}%`,
     downloadingAggregate: (pct, completedTiles, totalTiles) =>
       `Downloading... ${pct}% (${completedTiles} / ${totalTiles} tiles)`,
     downloadSummary: (succeeded, total) =>
@@ -193,13 +186,6 @@ define([
       buttonEls: undefined,
 
       /**
-       * The current mode of the draw tool. This can be "draw", "move",
-       * "remove", or "add" - any of the "name" properties of the buttons array,
-       * excluding buttons like "clear" and "save" that have a method property.
-       */
-      mode: false,
-
-      /**
        * The Cesium map model to draw on. This must be the same model that the
        * mapWidget is using.
        * @type {Map}
@@ -234,11 +220,10 @@ define([
       points: undefined,
 
       /**
-       * The GeoPoints collection that stores the points of the polygon that is
-       * being drawn.
-       * @type {MapInteraction}
+       * Whether the draw tool is currently active.
+       * @type {boolean}
        */
-      mapinteraction: undefined,
+      draw: false,
 
       /**
        * The color of the polygon that is being drawn as a hex string.
