@@ -82,10 +82,6 @@ define([
       `The draw tool is not available. ${detail}`,
     estimatedFileSize: (size) =>
       `Estimated download file size is \u2264 ${size}.`,
-    fileSizeExceedsLimit: (layerName, maxSize) =>
-      `File size for ${layerName} > the max download size, ${maxSize}. Select lower resolution/ draw smaller AOI.`,
-    generatingZip: (layerName, numFiles) =>
-      `Generating ZIP file for ${layerName} (${numFiles} files)...`,
     metadataError: (layerID) => `Error fetching metadata for ${layerID}`,
     metadataFetchFailed: (layerID, statusText) =>
       `Failed to fetch metadata for ${layerID}: ${statusText}`,
@@ -959,34 +955,32 @@ define([
       },
 
       /**
+       * Returns true if at least one selected layer has a calculated,
+       * non-WMTS entry in `dataDownloadLinks`. This is the single gate used
+       * everywhere to decide whether the save button should be enabled.
+       * @returns {boolean} True if any layer is ready to download.
+       */
+      canDownloadAnyLayer() {
+        return (this.layerDownloadViews || []).some(
+          (ldv) =>
+            ldv.isSelected &&
+            ldv.item.layerID in this.dataDownloadLinks &&
+            this.dataDownloadLinks[ldv.item.layerID].fileType !== "wmts",
+        );
+      },
+
+      /**
        * Handles the selection of map layers and updates the state of the save
        * button and other UI elements based on whether any checkboxes are
        * checked.
        */
       layerSelection() {
         const view = this;
-        const isAnyChecked = view.layerDownloadViews.some(
-          (ldv) => ldv.isSelected,
-        );
-        const isAnyFileTypeSelected = view.layerDownloadViews.some(
-          (ldv) =>
-            ldv.isSelected &&
-            ["png", "tif", "gpkg"].includes(ldv.selectedFileType),
-        );
-
-        if (isAnyChecked && isAnyFileTypeSelected) {
-          view.setButtonStatuses({
-            draw: "deactivated",
-            save: "enabled",
-            clear: "enabled",
-          });
-        } else {
-          view.setButtonStatuses({
-            draw: "deactivated",
-            save: "deactivated",
-            clear: "enabled",
-          });
-        }
+        view.setButtonStatuses({
+          draw: "deactivated",
+          save: view.canDownloadAnyLayer() ? "enabled" : "deactivated",
+          clear: "enabled",
+        });
 
         view.layerDownloadViews
           .filter((ldv) => !ldv.isSelected)
@@ -1003,27 +997,11 @@ define([
        * with.
        */
       fileTypeSelection(layerID) {
-        const view = this;
-        const isAnyFileTypeSelected = view.layerDownloadViews.some(
-          (ldv) =>
-            ldv.isSelected &&
-            ["png", "tif", "gpkg"].includes(ldv.selectedFileType),
-        );
-        if (!isAnyFileTypeSelected) {
-          view.setButtonStatuses({
-            draw: "deactivated",
-            save: "deactivated",
-            clear: "enabled",
-          });
-        } else {
-          view.setButtonStatuses({
-            draw: "deactivated",
-            save: "enabled",
-            clear: "enabled",
-          });
-        }
-        if (layerID in view.dataDownloadLinks) {
-          delete view.dataDownloadLinks[layerID];
+        // Remove the stale entry so getRawFileSize can add the recalculated
+        // one. The save button is updated by updateLayerInfoEl once the new
+        // size is known, so no button logic is needed here.
+        if (layerID in this.dataDownloadLinks) {
+          delete this.dataDownloadLinks[layerID];
         }
       },
 
@@ -1077,11 +1055,16 @@ define([
         if (
           this.dataDownloadLinks[layerID]?.fileSize > this.downloadSizeLimit
         ) {
-          // Instead of disabling the Download button for large file sizes simply
-          // remove the layer from the the download list variable (i.e.,
-          // dataDownloadLinks)
           delete this.dataDownloadLinks[layerID];
         }
+
+        // Always sync the save button against the authoritative state:
+        // enabled only when at least one selected layer has a valid,
+        // non-WMTS entry in dataDownloadLinks.
+        this.setButtonStatus(
+          "save",
+          this.canDownloadAnyLayer() ? "enabled" : "deactivated",
+        );
       },
 
       /**
@@ -1330,20 +1313,11 @@ define([
       async downloadData() {
         const view = this;
 
-        // Filter to layers that are eligible for download, showing immediate
-        // errors for any that are not.
-        const allEntries = Object.entries(this.dataDownloadLinks);
-        const layers = allEntries.filter(
+        // Filter to layers that are eligible for download, surfacing errors
+        // for any that are not (e.g. no URLs).
+        const layers = Object.entries(this.dataDownloadLinks).filter(
           ([, data]) => {
             if (data.fileType === "wmts") return false;
-            if (data.fileSize >= view.downloadSizeLimit) {
-              const maxSize = Utilities.bytesToSize(view.downloadSizeLimit, 2);
-              view.updateStatusBar({
-                error: true,
-                message: MESSAGES.fileSizeExceedsLimit(data.layerName, maxSize),
-              });
-              return false;
-            }
             if (!data.urls?.length) {
               view.updateStatusBar({
                 error: true,
@@ -1355,23 +1329,7 @@ define([
           },
         );
 
-        if (!layers.length) {
-          if (!allEntries.length) {
-            // dataDownloadLinks was empty — oversized layers were pre-removed
-            // by updateLayerInfoEl before downloadData ran. Show an error so
-            // the user gets feedback instead of nothing happening.
-            view.updateStatusBar({
-              error: true,
-              message: MESSAGES.downloadSizeTooLarge(
-                Utilities.bytesToSize(view.downloadSizeLimit, 2),
-                MESSAGES.wmtsComment,
-              ),
-            });
-          }
-          // When allEntries was non-empty, the filter already surfaced errors
-          // via updateStatusBar for each ineligible layer.
-          return;
-        }
+        if (!layers.length) return;
 
         // Aggregate tile count across all layers
         const totalTiles = layers.reduce(
