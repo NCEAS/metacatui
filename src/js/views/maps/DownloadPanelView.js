@@ -56,6 +56,7 @@ define([
     progressContainer: "download-panel__progress-container",
     progressBar: "download-panel__progress-bar",
     progressBarNoData: "download-panel__progress-bar--no-data",
+    progressDetail: "download-panel__progress-detail",
   };
 
   const MESSAGES = {
@@ -492,6 +493,9 @@ define([
         );
         this.progressBarEl = this.el.querySelector(
           `.${CLASS_NAMES.progressBar}`,
+        );
+        this.progressDetailEl = this.el.querySelector(
+          `.${CLASS_NAMES.progressDetail}`,
         );
 
         this.renderToolbar();
@@ -1355,6 +1359,14 @@ define([
         ).length;
         const failed = results.length - succeeded;
 
+        const errorDetails = results
+          .map((r, i) => ({ result: r, data: layers[i][1] }))
+          .filter(({ result }) => result.status === "rejected")
+          .map(
+            ({ result, data }) =>
+              `${data.layerName}: ${result.reason?.message ?? "Unknown error"}`,
+          );
+
         if (failed === 0) {
           view.updateStatusBar({
             progress: 100,
@@ -1368,6 +1380,7 @@ define([
               layers.length,
               failed,
             ),
+            errorDetails,
           });
         }
       },
@@ -1437,14 +1450,16 @@ define([
         progress = null,
         show = true,
         error = false,
+        errorDetails = [],
       }) {
-        const { progressContainerEl, progressBarEl } = this;
+        const { progressContainerEl, progressBarEl, progressDetailEl } = this;
         if (!progressContainerEl || !progressBarEl) return;
 
         if (show) {
           progressContainerEl.style.display = "block";
         } else {
           progressContainerEl.style.display = "none";
+          if (progressDetailEl) progressDetailEl.textContent = "";
           return;
         }
 
@@ -1452,16 +1467,26 @@ define([
           progressBarEl.classList.add(CLASS_NAMES.progressBarNoData);
           progressBarEl.classList.remove(CLASS_NAMES.progressBar);
           progressBarEl.style.width = "100%";
+          progressBarEl.textContent = message;
         } else {
           progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
           progressBarEl.classList.add(CLASS_NAMES.progressBar);
           if (typeof progress === "number") {
             progressBarEl.style.width = `${progress}%`;
           }
+          if (message) {
+            progressBarEl.textContent = message;
+          }
         }
 
-        if (message) {
-          progressBarEl.textContent = message;
+        if (progressDetailEl) {
+          if (error && errorDetails.length) {
+            progressDetailEl.innerHTML = errorDetails
+              .map((e) => `<div>${e}</div>`)
+              .join("");
+          } else {
+            progressDetailEl.textContent = "";
+          }
         }
       },
 
