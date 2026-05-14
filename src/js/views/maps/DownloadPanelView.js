@@ -1319,8 +1319,17 @@ define([
           },
         );
 
-        // If every non-WMTS layer was skipped (no URLs), show the error now
-        // and bail out — there is nothing to download.
+        // Disable the toolbar immediately — before any early returns — so
+        // that moving code around can never leave buttons stuck in a disabled
+        // state. Any path that does not proceed to the full download must
+        // explicitly re-enable them before returning.
+        view.setButtonStatuses({
+          clear: "deactivated",
+          save: "deactivated",
+        });
+
+        // If every non-WMTS layer was skipped (no URLs), show the error now,
+        // restore the toolbar, and bail out — there is nothing to download.
         if (!layers.length) {
           if (skippedLayers.length) {
             view.updateStatusBar({
@@ -1331,6 +1340,10 @@ define([
               ),
             });
           }
+          view.setButtonStatuses({
+            clear: "enabled",
+            save: view.canDownloadAnyLayer() ? "enabled" : "deactivated",
+          });
           return;
         }
 
@@ -1339,13 +1352,6 @@ define([
         const controller = new AbortController();
         view.downloadAbortController = controller;
         const { signal } = controller;
-
-        // Disable the toolbar for the duration of the download to prevent
-        // re-entrant calls. Draw is already deactivated at this point.
-        view.setButtonStatuses({
-          clear: "deactivated",
-          save: "deactivated",
-        });
 
         // Aggregate tile count across all layers.
         const totalTiles = layers.reduce(
