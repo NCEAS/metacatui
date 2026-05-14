@@ -1396,7 +1396,12 @@ define([
           return;
         }
 
-        view.downloadAbortController = null;
+        // Only clear the shared reference if it still points to this
+        // invocation's controller. A new downloadData() call may have already
+        // replaced it, in which case we must not null it out.
+        if (view.downloadAbortController === controller) {
+          view.downloadAbortController = null;
+        }
 
         const succeeded = results.filter(
           (r) => r.status === "fulfilled",
