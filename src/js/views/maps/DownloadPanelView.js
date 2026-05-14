@@ -411,6 +411,8 @@ define([
        * Resets the draw tool to its initial state.
        */
       reset() {
+        this.downloadAbortController?.abort();
+        this.downloadAbortController = null;
         this.clearPoints();
         this.removeClickListeners();
 
@@ -1320,6 +1322,12 @@ define([
 
         if (!layers.length) return;
 
+        // Create a cancellation token for this download session. Stored on
+        // the view so reset() can abort in-flight fetches.
+        const controller = new AbortController();
+        view.downloadAbortController = controller;
+        const { signal } = controller;
+
         // Disable the toolbar for the duration of the download to prevent
         // re-entrant calls. Draw is already deactivated at this point.
         view.setButtonStatuses({
@@ -1368,9 +1376,15 @@ define([
         // Download all layers in parallel, collecting settled results
         const results = await Promise.allSettled(
           layers.map(([layerID, data]) =>
-            view.downloadLayer(layerID, data, onTileComplete),
+            view.downloadLayer(layerID, data, onTileComplete, signal),
           ),
         );
+
+        // If the download was cancelled (e.g. user clicked Clear), reset()
+        // has already cleaned up the UI — skip all result processing.
+        if (signal.aborted) return;
+
+        view.downloadAbortController = null;
 
         const succeeded = results.filter(
           (r) => r.status === "fulfilled",
@@ -1417,16 +1431,19 @@ define([
        * @param {object} data - The layer entry from `dataDownloadLinks`.
        * @param {Function} onTileComplete - Called once each time any tile fetch
        * completes, used to advance the aggregate progress bar.
+       * @param {AbortSignal} [signal] - Optional signal for cancelling
+       * in-flight fetches when the user resets the panel.
        * @returns {Promise<void>} Resolves when the ZIP has been saved.
        * @throws {Error} If the fetched tiles contain no usable data.
        */
-      async downloadLayer(layerID, data, onTileComplete) {
+      async downloadLayer(layerID, data, onTileComplete, signal) {
         const zip = await this.retrieveDataFromURL(
           layerID,
           data.urls,
           data.baseURL,
           data.fileType,
           onTileComplete,
+          signal,
         );
 
         if (!Object.keys(zip.files).length) {
@@ -1436,7 +1453,7 @@ define([
         if (data.metadataPid) {
           const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
           try {
-            const response = await fetch(metadataUrl);
+            const response = await fetch(metadataUrl, { signal });
             if (!response.ok) {
               throw new Error(
                 MESSAGES.metadataFetchFailed(layerID, response.statusText),
@@ -1444,8 +1461,10 @@ define([
             }
             const metadataBlob = await response.blob();
             zip.file(`${layerID}_metadata.xml`, metadataBlob);
-          } catch (_e) {
-            // Metadata fetch failure is non-fatal; proceed without it
+          } catch (e) {
+            // Re-throw AbortError so the cancellation propagates cleanly.
+            // All other metadata failures are non-fatal; proceed without it.
+            if (e.name === "AbortError") throw e;
           }
         }
 
@@ -1526,6 +1545,8 @@ define([
        * @param {function(): void} [onTileComplete] - Optional callback invoked
        * once each time a tile fetch completes, used to advance the aggregate
        * progress bar.
+       * @param {AbortSignal} [signal] - Optional signal for cancelling
+       * in-flight fetches when the user resets the panel.
        * @returns {Promise<JSZip>} A promise that resolves to a JSZip instance
        * containing the downloaded files.
        * @throws {Error} If there is an issue with fetching or processing the
@@ -1537,13 +1558,14 @@ define([
         baseURL,
         fileType,
         onTileComplete,
+        signal,
       ) {
         // Initialize JSZip
         const zip = new JSZip();
 
         // Create an array of promises
         const fetchPromises = urls.map(async (url) => {
-          const response = await fetch(url);
+          const response = await fetch(url, { signal });
           if (!response.ok) {
             if (response.status === 404) {
               // We can safely skip 404 errors because we don't expect all URLs
@@ -1551,8 +1573,10 @@ define([
               onTileComplete?.();
               return null;
             }
-            // Other errors should be handled
-            throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
+            // Non-404 tile failures are skipped so one bad tile does not
+            // fail the entire layer (consistent with how 404s are handled).
+            onTileComplete?.();
+            return null;
           }
 
           const reader = response.body.getReader();
@@ -1584,13 +1608,14 @@ define([
           return { fileName, blob };
         });
 
-        // Wait for all fetches to complete
-        const results = await Promise.all(fetchPromises);
+        // Use allSettled so an AbortError from a cancelled signal does not
+        // suppress blobs that were already fully fetched in this batch.
+        const results = await Promise.allSettled(fetchPromises);
 
         // Add files to zip
         results.forEach((result) => {
-          if (result) {
-            zip.file(result.fileName, result.blob);
+          if (result.status === "fulfilled" && result.value) {
+            zip.file(result.value.fileName, result.value.blob);
           }
         });
 
