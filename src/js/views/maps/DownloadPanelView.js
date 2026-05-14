@@ -1304,23 +1304,35 @@ define([
       async downloadData() {
         const view = this;
 
-        // Filter to layers that are eligible for download, surfacing errors
-        // for any that are not (e.g. no URLs).
+        // Collect layers that have no tile URLs so we can include them in the
+        // final error summary rather than silently dropping them or immediately
+        // overwriting the progress bar before any download has started.
+        const skippedLayers = [];
         const layers = Object.entries(this.dataDownloadLinks).filter(
           ([, data]) => {
             if (data.fileType === "wmts") return false;
             if (!data.urls?.length) {
-              view.updateStatusBar({
-                error: true,
-                message: MESSAGES.noDataAvailable,
-              });
+              skippedLayers.push(data.layerName);
               return false;
             }
             return true;
           },
         );
 
-        if (!layers.length) return;
+        // If every non-WMTS layer was skipped (no URLs), show the error now
+        // and bail out — there is nothing to download.
+        if (!layers.length) {
+          if (skippedLayers.length) {
+            view.updateStatusBar({
+              error: true,
+              message: MESSAGES.noDataAvailable,
+              errorDetails: skippedLayers.map(
+                (name) => `${name}: no tile URLs`,
+              ),
+            });
+          }
+          return;
+        }
 
         // Create a cancellation token for this download session. Stored on
         // the view so reset() can abort in-flight fetches.
@@ -1406,15 +1418,20 @@ define([
         const succeeded = results.filter(
           (r) => r.status === "fulfilled",
         ).length;
-        const failed = results.length - succeeded;
 
-        const errorDetails = results
-          .map((r, i) => ({ result: r, data: layers[i][1] }))
-          .filter(({ result }) => result.status === "rejected")
-          .map(
-            ({ result, data }) =>
-              `${data.layerName}: ${result.reason?.message ?? "Unknown error"}`,
-          );
+        const errorDetails = [
+          // Per-layer failures from Promise.allSettled
+          ...results
+            .map((r, i) => ({ result: r, data: layers[i][1] }))
+            .filter(({ result }) => result.status === "rejected")
+            .map(
+              ({ result, data }) =>
+                `${data.layerName}: ${result.reason?.message ?? "Unknown error"}`,
+            ),
+          // Layers that were skipped before the download started (no URLs)
+          ...skippedLayers.map((name) => `${name}: no tile URLs`),
+        ];
+        const failed = results.length - succeeded + skippedLayers.length;
 
         if (failed === 0) {
           view.updateStatusBar({
