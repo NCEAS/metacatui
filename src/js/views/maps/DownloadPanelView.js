@@ -1436,6 +1436,10 @@ define([
             ),
           // Layers that were skipped before the download started (no URLs)
           ...skippedLayers.map((name) => `${name}: no tile URLs`),
+          // Non-fatal warnings from layers that otherwise succeeded
+          ...results
+            .filter((r) => r.status === "fulfilled")
+            .flatMap((r) => r.value?.warnings ?? []),
         ];
         const failed = results.length - succeeded + skippedLayers.length;
 
@@ -1443,6 +1447,7 @@ define([
           view.updateStatusBar({
             progress: 100,
             message: MESSAGES.downloadSummary(succeeded, layers.length),
+            errorDetails,
           });
         } else {
           view.updateStatusBar({
@@ -1478,7 +1483,7 @@ define([
        * @throws {Error} If the fetched tiles contain no usable data.
        */
       async downloadLayer(layerID, data, onTileComplete, signal) {
-        const zip = await this.retrieveDataFromURL(
+        const { zip, failedTiles } = await this.retrieveDataFromURL(
           layerID,
           data.urls,
           data.baseURL,
@@ -1491,6 +1496,13 @@ define([
           throw new Error(MESSAGES.noDataAvailable);
         }
 
+        let metadataWarning = null;
+        const warnings = [];
+        if (failedTiles > 0) {
+          warnings.push(
+            `${data.layerName}: ${failedTiles} tile${failedTiles !== 1 ? "s" : ""} could not be downloaded`,
+          );
+        }
         if (data.metadataPid) {
           const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
           try {
@@ -1504,16 +1516,22 @@ define([
             zip.file(`${layerID}_metadata.xml`, metadataBlob);
           } catch (e) {
             // Re-throw AbortError so the cancellation propagates cleanly.
-            // All other metadata failures are non-fatal; proceed without it.
+            // Non-fatal metadata failures are resolved with a warning string
+            // so the caller can surface them to the user without failing the
+            // layer download.
             if (e.name === "AbortError") throw e;
+            metadataWarning = `${data.layerName}: metadata not included — ${e.message}`;
           }
         }
+        if (metadataWarning) warnings.push(metadataWarning);
 
         const zipBlob = await zip.generateAsync({ type: "blob" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(zipBlob);
         link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
         link.click();
+
+        return { warnings };
       },
 
       /**
@@ -1564,7 +1582,7 @@ define([
         }
 
         if (progressErrorEl) {
-          if (error && errorDetails.length) {
+          if (errorDetails.length) {
             progressErrorEl.replaceChildren();
             errorDetails.forEach((e) => {
               const errorDetailEl = document.createElement("div");
@@ -1615,12 +1633,13 @@ define([
               // We can safely skip 404 errors because we don't expect all URLs
               // to be valid
               onTileComplete?.();
-              return null;
+              return { skipped: true };
             }
-            // Non-404 tile failures are also skipped so one bad tile does not
-            // fail the entire layer.
+            // Non-404 tile failures are skipped so one bad tile does not
+            // fail the entire layer, but they are counted so the caller can
+            // warn the user that some tiles are missing.
             onTileComplete?.();
-            return null;
+            return { failed: true };
           }
 
           const reader = response.body.getReader();
@@ -1656,14 +1675,20 @@ define([
         // suppress blobs that were already fully fetched in this batch.
         const results = await Promise.allSettled(fetchPromises);
 
-        // Add files to zip
+        // Add files to zip, counting non-404 tile failures separately so the
+        // caller can warn the user without failing the whole layer.
+        let failedTiles = 0;
         results.forEach((result) => {
           if (result.status === "fulfilled" && result.value) {
-            zip.file(result.value.fileName, result.value.blob);
+            if (result.value.failed) {
+              failedTiles += 1;
+            } else if (result.value.fileName) {
+              zip.file(result.value.fileName, result.value.blob);
+            }
           }
         });
 
-        return zip;
+        return { zip, failedTiles };
       },
     },
   );
