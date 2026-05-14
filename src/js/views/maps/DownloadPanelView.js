@@ -1542,9 +1542,12 @@ define([
 
         if (progressErrorEl) {
           if (error && errorDetails.length) {
-            progressErrorEl.innerHTML = errorDetails
-              .map((e) => `<div>${e}</div>`)
-              .join("");
+            progressErrorEl.replaceChildren();
+            errorDetails.forEach((e) => {
+              const errorDetailEl = document.createElement("div");
+              errorDetailEl.textContent = e;
+              progressErrorEl.appendChild(errorDetailEl);
+            });
           } else {
             progressErrorEl.textContent = "";
           }
