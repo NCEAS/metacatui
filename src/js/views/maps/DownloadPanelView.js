@@ -159,7 +159,7 @@ define([
           blockMethodIfDeactivated: true,
         },
         {
-          name: "save",
+          name: "download",
           label: "Download",
           icon: "download-alt",
           method: "downloadData",
@@ -431,7 +431,7 @@ define([
         this.setButtonStatuses({
           draw: "enabled",
           clear: "deactivated",
-          save: "deactivated",
+          download: "deactivated",
         });
       },
 
@@ -770,7 +770,7 @@ define([
         this.setButtonStatuses({
           draw: "enabled",
           clear: "deactivated",
-          save: "deactivated",
+          download: "deactivated",
         });
 
         view.generatePreviewPanel();
@@ -905,14 +905,14 @@ define([
         this.setButtonStatuses({
           draw: "deactivated",
           clear: "enabled",
-          save: "deactivated",
+          download: "deactivated",
         });
 
         if (!selectedLayersList.length) {
           // Update the text of download-panel__instructions
           this.instructionsEl.textContent = MESSAGES.noLayersAvailable;
           view.setButtonStatuses({
-            save: "deactivated",
+            download: "deactivated",
             draw: "deactivated",
             clear: "enabled",
           });
@@ -948,7 +948,7 @@ define([
       /**
        * Returns true if at least one selected layer has a calculated,
        * non-WMTS entry in `dataDownloadLinks`. This is the single gate used
-       * everywhere to decide whether the save button should be enabled.
+       * everywhere to decide whether the download button should be enabled.
        * @returns {boolean} True if any layer is ready to download.
        */
       canDownloadAnyLayer() {
@@ -969,7 +969,7 @@ define([
         const view = this;
         view.setButtonStatuses({
           draw: "deactivated",
-          save: view.canDownloadAnyLayer() ? "enabled" : "deactivated",
+          download: view.canDownloadAnyLayer() ? "enabled" : "deactivated",
           clear: "enabled",
         });
 
@@ -989,7 +989,7 @@ define([
        */
       fileTypeSelection(layerID) {
         // Remove the stale entry so getRawFileSize can add the recalculated
-        // one. The save button is updated by updateLayerInfoEl once the new
+        // one. The download button is updated by updateLayerInfoEl once the new
         // size is known, so no button logic is needed here.
         if (layerID in this.dataDownloadLinks) {
           delete this.dataDownloadLinks[layerID];
@@ -1049,11 +1049,11 @@ define([
           delete this.dataDownloadLinks[layerID];
         }
 
-        // Always sync the save button against the authoritative state:
+        // Always sync the download button against the authoritative state:
         // enabled only when at least one selected layer has a valid,
         // non-WMTS entry in dataDownloadLinks.
         this.setButtonStatus(
-          "save",
+          "download",
           this.canDownloadAnyLayer() ? "enabled" : "deactivated",
         );
       },
@@ -1325,7 +1325,7 @@ define([
         // explicitly re-enable them before returning.
         view.setButtonStatuses({
           clear: "deactivated",
-          save: "deactivated",
+          download: "deactivated",
         });
 
         // If every non-WMTS layer was skipped (no URLs), show the error now,
@@ -1342,7 +1342,7 @@ define([
           }
           view.setButtonStatuses({
             clear: "enabled",
-            save: view.canDownloadAnyLayer() ? "enabled" : "deactivated",
+            download: view.canDownloadAnyLayer() ? "enabled" : "deactivated",
           });
           return;
         }
@@ -1409,7 +1409,7 @@ define([
           view.setButtonStatuses({
             draw: "enabled",
             clear: "deactivated",
-            save: "deactivated",
+            download: "deactivated",
           });
           return;
         }
@@ -1456,10 +1456,10 @@ define([
           });
         }
 
-        // Re-enable clear and save now that the download has settled.
+        // Re-enable clear and download now that the download has settled.
         view.setButtonStatuses({
           clear: "enabled",
-          save: view.canDownloadAnyLayer() ? "enabled" : "deactivated",
+          download: view.canDownloadAnyLayer() ? "enabled" : "deactivated",
         });
       },
 
