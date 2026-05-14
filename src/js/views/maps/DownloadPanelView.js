@@ -85,7 +85,7 @@ define([
     downloadSummary: (succeeded, total) =>
       `Download complete (${succeeded} of ${total} layer${total !== 1 ? "s" : ""})`,
     downloadSummaryWithErrors: (succeeded, total, failed) =>
-      `${succeeded} of ${total} layer${total !== 1 ? "s" : ""} downloaded (${failed} failed)`,
+      `${succeeded} of ${total} layer${succeeded !== 1 ? "s" : ""} downloaded (${failed} failed)`,
   };
 
   /**
