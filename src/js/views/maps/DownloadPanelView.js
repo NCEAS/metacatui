@@ -1320,6 +1320,13 @@ define([
 
         if (!layers.length) return;
 
+        // Disable the toolbar for the duration of the download to prevent
+        // re-entrant calls. Draw is already deactivated at this point.
+        view.setButtonStatuses({
+          clear: "deactivated",
+          save: "deactivated",
+        });
+
         // Aggregate tile count across all layers
         const totalTiles = layers.reduce(
           (sum, [, data]) => sum + data.urls.length,
@@ -1394,6 +1401,12 @@ define([
             errorDetails,
           });
         }
+
+        // Re-enable clear and save now that the download has settled.
+        view.setButtonStatuses({
+          clear: "enabled",
+          save: view.canDownloadAnyLayer() ? "enabled" : "deactivated",
+        });
       },
 
       /**
