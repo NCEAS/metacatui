@@ -85,7 +85,7 @@ define([
     downloadSummary: (succeeded, total) =>
       `Download complete (${succeeded} of ${total} layer${total !== 1 ? "s" : ""})`,
     downloadSummaryWithErrors: (succeeded, total, failed) =>
-      `${succeeded} of ${total} layer${succeeded !== 1 ? "s" : ""} downloaded (${failed} failed)`,
+      `${succeeded} of ${total} layer${total !== 1 ? "s" : ""} downloaded (${failed} failed)`,
   };
 
   /**
@@ -1479,8 +1479,15 @@ define([
        * bar.
        * @param {AbortSignal} [signal] - Optional signal for cancelling
        * in-flight fetches when the user resets the panel.
-       * @returns {Promise<void>} Resolves when the ZIP has been saved.
+       * @returns {Promise<{warnings: string[]}>} Resolves with an array of
+       * non-fatal warning strings (e.g. failed tiles, missing metadata) that
+       * the caller should surface to the user. Empty when everything succeeded.
        * @throws {Error} If the fetched tiles contain no usable data.
+       * @throws {DOMException} An AbortError if `signal` is aborted during the
+       * metadata fetch. Tile fetches that are already in-flight when the signal
+       * fires are allowed to settle via `Promise.allSettled` so partially
+       * fetched data is not lost, but the metadata step and ZIP generation are
+       * cancelled immediately.
        */
       async downloadLayer(layerID, data, onTileComplete, signal) {
         const { zip, failedTiles } = await this.retrieveDataFromURL(
@@ -1609,10 +1616,13 @@ define([
        * the aggregate progress bar.
        * @param {AbortSignal} [signal] - Optional signal for cancelling
        * in-flight fetches when the user resets the panel.
-       * @returns {Promise<JSZip>} A promise that resolves to a JSZip instance
-       * containing the downloaded files.
-       * @throws {Error} If there is an issue with fetching or processing the
-       * data.
+       * @returns {Promise<{zip: JSZip, failedTiles: number}>} Resolves with the
+       * populated ZIP archive and a count of non-404 tile failures. 404s are
+       * silently skipped and not counted. The promise is settled via
+       * `Promise.allSettled` internally, so an aborted signal does not discard
+       * tiles that completed before cancellation.
+       * @throws {DOMException} An AbortError propagated from any tile fetch
+       * that fires before `Promise.allSettled` can catch it.
        */
       async retrieveDataFromURL(
         layerID,
