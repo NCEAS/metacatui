@@ -1605,12 +1605,17 @@ other class: .ui-slider-range */
 
 .download-panel__progress-container {
   width: calc(100% - 60px);
+  margin-top: 10px;
+}
+
+.download-panel__progress-track {
   background-color: var(
     --portal-col-neutral-2,
     var(--map-col-bkg-lightest__deprecate)
   );
   border-radius: 5px;
-  margin-top: 10px;
+  overflow: hidden;
+  height: 18px;
 }
 
 .download-panel__progress-bar {
@@ -1624,14 +1629,14 @@ other class: .ui-slider-range */
   color: var(--portal-col-neutral-00, var(--map-col-text__deprecate));
   line-height: 18px;
   font-size: 10px;
-  border-radius: 5px;
   transition: width 0.4s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .download-panel__progress-bar--no-data {
   width: 100%;
   height: 18px;
-  border-radius: 5px;
-  overflow: hidden;
   background-color: var(--portal-col-error-light, #fee2e2);
   color: var(--portal-col-error, #dc2626);
   text-align: center;
@@ -1639,7 +1644,7 @@ other class: .ui-slider-range */
   font-size: 10px;
 }
 
-.download-panel__progress-detail {
+.download-panel__progress-error {
   font-size: 10px;
   color: var(--portal-col-error, #dc2626);
   padding: 2px 4px 2px;
@@ -1647,7 +1652,7 @@ other class: .ui-slider-range */
   min-height: 0;
 }
 
-.download-panel__progress-detail div::before {
+.download-panel__progress-error div::before {
   content: "\26A0\FE0F  "; /* ⚠ warning sign */
 }
 

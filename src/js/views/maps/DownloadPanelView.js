@@ -56,7 +56,7 @@ define([
     progressContainer: "download-panel__progress-container",
     progressBar: "download-panel__progress-bar",
     progressBarNoData: "download-panel__progress-bar--no-data",
-    progressDetail: "download-panel__progress-detail",
+    progressError: "download-panel__progress-error",
   };
 
   const MESSAGES = {
@@ -494,8 +494,8 @@ define([
         this.progressBarEl = this.el.querySelector(
           `.${CLASS_NAMES.progressBar}`,
         );
-        this.progressDetailEl = this.el.querySelector(
-          `.${CLASS_NAMES.progressDetail}`,
+        this.progressErrorEl = this.el.querySelector(
+          `.${CLASS_NAMES.progressError}`,
         );
 
         this.renderToolbar();
@@ -1327,6 +1327,17 @@ define([
         );
         let completedTiles = 0;
 
+        // Instantly reset bar to 0% without animation before the new download
+        if (view.progressBarEl) {
+          view.progressBarEl.style.transition = "none";
+          view.progressBarEl.style.width = "0%";
+          view.progressBarEl.textContent = "";
+          // Force reflow so the reset registers before transition is restored
+          // eslint-disable-next-line no-unused-expressions
+          view.progressBarEl.offsetWidth; // read to trigger reflow
+          view.progressBarEl.style.transition = "";
+        }
+
         // Show bar at 0% before any fetching starts
         view.updateStatusBar({
           progress: 0,
@@ -1452,14 +1463,14 @@ define([
         error = false,
         errorDetails = [],
       }) {
-        const { progressContainerEl, progressBarEl, progressDetailEl } = this;
+        const { progressContainerEl, progressBarEl, progressErrorEl } = this;
         if (!progressContainerEl || !progressBarEl) return;
 
         if (show) {
           progressContainerEl.style.display = "block";
         } else {
           progressContainerEl.style.display = "none";
-          if (progressDetailEl) progressDetailEl.textContent = "";
+          if (progressErrorEl) progressErrorEl.textContent = "";
           return;
         }
 
@@ -1479,13 +1490,13 @@ define([
           }
         }
 
-        if (progressDetailEl) {
+        if (progressErrorEl) {
           if (error && errorDetails.length) {
-            progressDetailEl.innerHTML = errorDetails
+            progressErrorEl.innerHTML = errorDetails
               .map((e) => `<div>${e}</div>`)
               .join("");
           } else {
-            progressDetailEl.textContent = "";
+            progressErrorEl.textContent = "";
           }
         }
       },
