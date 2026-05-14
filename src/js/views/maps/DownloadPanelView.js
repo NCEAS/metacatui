@@ -1335,15 +1335,19 @@ define([
           save: "deactivated",
         });
 
-        // Aggregate tile count across all layers
+        // Aggregate tile count across all layers.
         const totalTiles = layers.reduce(
           (sum, [, data]) => sum + data.urls.length,
           0,
         );
         let completedTiles = 0;
 
-        // Instantly reset bar to 0% without animation before the new download
+        // Instantly reset bar to 0% without animation before the new download.
+        // Also clear error-state classes so the red styling is gone before the
+        // container becomes visible.
         if (view.progressBarEl) {
+          view.progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
+          view.progressBarEl.classList.add(CLASS_NAMES.progressBar);
           view.progressBarEl.style.transition = "none";
           view.progressBarEl.style.width = "0%";
           view.progressBarEl.textContent = "";
@@ -1359,7 +1363,7 @@ define([
           message: MESSAGES.downloadingAggregate(0, 0, totalTiles),
         });
 
-        // Called once per completed tile from any layer
+        // Called once per resolved tile from any layer (success or skipped).
         const onTileComplete = () => {
           completedTiles += 1;
           const pct = Math.round((completedTiles / totalTiles) * 100);
@@ -1380,9 +1384,17 @@ define([
           ),
         );
 
-        // If the download was cancelled (e.g. user clicked Clear), reset()
-        // has already cleaned up the UI — skip all result processing.
-        if (signal.aborted) return;
+        // If the download was cancelled (e.g. user clicked Clear), restore
+        // the default button state explicitly so this function is
+        // self-contained and does not rely on reset() having done it.
+        if (signal.aborted) {
+          view.setButtonStatuses({
+            draw: "enabled",
+            clear: "deactivated",
+            save: "deactivated",
+          });
+          return;
+        }
 
         view.downloadAbortController = null;
 
@@ -1429,8 +1441,9 @@ define([
        * each eligible layer.
        * @param {string} layerID - The unique identifier for the data layer.
        * @param {object} data - The layer entry from `dataDownloadLinks`.
-       * @param {Function} onTileComplete - Called once each time any tile fetch
-       * completes, used to advance the aggregate progress bar.
+       * @param {Function} onTileComplete - Called once each time a tile
+       * resolves (success or skipped), used to advance the aggregate progress
+       * bar.
        * @param {AbortSignal} [signal] - Optional signal for cancelling
        * in-flight fetches when the user resets the panel.
        * @returns {Promise<void>} Resolves when the ZIP has been saved.
@@ -1543,8 +1556,8 @@ define([
        * @param {string} fileType - The type of file being processed (e.g.,
        * "wmts").
        * @param {function(): void} [onTileComplete] - Optional callback invoked
-       * once each time a tile fetch completes, used to advance the aggregate
-       * progress bar.
+       * once each time a tile resolves (success or skipped), used to advance
+       * the aggregate progress bar.
        * @param {AbortSignal} [signal] - Optional signal for cancelling
        * in-flight fetches when the user resets the panel.
        * @returns {Promise<JSZip>} A promise that resolves to a JSZip instance
@@ -1573,8 +1586,8 @@ define([
               onTileComplete?.();
               return null;
             }
-            // Non-404 tile failures are skipped so one bad tile does not
-            // fail the entire layer (consistent with how 404s are handled).
+            // Non-404 tile failures are also skipped so one bad tile does not
+            // fail the entire layer.
             onTileComplete?.();
             return null;
           }
