@@ -257,10 +257,37 @@ define([
       },
 
       /**
-       * The array that store the list of URLs for each data layer that is
-       * selected for partial download. Initialized in initialize() to avoid
-       * shared state across instances.
-       * @type {object}
+       * @typedef {object} LayerDownloadEntry
+       * @property {string[]} urls - Tile URLs to fetch.
+       * @property {string|null} baseURL - Prefix stripped from each URL when
+       * constructing the ZIP filename.
+       * @property {string} fileType - Format of the tiles (e.g. "png",
+       * "tif", "gpkg"). "wmts" entries are excluded from downloads.
+       * @property {number|null} fileSize - Estimated total size in bytes, or
+       * null for WMTS layers.
+       * @property {string|null} wmtsUrl - WMTS service endpoint shown to the
+       * user for copy-paste, or null for non-WMTS layers.
+       * @property {string} layerName - Human-readable layer name used in
+       * progress messages and error details.
+       * @property {string} [metadataPid] - DataONE PID for the layer's
+       * metadata document. When present, a metadata XML file is appended to
+       * the ZIP.
+       * @property {number} zoomLevel - Tile matrix zoom level selected by the
+       * user.
+       * @property {string|null} fullDownloadLink - Link to the full dataset
+       * download (not used during tile download).
+       * @property {string|null} pngDownloadLink - Template URL for PNG tiles.
+       * @property {string} id - Layer identifier derived from the asset ID.
+       */
+
+      /**
+       * A map of layer IDs to their download metadata and tile URLs. Populated
+       * by `getRawFileSize` as the user selects layers and formats; entries are
+       * removed when a layer is deselected, its format changes, or `reset()` is
+       * called. WMTS entries are stored here but excluded from actual tile
+       * downloads — they are only surfaced as a copy-paste URL.
+       * Initialized in `initialize()` to avoid shared state across instances.
+       * @type {Record<string, LayerDownloadEntry>}
        */
       dataDownloadLinks: undefined,
 
@@ -1473,7 +1500,7 @@ define([
        * and triggers a ZIP download. Called by `downloadData` in parallel for
        * each eligible layer.
        * @param {string} layerID - The unique identifier for the data layer.
-       * @param {object} data - The layer entry from `dataDownloadLinks`.
+       * @param {LayerDownloadEntry} data - The layer entry from `dataDownloadLinks`.
        * @param {Function} onTileComplete - Called once each time a tile
        * resolves (success or skipped), used to advance the aggregate progress
        * bar.
