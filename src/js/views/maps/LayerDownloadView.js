@@ -50,6 +50,16 @@ define(["underscore", "backbone"], (_, Backbone) => {
        */
       className: BASE_CLASS,
 
+      /** @inheritdoc */
+      events() {
+        const CN = CLASS_NAMES;
+        return {
+          [`change .${CN.checkbox}`]: "handleCheckboxChange",
+          [`change .${CN.resolutionDropdown}`]: "handleResolutionChange",
+          [`change .${CN.fileTypeDropdown}`]: "handleFileTypeChange",
+        };
+      },
+
       /**
        * Initialise the view.
        * @param {object} options - Options for the view.
@@ -114,13 +124,82 @@ define(["underscore", "backbone"], (_, Backbone) => {
       },
 
       /**
+       * Handles changes to the layer checkbox. If checked, selects the layer
+       * and expands the content; if unchecked, deselects, collapses, and resets
+       * the dropdowns.
+       */
+      handleCheckboxChange() {
+        if (this.checkbox.checked) {
+          this.isSelected = true;
+          this.expand();
+        } else {
+          this.isSelected = false;
+          this.collapse();
+          this.resetDropdowns();
+        }
+        this.downloadPanelView.layerSelection();
+      },
+
+      /**
+       * Handles changes to the resolution dropdown. Enables the file-type
+       * dropdown, clears the file-type selection, removes stale download links,
+       * and updates the info box and save-button state.
+       */
+      handleResolutionChange() {
+        this.selectedResolution = this.resolutionDropdown.value;
+        this.fileTypeDropdown.disabled = false;
+        this.fileTypeDropdown.value =
+          this.downloadPanelView.dropdownOptions.fileType.defaultValue;
+        this.selectedFileType = "";
+        delete this.downloadPanelView.dataDownloadLinks[this.item.layerID];
+        this.fileSizeInfoBox.textContent = "Select file format to download...";
+        this.fileSizeInfoBox.classList.add(CLASS_NAMES.informationBoxWarning);
+        this.fileSizeInfoBox.classList.remove(
+          CLASS_NAMES.error,
+          CLASS_NAMES.informationBoxWmts,
+        );
+        this.downloadPanelView.layerSelection();
+      },
+
+      /**
+       * Handles changes to the file-type dropdown. Calculates the estimated
+       * file size and updates the info box and save-button state.
+       */
+      handleFileTypeChange() {
+        const { item, downloadPanelView } = this;
+        this.selectedFileType = this.fileTypeDropdown.value;
+        this.fileSizeInfoBox.classList.remove(
+          CLASS_NAMES.informationBoxWarning,
+        );
+        downloadPanelView.fileTypeSelection(item.layerID);
+        const fileSize = downloadPanelView.getRawFileSize(
+          this.resolutionDropdown.value,
+          this.fileTypeDropdown.value,
+          item.layerID,
+          item.fullDownloadLink,
+          item.pngDownloadLink,
+          item.gpkgDownloadLink,
+          item.ID,
+          item.layerName,
+          item.wmtsDownloadLink,
+          item.metadataPid,
+          item.tiffDownloadLink,
+        );
+        downloadPanelView.updateTextbox(
+          this.fileSizeInfoBox,
+          fileSize,
+          this.fileTypeDropdown.value,
+          item.layerID,
+        );
+      },
+
+      /**
        * Render the complete panel: a header row with [checkbox] [title] [caret]
        * and a collapsible content section with the download controls.
        * @returns {LayerDownloadView} this
        */
       render() {
         this.$el.empty();
-        const view = this;
         const { item, downloadPanelView } = this;
 
         // ── Header row ────────────────────────────────────────────────────────
@@ -255,67 +334,6 @@ define(["underscore", "backbone"], (_, Backbone) => {
         this.contentEl = content;
         this.el.appendChild(header);
         this.el.appendChild(content);
-
-        // ── Event listeners ───────────────────────────────────────────────────
-
-        // Checking the checkbox selects the layer and expands the content;
-        // unchecking deselects, collapses, and resets the dropdowns.
-        checkbox.addEventListener("change", () => {
-          if (checkbox.checked) {
-            view.isSelected = true;
-            view.expand();
-          } else {
-            view.isSelected = false;
-            view.collapse();
-            view.resetDropdowns();
-          }
-          downloadPanelView.layerSelection();
-        });
-
-        // Resolution change: enable file-type dropdown, clear its value,
-        // delete stale download links, update hint, recalculate button state
-        resolutionDropdown.addEventListener("change", () => {
-          view.selectedResolution = resolutionDropdown.value;
-          fileTypeDropdown.disabled = false;
-          fileTypeDropdown.value = defaultFileTypeOption.value;
-          view.selectedFileType = "";
-
-          delete downloadPanelView.dataDownloadLinks[item.layerID];
-
-          fileSizeInfoBox.textContent = "Select file format to download...";
-          fileSizeInfoBox.classList.add(CLASS_NAMES.informationBoxWarning);
-          fileSizeInfoBox.classList.remove(
-            CLASS_NAMES.error,
-            CLASS_NAMES.informationBoxWmts,
-          );
-          downloadPanelView.layerSelection();
-        });
-
-        // File-type change: recalculate file size and notify parent
-        fileTypeDropdown.addEventListener("change", () => {
-          view.selectedFileType = fileTypeDropdown.value;
-          fileSizeInfoBox.classList.remove(CLASS_NAMES.informationBoxWarning);
-          downloadPanelView.fileTypeSelection(item.layerID);
-          const fileSize = downloadPanelView.getRawFileSize(
-            resolutionDropdown.value,
-            fileTypeDropdown.value,
-            item.layerID,
-            item.fullDownloadLink,
-            item.pngDownloadLink,
-            item.gpkgDownloadLink,
-            item.ID,
-            item.layerName,
-            item.wmtsDownloadLink,
-            item.metadataPid,
-            item.tiffDownloadLink,
-          );
-          downloadPanelView.updateTextbox(
-            fileSizeInfoBox,
-            fileSize,
-            fileTypeDropdown.value,
-            item.layerID,
-          );
-        });
 
         return this;
       },

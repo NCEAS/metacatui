@@ -142,6 +142,8 @@ define([
         const events = {};
         const CN = CLASS_NAMES;
         events[`click .${CN.button}`] = "handleButtonClick";
+        events[`click .${CN.closeButton}`] = "close";
+        events[`click .${CN.copyIcon}`] = "handleCopyIconClick";
         return events;
       },
 
@@ -468,6 +470,35 @@ define([
       },
 
       /**
+       * Handles a click on the copy icon in the WMTS info box. Copies the WMTS
+       * URL text to the clipboard and briefly shows a confirmation message.
+       * Because this handler is registered via the delegated events hash, it
+       * replaces the previous `.onclick` assignment and never stacks.
+       * @param {Event} event - The click event.
+       */
+      handleCopyIconClick(event) {
+        const infoBox = event.currentTarget.closest(`.${CLASS_NAMES.wmtsCopy}`);
+        if (!infoBox) return;
+        const wmtsText = infoBox.querySelector(`.${CLASS_NAMES.wmtsText}`);
+        if (!wmtsText) return;
+        const text = wmtsText.textContent;
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            wmtsText.textContent = "Copied to clipboard!";
+            setTimeout(() => {
+              wmtsText.textContent = text;
+            }, 2000);
+          })
+          .catch(() => {
+            wmtsText.textContent = "Copy failed!";
+            setTimeout(() => {
+              wmtsText.textContent = text;
+            }, 2000);
+          });
+      },
+
+      /**
        * Toggles the draw tool on and off.
        * @param {boolean} [draw] - If true, the draw tool will be turned on. If
        * false, it will be turned off. If not provided, the draw tool will
@@ -672,12 +703,6 @@ define([
         });
 
         view.generatePreviewPanel();
-        const closeDownloadPanelButton = this.el.querySelector(
-          `.${CLASS_NAMES.closeButton}`,
-        );
-        closeDownloadPanelButton.addEventListener("click", () => {
-          view.close();
-        });
       },
 
       /**
@@ -954,50 +979,17 @@ define([
         if (!fileSizeInfoBox) return;
         fileSizeInfoBox.classList.remove(CLASS_NAMES.error);
         fileSizeInfoBox.classList.remove(CLASS_NAMES.wmtsCopy);
-        const view = this;
         if (fileType === "wmts") {
           fileSizeInfoBox.innerHTML = `
             <span class="${CLASS_NAMES.wmtsText}">${fileSizeDetails}</span>
             <i class="${CLASS_NAMES.copyIcon} icon-copy" title="Copy to Clipboard"></i>
           `;
           fileSizeInfoBox.classList.add(CLASS_NAMES.wmtsCopy);
-
-          // Keep direct references so closures below are scoped to this exact
-          // render — not to fileSizeInfoBox.innerHTML which may be replaced.
-          const wmtsText = fileSizeInfoBox.querySelector(
-            `.${CLASS_NAMES.wmtsText}`,
-          );
-          const copyIcon = fileSizeInfoBox.querySelector(
-            `.${CLASS_NAMES.copyIcon}`,
-          );
-
-          if (!wmtsText || !copyIcon) return;
-
-          // Use .onclick (not addEventListener) so re-calling updateTextbox for
-          // the same box replaces rather than stacks the handler.
-          copyIcon.onclick = () => {
-            navigator.clipboard
-              .writeText(wmtsText.textContent)
-              .then(() => {
-                const original = wmtsText.textContent;
-                wmtsText.textContent = "Copied to clipboard!";
-                setTimeout(() => {
-                  wmtsText.textContent = original;
-                }, 2000);
-              })
-              .catch(() => {
-                const original = wmtsText.textContent;
-                wmtsText.textContent = "Copy failed!";
-                setTimeout(() => {
-                  wmtsText.textContent = original;
-                }, 2000);
-              });
-          };
         } else {
           const optionalComment =
             "Use WMTS for accessing large data volume or re-draw AOI.";
-          const maxSize = Utilities.bytesToSize(view.downloadSizeLimit, 2);
-          if (fileSizeDetails > view.downloadSizeLimit) {
+          const maxSize = Utilities.bytesToSize(this.downloadSizeLimit, 2);
+          if (fileSizeDetails > this.downloadSizeLimit) {
             fileSizeInfoBox.textContent = `Download size is too big ( > ${maxSize}). ${optionalComment}.`;
             fileSizeInfoBox.classList.add(CLASS_NAMES.error);
           } else {
@@ -1008,8 +1000,8 @@ define([
         // Instead of disabling the Download button for large file sizes simply
         // remove the layer from the the download list variable (i.e.,
         // dataDownloadLinks)
-        if (view.dataDownloadLinks[layerID].fileSize > view.downloadSizeLimit) {
-          delete view.dataDownloadLinks[layerID];
+        if (this.dataDownloadLinks[layerID].fileSize > this.downloadSizeLimit) {
+          delete this.dataDownloadLinks[layerID];
         }
       },
 
