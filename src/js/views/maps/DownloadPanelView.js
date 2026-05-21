@@ -23,14 +23,39 @@ define([
 ) => {
   // Classes used in the view
   const CLASS_NAMES = {
-    button: "draw__button",
-    buttonFocus: "draw__button--active",
-    buttonDisable: "draw__button--disable",
-    dropdown: "downloads-dropdown",
-    resolutionDropdown: "resolution-dropdown",
-    fileTypeDropdown: "fileType-downloads-dropdown",
+    // Block
+    block: "download-panel",
+    // Header elements
+    header: "download-panel__header",
+    titleGroup: "download-panel__title-group",
+    title: "download-panel__title",
+    closeButton: "download-panel__close-button",
+    // Body elements
+    instructions: "download-panel__instructions",
+    dataList: "download-panel__data-list",
+    // Draw tool block
+    drawTool: "draw-tool",
+    // Draw toolbar buttons
+    button: "draw-tool__button",
+    buttonFocus: "draw-tool__button--active",
+    buttonDisable: "draw-tool__button--disable",
+    // Draw toolbar button internals
+    buttonIconWrap: "draw-tool__button-icon-wrap",
+    buttonIconWrapDisabled: "draw-tool__button-icon-wrap--disabled",
+    buttonLabel: "draw-tool__button-label",
+    // Shared toolbar classes (used for coordinating with ToolbarView)
+    toolbarLink: "toolbar__links",
+    toolbarLinkActive: "toolbar__link--active",
+    toolbarContentActive: "toolbar__content--active",
+    // Info box states (used in updateTextbox)
     error: "error",
-    wmtsCopy: "wmts-copy",
+    wmtsCopy: "layer-download__information--wmts",
+    wmtsText: "layer-download__wmts-text",
+    copyIcon: "layer-download__copy-icon",
+    // Progress bar (created in initializeDownloadPanel)
+    progressContainer: "download-panel__progress-container",
+    progressBar: "download-panel__progress-bar",
+    progressBarNoData: "download-panel__progress-bar--no-data",
   };
 
   /**
@@ -59,31 +84,7 @@ define([
        * The HTML classes to use for this view's element
        * @type {string}
        */
-      className: "download-panel",
-
-      /**
-       * Class to use for the buttons
-       * @type {string}
-       */
-      buttonClass: "draw__button ",
-
-      /**
-       * Class to use for the active button
-       * @type {string}
-       */
-      buttonClassActive: "draw__button--active",
-
-      /**
-       * Class to disable button
-       * @type {string}
-       */
-      buttonClassDisable: "draw__button--disable",
-
-      /**
-       * The HTML classes to use for this data panel element
-       * @type {string}
-       */
-      dataPanelClass: "download-panel",
+      className: CLASS_NAMES.block,
 
       /**
        * The maximum size of the download in bytes. If download is estimated to exceed
@@ -224,9 +225,9 @@ define([
        * @type {object}
        */
       fileSizes: {
-        tif: 525312,  // ~513 KiB per tile
-        png: 2765,    // ~2.7 KiB per tile
-        wmts: 15360,  // ~15 KiB per tile
+        tif: 525312, // ~513 KiB per tile
+        png: 2765, // ~2.7 KiB per tile
+        wmts: 15360, // ~15 KiB per tile
         gpkg: 184320, // ~180 KiB per tile
       },
 
@@ -236,16 +237,6 @@ define([
        * @type {Array}
        */
       dataDownloadLinks: {},
-
-      /**
-       * The classes of the sub-elements that combined to create the download
-       * panel view.
-       */
-      classes: {
-        toolbarLink: ".toolbar__links",
-        toolbarLinkActive: "toolbar__link--active",
-        toolbarContentActive: "toolbar__content--active",
-      },
 
       /**
        * The z levels available for download along with their approximate pixel
@@ -399,10 +390,10 @@ define([
         this.clearPoints();
         this.removeClickListeners();
 
-        document.querySelector(".download-data-list__panel").textContent =
+        this.el.querySelector(`.${CLASS_NAMES.instructions}`).textContent =
           "Draw Area of Interest: Single-click to add vertices, double-click to complete.";
 
-        document.querySelector(".download-data-list").innerHTML = "";
+        this.el.querySelector(`.${CLASS_NAMES.dataList}`).innerHTML = "";
         this.setButtonStatuses({
           draw: "enabled",
           clear: "deactivated",
@@ -525,14 +516,23 @@ define([
       setButtonStatus(name, status) {
         const buttonEl = this.buttonEls[`${name}Button`];
         if (!buttonEl || buttonEl.dataset.status === status) return;
+        const iconWrapEl = buttonEl.querySelector(
+          `.${CLASS_NAMES.buttonIconWrap}`,
+        );
 
         // Reset all button styles - default to enabled
         buttonEl.classList.remove(CLASS_NAMES.buttonFocus);
         buttonEl.classList.remove(CLASS_NAMES.buttonDisable);
+        if (iconWrapEl) {
+          iconWrapEl.classList.remove(CLASS_NAMES.buttonIconWrapDisabled);
+        }
         buttonEl.dataset.status = status;
 
         if (status === "deactivated") {
           buttonEl.classList.add(CLASS_NAMES.buttonDisable);
+          if (iconWrapEl) {
+            iconWrapEl.classList.add(CLASS_NAMES.buttonIconWrapDisabled);
+          }
         } else if (status === "focused") {
           buttonEl.classList.add(CLASS_NAMES.buttonFocus);
         }
@@ -646,19 +646,18 @@ define([
        * Create and insert the buttons for drawing and clearing the polygon.
        */
       renderToolbar() {
-        // alert("Rendering draw toolbar");
         const view = this;
-        const drawContainer = this.el.querySelector(".draw-tool");
+        const drawContainer = this.el.querySelector(`.${CLASS_NAMES.drawTool}`);
         if (!drawContainer) return;
         // Create the buttons
         view.buttons.forEach((options) => {
           const button = document.createElement("button");
-          button.className = this.buttonClass;
+          button.className = CLASS_NAMES.button;
           button.innerHTML = `
-              <span class="custom-circle">
+              <span class="${CLASS_NAMES.buttonIconWrap}">
                 <i class="icon icon-${options.icon}"></i>
               </span> 
-              <span class="draw-button-label">${options.label}</span> `;
+              <span class="${CLASS_NAMES.buttonLabel}">${options.label}</span> `;
           button.dataset.name = options.name;
           if (!view.buttonEls) view.buttonEls = {};
           view.buttonEls[`${options.name}Button`] = button;
@@ -674,7 +673,7 @@ define([
 
         view.generatePreviewPanel();
         const closeDownloadPanelButton = this.el.querySelector(
-          ".download-panel-close__button",
+          `.${CLASS_NAMES.closeButton}`,
         );
         closeDownloadPanelButton.addEventListener("click", () => {
           view.close();
@@ -796,7 +795,9 @@ define([
             index === self.findIndex((l) => l.layerID === layer.layerID),
         );
         // Create download tool panel
-        const downloadDataPanel = document.querySelector(".download-data-list");
+        const downloadDataPanel = this.el.querySelector(
+          `.${CLASS_NAMES.dataList}`,
+        );
 
         if (!downloadDataPanel) return;
 
@@ -817,8 +818,8 @@ define([
         });
 
         if (!selectedLayersList.length) {
-          // Update the text of download-data-list__panel
-          document.querySelector(".download-data-list__panel").textContent =
+          // Update the text of download-panel__instructions
+          this.el.querySelector(`.${CLASS_NAMES.instructions}`).textContent =
             "No layers are available for download. Click on layers in the list above to make them visible on the Map and available for download. Only select layers have data products available for download.";
           view.setButtonStatuses({
             save: "deactivated",
@@ -839,22 +840,22 @@ define([
 
             view.layerDownloadViews.push(layerDownloadView);
           });
-          // Update the text of download-data-list__panel
-          document.querySelector(".download-data-list__panel").textContent =
+          // Update the text of download-panel__instructions
+          this.el.querySelector(`.${CLASS_NAMES.instructions}`).textContent =
             "Select products below and click the download button. To download full datasets (including original shapefiles) please use the Layers panel above. ";
 
           // Progress Bar
-          const dataListPanel = document.querySelector(
-            ".download-data-list__panel",
+          const dataListPanel = this.el.querySelector(
+            `.${CLASS_NAMES.instructions}`,
           );
           // Create the download status bar container
           const downloadStatusContainer = document.createElement("div");
-          downloadStatusContainer.classList.add("download-status-container");
+          downloadStatusContainer.classList.add(CLASS_NAMES.progressContainer);
           downloadStatusContainer.style.display = "none"; // Hidden by default
 
           // Create the progress bar element
           const progressBar = document.createElement("div");
-          progressBar.classList.add("progress-bar");
+          progressBar.classList.add(CLASS_NAMES.progressBar);
           progressBar.style.width = "0%"; // Initial width
           progressBar.textContent = "0%"; // Initial text
 
@@ -956,33 +957,42 @@ define([
         const view = this;
         if (fileType === "wmts") {
           fileSizeInfoBox.innerHTML = `
-            <span id="fileSizeText">${fileSizeDetails}</span>
-            <i id="copyWMTS" class="icon-copy" title="Copy to Clipboard"></i>
+            <span class="${CLASS_NAMES.wmtsText}">${fileSizeDetails}</span>
+            <i class="${CLASS_NAMES.copyIcon} icon-copy" title="Copy to Clipboard"></i>
           `;
           fileSizeInfoBox.classList.add(CLASS_NAMES.wmtsCopy);
 
-          // Add event listener for copying
-          document.getElementById("copyWMTS").addEventListener("click", () => {
-            const textToCopy =
-              document.getElementById("fileSizeText").textContent;
+          // Keep direct references so closures below are scoped to this exact
+          // render — not to fileSizeInfoBox.innerHTML which may be replaced.
+          const wmtsText = fileSizeInfoBox.querySelector(
+            `.${CLASS_NAMES.wmtsText}`,
+          );
+          const copyIcon = fileSizeInfoBox.querySelector(
+            `.${CLASS_NAMES.copyIcon}`,
+          );
+
+          if (!wmtsText || !copyIcon) return;
+
+          // Use .onclick (not addEventListener) so re-calling updateTextbox for
+          // the same box replaces rather than stacks the handler.
+          copyIcon.onclick = () => {
             navigator.clipboard
-              .writeText(textToCopy)
+              .writeText(wmtsText.textContent)
               .then(() => {
-                const currentContent = fileSizeInfoBox.innerHTML;
-                // alert("Copied to clipboard!");
-                fileSizeInfoBox.innerHTML = "Copied to clipboard!";
+                const original = wmtsText.textContent;
+                wmtsText.textContent = "Copied to clipboard!";
                 setTimeout(() => {
-                  fileSizeInfoBox.innerHTML = currentContent;
-                }, 2000); // Reset after 2 seconds
+                  wmtsText.textContent = original;
+                }, 2000);
               })
               .catch(() => {
-                const currentContent = fileSizeInfoBox.innerHTML;
-                fileSizeInfoBox.innerHTML = "Copy failed!";
+                const original = wmtsText.textContent;
+                wmtsText.textContent = "Copy failed!";
                 setTimeout(() => {
-                  fileSizeInfoBox.innerHTML = currentContent;
-                }, 2000); // Reset after 2 seconds
+                  wmtsText.textContent = original;
+                }, 2000);
               });
-          });
+          };
         } else {
           const optionalComment =
             "Use WMTS for accessing large data volume or re-draw AOI.";
@@ -1431,11 +1441,11 @@ define([
         }
 
         if (error) {
-          progressBar.classList.remove("progress-bar");
-          progressBar.classList.add("progress-bar-no-data");
+          progressBar.classList.remove(CLASS_NAMES.progressBar);
+          progressBar.classList.add(CLASS_NAMES.progressBarNoData);
         } else {
-          progressBar.classList.remove("progress-bar-no-data");
-          progressBar.classList.add("progress-bar");
+          progressBar.classList.remove(CLASS_NAMES.progressBarNoData);
+          progressBar.classList.add(CLASS_NAMES.progressBar);
         }
 
         if (typeof progress === "number") {
@@ -1445,8 +1455,8 @@ define([
           } else {
             progressBar.textContent = "";
           }
-          progressBar.classList.remove("progress-bar-no-data");
-          progressBar.classList.add("progress-bar");
+          progressBar.classList.remove(CLASS_NAMES.progressBarNoData);
+          progressBar.classList.add(CLASS_NAMES.progressBar);
         } else {
           progressBar.style.width = "100%";
         }

@@ -9,13 +9,17 @@ define(["underscore", "backbone"], (_, Backbone) => {
     checkbox: `${BASE_CLASS}__checkbox`,
     title: `${BASE_CLASS}__title`,
     content: `${BASE_CLASS}__content`,
-
-    dropdown: "downloads-dropdown",
-    resolutionDropdown: "resolution-dropdown",
-    fileTypeDropdown: "fileType-downloads-dropdown",
-    dropdownWrapper: "downloads-dropdown-wrapper",
-    dropdownContainer: "downloads-dropdown-container",
-    fileSizeBox: "downloads-textbox",
+    contentVisible: `${BASE_CLASS}__content--visible`,
+    dropdown: `${BASE_CLASS}__dropdown`,
+    resolutionDropdown: `${BASE_CLASS}__dropdown--resolution`,
+    fileTypeDropdown: `${BASE_CLASS}__dropdown--file-type`,
+    dropdownWrapper: `${BASE_CLASS}__dropdown-wrapper`,
+    dropdownLabel: `${BASE_CLASS}__dropdown-label`,
+    dropdownContainer: `${BASE_CLASS}__dropdown-container`,
+    informationBox: `${BASE_CLASS}__information`,
+    informationBoxWarning: `${BASE_CLASS}__information--warning`,
+    informationBoxWmts: `${BASE_CLASS}__information--wmts`,
+    error: "error",
   };
 
   /**
@@ -66,17 +70,20 @@ define(["underscore", "backbone"], (_, Backbone) => {
 
       /** @returns {boolean} Whether the content section is currently visible. */
       isExpanded() {
-        return this.$el.hasClass("show-content");
+        return (
+          this.contentEl?.classList.contains(CLASS_NAMES.contentVisible) ??
+          false
+        );
       },
 
       /** Show the content section without changing the checkbox state. */
       expand() {
-        this.$el.addClass("show-content");
+        this.contentEl?.classList.add(CLASS_NAMES.contentVisible);
       },
 
       /** Hide the content section without changing the checkbox state. */
       collapse() {
-        this.$el.removeClass("show-content");
+        this.contentEl?.classList.remove(CLASS_NAMES.contentVisible);
       },
 
       /**
@@ -98,8 +105,11 @@ define(["underscore", "backbone"], (_, Backbone) => {
         if (this.fileSizeInfoBox) {
           this.fileSizeInfoBox.textContent =
             "Select resolution and file format to download...";
-          this.fileSizeInfoBox.classList.remove("error", "wmts-copy");
-          this.fileSizeInfoBox.classList.add("downloads-textbox--warning");
+          this.fileSizeInfoBox.classList.remove(
+            CLASS_NAMES.error,
+            CLASS_NAMES.informationBoxWmts,
+          );
+          this.fileSizeInfoBox.classList.add(CLASS_NAMES.informationBoxWarning);
         }
       },
 
@@ -151,6 +161,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
 
         const resolutionDropdownId = `resolution-dropdown-${item.layerID}`;
         const resolutionLabel = document.createElement("label");
+        resolutionLabel.classList.add(CLASS_NAMES.dropdownLabel);
         resolutionLabel.textContent =
           downloadPanelView.dropdownOptions.resolution.label;
         resolutionLabel.htmlFor = resolutionDropdownId;
@@ -190,6 +201,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
 
         const fileTypeDropdownId = `fileType-dropdown-${item.layerID}`;
         const fileTypeLabel = document.createElement("label");
+        fileTypeLabel.classList.add(CLASS_NAMES.dropdownLabel);
         fileTypeLabel.textContent =
           downloadPanelView.dropdownOptions.fileType.label;
         fileTypeLabel.htmlFor = fileTypeDropdownId;
@@ -229,8 +241,8 @@ define(["underscore", "backbone"], (_, Backbone) => {
 
         const fileSizeInfoBox = document.createElement("span");
         fileSizeInfoBox.classList.add(
-          CLASS_NAMES.fileSizeBox,
-          "downloads-textbox--warning",
+          CLASS_NAMES.informationBox,
+          CLASS_NAMES.informationBoxWarning,
         );
         fileSizeInfoBox.textContent =
           "Select resolution and file format to download...";
@@ -240,6 +252,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
         content.appendChild(fileSizeInfoBox);
 
         // ── Assemble ──────────────────────────────────────────────────────────
+        this.contentEl = content;
         this.el.appendChild(header);
         this.el.appendChild(content);
 
@@ -270,15 +283,18 @@ define(["underscore", "backbone"], (_, Backbone) => {
           delete downloadPanelView.dataDownloadLinks[item.layerID];
 
           fileSizeInfoBox.textContent = "Select file format to download...";
-          fileSizeInfoBox.classList.add("downloads-textbox--warning");
-          fileSizeInfoBox.classList.remove("error", "wmts-copy");
+          fileSizeInfoBox.classList.add(CLASS_NAMES.informationBoxWarning);
+          fileSizeInfoBox.classList.remove(
+            CLASS_NAMES.error,
+            CLASS_NAMES.informationBoxWmts,
+          );
           downloadPanelView.layerSelection();
         });
 
         // File-type change: recalculate file size and notify parent
         fileTypeDropdown.addEventListener("change", () => {
           view.selectedFileType = fileTypeDropdown.value;
-          fileSizeInfoBox.classList.remove("downloads-textbox--warning");
+          fileSizeInfoBox.classList.remove(CLASS_NAMES.informationBoxWarning);
           downloadPanelView.fileTypeSelection(item.layerID);
           const fileSize = downloadPanelView.getRawFileSize(
             resolutionDropdown.value,
