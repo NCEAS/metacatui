@@ -207,9 +207,7 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
           CLASS_NAMES.informationWmts,
         );
 
-        this.downloadPanelView.setButtonStatuses({
-          save: "deactivated",
-        });
+        this.downloadPanelView.layerSelection();
       },
 
       /**
