@@ -1,7 +1,6 @@
 "use strict";
 
 define([
-  "underscore",
   "backbone",
   "jszip",
   "common/Utilities",
@@ -10,7 +9,6 @@ define([
   "collections/maps/GeoPoints",
   "views/maps/LayerDownloadView",
 ], (
-  _,
   Backbone,
   JSZip,
   Utilities,
@@ -55,14 +53,15 @@ define([
     // Progress bar (created in initializeDownloadPanel)
     progressContainer: "download-panel__progress-container",
     progressBar: "download-panel__progress-bar",
+    progressTrack: "download-panel__progress-track",
     progressBarNoData: "download-panel__progress-bar--no-data",
+    progressBarWarning: "download-panel__progress-bar--warning",
+    progressError: "download-panel__progress-error",
+    progressErrorWarning: "download-panel__progress-error--warning",
   };
 
   const MESSAGES = {
     // Plain strings
-    downloadComplete: "Download Complete!",
-    downloadFailed:
-      "Failed to download data files for selected data layer(s) within area of interest. ",
     drawInstructions:
       "Draw Area of Interest: Single-click to add vertices, double-click to complete.",
     noDataAvailable:
@@ -74,22 +73,20 @@ define([
       "Select products below and click the download button. To download full datasets (including original shapefiles) please use the Layers panel above. ",
     wmtsComment: "Use WMTS for accessing large data volume or re-draw AOI",
     // Functions
-    downloading: (layerName, progress) =>
-      `Downloading data for ${layerName} (${progress}%)`,
     downloadSizeTooLarge: (maxSize, comment) =>
       `Download size is too big ( > ${maxSize}). ${comment}.`,
     drawToolUnavailable: (detail) =>
       `The draw tool is not available. ${detail}`,
     estimatedFileSize: (size) =>
       `Estimated download file size is \u2264 ${size}.`,
-    fileSizeExceedsLimit: (layerName, maxSize) =>
-      `File size for ${layerName} > the max download size, ${maxSize}. Select lower resolution/ draw smaller AOI.`,
-    generatingZip: (layerName, numFiles) =>
-      `Generating ZIP file for ${layerName} (${numFiles} files)...`,
-    metadataError: (layerID) => `Error fetching metadata for ${layerID}`,
     metadataFetchFailed: (layerID, statusText) =>
       `Failed to fetch metadata for ${layerID}: ${statusText}`,
-    progress: (pct) => `Progress: ${pct}%`,
+    downloadingAggregate: (pct, completedTiles, totalTiles) =>
+      `Downloading... ${pct}% (${completedTiles} / ${totalTiles} tiles)`,
+    downloadSummary: (succeeded, total) =>
+      `Download complete (${succeeded} of ${total} layer${total !== 1 ? "s" : ""})`,
+    downloadSummaryWithErrors: (succeeded, total, failed) =>
+      `${succeeded} of ${total} layer${total !== 1 ? "s" : ""} downloaded (${failed} failed)`,
   };
 
   /**
@@ -163,7 +160,7 @@ define([
           blockMethodIfDeactivated: true,
         },
         {
-          name: "save",
+          name: "download",
           label: "Download",
           icon: "download-alt",
           method: "downloadData",
@@ -191,13 +188,6 @@ define([
       buttonEls: undefined,
 
       /**
-       * The current mode of the draw tool. This can be "draw", "move",
-       * "remove", or "add" - any of the "name" properties of the buttons array,
-       * excluding buttons like "clear" and "save" that have a method property.
-       */
-      mode: false,
-
-      /**
        * The Cesium map model to draw on. This must be the same model that the
        * mapWidget is using.
        * @type {Map}
@@ -206,9 +196,9 @@ define([
 
       /**
        * The primary HTML template for this view
-       * @type {Underscore.template}
+       * @type {string}
        */
-      template: _.template(`
+      template: `
         <div class="${CLASS_NAMES.header}">
           <div class="${CLASS_NAMES.titleGroup}">
             <i class="${CLASS_NAMES.downloadGlyph} ${CLASS_NAMES.titleIcon}"></i>
@@ -221,9 +211,15 @@ define([
         <div class="${CLASS_NAMES.instructions}">
           ${MESSAGES.drawInstructions}
         </div>
+        <div class="${CLASS_NAMES.progressContainer}" style="display:none">
+          <div class="${CLASS_NAMES.progressTrack}">
+            <div class="${CLASS_NAMES.progressBar}" style="width:0%"></div>
+          </div>
+          <div class="${CLASS_NAMES.progressError}"></div>
+        </div>
         <div class="${CLASS_NAMES.dataList}"></div>
         <div class="${CLASS_NAMES.drawTool}"></div>
-      `),
+      `,
 
       /**
        * A reference to the MapInteraction model on the MapModel that is used to
@@ -247,11 +243,10 @@ define([
       points: undefined,
 
       /**
-       * The GeoPoints collection that stores the points of the polygon that is
-       * being drawn.
-       * @type {MapInteraction}
+       * Whether the draw tool is currently active.
+       * @type {boolean}
        */
-      mapinteraction: undefined,
+      draw: false,
 
       /**
        * The color of the polygon that is being drawn as a hex string.
@@ -284,10 +279,37 @@ define([
       },
 
       /**
-       * The array that store the list of URLs for each data layer that is
-       * selected for partial download. Initialized in initialize() to avoid
-       * shared state across instances.
-       * @type {object}
+       * @typedef {object} LayerDownloadEntry
+       * @property {string[]} urls - Tile URLs to fetch.
+       * @property {string|null} baseURL - Prefix stripped from each URL when
+       * constructing the ZIP filename.
+       * @property {string} fileType - Format of the tiles (e.g. "png",
+       * "tif", "gpkg"). "wmts" entries are excluded from downloads.
+       * @property {number|null} fileSize - Estimated total size in bytes, or
+       * null for WMTS layers.
+       * @property {string|null} wmtsUrl - WMTS service endpoint shown to the
+       * user for copy-paste, or null for non-WMTS layers.
+       * @property {string} layerName - Human-readable layer name used in
+       * progress messages and error details.
+       * @property {string} [metadataPid] - DataONE PID for the layer's
+       * metadata document. When present, a metadata XML file is appended to
+       * the ZIP.
+       * @property {number} zoomLevel - Tile matrix zoom level selected by the
+       * user.
+       * @property {string|null} fullDownloadLink - Link to the full dataset
+       * download (not used during tile download).
+       * @property {string|null} pngDownloadLink - Template URL for PNG tiles.
+       * @property {string} id - Layer identifier derived from the asset ID.
+       */
+
+      /**
+       * A map of layer IDs to their download metadata and tile URLs. Populated
+       * by `getRawFileSize` as the user selects layers and formats; entries are
+       * removed when a layer is deselected, its format changes, or `reset()` is
+       * called. WMTS entries are stored here but excluded from actual tile
+       * downloads — they are only surfaced as a copy-paste URL.
+       * Initialized in `initialize()` to avoid shared state across instances.
+       * @type {Record<string, LayerDownloadEntry>}
        */
       dataDownloadLinks: undefined,
 
@@ -438,10 +460,13 @@ define([
        * Resets the draw tool to its initial state.
        */
       reset() {
+        this.downloadAbortController?.abort();
+        this.downloadAbortController = null;
         this.clearPoints();
         this.removeClickListeners();
 
         this.instructionsEl.textContent = MESSAGES.drawInstructions;
+        this.updateStatusBar({ show: false });
 
         if (this.layerDownloadViews) {
           this.layerDownloadViews.forEach((ldv) => {
@@ -455,7 +480,7 @@ define([
         this.setButtonStatuses({
           draw: "enabled",
           clear: "deactivated",
-          save: "deactivated",
+          download: "deactivated",
         });
       },
 
@@ -473,6 +498,8 @@ define([
 
       /** @inheritdoc */
       remove() {
+        this.downloadAbortController?.abort();
+        this.downloadAbortController = null;
         this.removeLayer();
         this.removeClickListeners();
         if (this.layerDownloadViews) {
@@ -508,12 +535,21 @@ define([
           this.showError(MESSAGES.noMapModel);
           return this;
         }
-        this.$el.html(this.template());
+        this.$el.html(this.template);
         this.instructionsEl = this.el.querySelector(
           `.${CLASS_NAMES.instructions}`,
         );
         this.dataListEl = this.el.querySelector(`.${CLASS_NAMES.dataList}`);
         this.drawToolEl = this.el.querySelector(`.${CLASS_NAMES.drawTool}`);
+        this.progressContainerEl = this.el.querySelector(
+          `.${CLASS_NAMES.progressContainer}`,
+        );
+        this.progressBarEl = this.el.querySelector(
+          `.${CLASS_NAMES.progressBar}`,
+        );
+        this.progressErrorEl = this.el.querySelector(
+          `.${CLASS_NAMES.progressError}`,
+        );
 
         this.renderToolbar();
         return this;
@@ -785,7 +821,7 @@ define([
         this.setButtonStatuses({
           draw: "enabled",
           clear: "deactivated",
-          save: "deactivated",
+          download: "deactivated",
         });
 
         view.generatePreviewPanel();
@@ -920,14 +956,14 @@ define([
         this.setButtonStatuses({
           draw: "deactivated",
           clear: "enabled",
-          save: "deactivated",
+          download: "deactivated",
         });
 
         if (!selectedLayersList.length) {
           // Update the text of download-panel__instructions
           this.instructionsEl.textContent = MESSAGES.noLayersAvailable;
           view.setButtonStatuses({
-            save: "deactivated",
+            download: "deactivated",
             draw: "deactivated",
             clear: "enabled",
           });
@@ -957,27 +993,22 @@ define([
           });
           // Update the text of download-panel__instructions
           this.instructionsEl.textContent = MESSAGES.selectProducts;
-
-          // Progress Bar
-          // Create the download status bar container
-          const progressContainerEl = document.createElement("div");
-          progressContainerEl.classList.add(CLASS_NAMES.progressContainer);
-          progressContainerEl.style.display = "none"; // Hidden by default
-
-          // Create the progress bar element
-          const progressBarEl = document.createElement("div");
-          progressBarEl.classList.add(CLASS_NAMES.progressBar);
-          progressBarEl.style.width = "0%"; // Initial width
-          progressBarEl.textContent = "0%"; // Initial text
-
-          progressContainerEl.appendChild(progressBarEl);
-          this.instructionsEl.appendChild(progressContainerEl);
-
-          // Save reference to the progress bar and related elements for
-          // updating later.
-          view.progressContainerEl = progressContainerEl;
-          view.progressBarEl = progressBarEl;
         }
+      },
+
+      /**
+       * Returns true if at least one selected layer has a calculated,
+       * non-WMTS entry in `dataDownloadLinks`. This is the single gate used
+       * everywhere to decide whether the download button should be enabled.
+       * @returns {boolean} True if any layer is ready to download.
+       */
+      canDownloadAnyLayer() {
+        return (this.layerDownloadViews || []).some(
+          (ldv) =>
+            ldv.isSelected &&
+            ldv.item.layerID in this.dataDownloadLinks &&
+            this.dataDownloadLinks[ldv.item.layerID].fileType !== "wmts",
+        );
       },
 
       /**
@@ -987,28 +1018,11 @@ define([
        */
       layerSelection() {
         const view = this;
-        const isAnyChecked = view.layerDownloadViews.some(
-          (ldv) => ldv.isSelected,
-        );
-        const isAnyFileTypeSelected = view.layerDownloadViews.some(
-          (ldv) =>
-            ldv.isSelected &&
-            ["png", "tif", "gpkg"].includes(ldv.selectedFileType),
-        );
-
-        if (isAnyChecked && isAnyFileTypeSelected) {
-          view.setButtonStatuses({
-            draw: "deactivated",
-            save: "enabled",
-            clear: "enabled",
-          });
-        } else {
-          view.setButtonStatuses({
-            draw: "deactivated",
-            save: "deactivated",
-            clear: "enabled",
-          });
-        }
+        view.setButtonStatuses({
+          draw: "deactivated",
+          download: view.canDownloadAnyLayer() ? "enabled" : "deactivated",
+          clear: "enabled",
+        });
 
         view.layerDownloadViews
           .filter((ldv) => !ldv.isSelected)
@@ -1025,27 +1039,11 @@ define([
        * with.
        */
       fileTypeSelection(layerID) {
-        const view = this;
-        const isAnyFileTypeSelected = view.layerDownloadViews.some(
-          (ldv) =>
-            ldv.isSelected &&
-            ["png", "tif", "gpkg"].includes(ldv.selectedFileType),
-        );
-        if (!isAnyFileTypeSelected) {
-          view.setButtonStatuses({
-            draw: "deactivated",
-            save: "deactivated",
-            clear: "enabled",
-          });
-        } else {
-          view.setButtonStatuses({
-            draw: "deactivated",
-            save: "enabled",
-            clear: "enabled",
-          });
-        }
-        if (layerID in view.dataDownloadLinks) {
-          delete view.dataDownloadLinks[layerID];
+        // Remove the stale entry so getRawFileSize can add the recalculated
+        // one. The download button is updated by updateLayerInfoEl once the new
+        // size is known, so no button logic is needed here.
+        if (layerID in this.dataDownloadLinks) {
+          delete this.dataDownloadLinks[layerID];
         }
       },
 
@@ -1099,11 +1097,16 @@ define([
         if (
           this.dataDownloadLinks[layerID]?.fileSize > this.downloadSizeLimit
         ) {
-          // Instead of disabling the Download button for large file sizes simply
-          // remove the layer from the the download list variable (i.e.,
-          // dataDownloadLinks)
           delete this.dataDownloadLinks[layerID];
         }
+
+        // Always sync the download button against the authoritative state:
+        // enabled only when at least one selected layer has a valid,
+        // non-WMTS entry in dataDownloadLinks.
+        this.setButtonStatus(
+          "download",
+          this.canDownloadAnyLayer() ? "enabled" : "deactivated",
+        );
       },
 
       /**
@@ -1343,167 +1346,260 @@ define([
       },
 
       /**
-       * Downloads data for each layer specified in `dataDownloadLinks` and
-       * provides progress updates. This function iterates through the
-       * `dataDownloadLinks` object, retrieves data for each layer, and
-       * generates a ZIP file for download. It updates a progress bar to reflect
-       * the download status and handles errors or cases where no data is
-       * available.
-       * @returns {Promise} Resolves when all data layers have been processed.
-       * @property {object} dataDownloadLinks - An object containing data layer
-       * information.
-       * @property {string} dataDownloadLinks.layerID - The unique identifier
-       * for the data layer.
-       * @property {object} dataDownloadLinks.data - Metadata for the data
-       * layer.
-       * @property {string[]} dataDownloadLinks.data.urls - Array of URLs to
-       * retrieve data from.
-       * @property {string} dataDownloadLinks.data.baseURL - Base URL for the
-       * data layer.
-       * @property {string} dataDownloadLinks.data.fileType - The file type of
-       * the data (e.g., "zip").
-       * @property {number|null} dataDownloadLinks.data.fileSize - The size of
-       * the data file in bytes, or null for WMTS layers.
-       * @property {string|null} dataDownloadLinks.data.wmtsUrl - The WMTS
-       * service URL for the layer, or null for non-WMTS layers.
-       * @property {string} dataDownloadLinks.data.layerName - The name of the
-       * data layer.
-       * @property {string} dataDownloadLinks.data.metadataPid - The metadata
-       * pid of the data layer.
+       * Downloads data for all eligible layers in `dataDownloadLinks` and
+       * shows aggregate tile-count progress. All layers download in parallel;
+       * a single shared counter increments as individual tiles complete across
+       * all layers, driving one aggregate progress bar.
+       * @returns {Promise<void>} Resolves when all layers have been processed.
        */
       async downloadData() {
         const view = this;
-        // Loop through each layerID in dataDownloadLinks and process them
-        // individually
-        Object.entries(this.dataDownloadLinks).forEach(
-          async ([layerID, data]) => {
-            // WMTS files - provide a service url instead of a download
-            if (data.fileType === "wmts") {
-              return;
-            }
 
-            // If file size is approximately over a GB then do not download
-            if (data.fileSize >= view.downloadSizeLimit) {
-              const maxSize = Utilities.bytesToSize(view.downloadSizeLimit, 2);
-              view.updateStatusBar({
-                error: true,
-                message: MESSAGES.fileSizeExceedsLimit(data.layerName, maxSize),
-              });
-              return;
-            }
-
-            // If no URL for the layers, nothing to download
+        // Collect layers that have no tile URLs so we can include them in the
+        // final error summary rather than silently dropping them or immediately
+        // overwriting the progress bar before any download has started.
+        const skippedLayers = [];
+        const layers = Object.entries(this.dataDownloadLinks).filter(
+          ([, data]) => {
+            if (data.fileType === "wmts") return false;
             if (!data.urls?.length) {
-              view.updateStatusBar({
-                error: true,
-                message: MESSAGES.noDataAvailable,
-              });
-              return;
+              skippedLayers.push(data.layerName);
+              return false;
             }
-
-            // Show the progress bar for the current layer
-            const updateStatusBar = (progress) => {
-              view.updateStatusBar({
-                progress,
-                message: MESSAGES.downloading(data.layerName, progress),
-              });
-            };
-            // Start progress tracking
-            updateStatusBar(0);
-
-            try {
-              const layerZip = await view.retrieveDataFromURL(
-                layerID,
-                data.urls,
-                data.baseURL,
-                data.fileType,
-                (progress) => {
-                  // Progress tracking callback function
-                  updateStatusBar(progress);
-                },
-              );
-
-              // Stop if no data
-              if (!Object.keys(layerZip.files).length) {
-                view.updateStatusBar({
-                  message: MESSAGES.noDataAvailable,
-                  error: true,
-                });
-                return;
-              }
-
-              const numFiles = Object.keys(layerZip.files).length;
-              view.updateStatusBar({
-                message: MESSAGES.generatingZip(data.layerName, numFiles),
-              });
-
-              if (data.metadataPid) {
-                const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
-                fetch(metadataUrl)
-                  .then((response) => {
-                    if (!response.ok) {
-                      throw new Error(
-                        MESSAGES.metadataFetchFailed(
-                          layerID,
-                          response.statusText,
-                        ),
-                      );
-                    }
-                    return response.blob();
-                  })
-                  .then((metadataBlob) => {
-                    layerZip.file(`${layerID}_metadata.xml`, metadataBlob);
-                  })
-                  .catch((error) => {
-                    let message = MESSAGES.metadataError(layerID);
-                    if (error.message) {
-                      message += `: ${error.message}`;
-                    }
-
-                    view.updateStatusBar({
-                      error: true,
-                      message,
-                    });
-                  })
-                  .finally(() => {
-                    // Always generate the ZIP, regardless of metadata result
-                    layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
-                      view.updateStatusBar({
-                        message: MESSAGES.downloadComplete,
-                        progress: 100,
-                      });
-                      const link = document.createElement("a");
-                      link.href = URL.createObjectURL(zipBlob);
-                      link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
-                      link.click();
-                    });
-                  });
-              } else {
-                // No metadata to fetch, just generate the ZIP
-                layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
-                  view.updateStatusBar({
-                    message: MESSAGES.downloadComplete,
-                    progress: 100,
-                  });
-                  const link = document.createElement("a");
-                  link.href = URL.createObjectURL(zipBlob);
-                  link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
-                  link.click();
-                });
-              }
-            } catch (error) {
-              let message = MESSAGES.downloadFailed;
-              if (error.message) {
-                message += error.message;
-              }
-
-              view.updateStatusBar({
-                message,
-                error: true,
-              });
-            }
+            return true;
           },
         );
+
+        // Disable the toolbar immediately — before any early returns — so
+        // that moving code around can never leave buttons stuck in a disabled
+        // state. Any path that does not proceed to the full download must
+        // explicitly re-enable them before returning.
+        view.setButtonStatuses({
+          clear: "deactivated",
+          download: "deactivated",
+        });
+
+        // If every non-WMTS layer was skipped (no URLs), show the error now,
+        // restore the toolbar, and bail out — there is nothing to download.
+        if (!layers.length) {
+          if (skippedLayers.length) {
+            view.updateStatusBar({
+              error: true,
+              message: MESSAGES.noDataAvailable,
+              errorDetails: skippedLayers.map(
+                (name) => `${name}: no tile URLs`,
+              ),
+            });
+          }
+          view.setButtonStatuses({
+            clear: "enabled",
+            download: view.canDownloadAnyLayer() ? "enabled" : "deactivated",
+          });
+          return;
+        }
+
+        // Create a cancellation token for this download session. Stored on
+        // the view so reset() can abort in-flight fetches.
+        const controller = new AbortController();
+        view.downloadAbortController = controller;
+        const { signal } = controller;
+
+        // Aggregate tile count across all layers.
+        const totalTiles = layers.reduce(
+          (sum, [, data]) => sum + data.urls.length,
+          0,
+        );
+        let completedTiles = 0;
+
+        // Instantly reset bar to 0% without animation before the new download.
+        // Also clear error-state classes so the red styling is gone before the
+        // container becomes visible.
+        if (view.progressBarEl) {
+          view.progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
+          view.progressBarEl.classList.remove(CLASS_NAMES.progressBarWarning);
+          view.progressBarEl.classList.add(CLASS_NAMES.progressBar);
+          view.progressBarEl.style.transition = "none";
+          view.progressBarEl.style.width = "0%";
+          view.progressBarEl.textContent = "";
+          // Force reflow so the reset registers before transition is restored
+          // eslint-disable-next-line no-unused-expressions
+          view.progressBarEl.offsetWidth; // read to trigger reflow
+          view.progressBarEl.style.transition = "";
+        }
+
+        // Show bar at 0% before any fetching starts
+        view.updateStatusBar({
+          progress: 0,
+          message: MESSAGES.downloadingAggregate(0, 0, totalTiles),
+        });
+
+        // Called once per resolved tile from any layer (success or skipped).
+        const onTileComplete = () => {
+          completedTiles += 1;
+          const pct = Math.round((completedTiles / totalTiles) * 100);
+          view.updateStatusBar({
+            progress: pct,
+            message: MESSAGES.downloadingAggregate(
+              pct,
+              completedTiles,
+              totalTiles,
+            ),
+          });
+        };
+
+        // Download all layers in parallel, collecting settled results
+        const results = await Promise.allSettled(
+          layers.map(([layerID, data]) =>
+            view.downloadLayer(layerID, data, onTileComplete, signal),
+          ),
+        );
+
+        // If the download was cancelled (e.g. user clicked Clear), bail out.
+        // reset() — the only abort source — has already set the button states.
+        if (signal.aborted) return;
+
+        // Only clear the shared reference if it still points to this
+        // invocation's controller. A new downloadData() call may have already
+        // replaced it, in which case we must not null it out.
+        if (view.downloadAbortController === controller) {
+          view.downloadAbortController = null;
+        }
+
+        const succeeded = results.filter(
+          (r) => r.status === "fulfilled",
+        ).length;
+
+        const errorDetails = [
+          // Per-layer failures from Promise.allSettled
+          ...results
+            .map((r, i) => ({ result: r, data: layers[i][1] }))
+            .filter(({ result }) => result.status === "rejected")
+            .map(
+              ({ result, data }) =>
+                `${data.layerName}: ${result.reason?.message ?? "Unknown error"}`,
+            ),
+          // Layers that were skipped before the download started (no URLs)
+          ...skippedLayers.map((name) => `${name}: no tile URLs`),
+          // Non-fatal warnings from layers that otherwise succeeded
+          ...results
+            .filter((r) => r.status === "fulfilled")
+            .flatMap((r) => r.value?.warnings ?? []),
+        ];
+        const totalLayers = layers.length + skippedLayers.length;
+        const failed = results.length - succeeded + skippedLayers.length;
+
+        if (failed === 0) {
+          view.updateStatusBar({
+            progress: 100,
+            message: MESSAGES.downloadSummary(succeeded, totalLayers),
+            errorDetails,
+          });
+        } else if (succeeded > 0) {
+          view.updateStatusBar({
+            warning: true,
+            message: MESSAGES.downloadSummaryWithErrors(
+              succeeded,
+              totalLayers,
+              failed,
+            ),
+            errorDetails,
+          });
+        } else {
+          view.updateStatusBar({
+            error: true,
+            message: MESSAGES.downloadSummaryWithErrors(
+              succeeded,
+              totalLayers,
+              failed,
+            ),
+            errorDetails,
+          });
+        }
+
+        // Re-enable clear and download now that the download has settled.
+        view.setButtonStatuses({
+          clear: "enabled",
+          download: view.canDownloadAnyLayer() ? "enabled" : "deactivated",
+        });
+      },
+
+      /**
+       * Downloads a single layer's tiles, optionally appends a metadata file,
+       * and triggers a ZIP download. Called by `downloadData` in parallel for
+       * each eligible layer.
+       * @param {string} layerID - The unique identifier for the data layer.
+       * @param {LayerDownloadEntry} data - The layer entry from `dataDownloadLinks`.
+       * @param {Function} onTileComplete - Called once each time a tile
+       * resolves (success or skipped), used to advance the aggregate progress
+       * bar.
+       * @param {AbortSignal} [signal] - Optional signal for cancelling
+       * in-flight fetches when the user resets the panel.
+       * @returns {Promise<{warnings: string[]}>} Resolves with an array of
+       * non-fatal warning strings (e.g. failed tiles, missing metadata) that
+       * the caller should surface to the user. Empty when everything succeeded.
+       * @throws {Error} If the fetched tiles contain no usable data.
+       * @throws {DOMException} An AbortError if `signal` is aborted during the
+       * metadata fetch. Tile fetches that are already in-flight when the signal
+       * fires are allowed to settle via `Promise.allSettled` so partially
+       * fetched data is not lost, but the metadata step and ZIP generation are
+       * cancelled immediately.
+       */
+      async downloadLayer(layerID, data, onTileComplete, signal) {
+        const { zip, failedTiles } = await this.retrieveDataFromURL(
+          layerID,
+          data.urls,
+          data.baseURL,
+          data.fileType,
+          onTileComplete,
+          signal,
+        );
+
+        // If the user cancelled (e.g. clicked Clear) while tiles were
+        // in-flight, discard everything — they don't want a partial ZIP.
+        if (signal?.aborted) {
+          throw new DOMException("Download cancelled by user", "AbortError");
+        }
+
+        if (!Object.keys(zip.files).length) {
+          throw new Error(MESSAGES.noDataAvailable);
+        }
+
+        let metadataWarning = null;
+        const warnings = [];
+        if (failedTiles > 0) {
+          warnings.push(
+            `${data.layerName}: ${failedTiles} tile${failedTiles !== 1 ? "s" : ""} could not be downloaded`,
+          );
+        }
+        if (data.metadataPid) {
+          const metadataUrl = `${this.objectServiceUrl}${data.metadataPid}`;
+          try {
+            const response = await fetch(metadataUrl, { signal });
+            if (!response.ok) {
+              throw new Error(
+                MESSAGES.metadataFetchFailed(layerID, response.statusText),
+              );
+            }
+            const metadataBlob = await response.blob();
+            zip.file(`${layerID}_metadata.xml`, metadataBlob);
+          } catch (e) {
+            // Re-throw AbortError so the cancellation propagates cleanly.
+            // Non-fatal metadata failures are resolved with a warning string
+            // so the caller can surface them to the user without failing the
+            // layer download.
+            if (e.name === "AbortError") throw e;
+            metadataWarning = `${data.layerName}: metadata not included — ${e.message}`;
+          }
+        }
+        if (metadataWarning) warnings.push(metadataWarning);
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(zipBlob);
+        link.download = `${layerID}_${data.fileType}_zoom-level-${data.zoomLevel}.zip`;
+        link.click();
+
+        return { warnings };
       },
 
       /**
@@ -1517,47 +1613,68 @@ define([
        * @param {boolean} [options.show] - Whether to show or hide the status
        * bar.
        * @param {boolean} [options.error] - Whether the status bar should
-       * indicate an error state.
+       * indicate a total-failure error state (red).
+       * @param {boolean} [options.warning] - Whether the status bar should
+       * indicate a partial-failure warning state (amber).
        */
       updateStatusBar({
         message = "",
         progress = null,
         show = true,
         error = false,
+        warning = false,
+        errorDetails = [],
       }) {
-        const view = this;
-        const { progressContainerEl, progressBarEl } = view;
+        const { progressContainerEl, progressBarEl, progressErrorEl } = this;
+        if (!progressContainerEl || !progressBarEl) return;
 
         if (show) {
           progressContainerEl.style.display = "block";
         } else {
           progressContainerEl.style.display = "none";
+          if (progressErrorEl) progressErrorEl.textContent = "";
           return;
         }
 
         if (error) {
-          progressBarEl.classList.remove(CLASS_NAMES.progressBar);
           progressBarEl.classList.add(CLASS_NAMES.progressBarNoData);
-        } else {
-          progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
-          progressBarEl.classList.add(CLASS_NAMES.progressBar);
-        }
-
-        if (typeof progress === "number") {
-          progressBarEl.style.width = `${progress}%`;
-          if (progress > 0) {
-            progressBarEl.textContent = MESSAGES.progress(progress);
-          } else {
-            progressBarEl.textContent = "";
-          }
-          progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
-          progressBarEl.classList.add(CLASS_NAMES.progressBar);
-        } else {
+          progressBarEl.classList.remove(CLASS_NAMES.progressBarWarning);
+          progressBarEl.classList.remove(CLASS_NAMES.progressBar);
           progressBarEl.style.width = "100%";
+          progressBarEl.textContent = message;
+        } else if (warning) {
+          progressBarEl.classList.add(CLASS_NAMES.progressBarWarning);
+          progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
+          progressBarEl.classList.remove(CLASS_NAMES.progressBar);
+          progressBarEl.style.width = "100%";
+          progressBarEl.textContent = message;
+        } else {
+          progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
+          progressBarEl.classList.remove(CLASS_NAMES.progressBarWarning);
+          progressBarEl.classList.add(CLASS_NAMES.progressBar);
+          if (typeof progress === "number") {
+            progressBarEl.style.width = `${progress}%`;
+          }
+          if (message) {
+            progressBarEl.textContent = message;
+          }
         }
 
-        if (message) {
-          progressBarEl.textContent = message;
+        if (progressErrorEl) {
+          progressErrorEl.classList.toggle(
+            CLASS_NAMES.progressErrorWarning,
+            warning,
+          );
+          if (errorDetails.length) {
+            progressErrorEl.replaceChildren();
+            errorDetails.forEach((e) => {
+              const errorDetailEl = document.createElement("div");
+              errorDetailEl.textContent = e;
+              progressErrorEl.appendChild(errorDetailEl);
+            });
+          } else {
+            progressErrorEl.textContent = "";
+          }
         }
       },
 
@@ -1570,33 +1687,46 @@ define([
        * file paths.
        * @param {string} fileType - The type of file being processed (e.g.,
        * "wmts").
-       * @param {function(number): void} [onProgress] - Optional callback
-       * function to report download progress as a percentage.
-       * @returns {Promise<JSZip>} A promise that resolves to a JSZip instance
-       * containing the downloaded files.
-       * @throws {Error} If there is an issue with fetching or processing the
-       * data.
+       * @param {function(): void} [onTileComplete] - Optional callback invoked
+       * once each time a tile resolves (success or skipped), used to advance
+       * the aggregate progress bar.
+       * @param {AbortSignal} [signal] - Optional signal for cancelling
+       * in-flight fetches when the user resets the panel.
+       * @returns {Promise<{zip: JSZip, failedTiles: number}>} Resolves with the
+       * populated ZIP archive and a count of non-404 tile failures. 404s are
+       * silently skipped and not counted. The promise is settled via
+       * `Promise.allSettled` internally, so an aborted signal does not discard
+       * tiles that completed before cancellation.
+       * @throws {DOMException} An AbortError propagated from any tile fetch
+       * that fires before `Promise.allSettled` can catch it.
        */
-      async retrieveDataFromURL(layerID, urls, baseURL, fileType, onProgress) {
+      async retrieveDataFromURL(
+        layerID,
+        urls,
+        baseURL,
+        fileType,
+        onTileComplete,
+        signal,
+      ) {
         // Initialize JSZip
         const zip = new JSZip();
 
         // Create an array of promises
         const fetchPromises = urls.map(async (url) => {
-          const response = await fetch(url);
+          const response = await fetch(url, { signal });
           if (!response.ok) {
             if (response.status === 404) {
               // We can safely skip 404 errors because we don't expect all URLs
               // to be valid
-              return null;
+              onTileComplete?.();
+              return { skipped: true };
             }
-            // Other errors should be handled
-            throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
+            // Non-404 tile failures are skipped so one bad tile does not
+            // fail the entire layer, but they are counted so the caller can
+            // warn the user that some tiles are missing.
+            onTileComplete?.();
+            return { failed: true };
           }
-
-          const contentLength = response.headers.get("Content-Length");
-          const totalBytes = contentLength ? parseInt(contentLength, 10) : null;
-          let loadedBytes = 0;
 
           const reader = response.body.getReader();
           const chunks = [];
@@ -1609,14 +1739,11 @@ define([
             done = isDone;
             if (value) {
               chunks.push(value);
-              loadedBytes += value.length;
-
-              if (onProgress && totalBytes) {
-                const progress = Math.floor((loadedBytes / totalBytes) * 100);
-                onProgress(progress); // Update progress
-              }
             }
           }
+
+          // Tile fully fetched — advance the aggregate progress bar
+          onTileComplete?.();
 
           const blob = new Blob(chunks);
           const urlParts = url.split(baseURL).filter((part) => part !== "");
@@ -1630,17 +1757,24 @@ define([
           return { fileName, blob };
         });
 
-        // Wait for all fetches to complete
-        const results = await Promise.all(fetchPromises);
+        // Use allSettled so an AbortError from a cancelled signal does not
+        // suppress blobs that were already fully fetched in this batch.
+        const results = await Promise.allSettled(fetchPromises);
 
-        // Add files to zip
+        // Add files to zip, counting non-404 tile failures separately so the
+        // caller can warn the user without failing the whole layer.
+        let failedTiles = 0;
         results.forEach((result) => {
-          if (result) {
-            zip.file(result.fileName, result.blob);
+          if (result.status === "fulfilled" && result.value) {
+            if (result.value.failed) {
+              failedTiles += 1;
+            } else if (result.value.fileName) {
+              zip.file(result.value.fileName, result.value.blob);
+            }
           }
         });
 
-        return zip;
+        return { zip, failedTiles };
       },
     },
   );
