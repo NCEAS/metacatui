@@ -270,9 +270,6 @@ define(["underscore", "backbone"], (_, Backbone) => {
         const fileTypeDropdownId = `fileType-dropdown-${item.layerID}`;
 
         this.el.innerHTML = this.template({
-          // Note: the template also contains hardcoded BEM class strings for
-          // header, title, dropdown, dropdownLabel, dropdownWrapper, and
-          // dropdownContainer that must stay in sync with CLASS_NAMES above.
           layerName: item.layerName,
           resolutionDropdownId,
           resolutionLabel: dropdownOptions.resolution.label,
