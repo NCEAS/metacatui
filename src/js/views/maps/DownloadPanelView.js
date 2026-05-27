@@ -1468,12 +1468,13 @@ define([
             .filter((r) => r.status === "fulfilled")
             .flatMap((r) => r.value?.warnings ?? []),
         ];
+        const totalLayers = layers.length + skippedLayers.length;
         const failed = results.length - succeeded + skippedLayers.length;
 
         if (failed === 0) {
           view.updateStatusBar({
             progress: 100,
-            message: MESSAGES.downloadSummary(succeeded, layers.length),
+            message: MESSAGES.downloadSummary(succeeded, totalLayers),
             errorDetails,
           });
         } else {
@@ -1481,7 +1482,7 @@ define([
             error: true,
             message: MESSAGES.downloadSummaryWithErrors(
               succeeded,
-              layers.length,
+              totalLayers,
               failed,
             ),
             errorDetails,
