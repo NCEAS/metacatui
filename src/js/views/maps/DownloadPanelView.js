@@ -5,7 +5,6 @@ define([
   "backbone",
   "jszip",
   "common/Utilities",
-  "text!templates/maps/download-panel.html",
   "models/connectors/GeoPoints-CesiumPolygon",
   "models/connectors/GeoPoints-CesiumPoints",
   "collections/maps/GeoPoints",
@@ -15,7 +14,6 @@ define([
   Backbone,
   JSZip,
   Utilities,
-  Template,
   GeoPointsVectorData,
   GeoPointsCesiumPoints,
   GeoPoints,
@@ -28,6 +26,8 @@ define([
     // Header elements
     header: "download-panel__header",
     titleGroup: "download-panel__title-group",
+    titleIcon: "download-panel__icon",
+    downloadGlyph: "icon-download-alt",
     title: "download-panel__title",
     closeButton: "download-panel__close-button",
     // Body elements
@@ -208,7 +208,22 @@ define([
        * The primary HTML template for this view
        * @type {Underscore.template}
        */
-      template: _.template(Template),
+      template: _.template(`
+        <div class="${CLASS_NAMES.header}">
+          <div class="${CLASS_NAMES.titleGroup}">
+            <i class="${CLASS_NAMES.downloadGlyph} ${CLASS_NAMES.titleIcon}"></i>
+            <h3 class="${CLASS_NAMES.title}">Partial Data Download</h3>
+          </div>
+          <button class="map-view__button ${CLASS_NAMES.closeButton}" type="button">
+            <i class="icon-remove"></i>
+          </button>
+        </div>
+        <div class="${CLASS_NAMES.instructions}">
+          Draw Area of Interest: Single-click to add vertices, double-click to complete.
+        </div>
+        <div class="${CLASS_NAMES.dataList}"></div>
+        <div class="${CLASS_NAMES.drawTool}"></div>
+      `),
 
       /**
        * A reference to the MapInteraction model on the MapModel that is used to
