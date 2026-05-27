@@ -1,7 +1,6 @@
 "use strict";
 
 define([
-  "underscore",
   "backbone",
   "jszip",
   "common/Utilities",
@@ -10,7 +9,6 @@ define([
   "collections/maps/GeoPoints",
   "views/maps/LayerDownloadView",
 ], (
-  _,
   Backbone,
   JSZip,
   Utilities,
@@ -198,9 +196,9 @@ define([
 
       /**
        * The primary HTML template for this view
-       * @type {Underscore.template}
+       * @type {string}
        */
-      template: _.template(`
+      template: `
         <div class="${CLASS_NAMES.header}">
           <div class="${CLASS_NAMES.titleGroup}">
             <i class="${CLASS_NAMES.downloadGlyph} ${CLASS_NAMES.titleIcon}"></i>
@@ -221,7 +219,7 @@ define([
         </div>
         <div class="${CLASS_NAMES.dataList}"></div>
         <div class="${CLASS_NAMES.drawTool}"></div>
-      `),
+      `,
 
       /**
        * A reference to the MapInteraction model on the MapModel that is used to
@@ -537,7 +535,7 @@ define([
           this.showError(MESSAGES.noMapModel);
           return this;
         }
-        this.$el.html(this.template());
+        this.$el.html(this.template);
         this.instructionsEl = this.el.querySelector(
           `.${CLASS_NAMES.instructions}`,
         );
