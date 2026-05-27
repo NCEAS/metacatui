@@ -476,6 +476,8 @@ define([
 
       /** @inheritdoc */
       remove() {
+        this.downloadAbortController?.abort();
+        this.downloadAbortController = null;
         this.removeLayer();
         this.removeClickListeners();
         if (this.layerDownloadViews) {
@@ -1429,17 +1431,9 @@ define([
           ),
         );
 
-        // If the download was cancelled (e.g. user clicked Clear), restore
-        // the default button state explicitly so this function is
-        // self-contained and does not rely on reset() having done it.
-        if (signal.aborted) {
-          view.setButtonStatuses({
-            draw: "enabled",
-            clear: "deactivated",
-            download: "deactivated",
-          });
-          return;
-        }
+        // If the download was cancelled (e.g. user clicked Clear), bail out.
+        // reset() — the only abort source — has already set the button states.
+        if (signal.aborted) return;
 
         // Only clear the shared reference if it still points to this
         // invocation's controller. A new downloadData() call may have already
@@ -1526,6 +1520,12 @@ define([
           onTileComplete,
           signal,
         );
+
+        // If the user cancelled (e.g. clicked Clear) while tiles were
+        // in-flight, discard everything — they don't want a partial ZIP.
+        if (signal?.aborted) {
+          throw new DOMException("Download cancelled by user", "AbortError");
+        }
 
         if (!Object.keys(zip.files).length) {
           throw new Error(MESSAGES.noDataAvailable);
