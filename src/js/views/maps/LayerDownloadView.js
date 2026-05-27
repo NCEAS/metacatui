@@ -1,10 +1,6 @@
 "use strict";
 
-define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
-  _,
-  Backbone,
-  Template,
-) => {
+define(["underscore", "backbone"], (_, Backbone) => {
   const BASE_CLASS = "layer-download";
 
   // HTML classes used inside this view
@@ -76,7 +72,29 @@ define(["underscore", "backbone", "text!templates/maps/layer-download.html"], (
        * The primary HTML template for this view.
        * @type {Underscore.template}
        */
-      template: _.template(Template),
+      template: _.template(`
+        <div class="${CLASS_NAMES.header}">
+          <input type="checkbox" class="${CLASS_NAMES.checkbox}" />
+          <span class="${CLASS_NAMES.title}"><%- layerName %></span>
+        </div>
+        <div class="${CLASS_NAMES.content}">
+          <div class="${CLASS_NAMES.dropdownContainer}">
+            <div class="${CLASS_NAMES.dropdownWrapper}">
+              <label class="${CLASS_NAMES.dropdownLabel}" for="<%- resolutionDropdownId %>"><%- resolutionLabel %></label>
+              <select id="<%- resolutionDropdownId %>" class="${CLASS_NAMES.dropdown} ${CLASS_NAMES.resolutionDropdown}">
+                <option value="<%- resolutionDefaultValue %>" disabled selected><%- resolutionDefaultText %></option>
+              </select>
+            </div>
+            <div class="${CLASS_NAMES.dropdownWrapper}">
+              <label class="${CLASS_NAMES.dropdownLabel}" for="<%- fileTypeDropdownId %>"><%- fileTypeLabel %></label>
+              <select id="<%- fileTypeDropdownId %>" class="${CLASS_NAMES.dropdown} ${CLASS_NAMES.fileTypeDropdown}" disabled>
+                <option value="<%- fileTypeDefaultValue %>" disabled selected><%- fileTypeDefaultText %></option>
+              </select>
+            </div>
+          </div>
+          <span class="${CLASS_NAMES.information} ${CLASS_NAMES.informationWarning}"><%- initialMessage %></span>
+        </div>
+      `),
 
       /** @inheritdoc */
       events() {
