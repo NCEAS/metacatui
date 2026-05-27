@@ -219,7 +219,7 @@ define([
           </button>
         </div>
         <div class="${CLASS_NAMES.instructions}">
-          Draw Area of Interest: Single-click to add vertices, double-click to complete.
+          ${MESSAGES.drawInstructions}
         </div>
         <div class="${CLASS_NAMES.dataList}"></div>
         <div class="${CLASS_NAMES.drawTool}"></div>
