@@ -1643,6 +1643,15 @@ other class: .ui-slider-range */
   line-height: 18px;
   font-size: 10px;
 }
+.download-panel__progress-bar--warning {
+  width: 100%;
+  height: 18px;
+  background-color: var(--portal-col-warning-light, #fef3c7);
+  color: var(--portal-col-warning, #b45309);
+  text-align: center;
+  line-height: 18px;
+  font-size: 10px;
+}
 
 .download-panel__progress-error {
   font-size: 10px;
@@ -1650,6 +1659,9 @@ other class: .ui-slider-range */
   padding: 2px 4px 2px;
   line-height: 1.5;
   min-height: 0;
+}
+.download-panel__progress-error--warning {
+  color: var(--portal-col-warning, #b45309);
 }
 
 .download-panel__progress-error div::before {

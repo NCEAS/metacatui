@@ -56,7 +56,9 @@ define([
     progressContainer: "download-panel__progress-container",
     progressBar: "download-panel__progress-bar",
     progressBarNoData: "download-panel__progress-bar--no-data",
+    progressBarWarning: "download-panel__progress-bar--warning",
     progressError: "download-panel__progress-error",
+    progressErrorWarning: "download-panel__progress-error--warning",
   };
 
   const MESSAGES = {
@@ -1394,6 +1396,7 @@ define([
         // container becomes visible.
         if (view.progressBarEl) {
           view.progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
+          view.progressBarEl.classList.remove(CLASS_NAMES.progressBarWarning);
           view.progressBarEl.classList.add(CLASS_NAMES.progressBar);
           view.progressBarEl.style.transition = "none";
           view.progressBarEl.style.width = "0%";
@@ -1469,6 +1472,16 @@ define([
           view.updateStatusBar({
             progress: 100,
             message: MESSAGES.downloadSummary(succeeded, totalLayers),
+            errorDetails,
+          });
+        } else if (succeeded > 0) {
+          view.updateStatusBar({
+            warning: true,
+            message: MESSAGES.downloadSummaryWithErrors(
+              succeeded,
+              totalLayers,
+              failed,
+            ),
             errorDetails,
           });
         } else {
@@ -1580,13 +1593,16 @@ define([
        * @param {boolean} [options.show] - Whether to show or hide the status
        * bar.
        * @param {boolean} [options.error] - Whether the status bar should
-       * indicate an error state.
+       * indicate a total-failure error state (red).
+       * @param {boolean} [options.warning] - Whether the status bar should
+       * indicate a partial-failure warning state (amber).
        */
       updateStatusBar({
         message = "",
         progress = null,
         show = true,
         error = false,
+        warning = false,
         errorDetails = [],
       }) {
         const { progressContainerEl, progressBarEl, progressErrorEl } = this;
@@ -1602,11 +1618,19 @@ define([
 
         if (error) {
           progressBarEl.classList.add(CLASS_NAMES.progressBarNoData);
+          progressBarEl.classList.remove(CLASS_NAMES.progressBarWarning);
+          progressBarEl.classList.remove(CLASS_NAMES.progressBar);
+          progressBarEl.style.width = "100%";
+          progressBarEl.textContent = message;
+        } else if (warning) {
+          progressBarEl.classList.add(CLASS_NAMES.progressBarWarning);
+          progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
           progressBarEl.classList.remove(CLASS_NAMES.progressBar);
           progressBarEl.style.width = "100%";
           progressBarEl.textContent = message;
         } else {
           progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
+          progressBarEl.classList.remove(CLASS_NAMES.progressBarWarning);
           progressBarEl.classList.add(CLASS_NAMES.progressBar);
           if (typeof progress === "number") {
             progressBarEl.style.width = `${progress}%`;
@@ -1617,6 +1641,10 @@ define([
         }
 
         if (progressErrorEl) {
+          progressErrorEl.classList.toggle(
+            CLASS_NAMES.progressErrorWarning,
+            warning,
+          );
           if (errorDetails.length) {
             progressErrorEl.replaceChildren();
             errorDetails.forEach((e) => {
