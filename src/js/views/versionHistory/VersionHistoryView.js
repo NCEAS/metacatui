@@ -606,7 +606,11 @@ define([
        */
       applyDateNotes(conflicts = []) {
         this.clearDateNotes();
-        if (!this.collection || !Array.isArray(conflicts) || !conflicts.length) {
+        if (
+          !this.collection ||
+          !Array.isArray(conflicts) ||
+          !conflicts.length
+        ) {
           return;
         }
         conflicts.forEach((conflict) => {

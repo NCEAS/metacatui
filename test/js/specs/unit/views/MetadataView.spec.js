@@ -130,7 +130,9 @@ define([
       const context = {
         model: new Backbone.Model({ id: "pid.indexing" }),
         pid: "pid.indexing",
-        getSysMeta: sinon.stub().resolves({ data: { identifier: "pid.indexing" } }),
+        getSysMeta: sinon
+          .stub()
+          .resolves({ data: { identifier: "pid.indexing" } }),
         hideLoading,
         showError,
         showNotFound,
@@ -202,7 +204,9 @@ define([
     });
 
     it("falls back to the last metadata PID when query service fails", async () => {
-      state.sandbox.stub(QueryService, "queryWithFetch").rejects(new Error("fail"));
+      state.sandbox
+        .stub(QueryService, "queryWithFetch")
+        .rejects(new Error("fail"));
       const context = {
         model: new Backbone.Model({ isDocumentedBy: ["meta.old", "meta.new"] }),
         pid: "data.pid",
@@ -213,7 +217,10 @@ define([
       await MetadataView.prototype.resolveMetadataForData.call(context);
 
       expect(
-        context.navigateWithFragment.calledOnceWithExactly("meta.new", "data.pid"),
+        context.navigateWithFragment.calledOnceWithExactly(
+          "meta.new",
+          "data.pid",
+        ),
       ).to.equal(true);
       expect(context.noMetadata.called).to.equal(false);
     });
