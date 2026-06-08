@@ -351,5 +351,6 @@ MetacatUI.themeMap = {
       MetacatUI.root + "/js/themes/" + MetacatUI.theme + "/models/Map.js",
     "routers/router":
       MetacatUI.root + "/js/themes/" + MetacatUI.theme + "/routers/router.js",
+    "routers/BaseRouter": MetacatUI.root + "/js/routers/router.js",
   },
 };
