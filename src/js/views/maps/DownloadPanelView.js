@@ -4,31 +4,92 @@ define([
   "underscore",
   "backbone",
   "jszip",
-  "text!templates/maps/download-panel.html",
+  "common/Utilities",
   "models/connectors/GeoPoints-CesiumPolygon",
   "models/connectors/GeoPoints-CesiumPoints",
   "collections/maps/GeoPoints",
+  "views/maps/LayerDownloadView",
 ], (
   _,
   Backbone,
   JSZip,
-  Template,
+  Utilities,
   GeoPointsVectorData,
   GeoPointsCesiumPoints,
   GeoPoints,
+  LayerDownloadView,
 ) => {
   // Classes used in the view
   const CLASS_NAMES = {
-    button: "draw__button",
-    buttonFocus: "draw__button--active",
-    buttonDisable: "draw__button--disable",
-    layerItemPanelToggle: "download-expansion-panel__toggle",
-    layerItemCheckbox: "download-expansion-panel__checkbox",
-    dropdown: "downloads-dropdown",
-    resolutionDropdown: "resolution-dropdown",
-    fileTypeDropdown: "fileType-downloads-dropdown",
+    // Block
+    block: "download-panel",
+    // Header elements
+    header: "download-panel__header",
+    titleGroup: "download-panel__title-group",
+    titleIcon: "download-panel__icon",
+    downloadGlyph: "icon-download-alt",
+    title: "download-panel__title",
+    closeButton: "download-panel__close-button",
+    // Body elements
+    instructions: "download-panel__instructions",
+    dataList: "download-panel__data-list",
+    // Draw tool block
+    drawTool: "draw-tool",
+    // Draw toolbar buttons
+    button: "draw-tool__button",
+    buttonActive: "draw-tool__button--active",
+    buttonDisable: "draw-tool__button--disable",
+    // Draw toolbar button internals
+    buttonIconWrap: "draw-tool__button-icon-wrap",
+    buttonIconWrapDisabled: "draw-tool__button-icon-wrap--disabled",
+    buttonLabel: "draw-tool__button-label",
+    // Shared toolbar classes (used for coordinating with ToolbarView)
+    toolbarLink: "toolbar__links",
+    toolbarLinkActive: "toolbar__link--active",
+    toolbarContentActive: "toolbar__content--active",
+    // Info box states (used in updateTextbox)
     error: "error",
-    wmtsCopy: "wmts-copy",
+    informationWmts: "layer-download__information--wmts",
+    wmtsText: "layer-download__wmts-text",
+    copyIcon: "layer-download__copy-icon",
+    // Progress bar (created in initializeDownloadPanel)
+    progressContainer: "download-panel__progress-container",
+    progressBar: "download-panel__progress-bar",
+    progressBarNoData: "download-panel__progress-bar--no-data",
+  };
+
+  const MESSAGES = {
+    // Plain strings
+    downloadComplete: "Download Complete!",
+    downloadFailed:
+      "Failed to download data files for selected data layer(s) within area of interest. ",
+    drawInstructions:
+      "Draw Area of Interest: Single-click to add vertices, double-click to complete.",
+    noDataAvailable:
+      "No data available for selected data layer(s) within area of interest.",
+    noLayersAvailable:
+      "No layers are available for download. Click on layers in the list above to make them visible on the Map and available for download. Only select layers have data products available for download.",
+    noMapModel: "No map model was provided.",
+    selectProducts:
+      "Select products below and click the download button. To download full datasets (including original shapefiles) please use the Layers panel above. ",
+    wmtsComment: "Use WMTS for accessing large data volume or re-draw AOI",
+    // Functions
+    downloading: (layerName, progress) =>
+      `Downloading data for ${layerName} (${progress}%)`,
+    downloadSizeTooLarge: (maxSize, comment) =>
+      `Download size is too big ( > ${maxSize}). ${comment}.`,
+    drawToolUnavailable: (detail) =>
+      `The draw tool is not available. ${detail}`,
+    estimatedFileSize: (size) =>
+      `Estimated download file size is \u2264 ${size}.`,
+    fileSizeExceedsLimit: (layerName, maxSize) =>
+      `File size for ${layerName} > the max download size, ${maxSize}. Select lower resolution/ draw smaller AOI.`,
+    generatingZip: (layerName, numFiles) =>
+      `Generating ZIP file for ${layerName} (${numFiles} files)...`,
+    metadataError: (layerID) => `Error fetching metadata for ${layerID}`,
+    metadataFetchFailed: (layerID, statusText) =>
+      `Failed to fetch metadata for ${layerID}: ${statusText}`,
+    progress: (pct) => `Progress: ${pct}%`,
   };
 
   /**
@@ -57,38 +118,14 @@ define([
        * The HTML classes to use for this view's element
        * @type {string}
        */
-      className: "download-panel",
-
-      /**
-       * Class to use for the buttons
-       * @type {string}
-       */
-      buttonClass: "draw__button ",
-
-      /**
-       * Class to use for the active button
-       * @type {string}
-       */
-      buttonClassActive: "draw__button--active",
-
-      /**
-       * Class to disable button
-       * @type {string}
-       */
-      buttonClassDisable: "draw__button--disable",
-
-      /**
-       * The HTML classes to use for this data panel element
-       * @type {string}
-       */
-      dataPanelClass: "download-panel",
+      className: CLASS_NAMES.block,
 
       /**
        * The maximum size of the download in bytes. If download is estimated to exceed
        * this size, the download will be blocked.
        * @type {number}
        */
-      downloadSizeLimit: 1050000, // 1 GB
+      downloadSizeLimit: 1000000000, // 1 GB
 
       /**
        * @typedef {object} DrawToolButtonOptions
@@ -139,17 +176,19 @@ define([
         const events = {};
         const CN = CLASS_NAMES;
         events[`click .${CN.button}`] = "handleButtonClick";
-        events[`click .${CN.layerItemPanelToggle}`] = "toggleLayerSection";
+        events[`click .${CN.closeButton}`] = "close";
+        events[`click .${CN.copyIcon}`] = "handleCopyIconClick";
         return events;
       },
 
       /**
        * The buttons that have been rendered in the toolbar. Formatted as an
        * object with the button name as the key and the button element as the
-       * value.
+       * value. Initialized in initialize() to avoid shared state across
+       * instances.
        * @type {object}
        */
-      buttonEls: {},
+      buttonEls: undefined,
 
       /**
        * The current mode of the draw tool. This can be "draw", "move",
@@ -169,7 +208,22 @@ define([
        * The primary HTML template for this view
        * @type {Underscore.template}
        */
-      template: _.template(Template),
+      template: _.template(`
+        <div class="${CLASS_NAMES.header}">
+          <div class="${CLASS_NAMES.titleGroup}">
+            <i class="${CLASS_NAMES.downloadGlyph} ${CLASS_NAMES.titleIcon}"></i>
+            <h3 class="${CLASS_NAMES.title}">Partial Data Download</h3>
+          </div>
+          <button class="map-view__button ${CLASS_NAMES.closeButton}" type="button">
+            <i class="icon-remove"></i>
+          </button>
+        </div>
+        <div class="${CLASS_NAMES.instructions}">
+          ${MESSAGES.drawInstructions}
+        </div>
+        <div class="${CLASS_NAMES.dataList}"></div>
+        <div class="${CLASS_NAMES.drawTool}"></div>
+      `),
 
       /**
        * A reference to the MapInteraction model on the MapModel that is used to
@@ -219,38 +273,23 @@ define([
       tileMatrixSet: "WGS1984Quad",
 
       /**
-       * The file size for tiled data in geotiff format (in KB).
-       * @type {number}
+       * The estimated file size per tile for each format, in bytes.
+       * @type {object}
        */
       fileSizes: {
-        tif: 513,
-        png: 2.7,
-        wmts: 15,
-        gpkg: 180,
+        tif: 525312, // ~513 KiB per tile
+        png: 2765, // ~2.7 KiB per tile
+        wmts: 15360, // ~15 KiB per tile
+        gpkg: 184320, // ~180 KiB per tile
       },
 
       /**
        * The array that store the list of URLs for each data layer that is
-       * selected for partial download.
-       * @type {Array}
+       * selected for partial download. Initialized in initialize() to avoid
+       * shared state across instances.
+       * @type {object}
        */
-      dataDownloadLinks: {},
-
-      /**
-       * The classes of the sub-elements that combined to create the download
-       * panel view.
-       */
-      classes: {
-        toolbarLink: ".toolbar__links",
-        toolbarLinkActive: "toolbar__link--active",
-        toolbarContentActive: "toolbar__content--active",
-        layerItemPanel: "download-expansion-panel",
-        layerItemTitle: "download-expansion-panel__title",
-        layerItemContent: "download-expansion-panel__content",
-        dropdownWrapper: "downloads-dropdown-wrapper",
-        dropdownContainer: "downloads-dropdown-container",
-        fileSizeBox: "downloads-textbox",
-      },
+      dataDownloadLinks: undefined,
 
       /**
        * The z levels available for download along with their approximate pixel
@@ -315,6 +354,8 @@ define([
        * @param {string} [options.mode] - The initial mode of the draw tool.
        */
       initialize(options) {
+        this.dataDownloadLinks = {};
+        this.buttonEls = {};
         this.mapModel = options.model || new Map();
         this.objectServiceUrl = MetacatUI.appModel.get("objectServiceUrl");
         // Add models & collections, interactions, layer, connector, points
@@ -360,7 +401,6 @@ define([
        * Sets up the connector to connect the GeoPoints collection to the
        * CesiumVectorData model. Adds the connector and points properties to
        * this view.
-       * @returns {GeoPointsVectorData} The connector
        */
       setUpConnectors() {
         const points = new GeoPoints();
@@ -375,8 +415,6 @@ define([
         });
         this.polygonConnector.connect();
         this.pointsConnector.connect();
-
-        return this.connector;
       },
 
       /**
@@ -400,14 +438,20 @@ define([
        * Resets the draw tool to its initial state.
        */
       reset() {
-        this.toggleDraw(true);
         this.clearPoints();
         this.removeClickListeners();
 
-        document.querySelector(".download-data-list__panel").textContent =
-          "Draw Area of Interest: Single-click to add vertices, double-click to complete.";
+        this.instructionsEl.textContent = MESSAGES.drawInstructions;
 
-        document.querySelector(".download-data-list").innerHTML = "";
+        if (this.layerDownloadViews) {
+          this.layerDownloadViews.forEach((ldv) => {
+            this.stopListening(ldv);
+            ldv.remove();
+          });
+          this.layerDownloadViews = [];
+        }
+        this.dataDownloadLinks = {};
+        this.dataListEl.innerHTML = "";
         this.setButtonStatuses({
           draw: "enabled",
           clear: "deactivated",
@@ -427,6 +471,20 @@ define([
         this.mapModel.removeAsset(this.layer);
       },
 
+      /** @inheritdoc */
+      remove() {
+        this.removeLayer();
+        this.removeClickListeners();
+        if (this.layerDownloadViews) {
+          this.layerDownloadViews.forEach((ldv) => {
+            this.stopListening(ldv);
+            ldv.remove();
+          });
+          this.layerDownloadViews = [];
+        }
+        Backbone.View.prototype.remove.call(this);
+      },
+
       /**
        * Render the view by updating the HTML of the element. The new HTML is
        * computed from an HTML template that is passed an object with relevant
@@ -434,12 +492,28 @@ define([
        * @returns {DownloadPanelView} This view
        */
       render() {
+        // Clean up any previously rendered child views before rebuilding the
+        // DOM, so their event listeners and references are properly torn down.
+        if (this.layerDownloadViews) {
+          this.layerDownloadViews.forEach((ldv) => {
+            this.stopListening(ldv);
+            ldv.remove();
+          });
+          this.layerDownloadViews = [];
+        }
+        this.buttonEls = {};
+
         // Insert the template into the view
         if (!this.mapModel) {
-          this.showError("No map model was provided.");
+          this.showError(MESSAGES.noMapModel);
           return this;
         }
         this.$el.html(this.template());
+        this.instructionsEl = this.el.querySelector(
+          `.${CLASS_NAMES.instructions}`,
+        );
+        this.dataListEl = this.el.querySelector(`.${CLASS_NAMES.dataList}`);
+        this.drawToolEl = this.el.querySelector(`.${CLASS_NAMES.drawTool}`);
 
         this.renderToolbar();
         return this;
@@ -453,7 +527,7 @@ define([
       showError(message) {
         const str =
           `<i class="icon-warning-sign icon-left"></i>` +
-          `<span> The draw tool is not available. ${message}</span>`;
+          `<span> ${MESSAGES.drawToolUnavailable(message)}</span>`;
         this.el.innerHTML = str;
       },
 
@@ -479,6 +553,37 @@ define([
           }
           method.call(this, event);
         }
+      },
+
+      /**
+       * Handles a click on the copy icon in the WMTS info box. Copies the WMTS
+       * URL text to the clipboard and briefly shows a confirmation message.
+       * @param {Event} event - The click event.
+       */
+      handleCopyIconClick(event) {
+        const informationEl = event.currentTarget.closest(
+          `.${CLASS_NAMES.informationWmts}`,
+        );
+        if (!informationEl) return;
+        const wmtsTextEl = informationEl.querySelector(
+          `.${CLASS_NAMES.wmtsText}`,
+        );
+        if (!wmtsTextEl) return;
+        const wmtsUrl = wmtsTextEl.textContent;
+        navigator.clipboard
+          .writeText(wmtsUrl)
+          .then(() => {
+            wmtsTextEl.textContent = "Copied to clipboard!";
+            setTimeout(() => {
+              wmtsTextEl.textContent = wmtsUrl;
+            }, 2000);
+          })
+          .catch(() => {
+            wmtsTextEl.textContent = "Copy failed!";
+            setTimeout(() => {
+              wmtsTextEl.textContent = wmtsUrl;
+            }, 2000);
+          });
       },
 
       /**
@@ -511,7 +616,7 @@ define([
           // Turn on drawing mode
           this.draw = true;
           this.setClickListeners();
-          this.setButtonStatus("draw", "focused");
+          this.setButtonStatus("draw", "active");
         } else {
           // Turn off drawing mode
           this.draw = false;
@@ -522,29 +627,38 @@ define([
 
       /**
        * Sets the status of the button to either "enabled", "deactivated", or
-       * "focused".
+       * "active".
        * @param {string} name - The name of the button to set the status for.
-       * @param {"enabled"|"deactivated"|"focused"} status - The status to set
+       * @param {"enabled"|"deactivated"|"active"} status - The status to set
        * the button to.
        */
       setButtonStatus(name, status) {
         const buttonEl = this.buttonEls[`${name}Button`];
         if (!buttonEl || buttonEl.dataset.status === status) return;
+        const iconWrapEl = buttonEl.querySelector(
+          `.${CLASS_NAMES.buttonIconWrap}`,
+        );
 
         // Reset all button styles - default to enabled
-        buttonEl.classList.remove(CLASS_NAMES.buttonFocus);
+        buttonEl.classList.remove(CLASS_NAMES.buttonActive);
         buttonEl.classList.remove(CLASS_NAMES.buttonDisable);
+        if (iconWrapEl) {
+          iconWrapEl.classList.remove(CLASS_NAMES.buttonIconWrapDisabled);
+        }
         buttonEl.dataset.status = status;
 
         if (status === "deactivated") {
           buttonEl.classList.add(CLASS_NAMES.buttonDisable);
-        } else if (status === "focused") {
-          buttonEl.classList.add(CLASS_NAMES.buttonFocus);
+          if (iconWrapEl) {
+            iconWrapEl.classList.add(CLASS_NAMES.buttonIconWrapDisabled);
+          }
+        } else if (status === "active") {
+          buttonEl.classList.add(CLASS_NAMES.buttonActive);
         }
 
         // Special case for the draw button, which sets the draw mode
         if (name === "draw") {
-          const turnOnDraw = status === "focused";
+          const turnOnDraw = status === "active";
           this.toggleDraw(turnOnDraw, status);
         }
       },
@@ -651,23 +765,20 @@ define([
        * Create and insert the buttons for drawing and clearing the polygon.
        */
       renderToolbar() {
-        // alert("Rendering draw toolbar");
         const view = this;
-        const drawContainer = this.el.querySelector(".draw-tool");
-        if (!drawContainer) return;
+        if (!this.drawToolEl) return;
         // Create the buttons
         view.buttons.forEach((options) => {
-          const button = document.createElement("button");
-          button.className = this.buttonClass;
-          button.innerHTML = `
-              <span class="custom-circle">
+          const buttonEl = document.createElement("button");
+          buttonEl.className = CLASS_NAMES.button;
+          buttonEl.innerHTML = `
+              <span class="${CLASS_NAMES.buttonIconWrap}">
                 <i class="icon icon-${options.icon}"></i>
               </span> 
-              <span class="draw-button-label">${options.label}</span> `;
-          button.dataset.name = options.name;
-          if (!view.buttonEls) view.buttonEls = {};
-          view.buttonEls[`${options.name}Button`] = button;
-          drawContainer.appendChild(button);
+              <span class="${CLASS_NAMES.buttonLabel}">${options.label}</span> `;
+          buttonEl.dataset.name = options.name;
+          view.buttonEls[`${options.name}Button`] = buttonEl;
+          this.drawToolEl.appendChild(buttonEl);
         });
 
         // Set the buttons to the default state
@@ -678,12 +789,6 @@ define([
         });
 
         view.generatePreviewPanel();
-        const closeDownloadPanelButton = this.el.querySelector(
-          ".download-panel-close__button",
-        );
-        closeDownloadPanelButton.addEventListener("click", () => {
-          view.close();
-        });
       },
 
       /**
@@ -708,10 +813,6 @@ define([
        */
       generatePreviewPanel() {
         const view = this;
-        let selectedResolution;
-        this.clearButtonEl = this.buttonEls.clearButton;
-        this.saveButtonEl = this.buttonEls.saveButton;
-        this.drawButtonEl = this.buttonEls.drawButton;
 
         // Get the selected layers from the Layer Panel View and retreive the
         // following information
@@ -752,7 +853,7 @@ define([
             if (value.attributes && Array.isArray(value.attributes.services)) {
               pngDownloadLink = value.attributes.services.find(
                 (service) => service.type === "png",
-              ).endpoint;
+              )?.endpoint;
             } else {
               pngDownloadLink = null;
             }
@@ -801,13 +902,17 @@ define([
           (layer, index, self) =>
             index === self.findIndex((l) => l.layerID === layer.layerID),
         );
-        // Create download tool panel
-        const downloadDataPanel = document.querySelector(".download-data-list");
+        if (!this.dataListEl) return;
 
-        if (!downloadDataPanel) return;
-
-        // Clear any previously added layer items in case of a rerender
-        downloadDataPanel.innerHTML = "";
+        // Clean up tracked view instances from the previous render.
+        if (this.layerDownloadViews) {
+          this.layerDownloadViews.forEach((ldv) => {
+            this.stopListening(ldv);
+            ldv.remove();
+          });
+        }
+        this.dataListEl.innerHTML = "";
+        this.layerDownloadViews = [];
 
         // If there is no polygon on the map, quit here.
         if (!this.points.length) return;
@@ -819,9 +924,8 @@ define([
         });
 
         if (!selectedLayersList.length) {
-          // Update the text of download-data-list__panel
-          document.querySelector(".download-data-list__panel").textContent =
-            "No layers are available for download. Click on layers in the list above to make them visible on the Map and available for download. Only select layers have data products available for download.";
+          // Update the text of download-panel__instructions
+          this.instructionsEl.textContent = MESSAGES.noLayersAvailable;
           view.setButtonStatuses({
             save: "deactivated",
             draw: "deactivated",
@@ -830,249 +934,50 @@ define([
         } else {
           // Loop through selected data layers
           selectedLayersList.forEach((item) => {
-            const fileTypeOptions = {
-              tif: "Geotiff",
-              png: "PNG",
-              wmts: "WMTS file",
-              gpkg: "Geopackage",
-            };
+            // Create a LayerDownloadView for this layer's controls
+            const layerDownloadView = new LayerDownloadView({
+              item,
+              downloadPanelView: view,
+            });
 
-            // Create panel container for each layer that intersects the
-            // bounding box
-            const downloadDataPanelContainer = document.createElement("div");
-            downloadDataPanelContainer.classList.add(
-              this.classes.layerItemPanel,
-            );
-            const layerItem = document.createElement("div");
-            layerItem.classList.add(CLASS_NAMES.layerItemPanelToggle);
+            layerDownloadView.render();
+            this.dataListEl.appendChild(layerDownloadView.el);
 
-            // Create checkbox that allows user to select the layer
-            const layerItemSelectBox = document.createElement("input");
-            layerItemSelectBox.type = "checkbox";
-            layerItemSelectBox.classList.add(CLASS_NAMES.layerItemCheckbox);
-
-            // Attach layer attributes to the checkbox
-            layerItemSelectBox.dataset.layerId = item.layerID;
-            layerItemSelectBox.dataset.downloadLink = item.downloadLink;
-            layerItemSelectBox.dataset.layerName = item.layerName;
-            layerItemSelectBox.dataset.fullDownloadLink = item.fullDownloadLink;
-            layerItemSelectBox.dataset.pngDownloadLink = item.pngDownloadLink;
-            layerItemSelectBox.dataset.id = item.ID;
-            layerItemSelectBox.dataset.wmtsDownloadLink = item.wmtsDownloadLink;
-            layerItemSelectBox.dataset.gpkgDownloadLink = item.gpkgDownloadLink;
-            layerItemSelectBox.dataset.tiffDownloadLink = item.tiffDownloadLink;
-            layerItemSelectBox.dataset.metadataPid = item.metadataPid;
-
-            const layerItemSpan = document.createElement("span");
-            layerItemSpan.classList.add(this.classes.layerItemTitle);
-            layerItemSpan.textContent = item.layerName;
-
-            layerItem.appendChild(layerItemSelectBox);
-            layerItem.appendChild(layerItemSpan);
-
-            const layerItemSelectContent = document.createElement("div");
-            layerItemSelectContent.classList.add(this.classes.layerItemContent);
-
-            // Create the "Resolution" dropdown
-            const resolutionDropdownWrapper = document.createElement("div");
-            resolutionDropdownWrapper.classList.add(
-              this.classes.dropdownWrapper,
-            );
-            const resolutionLabel = document.createElement("label");
-            resolutionLabel.textContent = this.dropdownOptions.resolution.label;
-
-            const resolutionDropdown = document.createElement("select");
-            resolutionDropdown.classList.add(CLASS_NAMES.dropdown);
-            resolutionDropdown.classList.add(CLASS_NAMES.resolutionDropdown);
-
-            // Add a default select option
-            const defaultResolutionOption = document.createElement("option");
-            defaultResolutionOption.value =
-              this.dropdownOptions.resolution.defaultValue;
-            defaultResolutionOption.textContent =
-              this.dropdownOptions.resolution.defaultText;
-            defaultResolutionOption.disabled = true; // Make it non-selectable
-            defaultResolutionOption.selected = true; // Make it the default selection
-            resolutionDropdown.appendChild(defaultResolutionOption);
-
-            Object.entries(this.zoomLevels).forEach(
-              ([zoomLevel, pixelResolution]) => {
-                const option = document.createElement("option");
-                option.value = zoomLevel;
-                option.textContent = `${zoomLevel} - ${pixelResolution}`;
-                resolutionDropdown.appendChild(option);
+            // When the resolution is changed, the previously calculated
+            // download link for this layer is no longer valid.
+            view.listenTo(
+              layerDownloadView,
+              "download:invalidated",
+              (layerID) => {
+                delete view.dataDownloadLinks[layerID];
               },
             );
 
-            resolutionDropdownWrapper.appendChild(resolutionLabel);
-            resolutionDropdownWrapper.appendChild(resolutionDropdown);
-
-            // Create the "File Type" dropdown
-            const fileTypeDropdownWrapper = document.createElement("div");
-            fileTypeDropdownWrapper.classList.add(this.classes.dropdownWrapper);
-            const fileTypeLabel = document.createElement("label");
-            fileTypeLabel.textContent = this.dropdownOptions.fileType.label;
-
-            const fileTypeDropdown = document.createElement("select");
-            fileTypeDropdown.classList.add(CLASS_NAMES.dropdown);
-            fileTypeDropdown.classList.add(CLASS_NAMES.fileTypeDropdown);
-
-            if (item.tiffDownloadLink == null) {
-              delete fileTypeOptions.tif;
-            }
-
-            if (item.gpkgDownloadLink == null) {
-              delete fileTypeOptions.gpkg;
-            }
-            // Add a default select option
-            const defaultFileTypeOption = document.createElement("option");
-            defaultFileTypeOption.value =
-              this.dropdownOptions.fileType.defaultValue;
-            defaultFileTypeOption.textContent =
-              this.dropdownOptions.fileType.defaultText;
-            defaultFileTypeOption.disabled = true; // Make it non-selectable
-            defaultFileTypeOption.selected = true; // Make it the default selection
-            fileTypeDropdown.appendChild(defaultFileTypeOption);
-
-            Object.entries(fileTypeOptions).forEach(
-              ([fileType, fileTypeName]) => {
-                const option = document.createElement("option");
-                option.value = fileType;
-                option.textContent = fileTypeName;
-                fileTypeDropdown.appendChild(option);
-              },
-            );
-
-            fileTypeDropdownWrapper.appendChild(fileTypeLabel);
-            fileTypeDropdownWrapper.appendChild(fileTypeDropdown);
-            fileTypeDropdown.disabled = true; // initially setting it to true
-
-            const dropdownContainer = document.createElement("div");
-            dropdownContainer.classList.add(this.classes.dropdownContainer);
-
-            // Append both dropdown wrappers
-            dropdownContainer.appendChild(resolutionDropdownWrapper);
-            dropdownContainer.appendChild(fileTypeDropdownWrapper);
-            layerItemSelectContent.appendChild(dropdownContainer);
-
-            // Textbox to display file size
-            const fileSizeInfoBox = document.createElement("label");
-            fileSizeInfoBox.classList.add(this.classes.fileSizeBox);
-            fileSizeInfoBox.textContent =
-              "Select resolution and file format to download...";
-            layerItemSelectContent.appendChild(fileSizeInfoBox);
-
-            // Handle change event for "Resolution" dropdown
-            resolutionDropdown.addEventListener("change", () => {
-              selectedResolution = resolutionDropdown.value;
-              if (selectedResolution !== "") {
-                fileTypeDropdown.disabled = false; // Enable the fileTypeDropdown
-              }
-              fileTypeDropdown.value = defaultFileTypeOption.value;
-            });
-
-            // Update approximate file size when a file type is selected in
-            // fileTypeDropdown
-            fileTypeDropdown.addEventListener("change", () => {
-              view.fileTypeSelection(layerItemSelectBox.dataset.layerId); // Update Save button state -- moved from layer check-box change event
-              const fileSize = view.getRawFileSize(
-                resolutionDropdown.value,
-                fileTypeDropdown.value,
-                layerItemSelectBox.dataset.layerId,
-                layerItemSelectBox.dataset.fullDownloadLink,
-                layerItemSelectBox.dataset.pngDownloadLink,
-                layerItemSelectBox.dataset.gpkgDownloadLink,
-                layerItemSelectBox.dataset.id,
-                layerItemSelectBox.dataset.layerName,
-                layerItemSelectBox.dataset.wmtsDownloadLink,
-                layerItemSelectBox.dataset.metadataPid,
-                layerItemSelectBox.dataset.tiffDownloadLink,
-              );
-              view.updateTextbox(
-                fileSizeInfoBox,
-                fileSize,
-                fileTypeDropdown.value,
-                layerItemSelectBox.dataset.layerId,
-              );
-            });
-
-            // Append elements
-            downloadDataPanelContainer.appendChild(layerItem);
-            downloadDataPanelContainer.appendChild(layerItemSelectContent);
-            downloadDataPanel.appendChild(downloadDataPanelContainer);
-
-            // Toggle the expansion panel content on click
-            layerItem.addEventListener("click", () => {
-              downloadDataPanelContainer.classList.toggle("show-content");
-            });
+            view.layerDownloadViews.push(layerDownloadView);
           });
-          // Update the text of download-data-list__panel
-          document.querySelector(".download-data-list__panel").textContent =
-            "Select products below and click the download button. To download full datasets (including original shapefiles) please use the Layers panel above. ";
+          // Update the text of download-panel__instructions
+          this.instructionsEl.textContent = MESSAGES.selectProducts;
 
           // Progress Bar
-          const dataListPanel = document.querySelector(
-            ".download-data-list__panel",
-          );
           // Create the download status bar container
-          const downloadStatusContainer = document.createElement("div");
-          downloadStatusContainer.classList.add("download-status-container");
-          downloadStatusContainer.style.display = "none"; // Hidden by default
+          const progressContainerEl = document.createElement("div");
+          progressContainerEl.classList.add(CLASS_NAMES.progressContainer);
+          progressContainerEl.style.display = "none"; // Hidden by default
 
           // Create the progress bar element
-          const progressBar = document.createElement("div");
-          progressBar.classList.add("progress-bar");
-          progressBar.style.width = "0%"; // Initial width
-          progressBar.textContent = "0%"; // Initial text
+          const progressBarEl = document.createElement("div");
+          progressBarEl.classList.add(CLASS_NAMES.progressBar);
+          progressBarEl.style.width = "0%"; // Initial width
+          progressBarEl.textContent = "0%"; // Initial text
 
-          downloadStatusContainer.appendChild(progressBar);
-          dataListPanel.appendChild(downloadStatusContainer);
+          progressContainerEl.appendChild(progressBarEl);
+          this.instructionsEl.appendChild(progressContainerEl);
 
           // Save reference to the progress bar and related elements for
           // updating later.
-          view.downloadStatusContainer = downloadStatusContainer;
-          view.progressBar = progressBar;
+          view.progressContainerEl = progressContainerEl;
+          view.progressBarEl = progressBarEl;
         }
-      },
-
-      /**
-       * Open or close the data/layer item in the list of downloadable layers.
-       * @param {Event} event - The click event that triggered this function.
-       */
-      toggleLayerSection(event) {
-        // TODO: Use the accordion view to handle this
-        const view = this;
-        const itemToggle = event.currentTarget;
-        const itemContent = itemToggle.nextElementSibling;
-        const checkbox = itemToggle.querySelector(
-          `.${CLASS_NAMES.layerItemCheckbox}`,
-        );
-        const resolutionDropdown = itemContent.querySelector(
-          `.${CLASS_NAMES.resolutionDropdown}`,
-        );
-        const fileTypeDropdown = itemContent.querySelector(
-          `.${CLASS_NAMES.fileTypeDropdown}`,
-        );
-
-        const isOpen = itemToggle.classList.contains("show-content");
-
-        // If it's open, close it
-        if (isOpen) {
-          // Close it
-          itemToggle.classList.remove("show-content");
-          itemContent.style.display = "none";
-          checkbox.checked = false; // Uncheck the checkbox
-        } else {
-          itemToggle.classList.add("show-content");
-          itemContent.style.display = "block";
-          checkbox.checked = true; // Check the checkbox
-          // Reset resolution dropdown to the default value
-          resolutionDropdown.value =
-            this.dropdownOptions.resolution.defaultValue;
-          // Disable fileTypeDropdown if necessary
-          fileTypeDropdown.disabled = true;
-        }
-        view.layerSelection(); // Update Save button state
       },
 
       /**
@@ -1082,21 +987,16 @@ define([
        */
       layerSelection() {
         const view = this;
-        const checkboxes = document.querySelectorAll(
-          ".download-expansion-panel__checkbox",
+        const isAnyChecked = view.layerDownloadViews.some(
+          (ldv) => ldv.isSelected,
         );
-        const isAnyChecked = Array.from(checkboxes).some(
-          (checkbox) => checkbox.checked,
-        );
-        const dropdowns = document.querySelectorAll(
-          ".downloads-dropdown-container .fileType-downloads-dropdown",
-        );
-
-        const isanyFileTypeSelected = Array.from(dropdowns).some((dropdown) =>
-          ["png", "tif", "gpkg"].includes(dropdown.value.toLowerCase()),
+        const isAnyFileTypeSelected = view.layerDownloadViews.some(
+          (ldv) =>
+            ldv.isSelected &&
+            ["png", "tif", "gpkg"].includes(ldv.selectedFileType),
         );
 
-        if (isAnyChecked && isanyFileTypeSelected) {
+        if (isAnyChecked && isAnyFileTypeSelected) {
           view.setButtonStatuses({
             draw: "deactivated",
             save: "enabled",
@@ -1110,13 +1010,11 @@ define([
           });
         }
 
-        const uncheckedLayerIds = Array.from(checkboxes)
-          .filter((checkbox) => !checkbox.checked)
-          .map((checkbox) => checkbox.dataset.layerId);
-
-        uncheckedLayerIds.forEach((layerID) => {
-          delete view.dataDownloadLinks[layerID];
-        });
+        view.layerDownloadViews
+          .filter((ldv) => !ldv.isSelected)
+          .forEach((ldv) => {
+            delete view.dataDownloadLinks[ldv.item.layerID];
+          });
       },
 
       /**
@@ -1128,14 +1026,12 @@ define([
        */
       fileTypeSelection(layerID) {
         const view = this;
-        const dropdowns = document.querySelectorAll(
-          ".downloads-dropdown-container .fileType-downloads-dropdown",
+        const isAnyFileTypeSelected = view.layerDownloadViews.some(
+          (ldv) =>
+            ldv.isSelected &&
+            ["png", "tif", "gpkg"].includes(ldv.selectedFileType),
         );
-
-        const isPNGorTIFSelected = Array.from(dropdowns).some((dropdown) =>
-          ["png", "tif", "gpkg"].includes(dropdown.value.toLowerCase()),
-        );
-        if (!isPNGorTIFSelected) {
+        if (!isAnyFileTypeSelected) {
           view.setButtonStatuses({
             draw: "deactivated",
             save: "deactivated",
@@ -1150,73 +1046,63 @@ define([
         }
         if (layerID in view.dataDownloadLinks) {
           delete view.dataDownloadLinks[layerID];
-          // alert("Deleted download links for " + layerID);
         }
       },
 
       /**
-       * Updates the text content of the provided info box with file size
-       * details and file type information.
-       * @param {HTMLElement} infoBox - The HTML element where the file size
+       * Updates the text content of the provided HTML element with file size
+       * details or a wmts link to copy.
+       * @param {HTMLElement} informationEl - The HTML element where the file size
        * information will be displayed.
-       * @param {number} fileSizeDetails - The size of the file in kilobytes
-       * (KB).
+       * @param {number|null} fileSizeBytes - The estimated size of the file
+       * in bytes, or null for WMTS layers.
        * @param {string} fileType - The type of the file (e.g., "wmts").
        * @param {string} layerID - The ID of the map layer being interacted
        * with.
        */
-      updateTextbox(infoBox, fileSizeDetails, fileType, layerID) {
-        const fileSizeInfoBox = infoBox;
-        if (!fileSizeInfoBox) return;
-        fileSizeInfoBox.classList.remove(CLASS_NAMES.error);
-        fileSizeInfoBox.classList.remove(CLASS_NAMES.wmtsCopy);
-        const view = this;
+      updateLayerInfoEl(informationEl, fileSizeBytes, fileType, layerID) {
+        // Satisfies assignment to property of function parameter eslint rule
+        const infoEl = informationEl;
+        if (!infoEl) return;
+        infoEl.classList.remove(CLASS_NAMES.error);
+        infoEl.classList.remove(CLASS_NAMES.informationWmts);
         if (fileType === "wmts") {
-          fileSizeInfoBox.innerHTML = `
-            <span id="fileSizeText">${fileSizeDetails}</span>
-            <i id="copyWMTS" class="icon-copy" title="Copy to Clipboard"></i>
-          `;
-          fileSizeInfoBox.classList.add(CLASS_NAMES.wmtsCopy);
+          const wmtsUrl = this.dataDownloadLinks[layerID]?.wmtsUrl ?? "";
+          infoEl.textContent = "";
+          const wmtsTextEl = document.createElement("span");
+          wmtsTextEl.className = CLASS_NAMES.wmtsText;
+          wmtsTextEl.textContent = wmtsUrl;
 
-          // Add event listener for copying
-          document.getElementById("copyWMTS").addEventListener("click", () => {
-            const textToCopy =
-              document.getElementById("fileSizeText").textContent;
-            navigator.clipboard
-              .writeText(textToCopy)
-              .then(() => {
-                const currentContent = fileSizeInfoBox.innerHTML;
-                // alert("Copied to clipboard!");
-                fileSizeInfoBox.innerHTML = "Copied to clipboard!";
-                setTimeout(() => {
-                  fileSizeInfoBox.innerHTML = currentContent;
-                }, 2000); // Reset after 2 seconds
-              })
-              .catch(() => {
-                const currentContent = fileSizeInfoBox.innerHTML;
-                fileSizeInfoBox.innerHTML = "Copy failed!";
-                setTimeout(() => {
-                  fileSizeInfoBox.innerHTML = currentContent;
-                }, 2000); // Reset after 2 seconds
-              });
-          });
+          const copyIconEl = document.createElement("i");
+          copyIconEl.className = `${CLASS_NAMES.copyIcon} icon-copy`;
+          copyIconEl.title = "Copy to Clipboard";
+
+          infoEl.replaceChildren(wmtsTextEl, copyIconEl);
+          infoEl.classList.add(CLASS_NAMES.informationWmts);
         } else {
-          const optionalComment =
-            "Use WMTS for accessing large data volume or re-draw AOI.";
-          const maxSizeGB = `${(view.downloadSizeLimit / 1e9).toFixed(2)} GB`;
-          if (fileSizeDetails > view.downloadSizeLimit) {
-            fileSizeInfoBox.textContent = `Download size is too big ( > ${maxSizeGB}). ${optionalComment}.`;
-            fileSizeInfoBox.classList.add(CLASS_NAMES.error);
+          const maxSize = Utilities.bytesToSize(this.downloadSizeLimit, 2);
+          if (fileSizeBytes > this.downloadSizeLimit) {
+            infoEl.textContent = MESSAGES.downloadSizeTooLarge(
+              maxSize,
+              MESSAGES.wmtsComment,
+            );
+            infoEl.classList.add(CLASS_NAMES.error);
           } else {
-            fileSizeInfoBox.textContent = `Estimated download file size is ≤ ${(fileSizeDetails / 1000).toFixed(2)} MB.`;
+            infoEl.textContent = MESSAGES.estimatedFileSize(
+              Utilities.bytesToSize(fileSizeBytes, 2),
+            );
           }
         }
 
-        // Instead of disabling the Download button for large file sizes simply
-        // remove the layer from the the download list variable (i.e.,
-        // dataDownloadLinks)
-        if (view.dataDownloadLinks[layerID].fileSize > view.downloadSizeLimit) {
-          delete view.dataDownloadLinks[layerID];
+        // fileSize is always numeric or null, so this comparison is safe for
+        // all file types including WMTS (null > limit is false).
+        if (
+          this.dataDownloadLinks[layerID]?.fileSize > this.downloadSizeLimit
+        ) {
+          // Instead of disabling the Download button for large file sizes simply
+          // remove the layer from the the download list variable (i.e.,
+          // dataDownloadLinks)
+          delete this.dataDownloadLinks[layerID];
         }
       },
 
@@ -1243,7 +1129,8 @@ define([
        * @param {string} metadataURL - The metadata URL for the layer.
        * @param {string} tiffDownloadLink - The template URL for downloading
        * TIFF tiles.
-       * @returns {number} The total file size for the specified layer in bytes.
+       * @returns {number} The estimated total file size for the specified layer
+       * in bytes.
        */
       getRawFileSize(
         resolution,
@@ -1258,13 +1145,6 @@ define([
         metadataURL,
         tiffDownloadLink,
       ) {
-        const layerSelectBoxes = document.querySelectorAll(
-          ".download-expansion-panel__checkbox",
-        );
-        const selectedLayerSelectBoxes = Array.from(layerSelectBoxes).filter(
-          (checkbox) => checkbox.checked,
-        );
-
         this.polygon = this.getPolygon(this.points.toJSON());
         this.boundingBox = this.getBoundingBox(this.polygon);
         let totalFileSize;
@@ -1298,21 +1178,19 @@ define([
           const urlCount = urls.length;
           totalFileSize = urlCount * this.fileSizes[fileFormat];
         } else {
-          // Instead of downloading the WMTS file, just provide the URL (below
-          // the dropdowns)
-          totalFileSize = wmtsDownloadLink;
+          // WMTS: no tile download, just surface the service URL to the user.
+          // fileSize is stored as null for WMTS; wmtsUrl is stored separately.
+          totalFileSize = null;
         }
 
-        // Update this.dataDownloadLinks - If the layerID in dataDownloadLinks
-        // is not in the selectedLayerIDs list, remove it
-        if (selectedLayerSelectBoxes.length > 1) {
-          const selectedLayerIDs = Array.from(selectedLayerSelectBoxes).map(
-            (checkbox) => checkbox.dataset.layerId,
-          );
-          Object.keys(this.dataDownloadLinks).forEach((downloadLink) => {
-            if (!selectedLayerIDs.includes(downloadLink)) {
-              delete this.dataDownloadLinks[downloadLink];
-              // alert("Successfully deleted" + layerID);
+        // Sync dataDownloadLinks: remove entries for layers no longer selected.
+        const selectedLayerIDs = (this.layerDownloadViews || [])
+          .filter((ldv) => ldv.isSelected)
+          .map((ldv) => ldv.item.layerID);
+        if (selectedLayerIDs.length > 1) {
+          Object.keys(this.dataDownloadLinks).forEach((existingLayerID) => {
+            if (!selectedLayerIDs.includes(existingLayerID)) {
+              delete this.dataDownloadLinks[existingLayerID];
             }
           });
         }
@@ -1326,7 +1204,9 @@ define([
           baseURL: baseURL || null,
           layerName,
           fileType: fileFormat,
+          // fileSize is always a byte count (number) or null
           fileSize: totalFileSize,
+          wmtsUrl: fileFormat === "wmts" ? wmtsDownloadLink : null,
           metadataPid: metadataURL,
         };
         return totalFileSize;
@@ -1342,11 +1222,9 @@ define([
        * @returns {number[][]} An array of arrays representing the polygon.
        */
       getPolygon(jsonData) {
-        // this.jsonData = this.points.toJSON();
-        const polygon = jsonData
-          .reverse()
-          .map((i) => [i.longitude, i.latitude]);
-        polygon.push([jsonData[0].longitude, jsonData[0].latitude]);
+        const reversed = [...jsonData].reverse();
+        const polygon = reversed.map((i) => [i.longitude, i.latitude]);
+        polygon.push([reversed[0].longitude, reversed[0].latitude]);
         // Return a polygon
         return polygon;
       },
@@ -1484,8 +1362,10 @@ define([
        * data layer.
        * @property {string} dataDownloadLinks.data.fileType - The file type of
        * the data (e.g., "zip").
-       * @property {number} dataDownloadLinks.data.fileSize - The size of the
-       * data file in bytes.
+       * @property {number|null} dataDownloadLinks.data.fileSize - The size of
+       * the data file in bytes, or null for WMTS layers.
+       * @property {string|null} dataDownloadLinks.data.wmtsUrl - The WMTS
+       * service URL for the layer, or null for non-WMTS layers.
        * @property {string} dataDownloadLinks.data.layerName - The name of the
        * data layer.
        * @property {string} dataDownloadLinks.data.metadataPid - The metadata
@@ -1504,10 +1384,10 @@ define([
 
             // If file size is approximately over a GB then do not download
             if (data.fileSize >= view.downloadSizeLimit) {
-              const maxSizeGB = `${(view.downloadSizeLimit / 1e9).toFixed(2)} GB`;
+              const maxSize = Utilities.bytesToSize(view.downloadSizeLimit, 2);
               view.updateStatusBar({
                 error: true,
-                message: `File size for ${data.layerName} > the max download size, ${maxSizeGB}. Select lower resolution/ draw smaller AOI.`,
+                message: MESSAGES.fileSizeExceedsLimit(data.layerName, maxSize),
               });
               return;
             }
@@ -1516,8 +1396,7 @@ define([
             if (!data.urls?.length) {
               view.updateStatusBar({
                 error: true,
-                message:
-                  "No data available for selected data layer(s) within area of interest.",
+                message: MESSAGES.noDataAvailable,
               });
               return;
             }
@@ -1526,7 +1405,7 @@ define([
             const updateStatusBar = (progress) => {
               view.updateStatusBar({
                 progress,
-                message: `Downloading data for ${data.layerName} (${progress}%)`,
+                message: MESSAGES.downloading(data.layerName, progress),
               });
             };
             // Start progress tracking
@@ -1547,8 +1426,7 @@ define([
               // Stop if no data
               if (!Object.keys(layerZip.files).length) {
                 view.updateStatusBar({
-                  message:
-                    "No data available for selected data layer(s) within area of interest.",
+                  message: MESSAGES.noDataAvailable,
                   error: true,
                 });
                 return;
@@ -1556,7 +1434,7 @@ define([
 
               const numFiles = Object.keys(layerZip.files).length;
               view.updateStatusBar({
-                message: `Generating ZIP file for ${data.layerName} (${numFiles} files)...`,
+                message: MESSAGES.generatingZip(data.layerName, numFiles),
               });
 
               if (data.metadataPid) {
@@ -1565,7 +1443,10 @@ define([
                   .then((response) => {
                     if (!response.ok) {
                       throw new Error(
-                        `Failed to fetch metadata for ${layerID}: ${response.statusText}`,
+                        MESSAGES.metadataFetchFailed(
+                          layerID,
+                          response.statusText,
+                        ),
                       );
                     }
                     return response.blob();
@@ -1574,7 +1455,7 @@ define([
                     layerZip.file(`${layerID}_metadata.xml`, metadataBlob);
                   })
                   .catch((error) => {
-                    let message = `Error fetching metadata for ${layerID}`;
+                    let message = MESSAGES.metadataError(layerID);
                     if (error.message) {
                       message += `: ${error.message}`;
                     }
@@ -1588,7 +1469,7 @@ define([
                     // Always generate the ZIP, regardless of metadata result
                     layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
                       view.updateStatusBar({
-                        message: "Download Complete!",
+                        message: MESSAGES.downloadComplete,
                         progress: 100,
                       });
                       const link = document.createElement("a");
@@ -1601,7 +1482,7 @@ define([
                 // No metadata to fetch, just generate the ZIP
                 layerZip.generateAsync({ type: "blob" }).then((zipBlob) => {
                   view.updateStatusBar({
-                    message: "Download Complete!",
+                    message: MESSAGES.downloadComplete,
                     progress: 100,
                   });
                   const link = document.createElement("a");
@@ -1611,8 +1492,7 @@ define([
                 });
               }
             } catch (error) {
-              let message =
-                "Failed to download data files for selected data layer(s) within area of interest. ";
+              let message = MESSAGES.downloadFailed;
               if (error.message) {
                 message += error.message;
               }
@@ -1646,38 +1526,38 @@ define([
         error = false,
       }) {
         const view = this;
-        const { downloadStatusContainer, progressBar } = view;
+        const { progressContainerEl, progressBarEl } = view;
 
         if (show) {
-          downloadStatusContainer.style.display = "block";
+          progressContainerEl.style.display = "block";
         } else {
-          downloadStatusContainer.style.display = "none";
+          progressContainerEl.style.display = "none";
           return;
         }
 
         if (error) {
-          progressBar.classList.remove("progress-bar");
-          progressBar.classList.add("progress-bar-no-data");
+          progressBarEl.classList.remove(CLASS_NAMES.progressBar);
+          progressBarEl.classList.add(CLASS_NAMES.progressBarNoData);
         } else {
-          progressBar.classList.remove("progress-bar-no-data");
-          progressBar.classList.add("progress-bar");
+          progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
+          progressBarEl.classList.add(CLASS_NAMES.progressBar);
         }
 
         if (typeof progress === "number") {
-          progressBar.style.width = `${progress}%`;
+          progressBarEl.style.width = `${progress}%`;
           if (progress > 0) {
-            progressBar.textContent = `Progress: ${progress}%`;
+            progressBarEl.textContent = MESSAGES.progress(progress);
           } else {
-            progressBar.textContent = "";
+            progressBarEl.textContent = "";
           }
-          progressBar.classList.remove("progress-bar-no-data");
-          progressBar.classList.add("progress-bar");
+          progressBarEl.classList.remove(CLASS_NAMES.progressBarNoData);
+          progressBarEl.classList.add(CLASS_NAMES.progressBar);
         } else {
-          progressBar.style.width = "100%";
+          progressBarEl.style.width = "100%";
         }
 
         if (message) {
-          progressBar.textContent = message;
+          progressBarEl.textContent = message;
         }
       },
 
