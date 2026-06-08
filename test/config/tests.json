@@ -116,6 +116,7 @@
     "./js/specs/unit/views/uiElements/ToggleView.spec.js",
     "./js/specs/unit/views/metadata/EML211EditorView.spec.js",
     "./js/specs/unit/models/UserModel.spec.js",
+    "./js/specs/unit/models/dataONEServices/UrlBuilder.spec.js",
     "./js/specs/unit/models/dataONEServices/DataONEHttpError.spec.js",
     "./js/specs/unit/models/dataONEServices/HttpRetryPolicy.spec.js"
   ],
