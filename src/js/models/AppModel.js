@@ -2348,14 +2348,14 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
               type: "datasetChanges",
               label: "Dataset Changes",
               description:
-                "Get notified when the metadata changes or when files are added, removed, or replaced",
-            },
-            {
-              type: "citations",
-              label: "Citations",
-              description: "Get notified when someone cites the dataset",
+                "Be notified when new data, documentation improvements, or corrections become available",
             },
             // Not yet supported:
+            // {
+            //   type: "citations",
+            //   label: "Citations",
+            //   description: "Get notified when someone cites the dataset",
+            // },
             // {
             //   type: "downloads",
             //   label: "Downloads",
