@@ -17,6 +17,29 @@ define([
   };
 
   /**
+   * Appends `embed=true` to Streamlit app URLs if not already present.
+   * Streamlit requires this parameter when loaded in an iframe to avoid
+   * redirect loops caused by its auth flow.
+   * @param {string} url The URL to potentially modify.
+   * @returns {string} The URL with `embed=true` appended for Streamlit URLs.
+   */
+  function addStreamlitEmbedParam(url) {
+    try {
+      const parsed = new URL(url);
+      if (
+        parsed.hostname.endsWith(".streamlit.app") &&
+        !parsed.searchParams.has("embed")
+      ) {
+        parsed.searchParams.set("embed", "true");
+        return parsed.toString();
+      }
+    } catch (e) {
+      // Invalid URL, return as-is
+    }
+    return url;
+  }
+
+  /**
    * Tests a URL against the app's trustedContentSources list.
    * @param {string} url The URL to test.
    * @returns {boolean} True if the URL is trusted or the list is empty/absent.
@@ -91,7 +114,7 @@ define([
           } else {
             iframe.removeAttribute("sandbox");
           }
-          iframe.src = url;
+          iframe.src = addStreamlitEmbedParam(url);
           iframe.style.display = "";
           untrusted.style.display = "none";
         } else {
