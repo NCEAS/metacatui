@@ -2089,7 +2089,7 @@ other class: .ui-slider-range */
   .viewfinder-zoom-preset__title {
     color: var(--portal-col-primary-6, white);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 1.05rem;
     line-height: 1.3;
   }
 
@@ -2120,6 +2120,38 @@ other class: .ui-slider-range */
     color: var(--portal-col-neutral-7, white);
     font-size: 0.85rem;
     line-height: 1.45;
+
+    /* Links embedded in description HTML (e.g. Virtual Tour links) render as
+       full-width block buttons so they are consistent with action buttons. */
+    a {
+      display: flex;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 0.5rem;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      text-align: center;
+      text-decoration: none;
+      background: var(
+        --portal-col-neutral-00,
+        var(--map-col-buttons__deprecate)
+      );
+      color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
+      border-radius: var(--map-border-radius-big);
+      border: 1px solid var(--portal-col-primary-2);
+      padding: 0.5rem 0.55rem;
+      font-size: 1rem;
+      white-space: normal;
+    }
+
+    a:hover {
+      background-color: var(
+        --portal-col-primary-1,
+        var(--map-col-bkg-lighter__deprecate)
+      );
+      border-color: var(--portal-col-primary-4);
+    }
   }
 
   /* ---- Action buttons ---- */
@@ -2142,8 +2174,38 @@ other class: .ui-slider-range */
     white-space: normal;
   }
 
-  /* "Explore in App" uses the primary accent colour to stand out */
-  .viewfinder-zoom-preset__cta-button {
+  .viewfinder-zoom-preset__view-layers-button:hover,
+  .viewfinder-zoom-preset__open-tab-button:hover,
+  .viewfinder-zoom-preset__cta-button:hover {
+    background-color: var(
+      --portal-col-primary-1,
+      var(--map-col-bkg-lighter__deprecate)
+    );
+    border-color: var(--portal-col-primary-4);
+    filter: none;
+  }
+
+  /* Active state on the card wrapper — one card highlighted at a time */
+  &.viewfinder-zoom-preset--active {
+    background-color: var(
+      --portal-col-primary-1,
+      var(--map-col-bkg-lighter__deprecate)
+    );
+    border-color: var(
+      --portal-col-primary-4,
+      var(--map-col-highlight__deprecate)
+    );
+    box-shadow: 0 0 0 1px var(--portal-col-primary-3, transparent) inset;
+
+    .viewfinder-zoom-preset__title {
+      color: var(--portal-col-primary-7, white);
+    }
+  }
+
+  /* The specific button that was clicked turns dark blue */
+  .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active,
+  .viewfinder-zoom-preset__open-tab-button.viewfinder-zoom-preset--active,
+  .viewfinder-zoom-preset__cta-button.viewfinder-zoom-preset--active {
     background-color: var(
       --portal-col-primary-6,
       var(--map-col-highlight__deprecate)
@@ -2152,22 +2214,10 @@ other class: .ui-slider-range */
     border-color: var(--portal-col-primary-5);
   }
 
-  .viewfinder-zoom-preset__cta-button:hover {
+  .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active:hover,
+  .viewfinder-zoom-preset__open-tab-button.viewfinder-zoom-preset--active:hover,
+  .viewfinder-zoom-preset__cta-button.viewfinder-zoom-preset--active:hover {
     filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.15));
-  }
-
-  /* Active state on buttons (not card wrapper) */
-  .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active,
-  .viewfinder-zoom-preset__open-tab-button.viewfinder-zoom-preset--active {
-    background-color: var(
-      --portal-col-primary-6,
-      var(--map-col-highlight__deprecate)
-    );
-    color: var(--portal-col-neutral-00);
-  }
-
-  .viewfinder-zoom-preset__cta-button.viewfinder-zoom-preset--active {
-    filter: var(--map-no-brightness-or-opacity-tweaks, brightness(0.85));
   }
 
   /* ---- Layer badges (informational only) ---- */

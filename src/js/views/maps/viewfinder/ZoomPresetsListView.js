@@ -36,6 +36,7 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
        * @param root0.selectZoomPreset
        * @param root0.openVisualization
        * @param root0.closeVisualization
+       * @param root0.onActivate
        * @param root0.zoomPresets
        * @property {ZoomPresets} zoomPresets The collection of zoom presets
        * @property {Function} selectZoomPreset The callback function for
@@ -50,6 +51,7 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
         selectZoomPreset,
         openVisualization,
         closeVisualization,
+        onActivate,
       }) {
         this.children = [];
         this.zoomPresets = zoomPresets;
@@ -62,6 +64,8 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
           typeof closeVisualization === "function"
             ? closeVisualization
             : () => {};
+        this.onActivate =
+          typeof onActivate === "function" ? onActivate : () => {};
       },
 
       /**
@@ -80,6 +84,9 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
             },
             closeVisualizationCallback: () => {
               this.closeVisualization();
+            },
+            onActivate: (activeView) => {
+              this.onActivate(activeView);
             },
           });
           view.render();

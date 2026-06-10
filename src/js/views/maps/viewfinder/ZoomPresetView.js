@@ -74,9 +74,10 @@ define([
        * any open visualization overlay first.
        */
       selectLayers() {
+        this.onActivate(this);
         this.closeVisualizationCallback();
+        this.setActive(CLASS_NAMES.viewLayersButton);
         this.selectCallback();
-        this.setActiveButton(CLASS_NAMES.viewLayersButton);
       },
 
       /**
@@ -84,12 +85,13 @@ define([
        * visualization overlay first. Uses noopener,noreferrer for security.
        */
       openTab() {
+        this.onActivate(this);
         this.closeVisualizationCallback();
+        this.setActive(CLASS_NAMES.openTabButton);
         const url = this.preset.get("tabUrl");
         if (url) {
           window.open(url, "_blank", "noopener,noreferrer");
         }
-        this.setActiveButton(CLASS_NAMES.openTabButton);
       },
 
       /**
@@ -97,19 +99,20 @@ define([
        * Closes any existing overlay first, then invokes the CTA callback.
        */
       selectVisualization() {
+        this.onActivate(this);
         this.closeVisualizationCallback();
+        this.setActive(CLASS_NAMES.ctaButton);
         const url = this.preset.get("iframeUrl");
         const permissions = this.preset.get("iframePermissions");
         this.ctaCallback(url, permissions);
-        this.setActiveButton(CLASS_NAMES.ctaButton);
       },
 
       /**
-       * Mark one button as active and remove active state from the others.
-       * @param {string} activeClass The CLASS_NAMES value of the button to
-       * mark active.
+       * Mark this card as active and highlight the specific clicked button.
+       * @param {string} buttonClass The CLASS_NAMES value of the button clicked.
        */
-      setActiveButton(activeClass) {
+      setActive(buttonClass) {
+        this.el.classList.add(CLASS_NAMES.active);
         const buttonClasses = [
           CLASS_NAMES.viewLayersButton,
           CLASS_NAMES.openTabButton,
@@ -117,16 +120,25 @@ define([
         ];
         buttonClasses.forEach((cls) => {
           const btn = this.el.querySelector(`.${cls}`);
-          if (!btn) return;
-          btn.classList.toggle(CLASS_NAMES.active, cls === activeClass);
+          if (btn)
+            btn.classList.toggle(CLASS_NAMES.active, cls === buttonClass);
         });
       },
 
       /**
-       * Remove the active state from all buttons in this card.
+       * Remove the active state from this card and all its buttons.
        */
       resetActiveState() {
-        this.setActiveButton(null);
+        this.el.classList.remove(CLASS_NAMES.active);
+        [
+          CLASS_NAMES.viewLayersButton,
+          CLASS_NAMES.openTabButton,
+          CLASS_NAMES.ctaButton,
+        ].forEach((cls) => {
+          this.el
+            .querySelector(`.${cls}`)
+            ?.classList.remove(CLASS_NAMES.active);
+        });
       },
 
       /** Values meant to be used by the rendered HTML template. */
@@ -146,12 +158,14 @@ define([
        * when "Explore in App" is clicked. Should open the visualization overlay.
        * @param {Function} [options.closeVisualizationCallback] Called before
        * any button action to dismiss any currently open overlay.
+       * @param options.onActivate
        */
       initialize({
         preset,
         selectCallback,
         ctaCallback,
         closeVisualizationCallback,
+        onActivate,
       }) {
         this.preset = preset;
         this.selectCallback =
@@ -162,6 +176,7 @@ define([
           typeof closeVisualizationCallback === "function"
             ? closeVisualizationCallback
             : noop;
+        this.onActivate = typeof onActivate === "function" ? onActivate : noop;
       },
 
       /**

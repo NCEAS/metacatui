@@ -182,6 +182,13 @@ define([
           closeVisualization: () => {
             this.viewfinderModel.closeVisualization();
           },
+          onActivate: (activeView) => {
+            this.zoomPresetsListViews.forEach((lv) => {
+              lv.children?.forEach((child) => {
+                if (child !== activeView) child.resetActiveState();
+              });
+            });
+          },
         });
         this.zoomPresetsListViews.push(zoomPresetsListView);
         const expansionPanel = new ExpansionPanelView({

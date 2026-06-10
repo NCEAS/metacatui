@@ -22,22 +22,22 @@
     <div class="<%= classNames.description %>"><%= preset.description %></div>
   <% } %>
   <div class="<%= classNames.actions %>">
-    <button class="<%= classNames.viewLayersButton %> map-view__button map-view__button--emphasis">
-      <i class="icon icon-eye-open"></i>
-      View Layers
-    </button>
-    <% if (preset.tabUrl) { %>
-      <button class="<%= classNames.openTabButton %> map-view__button map-view__button--emphasis">
-        <i class="icon icon-external-link"></i>
-        Open in Browser
-      </button>
-    <% } %>
     <% if (preset.iframeUrl) { %>
       <button class="<%= classNames.ctaButton %> map-view__button map-view__button--emphasis">
         <% if (preset.ctaIcon) { %><i class="icon <%= preset.ctaIcon %>"></i><% } %>
         <%= preset.ctaText || "Explore in App" %>
       </button>
     <% } %>
+    <% if (preset.tabUrl) { %>
+      <button class="<%= classNames.openTabButton %> map-view__button map-view__button--emphasis">
+        <i class="icon icon-external-link"></i>
+        Open in Browser
+      </button>
+    <% } %>
+    <button class="<%= classNames.viewLayersButton %> map-view__button map-view__button--emphasis">
+      <i class="icon icon-eye-open"></i>
+      View Layers
+    </button>
   </div>
   <% if (preset.enabledLayerLabels && preset.enabledLayerLabels.length) { %>
     <div class="<%= classNames.layers %>">
