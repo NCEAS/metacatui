@@ -2,9 +2,8 @@ define([
   "/test/js/specs/shared/clean-state.js",
   "models/resourceMap/ResourceMapResolver",
   "models/sysmeta/SystemMetadata",
-  "collections/SolrResults",
   "common/QueryService",
-], (cleanState, ResourceMapResolver, SysMeta, SolrResults, QueryService) => {
+], (cleanState, ResourceMapResolver, SysMeta, QueryService) => {
   const should = chai.should();
   const expect = chai.expect;
 
@@ -68,37 +67,71 @@ define([
     describe("searchIndex()", () => {
       it("escapes PID values when building the Solr query", async () => {
         const pid = 'pid:"v1"+(x/y)';
-        const setQuery = state.sandbox.stub(SolrResults.prototype, "setQuery");
-        state.sandbox.stub(SolrResults.prototype, "setfields");
-        state.sandbox.stub(SolrResults.prototype, "queryPromise").resolves();
-        state.sandbox.stub(SolrResults.prototype, "toJSON").returns([]);
-        state.sandbox.stub(SolrResults.prototype, "getNumFound").returns(0);
+        const queryWithFetch = state.sandbox
+          .stub(QueryService, "queryWithFetch")
+          .resolves({ response: { numFound: 0, docs: [] } });
 
         await ResourceMapResolver.searchIndex(pid);
 
-        const escapedPid = QueryService.escapeLucene(pid);
-        setQuery.calledOnceWithExactly(
-          `id:"${escapedPid}" OR seriesId:"${escapedPid}"`,
-        ).should.be.true;
+        queryWithFetch.calledOnce.should.be.true;
+        queryWithFetch.firstCall.args[0].q.should.equal(
+          QueryService.buildIdQuery(pid),
+        );
+        queryWithFetch.firstCall.args[0].fields.should.include(
+          "dateUploaded",
+        );
       });
 
       it("returns a direct RM for a data PID when one RM is indexed", async () => {
-        state.sandbox.stub(SolrResults.prototype, "setQuery");
-        state.sandbox.stub(SolrResults.prototype, "setfields");
-        state.sandbox.stub(SolrResults.prototype, "queryPromise").resolves();
-        state.sandbox.stub(SolrResults.prototype, "toJSON").returns([
-          {
-            id: "data.1",
-            formatType: "DATA",
-            resourceMap: ["rm.1"],
+        state.sandbox.stub(QueryService, "queryWithFetch").resolves({
+          response: {
+            numFound: 1,
+            docs: [
+              {
+                id: "data.1",
+                formatType: "DATA",
+                resourceMap: ["rm.1"],
+              },
+            ],
           },
-        ]);
-        state.sandbox.stub(SolrResults.prototype, "getNumFound").returns(1);
+        });
 
         const result = await ResourceMapResolver.searchIndex("data.1");
 
         result.rm.should.equal("rm.1");
         result.meta.isData.should.equal(true);
+      });
+
+      it("selects the newest unobsoleted RM doc by dateUploaded", () => {
+        const rm = ResourceMapResolver.selectLatestPidFromDocs([
+          {
+            id: "rm.old",
+            dateUploaded: "2024-01-01T00:00:00Z",
+          },
+          {
+            id: "rm.new",
+            dateUploaded: "2024-02-01T00:00:00Z",
+          },
+        ]);
+
+        rm.should.equal("rm.new");
+      });
+
+      it("falls back to the newest RM doc by dateUploaded when all docs are obsoleted", () => {
+        const rm = ResourceMapResolver.selectLatestPidFromDocs([
+          {
+            id: "rm.old",
+            obsoletedBy: "rm.new",
+            dateUploaded: "2024-01-01T00:00:00Z",
+          },
+          {
+            id: "rm.new",
+            obsoletedBy: "rm.old",
+            dateUploaded: "2024-02-01T00:00:00Z",
+          },
+        ]);
+
+        rm.should.equal("rm.new");
       });
     });
 
@@ -420,6 +453,7 @@ define([
           pid,
           rm: rm || null,
         }));
+        sandbox.stub(rmr, "verify").resolves(true);
 
         const result = await rmr.resolve("data.1");
         result.should.deep.equal({
@@ -434,20 +468,6 @@ define([
         ResourceMapResolver.searchIndex.secondCall.args[0].should.equal(
           "meta.1",
         );
-      });
-    });
-
-    describe("data PID helper methods", () => {
-      it("getLatestMetadataPids returns only non-obsoleted metadata versions", async () => {
-        const { sandbox, rmr } = state;
-
-        sandbox.stub(ResourceMapResolver, "searchIndexByPids").resolves([
-          { id: "meta.1", obsoletedBy: "meta.2" },
-          { id: "meta.2", obsoletedBy: null },
-        ]);
-
-        const latest = await rmr.getLatestMetadataPids(["meta.1", "meta.2"]);
-        latest.should.deep.equal(["meta.2"]);
       });
     });
 
@@ -501,18 +521,18 @@ define([
         rmr.status.calledOnce.should.be.true;
       });
 
-      it("accepts additional verification PIDs when validating RM membership", async () => {
+      it("requires the input PID when validating RM membership", async () => {
         const { sandbox, rmr } = state;
         const model = new Backbone.Model({ memberIds: ["meta.2"] });
 
         sandbox.stub(rmr, "fetchResourceMap").resolves({ model, status: 200 });
         sandbox.stub(rmr, "status");
 
-        const result = await rmr.verify("rm123", "data.1", ["meta.2"]);
-        result.should.be.true;
+        const result = await rmr.verify("rm123", "data.1");
+        result.should.be.false;
 
         rmr.status.calledOnce.should.be.true;
-        rmr.status.firstCall.args[3].matchedPid.should.equal("meta.2");
+        should.not.exist(rmr.status.firstCall.args[3].matchedPid);
       });
     });
 

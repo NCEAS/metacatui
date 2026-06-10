@@ -3,32 +3,46 @@ define([
   "models/PersistentStorage",
   "models/sysmeta/VersionTracker",
   "models/PackageModel",
-  "collections/SolrResults",
   "common/EventLog",
   "common/QueryService",
   "common/UrlUtilities",
+  "common/ValueUtilities",
 ], (
   Backbone,
   PersistentStorage,
   VersionTracker,
   PackageModel,
-  Solr,
   EventLog,
   QueryService,
   UrlUtilities,
+  ValueUtilities,
 ) => {
   // Index field names
-  const RM_FIELD = "resourceMap";
-  const FORMAT_ID_FIELD = "formatId";
-  const FORMAT_TYPE_FIELD = "formatType";
-  const IS_DOCUMENTED_BY_FIELD = "isDocumentedBy";
-  const OBSOLETED_BY_FIELD = "obsoletedBy";
-  const SERIESID_FIELD = "seriesId";
-  const ID_FIELD = "id";
+  const FIELDS = Object.freeze({
+    RM: "resourceMap",
+    FORMAT_ID: "formatId",
+    FORMAT_TYPE: "formatType",
+    IS_DOCUMENTED_BY: "isDocumentedBy",
+    OBSOLETED_BY: "obsoletedBy",
+    SERIESID: "seriesId",
+    ID: "id",
+    DATE_UPLOADED: "dateUploaded",
+  });
+
+  const QUERY_FIELDS = [
+    FIELDS.RM,
+    FIELDS.FORMAT_ID,
+    FIELDS.FORMAT_TYPE,
+    FIELDS.IS_DOCUMENTED_BY,
+    FIELDS.OBSOLETED_BY,
+    FIELDS.SERIESID,
+    FIELDS.ID,
+    FIELDS.DATE_UPLOADED,
+  ];
 
   // Index values
-  const DATA_TYPE = "DATA";
   const RM_FORMAT_ID = "http://www.openarchives.org/ore/terms";
+  const { FORMAT_TYPES } = QueryService;
 
   // Naming convention for resource map PIDs
   const RM_FILENAME_PREFIX = "resource_map_";
@@ -59,6 +73,8 @@ define([
     foundAndValid: "Resource map pid found and links to the given PID",
     rmFetchError: "Error fetching resource map via object API",
     unauthorized: "Stopped resolution: user not authorized to access sysmeta",
+    multiResultSamePid:
+      "Multiple documents were found in index with the same PID. This should not happen and indicates an issue with the index.",
   });
 
   const DEFAULT_MAX_STEPS = 200; // Default max steps to walk back in sysmeta
@@ -154,6 +170,35 @@ define([
     }
 
     /**
+     * Extracts a useful error message or status code from an error object, if
+     * possible.
+     * @param {Error|object|string} error The error to extract the message from
+     * @returns {string|number} The extracted error message or status code, or
+     * the original error if no message or status code could be extracted
+     * @since 0.0.0
+     * @private
+     */
+    static errorValue(error) {
+      return error?.status || error?.message || error;
+    }
+
+    /**
+     * Logs a warning message to the event log and console (if console logging
+     * is enabled).
+     * @param {string} message The warning message to log
+     * @param {Error|object|string} [error] An optional error object
+     * @since 0.0.0
+     */
+    warn(message, error) {
+      this.eventLog.consoleLog(
+        message,
+        "ResourceMapResolver",
+        "warning",
+        error,
+      );
+    }
+
+    /**
      * An object representing the result of the resolution process.
      * @typedef {object} ResolveResult
      * @property {boolean} success Whether the resolution was successful
@@ -171,40 +216,45 @@ define([
      */
 
     /**
-     * The main method to resolve the resource map PID for a given PID.
-     * It will try multiple strategies in order to find the resource map
-     * associated with the PID.
+     * The main method to resolve the resource map PID for a given PID. It will
+     * try multiple strategies in order to find the resource map associated with
+     * the PID.
      * @param {string} pid The PID of the document to resolve
+     * @param {object} [options] Resolution options.
+     * @param {string[]} [options.fields] An array of index fields to query in
+     * addition to the default fields. This can be used to get additional
+     * metadata about the PID from the index to reduce queries by the consumer.
      * @returns {Promise<ResolveResult>} The result of the resolution process
      */
-    async resolve(pid) {
+    async resolve(pid, options = {}) {
       // ---- INDEX ----
-      let indexResult;
+      let indexResult = null;
       try {
-        indexResult = await this.constructor.searchIndex(pid);
+        indexResult = await this.constructor.searchIndex(pid, options);
       } catch (error) {
-        // Don't stop resolution process if index search fails for some reason
-        // (e.g. Solr is down).
         indexResult = {
           pid,
           rm: null,
           meta: {
             indexError: true,
-            error: error?.status || error?.message || error,
+            error: this.constructor.errorValue(error),
           },
         };
-        this.eventLog.consoleLog(
-          `Error searching index for PID ${pid}`,
-          "ResourceMapResolver",
-          "warning",
-          error,
-        );
+        // Don't stop resolution process if index search fails for some reason
+        // (e.g. Solr is down).
+        this.warn(`Error searching index for PID ${pid}`, error);
       }
+
       let resolutionMeta = { ...(indexResult?.meta || {}) };
       const foundRM = indexResult?.rm || null;
       if (foundRM) {
-        return this.status(pid, STATUS.indexMatch, foundRM, resolutionMeta);
+        return this.status(pid, STATUS.indexMatch, foundRM, {
+          ...resolutionMeta,
+          source: "index",
+        });
       }
+
+      // -- Special case: PID is a series ID --
       if (indexResult?.meta?.isSid) {
         // Either we find PID for SID and resolve with PID, or we fail here
         // (don't continue to storage, sysmeta, guess using SID)
@@ -212,20 +262,34 @@ define([
         return this.resolveFromSeriesId(pid);
       }
 
-      if (indexResult?.meta?.isData && indexResult?.meta?.isDocumentedBy) {
-        const resolvedDataPid = await this.resolveDataPidFromMetadata(
-          indexResult.meta,
+      // -- Special case: PID a data object and has isDocumentedBy metadata PIDs --
+      if (
+        indexResult?.meta?.isData &&
+        indexResult.meta.isDocumentedBy?.length
+      ) {
+        const metadataSearchResult = await this.resolveFromMetadataPids(
+          indexResult.meta.isDocumentedBy,
         );
-        resolutionMeta = { ...resolutionMeta, ...resolvedDataPid.meta };
-        if (resolvedDataPid.rm) {
-          return this.status(pid, STATUS.indexMatch, resolvedDataPid.rm, {
-            ...resolutionMeta,
-            source: "isDocumentedBy",
-          });
+        resolutionMeta = { ...resolutionMeta, ...metadataSearchResult.meta };
+        if (metadataSearchResult.rm) {
+          // First verify
+          const valid = await this.verify(metadataSearchResult.rm, pid);
+          if (valid) {
+            return this.status(
+              pid,
+              STATUS.indexMatch,
+              metadataSearchResult.rm,
+              {
+                ...resolutionMeta,
+                source: "isDocumentedBy",
+              },
+            );
+          }
         }
       }
 
-      const rmCandidates = this.constructor.normalizePidList(
+      // -- Special case: more than 1 resource map found in index --
+      const rmCandidates = ValueUtilities.normalizeStringList(
         resolutionMeta?.rms || [],
       );
       if (rmCandidates.length > 1) {
@@ -233,37 +297,33 @@ define([
         // and one is not yet obsoleted, then that is the one we want.
         const multiResult = await this.multiRMCheck(pid, rmCandidates);
         const singleRM = multiResult.rm;
-        if (singleRM) {
-          return this.status(pid, STATUS.multiRMMatch, singleRM, {
-            ...resolutionMeta,
-            ...multiResult.meta,
-            rms: rmCandidates,
-          });
-        }
-        // If not found, then continue with the resolution process
-        this.status(pid, STATUS.multiRMMiss, null, {
+        const multiMeta = {
           ...resolutionMeta,
           ...multiResult.meta,
           rms: rmCandidates,
-        });
+        };
+        if (singleRM) {
+          return this.status(pid, STATUS.multiRMMatch, singleRM, {
+            ...multiMeta,
+            source: "index",
+            multipleRMsResolvedToSingleRoot: true,
+          });
+        }
+        // If not found, then continue with the resolution process
+        this.status(pid, STATUS.multiRMMiss, null, multiMeta);
       }
 
       this.status(pid, STATUS.indexMiss, null, resolutionMeta);
-      const verificationTargets = this.getVerificationTargets(
-        pid,
-        resolutionMeta,
-      );
 
       // ---- STORAGE ----
       const storageResult = await this.checkStorage(pid);
       if (storageResult.rm) {
-        const valid = await this.verify(
-          storageResult.rm,
-          pid,
-          verificationTargets,
-        );
+        const valid = await this.verify(storageResult.rm, pid);
         if (valid) {
-          return this.status(pid, STATUS.storageMatch, storageResult.rm);
+          return this.status(pid, STATUS.storageMatch, storageResult.rm, {
+            ...resolutionMeta,
+            source: "storage",
+          });
         }
       }
       this.status(pid, STATUS.storageMiss, null);
@@ -271,14 +331,22 @@ define([
       // ---- SYS META ----
       const smResult = await this.walkSysmeta(pid);
       if (smResult.rm) {
-        const valid = await this.verify(smResult.rm, pid, verificationTargets);
+        const valid = await this.verify(smResult.rm, pid);
         if (valid) {
-          return this.status(pid, STATUS.smMatch, smResult.rm, smResult.meta);
+          return this.status(pid, STATUS.smMatch, smResult.rm, {
+            ...resolutionMeta,
+            ...(smResult.meta || {}),
+            source: "sysMeta",
+          });
         }
       }
       if (smResult.meta?.unauthorized) {
         // If we got a 401 error, stop the resolution process
-        return this.status(pid, STATUS.unauthorized, null, smResult.meta);
+        return this.status(pid, STATUS.unauthorized, null, {
+          ...resolutionMeta,
+          ...smResult.meta,
+          source: "sysMeta",
+        });
       }
       // Otherwise, we record that this step failed and continue to guess
       this.status(pid, STATUS.smMiss, null, smResult.meta);
@@ -287,177 +355,114 @@ define([
       const guessedPid = await this.guessPid(pid);
       if (guessedPid) {
         // Already verified in guessPid, so just return the result
-        return this.status(pid, STATUS.guessMatch, guessedPid);
+        return this.status(pid, STATUS.guessMatch, guessedPid, {
+          ...resolutionMeta,
+          source: "guess",
+        });
       }
       this.status(pid, STATUS.guessMiss, null, { guessedPid });
 
       // ---- NOT FOUND ----
-      return this.status(pid, STATUS.allMiss, null);
+      return this.status(pid, STATUS.allMiss, null, resolutionMeta);
     }
 
     /**
-     * Resolve data PIDs via metadata links in Solr. Mirrors the MetadataView
-     * strategy of using isDocumentedBy, then selecting latest metadata docs.
-     * @param {object} indexMeta Metadata from searchIndex()
+     * Given a list of metadata PIDs, collapse them by version chain, then
+     * resolve a resource map for each unique version chain.
+     * @param {string[]} metadataPids An array of metadata PIDs, e.g. the
+     * documentedBy PIDs returned from the index for a data PID.
      * @returns {Promise<{rm: (string|null), meta: object}>} The resolved RM PID
      * if found, and metadata about the resolution attempt
      */
-    async resolveDataPidFromMetadata(indexMeta = {}) {
-      const isDocumentedBy = this.constructor.normalizePidList(
-        indexMeta?.isDocumentedBy || [],
-      );
+    async resolveFromMetadataPids(metadataPids = []) {
+      const inputMetadataPids =
+        ValueUtilities.normalizeStringList(metadataPids);
       const result = {
         rm: null,
         meta: {
-          isDocumentedBy,
+          inputMetadataPids,
           metadataCandidates: [],
           resolvedMetadataPids: [],
+          rms: [],
         },
       };
-      if (!isDocumentedBy.length) return result;
+      if (!inputMetadataPids.length) return result;
 
-      const metadataCandidates =
-        await this.getLatestMetadataPids(isDocumentedBy);
-      result.meta.metadataCandidates = metadataCandidates;
+      // First, reduce the list of metadata PIDs to the latest reachable PIDs
+      // from each version chain. This avoids redundant resolution attempts for
+      // metadata that are just older versions of each other.
+      result.meta.metadataCandidates =
+        await this.reducePidsToLatest(inputMetadataPids);
 
-      const lookupResults = await Promise.all(
-        metadataCandidates.map(async (candidatePid) => {
-          let metadataPid = candidatePid;
-          let metadataResult = null;
+      // Next, resolve the RM for each metadata PID candidate.
+      const metadataResults = await Promise.all(
+        result.meta.metadataCandidates.map(async (metadataPid) => {
           try {
-            metadataResult = await this.constructor.searchIndex(metadataPid);
+            return {
+              metadataPid,
+              result: await this.resolve(metadataPid),
+            };
           } catch (error) {
-            this.eventLog.consoleLog(
-              `Error searching index for documented metadata PID ${metadataPid}`,
-              "ResourceMapResolver",
-              "warning",
-              error,
-            );
-            return null;
+            this.warn(`Error resolving metadata PID ${metadataPid}`, error);
+            return { metadataPid, result: null };
           }
-
-          if (metadataResult?.meta?.isSid) {
-            const resolvedPid = await this.getPidForSid(metadataPid);
-            if (resolvedPid) {
-              metadataPid = resolvedPid;
-              try {
-                metadataResult =
-                  await this.constructor.searchIndex(metadataPid);
-              } catch (error) {
-                this.eventLog.consoleLog(
-                  `Error searching index for metadata PID ${metadataPid} resolved from SID ${candidatePid}`,
-                  "ResourceMapResolver",
-                  "warning",
-                  error,
-                );
-                return null;
-              }
-            }
-          }
-
-          return { metadataPid, metadataResult };
         }),
       );
 
-      const resolvedMetadataPids = [];
-      const rmCandidates = [];
-      lookupResults.forEach((lookup) => {
-        if (!lookup) return;
-        resolvedMetadataPids.push(lookup.metadataPid);
-        if (lookup.metadataResult?.rm) {
-          rmCandidates.push(lookup.metadataResult.rm);
-        }
-        rmCandidates.push(
-          ...this.constructor.normalizePidList(
-            lookup.metadataResult?.meta?.rms,
-          ),
-        );
-      });
+      const resolvedMetadataPids = metadataResults.map(
+        (metadataResult) => metadataResult.metadataPid,
+      );
+      const rmCandidates = ValueUtilities.normalizeStringList(
+        metadataResults.map((metadataResult) => metadataResult.result?.rm),
+      );
 
       result.meta.resolvedMetadataPids =
-        this.constructor.normalizePidList(resolvedMetadataPids);
-      result.meta.rms = this.constructor.normalizePidList(rmCandidates);
+        ValueUtilities.normalizeStringList(resolvedMetadataPids);
+      result.meta.rms = rmCandidates;
 
-      if (result.meta.rms.length === 1) {
-        [result.rm] = result.meta.rms;
+      if (rmCandidates.length === 1) {
+        [result.rm] = rmCandidates;
       }
 
       return result;
     }
 
     /**
-     * Given a list of metadata identifiers, choose the latest metadata version
-     * from each chain, following the MetadataView decision tree.
-     * @param {string[]} metadataPids Metadata PID candidates
-     * @returns {Promise<string[]>} Latest metadata PID candidates
+     * Collapse a list of PIDs to only the most one for its version chain. For
+     * example, if given 3 PIDs that are all part of the same version chain, it
+     * will remove the two older versions. If given PIDs that are part of
+     * different version chains, it will return the most recent PID from each
+     * chain.
+     * @param {string[]} pids PIDs to group by version chain
+     * @returns {Promise<string[]>} Latest PID from each discovered chain
      */
-    async getLatestMetadataPids(metadataPids = []) {
-      const uniqueMetadataPids =
-        this.constructor.normalizePidList(metadataPids);
-      if (uniqueMetadataPids.length <= 1) return uniqueMetadataPids;
+    async reducePidsToLatest(pids = []) {
+      let remainingPids = ValueUtilities.normalizeStringList(pids);
+      const latestPids = [];
 
-      let docs = [];
-      try {
-        docs = await this.constructor.searchIndexByPids(uniqueMetadataPids, [
-          ID_FIELD,
-          SERIESID_FIELD,
-          OBSOLETED_BY_FIELD,
-        ]);
-      } catch (error) {
-        this.eventLog.consoleLog(
-          "Error finding latest documented metadata PIDs",
-          "ResourceMapResolver",
-          "warning",
-          error,
-        );
-        return [uniqueMetadataPids[uniqueMetadataPids.length - 1]];
-      }
-
-      if (!docs.length) {
-        return [uniqueMetadataPids[uniqueMetadataPids.length - 1]];
-      }
-
-      const metadataPidSet = new Set(uniqueMetadataPids);
-      docs.forEach((doc) => {
-        this.constructor
-          .normalizePidList([
-            doc?.[ID_FIELD],
-            ...this.constructor.valueAsArray(doc?.[SERIESID_FIELD]),
-          ])
-          .forEach((value) => metadataPidSet.add(value));
-      });
-
-      const latestPids = this.constructor.normalizePidList(
-        docs
-          .filter((doc) => {
-            const obsoletedBy = this.constructor.valueAsArray(
-              doc?.[OBSOLETED_BY_FIELD],
+      while (remainingPids.length) {
+        let chainDetails;
+        try {
+          chainDetails =
+            /* eslint-disable no-await-in-loop */
+            await this.versionTracker.checkPidsInSameVersionChain(
+              remainingPids,
             );
-            return !obsoletedBy.some((nextPid) => metadataPidSet.has(nextPid));
-          })
-          .map((doc) => doc?.[ID_FIELD]),
-      );
+        } catch (error) {
+          return remainingPids; // If we can't get version info, just return the original list
+        }
 
-      if (latestPids.length) return latestPids;
-      return [uniqueMetadataPids[uniqueMetadataPids.length - 1]];
-    }
+        if (chainDetails.sameChain) {
+          latestPids.push(chainDetails.newestPid);
+          break;
+        }
 
-    /**
-     * Build the PID candidates that can validate an RM for this resolve call.
-     * For data inputs this includes linked metadata PIDs, which allows
-     * verification to succeed for latest package versions.
-     * @param {string} pid Input PID
-     * @param {object} [meta] Index and link metadata from resolution steps
-     * @returns {string[]} Unique PID candidates
-     */
-    getVerificationTargets(pid, meta = {}) {
-      return this.constructor.normalizePidList([
-        pid,
-        ...this.constructor.valueAsArray(meta?.relatedPids),
-        ...this.constructor.valueAsArray(meta?.isDocumentedBy),
-        ...this.constructor.valueAsArray(meta?.metadataCandidates),
-        ...this.constructor.valueAsArray(meta?.resolvedMetadataPids),
-      ]);
+        const chain = new Set(chainDetails.chain || []);
+        latestPids.push(chainDetails.newestPid || remainingPids[0]);
+        remainingPids = remainingPids.filter((pid) => !chain.has(pid));
+      }
+
+      return ValueUtilities.normalizeStringList(latestPids);
     }
 
     /**
@@ -515,36 +520,25 @@ define([
         result.meta.multipleRMsNotVersions = true;
         return result;
       }
-      let record;
+      let versionChain;
       try {
-        // Only need version chain for one RM, since if they are all versions of
-        // each other they will have the same chain
-        record = await this.versionTracker.getAllVersions(rms[0]);
+        versionChain =
+          await this.versionTracker.checkPidsInSameVersionChain(rms);
       } catch (e) {
-        result.meta.error = e?.status || e?.message || e;
-        this.eventLog.consoleLog(
-          `Error fetching version chain for RM ${rms[0]}`,
-          "ResourceMapResolver",
-          "warning",
-          e,
-        );
+        result.meta.error = this.constructor.errorValue(e);
+        this.warn(`Error fetching version chain for PID ${rms[0]}`, e);
         return result;
       }
-
-      const { next, prev } = record;
-      const prevVersions = prev?.versions || [];
-      const nextVersions = next?.versions || [];
-      const chain = [...prevVersions].reverse().concat([rms[0]], nextVersions);
-      const chainSet = new Set(chain);
+      const { newestInChain, newestPid: newestRm, sameChain } = versionChain;
 
       // If the next chain is incomplete, we cannot be sure we have the most
       // recent RM
-      if (!next.chainComplete) {
+      if (!versionChain.chainComplete) {
         result.meta.chainIncomplete = true;
-        if (next.endIsPrivate) {
+        if (versionChain.endIsPrivate) {
           result.meta.unauthorized = true;
         }
-        if (next.endNotFound) {
+        if (versionChain.endNotFound) {
           result.meta.notFound = true;
         }
         return result;
@@ -552,26 +546,13 @@ define([
 
       // If the version history of one RM contains all of the others, then they
       // are all versions of each other. If not, we cannot resolve to a single RM.
-      if (!rms.every((rm) => chainSet.has(rm))) {
+      if (!sameChain) {
         result.meta.multipleRMsNotVersions = true;
         return result;
       }
 
-      // All RMs are versions of each other, so select the newest in the chain
-      const newestRm = rms.reduce((latest, rm) => {
-        const latestIndex = chain.indexOf(latest);
-        const rmIndex = chain.indexOf(rm);
-        return rmIndex > latestIndex ? rm : latest;
-      }, rms[0]);
-
-      const newestInChain = chain[chain.length - 1];
-
       if (newestRm !== newestInChain) {
-        if (next.chainComplete) {
-          result.meta.multipleRMsAllObsoleted = true;
-        } else {
-          result.meta.chainIncomplete = true;
-        }
+        result.meta.multipleRMsAllObsoleted = true;
         return result;
       }
 
@@ -595,19 +576,24 @@ define([
      */
     async getPidForSid(sid) {
       try {
-        const sysMeta = await this.versionTracker.getSysMeta(sid);
+        const sysMeta = await this.getSysMeta(sid);
         return sysMeta?.identifier || null;
       } catch (error) {
         if (error?.status) {
-          this.eventLog.consoleLog(
-            `Failed to resolve PID for SID ${sid}`,
-            "ResourceMapResolver",
-            "warning",
-            error,
-          );
+          this.warn(`Failed to resolve PID for SID ${sid}`, error);
         }
         return null;
       }
+    }
+
+    /**
+     * Gets the system metadata for a given PID.
+     * @param {string} pid The PID to get the system metadata for
+     * @param {object} [options] Options to SysMeta service
+     * @returns {Promise<SystemMetadata>} The sysMeta for the PID
+     */
+    async getSysMeta(pid, options = {}) {
+      return this.versionTracker.getSysMeta(pid, options);
     }
 
     /**
@@ -680,152 +666,107 @@ define([
     }
 
     /**
-     * Normalize any value into an array.
-     * @param {*} value Value to normalize
-     * @returns {Array} Array representation of value
-     */
-    static valueAsArray(value) {
-      if (Array.isArray(value)) return value;
-      if (value === null || value === undefined || value === "") return [];
-      return [value];
-    }
-
-    /**
-     * Normalize a PID list and dedupe it.
-     * @param {Array|string|null|undefined} values PID values
-     * @returns {string[]} Unique, non-empty PID strings
-     */
-    static normalizePidList(values) {
-      const asList = Array.isArray(values) ? values : [values];
-      return Array.from(
-        new Set(
-          asList
-            .filter((value) => typeof value === "string")
-            .map((value) => value.trim())
-            .filter(Boolean),
-        ),
-      );
-    }
-
-    /**
-     * Query index docs for a list of IDs/seriesIds.
-     * @param {string[]} pids PIDs or SIDs to query for
-     * @param {string[]} fields Solr fields to return
-     * @returns {Promise<object[]>} Solr docs
-     */
-    static async searchIndexByPids(pids, fields = [ID_FIELD]) {
-      const uniquePids = this.normalizePidList(pids);
-      if (!uniquePids.length) return [];
-
-      const clauses = uniquePids.flatMap((rawPid) => {
-        const escapedPid = QueryService.escapeLucene(rawPid);
-        return [
-          `${ID_FIELD}:"${escapedPid}"`,
-          `${SERIESID_FIELD}:"${escapedPid}"`,
-        ];
-      });
-
-      const index = new Solr();
-      index.setQuery(clauses.join(" OR "));
-      index.setfields(fields);
-      index.setrows(Math.max(uniquePids.length * 4, 25));
-      await index.queryPromise();
-
-      return index.toJSON() || [];
-    }
-
-    /**
      * Return the most recent PID represented by a set of Solr docs.
      * @param {object[]} docs Solr docs
      * @returns {string|null} Latest PID if available
      */
-    static getLatestPidFromDocs(docs = []) {
-      const validDocs = docs.filter(
-        (doc) => typeof doc?.[ID_FIELD] === "string",
-      );
+    static selectLatestPidFromDocs(docs = []) {
+      const getDateUploadedTime = (doc) => {
+        const dateValue = ValueUtilities.listify(
+          doc?.[FIELDS.DATE_UPLOADED],
+        )[0];
+        const time = Date.parse(dateValue);
+        return Number.isNaN(time) ? null : time;
+      };
+      const compareDateUploadedDesc = (a, b) => {
+        const aTime = getDateUploadedTime(a);
+        const bTime = getDateUploadedTime(b);
+        if (aTime === bTime) return 0;
+        if (aTime === null) return 1;
+        if (bTime === null) return -1;
+        return bTime - aTime;
+      };
+      const validDocs = docs
+        .filter((doc) => typeof doc?.[FIELDS.ID] === "string")
+        .sort(compareDateUploadedDesc);
       if (!validDocs.length) return null;
 
-      const docPidSet = new Set(validDocs.map((doc) => doc[ID_FIELD]));
+      const docPidSet = new Set(validDocs.map((doc) => doc[FIELDS.ID]));
       const latestDocs = validDocs.filter((doc) => {
-        const obsoletedBy = this.valueAsArray(doc?.[OBSOLETED_BY_FIELD]);
+        const obsoletedBy = ValueUtilities.listify(doc?.[FIELDS.OBSOLETED_BY]);
         return !obsoletedBy.some((value) => docPidSet.has(value));
       });
 
-      if (latestDocs.length) return latestDocs[0][ID_FIELD];
-      return validDocs[validDocs.length - 1][ID_FIELD];
+      if (latestDocs.length) return latestDocs[0][FIELDS.ID];
+      return validDocs[0][FIELDS.ID];
     }
 
     /**
      * Searches the index for a resource map associated with the given PID.
      * Returns an object containing the PID and metadata about the search.
      * @param {string} pid The PID to search for in the index
-     * @returns {Promise<object|null>} An object containing the PID and
-     * metadata if a resource map is found, null otherwise
+     * @param {object} [options] Search options
+     * @param {string[]} [options.fields] An array of index fields to query in
+     * addition to the default fields.
+     * @returns {Promise<object|null>} An object containing the PID and metadata
+     * if a resource map is found, null otherwise
      */
-    static async searchIndex(pid) {
-      // Important: create a new Solr instance for each query to avoid
-      // overwriting fields, query, etc. incase searchIndex is run concurrently.
-      const index = new Solr();
-      const escapedPid = QueryService.escapeLucene(pid);
-      index.setQuery(
-        `${ID_FIELD}:"${escapedPid}" OR ${SERIESID_FIELD}:"${escapedPid}"`,
+    static async searchIndex(pid, options) {
+      const meta = { numFound: 0 };
+      const result = { pid, rm: null, meta };
+
+      const response = await QueryService.queryWithFetch({
+        q: QueryService.buildIdQuery(pid),
+        fields: [...QUERY_FIELDS, ...(options?.fields || [])],
+        rows: 100,
+      });
+      const docs = QueryService.parseResponse(response);
+      const numFound = response?.response?.numFound || docs.length;
+      if (numFound === 0) return result;
+      meta.numFound = numFound;
+      meta.indexResults = docs;
+
+      // If we found one doc matching the incoming PID, then we can be fairly
+      // confident about the format type and use that to help with the
+      // resolution.
+      const idMatch = docs.filter((doc) => doc[FIELDS.ID] === pid);
+      if (idMatch.length > 1) throw new Error(STATUS.multiResultSamePid);
+      if (idMatch.length === 1) {
+        const doc = idMatch[0];
+        const formatType = doc[FIELDS.FORMAT_TYPE];
+        meta.formatType = formatType;
+        meta.indexMatch = doc;
+        if (formatType === FORMAT_TYPES.DATA) {
+          meta.isData = true;
+        } else if (formatType === FORMAT_TYPES.METADATA) {
+          meta.isMetadata = true;
+        } else if (formatType === RM_FORMAT_ID) {
+          meta.isRM = true;
+          result.rm = doc[FIELDS.ID];
+        }
+      }
+
+      // Collect other metadata about the PID from the search results that may
+      // be helpful for the resolution process
+      meta.isSid = docs.some((doc) =>
+        ValueUtilities.listify(doc?.[FIELDS.SERIESID]).includes(pid),
       );
-      index.setfields([
-        RM_FIELD,
-        FORMAT_ID_FIELD,
-        FORMAT_TYPE_FIELD,
-        IS_DOCUMENTED_BY_FIELD,
-        OBSOLETED_BY_FIELD,
-        SERIESID_FIELD,
-        ID_FIELD,
-      ]);
-      await index.queryPromise();
-      const result = { pid, rm: null };
-
-      const docs = index.toJSON() || [];
-
-      const numDocs = index.getNumFound();
-      if (numDocs === 0) return result;
-
-      const isDocumentedBy = ResourceMapResolver.normalizePidList(
+      meta.rms = ValueUtilities.normalizeStringList(
+        docs.flatMap((doc) => ValueUtilities.listify(doc?.[FIELDS.RM])),
+      );
+      meta.isDocumentedBy = ValueUtilities.normalizeStringList(
         docs.flatMap((doc) =>
-          ResourceMapResolver.valueAsArray(doc?.[IS_DOCUMENTED_BY_FIELD]),
+          ValueUtilities.listify(doc?.[FIELDS.IS_DOCUMENTED_BY]),
         ),
       );
-      const relatedPids = ResourceMapResolver.normalizePidList(
-        docs.flatMap((doc) => [
-          doc?.[ID_FIELD],
-          ...ResourceMapResolver.valueAsArray(doc?.[SERIESID_FIELD]),
-          ...ResourceMapResolver.valueAsArray(doc?.[IS_DOCUMENTED_BY_FIELD]),
-        ]),
-      );
-      const meta = {
-        isSid: docs.some((doc) =>
-          ResourceMapResolver.valueAsArray(doc?.[SERIESID_FIELD]).includes(pid),
-        ),
-        isData: docs.some((d) => d[FORMAT_TYPE_FIELD] === DATA_TYPE),
-        isRM: docs?.some((d) => d[FORMAT_ID_FIELD] === RM_FORMAT_ID),
-        isDocumentedBy,
-        relatedPids,
-        rms: ResourceMapResolver.normalizePidList(
-          docs.flatMap((doc) =>
-            ResourceMapResolver.valueAsArray(doc?.[RM_FIELD]),
-          ),
-        ),
-      };
-      result.meta = meta;
 
-      if (meta.isRM && !meta.isSid) {
-        result.rm = ResourceMapResolver.getLatestPidFromDocs(docs) || pid;
-        return result;
+      // If the PID is a series ID, then we need to follow other steps to find
+      // the RM.
+      if (!meta.isSid) {
+        if (meta.rms.length === 1) [result.rm] = meta.rms;
+        if (result.rm) return result;
       }
 
-      if (meta.rms.length === 1 && !meta.isSid) {
-        [result.rm] = meta.rms;
-        return result;
-      }
-
-      result.rm = result.rm || null;
       return result;
     }
 
@@ -867,22 +808,15 @@ define([
           try {
             return await this.storage.setItem(pid, rm);
           } catch (retryErr) {
-            this.eventLog.consoleLog(
+            this.warn(
               "Retry failed: Unable to add RM to local storage",
-              "ResourceMapResolver",
-              "warning",
               retryErr,
             );
             return null;
           }
         } else {
           // Unexpected error type
-          this.eventLog.consoleLog(
-            "Unexpected error adding RM to local storage",
-            "ResourceMapResolver",
-            "warning",
-            err,
-          );
+          this.warn("Unexpected error adding RM to local storage", err);
           return null;
         }
       }
@@ -929,13 +863,8 @@ define([
           indexResult = await this.constructor.searchIndex(currentPid);
         } catch (error) {
           meta.indexError = true;
-          meta.error = error?.status || error?.message || error;
-          this.eventLog.consoleLog(
-            `Error searching index for prior PID ${currentPid}`,
-            "ResourceMapResolver",
-            "warning",
-            error,
-          );
+          meta.error = this.constructor.errorValue(error);
+          this.warn(`Error searching index for prior PID ${currentPid}`, error);
           break;
         }
         if (indexResult.rm) {
@@ -977,23 +906,14 @@ define([
      * as a member.
      * @param {string} rm The PID of the resource map to verify
      * @param {string} pid The PID of the document to check
-     * @param {string[]} [verificationPids] Additional PID candidates that can
-     * validate this RM membership check.
      * @returns {Promise<boolean>} True if the RM is valid and contains the PID,
      * false otherwise
      */
-    async verify(rm, pid, verificationPids = []) {
+    async verify(rm, pid) {
       const rmFetchResults = await this.fetchResourceMap(rm);
       const rmModel = rmFetchResults?.model;
       const rmMembers = rmModel?.originalMembers;
-      const verificationTargets = this.constructor.normalizePidList([
-        pid,
-        ...this.constructor.valueAsArray(verificationPids),
-      ]);
-      const matchedPid = verificationTargets.find((targetPid) =>
-        ResourceMapResolver.containsPid(rmModel, targetPid),
-      );
-      const isValid = !!matchedPid;
+      const isValid = ResourceMapResolver.containsPid(rmModel, pid);
       const meta = {};
 
       let status = STATUS.foundButNotValid;
@@ -1003,7 +923,7 @@ define([
         meta.error = rmFetchResults?.status || "Unknown error";
       } else {
         meta.rmMembers = rmMembers || [];
-        meta.matchedPid = matchedPid || null;
+        meta.matchedPid = isValid ? pid : null;
       }
 
       this.status(pid, status, isValid ? rm : null, meta);
@@ -1093,17 +1013,13 @@ define([
       // Store the obj:rm pair in local storage if rm is found
       if (rm) {
         this.addToStorage(pid, rm).catch((error) => {
-          this.eventLog.consoleLog(
-            `Failed to persist RM ${rm} for PID ${pid}`,
-            "ResourceMapResolver",
-            "warning",
-            error,
-          );
+          this.warn(`Failed to persist RM ${rm} for PID ${pid}`, error);
         });
       }
 
       const result = { success: !!rm, pid, log };
       if (rm) result.rm = rm;
+      if (meta) result.meta = meta;
 
       // If there are any unauthorized events in the log, add it to the result
       if (ResourceMapResolver.checkLogForUnauth(log))
@@ -1118,6 +1034,8 @@ define([
 
   // Allow the class to trigger Backbone events
   Object.assign(ResourceMapResolver.prototype, Backbone.Events);
+
+  ResourceMapResolver.QUERY_FIELDS = QUERY_FIELDS;
 
   return ResourceMapResolver;
 });
