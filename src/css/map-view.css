@@ -89,6 +89,7 @@
   --map-z-index-top-shadow: calc(var(--map-z-index-base) + 1);
   --map-z-index-layer-details: calc(var(--map-z-index-top-shadow) + 1);
   --map-z-index-feature-info: calc(var(--map-z-index-layer-details) + 1);
+  --map-z-index-visualization-panel: calc(var(--map-z-index-feature-info) + 1);
 }
 
 /* hide the credits until we can find a better placement for them */
@@ -2021,121 +2022,266 @@ other class: .ui-slider-range */
   }
 }
 
+/*****************************************************************************************
+ *
+ * Zoom Preset Cards
+ *
+ * Cards in the viewfinder that represent a point of interest. Each card has:
+ *   - A header with an optional image (left) and metadata (right): title, date, authors
+ *   - An optional description
+ *   - Action buttons: "View Layers" (always), "Open in Browser" (if tabUrl), and/or
+ *     "Explore in App" (if iframeUrl)
+ *   - Informational layer badges showing which layers will be toggled
+ *
+ * The card body is not interactive — all actions are explicit buttons.
+ *
+ */
+
 .viewfinder-zoom-presets {
   display: flex;
   flex-direction: column;
   padding: 0.1rem 1.5rem 1rem 1.5rem;
   row-gap: 0.5rem;
+}
 
-  .viewfinder-zoom-preset__preset {
-    border-radius: var(--map-border-radius-big);
-    border: 1px solid
-      var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
-    cursor: pointer;
+.viewfinder-zoom-preset {
+  border-radius: var(--map-border-radius-big);
+  border: 1px solid
+    var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
+
+  .viewfinder-zoom-preset__card {
     display: flex;
     flex-direction: column;
-    padding: 1.1rem 1.1rem 1rem 1.4rem;
-    row-gap: 0.5rem;
+    padding: 1rem 1.1rem 1rem 1.1rem;
+    row-gap: 0.75rem;
+  }
 
-    &:hover {
-      background-color: var(
-        --portal-col-primary-1,
-        var(--map-col-bkg-lighter__deprecate)
-      );
+  /* ---- Header: image (left) + metadata (right) ---- */
 
-      .viewfinder-zoom-preset__layer {
-        background-color: var(
-          rgb(from var(--portal-col-primary-2) r g b / 50%),
-          var(--map-col-bkg__deprecate)
-        );
+  .viewfinder-zoom-preset__header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
 
-        .viewfinder-zoom-preset__layer-content {
-          color: var(--portal-col-primary-6);
-
-          i {
-            color: var(--portal-col-primary-6);
-          }
-        }
-      }
-    }
-
-    .viewfinder-zoom-preset__title {
-      color: var(--portal-col-primary-6, white);
-      font-weight: 600;
-    }
-
-    .viewfinder-zoom-preset__description {
-      color: var(--portal-col-neutral-7, white);
-      font-size: 0.85rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .viewfinder-zoom-preset__layers {
-      column-gap: 0.5rem;
-      display: flex;
-      flex-wrap: wrap;
-      row-gap: 0.5rem;
-    }
-
-    .viewfinder-zoom-preset__layer {
-      align-items: center;
-      background: var(
-        rgb(from var(--portal-col-neutral-2) r g b / 50%),
-        var(--map-col-bkg-lighter__deprecate)
-      );
-      border-radius: var(--map-border-radius-big);
-      display: flex;
-      height: 1.5rem;
-      justify-content: center;
-      padding: 0 1rem 0 0.5rem;
-
-      .viewfinder-zoom-preset__layer-content {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        text-wrap: nowrap;
-        color: var(--portal-col-neutral-5, white);
-        font-size: 0.8rem;
-        max-width: 10rem;
-
-        i {
-          padding: 0 0.25rem;
-          color: var(--portal-col-primary-6, white);
-        }
-      }
-    }
+  /* When there is no image, the header collapses to a single column */
+  .viewfinder-zoom-preset__header:not(:has(.viewfinder-zoom-preset__image)) {
+    grid-template-columns: 1fr;
   }
 
   .viewfinder-zoom-preset__image {
-    float: left;
-    margin: 0.3rem 0.5rem 0 0;
-    border-radius: var(--map-border-radius-big);
-    max-width: 90px;
-    max-height: 90px;
+    width: 5.5rem;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: var(--map-border-radius-small);
+    display: block;
+    flex-shrink: 0;
   }
 
-  .viewfinder-zoom-preset.viewfinder-zoom-preset--active
-    .viewfinder-zoom-preset__preset {
-    background-color: var(--portal-col-primary-6, #15324e);
+  .viewfinder-zoom-preset__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+  }
 
-    .viewfinder-zoom-preset__title,
-    .viewfinder-zoom-preset__description {
-      color: var(--portal-col-neutral-00, white);
+  .viewfinder-zoom-preset__title {
+    color: var(--portal-col-primary-6, white);
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+
+  .viewfinder-zoom-preset__date {
+    color: var(--portal-col-neutral-5, white);
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+
+    i {
+      font-size: 0.85rem;
+      color: var(--portal-col-neutral-4);
     }
+  }
 
-    .viewfinder-zoom-preset__layer {
-      background: var(
-        rgb(from var(--portal-col-primary-5) r g b / 50%),
-        var(--map-col-bkg__deprecate)
-      );
+  .viewfinder-zoom-preset__authors {
+    color: var(--portal-col-neutral-5, white);
+    font-size: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-      .viewfinder-zoom-preset__layer-content {
-        color: var(--portal-col-primary-2, white);
+  /* ---- Description ---- */
 
-        i {
-          color: var(--portal-col-primary-4, white);
-        }
+  .viewfinder-zoom-preset__description {
+    color: var(--portal-col-neutral-7, white);
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+
+  /* ---- Action buttons ---- */
+
+  .viewfinder-zoom-preset__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .viewfinder-zoom-preset__view-layers-button,
+  .viewfinder-zoom-preset__open-tab-button,
+  .viewfinder-zoom-preset__cta-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-align: center;
+    white-space: normal;
+  }
+
+  /* "Explore in App" uses the primary accent colour to stand out */
+  .viewfinder-zoom-preset__cta-button {
+    background-color: var(
+      --portal-col-primary-6,
+      var(--map-col-highlight__deprecate)
+    );
+    color: var(--portal-col-neutral-00, white);
+    border-color: var(--portal-col-primary-5);
+  }
+
+  .viewfinder-zoom-preset__cta-button:hover {
+    filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.15));
+  }
+
+  /* Active state on buttons (not card wrapper) */
+  .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active,
+  .viewfinder-zoom-preset__open-tab-button.viewfinder-zoom-preset--active {
+    background-color: var(
+      --portal-col-primary-6,
+      var(--map-col-highlight__deprecate)
+    );
+    color: var(--portal-col-neutral-00);
+  }
+
+  .viewfinder-zoom-preset__cta-button.viewfinder-zoom-preset--active {
+    filter: var(--map-no-brightness-or-opacity-tweaks, brightness(0.85));
+  }
+
+  /* ---- Layer badges (informational only) ---- */
+
+  .viewfinder-zoom-preset__layers {
+    column-gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+
+  .viewfinder-zoom-preset__layer {
+    align-items: center;
+    background: var(
+      rgb(from var(--portal-col-neutral-2) r g b / 50%),
+      var(--map-col-bkg-lighter__deprecate)
+    );
+    border-radius: var(--map-border-radius-big);
+    display: flex;
+    height: 1.5rem;
+    justify-content: center;
+    padding: 0 0.75rem 0 0.5rem;
+
+    .viewfinder-zoom-preset__layer-content {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-wrap: nowrap;
+      color: var(--portal-col-neutral-5, white);
+      font-size: 0.75rem;
+      max-width: 10rem;
+
+      i {
+        padding: 0 0.25rem;
+        color: var(--portal-col-primary-6, white);
+        font-size: 0.85rem;
       }
     }
+  }
+}
+
+/*****************************************************************************************
+ *
+ * Visualization Panel
+ *
+ * A full-screen overlay that appears above the map and renders an external
+ * visualization application in an iframe. Opened by the "Explore in App"
+ * button on a ZoomPreset card that has an `iframeUrl` configured.
+ *
+ * Hidden by default; shown by adding the --open modifier class.
+ *
+ */
+
+.visualization-panel {
+  /* Covers the entire map-view (which is position:relative) */
+  position: absolute;
+  inset: 0;
+  z-index: var(--map-z-index-visualization-panel);
+  display: none;
+  flex-direction: column;
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+  animation: fadeIn 0.2s ease-in-out;
+  pointer-events: all;
+}
+
+.visualization-panel--open {
+  display: flex;
+}
+
+.visualization-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.5rem 1rem;
+  flex-shrink: 0;
+  background-color: var(
+    --portal-col-primary-1,
+    var(--map-col-bkg-lighter__deprecate)
+  );
+  border-bottom: 1px solid var(--portal-col-primary-2);
+}
+
+.visualization-panel__close-button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.visualization-panel__body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.visualization-panel__iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+}
+
+/* Fallback shown when the URL is not in trustedContentSources */
+.visualization-panel__untrusted {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  color: var(--portal-col-neutral-7, white);
+  text-align: center;
+
+  p {
+    max-width: 30rem;
+    line-height: 1.5;
   }
 }
 
