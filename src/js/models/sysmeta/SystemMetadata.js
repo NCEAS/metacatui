@@ -351,10 +351,12 @@ define([
      */
     toJSON() {
       const values = SystemMetadata.normalizeValues(this.toObject());
+      const checksum = values.checksum.toJSON() || {};
 
       return {
         ...values,
-        checksum: values.checksum.toJSON(),
+        checksum: checksum.value || null,
+        checksumAlgorithm: checksum.algorithm || null,
         accessPolicy: values.accessPolicy.toJSON(),
         replicationPolicy: values.replicationPolicy.hasValues()
           ? values.replicationPolicy.toJSON()
@@ -420,7 +422,15 @@ define([
         replicas: ReplicaList,
         mediaType: MediaType,
       }).forEach(([field, Type]) => {
-        const val = source[field];
+        const val =
+          field === "checksum" &&
+          !(source.checksum instanceof Checksum) &&
+          !isPlainObject(source.checksum)
+            ? {
+                value: source.checksum,
+                algorithm: source.checksumAlgorithm,
+              }
+            : source[field];
         normalized[field] =
           val instanceof Type ? val.normalize() : Type.fromValue(val);
       });

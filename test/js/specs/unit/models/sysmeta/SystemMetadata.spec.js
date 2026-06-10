@@ -238,10 +238,8 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
           identifier: "custom.1",
           archived: "true",
           serialVersion: "3",
-          checksum: {
-            value: "abc",
-            algorithm: "SHA-256",
-          },
+          checksum: "abc",
+          checksumAlgorithm: "SHA-256",
           accessPolicy: [{ subjects: ["public"], permissions: ["read"] }],
           replicationPolicy: {
             replicationAllowed: "true",
@@ -477,10 +475,8 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
       it("throws validation errors by default when the model is invalid", () => {
         const sysMeta = new SystemMetadata({
           identifier: "pid.1",
-          checksum: {
-            value: "abc",
-            algorithm: "SHA-256",
-          },
+          checksum: "abc",
+          checksumAlgorithm: "SHA-256",
           rightsHolder: "userA",
         });
 
@@ -501,10 +497,8 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
       it("skips validation when validate=false", () => {
         const sysMeta = new SystemMetadata({
           identifier: "pid.1",
-          checksum: {
-            value: "abc",
-            algorithm: "SHA-256",
-          },
+          checksum: "abc",
+          checksumAlgorithm: "SHA-256",
           rightsHolder: "userA",
           dateUploaded: "not-a-date",
         });
@@ -526,10 +520,8 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
           identifier: "pid.1",
           formatId: "",
           size: -1,
-          checksum: {
-            value: "abc",
-            algorithm: "",
-          },
+          checksum: "abc",
+          checksumAlgorithm: "",
           rightsHolder: "",
           seriesId: "pid.1",
           accessPolicy: [{ subjects: [""], permissions: ["badPermission"] }],
@@ -632,10 +624,8 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
 
       it("clears checksum, access rules, replicas, media type properties, and replication scopes", () => {
         const sysMeta = new SystemMetadata({
-          checksum: {
-            value: "abc",
-            algorithm: "SHA-256",
-          },
+          checksum: "abc",
+          checksumAlgorithm: "SHA-256",
           accessPolicy: [{ subjects: ["public"], permissions: ["read"] }],
           replicas: [
             {
@@ -702,10 +692,8 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
         const json = SystemMetadata.fromXml(FULL_XML).toJSON();
 
         expect(json.identifier).to.equal("sample.1");
-        expect(json.checksum).to.deep.equal({
-          value: "abcdef",
-          algorithm: "SHA-256",
-        });
+        expect(json.checksum).to.equal("abcdef");
+        expect(json.checksumAlgorithm).to.equal("SHA-256");
         expect(json.accessPolicy[0]).to.deep.equal({
           subjects: ["public"],
           permissions: ["read"],

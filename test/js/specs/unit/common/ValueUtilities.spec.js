@@ -71,6 +71,34 @@ define(["common/ValueUtilities", "common/UrlUtilities"], function (
       });
     });
 
+    describe("normalizeStringList", function () {
+      it("wraps, trims, drops empty entries, and deduplicates values", function () {
+        expect(
+          ValueUtilities.normalizeStringList([
+            "  a  ",
+            "b",
+            "",
+            null,
+            undefined,
+            "a",
+          ]),
+        ).to.deep.equal(["a", "b"]);
+        expect(ValueUtilities.normalizeStringList("  a  ")).to.deep.equal([
+          "a",
+        ]);
+        expect(ValueUtilities.normalizeStringList(null)).to.deep.equal([]);
+      });
+    });
+
+    describe("dedupeStrings", function () {
+      it("normalizes strings and preserves the first occurrence", function () {
+        expect(
+          ValueUtilities.dedupeStrings([" a ", "a", "", null, 2]),
+        ).to.deep.equal(["a", "2"]);
+        expect(ValueUtilities.dedupeStrings("a")).to.deep.equal([]);
+      });
+    });
+
     describe("listify", function () {
       it("wraps non-array values and preserves arrays", function () {
         expect(ValueUtilities.listify("a")).to.deep.equal(["a"]);
@@ -112,6 +140,19 @@ define(["common/ValueUtilities", "common/UrlUtilities"], function (
           "a",
           "b",
         ]);
+      });
+    });
+
+    describe("deepClone", function () {
+      it("clones nested values without retaining shared references", function () {
+        const source = { nested: { values: ["a"] } };
+        const clone = ValueUtilities.deepClone(source);
+
+        clone.nested.values.push("b");
+
+        expect(clone).to.deep.equal({ nested: { values: ["a", "b"] } });
+        expect(source).to.deep.equal({ nested: { values: ["a"] } });
+        expect(ValueUtilities.deepClone(undefined)).to.equal(undefined);
       });
     });
 
@@ -181,6 +222,27 @@ define(["common/ValueUtilities", "common/UrlUtilities"], function (
         expect(ValueUtilities.isPlainObject(null)).to.equal(false);
         expect(ValueUtilities.isPlainObject("x")).to.equal(false);
       });
+
+      it("checks own properties", function () {
+        const inherited = Object.create({ value: 1 });
+
+        expect(ValueUtilities.hasOwn({ value: 1 }, "value")).to.equal(true);
+        expect(ValueUtilities.hasOwn(inherited, "value")).to.equal(false);
+        expect(ValueUtilities.hasOwn(null, "value")).to.equal(false);
+      });
+
+      it("checks arrays for non-empty values", function () {
+        expect(ValueUtilities.isNonEmptyArray([])).to.equal(false);
+        expect(ValueUtilities.isNonEmptyArray([null, ""])).to.equal(false);
+        expect(ValueUtilities.isNonEmptyArray([0])).to.equal(true);
+      });
+
+      it("checks positive integers", function () {
+        expect(ValueUtilities.isPositiveInteger(1)).to.equal(true);
+        expect(ValueUtilities.isPositiveInteger(0)).to.equal(false);
+        expect(ValueUtilities.isPositiveInteger(-1)).to.equal(false);
+        expect(ValueUtilities.isPositiveInteger(1.5)).to.equal(false);
+      });
     });
 
     describe("requireNonEmptyString", function () {
@@ -210,6 +272,15 @@ define(["common/ValueUtilities", "common/UrlUtilities"], function (
         expect(function () {
           ValueUtilities.requireNonNegativeInteger(1.5, "Need index");
         }).to.throw("Need index");
+      });
+    });
+
+    describe("requirePositiveInteger", function () {
+      it("returns positive integers and rejects other values", function () {
+        expect(ValueUtilities.requirePositiveInteger(1)).to.equal(1);
+        expect(function () {
+          ValueUtilities.requirePositiveInteger(0, "Need positive integer");
+        }).to.throw("Need positive integer");
       });
     });
 

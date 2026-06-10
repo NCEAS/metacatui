@@ -333,36 +333,9 @@ define([], () => {
      * @since 0.0.0
      */
     getDirectChildTexts(node, name) {
-      return this.findDirectChildElements(node, name).map((child) =>
-        child?.textContent?.trim() || null,
+      return this.findDirectChildElements(node, name).map(
+        (child) => child?.textContent?.trim() || null,
       );
-    },
-
-    /**
-     * Build a namespace map from prefix-to-URI entries.
-     * @param {object} namespaceUris Prefix-to-URI map.
-     * @param {Function} [valueBuilder] Optional mapper for each namespace URI.
-     * @returns {object} Namespace map with the same keys as the input.
-     * @since 0.0.0
-     */
-    buildNamespaceMap(namespaceUris, valueBuilder = (value) => value) {
-      const source =
-        namespaceUris &&
-        typeof namespaceUris === "object" &&
-        !Array.isArray(namespaceUris)
-          ? namespaceUris
-          : {};
-      const buildValue =
-        typeof valueBuilder === "function" ? valueBuilder : (value) => value;
-
-      const keys = Object.keys(source);
-
-      const nsMap = {};
-      keys.forEach((key) => {
-        nsMap[key] = buildValue(source[key], key);
-      });
-
-      return nsMap;
     },
 
     /**

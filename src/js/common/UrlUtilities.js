@@ -395,21 +395,21 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
      * Build a full URL from a base URL and a relative path.
      * @param {string} [baseUrl] Base URL.
      * @param {string} [path] Path relative to the base URL.
-     * @param {object|boolean} [options] Options or legacy encodePath flag.
+     * @param {object} [options] Options.
      * @param {boolean} [options.encodePath] Whether to encode path segments
      * before joining.
      * @param {string} [options.fallbackOrigin] Fallback origin when baseUrl is
      * empty.
      * @returns {string} Full URL.
      */
-    buildUrl(baseUrl = "", path = "", options = {}) {
-      const normalizedOptions =
-        typeof options === "boolean" ? { encodePath: options } : options || {};
-      const {
+    buildUrl(
+      baseUrl = "",
+      path = "",
+      {
         encodePath = true,
         fallbackOrigin = globalThis.window?.location?.origin || "",
-      } = normalizedOptions;
-
+      } = {},
+    ) {
       const normalizedPath = normalizeText(path);
       const normalizedBaseUrl =
         normalizeText(baseUrl) || normalizeText(fallbackOrigin);
@@ -446,6 +446,19 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
           : correctedPath;
 
       return UrlUtilities.normalizeUrl(new URL(urlPath, correctedBaseUrl));
+    },
+
+    /**
+     * Get a URL for viewing a DataONE object with the given PID.
+     * @param {string} pid ID for the DataONE object.
+     * @returns {string} URL for viewing the object.
+     */
+    getViewLink(pid) {
+      const root = MetacatUI.root || MetacatUI.appModel.get("baseUrl");
+      return UrlUtilities.buildUrl(
+        root,
+        `view/${UrlUtilities.encodeDataONEPidForPath(pid)}`,
+      );
     },
   };
 

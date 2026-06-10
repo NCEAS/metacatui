@@ -81,6 +81,41 @@ define(["common/Utilities"], function (Utilities) {
 
         expect(result).to.equal(false);
       });
+
+      it("resolves properties from a nested appModel", async function () {
+        window.MetacatUI = {
+          appModel: {
+            get(property) {
+              return property === "metaServiceUrl"
+                ? "https://example.org/meta"
+                : undefined;
+            },
+          },
+        };
+
+        const result = await Utilities.awaitMetacatUI({
+          property: "metaServiceUrl",
+          maxAttempts: 1,
+          delay: 0,
+        });
+
+        expect(result).to.equal("https://example.org/meta");
+      });
+
+      it("resolves properties from a named MetacatUI app", async function () {
+        window.MetacatUI = {
+          customApp: { serviceUrl: "https://example.org/service" },
+        };
+
+        const result = await Utilities.awaitMetacatUI({
+          appName: "customApp",
+          property: "serviceUrl",
+          maxAttempts: 1,
+          delay: 0,
+        });
+
+        expect(result).to.equal("https://example.org/service");
+      });
     });
   });
 });

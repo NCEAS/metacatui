@@ -191,7 +191,7 @@ define([
         if (!this.pid) return this;
         if (!this.versionTracker) {
           const metaServiceUrl = await Utilities.awaitMetacatUI({
-            property: "sysMetaModel",
+            property: "metaServiceUrl",
           });
           this.versionTracker = new VersionTracker({ metaServiceUrl });
         }

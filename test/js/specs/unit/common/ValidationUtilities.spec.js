@@ -65,6 +65,21 @@ define(["common/ValidationUtilities"], function (ValidationUtilities) {
           extra: true,
         });
       });
+
+      it("creates structured validation warnings", function () {
+        expect(
+          ValidationUtilities.createValidationWarning({
+            field: "fieldA",
+            message: "Problem",
+            code: "warnField",
+          }),
+        ).to.deep.equal({
+          field: "fieldA",
+          message: "Problem",
+          severity: "warning",
+          code: "warnField",
+        });
+      });
     });
 
     describe("typed validators", function () {

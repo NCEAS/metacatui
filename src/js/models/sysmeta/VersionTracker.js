@@ -3,7 +3,8 @@ define([
   "models/dataONEServices/SysMetaService",
   "common/UrlUtilities",
   "common/DateUtilities",
-], (Backbone, SysMetaService, UrlUtilities, DateUtilities) => {
+  "common/ValueUtilities",
+], (Backbone, SysMetaService, UrlUtilities, DateUtilities, ValueUtilities) => {
   /**
    * @constant {number} DEFAULT_TTL_MS Default Time-To-Live for cached data
    * object to resource map PID mappings, in milliseconds.
@@ -448,6 +449,56 @@ define([
     }
 
     /**
+     * Check whether a set of PIDs belongs to one known version chain.
+     * @param {string[]} pids PIDs to compare
+     * @param {object} [options] options to pass to SysMetaService.download
+     * @returns {Promise<object>} Chain membership details
+     */
+    async checkPidsInSameVersionChain(pids = [], options = {}) {
+      const uniquePids = ValueUtilities.normalizeStringList(pids);
+      const result = {
+        pids: uniquePids,
+        sameChain: false,
+        chain: [],
+        newestPid: null,
+        newestInChain: null,
+        chainComplete: true,
+        endIsPrivate: false,
+        endNotFound: false,
+      };
+
+      if (!uniquePids.length) return result;
+      const anchorPid = uniquePids[0];
+
+      // Only need one chain, since matching PIDs should all appear in it.
+      const record = await this.getAllVersions(anchorPid, options);
+      const { next, prev } = record;
+      const prevVersions = prev?.versions || [];
+      const nextVersions = next?.versions || [];
+      const chain = [...prevVersions]
+        .reverse()
+        .concat([anchorPid], nextVersions);
+      const chainSet = new Set(chain);
+
+      result.chain = chain;
+      result.sameChain = uniquePids.every((value) => chainSet.has(value));
+      result.newestInChain = chain[chain.length - 1] || null;
+      result.newestPid = uniquePids.reduce((latest, value) => {
+        const latestIndex = chain.indexOf(latest);
+        const valueIndex = chain.indexOf(value);
+        return valueIndex > latestIndex ? value : latest;
+      }, uniquePids[0]);
+      result.chainComplete =
+        (prev?.chainComplete ?? true) && (next?.chainComplete ?? true);
+      result.endIsPrivate = Boolean(
+        prev?.endIsPrivate || next?.endIsPrivate,
+      );
+      result.endNotFound = Boolean(prev?.endNotFound || next?.endNotFound);
+
+      return result;
+    }
+
+    /**
      * Check if the given PID is at the end of its version chain in the given
      * direction.
      * @param {string} pid PID to check
@@ -475,7 +526,13 @@ define([
     async getLatestVersion(pid, options = {}) {
       const record = await this.getAllVersionsOneDirection(pid, true, options);
       const { versions, completedSteps } = record;
-      if (completedSteps === 0) return pid;
+      if (completedSteps === 0) {
+        // In case the input PID is a series ID, make sure we return the PID of
+        // the version, not the series ID.
+        if (record.endIsPrivate || record.endNotFound) return pid;
+        const sysMeta = await this.getSysMeta(pid, options);
+        return sysMeta?.identifier || pid;
+      }
       return versions[versions.length - 1];
     }
 

@@ -11,6 +11,12 @@ define([
     obsoletes: prevPid,
   });
 
+  const makeIdentifiedSysMeta = (identifier, nextPid = null, prevPid = null) => ({
+    identifier,
+    obsoletedBy: nextPid,
+    obsoletes: prevPid,
+  });
+
   const makeDatedSysMeta = ({
     identifier,
     dateUploaded,
@@ -682,6 +688,70 @@ define([
         stub.secondCall.args.should.deep.equal(["pid.1", true, options]);
       });
 
+      it("checkPidsInSameVersionChain returns chain membership details", async () => {
+        state.sandbox.stub(state.vt, "getAllVersions").resolves({
+          prev: { versions: ["pid.0"] },
+          next: { versions: ["pid.2"], chainComplete: true },
+        });
+
+        const result = await state.vt.checkPidsInSameVersionChain([
+          "pid.1",
+          "pid.2",
+        ]);
+
+        result.should.deep.equal({
+          pids: ["pid.1", "pid.2"],
+          sameChain: true,
+          chain: ["pid.0", "pid.1", "pid.2"],
+          newestPid: "pid.2",
+          newestInChain: "pid.2",
+          chainComplete: true,
+          endIsPrivate: false,
+          endNotFound: false,
+        });
+      });
+
+      it("checkPidsInSameVersionChain reports incomplete private ends", async () => {
+        state.sandbox.stub(state.vt, "getAllVersions").resolves({
+          prev: { versions: [] },
+          next: {
+            versions: ["pid.2"],
+            chainComplete: false,
+            endIsPrivate: true,
+          },
+        });
+
+        const result = await state.vt.checkPidsInSameVersionChain([
+          "pid.1",
+          "pid.other",
+        ]);
+
+        result.sameChain.should.equal(false);
+        result.newestPid.should.equal("pid.1");
+        result.chainComplete.should.equal(false);
+        result.endIsPrivate.should.equal(true);
+      });
+
+      it("checkPidsInSameVersionChain reports incomplete older ends", async () => {
+        state.sandbox.stub(state.vt, "getAllVersions").resolves({
+          prev: {
+            versions: ["pid.0"],
+            chainComplete: false,
+            endNotFound: true,
+          },
+          next: { versions: ["pid.2"], chainComplete: true },
+        });
+
+        const result = await state.vt.checkPidsInSameVersionChain([
+          "pid.1",
+          "pid.2",
+        ]);
+
+        result.sameChain.should.equal(true);
+        result.chainComplete.should.equal(false);
+        result.endNotFound.should.equal(true);
+      });
+
       it("isEndOfChain inspects sysmeta links", async () => {
         state.service.download.resolves(makeSysMeta("pid.2", null));
 
@@ -713,6 +783,29 @@ define([
 
         const latest = await state.vt.getLatestVersion("pid.1");
         latest.should.equal("pid.1");
+      });
+
+      it("returns the resolved sysmeta identifier when a series ID has no newer versions", async () => {
+        state.service.download.resolves(
+          makeIdentifiedSysMeta("pid.1", null, null),
+        );
+
+        const latest = await state.vt.getLatestVersion("seriesId.1");
+
+        latest.should.equal("pid.1");
+      });
+
+      it("returns the input PID when the starting sysmeta is not accessible", async () => {
+        state.sandbox.stub(state.vt, "getAllVersionsOneDirection").resolves({
+          versions: [],
+          completedSteps: 0,
+          endIsPrivate: true,
+        });
+
+        const latest = await state.vt.getLatestVersion("pid.1");
+
+        latest.should.equal("pid.1");
+        state.service.download.called.should.equal(false);
       });
 
       it("clears cache via SysMetaService", async () => {

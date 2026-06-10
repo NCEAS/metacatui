@@ -2,7 +2,6 @@
 
 define(["jquery"], ($) => {
   /**
-   *
    * @typedef {object} QueryOptions
    * @property {string}  q Solr query (Lucene syntax). Default `*:*`.
    * @property {string[]|string} [filterQueries] Filter queries (fq) to apply.
@@ -11,15 +10,15 @@ define(["jquery"], ($) => {
    * @property {number} [rows] Result row count. Default `25`.
    * @property {number} [start] Result offset. Default `0`.
    * @property {string[]} [facets] Fields to facet on.
-   * @property {string[]} [facetQueries] Facet queries (fq) to apply.
    * @property {string[]} [statsFields] Fields for statistics (stats.field).
-   * @property {string} [facetQueries] Facet queries (facet.query) to apply.
+   * @property {string[]|string} [facetQueries] Facet queries (facet.query) to
+   * apply.
    * @property {number} [facetLimit] Default `-1` (no limit).
    * @property {number} [facetMinCount] Default `1`.
-   * @property {} [facetRange]
-   * @property {string} [facetRangeStart]
-   * @property {string} [facetRangeEnd]
-   * @property {string} [facetRangeGap]
+   * @property {string} [facetRange] Field to use for range faceting.
+   * @property {string} [facetRangeStart] Lower bound for range faceting.
+   * @property {string} [facetRangeEnd] Upper bound for range faceting.
+   * @property {string} [facetRangeGap] Interval between range facets.
    * @property {string} [urlBase] Optional override for the query service base
    * URL.
    * @property {boolean} [usePost] Force POST / GET (overrides auto-choice).
@@ -38,25 +37,30 @@ define(["jquery"], ($) => {
    */
 
   /**
+   * Possible values for the formatType field.
+   */
+  const FORMAT_TYPES = Object.freeze({
+    RESOURCE: "RESOURCE",
+    METADATA: "METADATA",
+    DATA: "DATA",
+  });
+
+  /**
    * QueryService provides methods to execute Solr queries against the
    * configured query service URL. It supports both GET and POST requests,
    * handles query parameters, and can include facets, filter queries, and
    * statistics fields.
    * @class QueryService
+   * @since 0.0.0
    */
   class QueryService {
-    // --------------------------------------------------------------------- //
-    //  Public API
-    // --------------------------------------------------------------------- //
-
     /**
      * Common logic to extract query configuration from options.
-     * @param {QueryOptions} opts
+     * @param {QueryOptions} opts Query options.
      * @returns {object} { queryParams, urlBase, shouldPost }
      */
     static getQueryConfig(opts = {}) {
-      let {
-        q = "*:*",
+      const {
         filterQueries = [],
         fields = [],
         sort = "dateUploaded desc",
@@ -79,6 +83,8 @@ define(["jquery"], ($) => {
         groupField,
         groupLimit,
       } = opts;
+
+      let { q = "*:*" } = opts;
 
       // Normalize q and other query-like inputs if callers provided URL-encoded strings
       q = QueryService.normalizeLucene(q, { label: "q" });
@@ -229,7 +235,7 @@ define(["jquery"], ($) => {
         return [];
       }
 
-      const docs = response.response.docs;
+      const { docs } = response.response;
       QueryService.removeEmptyValues(docs);
       QueryService.parseResourceMapFields(docs);
 
@@ -239,7 +245,7 @@ define(["jquery"], ($) => {
 
     /**
      * Parses the resourceMap fields from the Solr response JSON.
-     * @param {object[]} json - The "docs" part of a JSON object from the Solr
+     * @param {object[]} docs - The "docs" part of a JSON object from the Solr
      * response
      * @returns {object[]} The updated docs with parsed resourceMap fields,
      * though the original docs are modified in place.
@@ -250,7 +256,9 @@ define(["jquery"], ($) => {
       }
       docs.forEach((doc) => {
         if (doc.resourceMap) {
-          doc.resourceMap = QueryService.parseResourceMapField(doc);
+          Object.assign(doc, {
+            resourceMap: QueryService.parseResourceMapField(doc),
+          });
         }
       });
       return docs;
@@ -268,7 +276,7 @@ define(["jquery"], ($) => {
      */
     static buildIdQuery(pid, sid) {
       let query = "";
-      const getQueryPart = QueryService.getQueryPart;
+      const { getQueryPart } = QueryService;
       // If there is no pid set, then search for sid or pid
       if (!sid)
         query += `(${getQueryPart("id", pid)} OR ${getQueryPart("seriesId", pid)})`;
@@ -294,7 +302,7 @@ define(["jquery"], ($) => {
           "QueryService.escapeLucene(): value must be a string.",
         );
       }
-      return value.replace(/([+\-!(){}\[\]^"~*?:\\/])/g, "\\$1");
+      return value.replace(/([+\-!(){}[\]^"~*?:\\/])/g, "\\$1");
     }
 
     /**
@@ -314,7 +322,7 @@ define(["jquery"], ($) => {
 
     /**
      * Parses the resourceMap field from the Solr response JSON.
-     * @param {object} json - The JSON object from the Solr response
+     * @param {object} doc - The JSON object from the Solr response
      * @returns {string|string[]} The resourceMap parsed. If it is a string,
      * it returns the trimmed string. If it is an array, it returns an array
      * of trimmed strings. If it is neither, it returns an empty array.
@@ -326,11 +334,12 @@ define(["jquery"], ($) => {
       const rms = doc.resourceMap;
       if (typeof rms === "string") {
         return [rms.trim()];
-      } else if (Array.isArray(rms)) {
+      }
+      if (Array.isArray(rms)) {
         return rms
-          .map((rMapId) => {
-            return typeof rMapId === "string" ? rMapId.trim() : rMapId;
-          })
+          .map((rMapId) =>
+            typeof rMapId === "string" ? rMapId.trim() : rMapId,
+          )
           .filter(Boolean); // Filter out any falsy values
       }
       // If nothing works so far, return an empty array
@@ -351,16 +360,12 @@ define(["jquery"], ($) => {
       docs.forEach((doc) => {
         Object.keys(doc).forEach((key) => {
           if (doc[key] === null || doc[key] === undefined || doc[key] === "") {
-            delete doc[key];
+            Reflect.deleteProperty(doc, key);
           }
         });
       });
       return docs;
     }
-
-    // --------------------------------------------------------------------- //
-    //  Private helpers
-    // --------------------------------------------------------------------- //
 
     /**
      * Get the configured query service URL from MetacatUI's appModel. Throws an
@@ -477,7 +482,7 @@ define(["jquery"], ($) => {
       // stats
       const statsFieldsArray = [].concat(statsFields).flat().filter(Boolean);
       if (statsFieldsArray.length) {
-        params["stats"] = "true";
+        params.stats = "true";
         statsFieldsArray.forEach((field) => {
           params["stats.field"] = params["stats.field"] || [];
           params["stats.field"].push(field);
@@ -485,7 +490,7 @@ define(["jquery"], ($) => {
       }
 
       if (archived) {
-        params["archived"] = "archived:*";
+        params.archived = "archived:*";
       }
 
       // groups
@@ -583,7 +588,7 @@ define(["jquery"], ($) => {
      */
     static decidePost(explicit) {
       if (typeof explicit === "boolean") return explicit;
-      if (!!MetacatUI?.appModel?.get("disableQueryPOSTs")) return false;
+      if (MetacatUI?.appModel?.get("disableQueryPOSTs")) return false;
       return true;
     }
 
@@ -658,6 +663,8 @@ define(["jquery"], ($) => {
       return { ...ajaxOpts, ...auth };
     }
   }
+
+  QueryService.FORMAT_TYPES = FORMAT_TYPES;
 
   return QueryService;
 });

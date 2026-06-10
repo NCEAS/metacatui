@@ -398,7 +398,7 @@ define([
         responseType,
         normalizedTransport,
       );
-      const url = UrlUtilities.buildUrl(this.baseUrl, path, encodePath);
+      const url = UrlUtilities.buildUrl(this.baseUrl, path, { encodePath });
 
       const mergedHeaders = this.constructor.mergeHeaders(
         this.defaultHeaders,

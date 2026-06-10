@@ -260,7 +260,7 @@ define([
         const expected = UrlUtilities.buildUrl(
           "https://example.org",
           path,
-          true,
+          { encodePath: true },
         );
 
         await state.client.request({ path });
@@ -559,7 +559,7 @@ define([
         const expected = UrlUtilities.buildUrl(
           "https://example.org",
           path,
-          false,
+          { encodePath: false },
         );
 
         await state.client.request({ path, encodePath: false });

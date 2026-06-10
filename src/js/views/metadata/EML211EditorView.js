@@ -417,7 +417,7 @@ define([
       async getDataPackage(model) {
         const metaModel = model || this.model;
         const metaServiceUrl = await Utilities.awaitMetacatUI({
-          property: "sysMetaModel",
+          property: "metaServiceUrl",
         });
         const resolver = new ResourceMapResolver({
           metaServiceUrl,

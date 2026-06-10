@@ -219,7 +219,7 @@ define([
       const url = UrlUtilities.buildUrl(
         "https://example.org",
         "object/pid:abc 123",
-        true,
+        { encodePath: true },
       );
       url.should.equal("https://example.org/object/pid%3Aabc%20123");
     });
@@ -228,7 +228,7 @@ define([
       UrlUtilities.buildUrl(
         "https://example.org/object/read",
         "doi:10.5063%2Fabc",
-        false,
+        { encodePath: false },
       ).should.equal("https://example.org/object/read/doi:10.5063%2Fabc");
     });
 
@@ -236,7 +236,7 @@ define([
       const url = UrlUtilities.buildUrl(
         "https://example.org/api/v1",
         "object/pid:abc 123",
-        true,
+        { encodePath: true },
       );
       url.should.equal("https://example.org/api/v1/object/pid%3Aabc%20123");
     });
@@ -245,7 +245,7 @@ define([
       const url = UrlUtilities.buildUrl(
         "https://example.org",
         "object/pid:abc 123",
-        false,
+        { encodePath: false },
       );
       // The space is still encoded because JS's URL normalizes URLs to encode
       // characters that are not allowed in URLs
@@ -253,7 +253,9 @@ define([
     });
 
     it("builds URLs with empty paths", () => {
-      const url = UrlUtilities.buildUrl("https://example.org", "", true);
+      const url = UrlUtilities.buildUrl("https://example.org", "", {
+        encodePath: true,
+      });
       url.should.equal("https://example.org");
     });
 

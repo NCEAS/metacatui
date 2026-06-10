@@ -1,6 +1,60 @@
 "use strict";
 
 define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
+  const FORMAT_MAP = {
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+      "Microsoft Excel OpenXML",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+      "Microsoft Word OpenXML",
+    "application/vnd.ms-excel.sheet.binary.macroEnabled.12":
+      "Microsoft Office Excel 2007 binary workbooks",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+      "Microsoft Office OpenXML Presentation",
+    "application/vnd.ms-excel": "Microsoft Excel",
+    "application/msword": "Microsoft Word",
+    "application/vnd.ms-powerpoint": "Microsoft Powerpoint",
+    "text/html": "HTML",
+    "text/plain": "plain text (.txt)",
+    "video/avi": "Microsoft AVI file",
+    "video/x-ms-wmv": "Windows Media Video (.wmv)",
+    "audio/x-ms-wma": "Windows Media Audio (.wma)",
+    "application/vnd.google-earth.kml xml":
+      "Google Earth Keyhole Markup Language (KML)",
+    "http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html":
+      "annotation",
+    "application/mathematica": "Mathematica Notebook",
+    "application/postscript": "Postscript",
+    "application/rtf": "Rich Text Format (RTF)",
+    "application/xml": "XML Application",
+    "text/xml": "XML",
+    "application/x-fasta": "FASTA sequence file",
+    "nexus/1997": "NEXUS File Format for Systematic Information",
+    "anvl/erc-v02":
+      "Kernel Metadata and Electronic Resource Citations (ERCs), 2010.05.13",
+    "http://purl.org/dryad/terms/":
+      "Dryad Metadata Application Profile Version 3.0",
+    "http://datadryad.org/profile/v3.1":
+      "Dryad Metadata Application Profile Version 3.1",
+    "application/pdf": "PDF",
+    "application/zip": "ZIP file",
+    "http://www.w3.org/TR/rdf-syntax-grammar": "RDF/XML",
+    "http://www.w3.org/TR/rdfa-syntax": "RDFa",
+    "application/rdf xml": "RDF",
+    "text/turtle": "TURTLE",
+    "text/n3": "N3",
+    "application/x-gzip": "GZIP Format",
+    "application/x-python": "Python script",
+    "http://www.w3.org/2005/Atom": "ATOM-1.0",
+    "application/octet-stream": "octet stream (application file)",
+    "http://digir.net/schema/conceptual/darwin/2003/1.0/darwin2.xsd":
+      "Darwin Core, v2.0",
+    "http://rs.tdwg.org/dwc/xsd/simpledarwincore/": "Simple Darwin Core",
+    "eml://ecoinformatics.org/eml-2.1.0": "EML v2.1.0",
+    "eml://ecoinformatics.org/eml-2.1.1": "EML v2.1.1",
+    "eml://ecoinformatics.org/eml-2.0.1": "EML v2.0.1",
+    "eml://ecoinformatics.org/eml-2.0.0": "EML v2.0.0",
+    "https://eml.ecoinformatics.org/eml-2.2.0": "EML v2.2.0",
+  };
   /**
    * @namespace Utilities
    * @description Miscellaneous app/browser helpers that do not yet fit better
@@ -91,13 +145,14 @@ define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
     },
 
     /**
-     * Read a MetacatUI property directly or via Backbone's `get`.
+     * Read a MetacatUI property directly, via Backbone's `get`, or from a
+     * nested appModel.
      * @param {string} property Property name to retrieve.
      * @param {object} [app] MetacatUI object.
      * @returns {*} Property value, or `undefined` when not present.
      */
     getMetacatUIProperty(property, app) {
-      const normalizedApp = app || globalThis.MetacatUI;
+      const normalizedApp = app || globalThis.MetacatUI?.appModel;
       if (!normalizedApp || !property) return undefined;
 
       if (normalizedApp[property] !== undefined) {
@@ -105,10 +160,13 @@ define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
       }
 
       if (typeof normalizedApp.get === "function") {
-        return normalizedApp.get(property);
+        const value = normalizedApp.get(property);
+        if (value !== undefined) return value;
       }
 
-      return undefined;
+      return normalizedApp.appModel
+        ? Utilities.getMetacatUIProperty(property, normalizedApp.appModel)
+        : undefined;
     },
 
     /**
@@ -123,6 +181,8 @@ define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
      * the MetacatUI object. If provided, the Promise won't resolve until that
      * property is available and not undefined. Otherwise, just waits for the
      * global MetacatUI object itself.
+     * @param {string} [options.appName] Optional MetacatUI property containing
+     * the object to wait for.
      * @returns {Promise<*>} Promise resolving to the requested global object or
      * property value.
      * @throws {Error} If the requested value is not available in time.
@@ -132,11 +192,14 @@ define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
       maxAttempts = 20,
       delay = 200,
       property = "",
+      appName = "",
     } = {}) {
       let attempts = 0;
       while (attempts < maxAttempts) {
         attempts += 1;
-        const app = globalThis.MetacatUI;
+        const app = appName
+          ? globalThis.MetacatUI?.[appName]
+          : globalThis.MetacatUI;
 
         if (app != null) {
           // If we're just waiting for the global object, return it now
@@ -210,6 +273,18 @@ define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
       });
       await fetchFormats;
       return app.objectFormats.toJSON();
+    },
+
+    /**
+     * Convert a format ID into a human-readable format name, if possible. If
+     * the format ID is not in the map, returns the original format ID.
+     * @param {string} formatId Format ID to convert.
+     * @returns {string} Human-readable format name, or original format ID if
+     * not found in the map.
+     * @since 0.0.0
+     */
+    getFriendlyFormat(formatId) {
+      return FORMAT_MAP[formatId] || formatId;
     },
   };
 

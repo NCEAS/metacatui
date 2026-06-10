@@ -125,6 +125,31 @@ define(["md5"], (md5) => {
     },
 
     /**
+     * Normalize, drop empty entries, and deduplicate string-like values while
+     * accepting either a single value or an array of values.
+     * @param {*} value Value or array of values to normalize and dedupe.
+     * @returns {string[]} Deduplicated normalized strings.
+     */
+    normalizeStringList(value) {
+      return ValueUtilities.dedupeStrings(ValueUtilities.listify(value));
+    },
+
+    /**
+     * Normalize, drop empty entries, and deduplicate string-like values while
+     * preserving first-seen order.
+     * @param {Array<*>} values Values to normalize and dedupe.
+     * @returns {string[]} Deduplicated normalized strings.
+     */
+    dedupeStrings(values) {
+      return ValueUtilities.dedupeBy(
+        (Array.isArray(values) ? values : [])
+          .map((value) => ValueUtilities.normalizeText(value))
+          .filter((value) => value !== null && value !== ""),
+        (value) => value,
+      );
+    },
+
+    /**
      * Deduplicate array values while preserving first-seen order.
      * @param {Array<*>} values Values to dedupe.
      * @returns {Array<*>} Deduplicated array.
@@ -209,6 +234,26 @@ define(["md5"], (md5) => {
           Array.isArray(value) ? [...value] : value,
         ]),
       );
+    },
+
+    /**
+     * Clone an arbitrary value using structuredClone when available, or a
+     * JSON-based fallback for older browsers (note: the fallback won't handle
+     * functions, Dates, etc.).
+     * @param {*} value Value to clone.
+     * @returns {*} Deeply cloned value.
+     */
+    deepClone(value) {
+      // First check if structuredClone is available (modern browsers)
+      if (typeof structuredClone === "function") {
+        return structuredClone(value);
+      }
+      if (value === undefined) {
+        return undefined;
+      }
+      // Fallback to JSON-based cloning for simple objects (note: this won't
+      // handle functions, Dates, etc.)
+      return JSON.parse(JSON.stringify(value));
     },
 
     /**
@@ -366,12 +411,37 @@ define(["md5"], (md5) => {
     },
 
     /**
+     * Check whether an object defines one own property.
+     * @param {*} value Candidate object.
+     * @param {string} key Property name to check.
+     * @returns {boolean} True when the object defines the property directly.
+     */
+    hasOwn(value, key) {
+      return ValueUtilities.isPlainObject(value)
+        ? Object.prototype.hasOwnProperty.call(value, key)
+        : false;
+    },
+
+    /**
      * Check whether a value is a non-empty string.
      * @param {*} value Candidate value.
      * @returns {boolean} True when value is a non-empty string.
      */
     isNonEmptyString(value) {
       return typeof value === "string" && value.trim().length > 0;
+    },
+
+    /**
+     * Check whether an array contains at least one non-empty value.
+     * @param {*} value Candidate array.
+     * @returns {boolean} True when the array contains a non-empty value.
+     */
+    isNonEmptyArray(value) {
+      if (!Array.isArray(value) || value.length === 0) return false;
+      const nonEmptyItems = value
+        .map((item) => ValueUtilities.nullIfEmpty(item))
+        .filter((item) => item !== null);
+      return nonEmptyItems.length > 0;
     },
 
     /**
@@ -402,6 +472,15 @@ define(["md5"], (md5) => {
     },
 
     /**
+     * Check whether a value is a positive integer (aka natural number).
+     * @param {*} value Candidate value.
+     * @returns {boolean} True when value is a natural number.
+     */
+    isPositiveInteger(value) {
+      return Number.isInteger(value) && value > 0;
+    },
+
+    /**
      * Require a non-negative integer and throw when invalid.
      * @param {*} value Candidate index value.
      * @param {string} [message] Error message to throw when invalid.
@@ -413,6 +492,23 @@ define(["md5"], (md5) => {
       message = "Value must be a non-negative integer index",
     ) {
       if (!ValueUtilities.isNonNegativeInteger(value)) {
+        throw new Error(message);
+      }
+      return value;
+    },
+
+    /**
+     * Require a positive integer and throw when invalid.
+     * @param {*} value Candidate index value.
+     * @param {string} [message] Error message to throw when invalid.
+     * @returns {number} Original integer index when valid.
+     * @throws {Error} When the value is not a positive integer.
+     */
+    requirePositiveInteger(
+      value,
+      message = "Value must be a positive integer",
+    ) {
+      if (!ValueUtilities.isPositiveInteger(value)) {
         throw new Error(message);
       }
       return value;

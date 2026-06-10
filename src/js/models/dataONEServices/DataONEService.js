@@ -253,7 +253,8 @@ define([
      * @returns {Promise<Backbone.Model>} Promise resolving to the user model.
      */
     static async awaitUserModel() {
-      return Utilities.awaitMetacatUI({ property: "appUserModel" });
+      await Utilities.awaitMetacatUI({ appName: "appUserModel" });
+      return globalThis.MetacatUI?.appUserModel || null;
     }
 
     /**

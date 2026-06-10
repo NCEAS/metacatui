@@ -61,6 +61,18 @@ define(["common/ValueUtilities", "common/DateUtilities"], (
     },
 
     /**
+     * Create a structured validation warning.
+     * @param {object} [options] Validation warning options.
+     * @returns {object} Validation warning object.
+     */
+    createValidationWarning(options = {}) {
+      return ValidationUtilities.createValidationIssue({
+        severity: "warning",
+        ...options,
+      });
+    },
+
+    /**
      * Append one parse warning in the shared validation-error shape.
      * @param {Array<object>} parseWarnings Target parse-warning array.
      * @param {string} field Field path.
