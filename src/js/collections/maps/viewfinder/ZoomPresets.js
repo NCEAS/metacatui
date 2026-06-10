@@ -165,7 +165,18 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
               featureId: zoomPresetObj.featureId,
               isLEONetwork: zoomPresetObj.isLEONetwork === true,
               featureLayerId: zoomPresetObj.featureLayerId || null,
-              featureLayer: featureLayer,
+              featureLayer,
+              // Visualization / Virtual Tour fields
+              authors: zoomPresetObj.authors || [],
+              ctaIcon: zoomPresetObj.ctaIcon || "",
+              ctaText: zoomPresetObj.ctaText || "",
+              date: zoomPresetObj.date || null,
+              iframePermissions:
+                zoomPresetObj.iframePermissions ||
+                "allow-scripts allow-same-origin",
+              iframeUrl: zoomPresetObj.iframeUrl || null,
+              messageOrigin: zoomPresetObj.messageOrigin || "",
+              tabUrl: zoomPresetObj.tabUrl || null,
             },
             { parse: true },
           );

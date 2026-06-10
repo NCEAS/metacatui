@@ -10,22 +10,35 @@ define([
   // The HTML classes to use for this view's HTML elements.
   const CLASS_NAMES = {
     active: `${BASE_CLASS}--active`,
+    actions: `${BASE_CLASS}__actions`,
+    authors: `${BASE_CLASS}__authors`,
+    card: `${BASE_CLASS}__card`,
+    ctaButton: `${BASE_CLASS}__cta-button`,
+    date: `${BASE_CLASS}__date`,
     description: `${BASE_CLASS}__description`,
+    header: `${BASE_CLASS}__header`,
+    image: `${BASE_CLASS}__image`,
     layer: `${BASE_CLASS}__layer`,
     layerContent: `${BASE_CLASS}__layer-content`,
     layers: `${BASE_CLASS}__layers`,
-    preset: `${BASE_CLASS}__preset`,
+    meta: `${BASE_CLASS}__meta`,
+    openTabButton: `${BASE_CLASS}__open-tab-button`,
     title: `${BASE_CLASS}__title`,
-    image: `${BASE_CLASS}__image`,
+    viewLayersButton: `${BASE_CLASS}__view-layers-button`,
   };
   // A function that does nothing. Can be safely called as a default callback.
   const noop = () => {};
 
   /**
    * @class ZoomPresetView
-   * @classdesc Shows the title, description, and associated layers of a
-   * configured location within a MapView. Users may click on a preset
-   * to zoom to that location.
+   * @classdesc Shows the title, description, optional metadata, and action
+   * buttons for a configured location within a MapView. Card variants:
+   * - Basic: "View Layers" button zooms and toggles relevant layers.
+   * - Virtual Tour: adds "Open in Browser" button opening `tabUrl` in a new
+   *   tab.
+   * - Visualization App: adds "Explore in App" button opening `iframeUrl` in
+   *   a full-screen overlay above the map.
+   * The card body itself is not interactive — all actions are explicit buttons.
    * @classcategory Views/Maps/Viewfinder
    * @name ZoomPresetView
    * @augments Backbone.View
@@ -50,21 +63,70 @@ define([
        */
       events() {
         return {
-          [`click .${CLASS_NAMES.preset}`]: "select",
+          [`click .${CLASS_NAMES.viewLayersButton}`]: "selectLayers",
+          [`click .${CLASS_NAMES.openTabButton}`]: "openTab",
+          [`click .${CLASS_NAMES.ctaButton}`]: "selectVisualization",
         };
       },
 
-      resetActiveState() {
-        this.el.classList.remove(CLASS_NAMES.active);
+      /**
+       * Zoom to the preset's location and toggle the relevant layers. Closes
+       * any open visualization overlay first.
+       */
+      selectLayers() {
+        this.closeVisualizationCallback();
+        this.selectCallback();
+        this.setActiveButton(CLASS_NAMES.viewLayersButton);
       },
 
       /**
-       * Add the active class and call the select callback function set on
-       * this view by the parent ZoomPresetsListView.
+       * Open the preset's tabUrl in a new browser tab. Closes any open
+       * visualization overlay first. Uses noopener,noreferrer for security.
        */
-      select() {
-        this.selectCallback();
-        this.el.classList.add(CLASS_NAMES.active);
+      openTab() {
+        this.closeVisualizationCallback();
+        const url = this.preset.get("tabUrl");
+        if (url) {
+          window.open(url, "_blank", "noopener,noreferrer");
+        }
+        this.setActiveButton(CLASS_NAMES.openTabButton);
+      },
+
+      /**
+       * Open the preset's iframeUrl in the full-screen visualization overlay.
+       * Closes any existing overlay first, then invokes the CTA callback.
+       */
+      selectVisualization() {
+        this.closeVisualizationCallback();
+        const url = this.preset.get("iframeUrl");
+        const permissions = this.preset.get("iframePermissions");
+        this.ctaCallback(url, permissions);
+        this.setActiveButton(CLASS_NAMES.ctaButton);
+      },
+
+      /**
+       * Mark one button as active and remove active state from the others.
+       * @param {string} activeClass The CLASS_NAMES value of the button to
+       * mark active.
+       */
+      setActiveButton(activeClass) {
+        const buttonClasses = [
+          CLASS_NAMES.viewLayersButton,
+          CLASS_NAMES.openTabButton,
+          CLASS_NAMES.ctaButton,
+        ];
+        buttonClasses.forEach((cls) => {
+          const btn = this.el.querySelector(`.${cls}`);
+          if (!btn) return;
+          btn.classList.toggle(CLASS_NAMES.active, cls === activeClass);
+        });
+      },
+
+      /**
+       * Remove the active state from all buttons in this card.
+       */
+      resetActiveState() {
+        this.setActiveButton(null);
       },
 
       /** Values meant to be used by the rendered HTML template. */
@@ -75,15 +137,31 @@ define([
 
       /**
        * Initialize the view with the given options.
-       * @param {object} param0 - The view options.
-       * @param {ZoomPresetModel} param0.preset - The metadata associated with this zoom
-       * @param {Function} param0.selectCallback to be called when this preset is
-       * selected.
+       * @param {object} options - The view options.
+       * @param {ZoomPresetModel} options.preset - The metadata associated with
+       * this zoom preset card.
+       * @param {Function} [options.selectCallback] Called when "View Layers" is
+       * clicked. Should zoom to the preset location and toggle layers.
+       * @param {Function} [options.ctaCallback] Called with (url, permissions)
+       * when "Explore in App" is clicked. Should open the visualization overlay.
+       * @param {Function} [options.closeVisualizationCallback] Called before
+       * any button action to dismiss any currently open overlay.
        */
-      initialize({ preset, selectCallback }) {
+      initialize({
+        preset,
+        selectCallback,
+        ctaCallback,
+        closeVisualizationCallback,
+      }) {
+        this.preset = preset;
         this.selectCallback =
           typeof selectCallback === "function" ? selectCallback : noop;
-        this.preset = preset;
+        this.ctaCallback =
+          typeof ctaCallback === "function" ? ctaCallback : noop;
+        this.closeVisualizationCallback =
+          typeof closeVisualizationCallback === "function"
+            ? closeVisualizationCallback
+            : noop;
       },
 
       /**
