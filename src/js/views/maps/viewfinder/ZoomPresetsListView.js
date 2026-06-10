@@ -14,12 +14,12 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
    * layers enabled.
    * @classcategory Views/Maps/Viewfinder
    * @name ZoomPresetsListView
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @screenshot views/maps/viewfinder/ZoomPresetsListView.png
    * @since 2.29.0
    * @constructs ZoomPresetsListView
    */
-  var ZoomPresetsListView = Backbone.View.extend(
+  const ZoomPresetsListView = Backbone.View.extend(
     /** @lends ZoomPresetsListView.prototype */ {
       /**
        * The type of View this is
@@ -31,15 +31,37 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
       className: BASE_CLASS,
 
       /**
-       * @typedef {Object} ZoomPresetsListViewOptions
+       * @typedef {object} ZoomPresetsListViewOptions
+       * @param root0
+       * @param root0.selectZoomPreset
+       * @param root0.openVisualization
+       * @param root0.closeVisualization
+       * @param root0.zoomPresets
        * @property {ZoomPresets} zoomPresets The collection of zoom presets
        * @property {Function} selectZoomPreset The callback function for
-       * selecting a zoom preset.
+       * selecting a zoom preset (zoom + toggle layers).
+       * @property {Function} [openVisualization] Called with (url, permissions)
+       * to open the visualization overlay.
+       * @property {Function} [closeVisualization] Called to close the
+       * visualization overlay.
        */
-      initialize({ zoomPresets, selectZoomPreset }) {
+      initialize({
+        zoomPresets,
+        selectZoomPreset,
+        openVisualization,
+        closeVisualization,
+      }) {
         this.children = [];
         this.zoomPresets = zoomPresets;
         this.selectZoomPreset = selectZoomPreset;
+        this.openVisualization =
+          typeof openVisualization === "function"
+            ? openVisualization
+            : () => {};
+        this.closeVisualization =
+          typeof closeVisualization === "function"
+            ? closeVisualization
+            : () => {};
       },
 
       /**
@@ -49,13 +71,16 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
         this.el.innerHTML = "";
         this.children = this.zoomPresets?.models?.map((preset) => {
           const view = new ZoomPresetView({
+            preset,
             selectCallback: () => {
               this.selectZoomPreset(preset);
-              this.children.forEach((child) => {
-                child.resetActiveState();
-              });
             },
-            preset,
+            ctaCallback: (url, permissions) => {
+              this.openVisualization(url, permissions);
+            },
+            closeVisualizationCallback: () => {
+              this.closeVisualization();
+            },
           });
           view.render();
           this.el.appendChild(view.el);

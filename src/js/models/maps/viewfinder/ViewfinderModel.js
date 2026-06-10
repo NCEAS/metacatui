@@ -161,6 +161,31 @@ define([
       },
 
       /**
+       * Open a visualization app in the full-screen iframe overlay by setting
+       * the activeVisualizationUrl attribute on the map model.
+       * @param {string} url The URL to load in the iframe overlay.
+       * @param {string} [permissions] The sandbox attribute value for the
+       * iframe. Defaults to the preset's iframePermissions value.
+       */
+      openVisualization(url, permissions) {
+        this.mapModel.set({
+          activeVisualizationUrl: url,
+          activeVisualizationPermissions: permissions,
+        });
+      },
+
+      /**
+       * Close the visualization overlay by clearing activeVisualizationUrl on
+       * the map model.
+       */
+      closeVisualization() {
+        this.mapModel.set({
+          activeVisualizationUrl: null,
+          activeVisualizationPermissions: null,
+        });
+      },
+
+      /**
        * Select a ZoomPresetModel from the list of presets and navigate there.
        * This function hides all layers that are not to be visible according to
        * the ZoomPresetModel configuration.

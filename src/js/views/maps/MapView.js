@@ -11,6 +11,7 @@ define([
   "views/maps/ToolbarView",
   "views/maps/FeatureInfoView",
   "views/maps/LayerDetailsView",
+  "views/maps/VisualizationPanelView",
   // CSS
   `text!${MetacatUI.root}/css/map-view.css`,
 ], (
@@ -24,6 +25,7 @@ define([
   ToolbarView,
   FeatureInfoView,
   LayerDetailsView,
+  VisualizationPanelView,
   // CSS
   MapCSS,
 ) => {
@@ -132,7 +134,48 @@ define([
         if (this.model.get("showFeatureInfo")) {
           this.renderFeatureInfo();
         }
+        this.renderVisualizationPanel();
         return this;
+      },
+
+      /**
+       * Renders the full-screen visualization overlay panel and wires it to
+       * the map model's activeVisualizationUrl attribute.
+       * @returns {VisualizationPanelView} Returns the rendered panel view.
+       */
+      renderVisualizationPanel() {
+        const view = this;
+        view.visualizationPanel = new VisualizationPanelView();
+        view.visualizationPanel.render();
+        view.subElements.mapWidgetContainer.appendChild(
+          view.visualizationPanel.el,
+        );
+
+        view.stopListening(view.model, "change:activeVisualizationUrl");
+        view.listenTo(
+          view.model,
+          "change:activeVisualizationUrl",
+          (model, url) => {
+            if (url) {
+              const permissions = model.get("activeVisualizationPermissions");
+              view.visualizationPanel.open(url, permissions);
+            } else {
+              view.visualizationPanel.close();
+            }
+          },
+        );
+
+        // Keep map model in sync when the panel is closed via its own button
+        // or the Escape key (which triggers the "close" event on the panel).
+        view.stopListening(view.visualizationPanel, "close");
+        view.listenTo(view.visualizationPanel, "close", () => {
+          view.model.set({
+            activeVisualizationUrl: null,
+            activeVisualizationPermissions: null,
+          });
+        });
+
+        return view.visualizationPanel;
       },
 
       /**
@@ -235,6 +278,7 @@ define([
           this.toolbar,
           this.featureInfo,
           this.layerDetails,
+          this.visualizationPanel,
         ];
       },
 

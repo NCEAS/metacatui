@@ -68,6 +68,21 @@ define([
       initialize({ model: mapModel }) {
         this.viewfinderModel = new ViewfinderModel({ mapModel });
         this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
+        this.zoomPresetsListViews = [];
+
+        // When the visualization overlay closes, reset active button states
+        // on all preset cards so none appears stuck in an active state.
+        this.listenTo(
+          mapModel,
+          "change:activeVisualizationUrl",
+          (model, url) => {
+            if (!url) {
+              this.zoomPresetsListViews.forEach((listView) => {
+                listView.children?.forEach((child) => child.resetActiveState());
+              });
+            }
+          },
+        );
       },
 
       /**
@@ -161,7 +176,14 @@ define([
           selectZoomPreset: (preset) => {
             this.viewfinderModel.selectZoomPreset(preset);
           },
+          openVisualization: (url, permissions) => {
+            this.viewfinderModel.openVisualization(url, permissions);
+          },
+          closeVisualization: () => {
+            this.viewfinderModel.closeVisualization();
+          },
         });
+        this.zoomPresetsListViews.push(zoomPresetsListView);
         const expansionPanel = new ExpansionPanelView({
           contentViewInstance: zoomPresetsListView,
           icon: category.get("icon"),
