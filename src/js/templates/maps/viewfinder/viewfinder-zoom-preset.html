@@ -11,9 +11,9 @@
           <%= preset.date %>
         </div>
       <% } %>
-      <% if (preset.authors && preset.authors.length) { %>
+      <% if (preset.authorsDisplay) { %>
         <div class="<%= classNames.authors %>">
-          By: <%= preset.authors.join(", ") %>
+          By: <%= preset.authorsDisplay %>
         </div>
       <% } %>
     </div>

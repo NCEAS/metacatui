@@ -28,6 +28,32 @@ define([
   };
   // A function that does nothing. Can be safely called as a default callback.
   const noop = () => {};
+  // Maximum character length for the rendered author list before truncating.
+  const MAX_AUTHORS_LENGTH = 30;
+
+  /**
+   * Truncates an authors array to fit within MAX_AUTHORS_LENGTH characters.
+   * If the full joined string exceeds the limit, authors are added one at a
+   * time until the next name would exceed the limit, then "+N more..." is
+   * appended for the remaining count.
+   * @param {string[]} authors Array of author name strings.
+   * @returns {string} The display string, possibly truncated.
+   */
+  function truncateAuthors(authors) {
+    if (!authors || !authors.length) return "";
+    const full = authors.join(", ");
+    if (full.length <= MAX_AUTHORS_LENGTH) return full;
+    let display = "";
+    let count = 0;
+    for (let i = 0; i < authors.length; i += 1) {
+      const candidate = i === 0 ? authors[i] : `${display}, ${authors[i]}`;
+      if (candidate.length > MAX_AUTHORS_LENGTH) break;
+      display = candidate;
+      count += 1;
+    }
+    const remaining = authors.length - count;
+    return remaining > 0 ? `${display}, +${remaining} more...` : display;
+  }
 
   /**
    * @class ZoomPresetView
@@ -186,6 +212,9 @@ define([
        */
       render() {
         this.templateVars.preset = this.preset.toJSON();
+        this.templateVars.preset.authorsDisplay = truncateAuthors(
+          this.templateVars.preset.authors,
+        );
         this.el.innerHTML = _.template(Template)(this.templateVars);
       },
     },
