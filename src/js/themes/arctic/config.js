@@ -278,6 +278,8 @@ MetacatUI.AppConfig = {
     "https://cosima.nceas.ucsb.edu*",
     "https://shirlysteph.github.io/salmon-storymap/",
     "https://water-timeseries.streamlit.app*",
+    "https://virtualice.byrd.osu.edu/alaska-permafrost/*",
+    "https://virtualice.byrd.osu.edu/permafrost/*",
   ],
   ...(MetacatUI.AppConfig || {}),
 };
