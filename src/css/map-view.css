@@ -2178,6 +2178,8 @@ other class: .ui-slider-range */
 
   /* View Layers button: plain gray text, no button outline */
   .viewfinder-zoom-preset__view-layers-button {
+    align-self: center;
+    width: fit-content;
     background: transparent;
     border: none;
     color: var(--portal-col-neutral-5, #aaa);
@@ -2207,10 +2209,6 @@ other class: .ui-slider-range */
       var(--map-col-highlight__deprecate)
     );
     box-shadow: 0 0 0 1px var(--portal-col-primary-3, transparent) inset;
-
-    .viewfinder-zoom-preset__title {
-      color: var(--portal-col-primary-7, white);
-    }
   }
 
   /* When View Layers is the active button, layer badges turn blue and expand */
