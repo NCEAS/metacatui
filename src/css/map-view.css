@@ -2174,7 +2174,20 @@ other class: .ui-slider-range */
     white-space: normal;
   }
 
-  .viewfinder-zoom-preset__view-layers-button:hover,
+  /* View Layers button: plain gray text, no button outline */
+  .viewfinder-zoom-preset__view-layers-button {
+    background: transparent;
+    border: none;
+    color: var(--portal-col-neutral-5, #aaa);
+  }
+
+  .viewfinder-zoom-preset__view-layers-button:hover {
+    background: transparent;
+    border: none;
+    color: var(--portal-col-primary-6, white);
+    filter: none;
+  }
+
   .viewfinder-zoom-preset__open-tab-button:hover,
   .viewfinder-zoom-preset__cta-button:hover {
     background-color: var(
@@ -2202,8 +2215,33 @@ other class: .ui-slider-range */
     }
   }
 
-  /* The specific button that was clicked turns dark blue */
-  .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active,
+  /* When View Layers is the active button, layer badges turn blue */
+  &.viewfinder-zoom-preset--active:has(
+      .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active
+    ) {
+    .viewfinder-zoom-preset__layer-content {
+      color: var(--portal-col-primary-6, white);
+
+      i {
+        color: var(--portal-col-primary-6, white);
+      }
+    }
+  }
+
+  /* View Layers button active: blue text only, no fill */
+  .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active {
+    background: transparent;
+    border: none;
+    color: var(--portal-col-primary-6, #3d8bcd);
+  }
+
+  .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active:hover {
+    background: transparent;
+    border: none;
+    filter: none;
+  }
+
+  /* The other buttons that were clicked turn dark blue (filled) */
   .viewfinder-zoom-preset__open-tab-button.viewfinder-zoom-preset--active,
   .viewfinder-zoom-preset__cta-button.viewfinder-zoom-preset--active {
     background-color: var(
@@ -2214,7 +2252,6 @@ other class: .ui-slider-range */
     border-color: var(--portal-col-primary-5);
   }
 
-  .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active:hover,
   .viewfinder-zoom-preset__open-tab-button.viewfinder-zoom-preset--active:hover,
   .viewfinder-zoom-preset__cta-button.viewfinder-zoom-preset--active:hover {
     filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.15));
@@ -2236,6 +2273,7 @@ other class: .ui-slider-range */
       var(--map-col-bkg-lighter__deprecate)
     );
     border-radius: var(--map-border-radius-big);
+    cursor: text;
     display: flex;
     height: 1.5rem;
     justify-content: center;
@@ -2251,7 +2289,7 @@ other class: .ui-slider-range */
 
       i {
         padding: 0 0.25rem;
-        color: var(--portal-col-primary-6, white);
+        color: var(--portal-col-neutral-4, #888);
         font-size: 0.85rem;
       }
     }
