@@ -39,8 +39,10 @@
       View Layers
     </button>
   </div>
-  <% if (preset.enabledLayerLabels && preset.enabledLayerLabels.length) { %>
-    <div class="<%= classNames.layers %>">
+</div>
+<% if (preset.enabledLayerLabels && preset.enabledLayerLabels.length) { %>
+  <div class="<%= classNames.layers %>">
+    <div class="viewfinder-zoom-preset__layers-inner">
       <% _.each(preset.enabledLayerLabels, label => { %>
         <div class="<%= classNames.layer %>" title="<%= label %>">
           <div class="<%= classNames.layerContent %>">
@@ -50,5 +52,5 @@
         </div>
       <% }); %>
     </div>
-  <% } %>
-</div>
+  </div>
+<% } %>

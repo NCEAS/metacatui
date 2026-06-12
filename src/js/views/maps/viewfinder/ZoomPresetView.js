@@ -29,7 +29,7 @@ define([
   // A function that does nothing. Can be safely called as a default callback.
   const noop = () => {};
   // Maximum character length for the rendered author list before truncating.
-  const MAX_AUTHORS_LENGTH = 30;
+  const MAX_AUTHORS_LENGTH = 50;
 
   /**
    * Truncates an authors array to fit within MAX_AUTHORS_LENGTH characters.

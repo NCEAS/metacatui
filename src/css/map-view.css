@@ -2052,7 +2052,7 @@ other class: .ui-slider-range */
   .viewfinder-zoom-preset__card {
     display: flex;
     flex-direction: column;
-    padding: 1rem 1.1rem 1rem 1.1rem;
+    padding: 1.1rem;
     row-gap: 0.75rem;
   }
 
@@ -2091,6 +2091,7 @@ other class: .ui-slider-range */
     font-weight: 600;
     font-size: 1.05rem;
     line-height: 1.3;
+    margin-block-start: calc((1em - 1lh) / 2);
   }
 
   .viewfinder-zoom-preset__date {
@@ -2172,6 +2173,7 @@ other class: .ui-slider-range */
     gap: 0.5rem;
     text-align: center;
     white-space: normal;
+    font-size: 0.95rem;
   }
 
   /* View Layers button: plain gray text, no button outline */
@@ -2190,10 +2192,6 @@ other class: .ui-slider-range */
 
   .viewfinder-zoom-preset__open-tab-button:hover,
   .viewfinder-zoom-preset__cta-button:hover {
-    background-color: var(
-      --portal-col-primary-1,
-      var(--map-col-bkg-lighter__deprecate)
-    );
     border-color: var(--portal-col-primary-4);
     filter: none;
   }
@@ -2215,7 +2213,7 @@ other class: .ui-slider-range */
     }
   }
 
-  /* When View Layers is the active button, layer badges turn blue */
+  /* When View Layers is the active button, layer badges turn blue and expand */
   &.viewfinder-zoom-preset--active:has(
       .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active
     ) {
@@ -2225,6 +2223,11 @@ other class: .ui-slider-range */
       i {
         color: var(--portal-col-primary-6, white);
       }
+    }
+
+    .viewfinder-zoom-preset__layers {
+      grid-template-rows: 1fr;
+      padding: 0 1.1rem 1rem;
     }
   }
 
@@ -2257,13 +2260,24 @@ other class: .ui-slider-range */
     filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.15));
   }
 
-  /* ---- Layer badges (informational only) ---- */
+  /* ---- Layer badges (informational only, collapsed until View Layers is active) ---- */
 
   .viewfinder-zoom-preset__layers {
-    column-gap: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    row-gap: 0.5rem;
+    display: grid;
+    grid-template-rows: 0fr;
+    overflow: hidden;
+    padding: 0 1.1rem;
+    transition:
+      grid-template-rows 0.3s ease,
+      padding 0.3s ease;
+  }
+
+  .viewfinder-zoom-preset__layers-inner {
+    min-height: 0;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
   }
 
   .viewfinder-zoom-preset__layer {
@@ -2276,7 +2290,8 @@ other class: .ui-slider-range */
     cursor: text;
     display: flex;
     height: 1.5rem;
-    justify-content: center;
+    justify-content: flex-start;
+    min-width: 0;
     padding: 0 0.75rem 0 0.5rem;
 
     .viewfinder-zoom-preset__layer-content {
@@ -2285,7 +2300,7 @@ other class: .ui-slider-range */
       text-wrap: nowrap;
       color: var(--portal-col-neutral-5, white);
       font-size: 0.75rem;
-      max-width: 10rem;
+      max-width: 100%;
 
       i {
         padding: 0 0.25rem;
