@@ -2111,10 +2111,12 @@ other class: .ui-slider-range */
 
   .viewfinder-zoom-preset__authors {
     color: var(--portal-col-neutral-5, white);
+    display: -webkit-box;
     font-size: 0.75rem;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 
   /* ---- Description ---- */
