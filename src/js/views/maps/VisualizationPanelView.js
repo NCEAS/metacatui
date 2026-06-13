@@ -95,6 +95,16 @@ define([
       },
 
       /**
+       * Bind the Escape-key handler once so the same reference can be
+       * added and removed from the document.
+       */
+      initialize() {
+        this.handleEscapeKey = (e) => {
+          if (e.key === "Escape") this.close();
+        };
+      },
+
+      /**
        * Open the panel and load the given URL in the iframe. If the URL is
        * not trusted, show a plain link fallback instead.
        * @param {string} url The URL to load.
@@ -127,8 +137,7 @@ define([
         }
 
         this.el.classList.add(CLASS_NAMES.open);
-        this._boundEscapeHandler = this._onEscape.bind(this);
-        document.addEventListener("keydown", this._boundEscapeHandler);
+        document.addEventListener("keydown", this.handleEscapeKey);
       },
 
       /**
@@ -138,19 +147,8 @@ define([
         const iframe = this.el.querySelector(`.${CLASS_NAMES.iframe}`);
         if (iframe) iframe.src = "";
         this.el.classList.remove(CLASS_NAMES.open);
-        if (this._boundEscapeHandler) {
-          document.removeEventListener("keydown", this._boundEscapeHandler);
-          this._boundEscapeHandler = null;
-        }
+        document.removeEventListener("keydown", this.handleEscapeKey);
         this.trigger("close");
-      },
-
-      /**
-       * Handle keydown events while the panel is open.
-       * @param {KeyboardEvent} e
-       */
-      _onEscape(e) {
-        if (e.key === "Escape") this.close();
       },
 
       /**
