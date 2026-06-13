@@ -7,7 +7,7 @@
       <div class="<%= classNames.title %>"><%= preset.title %></div>
       <% if (preset.date) { %>
         <div class="<%= classNames.date %>">
-          <i class="icon icon-calendar"></i>
+          <i class="icon icon-calendar-empty"></i>
           <%= preset.date %>
         </div>
       <% } %>
@@ -24,7 +24,7 @@
   <div class="<%= classNames.actions %>">
     <% if (preset.iframeUrl) { %>
       <button class="<%= classNames.ctaButton %> map-view__button map-view__button--emphasis">
-        <% if (preset.ctaIcon) { %><i class="icon <%= preset.ctaIcon %>"></i><% } %>
+        <% if (preset.ctaIcon) { %><i class="icon icon-<%= preset.ctaIcon %>"></i><% } %>
         <%= preset.ctaText || "Explore in App" %>
       </button>
     <% } %>
@@ -42,7 +42,7 @@
 </div>
 <% if (preset.enabledLayerLabels && preset.enabledLayerLabels.length) { %>
   <div class="<%= classNames.layers %>">
-    <div class="viewfinder-zoom-preset__layers-inner">
+    <div class="<%= classNames.layersInner %>">
       <% _.each(preset.enabledLayerLabels, label => { %>
         <div class="<%= classNames.layer %>" title="<%= label %>">
           <div class="<%= classNames.layerContent %>">

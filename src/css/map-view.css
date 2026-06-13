@@ -1973,8 +1973,10 @@ other class: .ui-slider-range */
   }
 }
 
-.viewfinder-search__search-input {
-  margin: 0 1.5rem;
+.viewfinder-search {
+  .viewfinder-search__search-input {
+    margin: 0 1.5rem;
+  }
 }
 
 .viewfinder-predictions {
@@ -2040,7 +2042,7 @@ other class: .ui-slider-range */
 .viewfinder-zoom-presets {
   display: flex;
   flex-direction: column;
-  padding: 0.1rem 1.5rem 1rem 1.5rem;
+  padding: 0 1.5rem 1rem 1.5rem;
   row-gap: 0.5rem;
 }
 
@@ -2121,38 +2123,6 @@ other class: .ui-slider-range */
     color: var(--portal-col-neutral-7, white);
     font-size: 0.85rem;
     line-height: 1.45;
-
-    /* Links embedded in description HTML (e.g. Virtual Tour links) render as
-       full-width block buttons so they are consistent with action buttons. */
-    a {
-      display: flex;
-      width: 100%;
-      box-sizing: border-box;
-      margin-top: 0.5rem;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      text-align: center;
-      text-decoration: none;
-      background: var(
-        --portal-col-neutral-00,
-        var(--map-col-buttons__deprecate)
-      );
-      color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
-      border-radius: var(--map-border-radius-big);
-      border: 1px solid var(--portal-col-primary-2);
-      padding: 0.5rem 0.55rem;
-      font-size: 1rem;
-      white-space: normal;
-    }
-
-    a:hover {
-      background-color: var(
-        --portal-col-primary-1,
-        var(--map-col-bkg-lighter__deprecate)
-      );
-      border-color: var(--portal-col-primary-4);
-    }
   }
 
   /* ---- Action buttons ---- */
@@ -2163,7 +2133,7 @@ other class: .ui-slider-range */
     gap: 0.4rem;
   }
 
-  .viewfinder-zoom-preset__view-layers-button,
+  /* Open Tab or iFrame (primary) buttons */
   .viewfinder-zoom-preset__open-tab-button,
   .viewfinder-zoom-preset__cta-button {
     width: 100%;
@@ -2176,18 +2146,20 @@ other class: .ui-slider-range */
     font-size: 0.95rem;
   }
 
-  /* View Layers button: plain gray text, no button outline */
+  /* View Layers (secondary) button: plain gray text, no button outline */
   .viewfinder-zoom-preset__view-layers-button {
     align-self: center;
+    display: flex;
+    align-items: center;
     width: fit-content;
     background: transparent;
+    gap: 0.5rem;
+    font-size: 0.95rem;
     border: none;
     color: var(--portal-col-neutral-5, #aaa);
   }
 
   .viewfinder-zoom-preset__view-layers-button:hover {
-    background: transparent;
-    border: none;
     color: var(--portal-col-primary-6, white);
     filter: none;
   }
@@ -2211,40 +2183,23 @@ other class: .ui-slider-range */
     box-shadow: 0 0 0 1px var(--portal-col-primary-3, transparent) inset;
   }
 
-  /* When View Layers is the active button, layer badges turn blue and expand */
+  /* When View Layers is the active button, layer badges expand and the text turns blue */
   &.viewfinder-zoom-preset--active:has(
-      .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active
+      .viewfinder-zoom-preset__view-layers-button--active
     ) {
-    .viewfinder-zoom-preset__layer-content {
-      color: var(--portal-col-primary-6, white);
-
-      i {
-        color: var(--portal-col-primary-6, white);
-      }
-    }
-
     .viewfinder-zoom-preset__layers {
       grid-template-rows: 1fr;
       padding: 0 1.1rem 1rem;
     }
   }
 
-  /* View Layers button active: blue text only, no fill */
-  .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active {
-    background: transparent;
-    border: none;
+  .viewfinder-zoom-preset__view-layers-button--active {
     color: var(--portal-col-primary-6, #3d8bcd);
   }
 
-  .viewfinder-zoom-preset__view-layers-button.viewfinder-zoom-preset--active:hover {
-    background: transparent;
-    border: none;
-    filter: none;
-  }
-
   /* The other buttons that were clicked turn dark blue (filled) */
-  .viewfinder-zoom-preset__open-tab-button.viewfinder-zoom-preset--active,
-  .viewfinder-zoom-preset__cta-button.viewfinder-zoom-preset--active {
+  .viewfinder-zoom-preset__open-tab-button--active,
+  .viewfinder-zoom-preset__cta-button--active {
     background-color: var(
       --portal-col-primary-6,
       var(--map-col-highlight__deprecate)
@@ -2253,8 +2208,8 @@ other class: .ui-slider-range */
     border-color: var(--portal-col-primary-5);
   }
 
-  .viewfinder-zoom-preset__open-tab-button.viewfinder-zoom-preset--active:hover,
-  .viewfinder-zoom-preset__cta-button.viewfinder-zoom-preset--active:hover {
+  .viewfinder-zoom-preset__open-tab-button--active:hover,
+  .viewfinder-zoom-preset__cta-button--active:hover {
     filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.15));
   }
 
@@ -2296,13 +2251,13 @@ other class: .ui-slider-range */
       overflow: hidden;
       text-overflow: ellipsis;
       text-wrap: nowrap;
-      color: var(--portal-col-neutral-5, white);
+      color: var(--portal-col-primary-6, white);
       font-size: 0.75rem;
       max-width: 100%;
 
       i {
         padding: 0 0.25rem;
-        color: var(--portal-col-neutral-4, #888);
+        color: var(--portal-col-primary-6, white);
         font-size: 0.85rem;
       }
     }

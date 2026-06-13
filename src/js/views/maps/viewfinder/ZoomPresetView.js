@@ -14,6 +14,7 @@ define([
     authors: `${BASE_CLASS}__authors`,
     card: `${BASE_CLASS}__card`,
     ctaButton: `${BASE_CLASS}__cta-button`,
+    ctaButtonActive: `${BASE_CLASS}__cta-button--active`,
     date: `${BASE_CLASS}__date`,
     description: `${BASE_CLASS}__description`,
     header: `${BASE_CLASS}__header`,
@@ -21,10 +22,13 @@ define([
     layer: `${BASE_CLASS}__layer`,
     layerContent: `${BASE_CLASS}__layer-content`,
     layers: `${BASE_CLASS}__layers`,
+    layersInner: `${BASE_CLASS}__layers-inner`,
     meta: `${BASE_CLASS}__meta`,
     openTabButton: `${BASE_CLASS}__open-tab-button`,
+    openTabButtonActive: `${BASE_CLASS}__open-tab-button--active`,
     title: `${BASE_CLASS}__title`,
     viewLayersButton: `${BASE_CLASS}__view-layers-button`,
+    viewLayersButtonActive: `${BASE_CLASS}__view-layers-button--active`,
   };
   // A function that does nothing. Can be safely called as a default callback.
   const noop = () => {};
@@ -139,15 +143,14 @@ define([
        */
       setActive(buttonClass) {
         this.el.classList.add(CLASS_NAMES.active);
-        const buttonClasses = [
-          CLASS_NAMES.viewLayersButton,
-          CLASS_NAMES.openTabButton,
-          CLASS_NAMES.ctaButton,
+        const buttonActiveMap = [
+          [CLASS_NAMES.viewLayersButton, CLASS_NAMES.viewLayersButtonActive],
+          [CLASS_NAMES.openTabButton, CLASS_NAMES.openTabButtonActive],
+          [CLASS_NAMES.ctaButton, CLASS_NAMES.ctaButtonActive],
         ];
-        buttonClasses.forEach((cls) => {
+        buttonActiveMap.forEach(([cls, activeCls]) => {
           const btn = this.el.querySelector(`.${cls}`);
-          if (btn)
-            btn.classList.toggle(CLASS_NAMES.active, cls === buttonClass);
+          if (btn) btn.classList.toggle(activeCls, cls === buttonClass);
         });
       },
 
@@ -157,13 +160,11 @@ define([
       resetActiveState() {
         this.el.classList.remove(CLASS_NAMES.active);
         [
-          CLASS_NAMES.viewLayersButton,
-          CLASS_NAMES.openTabButton,
-          CLASS_NAMES.ctaButton,
-        ].forEach((cls) => {
-          this.el
-            .querySelector(`.${cls}`)
-            ?.classList.remove(CLASS_NAMES.active);
+          [CLASS_NAMES.viewLayersButton, CLASS_NAMES.viewLayersButtonActive],
+          [CLASS_NAMES.openTabButton, CLASS_NAMES.openTabButtonActive],
+          [CLASS_NAMES.ctaButton, CLASS_NAMES.ctaButtonActive],
+        ].forEach(([cls, activeCls]) => {
+          this.el.querySelector(`.${cls}`)?.classList.remove(activeCls);
         });
       },
 
