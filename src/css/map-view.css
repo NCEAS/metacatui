@@ -2194,7 +2194,7 @@ other class: .ui-slider-range */
   }
 
   .viewfinder-zoom-preset__view-layers-button--active {
-    color: var(--portal-col-primary-6, #3d8bcd);
+    color: var(--portal-col-primary-6, white);
   }
 
   /* The other buttons that were clicked turn dark blue (filled) */
