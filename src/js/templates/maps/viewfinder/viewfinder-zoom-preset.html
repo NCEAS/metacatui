@@ -30,8 +30,9 @@
     <% } %>
     <% if (preset.tabUrl) { %>
       <button class="<%= classNames.openTabButton %> map-view__button map-view__button--emphasis">
-        <i class="icon icon-external-link"></i>
-        Open in Browser
+        <% var tabIcon = (!preset.iframeUrl && preset.ctaIcon) ? preset.ctaIcon : 'external-link'; %>
+        <i class="icon icon-<%= tabIcon %>"></i>
+        <%= (!preset.iframeUrl && preset.ctaText) ? preset.ctaText : "Open in Browser" %>
       </button>
     <% } %>
     <button class="<%= classNames.viewLayersButton %> map-view__button">
