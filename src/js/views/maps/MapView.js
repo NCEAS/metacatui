@@ -157,7 +157,8 @@ define([
           "change:activeVisualizationUrl",
           (model, url) => {
             if (url) {
-              const permissions = model.get("activeVisualizationPermissions");
+              const permissions =
+                model.get("activeVisualizationPermissions") || undefined;
               view.visualizationPanel.open(url, permissions);
             } else {
               view.visualizationPanel.close();
