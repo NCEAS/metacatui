@@ -55,6 +55,9 @@ define([
       display = candidate;
       count += 1;
     }
+    if (count === 0) {
+      return `${authors[0].slice(0, MAX_AUTHORS_LENGTH - 3)}...`;
+    }
     const remaining = authors.length - count;
     return remaining > 0 ? `${display}, +${remaining} more...` : display;
   }
