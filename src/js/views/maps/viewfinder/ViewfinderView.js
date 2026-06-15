@@ -190,6 +190,10 @@ define([
             });
           },
         });
+        zoomPresetsListView.categoryCid = category.cid;
+        this.zoomPresetsListViews = this.zoomPresetsListViews.filter(
+          (lv) => lv.categoryCid !== category.cid,
+        );
         this.zoomPresetsListViews.push(zoomPresetsListView);
         const expansionPanel = new ExpansionPanelView({
           contentViewInstance: zoomPresetsListView,
