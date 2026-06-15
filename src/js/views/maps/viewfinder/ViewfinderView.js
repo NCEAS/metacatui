@@ -63,7 +63,7 @@ define([
       /**
        * Initialize the ViewfinderView.
        * @param {object} options - The options for the view.
-       * @param {object} options.model - The map model to use for this view.
+       * @param {Map} options.model - The map model to use for this view.
        */
       initialize({ model: mapModel }) {
         this.viewfinderModel = new ViewfinderModel({ mapModel });

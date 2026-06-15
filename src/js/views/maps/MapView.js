@@ -83,7 +83,7 @@ define([
       },
 
       /**
-       * @typedef {object} ViewfinderViewOptions
+       * @typedef {object} MapViewOptions
        * @property {Map} model The map model that contains the configs for this map view.
        * @property {boolean} isPortalMap Indicates whether the map view is a part of a
        * portal, which is styled differently.

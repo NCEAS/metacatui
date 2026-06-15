@@ -188,7 +188,8 @@ define([
        * when "Explore in App" is clicked. Should open the visualization overlay.
        * @param {Function} [options.closeVisualizationCallback] Called before
        * any button action to dismiss any currently open overlay.
-       * @param options.onActivate
+       * @param {Function} [options.onActivate] Called when this card is
+       * activated, so sibling cards can reset their active state.
        */
       initialize({
         preset,

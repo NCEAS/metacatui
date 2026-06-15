@@ -11,9 +11,9 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
   // Default height for zoom presets if not specified.
   const DEFAULT_HEIGHT = 800;
   /**
-   * Determine if array is empty.
+   * Determine if array is non-empty.
    * @param {Array} a The array in question.
-   * @returns {boolean} Whether the array is empty.
+   * @returns {boolean} Whether the array is non-empty.
    */
   function isNonEmptyArray(a) {
     return a && a.length && Array.isArray(a);
@@ -61,11 +61,9 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
    * @classdesc A ZoomPresets collection is a group of ZoomPresetModel models
    * that provide a location and list of layers to make visible when the user
    * selects.
-   * @class ZoomPresets
    * @classcategory Collections/Maps
    * @augments Backbone.Collection
    * @since 2.29.0
-   * @class
    */
   const ZoomPresets = Backbone.Collection.extend(
     /** @lends ZoomPresets.prototype */ {

@@ -32,12 +32,6 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
 
       /**
        * @typedef {object} ZoomPresetsListViewOptions
-       * @param root0
-       * @param root0.selectZoomPreset
-       * @param root0.openVisualization
-       * @param root0.closeVisualization
-       * @param root0.onActivate
-       * @param root0.zoomPresets
        * @property {ZoomPresets} zoomPresets The collection of zoom presets
        * @property {Function} selectZoomPreset The callback function for
        * selecting a zoom preset (zoom + toggle layers).
@@ -45,6 +39,12 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
        * to open the visualization overlay.
        * @property {Function} [closeVisualization] Called to close the
        * visualization overlay.
+       * @property {Function} [onActivate] Called when a zoom preset card is
+       * activated.
+       */
+
+      /**
+       * @param {ZoomPresetsListViewOptions} options Options for this view.
        */
       initialize({
         zoomPresets,

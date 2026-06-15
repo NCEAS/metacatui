@@ -51,7 +51,8 @@ define([
       },
 
       /**
-       * @param {Map} mapModel is the Map model that the ViewfinderModel is
+       * @param {object} options
+       * @param {Map} options.mapModel The Map model that the ViewfinderModel is
        * managing for the corresponding ViewfinderView.
        */
       initialize({ mapModel }) {

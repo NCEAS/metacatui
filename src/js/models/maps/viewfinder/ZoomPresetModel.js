@@ -23,8 +23,8 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
       /**
        * @typedef {object} ZoomPresetModelOptions
        * @property {string} title The displayed title for the preset.
-       * @property {GeoPoint} geoPoint The location representing this preset,
-       * including height information. Optional — if absent, the "View Layers"
+       * @property {GeoPoint|null} [geoPoint] The location representing this
+       * preset, including height information. If absent, the "View Layers"
        * button toggles layers without zooming.
        * @property {string} description A brief description of the layers and
        * location.
@@ -35,8 +35,9 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        * @property {string} [image] URL or path to a preview image for the card.
        * @property {string} [date] Display date string, e.g. "March 2024".
        * @property {string[]} [authors] Names of authors/creators to display.
-       * @property {string} [ctaText] Label for the primary CTA button. Defaults
-       * to "View Layers" when empty.
+       * @property {string} [ctaText] Label for the primary CTA button (used for
+       * the iframe/tab actions). Defaults to "Explore in App" (iframe) or
+       * "Open in Browser" (tab) when empty.
        * @property {string} [ctaIcon] FontAwesome icon class for the CTA button.
        * @property {string} [tabUrl] URL to open in a new browser tab when the
        * "Open in Browser" button is clicked.
@@ -75,11 +76,9 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        * Parse incoming data to create a ZoomPresetModel.
        * @param {object} data The data to parse
        * @param {object} [data.position] The latitude, longitude, and height of
-       * this ZoomPresetModel's GeoPoint. Optional — if absent, geoPoint is null
-       * and zoom actions are skipped.
-       * @param {object} data.rest The rest of the properties for this
-       * ZoomPresetModel.
-       * @returns {object} An object containing the GeoPoint and the rest of the
+       * this ZoomPresetModel's GeoPoint. If absent, geoPoint is null and zoom
+       * actions are skipped.
+       * @returns {object} An object containing the GeoPoint and all remaining
        * ZoomPresetModel properties.
        */
       parse({ position, ...rest }) {
