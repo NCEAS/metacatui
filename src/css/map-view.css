@@ -2308,9 +2308,10 @@ other class: .ui-slider-range */
 }
 
 .visualization-panel__close-button {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+  color: var(--portal-col-neutral-6);
+  font-size: 1rem;
+  height: 2rem;
+  width: 2rem;
 }
 
 .visualization-panel__body {
