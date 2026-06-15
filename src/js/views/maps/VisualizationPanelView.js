@@ -42,16 +42,18 @@ define([
   /**
    * Tests a URL against the app's trustedContentSources list.
    * @param {string} url The URL to test.
-   * @returns {boolean} True if the URL is trusted or the list is empty/absent.
+   * @returns {boolean} True if the URL matches a trustedContentSources pattern.
    */
   function isTrustedUrl(url) {
     const sources = MetacatUI?.appModel?.get("trustedContentSources") ?? [];
+    // Empty / falsy list disables all embedded content.
     if (!sources.length) return false;
+
     return sources.some((pattern) => {
-      // Convert glob-style wildcards to a regex.
-      const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&");
-      const regexStr = escaped.replace(/\*/g, ".*");
-      return new RegExp(`^${regexStr}$`, "i").test(url);
+      // Escape regex special characters, except "*"
+      const escaped = pattern.replace(/[-/\\^$+?.()|[\]{}]/g, "\\$&");
+      const regexString = `^${escaped.replace(/\*/g, ".*")}$`;
+      return new RegExp(regexString, "i").test(url);
     });
   }
 
