@@ -18,10 +18,12 @@ define([
     date: `${BASE_CLASS}__date`,
     description: `${BASE_CLASS}__description`,
     header: `${BASE_CLASS}__header`,
+    headerNoImage: `${BASE_CLASS}__header--no-image`,
     image: `${BASE_CLASS}__image`,
     layer: `${BASE_CLASS}__layer`,
     layerContent: `${BASE_CLASS}__layer-content`,
     layers: `${BASE_CLASS}__layers`,
+    layersActive: `${BASE_CLASS}--layers-active`,
     layersInner: `${BASE_CLASS}__layers-inner`,
     meta: `${BASE_CLASS}__meta`,
     openTabButton: `${BASE_CLASS}__open-tab-button`,
@@ -146,6 +148,10 @@ define([
        */
       setActive(buttonClass) {
         this.el.classList.add(CLASS_NAMES.active);
+        this.el.classList.toggle(
+          CLASS_NAMES.layersActive,
+          buttonClass === CLASS_NAMES.viewLayersButton,
+        );
         const buttonActiveMap = [
           [CLASS_NAMES.viewLayersButton, CLASS_NAMES.viewLayersButtonActive],
           [CLASS_NAMES.openTabButton, CLASS_NAMES.openTabButtonActive],
@@ -161,7 +167,7 @@ define([
        * Remove the active state from this card and all its buttons.
        */
       resetActiveState() {
-        this.el.classList.remove(CLASS_NAMES.active);
+        this.el.classList.remove(CLASS_NAMES.active, CLASS_NAMES.layersActive);
         [
           [CLASS_NAMES.viewLayersButton, CLASS_NAMES.viewLayersButtonActive],
           [CLASS_NAMES.openTabButton, CLASS_NAMES.openTabButtonActive],
@@ -221,6 +227,10 @@ define([
           this.templateVars.preset.authors,
         );
         this.el.innerHTML = _.template(Template)(this.templateVars);
+        if (!this.templateVars.preset.image) {
+          const header = this.el.querySelector(`.${CLASS_NAMES.header}`);
+          if (header) header.classList.add(CLASS_NAMES.headerNoImage);
+        }
       },
     },
   );

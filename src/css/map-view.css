@@ -2068,7 +2068,7 @@ other class: .ui-slider-range */
   }
 
   /* When there is no image, the header collapses to a single column */
-  .viewfinder-zoom-preset__header:not(:has(.viewfinder-zoom-preset__image)) {
+  .viewfinder-zoom-preset__header--no-image {
     grid-template-columns: 1fr;
   }
 
@@ -2186,9 +2186,7 @@ other class: .ui-slider-range */
   }
 
   /* When View Layers is the active button, layer badges expand and the text turns blue */
-  &.viewfinder-zoom-preset--active:has(
-      .viewfinder-zoom-preset__view-layers-button--active
-    ) {
+  &.viewfinder-zoom-preset--layers-active {
     .viewfinder-zoom-preset__layers {
       grid-template-rows: 1fr;
       padding: 0 1.1rem 1rem;
