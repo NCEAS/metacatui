@@ -152,6 +152,15 @@ define([
       },
 
       /**
+       * Cleanup global handlers if the view is destroyed while open.
+       */
+      onClose() {
+        document.removeEventListener("keydown", this.handleEscapeKey);
+        const iframe = this.el.querySelector(`.${CLASS_NAMES.iframe}`);
+        if (iframe) iframe.src = "";
+      },
+
+      /**
        * Render the panel. The panel is hidden by default; call `open()` to
        * show it.
        * @returns {VisualizationPanelView} Returns the rendered view element.
