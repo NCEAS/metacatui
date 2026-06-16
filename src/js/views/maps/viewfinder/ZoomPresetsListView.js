@@ -86,6 +86,9 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
               this.closeVisualization();
             },
             onActivate: (activeView) => {
+              this.children.forEach((child) => {
+                if (child !== activeView) child.resetActiveState();
+              });
               this.onActivate(activeView);
             },
           });
