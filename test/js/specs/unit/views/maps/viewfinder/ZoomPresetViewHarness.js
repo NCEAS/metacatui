@@ -6,8 +6,19 @@ define([], function () {
       this.view = view;
     }
 
+    /** Click the "View Layers" button to trigger the select/zoom action. */
     click() {
-      this.view.$el.find(".viewfinder-zoom-preset__preset").click();
+      this.view.$el.find(".viewfinder-zoom-preset__view-layers-button").click();
+    }
+
+    /**
+     * Click the CTA button at the given index (0-based).
+     * @param {number} [index=0]
+     */
+    clickCta(index = 0) {
+      this.view.$el
+        .find(`.viewfinder-zoom-preset__cta-button[data-cta-index="${index}"]`)
+        .click();
     }
 
     reset() {
