@@ -88,7 +88,7 @@ define([
         const iframe = state.view.el.querySelector(
           ".visualization-panel__iframe",
         );
-        expect(iframe.getAttribute("src")).to.equal("");
+        expect(iframe.getAttribute("src")).to.be.null;
       });
 
       it("fires a 'close' event when closed", () => {
@@ -184,7 +184,7 @@ define([
         const iframe = state.view.el.querySelector(
           ".visualization-panel__iframe",
         );
-        expect(iframe.getAttribute("src")).to.equal("");
+        expect(iframe.getAttribute("src")).to.be.null;
       });
 
       it("sets the fallback link href to the untrusted URL", () => {
