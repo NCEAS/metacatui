@@ -131,7 +131,7 @@ define([
           untrusted.style.display = "none";
         } else {
           iframe.removeAttribute("sandbox");
-          iframe.src = "";
+          iframe.removeAttribute("src");
           iframe.style.display = "none";
           untrustedLink.href = url;
           untrustedLink.textContent = url;
@@ -147,7 +147,7 @@ define([
        */
       close() {
         const iframe = this.el.querySelector(`.${CLASS_NAMES.iframe}`);
-        if (iframe) iframe.src = "";
+        if (iframe) iframe.removeAttribute("src");
         this.el.classList.remove(CLASS_NAMES.open);
         document.removeEventListener("keydown", this.handleEscapeKey);
         this.trigger("close");
@@ -159,7 +159,7 @@ define([
       onClose() {
         document.removeEventListener("keydown", this.handleEscapeKey);
         const iframe = this.el.querySelector(`.${CLASS_NAMES.iframe}`);
-        if (iframe) iframe.src = "";
+        if (iframe) iframe.removeAttribute("src");
       },
 
       /**
