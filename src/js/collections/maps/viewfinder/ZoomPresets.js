@@ -164,17 +164,11 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
               isLEONetwork: zoomPresetObj.isLEONetwork === true,
               featureLayerId: zoomPresetObj.featureLayerId || null,
               featureLayer,
-              // Visualization / Virtual Tour fields
               authors: zoomPresetObj.authors || [],
-              ctaIcon: zoomPresetObj.ctaIcon || "",
-              ctaText: zoomPresetObj.ctaText || "",
+              ctaActions: Array.isArray(zoomPresetObj.ctaActions)
+                ? zoomPresetObj.ctaActions
+                : [],
               date: zoomPresetObj.date || null,
-              iframePermissions:
-                zoomPresetObj.iframePermissions ||
-                "allow-scripts allow-same-origin",
-              iframeUrl: zoomPresetObj.iframeUrl || null,
-              messageOrigin: zoomPresetObj.messageOrigin || "",
-              tabUrl: zoomPresetObj.tabUrl || null,
             },
             { parse: true },
           );

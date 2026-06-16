@@ -22,19 +22,12 @@
     <div class="<%= classNames.description %>"><%= preset.description %></div>
   <% } %>
   <div class="<%= classNames.actions %>">
-    <% if (preset.iframeUrl) { %>
-      <button class="<%= classNames.ctaButton %> map-view__button map-view__button--emphasis">
-        <% if (preset.ctaIcon) { %><i class="icon icon-<%= preset.ctaIcon %>"></i><% } %>
-        <%= preset.ctaText || "Explore in App" %>
+    <% preset.ctaActions.forEach(function(action, i) { %>
+      <button class="<%= classNames.ctaButton %> map-view__button map-view__button--emphasis" data-cta-index="<%= i %>">
+        <% if (action.icon) { %><i class="icon icon-<%= action.icon %>"></i><% } %>
+        <%= action.label %>
       </button>
-    <% } %>
-    <% if (preset.tabUrl) { %>
-      <button class="<%= classNames.openTabButton %> map-view__button map-view__button--emphasis">
-        <% var tabIcon = (!preset.iframeUrl && preset.ctaIcon) ? preset.ctaIcon : 'external-link'; %>
-        <i class="icon icon-<%= tabIcon %>"></i>
-        <%= (!preset.iframeUrl && preset.ctaText) ? preset.ctaText : "Open in Browser" %>
-      </button>
-    <% } %>
+    <% }); %>
     <button class="<%= classNames.viewLayersButton %> map-view__button">
       <i class="icon icon-eye-open"></i>
       View Layers

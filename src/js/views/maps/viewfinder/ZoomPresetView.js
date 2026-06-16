@@ -26,8 +26,6 @@ define([
     layersActive: `${BASE_CLASS}--layers-active`,
     layersInner: `${BASE_CLASS}__layers-inner`,
     meta: `${BASE_CLASS}__meta`,
-    openTabButton: `${BASE_CLASS}__open-tab-button`,
-    openTabButtonActive: `${BASE_CLASS}__open-tab-button--active`,
     title: `${BASE_CLASS}__title`,
     viewLayersButton: `${BASE_CLASS}__view-layers-button`,
     viewLayersButtonActive: `${BASE_CLASS}__view-layers-button--active`,
@@ -36,6 +34,34 @@ define([
   const noop = () => {};
   // Maximum character length for the rendered author list before truncating.
   const MAX_AUTHORS_LENGTH = 50;
+
+  /**
+   * Handler registry: maps a ZoomPresetAction `type` string to a function that
+   * carries out the action. Add entries here to support new action types
+   * without modifying ZoomPresetView itself.
+   * @type {Object<string, function(ZoomPresetAction, ZoomPresetView): void>}
+   */
+  const CTA_HANDLERS = {
+    /**
+     * Opens the URL in the full-screen visualization overlay.
+     * @param {ZoomPresetAction} action
+     * @param {ZoomPresetView} view
+     */
+    iframe(action, view) {
+      const permissions =
+        action.permissions ?? "allow-scripts allow-same-origin";
+      view.ctaCallback(action.url, permissions);
+    },
+    /**
+     * Opens the URL in a new browser tab.
+     * @param {ZoomPresetAction} action
+     */
+    tab(action) {
+      if (action.url) {
+        window.open(action.url, "_blank", "noopener,noreferrer");
+      }
+    },
+  };
 
   /**
    * Truncates an authors array to fit within MAX_AUTHORS_LENGTH characters.
@@ -99,8 +125,7 @@ define([
       events() {
         return {
           [`click .${CLASS_NAMES.viewLayersButton}`]: "selectLayers",
-          [`click .${CLASS_NAMES.openTabButton}`]: "openTab",
-          [`click .${CLASS_NAMES.ctaButton}`]: "selectVisualization",
+          [`click .${CLASS_NAMES.ctaButton}`]: "handleCtaClick",
         };
       },
 
@@ -111,55 +136,45 @@ define([
       selectLayers() {
         this.onActivate(this);
         this.closeVisualizationCallback();
-        this.setActive(CLASS_NAMES.viewLayersButton);
+        this.setActive(
+          this.el.querySelector(`.${CLASS_NAMES.viewLayersButton}`),
+        );
         this.selectCallback();
       },
 
       /**
-       * Open the preset's tabUrl in a new browser tab. Closes any open
-       * visualization overlay first. Uses noopener,noreferrer for security.
+       * Dispatch a CTA button click to the registered handler for the action
+       * type. Closes any open visualization overlay first.
+       * @param {MouseEvent} e The click event from a `.cta-button` element.
        */
-      openTab() {
+      handleCtaClick(e) {
+        const btn = e.currentTarget;
+        const index = Number(btn.dataset.ctaIndex);
+        const action = this.preset.get("ctaActions")[index];
+        if (!action) return;
         this.onActivate(this);
         this.closeVisualizationCallback();
-        this.setActive(CLASS_NAMES.openTabButton);
-        const url = this.preset.get("tabUrl");
-        if (url) {
-          window.open(url, "_blank", "noopener,noreferrer");
-        }
-      },
-
-      /**
-       * Open the preset's iframeUrl in the full-screen visualization overlay.
-       * Closes any existing overlay first, then invokes the CTA callback.
-       */
-      selectVisualization() {
-        this.onActivate(this);
-        this.closeVisualizationCallback();
-        this.setActive(CLASS_NAMES.ctaButton);
-        const url = this.preset.get("iframeUrl");
-        const permissions = this.preset.get("iframePermissions");
-        this.ctaCallback(url, permissions);
+        this.setActive(btn);
+        CTA_HANDLERS[action.type]?.(action, this);
       },
 
       /**
        * Mark this card as active and highlight the specific clicked button.
-       * @param {string} buttonClass The CLASS_NAMES value of the button clicked.
+       * @param {HTMLElement} buttonEl The button element that was activated.
        */
-      setActive(buttonClass) {
+      setActive(buttonEl) {
         this.el.classList.add(CLASS_NAMES.active);
-        this.el.classList.toggle(
-          CLASS_NAMES.layersActive,
-          buttonClass === CLASS_NAMES.viewLayersButton,
-        );
-        const buttonActiveMap = [
-          [CLASS_NAMES.viewLayersButton, CLASS_NAMES.viewLayersButtonActive],
-          [CLASS_NAMES.openTabButton, CLASS_NAMES.openTabButtonActive],
-          [CLASS_NAMES.ctaButton, CLASS_NAMES.ctaButtonActive],
-        ];
-        buttonActiveMap.forEach(([cls, activeCls]) => {
-          const btn = this.el.querySelector(`.${cls}`);
-          if (btn) btn.classList.toggle(activeCls, cls === buttonClass);
+        const isLayersButton =
+          buttonEl?.classList.contains(CLASS_NAMES.viewLayersButton) ?? false;
+        this.el.classList.toggle(CLASS_NAMES.layersActive, isLayersButton);
+        this.el
+          .querySelector(`.${CLASS_NAMES.viewLayersButton}`)
+          ?.classList.toggle(
+            CLASS_NAMES.viewLayersButtonActive,
+            isLayersButton,
+          );
+        this.el.querySelectorAll(`.${CLASS_NAMES.ctaButton}`).forEach((btn) => {
+          btn.classList.toggle(CLASS_NAMES.ctaButtonActive, btn === buttonEl);
         });
       },
 
@@ -168,12 +183,11 @@ define([
        */
       resetActiveState() {
         this.el.classList.remove(CLASS_NAMES.active, CLASS_NAMES.layersActive);
-        [
-          [CLASS_NAMES.viewLayersButton, CLASS_NAMES.viewLayersButtonActive],
-          [CLASS_NAMES.openTabButton, CLASS_NAMES.openTabButtonActive],
-          [CLASS_NAMES.ctaButton, CLASS_NAMES.ctaButtonActive],
-        ].forEach(([cls, activeCls]) => {
-          this.el.querySelector(`.${cls}`)?.classList.remove(activeCls);
+        this.el
+          .querySelector(`.${CLASS_NAMES.viewLayersButton}`)
+          ?.classList.remove(CLASS_NAMES.viewLayersButtonActive);
+        this.el.querySelectorAll(`.${CLASS_NAMES.ctaButton}`).forEach((btn) => {
+          btn.classList.remove(CLASS_NAMES.ctaButtonActive);
         });
       },
 

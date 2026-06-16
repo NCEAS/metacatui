@@ -2135,8 +2135,7 @@ other class: .ui-slider-range */
     gap: 0.4rem;
   }
 
-  /* Open Tab or iFrame (primary) buttons */
-  .viewfinder-zoom-preset__open-tab-button,
+  /* CTA (primary) buttons */
   .viewfinder-zoom-preset__cta-button {
     width: 100%;
     display: flex;
@@ -2166,7 +2165,6 @@ other class: .ui-slider-range */
     filter: none;
   }
 
-  .viewfinder-zoom-preset__open-tab-button:hover,
   .viewfinder-zoom-preset__cta-button:hover {
     border-color: var(--portal-col-primary-4);
     filter: none;
@@ -2179,7 +2177,7 @@ other class: .ui-slider-range */
       var(--map-col-bkg-lighter__deprecate)
     );
     border-color: var(
-      --portal-col-primary-4,
+      --portal-col-primary-6,
       var(--map-col-highlight__deprecate)
     );
     box-shadow: 0 0 0 1px var(--portal-col-primary-3, transparent) inset;
@@ -2198,7 +2196,6 @@ other class: .ui-slider-range */
   }
 
   /* The other buttons that were clicked turn dark blue (filled) */
-  .viewfinder-zoom-preset__open-tab-button--active,
   .viewfinder-zoom-preset__cta-button--active {
     background-color: var(
       --portal-col-primary-6,
@@ -2208,7 +2205,6 @@ other class: .ui-slider-range */
     border-color: var(--portal-col-primary-5);
   }
 
-  .viewfinder-zoom-preset__open-tab-button--active:hover,
   .viewfinder-zoom-preset__cta-button--active:hover {
     filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.15));
   }

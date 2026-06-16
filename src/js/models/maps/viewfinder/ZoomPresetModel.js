@@ -21,6 +21,19 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
   const ZoomPresetModel = Backbone.Model.extend(
     /** @lends ZoomPresetModel.prototype */ {
       /**
+       * @typedef {object} ZoomPresetAction
+       * @property {'iframe'|'tab'} type The action type. 'iframe' opens the
+       * URL in the full-screen visualization overlay; 'tab' opens it in a new
+       * browser tab.
+       * @property {string} url The URL to open.
+       * @property {string} label The button label.
+       * @property {string} [icon] FontAwesome icon class for the button.
+       * @property {string} [permissions] Sandbox attribute value for the
+       * iframe (type 'iframe' only). Defaults to
+       * "allow-scripts allow-same-origin".
+       */
+
+      /**
        * @typedef {object} ZoomPresetModelOptions
        * @property {string} title The displayed title for the preset.
        * @property {GeoPoint|null} [geoPoint] The location representing this
@@ -35,18 +48,9 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        * @property {string} [image] URL or path to a preview image for the card.
        * @property {string} [date] Display date string, e.g. "March 2024".
        * @property {string[]} [authors] Names of authors/creators to display.
-       * @property {string} [ctaText] Label for the primary CTA button (used for
-       * the iframe/tab actions). Defaults to "Explore in App" (iframe) or
-       * "Open in Browser" (tab) when empty.
-       * @property {string} [ctaIcon] FontAwesome icon class for the CTA button.
-       * @property {string} [tabUrl] URL to open in a new browser tab when the
-       * "Open in Browser" button is clicked.
-       * @property {string} [iframeUrl] URL to load in the full-screen
-       * visualization overlay when "Explore in App" is clicked.
-       * @property {string} [iframePermissions] The sandbox attribute value for
-       * the iframe. Defaults to "allow-scripts allow-same-origin".
-       * @property {string} [messageOrigin] Trusted origin for postMessage
-       * communication from the embedded app (reserved for future use).
+       * @property {ZoomPresetAction[]} [ctaActions] CTA buttons to display
+       * above the "View Layers" button. Each entry declares the action type,
+       * URL, label, and optional icon.
        */
 
       /**
@@ -56,18 +60,13 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
       defaults() {
         return {
           authors: [],
-          ctaIcon: "",
-          ctaText: "",
+          ctaActions: [],
           date: null,
           description: "",
           enabledLayerIds: [],
           enabledLayerLabels: [],
           geoPoint: null,
-          iframePermissions: "",
-          iframeUrl: null,
           image: null,
-          messageOrigin: "",
-          tabUrl: null,
           title: "",
         };
       },
