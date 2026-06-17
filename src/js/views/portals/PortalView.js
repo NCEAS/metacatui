@@ -40,8 +40,8 @@ define([
    * @classdesc The PortalView is a generic view to render
    * portals, it will hold portal sections
    * @classcategory Views/Portals
-   * @augments Backbone.View
-   * @class
+   * @extends Backbone.View
+   * @constructor
    */
   const PortalView = Backbone.View.extend(
     /** @lends PortalView.prototype */ {
@@ -119,9 +119,9 @@ define([
 
       /* Renders the compiled template into HTML */
       template: _.template(PortalTemplate),
-      // A template to display a notification message
+      //A template to display a notification message
       alertTemplate: _.template(AlertTemplate),
-      // A template for displaying a loading message
+      //A template for displaying a loading message
       loadingTemplate: _.template(LoadingTemplate),
       // Template for the 'edit portal' button
       editPortalsTemplate: _.template(EditPortalsTemplate),
@@ -149,7 +149,7 @@ define([
       editButtonContainer: ".edit-portal-link-container",
       /**
        * The events this view will listen to and the associated function to call.
-       * @type {object}
+       * @type {Object}
        */
       events: {
         "click .portal-section-link": "handleSwitchSection",
@@ -158,7 +158,6 @@ define([
 
       /**
        * Is executed when a new PortalView is created
-       * @param options
        */
       initialize(options) {
         // Set the current PortalView properties
@@ -176,7 +175,8 @@ define([
 
       /**
        * Initial render of the PortalView
-       * @returns {PortalView} Returns itself for easy function stacking in the app
+       *
+       * @return {PortalView} Returns itself for easy function stacking in the app
        */
       render() {
         const view = this;
@@ -241,13 +241,13 @@ define([
         this.stopListening();
         this.listenToOnce(this.model, "sync", this.renderPortal);
 
-        // If the portal isn't found, display a 404 message
+        //If the portal isn't found, display a 404 message
         this.listenTo(this.model, "notFound", this.handleNotFound);
 
-        // Listen to errors that might occur during fetch()
+        //Listen to errors that might occur during fetch()
         this.listenToOnce(this.model, "error", this.showError);
 
-        // Fetch the model
+        //Fetch the model
         this.model.fetch({ objectOnly: true });
       },
 
@@ -324,7 +324,7 @@ define([
         this.stopListening(this.model, "notFound", this.handleNotFound);
         this.stopListening(this.model, "error", this.showError);
 
-        // If this is in DataONE Plus Preview Mode, check that the portal is
+        //If this is in DataONE Plus Preview Mode, check that the portal is
         // a Plus portal before rendering. Member Node portals are always displayed.
         if (
           MetacatUI.appModel.get("dataonePlusPreviewMode") &&
@@ -332,10 +332,10 @@ define([
         ) {
           const sourceMN = this.model.get("datasource");
 
-          // Check if the portal source node is from the active alt repo OR is
+          //Check if the portal source node is from the active alt repo OR is
           // configured as a Plus portal.
           if (
-            typeof sourceMN !== "string" ||
+            typeof sourceMN != "string" ||
             (sourceMN !=
               MetacatUI.appModel.get("defaultAlternateRepositoryId") &&
               !_.findWhere(
@@ -343,17 +343,17 @@ define([
                 { datasource: sourceMN, seriesId: this.model.get("seriesId") },
               ))
           ) {
-            // Get the name of the source member node
-            let sourceMNName = "original data repository";
-            let mnURL = "";
-            if (typeof sourceMN === "string") {
+            //Get the name of the source member node
+            let sourceMNName = "original data repository",
+              mnURL = "";
+            if (typeof sourceMN == "string") {
               const sourceMNObject = MetacatUI.nodeModel.getMember(sourceMN);
               if (sourceMNObject) {
                 sourceMNName = sourceMNObject.name;
 
-                // If there is a baseURL string
+                //If there is a baseURL string
                 if (sourceMNObject.baseURL) {
-                  // Parse out the origin of the baseURL string. We want to crop out the /metacat/d1/mn parts.
+                  //Parse out the origin of the baseURL string. We want to crop out the /metacat/d1/mn parts.
                   mnURL =
                     sourceMNObject.baseURL.substring(
                       0,
@@ -370,14 +370,16 @@ define([
               }
             }
 
-            // Show a message that the portal can be found on the repository website.
+            //Show a message that the portal can be found on the repository website.
             const message = $(document.createElement("h3")).addClass(
               "center stripe",
             );
             message.text(
-              `The ${this.model.get("name")} ${MetacatUI.appModel.get(
-                "portalTermSingular",
-              )} can be viewed in the `,
+              "The " +
+                this.model.get("name") +
+                " " +
+                MetacatUI.appModel.get("portalTermSingular") +
+                " can be viewed in the ",
             );
 
             if (mnURL) {
@@ -438,15 +440,15 @@ define([
 
           this.$("#portal-sections").append(this.sectionDataView.el);
 
-          // Render the section view and add it to the page
+          //Render the section view and add it to the page
           this.sectionDataView.render();
 
           this.addSectionLink(this.sectionDataView);
         }
 
-        // Render the metrics section link
+        //Render the metrics section link
         if (this.model.get("hideMetrics") !== true) {
-          // Create a PortalMetricsView
+          //Create a PortalMetricsView
           this.metricsView = new PortalMetricsView({
             model: this.model,
             id: this.model.get("metricsLabel"),
@@ -478,7 +480,7 @@ define([
 
           this.$("#portal-sections").append(this.sectionMembersView.el);
 
-          // Render the section view and add it to the page
+          //Render the section view and add it to the page
           this.sectionMembersView.render();
 
           this.addSectionLink(this.sectionMembersView);
@@ -532,14 +534,15 @@ define([
           }
         } catch (error) {
           console.log(
-            `Error re-arranging tabs according to the pageOrder option. Error message: ${error}`,
+            "Error re-arranging tabs according to the pageOrder option. Error message: " +
+              error,
           );
         }
 
-        // Switch to the active section
+        //Switch to the active section
         this.switchSection();
 
-        // Scroll to an inner-page link if there is one specified
+        //Scroll to an inner-page link if there is one specified
         if (window.location.hash && this.$(window.location.hash).length) {
           MetacatUI.appView.scrollTo(this.$(window.location.hash));
         }
@@ -549,7 +552,7 @@ define([
 
         // On mobile, hide section tabs a moment after page loads so
         // users notice where they are
-        setTimeout(() => {
+        setTimeout(function () {
           view.toggleSectionLinks();
         }, 700);
 
@@ -581,26 +584,31 @@ define([
           // when there is a theme + layout
           if (layout && supportedLayouts.includes(layout)) {
             require([
-              `text!${MetacatUI.root}/css/portal-layouts/${layout}.css`,
-            ], (ThemeCss) => {
-              const cssID = `portal-layout-${layout}`;
+              "text!" +
+                MetacatUI.root +
+                "/css/portal-layouts/" +
+                layout +
+                ".css",
+            ], function (ThemeCss) {
+              const cssID = "portal-layout-" + layout;
               MetacatUI.appModel.addCSS(ThemeCss, cssID);
               view.addedThemeCSS.push(cssID);
             });
           }
           if (theme && supportedThemes.includes(theme)) {
-            require([`text!${MetacatUI.root}/css/portal-themes/${theme}.css`], (
-              ThemeCss,
-            ) => {
-              const cssID = `portal-theme-${theme}`;
+            require([
+              "text!" + MetacatUI.root + "/css/portal-themes/" + theme + ".css",
+            ], function (ThemeCss) {
+              const cssID = "portal-theme-" + theme;
               MetacatUI.appModel.addCSS(ThemeCss, cssID);
               view.addedThemeCSS.push(cssID);
             });
           }
         } catch (error) {
           console.log(
-            `There was an error adding theme and/or layout styles in a PortalView` +
-              `. Error details: ${error}`,
+            "There was an error adding theme and/or layout styles in a PortalView" +
+              ". Error details: " +
+              error,
           );
         }
       },
@@ -617,7 +625,7 @@ define([
             this.$("#portal-section-tabs").slideToggle();
           }
         } catch (e) {
-          console.log(`Failed to toggle section links, error message: ${e}`);
+          console.log("Failed to toggle section links, error message: " + e);
         }
       },
 
@@ -630,20 +638,25 @@ define([
         // Insert the button into the navbar
         const container = $(this.editButtonContainer);
 
-        const { model } = this;
+        const model = this.model;
 
         this.listenToOnce(this.model, "change:isAuthorized", function () {
           if (!model.get("isAuthorized")) {
             return false;
+          } else {
+            container.html(
+              this.editPortalsTemplate({
+                editButtonText:
+                  "Edit " + MetacatUI.appModel.get("portalTermSingular"),
+                pathToEdit:
+                  MetacatUI.root +
+                  "/edit/" +
+                  MetacatUI.appModel.get("portalTermPlural") +
+                  "/" +
+                  model.get("label"),
+              }),
+            );
           }
-          container.html(
-            this.editPortalsTemplate({
-              editButtonText: `Edit ${MetacatUI.appModel.get("portalTermSingular")}`,
-              pathToEdit: `${MetacatUI.root}/edit/${MetacatUI.appModel.get(
-                "portalTermPlural",
-              )}/${model.get("label")}`,
-            }),
-          );
         });
 
         this.model.checkAuthority("write");
@@ -668,13 +681,13 @@ define([
         // Add or replace the label and section part of the path with updated values.
         // pathRE matches "/label/section", where the "/section" part is optional
         const pathRE = new RegExp(
-          `\\/(${label}|${originalLabel})(\\/[^\\/]*)?$`,
+          "\\/(" + label + "|" + originalLabel + ")(\\/[^\\/]*)?$",
           "i",
         );
-        let newPathName = `${pathName.replace(pathRE, "")}/${label}`;
+        let newPathName = pathName.replace(pathRE, "") + "/" + label;
 
         if (showSectionLabel && this.activeSection) {
-          newPathName += `/${this.activeSection.uniqueSectionLabel}`;
+          newPathName += "/" + this.activeSection.uniqueSectionLabel;
         }
 
         const searchQueryString = new URL(window.location.href).search;
@@ -764,7 +777,7 @@ define([
         });
 
         // If the section view has post-render functionality, execute it now
-        if (typeof sectionView.postRender === "function") {
+        if (typeof sectionView.postRender == "function") {
           sectionView.postRender();
         }
 
@@ -830,20 +843,21 @@ define([
       /**
        * Returns the section view that has a label matching the one given.
        * @param {string} label - The label for the section
-       * @returns {PortalSectionView|false} - Returns false if a matching section view isn't found
+       * @return {PortalSectionView|false} - Returns false if a matching section view isn't found
        */
       getSectionByLabel(label) {
-        // If no label is given, exit
+        //If no label is given, exit
         if (!label) {
           return;
         }
 
-        // Find the section view whose unique label matches the given label. Case-insensitive matching.
-        return _.find(this.subviews, (view) => {
-          if (typeof view.uniqueSectionLabel === "string") {
+        //Find the section view whose unique label matches the given label. Case-insensitive matching.
+        return _.find(this.subviews, function (view) {
+          if (typeof view.uniqueSectionLabel == "string") {
             return view.uniqueSectionLabel.toLowerCase() == label.toLowerCase();
+          } else {
+            return false;
           }
-          return false;
         });
       },
 
@@ -851,19 +865,19 @@ define([
        * Creates and returns a unique label for the given section. This label is just used in the view,
        * because portal sections can have duplicate labels. But unique labels need to be used for navigation in the view.
        * @param {PortEditorSection} sectionModel - The section for which to create a unique label
-       * @returns {string} The unique label string
+       * @return {string} The unique label string
        */
       getUniqueSectionLabel(sectionModel) {
-        // Get the label for this section
+        //Get the label for this section
         const sectionLabel = sectionModel
-          .get("label")
-          .replace(/[^a-zA-Z0-9 ]/g, "")
-          .replace(/ /g, "-");
-        const unalteredLabel = sectionLabel;
-        const sectionLabels = this.sectionLabels || [];
-        const i = 2;
+            .get("label")
+            .replace(/[^a-zA-Z0-9 ]/g, "")
+            .replace(/ /g, "-"),
+          unalteredLabel = sectionLabel,
+          sectionLabels = this.sectionLabels || [],
+          i = 2;
 
-        // Concatenate a number to the label if this one already exists
+        //Concatenate a number to the label if this one already exists
         while (sectionLabels.includes(sectionLabel)) {
           sectionLabel = unalteredLabel + i;
           i++;
@@ -875,31 +889,33 @@ define([
       /**
        * Creates a PortalSectionView to display the content in the given portal
        * section. Also creates a navigation link to the section.
+       *
        * @param {PortalSectionModel} sectionModel - The section to render in this view
        */
       addSection(sectionModel) {
-        // If this is a visualization Section, render it differently with PortalVizSectionView
+        //If this is a visualization Section, render it differently with PortalVizSectionView
         if (sectionModel.get("sectionType") == "visualization") {
           this.addVizSection(sectionModel);
+          return;
         }
-        // All other portal section types are rendered with the basic PortalSectionView
+        //All other portal section types are rendered with the basic PortalSectionView
         else {
-          // Create a new PortalSectionView
+          //Create a new PortalSectionView
           const sectionView = new PortalSectionView({
             model: sectionModel,
           });
 
-          // Render the section
+          //Render the section
           sectionView.render();
 
-          // Add the section view to this portal view
+          //Add the section view to this portal view
           this.$("#portal-sections").append(sectionView.el);
 
           this.addSectionLink(sectionView);
 
-          // Create a unique label for this section and save it
+          //Create a unique label for this section and save it
           const uniqueLabel = this.getUniqueSectionLabel(sectionModel);
-          // Set the unique section label for this view
+          //Set the unique section label for this view
           sectionView.uniqueSectionLabel = uniqueLabel;
 
           this.subviews.push(sectionView);
@@ -910,25 +926,26 @@ define([
        * Creates a PortalSectionView to display the content in the given portal
        * section. Also creates a navigation link to the section.
        * @param {PortalVizSectionModel} sectionModel - The visualization section to render in this view
+       *
        */
       addVizSection(sectionModel) {
-        // Create a new PortalSectionView
+        //Create a new PortalSectionView
         const sectionView = new PortalVisualizationsView({
           model: sectionModel,
         });
 
-        // Render the section
+        //Render the section
         sectionView.render();
 
-        // Add the section view to this portal view
+        //Add the section view to this portal view
         this.$("#portal-sections").append(sectionView.el);
 
         this.addSectionLink(sectionView);
 
-        // Create a unique label for this section and save it
+        //Create a unique label for this section and save it
         const uniqueLabel = this.getUniqueSectionLabel(sectionModel);
 
-        // Set the unique section label for this view
+        //Set the unique section label for this view
         sectionView.uniqueSectionLabel = uniqueLabel;
 
         this.subviews.push(sectionView);
@@ -942,7 +959,7 @@ define([
         const label = sectionView.getName();
         const hrefLabel = sectionView.getName({ linkFriendly: true });
 
-        // Create a navigation link
+        //Create a navigation link
         this.$("#portal-section-tabs").append(
           $(document.createElement("li"))
             .addClass("section-link-container")
@@ -950,7 +967,7 @@ define([
             .append(
               $(document.createElement("a"))
                 .text(label)
-                .attr("href", `#${hrefLabel}`)
+                .attr("href", "#" + hrefLabel)
                 .attr("data-toggle", "tab")
                 .addClass("portal-section-link")
                 .data("view", sectionView),
@@ -973,45 +990,47 @@ define([
             MetacatUI.appUserModel.get("loggedIn") &&
             this.model.get("fetchedWithAuth"))
         ) {
-          // Check if there is an indexing queue, because this model may still be indexing
+          //Check if there is an indexing queue, because this model may still be indexing
           const onError = function () {
-            // If the request to the monitor/status API fails, then show the not-found message
-            view.showNotFound.call(view);
-          };
-          const onSuccess = function (sizeOfQueue) {
-            if (sizeOfQueue > 0) {
-              // Show a warning message about the index queue
-              MetacatUI.appView.showAlert(
-                `<p>We couldn't find a data portal named " <span id='portal-view-not-found-name'></span>` +
-                  `".</p><p><i class='icon icon-exclamation-sign'></i> If this portal was created in the last few minutes, it may still be processing, since there are currently <b>${sizeOfQueue}</b> submissions in the queue.</p>`,
-                "alert-warning",
-                view.$el,
-              );
-              view.$(".loading").remove();
-
-              view
-                .$("#portal-view-not-found-name")
-                .text(view.label || view.portalId);
-            } else {
-              // If the size of the queue is 0, then show the not-found message
+              //If the request to the monitor/status API fails, then show the not-found message
               view.showNotFound.call(view);
-            }
-          };
+            },
+            onSuccess = function (sizeOfQueue) {
+              if (sizeOfQueue > 0) {
+                //Show a warning message about the index queue
+                MetacatUI.appView.showAlert(
+                  "<p>We couldn't find a data portal named \" <span id='portal-view-not-found-name'></span>" +
+                    "\".</p><p><i class='icon icon-exclamation-sign'></i> If this portal was created in the last few minutes, it may still be processing, since there are currently <b>" +
+                    sizeOfQueue +
+                    "</b> submissions in the queue.</p>",
+                  "alert-warning",
+                  view.$el,
+                );
+                view.$(".loading").remove();
 
-          // Get the size of the index queue
+                view
+                  .$("#portal-view-not-found-name")
+                  .text(view.label || view.portalId);
+              } else {
+                //If the size of the queue is 0, then show the not-found message
+                view.showNotFound.call(view);
+              }
+            };
+
+          //Get the size of the index queue
           MetacatUI.appLookupModel.getSizeOfIndexQueue(onSuccess, onError);
         }
-        // If the user IS logged in and we haven't fetched the model with user authentication yet
+        //If the user IS logged in and we haven't fetched the model with user authentication yet
         else if (
           MetacatUI.appUserModel.get("checked") &&
           MetacatUI.appUserModel.get("loggedIn")
         ) {
-          // Fetch again now that the user is logged in
+          //Fetch again now that the user is logged in
           this.model.fetch();
         }
-        // If the user login status is unknown, because authentication is still pending
+        //If the user login status is unknown, because authentication is still pending
         else if (!MetacatUI.appUserModel.get("checked")) {
-          // Wait for the authentication to be checked, and then start this function over again
+          //Wait for the authentication to be checked, and then start this function over again
           this.listenToOnce(
             MetacatUI.appUserModel,
             "change:checked",
@@ -1025,13 +1044,13 @@ define([
        */
       showNotFound() {
         const notFoundMessage =
-          "The data portal \"<span id='portal-view-not-found-name'></span>" +
-          "\" doesn't exist.";
-        const notification = this.alertTemplate({
-          classes: "alert-error",
-          msg: notFoundMessage,
-          includeEmail: true,
-        });
+            "The data portal \"<span id='portal-view-not-found-name'></span>" +
+            "\" doesn't exist.",
+          notification = this.alertTemplate({
+            classes: "alert-error",
+            msg: notFoundMessage,
+            includeEmail: true,
+          });
 
         this.$el.html(notification);
 
@@ -1042,63 +1061,74 @@ define([
        * Show an error message in this view
        * @param {SolrResult} model
        * @param {XMLHttpRequest.response|string} reponse
-       * @param response
        */
       showError(model, response) {
         try {
-          const errorMsg = "";
-          const errorClass = "alert-error";
-          const icon = "frown";
-          const portalTerm =
-            MetacatUI.appModel.get("portalTermSingular") || "portal";
-          const errorTitle = `Something went wrong displaying this ${portalTerm}.`;
+          const errorMsg = "",
+            errorClass = "alert-error",
+            icon = "frown",
+            portalTerm =
+              MetacatUI.appModel.get("portalTermSingular") || "portal",
+            errorTitle =
+              "Something went wrong displaying this " + portalTerm + ".";
 
           // For errors resulting from authorization errors, use a friendlier and more
           // helpful error message than the default message returned from fetch
           if (response && response.status == 401) {
-            errorTitle = `You need permission to view this ${portalTerm}.`;
+            errorTitle = "You need permission to view this " + portalTerm + ".";
             errorClass = "alert-info";
             icon = "lock";
             // Make a suggestion of how to fix the error based on whether the user is logged in or not.
             if (!MetacatUI.appUserModel.get("loggedIn")) {
               // If not logged in, suggest that the user signs in
-              errorMsg = `<strong><a href="${MetacatUI.appModel.get(
-                "signInUrlOrcid",
-              )}${
-                window.location.href
-              }">Sign in</a></strong> to see if you have already been given access to view this ${portalTerm}.`;
+              errorMsg =
+                '<strong><a href="' +
+                MetacatUI.appModel.get("signInUrlOrcid") +
+                window.location.href +
+                '">Sign in</a></strong> to see if you have already been given access to view this ' +
+                portalTerm +
+                ".";
             } else {
               // If signed in, suggest that the user contacts that portal owner
-              errorMsg = `Contact the owner of this ${portalTerm} to request access.`;
+              errorMsg =
+                "Contact the owner of this " +
+                portalTerm +
+                " to request access.";
             }
             // For all other types of errors
           } else {
             if (response && response.responseText) {
-              errorMsg = `Error details: ${$(response.responseText).text()}`;
+              errorMsg = "Error details: " + $(response.responseText).text();
             }
-            if (typeof response === "string") {
-              errorMsg = `Error details: ${response}`;
+            if (typeof response == "string") {
+              errorMsg = "Error details: " + response;
             }
           }
 
           if (errorMsg) {
-            errorMsg = `<p>${errorMsg}</p>`;
+            errorMsg = "<p>" + errorMsg + "</p>";
           }
 
-          // Show the error message
+          //Show the error message
           MetacatUI.appView.showAlert(
-            `<h4><i class='icon icon-${icon}'></i>${errorTitle}</h4>${errorMsg}`,
-            `${errorClass} portal-alert-container`,
+            "<h4><i class='icon icon-" +
+              icon +
+              "'></i>" +
+              errorTitle +
+              "</h4>" +
+              errorMsg,
+            errorClass + " portal-alert-container",
             this.$el,
             0,
             { includeEmail: true },
           );
 
-          // Remove the loading message from this view
+          //Remove the loading message from this view
           this.$el.find(".loading").remove();
         } catch (error) {
           console.log(
-            `There was a problem trying to display the error message in the Portal View. Error details: ${error}`,
+            "There was a problem trying to display the error message in the Portal View. Error details: " +
+              error,
           );
         }
       },
@@ -1107,16 +1137,16 @@ define([
        * This function is called whenever the window is scrolled.
        */
       handleScroll() {
-        const menu = $(".section-links-container")[0];
-        const menuHeight = $(menu).height();
-        const hiddenHeight = menuHeight * -1;
+        const menu = $(".section-links-container")[0],
+          menuHeight = $(menu).height(),
+          hiddenHeight = menuHeight * -1;
         const currentScrollPos = window.pageYOffset;
         if (MetacatUI.appView.prevScrollpos > currentScrollPos) {
-          // Get the height of any menu that may be displayed at the bottom of the page, too
+          //Get the height of any menu that may be displayed at the bottom of the page, too
 
           menu.style.bottom = "0px";
         } else {
-          menu.style.bottom = `${hiddenHeight}px`;
+          menu.style.bottom = hiddenHeight + "px";
         }
         MetacatUI.appView.prevScrollpos = currentScrollPos;
       },
@@ -1136,30 +1166,30 @@ define([
           }
         }
 
-        // Remove each subview from the DOM and remove listeners
+        //Remove each subview from the DOM and remove listeners
         _.invoke(this.subviews, "remove");
 
         this.subviews = new Array();
 
         // Remove any CSS that was added for the theme or layout
         if (this.addedThemeCSS && this.addedThemeCSS.length) {
-          this.addedThemeCSS.forEach((cssID) => {
+          this.addedThemeCSS.forEach(function (cssID) {
             MetacatUI.appModel.removeCSS(cssID);
           });
         }
 
-        // Remove all listeners
+        //Remove all listeners
         this.stopListening();
 
-        // Reset the active alternate repository
-        // MetacatUI.appModel.set("activeAlternateRepositoryId", null);
+        //Reset the active alternate repository
+        //MetacatUI.appModel.set("activeAlternateRepositoryId", null);
 
-        // Delete the metrics view from this view
+        //Delete the metrics view from this view
         delete this.sectionMetricsView;
-        // Delete the model from this view
+        //Delete the model from this view
         delete this.model;
 
-        // Remove the scroll listener
+        //Remove the scroll listener
         $(window).off("scroll", "", this.handleScroll);
 
         $("body").removeClass("PortalView");
@@ -1175,6 +1205,7 @@ define([
 
       /**
        * Checks if the label is a repository
+       *
        * @param {string} username - The portal label or the member node repository identifier
        */
       isNode(username) {
@@ -1185,8 +1216,11 @@ define([
         const model = this;
         const node = _.find(
           MetacatUI.nodeModel.get("members"),
-          (nodeModel) =>
-            nodeModel.shortIdentifier.toLowerCase() == username.toLowerCase(),
+          function (nodeModel) {
+            return (
+              nodeModel.shortIdentifier.toLowerCase() == username.toLowerCase()
+            );
+          },
         );
 
         return node && node !== undefined;
