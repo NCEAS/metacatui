@@ -1,11 +1,6 @@
 "use strict";
 
-define([
-  "underscore",
-  "backbone",
-  "text!templates/maps/visualization-panel.html",
-  "utils/isTrustedUrl",
-], (_, Backbone, Template, isTrustedUrl) => {
+define(["backbone", "utils/isTrustedUrl"], (Backbone, isTrustedUrl) => {
   const BASE_CLASS = "visualization-panel";
   const CLASS_NAMES = {
     body: `${BASE_CLASS}__body`,
@@ -16,6 +11,25 @@ define([
     untrusted: `${BASE_CLASS}__untrusted`,
     untrustedLink: `${BASE_CLASS}__untrusted-link`,
   };
+
+  const VIEW_TEMPLATE = `
+    <div class="${CLASS_NAMES.header}">
+      <button class="${CLASS_NAMES.closeButton} map-view__button" type="button" aria-label="Close visualization"><i class="icon-remove"></i></button>
+    </div>
+    <div class="${CLASS_NAMES.body}">
+      <iframe
+        class="${CLASS_NAMES.iframe}"
+        title="Visualization"
+      ></iframe>
+      <div class="${CLASS_NAMES.untrusted}" style="display:none">
+        <p>This content cannot be displayed here because its source is not in the list of trusted sources.</p>
+        <a class="${CLASS_NAMES.untrustedLink} map-view__button map-view__button--emphasis" target="_blank" rel="noopener noreferrer">
+          <i class="icon icon-external-link"></i>
+          Open in Browser
+        </a>
+      </div>
+    </div>
+  `;
 
   /**
    * @class VisualizationPanelView
@@ -31,7 +45,7 @@ define([
    * @classcategory Views/Maps
    * @name VisualizationPanelView
    * @augments Backbone.View
-   * @since 2.x.0
+   * @since 2.x.0 TODO: add version when released
    * @constructs VisualizationPanelView
    */
   const VisualizationPanelView = Backbone.View.extend(
@@ -122,7 +136,7 @@ define([
        * @returns {VisualizationPanelView} Returns the rendered view element.
        */
       render() {
-        this.el.innerHTML = _.template(Template)({ classNames: CLASS_NAMES });
+        this.el.innerHTML = VIEW_TEMPLATE;
         return this;
       },
     },
