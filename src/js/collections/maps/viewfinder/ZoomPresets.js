@@ -42,18 +42,29 @@ define(["underscore", "backbone", "models/maps/viewfinder/ZoomPresetModel"], (
    * Configuration options for a zoom preset in the MapConfig.
    * @typedef {object} MapConfig#ZoomPreset
    * @property {string} title The displayed title for the preset.
-   * @property {number} latitude The latitude of the preset location.
-   * @property {number} longitude The longitude of the preset location.
-   * @property {number} height The height of the preset location in meters.
-   * @property {string} description A brief description of the layers and
+   * @property {number} [latitude] The latitude of the preset location.
+   * @property {number} [longitude] The longitude of the preset location.
+   * @property {number} [height] The height (camera altitude) of the preset
+   * location in meters.
+   * @property {string} [description] A brief description of the layers and
    * location.
    * @property {string[]} enabledLayerIds A list of layer IDs which are to be
    * enabled for this preset. Must match the IDs of layers in the
    * MapConfig#MapAssetConfig.
    * @property {string[]} enabledLayerLabels A corresponding list of layer
    * labels which are enabled for this preset.
-   * @property {string} [imageUrl] An optional URL to an image that represents
-   * this preset.
+   * @property {string} [image] An optional URL to a preview image shown in the
+   * preset card.
+   * @property {string} [date] An optional display date string shown in the
+   * preset card (e.g. "2024 June 26").
+   * @property {string[]} [authors] An optional list of author names to display
+   * in the preset card.
+   * @property {ZoomPresetAction[]} [ctaActions] An optional list of call-to-
+   * action buttons to display on the preset card. Each entry must have a
+   * `type` ('iframe' or 'tab'), a `url`, a `label`, and may also have an optional
+   * `icon` (FontAwesome class). 'iframe' opens the URL in the full-screen
+   * visualization overlay; 'tab' opens it in a new browser tab. Note that the
+   * View Layers button is always present and does not need to be included in this list.
    */
 
   /**
