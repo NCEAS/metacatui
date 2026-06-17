@@ -48,9 +48,7 @@ define([
      * @param {ZoomPresetView} view
      */
     iframe(action, view) {
-      const permissions =
-        action.permissions ?? "allow-scripts allow-same-origin";
-      view.ctaCallback(action.url, permissions);
+      view.ctaCallback(action.url);
     },
     /**
      * Opens the URL in a new browser tab.
@@ -204,8 +202,8 @@ define([
        * this zoom preset card.
        * @param {Function} [options.selectCallback] Called when "View Layers" is
        * clicked. Should zoom to the preset location and toggle layers.
-       * @param {Function} [options.ctaCallback] Called with (url, permissions)
-       * when "Explore in App" is clicked. Should open the visualization overlay.
+       * @param {Function} [options.ctaCallback] Called with (url) when
+       * "Explore in App" is clicked. Should open the visualization overlay.
        * @param {Function} [options.closeVisualizationCallback] Called before
        * any button action to dismiss any currently open overlay.
        * @param {Function} [options.onActivate] Called when this card is

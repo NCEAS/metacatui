@@ -277,7 +277,6 @@ define([
           globeBaseColor: null,
           zoomPresets: null,
           activeVisualizationUrl: null,
-          activeVisualizationPermissions: "",
         };
       },
 

@@ -176,8 +176,8 @@ define([
           selectZoomPreset: (preset) => {
             this.viewfinderModel.selectZoomPreset(preset);
           },
-          openVisualization: (url, permissions) => {
-            this.viewfinderModel.openVisualization(url, permissions);
+          openVisualization: (url) => {
+            this.viewfinderModel.openVisualization(url);
           },
           closeVisualization: () => {
             this.viewfinderModel.closeVisualization();

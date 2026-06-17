@@ -165,14 +165,9 @@ define([
        * Open a visualization app in the full-screen iframe overlay by setting
        * the activeVisualizationUrl attribute on the map model.
        * @param {string} url The URL to load in the iframe overlay.
-       * @param {string} [permissions] The sandbox attribute value for the
-       * iframe. Defaults to the preset's iframePermissions value.
        */
-      openVisualization(url, permissions) {
-        this.mapModel.set({
-          activeVisualizationUrl: url,
-          activeVisualizationPermissions: permissions,
-        });
+      openVisualization(url) {
+        this.mapModel.set({ activeVisualizationUrl: url });
       },
 
       /**
@@ -180,10 +175,7 @@ define([
        * the map model.
        */
       closeVisualization() {
-        this.mapModel.set({
-          activeVisualizationUrl: null,
-          activeVisualizationPermissions: null,
-        });
+        this.mapModel.set({ activeVisualizationUrl: null });
       },
 
       /**

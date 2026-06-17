@@ -145,22 +145,15 @@ define([
         expect(iframe.getAttribute("src")).to.include("trusted.example.com");
       });
 
-      it("applies the sandbox attribute from the permissions argument", () => {
-        state.view.open(TRUSTED_URL, "allow-scripts");
+      it("applies the hardcoded sandbox attribute for a trusted URL", () => {
+        state.view.open(TRUSTED_URL);
 
         const iframe = state.view.el.querySelector(
           ".visualization-panel__iframe",
         );
-        expect(iframe.getAttribute("sandbox")).to.equal("allow-scripts");
-      });
-
-      it("removes the sandbox attribute when permissions is empty", () => {
-        state.view.open(TRUSTED_URL, "");
-
-        const iframe = state.view.el.querySelector(
-          ".visualization-panel__iframe",
+        expect(iframe.getAttribute("sandbox")).to.equal(
+          "allow-scripts allow-same-origin",
         );
-        expect(iframe.hasAttribute("sandbox")).to.be.false;
       });
 
       it("hides the iframe and shows the fallback for an untrusted URL", () => {
@@ -203,59 +196,6 @@ define([
 
         expect(state.view.el.classList.contains("visualization-panel--open")).to
           .be.true;
-      });
-    });
-
-    // ------------------------------------------------------------------ //
-    // Streamlit embed=true injection
-    // ------------------------------------------------------------------ //
-    describe("Streamlit embed parameter injection", () => {
-      const STREAMLIT_URL = "https://myapp.streamlit.app/";
-
-      const state = cleanState(() => {
-        globalThis.MetacatUI = makeMetacatUI([
-          "https://*.streamlit.app/*",
-          "https://myapp.streamlit.app/",
-        ]);
-
-        const view = new VisualizationPanelView();
-        view.render();
-        document.body.appendChild(view.el);
-
-        return { view };
-      }, beforeEach);
-
-      afterEach(() => {
-        state.view.remove();
-      });
-
-      it("appends embed=true to a Streamlit URL", () => {
-        state.view.open(STREAMLIT_URL);
-
-        const iframe = state.view.el.querySelector(
-          ".visualization-panel__iframe",
-        );
-        expect(iframe.getAttribute("src")).to.include("embed=true");
-      });
-
-      it("does not duplicate embed=true when it is already present", () => {
-        state.view.open(`${STREAMLIT_URL}?embed=true`);
-
-        const iframe = state.view.el.querySelector(
-          ".visualization-panel__iframe",
-        );
-        const src = iframe.getAttribute("src");
-        expect((src.match(/embed=true/g) || []).length).to.equal(1);
-      });
-
-      it("does not inject embed=true for non-Streamlit URLs", () => {
-        globalThis.MetacatUI = makeMetacatUI(["https://trusted.example.com/*"]);
-        state.view.open("https://trusted.example.com/app");
-
-        const iframe = state.view.el.querySelector(
-          ".visualization-panel__iframe",
-        );
-        expect(iframe.getAttribute("src")).to.not.include("embed=true");
       });
     });
 

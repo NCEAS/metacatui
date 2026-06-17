@@ -17,29 +17,6 @@ define([
   };
 
   /**
-   * Appends `embed=true` to Streamlit app URLs if not already present.
-   * Streamlit requires this parameter when loaded in an iframe to avoid
-   * redirect loops caused by its auth flow.
-   * @param {string} url The URL to potentially modify.
-   * @returns {string} The URL with `embed=true` appended for Streamlit URLs.
-   */
-  function addStreamlitEmbedParam(url) {
-    try {
-      const parsed = new URL(url);
-      if (
-        parsed.hostname.endsWith(".streamlit.app") &&
-        !parsed.searchParams.has("embed")
-      ) {
-        parsed.searchParams.set("embed", "true");
-        return parsed.toString();
-      }
-    } catch (e) {
-      // Invalid URL, return as-is
-    }
-    return url;
-  }
-
-  /**
    * Tests a URL against the app's trustedContentSources list.
    * @param {string} url The URL to test.
    * @returns {boolean} True if the URL matches a trustedContentSources pattern.
@@ -110,10 +87,8 @@ define([
        * Open the panel and load the given URL in the iframe. If the URL is
        * not trusted, show a plain link fallback instead.
        * @param {string} url The URL to load.
-       * @param {string} [permissions] The
-       * sandbox attribute value for the iframe.
        */
-      open(url, permissions = "allow-scripts allow-same-origin") {
+      open(url) {
         const iframe = this.el.querySelector(`.${CLASS_NAMES.iframe}`);
         const untrusted = this.el.querySelector(`.${CLASS_NAMES.untrusted}`);
         const untrustedLink = this.el.querySelector(
@@ -121,12 +96,8 @@ define([
         );
 
         if (isTrustedUrl(url)) {
-          if (permissions) {
-            iframe.setAttribute("sandbox", permissions);
-          } else {
-            iframe.removeAttribute("sandbox");
-          }
-          iframe.src = addStreamlitEmbedParam(url);
+          iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+          iframe.src = url;
           iframe.style.display = "";
           untrusted.style.display = "none";
         } else {

@@ -35,8 +35,8 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
        * @property {ZoomPresets} zoomPresets The collection of zoom presets
        * @property {Function} selectZoomPreset The callback function for
        * selecting a zoom preset (zoom + toggle layers).
-       * @property {Function} [openVisualization] Called with (url, permissions)
-       * to open the visualization overlay.
+       * @property {Function} [openVisualization] Called with (url) to open the
+       * visualization overlay.
        * @property {Function} [closeVisualization] Called to close the
        * visualization overlay.
        * @property {Function} [onActivate] Called when a zoom preset card is
@@ -79,8 +79,8 @@ define(["underscore", "backbone", "views/maps/viewfinder/ZoomPresetView"], (
             selectCallback: () => {
               this.selectZoomPreset(preset);
             },
-            ctaCallback: (url, permissions) => {
-              this.openVisualization(url, permissions);
+            ctaCallback: (url) => {
+              this.openVisualization(url);
             },
             closeVisualizationCallback: () => {
               this.closeVisualization();

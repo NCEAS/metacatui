@@ -28,9 +28,6 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        * @property {string} url The URL to open.
        * @property {string} label The button label.
        * @property {string} [icon] FontAwesome icon class for the button.
-       * @property {string} [permissions] Sandbox attribute value for the
-       * iframe (type 'iframe' only). Defaults to
-       * "allow-scripts allow-same-origin".
        */
 
       /**

@@ -157,9 +157,7 @@ define([
           "change:activeVisualizationUrl",
           (model, url) => {
             if (url) {
-              const permissions =
-                model.get("activeVisualizationPermissions") || undefined;
-              view.visualizationPanel.open(url, permissions);
+              view.visualizationPanel.open(url);
             } else {
               view.visualizationPanel.close();
             }
@@ -170,10 +168,7 @@ define([
         // or the Escape key (which triggers the "close" event on the panel).
         view.stopListening(view.visualizationPanel, "close");
         view.listenTo(view.visualizationPanel, "close", () => {
-          view.model.set({
-            activeVisualizationUrl: null,
-            activeVisualizationPermissions: null,
-          });
+          view.model.set({ activeVisualizationUrl: null });
         });
 
         return view.visualizationPanel;
