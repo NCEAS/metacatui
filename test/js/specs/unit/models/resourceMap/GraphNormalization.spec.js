@@ -1,11 +1,10 @@
 define([
   "rdflib",
   "models/resourceMap/ResourceMap",
-  "models/resourceMap/GraphRead",
   "models/resourceMap/GraphMutation",
   "models/resourceMap/GraphNormalization",
   "/test/js/specs/unit/models/resourceMap/ResourceMapTestUtils.js",
-], (rdf, ResourceMap, GraphRead, GraphMutation, GraphNormalization, testUtils) => {
+], (rdf, ResourceMap, GraphMutation, GraphNormalization, testUtils) => {
   chai.should();
   const { MISSING_IDENTIFIER_XML, createBaseResourceMap } = testUtils;
 
@@ -19,19 +18,17 @@ define([
         resourceMap.getNodeUriForPid("resource_map_doi:10.18739/A22Z9V"),
       );
 
-      GraphRead.nodeHasIdentifier(
-        resourceMap,
-        memberNode,
-        "resource_map_doi:10.18739/A22Z9V",
-      ).should.equal(true);
+      resourceMap
+        .getGraphState()
+        .nodeHasIdentifier(memberNode, "resource_map_doi:10.18739/A22Z9V")
+        .should.equal(true);
 
       GraphNormalization.synchronizeCoreGraph(resourceMap);
 
-      GraphRead.nodeHasIdentifier(
-        resourceMap,
-        memberNode,
-        "resource_map_doi:10.18739/A22Z9V",
-      ).should.equal(true);
+      resourceMap
+        .getGraphState()
+        .nodeHasIdentifier(memberNode, "resource_map_doi:10.18739/A22Z9V")
+        .should.equal(true);
       resourceMap.graph
         .statementsMatching(
           rdf.sym(resourceMap.aggregationUri),
@@ -71,25 +68,6 @@ define([
           aggregationNode,
         )
         .length.should.equal(1);
-    });
-
-    it("uses canonical member PIDs without fallback URI scans", () => {
-      const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:rm.fix.canonical.1",
-        memberPids: ["meta.1", "data.1", "data.2"],
-      });
-      const memberPids = resourceMap.getMemberPids();
-      const sandbox = sinon.createSandbox();
-
-      try {
-        const findNodeUriSpy = sandbox.spy(GraphRead, "findNodeUriForPid");
-
-        GraphNormalization.synchronizeCoreGraph(resourceMap, memberPids);
-
-        findNodeUriSpy.callCount.should.equal(0);
-      } finally {
-        sandbox.restore();
-      }
     });
 
     it("batch-canonicalizes legacy managed node URIs onto canonical resolve URIs", () => {
@@ -140,7 +118,7 @@ define([
         literalDataPid,
       );
 
-      GraphNormalization.canonicalizeManagedGraph(resourceMap);
+      GraphNormalization.repairBrokenGraph(resourceMap);
 
       resourceMap.graph
         .statementsMatching(rdf.sym(legacyResourceMapUri), undefined, undefined)
@@ -168,11 +146,10 @@ define([
           rdf.sym(canonicalDataUri),
         )
         .length.should.equal(1);
-      GraphRead.nodeHasIdentifier(
-        resourceMap,
-        rdf.sym(canonicalDataUri),
-        "data.1",
-      ).should.equal(true);
+      resourceMap
+        .getGraphState()
+        .nodeHasIdentifier(rdf.sym(canonicalDataUri), "data.1")
+        .should.equal(true);
     });
 
     it("does not rewrite literal values that match canonicalized node URIs", () => {
@@ -195,7 +172,7 @@ define([
         rdf.literal(legacyDataUri),
       );
 
-      GraphNormalization.canonicalizeManagedGraph(resourceMap);
+      GraphNormalization.repairBrokenGraph(resourceMap);
 
       resourceMap.graph
         .statementsMatching(
@@ -218,7 +195,7 @@ define([
         rdf.literal("standalone payload"),
       );
 
-      GraphNormalization.canonicalizeManagedGraph(resourceMap);
+      GraphNormalization.repairBrokenGraph(resourceMap);
 
       resourceMap.graph
         .statementsMatching(

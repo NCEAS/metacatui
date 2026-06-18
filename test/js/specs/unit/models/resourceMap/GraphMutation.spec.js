@@ -32,6 +32,32 @@ define([
         .length.should.equal(1);
     });
 
+    it("does not rewrite blank nodes whose values collide with a replaced URI", () => {
+      const resourceMap = createBaseResourceMap();
+      const oldUri = resourceMap.getNodeUriForPid("data.1");
+      const newUri = resourceMap.pidToUri("data.replaced");
+      // A hostile or buggy graph can contain a blank node whose internal
+      // value equals a named node's URI; only the named node may be replaced.
+      const collidingBlankNode = rdf.blankNode(oldUri);
+      collidingBlankNode.value.should.equal(oldUri);
+      const payloadPredicate = rdf.sym("https://example.org/test#payload");
+
+      resourceMap.graph.add(
+        collidingBlankNode,
+        payloadPredicate,
+        rdf.literal("blank node payload"),
+      );
+
+      GraphMutation.replaceNodeValue(resourceMap, oldUri, newUri);
+
+      resourceMap.graph
+        .statementsMatching(collidingBlankNode, payloadPredicate, undefined)
+        .length.should.equal(1);
+      resourceMap.graph
+        .statementsMatching(rdf.sym(newUri), payloadPredicate, undefined)
+        .length.should.equal(0);
+    });
+
     it("removes detached blank nodes with outgoing payloads", () => {
       const resourceMap = createBaseResourceMap();
       const resourceMapNode = rdf.sym(resourceMap.resourceMapUri);

@@ -1,23 +1,12 @@
 "use strict";
 
-define(["rdflib", "common/ValueUtilities", "models/resourceMap/GraphRead"], (
-  rdf,
-  ValueUtilities,
-  GraphRead,
-) => {
+define([
+  "rdflib",
+  "common/ValueUtilities",
+  "models/resourceMap/ResourceMapCommon",
+], (rdf, ValueUtilities, ResourceMapCommon) => {
   const { isNonEmptyString, normalizeText, requireNonEmptyString } =
     ValueUtilities;
-
-  /**
-   * Invalidate derived graph state after a successful graph edit.
-   * @param {ResourceMap} resourceMap Resource map whose graph may be dirty.
-   * @param {boolean} changed Whether the graph changed.
-   */
-  function markGraphDirty(resourceMap, changed) {
-    if (changed) {
-      resourceMap.markGraphDirty?.();
-    }
-  }
 
   /**
    * Add one RDF statement to the graph.
@@ -28,7 +17,7 @@ define(["rdflib", "common/ValueUtilities", "models/resourceMap/GraphRead"], (
    */
   function addStatement(resourceMap, subject, predicate, object) {
     resourceMap.graph.add(subject, predicate, object);
-    markGraphDirty(resourceMap, true);
+    resourceMap.markGraphDirty?.();
   }
 
   /**
@@ -42,7 +31,7 @@ define(["rdflib", "common/ValueUtilities", "models/resourceMap/GraphRead"], (
     }
 
     resourceMap.graph.remove(statement);
-    markGraphDirty(resourceMap, true);
+    resourceMap.markGraphDirty?.();
   }
 
   /**
@@ -82,57 +71,45 @@ define(["rdflib", "common/ValueUtilities", "models/resourceMap/GraphRead"], (
   }
 
   /**
-   * Replace every subject/object node value that matches one URI with another.
+   * Add reciprocal CiTO documentation statements.
    * @param {ResourceMap} resourceMap Resource map whose graph is updated.
-   * @param {string} oldValue Old node value.
-   * @param {string} newValue New node value.
+   * @param {NamedNode} metadataNode Documenting metadata node.
+   * @param {NamedNode} dataNode Documented data node.
    */
-  function replaceNodeValue(resourceMap, oldValue, newValue) {
-    const normalizedOldValue = normalizeText(oldValue);
-    const normalizedNewValue = normalizeText(newValue);
-    if (!normalizedOldValue || !normalizedNewValue) {
-      return;
-    }
-    if (normalizedOldValue === normalizedNewValue) {
-      return;
-    }
+  function addDocumentationLink(resourceMap, metadataNode, dataNode) {
+    addStatementIfMissing(
+      resourceMap,
+      metadataNode,
+      resourceMap.ns.CITO("documents"),
+      dataNode,
+    );
+    addStatementIfMissing(
+      resourceMap,
+      dataNode,
+      resourceMap.ns.CITO("isDocumentedBy"),
+      metadataNode,
+    );
+  }
 
-    resourceMap.graph.statements.slice().forEach((statement) => {
-      let nextStatement = statement;
-
-      if (statement.subject?.value === normalizedOldValue) {
-        nextStatement = rdf.st(
-          rdf.sym(normalizedNewValue),
-          nextStatement.predicate,
-          nextStatement.object,
-          nextStatement.why,
-        );
-      }
-
-      if (
-        statement.object?.termType === "NamedNode" &&
-        statement.object.value === normalizedOldValue
-      ) {
-        nextStatement = rdf.st(
-          nextStatement.subject,
-          nextStatement.predicate,
-          rdf.sym(normalizedNewValue),
-          nextStatement.why,
-        );
-      }
-
-      if (nextStatement === statement) {
-        return;
-      }
-
-      removeStatement(resourceMap, statement);
-      addStatementIfMissing(
-        resourceMap,
-        nextStatement.subject,
-        nextStatement.predicate,
-        nextStatement.object,
-      );
-    });
+  /**
+   * Remove reciprocal CiTO documentation statements.
+   * @param {ResourceMap} resourceMap Resource map whose graph is updated.
+   * @param {NamedNode} metadataNode Documenting metadata node.
+   * @param {NamedNode} dataNode Documented data node.
+   */
+  function removeDocumentationLink(resourceMap, metadataNode, dataNode) {
+    removeStatementsMatching(
+      resourceMap,
+      metadataNode,
+      resourceMap.ns.CITO("documents"),
+      dataNode,
+    );
+    removeStatementsMatching(
+      resourceMap,
+      dataNode,
+      resourceMap.ns.CITO("isDocumentedBy"),
+      metadataNode,
+    );
   }
 
   /**
@@ -164,9 +141,13 @@ define(["rdflib", "common/ValueUtilities", "models/resourceMap/GraphRead"], (
       return;
     }
 
+    // Only named nodes are replaced; literals and blank nodes whose values
+    // happen to match a replaced URI must keep their original identity.
     resourceMap.graph.statements.slice().forEach((statement) => {
       const nextSubjectValue = normalizedReplacements.get(
-        statement.subject?.value,
+        statement.subject?.termType === "NamedNode"
+          ? statement.subject.value
+          : null,
       );
       const nextObjectValue = normalizedReplacements.get(
         statement.object?.termType === "NamedNode"
@@ -193,6 +174,16 @@ define(["rdflib", "common/ValueUtilities", "models/resourceMap/GraphRead"], (
         nextObject,
       );
     });
+  }
+
+  /**
+   * Replace every subject/object node value that matches one URI with another.
+   * @param {ResourceMap} resourceMap Resource map whose graph is updated.
+   * @param {string} oldValue Old node value.
+   * @param {string} newValue New node value.
+   */
+  function replaceNodeValue(resourceMap, oldValue, newValue) {
+    replaceNodeValues(resourceMap, new Map([[oldValue, newValue]]));
   }
 
   /**
@@ -237,7 +228,7 @@ define(["rdflib", "common/ValueUtilities", "models/resourceMap/GraphRead"], (
 
     while (queue.length) {
       const blankNode = queue.pop();
-      const blankNodeKey = `${blankNode.termType}:${blankNode.value}`;
+      const blankNodeKey = ResourceMapCommon.nodeKey(blankNode);
       if (!visited.has(blankNodeKey)) {
         visited.add(blankNodeKey);
 
@@ -271,7 +262,18 @@ define(["rdflib", "common/ValueUtilities", "models/resourceMap/GraphRead"], (
    */
   function ensureIdentifierForUri(resourceMap, uri, pid) {
     const node = rdf.sym(uri);
-    if (!GraphRead.nodeHasIdentifier(resourceMap, node, pid)) {
+    const hasIdentifier = resourceMap.graph
+      .statementsMatching(
+        node,
+        resourceMap.ns.DCTERMS("identifier"),
+        undefined,
+        undefined,
+      )
+      .some(
+        (statement) =>
+          ResourceMapCommon.getLiteralObjectValue(statement.object) === pid,
+      );
+    if (!hasIdentifier) {
       addStatementIfMissing(
         resourceMap,
         node,
@@ -300,7 +302,7 @@ define(["rdflib", "common/ValueUtilities", "models/resourceMap/GraphRead"], (
       "A PID is required to find or create a node URI.",
     );
     const uri =
-      GraphRead.findNodeUriForPid(resourceMap, normalizedPid) ||
+      resourceMap.getGraphState().findNodeUriForPid(normalizedPid) ||
       resourceMap.pidToUri(normalizedPid);
 
     if (createIdentifier) {
@@ -358,9 +360,11 @@ define(["rdflib", "common/ValueUtilities", "models/resourceMap/GraphRead"], (
   return {
     addStatement,
     addStatementIfMissing,
+    addDocumentationLink,
     ensureIdentifierForUri,
     ensureNodeUriForPid,
     removeNodeReferences,
+    removeDocumentationLink,
     removeOrphanedBlankNodes,
     removeStatement,
     removeStatementsMatching,

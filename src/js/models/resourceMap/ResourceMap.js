@@ -1,7 +1,6 @@
 "use strict";
 
 define([
-  "uuid",
   "rdflib",
   "common/Utilities",
   "common/DataONEXmlUtilities",
@@ -10,7 +9,6 @@ define([
   "common/UrlUtilities",
   "common/ValidationUtilities",
   "common/ValueUtilities",
-  "models/resourceMap/GraphRead",
   "models/resourceMap/GraphMutation",
   "models/resourceMap/GraphNormalization",
   "models/resourceMap/ResourceMapCommon",
@@ -18,7 +16,6 @@ define([
   "models/resourceMap/ResourceMapValidation",
   "models/resourceMap/Provenance",
 ], (
-  uuid,
   rdf,
   Utilities,
   DataONEXML,
@@ -27,7 +24,6 @@ define([
   UrlUtilities,
   ValidationUtilities,
   ValueUtilities,
-  GraphRead,
   GraphMutation,
   GraphNormalization,
   ResourceMapCommon,
@@ -47,6 +43,8 @@ define([
     XSD: "http://www.w3.org/2001/XMLSchema#",
   };
 
+  const RESOURCE_MAP_PID_PREFIX = "resource_map_";
+
   const { createValidationException, createValidationReport } =
     ValidationUtilities;
   const { ResourceMapConflictError } = ResourceMapCommon;
@@ -57,13 +55,24 @@ define([
     isNonEmptyString,
     normalizeText,
     requireNonEmptyString,
+    makeUUID,
   } = ValueUtilities;
 
   const { getMetacatUIProperty } = Utilities;
-
   const { ParseError } = XMLUtilities;
 
-  // TODO: can we use DataPackageMember here?
+  /**
+   * Ensure that there is a trailing slash on url, trim whitespace.
+   * @param {string} value Candidate base URL.
+   * @returns {string|null} Normalized base URL or `null` when invalid.
+   */
+  function normalizeBase(value) {
+    return (
+      UrlUtilities.normalizeUrl(value, "", {
+        trailingSlash: "ensure",
+      }) || null
+    );
+  }
 
   /**
    * @typedef {object} ResourceMapMember
@@ -112,10 +121,9 @@ define([
    * provenance. Package-level provenance may reference external data PIDs that
    * are not aggregated members. Graph mutations that affect derived member
    * reads are expected to go through `ResourceMap` APIs so the cached summary
-   * stays coherent. Upon parsing, it normalizes common non-canonical RDF
+   * stays consistent. Upon parsing, it normalizes common non-canonical RDF
    * patterns found in real DataONE resource maps into a consistent form for
    * easier member and provenance extraction.
-   *
    * The RDF graph is the source of truth for the package. The summary returned
    * by `toJSON()` is a derived read view built from that graph for easier UI
    * and caller use.
@@ -149,28 +157,21 @@ define([
       graph,
       rawData,
     } = {}) {
-      this.errors = [];
-
       this.rawData = isNonEmptyString(rawData) ? rawData.trim() : null;
 
-      // TODO: rename "pid"
       this.resourceMapPid = requireNonEmptyString(
         resourceMapPid,
         "resourceMapPid required",
       );
 
       if (graph && typeof graph.add !== "function") {
-        throw new Error("Invalid graph");
+        throw new Error("ResourceMap requires an rdflib graph instance");
       }
 
       this.graph = graph || rdf.graph();
-      if (this.graph.resourceMapOwner && this.graph.resourceMapOwner !== this) {
-        throw new Error("Graph already owned by another ResourceMap");
-      }
-      this.graph.resourceMapOwner = this;
-      this.resolveServiceUrl =
-        this.constructor.normalizeBase(resolveServiceUrl);
-      this.objectServiceUrl = this.constructor.normalizeBase(objectServiceUrl);
+
+      this.resolveServiceUrl = normalizeBase(resolveServiceUrl);
+      this.objectServiceUrl = normalizeBase(objectServiceUrl);
 
       this.namespaces = { ...NAMESPACES };
       this.ns = Object.fromEntries(
@@ -184,11 +185,9 @@ define([
       // `https://cn.dataone.org/cn/v2/resolve/{pid}`. If not explicitly
       // provided, try to infer it from the graph, then fallback to a configured
       // MetacatUI resolve URL.
-      this.resolveBase = this.constructor.pickResolveBase({
+      this.resolveBase = this.pickResolveBase({
         resolveBase,
         resolveServiceUrl: this.resolveServiceUrl,
-        objectServiceUrl: this.objectServiceUrl,
-        resourceMap: this,
       });
 
       // In rdf xml, the resource map URI and aggregation URI are used in
@@ -197,28 +196,25 @@ define([
       this.resourceMapUri = this.pidToUri(this.resourceMapPid);
       this.aggregationUri = `${this.resourceMapUri}#aggregation`;
       this.graphState = new ResourceMapState({ resourceMap: this });
-      this.summaryCache = this.graphState.summaryCache;
       this.graphMutationDepth = 0;
+      this.unsavedChanges = false;
 
       this.provenance = new Provenance({ resourceMap: this });
 
-      // Initialize the graph with the core triples that we manage and
-      // normalize.
-      this.normalizeManagedGraph();
-      this.invalidateGraphState();
-    }
+      // Existing graphs may contain malformed but parseable RDF or legacy node
+      // shapes. Repair those once at the import boundary before normalizing the
+      // managed graph.
+      if (graph) {
+        this.mutateGraph(() => GraphNormalization.repairBrokenGraph(this), {
+          markDirty: false,
+          rollbackOnError: true,
+        });
+      }
 
-    /**
-     * Ensure that there is a trailing slash on url, trim whitespace.
-     * @param {string} value Candidate base URL.
-     * @returns {string|null} Normalized base URL or `null` when invalid.
-     */
-    static normalizeBase(value) {
-      return (
-        UrlUtilities.normalizeUrl(value, "", {
-          trailingSlash: "ensure",
-        }) || null
-      );
+      // Initialize the graph with the core triples that we manage.
+      this.normalizeGraph();
+      this.invalidateGraphState();
+      this.unsavedChanges = false;
     }
 
     /**
@@ -238,16 +234,17 @@ define([
       resolveServiceUrl,
       objectServiceUrl,
     } = {}) {
-      const baseUrl =
+      const base =
         normalizeText(parseBase) ||
-        this.normalizeBase(resolveBase) ||
-        this.normalizeBase(resolveServiceUrl) ||
-        this.normalizeBase(objectServiceUrl) ||
-        this.normalizeBase(getMetacatUIProperty("resolveServiceUrl")) ||
-        this.normalizeBase(getMetacatUIProperty("objectServiceUrl")) ||
-        null;
+        normalizeText(resolveBase) ||
+        normalizeText(resolveServiceUrl) ||
+        normalizeText(objectServiceUrl) ||
+        normalizeText(getMetacatUIProperty("resolveServiceUrl")) ||
+        normalizeText(getMetacatUIProperty("objectServiceUrl"));
 
-      return requireNonEmptyString(baseUrl, "parseBase required");
+      requireNonEmptyString(base, "parseBase required");
+
+      return normalizeBase(base);
     }
 
     /**
@@ -257,31 +254,67 @@ define([
      * base.
      * @param {string} [options.resolveServiceUrl] Resolve-service URL used when
      * no explicit resolve base is provided.
-     * @param {ResourceMap} [options.resourceMap] Resource map instance used for
-     * graph inference when needed.
      * @returns {string} Normalized resolve base URL.
      */
-    static pickResolveBase({
-      resolveBase,
-      resolveServiceUrl,
-      resourceMap = null,
-    } = {}) {
-      const baseUrl =
-        this.normalizeBase(resolveBase) ||
-        this.normalizeBase(resolveServiceUrl) ||
-        (resourceMap ? GraphRead.inferResolveBase(resourceMap) : null) ||
-        this.normalizeBase(getMetacatUIProperty("resolveServiceUrl")) ||
+    pickResolveBase({ resolveBase, resolveServiceUrl } = {}) {
+      const base =
+        normalizeText(resolveBase) ||
+        normalizeText(resolveServiceUrl) ||
+        this.inferResolveBase() ||
+        normalizeText(getMetacatUIProperty("resolveServiceUrl")) ||
         null;
 
-      return requireNonEmptyString(baseUrl, "resolveBase required");
+      requireNonEmptyString(base, "resolveBase required");
+
+      return normalizeBase(base);
     }
 
     /**
-     * Generate a ResourceMap PID using the established DataONE prefix.
-     * @returns {string} Generated resource-map PID.
+     * Infer a resolve-service base URL from named nodes in an imported graph.
+     * This runs during construction, before derived graph state exists.
+     * @returns {string|null} Inferred resolve base URL.
      */
-    static generatePid() {
-      return `resource_map_urn:uuid:${uuid.v4()}`;
+    inferResolveBase() {
+      if (!this.graph) return null;
+      const statements = this?.graph?.statements || [];
+      for (let i = 0; i < statements.length; i += 1) {
+        const statement = statements[i];
+        const values = [statement.subject, statement.object]
+          .filter((node) => node?.termType === "NamedNode")
+          .map((node) => node.value);
+        for (let j = 0; j < values.length; j += 1) {
+          const baseUrl = UrlUtilities.extractBaseUrl(values[j], {
+            requiredPathSegment: "/resolve/",
+            trailingSlash: "ensure",
+          });
+          if (baseUrl) return baseUrl;
+        }
+      }
+      return null;
+    }
+
+    /**
+     * Collect `dc:creator` and `dcterms:creator` statements on the resource map
+     * node.
+     * @param {ResourceMap} resourceMap Resource map whose graph is inspected.
+     * @returns {object[]} Creator statements.
+     */
+    static collectCreatorStatements(resourceMap) {
+      const resourceMapNode = rdf.sym(resourceMap.resourceMapUri);
+      return [
+        ...resourceMap.graph.statementsMatching(
+          resourceMapNode,
+          resourceMap.ns.DC("creator"),
+          undefined,
+          undefined,
+        ),
+        ...resourceMap.graph.statementsMatching(
+          resourceMapNode,
+          resourceMap.ns.DCTERMS("creator"),
+          undefined,
+          undefined,
+        ),
+      ];
     }
 
     /**
@@ -298,6 +331,9 @@ define([
      * as the canonical configuration fallback.
      * @param {Array<{pid: string, atLocations?: string[]}>} [options.members]
      * Aggregated members and their optional `prov:atLocation` values.
+     * @param {string[]} [options.memberPids] Convenience shorthand for a plain
+     * list of member PIDs without `prov:atLocation` values. Any PID already
+     * present in `members` is ignored.
      * @param {ResMapDocLink[]} [options.documentationLinks] Reciprocal CiTO
      * links to create.
      * @param {string} [options.creatorName] Creator name to write onto the map.
@@ -313,13 +349,15 @@ define([
       objectServiceUrl,
       resolveServiceUrl,
       members = [],
+      memberPids = [],
       documentationLinks = [],
       creatorName,
       modified,
       provenance = {},
     } = {}) {
       const resourceMap = new ResourceMap({
-        resourceMapPid: resourceMapPid || this.generatePid(),
+        resourceMapPid:
+          resourceMapPid || makeUUID({ prefix: RESOURCE_MAP_PID_PREFIX }),
         resolveBase,
         objectServiceUrl,
         resolveServiceUrl,
@@ -330,7 +368,12 @@ define([
       }
 
       resourceMap.setModified(modified || new Date().toISOString());
-      resourceMap.setMembers(members.map((member) => member.pid));
+      const memberPidSet = new Set(members.map((m) => m.pid));
+      const extraMembers = (memberPids || []).filter(
+        (pid) => !memberPidSet.has(pid),
+      );
+      const allMembers = [...members, ...extraMembers.map((pid) => ({ pid }))];
+      resourceMap.setMembers(allMembers.map((member) => member.pid));
       resourceMap.setDocumentationLinks(documentationLinks);
 
       // Preserve the long-standing DataONE workaround for single-member
@@ -339,7 +382,7 @@ define([
       // package contains only metadata.
       resourceMap.ensureSoloMemberSelfDocumentation();
 
-      const locatedMembers = members.flatMap(({ pid, atLocations = [] }) => {
+      const locatedMembers = allMembers.flatMap(({ pid, atLocations = [] }) => {
         if (!Array.isArray(atLocations)) {
           throw new Error("atLocations must be an array");
         }
@@ -363,48 +406,12 @@ define([
       }
 
       const summary = provenance || {};
-      if (
-        (summary.wasDerivedFrom || []).length ||
-        (summary.typeAssertions || []).length
-      ) {
-        resourceMap.mutateGraph(() => {
-          (summary.wasDerivedFrom || []).forEach((relationship) => {
-            const derived = resourceMap.provenance.ensureTypedPidNode(
-              relationship.derivedPid,
-              {
-                className: "Data",
-                markGenerated: true,
-                message: "Derived PID required",
-              },
-            );
-            const source = resourceMap.provenance.ensureTypedPidNode(
-              relationship.sourcePid,
-              {
-                className: "Data",
-                markGenerated: true,
-                message: "Source PID required",
-              },
-            );
-            GraphMutation.addStatementIfMissing(
-              resourceMap,
-              derived.node,
-              resourceMap.ns.PROV("wasDerivedFrom"),
-              source.node,
-            );
-          });
-          (summary.typeAssertions || []).forEach((assertion) => {
-            resourceMap.provenance.ensureTypedPidNode(assertion.pid, {
-              className: assertion.className,
-              markGenerated: false,
-              message: "PID required",
-            });
-            resourceMap.provenance.clearGeneratedTypeAssertion(
-              assertion.pid,
-              assertion.className,
-            );
-          });
-        });
-      }
+      (summary.wasDerivedFrom || []).forEach((relationship) => {
+        resourceMap.provenance.addWasDerivedFrom(
+          relationship.derivedPid,
+          relationship.sourcePid,
+        );
+      });
       (summary.generatedByPrograms || []).forEach((relationship) => {
         resourceMap.provenance.addGeneratedByProgram(
           relationship.dataPid,
@@ -420,12 +427,17 @@ define([
         );
       });
       (summary.wasInformedByPrograms || []).forEach((relationship) => {
-        resourceMap.provenance.addWasInformedByProgram(
-          relationship.programPid,
-          relationship.previousProgramPid,
-          relationship,
-        );
+        resourceMap.provenance.restoreWasInformedByLink(relationship);
       });
+      (summary.typeAssertions || [])
+        .filter(
+          ({ pid, className }) =>
+            ["Data", "Program"].includes(className) &&
+            !resourceMap.provenance.hasRole(pid, className),
+        )
+        .forEach(({ pid, className }) => {
+          resourceMap.provenance.addTypeAssertion(pid, className);
+        });
       return resourceMap;
     }
 
@@ -464,8 +476,8 @@ define([
         throw new ParseError(`Parse failed: ${msg}`);
       }
 
-      // The constructor canonicalizes the parsed RDF in-place, so old PID node
-      // formats are normalized before callers read members or provenance.
+      // The constructor repairs the parsed RDF in-place, so malformed and
+      // legacy node formats are normalized before callers read the graph.
       const resourceMap = new ResourceMap({
         resourceMapPid,
         graph,
@@ -549,7 +561,6 @@ define([
     /** @returns {ResourceMap} Res map after clearing derived state. */
     invalidateGraphState() {
       this.graphState.invalidate();
-      this.summaryCache = this.graphState.summaryCache;
       return this;
     }
 
@@ -570,19 +581,59 @@ define([
       return this.graphMutationDepth > 0;
     }
 
-    /** @returns {ResourceMap} Res map after invalidating graph state. */
+    /** @returns {boolean} Whether the graph differs from its saved baseline. */
+    hasUnsavedChanges() {
+      return this.unsavedChanges;
+    }
+
+    /**
+     * Store the serialized graph as the new saved baseline.
+     * @param {string} [resourceMapXml] Saved RDF/XML. Defaults to the current
+     * graph serialization.
+     * @returns {ResourceMap} Updated resource map instance.
+     */
+    markSaved(resourceMapXml = this.serializeGraph()) {
+      this.rawData = requireNonEmptyString(
+        resourceMapXml,
+        "ResourceMap XML required",
+      ).trim();
+      this.unsavedChanges = false;
+      return this;
+    }
+
+    /**
+     * Reparse the saved RDF/XML baseline, discarding unsaved graph changes.
+     * @returns {ResourceMap} Fresh resource map restored from `rawData`.
+     */
+    reparseRawData() {
+      if (!isNonEmptyString(this.rawData)) {
+        throw new Error("No saved ResourceMap XML available");
+      }
+
+      return ResourceMap.fromXml(this.resourceMapPid, this.rawData, {
+        resolveBase: this.resolveBase,
+        objectServiceUrl: this.objectServiceUrl,
+        resolveServiceUrl: this.resolveServiceUrl,
+      });
+    }
+
+    /** @returns {ResourceMap} Res map after marking the graph as changed. */
     markGraphDirty() {
-      this.invalidateGraphState();
+      this.unsavedChanges = true;
+      // Keep the pre-mutation projection stable throughout a grouped mutation.
+      // The outer mutation invalidates it once after all graph edits complete.
+      if (!this.isGraphMutating()) {
+        this.invalidateGraphState();
+      }
       return this;
     }
 
     /**
      * Return a derived package summary.
-     * @param {object} [options] Summary options.
      * @returns {ResourceMapSummary} Package summary.
      */
-    getSummary(options = {}) {
-      return this.getGraphState().getSummary(options);
+    getSummary() {
+      return this.getGraphState().getSummary();
     }
 
     /** @returns {ResourceMapValidationContext} Shared validation inputs. */
@@ -597,25 +648,19 @@ define([
 
     /**
      * Return aggregated member summaries.
-     * @param {object} [options] Read options.
-     * @param {boolean} [options.includeProvenanceFields] Include projected
-     * provenance fields.
      * @returns {ResourceMapMember[]} Member summaries.
      */
-    getMembers({ includeProvenanceFields = false } = {}) {
-      return this.getSummary({ includeProvenanceFields }).members;
+    getMembers() {
+      return this.getSummary().members;
     }
 
     /**
      * Return one aggregated member summary.
      * @param {string} pid Member PID.
-     * @param {object} [options] Read options.
-     * @param {boolean} [options.includeProvenanceFields] Include projected
-     * provenance fields.
      * @returns {ResourceMapMember|null} Member summary when aggregated.
      */
-    getMember(pid, { includeProvenanceFields = false } = {}) {
-      return this.getGraphState().getMember(pid, { includeProvenanceFields });
+    getMember(pid) {
+      return this.getGraphState().getMember(pid);
     }
 
     /**
@@ -667,11 +712,14 @@ define([
       if (!memberUri) {
         return this;
       }
+      const provenanceRemovals = this.provenance.collectMemberReferenceRemovals(
+        new Set([normalizedPid]),
+      );
 
       return this.mutateGraph(
         () => {
           const memberNode = rdf.sym(memberUri);
-          this.provenance.removeMemberReferences(normalizedPid);
+          this.provenance.applyMemberReferenceRemovals(provenanceRemovals);
           GraphMutation.removeNodeReferences(this, memberNode);
         },
         { removeOrphans: true },
@@ -693,42 +741,44 @@ define([
         return this;
       }
 
-      return this.mutateGraph(
-        () => {
-          const oldMemberUri =
-            this.getGraphState().findNodeUriForPid(normalizedOldPid);
-          if (!oldMemberUri) {
-            throw new Error("Member missing");
-          }
+      const graphState = this.getGraphState();
+      const oldMemberUri = graphState.findNodeUriForPid(normalizedOldPid);
+      if (!oldMemberUri) {
+        throw new Error(
+          `Cannot replace member: "${normalizedOldPid}" is not in this resource map`,
+        );
+      }
 
-          const existingNewMemberUri =
-            this.getGraphState().findNodeUriForPid(normalizedNewPid);
-          if (existingNewMemberUri && existingNewMemberUri !== oldMemberUri) {
-            throw new ResourceMapConflictError("PID already aggregated", {
-              code: "memberAlreadyAggregated",
-              details: {
-                oldPid: normalizedOldPid,
-                newPid: normalizedNewPid,
-              },
-            });
-          }
-
-          const nextMemberUri = this.pidToUri(normalizedNewPid);
-          if (nextMemberUri !== oldMemberUri) {
-            GraphMutation.replaceNodeValue(this, oldMemberUri, nextMemberUri);
-          }
-
-          GraphMutation.setIdentifierForUri(
-            this,
-            nextMemberUri,
-            normalizedNewPid,
-            {
-              removeValues: [normalizedOldPid],
+      const existingNewMemberUri =
+        graphState.findNodeUriForPid(normalizedNewPid);
+      if (existingNewMemberUri && existingNewMemberUri !== oldMemberUri) {
+        throw new ResourceMapConflictError(
+          `Cannot replace member: "${normalizedNewPid}" is already aggregated`,
+          {
+            code: "memberAlreadyAggregated",
+            details: {
+              oldPid: normalizedOldPid,
+              newPid: normalizedNewPid,
             },
-          );
-        },
-        { syncBefore: true, syncAfter: true },
-      );
+          },
+        );
+      }
+
+      return this.mutateGraph(() => {
+        const nextMemberUri = this.pidToUri(normalizedNewPid);
+        if (nextMemberUri !== oldMemberUri) {
+          GraphMutation.replaceNodeValue(this, oldMemberUri, nextMemberUri);
+        }
+
+        GraphMutation.setIdentifierForUri(
+          this,
+          nextMemberUri,
+          normalizedNewPid,
+          {
+            removeValues: [normalizedOldPid],
+          },
+        );
+      });
     }
 
     /**
@@ -755,14 +805,17 @@ define([
           pid,
           uri: this.getGraphState().findNodeUriForPid(pid),
         }));
+      const provenanceRemovals = removedMembers.length
+        ? this.provenance.collectMemberReferenceRemovals(
+            new Set(removedMembers.map(({ pid }) => pid)),
+          )
+        : null;
 
       if (removedMembers.length || addedMembers.length) {
         this.mutateGraph(
           () => {
             if (removedMembers.length) {
-              this.provenance.removeMemberReferences(
-                removedMembers.map(({ pid }) => pid),
-              );
+              this.provenance.applyMemberReferenceRemovals(provenanceRemovals);
               removedMembers.forEach(({ uri }) => {
                 GraphMutation.removeNodeReferences(this, rdf.sym(uri));
               });
@@ -821,17 +874,10 @@ define([
             });
 
       return this.mutateGraph(() => {
-        GraphMutation.addStatementIfMissing(
+        GraphMutation.addDocumentationLink(
           this,
           metadataMember.node,
-          this.ns.CITO("documents"),
           dataMember.node,
-        );
-        GraphMutation.addStatementIfMissing(
-          this,
-          dataMember.node,
-          this.ns.CITO("isDocumentedBy"),
-          metadataMember.node,
         );
       });
     }
@@ -855,17 +901,10 @@ define([
       const dataUri = this.getNodeUriForPid(normalizedDataPid);
 
       return this.mutateGraph(() => {
-        GraphMutation.removeStatementsMatching(
+        GraphMutation.removeDocumentationLink(
           this,
           rdf.sym(metadataUri),
-          this.ns.CITO("documents"),
           rdf.sym(dataUri),
-        );
-        GraphMutation.removeStatementsMatching(
-          this,
-          rdf.sym(dataUri),
-          this.ns.CITO("isDocumentedBy"),
-          rdf.sym(metadataUri),
         );
       });
     }
@@ -884,27 +923,30 @@ define([
           ),
           dataPid: requireNonEmptyString(link?.dataPid, "Data PID required"),
         })),
-        ResourceMapCommon.buildKey,
+        ({ metadataPid, dataPid }) =>
+          ResourceMapCommon.buildKey([metadataPid, dataPid]),
       );
 
-      const { memberSet } = this.getGraphState().getIndex();
       normalizedLinks.forEach(({ metadataPid, dataPid }) => {
-        if (!memberSet.has(metadataPid)) {
-          throw new Error("Metadata PID required");
+        if (!this.hasMember(metadataPid)) {
+          throw new Error(`Metadata "${metadataPid}" is not aggregated`);
         }
-        if (!memberSet.has(dataPid)) {
-          throw new Error("Data PID required");
+        if (!this.hasMember(dataPid)) {
+          throw new Error(`Data "${dataPid}" is not aggregated`);
         }
       });
 
       const currentByKey = new Map(
         this.getDocumentationLinks().map((link) => [
-          ResourceMapCommon.buildKey(link),
+          ResourceMapCommon.buildKey([link.metadataPid, link.dataPid]),
           link,
         ]),
       );
       const nextByKey = new Map(
-        normalizedLinks.map((link) => [ResourceMapCommon.buildKey(link), link]),
+        normalizedLinks.map((link) => [
+          ResourceMapCommon.buildKey([link.metadataPid, link.dataPid]),
+          link,
+        ]),
       );
       const removedKeys = [...currentByKey.keys()].filter(
         (key) => !nextByKey.has(key),
@@ -932,33 +974,11 @@ define([
       this.mutateGraph(() => {
         removedKeys.forEach((key) => {
           const { metadataNode, dataNode } = nodePairsByKey.get(key);
-          GraphMutation.removeStatementsMatching(
-            this,
-            metadataNode,
-            this.ns.CITO("documents"),
-            dataNode,
-          );
-          GraphMutation.removeStatementsMatching(
-            this,
-            dataNode,
-            this.ns.CITO("isDocumentedBy"),
-            metadataNode,
-          );
+          GraphMutation.removeDocumentationLink(this, metadataNode, dataNode);
         });
         addedKeys.forEach((key) => {
           const { metadataNode, dataNode } = nodePairsByKey.get(key);
-          GraphMutation.addStatementIfMissing(
-            this,
-            metadataNode,
-            this.ns.CITO("documents"),
-            dataNode,
-          );
-          GraphMutation.addStatementIfMissing(
-            this,
-            dataNode,
-            this.ns.CITO("isDocumentedBy"),
-            metadataNode,
-          );
+          GraphMutation.addDocumentationLink(this, metadataNode, dataNode);
         });
       });
 
@@ -1077,37 +1097,34 @@ define([
       const normalizedPid = requireNonEmptyString(pid, "PID required");
       if (normalizedPid === this.resourceMapPid) return this;
 
-      return this.mutateGraph(
-        () => {
-          const oldResourceMapPid = this.resourceMapPid;
-          const oldResourceMapUri = this.resourceMapUri;
-          const oldAggregationUri = this.aggregationUri;
+      return this.mutateGraph(() => {
+        const oldResourceMapPid = this.resourceMapPid;
+        const oldResourceMapUri = this.resourceMapUri;
+        const oldAggregationUri = this.aggregationUri;
 
-          this.resourceMapPid = normalizedPid;
-          this.resourceMapUri = this.pidToUri(normalizedPid);
-          this.aggregationUri = `${this.resourceMapUri}#aggregation`;
+        this.resourceMapPid = normalizedPid;
+        this.resourceMapUri = this.pidToUri(normalizedPid);
+        this.aggregationUri = `${this.resourceMapUri}#aggregation`;
 
-          GraphMutation.replaceNodeValue(
-            this,
-            oldResourceMapUri,
-            this.resourceMapUri,
-          );
-          GraphMutation.replaceNodeValue(
-            this,
-            oldAggregationUri,
-            this.aggregationUri,
-          );
-          GraphMutation.setIdentifierForUri(
-            this,
-            this.resourceMapUri,
-            normalizedPid,
-            {
-              removeValues: [oldResourceMapPid],
-            },
-          );
-        },
-        { syncAfter: true },
-      );
+        GraphMutation.replaceNodeValue(
+          this,
+          oldResourceMapUri,
+          this.resourceMapUri,
+        );
+        GraphMutation.replaceNodeValue(
+          this,
+          oldAggregationUri,
+          this.aggregationUri,
+        );
+        GraphMutation.setIdentifierForUri(
+          this,
+          this.resourceMapUri,
+          normalizedPid,
+          {
+            removeValues: [oldResourceMapPid],
+          },
+        );
+      });
     }
 
     /**
@@ -1121,7 +1138,7 @@ define([
         creatorName,
         "Creator required",
       ).trim();
-      const creatorStatements = GraphRead.collectCreatorStatements(this);
+      const creatorStatements = ResourceMap.collectCreatorStatements(this);
       const creatorPredicates = dedupeArray(
         creatorStatements
           .map((statement) => statement.predicate?.value)
@@ -1133,6 +1150,12 @@ define([
         )?.object || rdf.blankNode();
 
       return this.mutateGraph(() => {
+        creatorStatements
+          .filter((statement) => statement.object?.termType === "Literal")
+          .forEach((statement) => {
+            GraphMutation.removeStatement(this, statement);
+          });
+
         // Preserve the existing creator predicate style in the XML when we can
         // so editing a name does not also rewrite `dc:` vs `dcterms:` usage.
         (creatorPredicates.length
@@ -1153,7 +1176,7 @@ define([
           this.ns.FOAF("name"),
           undefined,
         );
-        GraphMutation.addStatement(
+        GraphMutation.addStatementIfMissing(
           this,
           creatorNode,
           this.ns.FOAF("name"),
@@ -1202,7 +1225,7 @@ define([
           this,
           resourceMapNode,
           this.ns.DCTERMS("modified"),
-          rdf.literal(normalizedModified, undefined, this.ns.XSD("dateTime")),
+          rdf.literal(normalizedModified, this.ns.XSD("dateTime")),
         );
       });
     }
@@ -1217,19 +1240,20 @@ define([
     }
 
     /**
-     * Explicitly normalize and repair the managed package graph in place.
-     * Canonicalizes managed node URIs and, when a package has exactly one
-     * remaining member and no documentation links, adds the self-documenting
-     * CiTO pair that older callers previously got implicitly during
-     * serialization.
+     * Explicitly normalize the managed package graph in place. When a package
+     * has exactly one remaining member and no documentation links, adds the
+     * self-documenting CiTO pair that older callers previously got implicitly
+     * during serialization.
+     * @param {object} [options] Normalization options.
+     * @param {boolean} [options.markDirty] Mark normalization changes unsaved.
      * @returns {ResourceMap} Updated resource map instance.
      */
-    normalize() {
+    normalize({ markDirty = false } = {}) {
       try {
         // Keep the graph in the XML shape that historically works best with
-        // DataONE indexing for one-member packages before canonicalizing it.
+        // DataONE indexing for one-member packages before normalizing it.
         this.ensureSoloMemberSelfDocumentation();
-        this.normalizeManagedGraph();
+        this.normalizeGraph({ markDirty });
         return this;
       } catch (error) {
         const msg = error?.message || "Unknown normalization error";
@@ -1261,32 +1285,19 @@ define([
     /**
      * Convert the current package state into a plain JSON summary.
      * @param {object} [options] JSON options.
-     * @param {boolean} [options.includeProvenanceFields] Include projected
-     * `prov_*` fields on each member row.
-     * @param {boolean} [options.sort] Sort output for deterministic diffs.
      * @param {string[]} [options.excludeFields] Top-level summary fields to
      * remove from the returned summary.
      * @returns {ResourceMapSummary} Plain JSON summary of the current resource
      * map state.
      */
     toJSON(options = {}) {
-      const {
-        includeProvenanceFields = true,
-        sort = false,
-        excludeFields = [],
-      } = options || {};
-      const summary = this.getSummary({ includeProvenanceFields });
-
-      if (sort) {
-        ResourceMapState.sortSummary(summary);
-      }
-
+      const { excludeFields = [] } = options || {};
+      const summary = this.getSummary();
       if (Array.isArray(excludeFields) && excludeFields.length > 0) {
         excludeFields.forEach((field) => {
           delete summary[field];
         });
       }
-
       return summary;
     }
 
@@ -1332,7 +1343,7 @@ define([
     requireExistingMemberPid(pid, message) {
       const normalizedPid = requireNonEmptyString(pid, message);
       if (!this.hasMember(normalizedPid)) {
-        throw new Error(message);
+        throw new Error(`${message}: "${normalizedPid}" is not aggregated`);
       }
       return normalizedPid;
     }
@@ -1381,40 +1392,68 @@ define([
      * are not enough.
      * @param {Function} mutator Graph mutation callback.
      * @param {object} [options] Mutation bookkeeping options.
-     * @param {boolean} [options.syncBefore] Synchronize core triples first.
-     * @param {boolean} [options.syncAfter] Synchronize core triples after
-     * mutation.
      * @param {boolean} [options.removeOrphans] Remove orphaned blank nodes
      * after mutation. Graph mutations that affect derived JSON reads should
      * flow through this method or other `ResourceMap` APIs so the cached
      * summary stays coherent.
+     * @param {boolean} [options.markDirty] Mark a successful outer mutation
+     * unsaved. When false, preserve the previous dirty state.
+     * @param {boolean} [options.rollbackOnError] Restore the graph if the
+     * outermost mutation throws.
      * @returns {ResourceMap} Updated resource map instance.
      */
     mutateGraph(
       mutator,
-      { syncBefore = false, syncAfter = false, removeOrphans = false } = {},
+      { removeOrphans = false, markDirty = true, rollbackOnError = false } = {},
     ) {
+      // True only for the outermost graph mutation, which is responsible for
+      // snapshotting, rollback, and unsaved-change tracking across the entire
+      // nested mutation chain.
+      const isOuterMutation = !this.isGraphMutating();
+      const shouldRollback = isOuterMutation && rollbackOnError;
+      const previousStatements = shouldRollback
+        ? this.graph.statements.slice()
+        : null;
+      const previousResourceMapPid = this.resourceMapPid;
+      const previousResourceMapUri = this.resourceMapUri;
+      const previousAggregationUri = this.aggregationUri;
+      const previousUnsavedChanges = this.unsavedChanges;
+
       this.beginGraphMutation();
       try {
-        if (syncBefore) {
-          // Normalize legacy node forms before targeted edits so lookups happen
-          // against the canonical URIs this class is responsible for managing.
-          this.normalizeManagedGraph();
-        }
-
         mutator();
-
-        if (syncAfter) {
-          // Rebuild the managed backbone after edits that may have changed a
-          // PID, a root URI, or an ORE membership link.
-          this.normalizeManagedGraph();
-        }
 
         if (removeOrphans) {
           GraphMutation.removeOrphanedBlankNodes(this);
         }
+        if (isOuterMutation) {
+          this.unsavedChanges = markDirty ? true : previousUnsavedChanges;
+        }
+      } catch (error) {
+        if (shouldRollback) {
+          this.graph.statements.slice().forEach((statement) => {
+            this.graph.remove(statement);
+          });
+          previousStatements.forEach((statement) => {
+            this.graph.add(
+              statement.subject,
+              statement.predicate,
+              statement.object,
+              statement.why,
+            );
+          });
+          this.resourceMapPid = previousResourceMapPid;
+          this.resourceMapUri = previousResourceMapUri;
+          this.aggregationUri = previousAggregationUri;
+          this.unsavedChanges = previousUnsavedChanges;
+        } else if (isOuterMutation) {
+          this.unsavedChanges = true;
+        }
+        throw error;
       } finally {
-        this.invalidateGraphState();
+        if (isOuterMutation) {
+          this.invalidateGraphState();
+        }
         this.endGraphMutation();
       }
 
@@ -1431,22 +1470,84 @@ define([
     serializeGraph() {
       const serializer = rdf.Serializer();
       serializer.store = this.graph;
-      return serializer.statementsToXML(this.graph.statements);
+      // Data/Program ProvONE types are derived from provenance edges and are
+      // not persisted in the live graph. Materialize them into the serialized
+      // output so resource maps carry the typing that the DataONE indexer and
+      // other ProvONE tools expect, without mutating the editing graph.
+      const rdfType = this.ns.RDF("type").value;
+      const oreAggregation = this.ns.ORE("Aggregation").value;
+      // Keep the submitted XML aligned with the legacy DataONE payload, which
+      // omits the explicit ore:Aggregation type for the aggregation node.
+      const statements = this.graph.statements
+        .filter(
+          (statement) =>
+            !(
+              statement.subject?.value === this.aggregationUri &&
+              statement.predicate?.value === rdfType &&
+              statement.object?.value === oreAggregation
+            ),
+        )
+        .concat(this.deriveRoleTypeStatements());
+      return serializer.statementsToXML(statements);
     }
 
     /**
-     * Canonicalize managed package nodes and normalize managed provenance.
+     * Build the derived ProvONE Data/Program `rdf:type` statements like "X
+     * prov:hadRole Data" or "Y prov:hadRole Program" for every node that plays
+     * those roles as defined by the provenance edges in the graph. These
+     * statements are not stored in the live graph but are derived for
+     * serialization only.
+     * @private
+     * @returns {Array<object>} Derived RDF type statements for serialization.
+     */
+    deriveRoleTypeStatements() {
+      const graphState = this.getGraphState();
+      const statements = [];
+      const existingTypeKeys = new Set(
+        this.graph
+          .statementsMatching(undefined, this.ns.RDF("type"), undefined)
+          .map(ResourceMapCommon.statementKey),
+      );
+      ["Data", "Program"].forEach((className) => {
+        const classNode = this.ns.PROVONE(className);
+        graphState.getRolePidSet(className).forEach((pid) => {
+          const uri = graphState.findNodeUriForPid(pid);
+          if (!uri) {
+            return;
+          }
+          const subject = rdf.sym(uri);
+          const statement = rdf.st(subject, this.ns.RDF("type"), classNode);
+          const statementKey = ResourceMapCommon.statementKey(statement);
+          if (!existingTypeKeys.has(statementKey)) {
+            existingTypeKeys.add(statementKey);
+            statements.push(statement);
+          }
+        });
+      });
+      return statements;
+    }
+
+    /**
+     * Synchronize and normalize the graph and provenance in place. This
+     * includes deduping statements, ensuring the core graph shape is consistent
+     * with the current member PID set, and normalizing provenance references to
+     * match the current graph state.
+     * @param {object} [options] Normalization options.
+     * @param {boolean} [options.markDirty] Mark normalization changes unsaved.
+     * @returns {ResourceMap} Updated resource map instance.
      * @private
      */
-    normalizeManagedGraph() {
-      this.beginGraphMutation();
-      try {
-        GraphNormalization.canonicalizeManagedGraph(this);
-        this.provenance.normalize();
-      } finally {
-        this.invalidateGraphState();
-        this.endGraphMutation();
-      }
+    normalizeGraph({ markDirty = false } = {}) {
+      const memberPids = this.getMemberPids();
+      this.mutateGraph(
+        () => {
+          GraphNormalization.synchronizeCoreGraph(this, memberPids);
+          GraphNormalization.dedupeStatements(this);
+        },
+        { markDirty, rollbackOnError: true },
+      );
+      this.provenance.normalize({ markDirty });
+      return this;
     }
 
     /**
@@ -1500,6 +1601,7 @@ define([
 
   /** Namespace URIs used by {@link ResourceMap} and its helper modules. */
   ResourceMap.NAMESPACES = { ...NAMESPACES };
+  ResourceMap.RESOURCE_MAP_PID_PREFIX = RESOURCE_MAP_PID_PREFIX;
 
   return ResourceMap;
 });

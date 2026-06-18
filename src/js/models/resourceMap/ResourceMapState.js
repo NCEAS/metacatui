@@ -4,16 +4,13 @@ define([
   "rdflib",
   "common/UrlUtilities",
   "common/ValueUtilities",
-  "models/resourceMap/GraphRead",
   "models/resourceMap/ResourceMapCommon",
-], (rdf, UrlUtilities, ValueUtilities, GraphRead, ResourceMapCommon) => {
+], (rdf, UrlUtilities, ValueUtilities, ResourceMapCommon) => {
   const PROVONE_BASE_URI =
     "http://purl.dataone.org/provone/2015/01/15/ontology#";
   const EXECUTION_CLASS_URI = `${PROVONE_BASE_URI}Execution`;
 
   const {
-    cloneObjectWithArrayValues,
-    dedupeArray,
     dedupeBy,
     dedupeStrings,
     isNonEmptyString,
@@ -23,16 +20,7 @@ define([
     sortStrings,
   } = ValueUtilities;
 
-  const { getLiteralLikeObjectValue, recoverBarePidValue } = GraphRead;
-
-  /**
-   * Build a stable lookup key for an RDF node.
-   * @param {NamedNode|BlankNode|Literal|null|undefined} node RDF node.
-   * @returns {string} Stable node key.
-   */
-  function nodeKey(node) {
-    return `${node?.termType || ""}::${node?.value || ""}`;
-  }
+  const { dedupeNodes, getLiteralLikeObjectValue, nodeKey } = ResourceMapCommon;
 
   /**
    * Append a non-null value to an array stored under a string map key.
@@ -67,26 +55,35 @@ define([
   }
 
   /**
-   * Deduplicate RDF nodes.
-   * @param {Array<NamedNode|BlankNode|Literal>} nodes Candidate nodes.
-   * @returns {Array<NamedNode|BlankNode|Literal>} Deduplicated nodes.
-   */
-  function dedupeNodes(nodes) {
-    return ResourceMapCommon.dedupeNodes(nodes || []);
-  }
-
-  /**
    * Choose the preferred URI for a PID from all indexed graph candidates.
    * @param {ResourceMap} resourceMap Owning resource map.
    * @param {string} pid PID being resolved.
    * @param {string[]} uris Candidate URIs.
    * @param {Map<string, string>} identifierForUri Identifier lookup by URI.
+   * @param {boolean} isAggregated Whether the PID is a package member.
    * @returns {string|null} Preferred URI.
    */
-  function buildPreferredUri(resourceMap, pid, uris, identifierForUri) {
+  function buildPreferredUri(
+    resourceMap,
+    pid,
+    uris,
+    identifierForUri,
+    isAggregated,
+  ) {
     const candidateUris = sortStrings(Array.isArray(uris) ? [...uris] : []);
     if (!candidateUris.length) {
       return null;
+    }
+
+    const directPidUri = candidateUris.find(
+      (uri) => normalizeText(uri) === pid,
+    );
+    if (
+      directPidUri &&
+      !isAggregated &&
+      ResourceMapCommon.isExternalDirectUriPid(pid)
+    ) {
+      return directPidUri;
     }
 
     const canonicalUri = isNonEmptyString(resourceMap.resolveBase)
@@ -119,22 +116,24 @@ define([
     const identifierMatch = candidateUris.find(
       (uri) => identifierForUri.get(uri) === pid,
     );
-    if (identifierMatch) {
-      return identifierMatch;
-    }
 
-    const directPidUri = candidateUris.find(
-      (uri) => normalizeText(uri) === pid,
-    );
-    if (directPidUri) {
-      return directPidUri;
-    }
-
-    return candidateUris[0];
+    return identifierMatch || directPidUri || candidateUris[0];
   }
 
   /**
-   * Cached derived read state for a ResourceMap RDF graph.
+   * ResourceMapState builds cached indexes and derived information from a
+   * ResourceMap's RDF graph. This allows the rest of the code to answer common
+   * questions, such as "what are the members?" or "which PID belongs to this
+   * node?", without repeatedly traversing RDF statements (which can be
+   * expensive to query).
+   *
+   * ResourceMapState never modifies the graph. Instead, it analyzes the graph
+   * and creates lookup tables, summaries, and other derived structures that
+   * make reads faster and simpler.
+   *
+   * The cached state is cleared whenever the graph changes. It is rebuilt
+   * lazily on the next read operation so that the state always stays in sync
+   * with the graph while avoiding unnecessary work.
    */
   class ResourceMapState {
     /**
@@ -145,19 +144,22 @@ define([
       this.resourceMap = resourceMap;
       this.summaryCache = new Map();
       this.graphIndex = null;
-      this.provenanceMemberFieldMap = null;
     }
 
     /** Clear all derived state after a graph mutation. */
     invalidate() {
       this.graphIndex = null;
       this.summaryCache.clear();
-      this.provenanceMemberFieldMap = null;
     }
 
     /** @returns {object} Lazily built graph index. */
     getIndex() {
       if (!this.graphIndex) {
+        if (this.resourceMap.isGraphMutating()) {
+          throw new Error(
+            "ResourceMapState must be built before starting a graph mutation",
+          );
+        }
         this.graphIndex = this.buildGraphIndex();
       }
       return this.graphIndex;
@@ -200,8 +202,8 @@ define([
       const foafNamesByNodeKey = new Map();
       const creatorStatements = [];
       const modifiedValues = [];
-      const explicitMemberNodeKeys = new Set();
-      const fallbackAggregateNodeKeys = new Set();
+      const aggregateStatements = [];
+      const isAggregatedByStatements = [];
       const documentationEdges = [];
       const atLocationStatements = [];
       const wasDerivedFromStatements = [];
@@ -215,7 +217,6 @@ define([
       const associationNodesByExecutionKey = new Map();
       const planNodesByAssociationKey = new Map();
       const agentUrisByAssociationKey = new Map();
-
       /**
        * Register one RDF node in the shared node lookups.
        * @param {NamedNode|BlankNode|Literal|null|undefined} node Candidate
@@ -273,21 +274,11 @@ define([
             break;
           }
           case predicateUris.oreAggregates: {
-            if (object?.termType === "NamedNode") {
-              fallbackAggregateNodeKeys.add(objectKey);
-              if (subject?.value === resourceMap.aggregationUri) {
-                explicitMemberNodeKeys.add(objectKey);
-              }
-            }
+            aggregateStatements.push(statement);
             break;
           }
           case predicateUris.oreIsAggregatedBy: {
-            if (
-              subject?.termType === "NamedNode" &&
-              object?.value === resourceMap.aggregationUri
-            ) {
-              explicitMemberNodeKeys.add(subjectKey);
-            }
+            isAggregatedByStatements.push(statement);
             break;
           }
           case predicateUris.citoDocuments: {
@@ -401,7 +392,6 @@ define([
       });
 
       const pidByNodeKey = new Map();
-      const pidByUri = new Map();
       const urisByPid = new Map();
 
       /**
@@ -416,31 +406,16 @@ define([
           return pidByNodeKey.get(key);
         }
 
-        let pid = null;
-        if (node?.termType === "NamedNode") {
-          pid =
-            identifierForUri.get(node.value) ||
-            resourceMap.constructor.uriToPid(node.value);
-
-          if (!isNonEmptyString(pid)) {
-            const fragmentlessUri = UrlUtilities.stripFragment(node.value);
-            if (fragmentlessUri !== node.value) {
-              pid =
-                identifierForUri.get(fragmentlessUri) ||
-                resourceMap.constructor.uriToPid(fragmentlessUri);
-            }
-          }
-
-          if (!isNonEmptyString(pid)) {
-            pid =
-              recoverBarePidValue(node.value) ||
-              recoverBarePidValue(UrlUtilities.stripFragment(node.value));
-          }
-        }
+        const pid =
+          node?.termType === "NamedNode"
+            ? ResourceMapCommon.recoverPidFromUri(resourceMap, node.value, {
+                identifierForUri,
+                allowBareValue: true,
+              })
+            : null;
 
         pidByNodeKey.set(key, pid || null);
         if (isNonEmptyString(pid) && node?.termType === "NamedNode") {
-          pidByUri.set(node.value, pid);
           addMapSetValue(urisByPid, pid, node.value);
         }
 
@@ -451,6 +426,37 @@ define([
         resolvePidForNode(node);
       });
 
+      const associatedAggregationUris = new Set(
+        ResourceMapCommon.collectAssociatedAggregationUris(resourceMap, {
+          pidFromNode: resolvePidForNode,
+          resourceMapUris: Array.from(
+            urisByPid.get(resourceMap.resourceMapPid) || [],
+          ),
+        }),
+      );
+      const memberNodeKeys = new Set();
+      aggregateStatements.forEach((statement) => {
+        if (
+          statement.object?.termType === "NamedNode" &&
+          associatedAggregationUris.has(statement.subject?.value)
+        ) {
+          memberNodeKeys.add(nodeKey(statement.object));
+        }
+      });
+      isAggregatedByStatements.forEach((statement) => {
+        if (
+          statement.subject?.termType === "NamedNode" &&
+          associatedAggregationUris.has(statement.object?.value)
+        ) {
+          memberNodeKeys.add(nodeKey(statement.subject));
+        }
+      });
+      const memberCandidateNodeKeys = Array.from(memberNodeKeys);
+      const aggregatedPids = new Set(
+        memberCandidateNodeKeys
+          .map((key) => resolvePidForNode(nodeByKey.get(key)))
+          .filter(isNonEmptyString),
+      );
       const preferredUriByPid = new Map(
         Array.from(urisByPid.entries()).map(([pid, values]) => [
           pid,
@@ -459,6 +465,7 @@ define([
             pid,
             Array.from(values),
             identifierForUri,
+            aggregatedPids.has(pid),
           ),
         ]),
       );
@@ -474,9 +481,6 @@ define([
         addMapArrayValue(nodesByIdentifier, normalizeText(uri), node);
       });
 
-      const memberCandidateNodeKeys = explicitMemberNodeKeys.size
-        ? Array.from(explicitMemberNodeKeys)
-        : Array.from(fallbackAggregateNodeKeys);
       let memberDescriptors = dedupeBy(
         memberCandidateNodeKeys
           .map((key) => nodeByKey.get(key))
@@ -508,7 +512,8 @@ define([
             return { metadataPid, dataPid };
           })
           .filter(Boolean),
-        ResourceMapCommon.buildKey,
+        ({ metadataPid, dataPid }) =>
+          ResourceMapCommon.buildKey([metadataPid, dataPid]),
       );
       const isDocumentedByByPid = new Map();
       const documentsByPid = new Map();
@@ -570,7 +575,9 @@ define([
 
       const modified = modifiedValues.find(isNonEmptyString) || null;
 
-      const typeAssertions = dedupeBy(
+      // Type assertions physically present in the graph: explicit annotations
+      // and managed Execution scaffolding.
+      const explicitTypeAssertions = dedupeBy(
         Array.from(typeUrisByNodeKey.entries()).flatMap(
           ([subjectKey, classUris]) => {
             const pid = resolvePidForNode(nodeByKey.get(subjectKey));
@@ -585,12 +592,8 @@ define([
               }));
           },
         ),
-        ResourceMapCommon.buildKey,
+        ({ pid, className }) => ResourceMapCommon.buildKey([pid, className]),
       );
-      const typeAssertionsByPid = new Map();
-      typeAssertions.forEach((assertion) => {
-        addMapSetValue(typeAssertionsByPid, assertion.pid, assertion.className);
-      });
 
       const rolePidSets = {
         Data: new Set(),
@@ -621,6 +624,30 @@ define([
           .forEach((pid) => rolePidSets.Program.add(pid));
       });
 
+      // Data/Program types are a projection of provenance structure. Rather
+      // than persist them as graph triples, derive them from the current role
+      // edges and union them with the explicit assertions. This keeps reads,
+      // toJSON, and serialized output consistent without the resource map
+      // owning auto-generated type triples.
+      const typeAssertions = dedupeBy(
+        [
+          ...explicitTypeAssertions,
+          ...Array.from(rolePidSets.Data, (pid) => ({
+            pid,
+            className: "Data",
+          })),
+          ...Array.from(rolePidSets.Program, (pid) => ({
+            pid,
+            className: "Program",
+          })),
+        ],
+        ({ pid, className }) => ResourceMapCommon.buildKey([pid, className]),
+      );
+      const typeAssertionsByPid = new Map();
+      typeAssertions.forEach((assertion) => {
+        addMapSetValue(typeAssertionsByPid, assertion.pid, assertion.className);
+      });
+
       const executionSummariesByKey = new Map();
       const executionNodes = dedupeNodes(
         Array.from(executionNodeKeys)
@@ -630,24 +657,17 @@ define([
 
       executionNodes.forEach((executionNode) => {
         const executionKey = nodeKey(executionNode);
-        const associationNodes = dedupeNodes(
+        const associations = dedupeNodes(
           associationNodesByExecutionKey.get(executionKey) || [],
-        );
-        const associations = associationNodes.map((associationNode) => {
+        ).map((associationNode) => {
           const associationKey = nodeKey(associationNode);
-          const planNodes = dedupeNodes(
-            planNodesByAssociationKey.get(associationKey) || [],
-          );
-          const agentUris = dedupeStrings(
-            agentUrisByAssociationKey.get(associationKey) || [],
-          );
-
           return {
             node: associationNode,
-            planNodes,
-            agentUris,
-            programPids: dedupeStrings(
-              planNodes.map((planNode) => resolvePidForNode(planNode)),
+            planNodes: dedupeNodes(
+              planNodesByAssociationKey.get(associationKey) || [],
+            ),
+            agentUris: dedupeStrings(
+              agentUrisByAssociationKey.get(associationKey) || [],
             ),
           };
         });
@@ -666,7 +686,8 @@ define([
               }),
             )
             .filter(({ programPid }) => isNonEmptyString(programPid)),
-          ResourceMapCommon.buildKey,
+          ({ programPid, agentUri }) =>
+            ResourceMapCommon.buildKey([programPid, agentUri]),
         );
 
         const identifierLiteral =
@@ -685,7 +706,6 @@ define([
           ).includes(EXECUTION_CLASS_URI),
           identifier,
           hasIdentifierLiteral: isNonEmptyString(identifierLiteral),
-          associationNodes,
           associations,
           programs,
           programPids: dedupeStrings(
@@ -698,7 +718,6 @@ define([
       });
 
       const executionNodesByProgramPid = new Map();
-      const executionNodesByIdentifier = new Map();
 
       executionSummariesByKey.forEach((summary) => {
         summary.programPids.forEach((programPid) => {
@@ -708,13 +727,6 @@ define([
             summary.node,
           );
         });
-        if (isNonEmptyString(summary.identifier)) {
-          addMapArrayValue(
-            executionNodesByIdentifier,
-            summary.identifier,
-            summary.node,
-          );
-        }
       });
 
       const wasDerivedFrom = dedupeBy(
@@ -728,49 +740,56 @@ define([
             return { derivedPid, sourcePid };
           })
           .filter(Boolean),
-        ResourceMapCommon.buildKey,
+        ({ derivedPid, sourcePid }) =>
+          ResourceMapCommon.buildKey([derivedPid, sourcePid]),
       );
 
-      const generatedByPrograms = dedupeBy(
-        wasGeneratedByStatements.flatMap((statement) => {
-          const dataPid = resolvePidForNode(statement.subject);
-          const executionSummary = executionSummariesByKey.get(
-            nodeKey(statement.object),
-          );
-          if (!dataPid || !executionSummary) {
-            return [];
-          }
-          return executionSummary.programs
-            .filter(({ programPid }) => isNonEmptyString(programPid))
-            .map(({ programPid, agentUri }) => ({
+      const projectExecutionProgramRelationships = (
+        statementsToProject,
+        dataFromObject,
+      ) =>
+        dedupeBy(
+          statementsToProject.flatMap((statement) => {
+            const dataNode = dataFromObject
+              ? statement.object
+              : statement.subject;
+            const executionNode = dataFromObject
+              ? statement.subject
+              : statement.object;
+            const dataPid = resolvePidForNode(dataNode);
+            const executionSummary = executionSummariesByKey.get(
+              nodeKey(executionNode),
+            );
+            if (!dataPid || !executionSummary) {
+              return [];
+            }
+            return executionSummary.programs
+              .filter(({ programPid }) => isNonEmptyString(programPid))
+              .map(({ programPid, agentUri }) => ({
+                dataPid,
+                programPid,
+                executionId: normalizeText(executionSummary.identifier),
+                agentUri: agentUri || null,
+              }));
+          }),
+          ({ dataPid, programPid, executionId, agentUri }) =>
+            ResourceMapCommon.buildKey([
               dataPid,
               programPid,
-              executionId: normalizeText(executionSummary.identifier),
-              agentUri: agentUri || null,
-            }));
-        }),
-        ResourceMapCommon.buildKey,
-      );
+              executionId,
+              agentUri,
+            ]),
+        );
 
-      const usedByPrograms = dedupeBy(
-        usedStatements.flatMap((statement) => {
-          const dataPid = resolvePidForNode(statement.object);
-          const executionSummary = executionSummariesByKey.get(
-            nodeKey(statement.subject),
-          );
-          if (!dataPid || !executionSummary) {
-            return [];
-          }
-          return executionSummary.programs
-            .filter(({ programPid }) => isNonEmptyString(programPid))
-            .map(({ programPid, agentUri }) => ({
-              dataPid,
-              programPid,
-              executionId: normalizeText(executionSummary.identifier),
-              agentUri: agentUri || null,
-            }));
-        }),
-        ResourceMapCommon.buildKey,
+      // prov:wasGeneratedBy stores the data PID in the subject position;
+      // prov:used stores it in the object position.
+      const generatedByPrograms = projectExecutionProgramRelationships(
+        wasGeneratedByStatements,
+        false,
+      );
+      const usedByPrograms = projectExecutionProgramRelationships(
+        usedStatements,
+        true,
       );
 
       const wasInformedByPrograms = dedupeBy(
@@ -802,7 +821,18 @@ define([
               })),
           );
         }),
-        ResourceMapCommon.buildKey,
+        ({
+          programPid,
+          previousProgramPid,
+          executionId,
+          previousExecutionId,
+        }) =>
+          ResourceMapCommon.buildKey([
+            programPid,
+            previousProgramPid,
+            executionId,
+            previousExecutionId,
+          ]),
       );
 
       const programExecutions = dedupeBy(
@@ -818,18 +848,14 @@ define([
               agentUri: agentUri || null,
             }));
         }),
-        ResourceMapCommon.buildKey,
+        ({ programPid, executionId, agentUri }) =>
+          ResourceMapCommon.buildKey([programPid, executionId, agentUri]),
       );
 
       return {
-        nodeByKey,
-        namedNodeByUri,
         nodesByIdentifier,
         identifierForNodeKey,
-        identifierForUri,
         pidByNodeKey,
-        pidByUri,
-        urisByPid,
         preferredUriByPid,
         memberDescriptors,
         memberDescriptorByPid,
@@ -846,7 +872,6 @@ define([
         executionNodes,
         executionSummariesByKey,
         executionNodesByProgramPid,
-        executionNodesByIdentifier,
         programExecutions,
         wasDerivedFrom,
         generatedByPrograms,
@@ -879,30 +904,17 @@ define([
         ),
       );
       snapshot.memberPids = sortStrings([...(snapshot.memberPids || [])]);
-      snapshot.documentationLinks = ResourceMapCommon.sortByBuildKey(
+      snapshot.documentationLinks = ResourceMapCommon.sortByFields(
         snapshot.documentationLinks,
+        ["metadataPid", "dataPid"],
       );
       snapshot.metadataPids = sortStrings([...(snapshot.metadataPids || [])]);
       snapshot.documentedObjectPids = sortStrings([
         ...(snapshot.documentedObjectPids || []),
       ]);
-      snapshot.provenance = {
-        wasDerivedFrom: ResourceMapCommon.sortByBuildKey(
-          snapshot.provenance?.wasDerivedFrom,
-        ),
-        generatedByPrograms: ResourceMapCommon.sortByBuildKey(
-          snapshot.provenance?.generatedByPrograms,
-        ),
-        usedByPrograms: ResourceMapCommon.sortByBuildKey(
-          snapshot.provenance?.usedByPrograms,
-        ),
-        wasInformedByPrograms: ResourceMapCommon.sortByBuildKey(
-          snapshot.provenance?.wasInformedByPrograms,
-        ),
-        typeAssertions: ResourceMapCommon.sortByBuildKey(
-          snapshot.provenance?.typeAssertions,
-        ),
-      };
+      snapshot.provenance = ResourceMapCommon.sortProvenanceSummary(
+        snapshot.provenance,
+      );
 
       return snapshot;
       /* eslint-enable no-param-reassign */
@@ -910,60 +922,27 @@ define([
 
     /**
      * Build or read a cached package summary.
-     * @param {object} [options] Summary options.
-     * @param {boolean} [options.includeProvenanceFields] Include projected
-     * provenance fields on members.
      * @returns {ResourceMapSummary} Cloned package summary.
      */
-    getSummary({ includeProvenanceFields = true } = {}) {
-      const cacheKey = includeProvenanceFields
-        ? "withProvenance"
-        : "withoutProvenance";
-      const cachedSummary = this.summaryCache.get(cacheKey);
+    getSummary() {
+      const cachedSummary = this.summaryCache.get("summary");
       if (cachedSummary) {
         return ValueUtilities.deepClone(cachedSummary);
       }
 
       const index = this.getIndex();
-      const isDocumentedBy = new Map();
-      const documents = new Map();
-
-      index.documentationLinks.forEach((link) => {
-        if (!isDocumentedBy.has(link.dataPid)) {
-          isDocumentedBy.set(link.dataPid, []);
-        }
-        isDocumentedBy.get(link.dataPid).push(link.metadataPid);
-
-        if (!documents.has(link.metadataPid)) {
-          documents.set(link.metadataPid, []);
-        }
-        documents.get(link.metadataPid).push(link.dataPid);
-      });
-
-      const provenanceFieldMap = includeProvenanceFields
-        ? this.getProvenanceMemberFieldMap()
-        : null;
-      const members = index.memberDescriptors.map((descriptor) => {
-        const member = {
-          pid: descriptor.pid,
-          uri: descriptor.uri,
-          isDocumentedBy: sortStrings([
-            ...(isDocumentedBy.get(descriptor.pid) || []),
-          ]),
-          documents: sortStrings([...(documents.get(descriptor.pid) || [])]),
-          atLocations: [...descriptor.atLocations],
-          displayAtLocations: [...descriptor.displayAtLocations],
-        };
-
-        if (includeProvenanceFields) {
-          Object.assign(
-            member,
-            cloneObjectWithArrayValues(provenanceFieldMap?.[descriptor.pid]),
-          );
-        }
-
-        return member;
-      });
+      const members = index.memberDescriptors.map((descriptor) => ({
+        pid: descriptor.pid,
+        uri: descriptor.uri,
+        isDocumentedBy: sortStrings([
+          ...(index.isDocumentedByByPid.get(descriptor.pid) || []),
+        ]),
+        documents: sortStrings([
+          ...(index.documentsByPid.get(descriptor.pid) || []),
+        ]),
+        atLocations: [...descriptor.atLocations],
+        displayAtLocations: [...descriptor.displayAtLocations],
+      }));
 
       const summary = ResourceMapState.sortSummary({
         resourceMapPid: this.resourceMap.resourceMapPid,
@@ -981,15 +960,11 @@ define([
         creatorName: index.creatorName,
         modified: index.modified,
         provenance: this.resourceMap.provenance.toJSON(),
-        metadataPids: dedupeArray(
-          index.documentationLinks.map((link) => link.metadataPid),
-        ),
-        documentedObjectPids: dedupeArray(
-          index.documentationLinks.map((link) => link.dataPid),
-        ),
+        metadataPids: Array.from(index.documentsByPid.keys()),
+        documentedObjectPids: Array.from(index.isDocumentedByByPid.keys()),
       });
 
-      this.summaryCache.set(cacheKey, ValueUtilities.deepClone(summary));
+      this.summaryCache.set("summary", ValueUtilities.deepClone(summary));
       return ValueUtilities.deepClone(summary);
     }
 
@@ -1012,70 +987,6 @@ define([
       };
     }
 
-    /**
-     * Infer a resolve-service base from indexed named nodes.
-     * @param {string|null} [fallbackBaseUrl] Value returned when none is found.
-     * @returns {string|null} Inferred or fallback base URL.
-     */
-    inferResolveBase(fallbackBaseUrl = null) {
-      const index = this.getIndex();
-      const candidateValues = Array.from(index.namedNodeByUri.keys());
-
-      for (let i = 0; i < candidateValues.length; i += 1) {
-        const baseUrl = UrlUtilities.extractBaseUrl(candidateValues[i], {
-          requiredPathSegment: "/resolve/",
-          trailingSlash: "ensure",
-        });
-        if (baseUrl) {
-          return baseUrl;
-        }
-      }
-
-      return fallbackBaseUrl;
-    }
-
-    /** @returns {string|null} Inferred resource-map node URI. */
-    inferResourceMapUri() {
-      const index = this.getIndex();
-      const byIdentifier = index.nodesByIdentifier.get(
-        this.resourceMap.resourceMapPid,
-      );
-      const identifierMatch = (byIdentifier || []).find(
-        (node) => node?.termType === "NamedNode",
-      );
-      if (identifierMatch) {
-        return identifierMatch.value;
-      }
-
-      const exactResolveUri = Array.from(index.namedNodeByUri.keys()).find(
-        (uri) =>
-          this.resourceMap.constructor.uriToPid(uri) ===
-          this.resourceMap.resourceMapPid,
-      );
-      return exactResolveUri || null;
-    }
-
-    /** @returns {string|null} Inferred aggregation node URI. */
-    inferAggregationUri() {
-      const describesStatement = this.resourceMap.graph.statementsMatching(
-        rdf.sym(this.resourceMap.resourceMapUri),
-        this.resourceMap.ns.ORE("describes"),
-        undefined,
-        undefined,
-      )[0];
-      if (describesStatement?.object?.value) {
-        return describesStatement.object.value;
-      }
-
-      const describedByStatement = this.resourceMap.graph.statementsMatching(
-        undefined,
-        this.resourceMap.ns.ORE("isDescribedBy"),
-        rdf.sym(this.resourceMap.resourceMapUri),
-        undefined,
-      )[0];
-      return describedByStatement?.subject?.value || null;
-    }
-
     /** @returns {Array<{pid: string, uri: string}>} Member descriptors. */
     getMemberDescriptors() {
       return this.getIndex().memberDescriptors.map(({ pid, uri }) => ({
@@ -1087,12 +998,9 @@ define([
     /**
      * Return one member summary from indexed graph state.
      * @param {string} pid Member PID.
-     * @param {object} [options] Read options.
-     * @param {boolean} [options.includeProvenanceFields] Include projected
-     * provenance fields.
      * @returns {ResourceMapMember|null} Member summary when present.
      */
-    getMember(pid, { includeProvenanceFields = false } = {}) {
+    getMember(pid) {
       const normalizedPid = normalizeText(pid);
       if (!isNonEmptyString(normalizedPid)) {
         return null;
@@ -1104,7 +1012,7 @@ define([
         return null;
       }
 
-      const member = {
+      return {
         pid: descriptor.pid,
         uri: descriptor.uri,
         isDocumentedBy: sortStrings([
@@ -1116,17 +1024,6 @@ define([
         atLocations: [...descriptor.atLocations],
         displayAtLocations: [...descriptor.displayAtLocations],
       };
-
-      if (includeProvenanceFields) {
-        Object.assign(
-          member,
-          cloneObjectWithArrayValues(
-            this.getProvenanceMemberFieldMap()?.[normalizedPid],
-          ),
-        );
-      }
-
-      return member;
     }
 
     /**
@@ -1149,16 +1046,12 @@ define([
 
     /** @returns {string[]} Unique documenting metadata PIDs. */
     getMetadataPids() {
-      return dedupeArray(
-        this.getIndex().documentationLinks.map((link) => link.metadataPid),
-      );
+      return Array.from(this.getIndex().documentsByPid.keys());
     }
 
     /** @returns {string[]} Unique documented member PIDs. */
     getDocumentedObjectPids() {
-      return dedupeArray(
-        this.getIndex().documentationLinks.map((link) => link.dataPid),
-      );
+      return Array.from(this.getIndex().isDocumentedByByPid.keys());
     }
 
     /** @returns {ResMapDocLink[]} Cloned documentation links. */
@@ -1186,9 +1079,9 @@ define([
     }
 
     /**
-     * Find indexed named nodes for an identifier.
+     * Find indexed RDF resource nodes for an identifier.
      * @param {string} identifier Identifier to resolve.
-     * @returns {NamedNode[]} Matching named nodes.
+     * @returns {Array<NamedNode|BlankNode>} Matching RDF resource nodes.
      */
     findNodesByIdentifier(identifier) {
       return dedupeNodes(
@@ -1239,13 +1132,20 @@ define([
       }));
     }
 
-    /** @returns {Object<string, object>} Cached provenance fields by PID. */
-    getProvenanceMemberFieldMap() {
-      if (!this.provenanceMemberFieldMap) {
-        this.provenanceMemberFieldMap =
-          this.resourceMap.provenance.getMemberFieldMap();
-      }
-      return this.provenanceMemberFieldMap;
+    /**
+     * Test whether a PID has one PROVONE type assertion.
+     * @param {string} pid PID to inspect.
+     * @param {string} className PROVONE class name.
+     * @returns {boolean} Whether the type is asserted.
+     */
+    hasTypeAssertion(pid, className) {
+      const normalizedPid = normalizeText(pid);
+      return (
+        isNonEmptyString(normalizedPid) &&
+        !!this.getIndex().typeAssertionsByPid
+          .get(normalizedPid)
+          ?.has(className)
+      );
     }
 
     /**
@@ -1290,12 +1190,10 @@ define([
       }
       return {
         ...summary,
-        associationNodes: [...summary.associationNodes],
         associations: summary.associations.map((association) => ({
           ...association,
           planNodes: [...association.planNodes],
           agentUris: [...association.agentUris],
-          programPids: [...association.programPids],
         })),
         programs: summary.programs.map((program) => ({ ...program })),
         programPids: [...summary.programPids],
@@ -1358,24 +1256,6 @@ define([
      */
     isExecutionNode(executionNode) {
       return !!this.getExecutionSummary(executionNode)?.isExecution;
-    }
-
-    /**
-     * Return association nodes for an execution.
-     * @param {NamedNode|BlankNode} executionNode Execution node.
-     * @returns {Array<NamedNode|BlankNode>} Association nodes.
-     */
-    getAssociationNodesForExecution(executionNode) {
-      return this.getExecutionSummary(executionNode)?.associationNodes || [];
-    }
-
-    /**
-     * Return programs associated with an execution.
-     * @param {NamedNode|BlankNode} executionNode Execution node.
-     * @returns {object[]} Program summaries.
-     */
-    getProgramsForExecution(executionNode) {
-      return this.getExecutionSummary(executionNode)?.programs || [];
     }
 
     /** @returns {object[]} Cloned program-execution relationships. */

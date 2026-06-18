@@ -2,7 +2,6 @@ define([
   "rdflib",
   "models/resourceMap/ResourceMap",
   "models/resourceMap/Provenance",
-  "models/resourceMap/GraphRead",
   "models/resourceMap/GraphMutation",
   "models/resourceMap/GraphNormalization",
   "models/resourceMap/ResourceMapCommon",
@@ -12,7 +11,6 @@ define([
   rdf,
   ResourceMap,
   Provenance,
-  GraphRead,
   GraphMutation,
   GraphNormalization,
   ResourceMapCommon,
@@ -20,12 +18,6 @@ define([
   testUtils,
 ) => {
   chai.should();
-  const ResourceMapGraph = Object.assign(
-    GraphRead,
-    GraphMutation,
-    GraphNormalization,
-  );
-  const ResourceMapGraphRead = GraphRead;
   const expect = chai.expect;
   const ns = {
     RDF: rdf.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
@@ -51,13 +43,30 @@ define([
     </error>
   `;
 
-  describe("ResourceMap Test Suite", () => {
-    it("builds distinct keys when relationship values contain separators", () => {
-      ResourceMapCommon.buildKey(["a::b", "c"]).should.not.equal(
-        ResourceMapCommon.buildKey(["a", "b::c"]),
-      );
-    });
+  /**
+   * Collect the creator statements on the resource map node.
+   * @param {ResourceMap} resourceMap Test resource map.
+   * @returns {object[]} `dc:creator` and `dcterms:creator` statements.
+   */
+  function creatorStatements(resourceMap) {
+    const resourceMapNode = rdf.sym(resourceMap.resourceMapUri);
+    return [
+      ...resourceMap.graph.statementsMatching(
+        resourceMapNode,
+        resourceMap.ns.DC("creator"),
+        undefined,
+        undefined,
+      ),
+      ...resourceMap.graph.statementsMatching(
+        resourceMapNode,
+        resourceMap.ns.DCTERMS("creator"),
+        undefined,
+        undefined,
+      ),
+    ];
+  }
 
+  describe("ResourceMap Test Suite", () => {
     // Ensure there is a resolveServiceUrl and a objectServiceUrl in the app
     // config for tests that rely on them, and restore any existing app config
     // after the tests complete.
@@ -120,20 +129,20 @@ define([
         `${TEST_RESOLVE_BASE}/resource_map_urn:uuid:rm.1#aggregation`,
       );
       resourceMap.resolveBase.should.equal(`${TEST_RESOLVE_BASE}/`);
-      ResourceMapGraph.getCreatorName(resourceMap).should.equal(
-        "Example Creator",
-      );
-      ResourceMapGraph.getModifiedValue(resourceMap).should.equal(
-        "2026-03-24T10:00:00.000Z",
-      );
-      ResourceMapGraph.collectMemberPids(resourceMap).should.have.members([
-        "meta.1",
-        "data.1",
-        "derived.1",
-        "script.1",
-        "script.2",
-        "resource_map_doi:10.18739/A2NESTED",
-      ]);
+      resourceMap.getSummary().creatorName.should.equal("Example Creator");
+      resourceMap
+        .getSummary()
+        .modified.should.equal("2026-03-24T10:00:00.000Z");
+      resourceMap
+        .getMemberPids()
+        .should.have.members([
+          "meta.1",
+          "data.1",
+          "derived.1",
+          "script.1",
+          "script.2",
+          "resource_map_doi:10.18739/A2NESTED",
+        ]);
       resourceMap.getMetadataPids().should.deep.equal(["meta.1"]);
       resourceMap
         .getDocumentedObjectPids()
@@ -141,9 +150,10 @@ define([
 
       resourceMap.getMetadataPids().length.should.be.greaterThan(0);
 
-      const dataMember = resourceMap.getMember("data.1", {
-        includeProvenanceFields: true,
-      });
+      resourceMap.hasMember("data.1").should.equal(true);
+      resourceMap.hasMember("missing.1").should.equal(false);
+
+      const dataMember = resourceMap.getMember("data.1");
       dataMember.should.deep.include({
         pid: "data.1",
         uri: `${TEST_RESOLVE_BASE}/data.1`,
@@ -152,32 +162,8 @@ define([
       dataMember.displayAtLocations.should.deep.equal(["data/data.csv"]);
       dataMember.isDocumentedBy.should.deep.equal(["meta.1"]);
       dataMember.documents.should.deep.equal([]);
-      dataMember.prov_usedByProgram.should.deep.equal(["script.1"]);
-      dataMember.prov_usedByExecution.should.deep.equal([
-        "urn:uuid:execution-1",
-      ]);
-      dataMember.prov_usedByUser.should.deep.equal([
-        "https://orcid.org/0000-0001-0000-0001",
-      ]);
-      dataMember.prov_instanceOfClass.should.deep.equal([
-        "http://purl.dataone.org/provone/2015/01/15/ontology#Data",
-      ]);
-
-      const scriptMember = resourceMap.getMember("script.1", {
-        includeProvenanceFields: true,
-      });
-      scriptMember.prov_generated.should.deep.equal(["derived.1"]);
-      scriptMember.prov_used.should.deep.equal(["data.1"]);
-      scriptMember.prov_wasInformedBy.should.deep.equal(["script.2"]);
-      scriptMember.prov_wasExecutedByExecution.should.deep.equal([
-        "urn:uuid:execution-1",
-      ]);
-      scriptMember.prov_wasExecutedByUser.should.deep.equal([
-        "https://orcid.org/0000-0001-0000-0001",
-      ]);
-
       resourceMap
-        .getMembers({ includeProvenanceFields: true })
+        .getMembers()
         .map((member) => member.pid)
         .should.have.members([
           "meta.1",
@@ -202,7 +188,7 @@ define([
         mixedCnResolveXml,
       );
 
-      ResourceMapGraph.collectMemberPids(resourceMap).should.include("data.1");
+      resourceMap.getMemberPids().should.include("data.1");
       resourceMap
         .getNodeUriForPid("data.1")
         .should.equal(`${TEST_RESOLVE_BASE}/data.1`);
@@ -222,7 +208,7 @@ define([
         },
       );
 
-      ResourceMapGraph.collectMemberPids(resourceMap).should.include("data.1");
+      resourceMap.getMemberPids().should.include("data.1");
       resourceMap
         .getNodeUriForPid("data.1")
         .should.equal(`${TEST_RESOLVE_BASE}/data.1`);
@@ -243,7 +229,7 @@ define([
         },
       );
 
-      ResourceMapGraph.collectMemberPids(resourceMap).should.include("data.1");
+      resourceMap.getMemberPids().should.include("data.1");
       resourceMap
         .getNodeUriForPid("data.1")
         .should.equal(`${TEST_RESOLVE_BASE}/data.1`);
@@ -282,30 +268,15 @@ define([
           ResourceMapState.prototype,
           "buildGraphIndex",
         );
-        const getMemberFieldMapSpy = sandbox.spy(
-          resourceMap.provenance,
-          "getMemberFieldMap",
-        );
-
+        resourceMap.getMembers().length.should.equal(6);
+        resourceMap.getMember("data.1").should.deep.include({
+          pid: "data.1",
+        });
         resourceMap
-          .getMembers({ includeProvenanceFields: true })
-          .length.should.equal(6);
-        resourceMap
-          .getMember("data.1", {
-            includeProvenanceFields: true,
-          })
-          .should.deep.include({
-            pid: "data.1",
-          });
-        resourceMap
-          .getMember("data.1", {
-            includeProvenanceFields: true,
-          })
+          .getMember("data.1")
           .atLocations.should.deep.equal(["data/data.csv"]);
         resourceMap
-          .toJSON({
-            includeProvenanceFields: true,
-          })
+          .toJSON()
           .memberPids.should.have.members([
             "meta.1",
             "data.1",
@@ -316,55 +287,6 @@ define([
           ]);
 
         buildGraphIndexSpy.callCount.should.equal(1);
-        getMemberFieldMapSpy.callCount.should.equal(1);
-      } finally {
-        sandbox.restore();
-      }
-    });
-
-    it("uses indexed member reads without building a package summary", () => {
-      const resourceMap = ResourceMap.fromXml(
-        "resource_map_urn:uuid:rm.1",
-        COMPREHENSIVE_XML,
-      );
-      const sandbox = sinon.createSandbox();
-
-      try {
-        const getSummarySpy = sandbox.spy(resourceMap, "getSummary");
-
-        resourceMap.getMember("data.1").should.deep.include({
-          pid: "data.1",
-          isDocumentedBy: ["meta.1"],
-        });
-        resourceMap.hasMember("data.1").should.equal(true);
-        resourceMap.hasMember("missing.1").should.equal(false);
-        resourceMap.getMetadataPids().should.include("meta.1");
-        resourceMap.getDocumentedObjectPids().should.include("data.1");
-
-        getSummarySpy.callCount.should.equal(0);
-      } finally {
-        sandbox.restore();
-      }
-    });
-
-    it("batches member additions without normalizing the managed graph", () => {
-      const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:rm.members.batch.1",
-        memberPids: ["meta.1"],
-      });
-      const sandbox = sinon.createSandbox();
-
-      try {
-        const mutateGraphSpy = sandbox.spy(resourceMap, "mutateGraph");
-        const normalizeSpy = sandbox.spy(resourceMap, "normalizeManagedGraph");
-
-        resourceMap.setMembers(["meta.1", "data.1", "data.2", "data.3"]);
-
-        mutateGraphSpy.callCount.should.equal(1);
-        normalizeSpy.callCount.should.equal(0);
-        resourceMap
-          .getMemberPids()
-          .should.have.members(["meta.1", "data.1", "data.2", "data.3"]);
       } finally {
         sandbox.restore();
       }
@@ -379,17 +301,15 @@ define([
 
       try {
         const mutateGraphSpy = sandbox.spy(resourceMap, "mutateGraph");
-        const removeReferencesSpy = sandbox.spy(
+        const collectReferencesSpy = sandbox.spy(
           resourceMap.provenance,
-          "removeMemberReferences",
+          "collectMemberReferenceRemovals",
         );
 
         resourceMap.setMembers(["meta.1", "data.4"]);
 
         mutateGraphSpy.callCount.should.equal(1);
-        removeReferencesSpy
-          .calledOnceWith(["data.1", "data.2", "data.3"])
-          .should.equal(true);
+        collectReferencesSpy.callCount.should.equal(1);
         resourceMap.getMemberPids().should.have.members(["meta.1", "data.4"]);
       } finally {
         sandbox.restore();
@@ -405,13 +325,9 @@ define([
       resourceMap.provenance.addUsedByProgram("data.1", "program.1", {
         executionId: "urn:uuid:exec.members.prov.batch.1",
       });
-      resourceMap.provenance.addGeneratedByProgram(
-        "derived.1",
-        "program.1",
-        {
-          executionId: "urn:uuid:exec.members.prov.batch.1",
-        },
-      );
+      resourceMap.provenance.addGeneratedByProgram("derived.1", "program.1", {
+        executionId: "urn:uuid:exec.members.prov.batch.1",
+      });
       const sandbox = sinon.createSandbox();
 
       try {
@@ -435,21 +351,6 @@ define([
       }
     });
 
-    it("caches the unsorted package summary used by toJSON()", () => {
-      const resourceMap = ResourceMap.fromXml(
-        "resource_map_urn:uuid:rm.1",
-        COMPREHENSIVE_XML,
-      );
-
-      expect(resourceMap.summaryCache.size).to.equal(0);
-      const summary = resourceMap.toJSON({
-        includeProvenanceFields: true,
-      });
-      const cachedSummary = resourceMap.summaryCache.get("withProvenance");
-
-      cachedSummary.should.deep.equal(summary);
-    });
-
     it("invalidates the cached summary after graph mutations routed through mutateGraph", () => {
       const resourceMap = ResourceMap.fromXml(
         "resource_map_urn:uuid:rm.1",
@@ -471,7 +372,7 @@ define([
         resourceMap.mutateGraph(() => {
           const memberNode = rdf.sym(resourceMap.getNodeUriForPid("data.1"));
 
-          ResourceMapGraph.removeStatementsMatching(
+          GraphMutation.removeStatementsMatching(
             resourceMap,
             memberNode,
             resourceMap.ns.PROV("atLocation"),
@@ -493,6 +394,159 @@ define([
       } finally {
         sandbox.restore();
       }
+    });
+
+    it("keeps projected reads on one stable State snapshot during mutation", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:rm.live.member.reads.1",
+        memberPids: ["meta.1", "data.1"],
+      });
+      const sandbox = sinon.createSandbox();
+      const documentationLinks = resourceMap.getDocumentationLinks();
+      const buildGraphIndexSpy = sandbox.spy(
+        ResourceMapState.prototype,
+        "buildGraphIndex",
+      );
+
+      try {
+        resourceMap.mutateGraph(() => {
+          resourceMap
+            .getNodeUriForPid("data.1")
+            .should.equal(resourceMap.pidToUri("data.1"));
+          resourceMap.hasMember("data.1").should.equal(true);
+          resourceMap.getMemberPids().should.have.members(["meta.1", "data.1"]);
+          resourceMap
+            .getDocumentationLinks()
+            .should.deep.equal(documentationLinks);
+        });
+
+        resourceMap.replaceMember("data.1", "data.renamed.1");
+      } finally {
+        sandbox.restore();
+      }
+
+      resourceMap.hasMember("data.renamed.1").should.equal(true);
+      resourceMap.hasMember("data.1").should.equal(false);
+      buildGraphIndexSpy.callCount.should.equal(1);
+    });
+
+    it("rejects lazy State construction after mutation begins", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:rm.mutation.state.guard.1",
+        memberPids: ["meta.1", "data.1"],
+      });
+
+      resourceMap.invalidateGraphState();
+
+      expect(() => {
+        resourceMap.mutateGraph(() => {
+          resourceMap.getMemberPids();
+        });
+      }).to.throw(
+        "ResourceMapState must be built before starting a graph mutation",
+      );
+    });
+
+    it("tracks saved graph changes and reparses the saved baseline", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:rm.changes.1",
+        memberPids: ["meta.1", "data.1", "source.1"],
+      });
+
+      resourceMap.markSaved();
+      resourceMap.hasUnsavedChanges().should.equal(false);
+
+      resourceMap.provenance.addWasDerivedFrom("data.1", "source.1");
+      resourceMap.hasUnsavedChanges().should.equal(true);
+
+      const restoredResourceMap = resourceMap.reparseRawData();
+      restoredResourceMap.hasUnsavedChanges().should.equal(false);
+      restoredResourceMap.provenance
+        .getWasDerivedFromLinks()
+        .should.deep.equal([]);
+    });
+
+    it("does not mark normalization changes unsaved unless requested", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:rm.normalize.dirty.1",
+        memberPids: ["meta.1", "data.1"],
+      });
+      const canonicalUri = resourceMap.getNodeUriForPid("data.1");
+      const customUri = "https://example.org/custom/member/normalize";
+
+      resourceMap.mutateGraph(() => {
+        GraphMutation.replaceNodeValue(resourceMap, canonicalUri, customUri);
+      });
+      resourceMap.markSaved();
+
+      resourceMap.normalize();
+      resourceMap.hasUnsavedChanges().should.equal(false);
+
+      resourceMap.mutateGraph(() => {
+        GraphMutation.replaceNodeValue(resourceMap, canonicalUri, customUri);
+      });
+      resourceMap.markSaved();
+
+      resourceMap.normalize({ markDirty: true });
+      resourceMap.hasUnsavedChanges().should.equal(true);
+    });
+
+    it("rolls back normalization when synchronization throws", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:rm.normalize.rollback.1",
+        memberPids: ["meta.1", "data.1"],
+      });
+      const sandbox = sinon.createSandbox();
+      const subject = rdf.sym("urn:uuid:normalization.rollback.subject");
+      const predicate = rdf.sym("urn:uuid:normalization.rollback.predicate");
+
+      resourceMap.markSaved();
+
+      try {
+        sandbox
+          .stub(GraphNormalization, "synchronizeCoreGraph")
+          .callsFake(() => {
+            GraphMutation.addStatement(
+              resourceMap,
+              subject,
+              predicate,
+              rdf.literal("partial normalization"),
+            );
+            throw new Error("Normalization synchronization failed");
+          });
+
+        expect(() => resourceMap.normalize()).to.throw(
+          "Normalize failed: Normalization synchronization failed",
+        );
+        resourceMap.graph
+          .statementsMatching(subject, predicate, undefined, undefined)
+          .should.deep.equal([]);
+        resourceMap.hasUnsavedChanges().should.equal(false);
+      } finally {
+        sandbox.restore();
+      }
+    });
+
+    it("rolls back an outer graph mutation when it throws", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:rm.rollback.1",
+        memberPids: ["meta.1", "data.1", "source.1"],
+      });
+
+      resourceMap.markSaved();
+
+      expect(() =>
+        resourceMap.mutateGraph(
+          () => {
+            resourceMap.provenance.addWasDerivedFrom("data.1", "source.1");
+            throw new Error("Mutation failed");
+          },
+          { rollbackOnError: true },
+        ),
+      ).to.throw(/mutation failed/i);
+
+      resourceMap.provenance.getWasDerivedFromLinks().should.deep.equal([]);
+      resourceMap.hasUnsavedChanges().should.equal(false);
     });
 
     it("creates new maps using the configured app resolve base URL", () => {
@@ -550,25 +604,6 @@ define([
       resourceMap.resourceMapUri.should.equal(
         `${TEST_RESOLVE_BASE}/resource_map_urn:uuid:rm.1`,
       );
-    });
-
-    it("rejects reusing one graph across multiple resource maps", () => {
-      const graph = rdf.graph();
-
-      new ResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:rm.owner.1",
-        graph,
-        resolveBase: TEST_RESOLVE_BASE,
-      });
-
-      expect(
-        () =>
-          new ResourceMap({
-            resourceMapPid: "resource_map_urn:uuid:rm.owner.2",
-            graph,
-            resolveBase: TEST_RESOLVE_BASE,
-          }),
-      ).to.throw("Graph already owned by another ResourceMap");
     });
 
     it("canonicalizes legacy root URI variants when adopting an existing graph", () => {
@@ -831,7 +866,7 @@ define([
       resourceMap
         .getNodeUriForPid(programPid)
         .should.equal(`${resolveBase}/doi:10.5063%2FF1%2BPROGRAM`);
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([
+      resourceMap.getDocumentationLinks().should.deep.equal([
         {
           metadataPid,
           dataPid,
@@ -911,7 +946,15 @@ define([
         )
         .length.should.equal(1);
       getIssueCodes(resourceMap.validate()).should.not.include(
-        "missingAggregationType",
+        "invalidPackageStructure",
+      );
+    });
+
+    it("omits explicit ore:Aggregation typing from serialized XML", () => {
+      const xml = createBaseResourceMap().serialize();
+
+      xml.should.not.contain(
+        'rdf:resource="http://www.openarchives.org/ore/terms/Aggregation"',
       );
     });
 
@@ -1026,16 +1069,26 @@ define([
         modified,
       });
 
-      ResourceMapGraph.getModifiedValue(resourceMap).should.equal(modified);
+      resourceMap.getSummary().modified.should.equal(modified);
       const xml = resourceMap.serialize();
       xml.should.contain(modified);
-      ResourceMapGraph.getModifiedValue(resourceMap).should.equal(modified);
+      const xmlDoc = new DOMParser().parseFromString(xml, "application/xml");
+      const [modifiedNode] = Array.from(
+        xmlDoc.getElementsByTagNameNS("http://purl.org/dc/terms/", "modified"),
+      );
+      modifiedNode
+        .getAttributeNS(
+          "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+          "datatype",
+        )
+        .should.equal("http://www.w3.org/2001/XMLSchema#dateTime");
+      resourceMap.getSummary().modified.should.equal(modified);
 
       const reparsed = ResourceMap.fromXml(
         "resource_map_urn:uuid:rm.modified.preserve.1",
         xml,
       );
-      ResourceMapGraph.getModifiedValue(reparsed).should.equal(modified);
+      reparsed.getSummary().modified.should.equal(modified);
     });
 
     it("preserves raw prov:atLocation values while exposing legacy display normalization", () => {
@@ -1167,11 +1220,7 @@ define([
       resourceMap.graph.add(
         dataNode,
         resourceMap.ns.PROV("atLocation"),
-        rdf.literal(
-          "data/remove.csv",
-          undefined,
-          resourceMap.ns.XSD("string"),
-        ),
+        rdf.literal("data/remove.csv", undefined, resourceMap.ns.XSD("string")),
       );
 
       resourceMap.removeLocation("data.1", "data/remove.csv");
@@ -1296,7 +1345,7 @@ define([
       ]);
       resourceMap.setLocation("data.2", "nested/data.csv");
 
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([
+      resourceMap.getDocumentationLinks().should.deep.equal([
         {
           metadataPid: "meta.1",
           dataPid: "data.2",
@@ -1312,7 +1361,7 @@ define([
       resourceMap.unlinkDocumentation("meta.1", "data.2");
       resourceMap.removeLocation("data.2", "nested/data.csv");
 
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([]);
+      resourceMap.getDocumentationLinks().should.deep.equal([]);
       resourceMap.getMember("data.2").atLocations.should.deep.equal([]);
     });
 
@@ -1352,19 +1401,52 @@ define([
       expect(resourceMap.getMember("")).to.equal(null);
     });
 
+    it("ignores literal objects when deriving members and documentation links", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:rm.literal.resources.1",
+        memberPids: ["meta.1"],
+        documentationLinks: [
+          {
+            metadataPid: "meta.1",
+            dataPid: "meta.1",
+          },
+        ],
+      });
+
+      resourceMap.graph.add(
+        rdf.sym(resourceMap.aggregationUri),
+        resourceMap.ns.ORE("aggregates"),
+        rdf.literal("literal.member.pid"),
+      );
+      resourceMap.graph.add(
+        rdf.sym(resourceMap.getNodeUriForPid("meta.1")),
+        resourceMap.ns.CITO("documents"),
+        rdf.literal("literal.data.pid"),
+      );
+      resourceMap.invalidateGraphState();
+
+      resourceMap.getMemberPids().should.deep.equal(["meta.1"]);
+      resourceMap.getDocumentationLinks().should.deep.equal([
+        {
+          metadataPid: "meta.1",
+          dataPid: "meta.1",
+        },
+      ]);
+    });
+
     it("normalizes root-escaping prov:atLocation values for display when reading RDF", () => {
       const resourceMap = createBaseResourceMap({
         resourceMapPid: "resource_map_urn:uuid:rm.atlocation.escape.read.1",
         memberPids: ["meta.1", "data.1", "data.2"],
       });
 
-      ResourceMapGraph.addStatement(
+      GraphMutation.addStatement(
         resourceMap,
         rdf.sym(resourceMap.getNodeUriForPid("data.1")),
         resourceMap.ns.PROV("atLocation"),
         rdf.literal("../x.csv"),
       );
-      ResourceMapGraph.addStatement(
+      GraphMutation.addStatement(
         resourceMap,
         rdf.sym(resourceMap.getNodeUriForPid("data.2")),
         resourceMap.ns.PROV("atLocation"),
@@ -1402,17 +1484,17 @@ define([
         "resource_map_urn:uuid:rm.creator.1",
         DCTERMS_CREATOR_XML,
       );
-      ResourceMapGraph.getCreatorName(dctermsCreatorMap).should.equal(
-        "DCTERMS Creator",
-      );
+      dctermsCreatorMap
+        .getSummary()
+        .creatorName.should.equal("DCTERMS Creator");
 
       const prefixedCreatorMap = ResourceMap.fromXml(
         "urn:uuid:rm.prefixed.1",
         PREFIX_ALIAS_CREATOR_XML,
       );
-      ResourceMapGraph.getCreatorName(prefixedCreatorMap).should.equal(
-        "Prefixed Creator",
-      );
+      prefixedCreatorMap
+        .getSummary()
+        .creatorName.should.equal("Prefixed Creator");
     });
 
     it("preserves extra creator RDF when updating the creator name", () => {
@@ -1428,11 +1510,44 @@ define([
         xml,
       );
 
-      ResourceMapGraph.getCreatorName(reparsed).should.equal("Updated Creator");
+      reparsed.getSummary().creatorName.should.equal("Updated Creator");
       reparsed.graph
         .statementsMatching(undefined, resourceMap.ns.FOAF("mbox"), undefined)
         .map((statement) => statement.object.value)
         .should.deep.equal(["mailto:creator@example.org"]);
+    });
+
+    it("removes literal creators while preserving an existing creator node", () => {
+      const resourceMap = ResourceMap.fromXml(
+        "resource_map_urn:uuid:rm.creator.1",
+        DCTERMS_CREATOR_XML,
+      );
+      const resourceMapNode = rdf.sym(resourceMap.resourceMapUri);
+      const existingCreatorNode = creatorStatements(resourceMap).find(
+        (statement) => statement.object.termType !== "Literal",
+      ).object;
+
+      resourceMap.graph.add(
+        resourceMapNode,
+        resourceMap.ns.DC("creator"),
+        rdf.literal("Literal DC Creator"),
+      );
+      resourceMap.graph.add(
+        resourceMapNode,
+        resourceMap.ns.DCTERMS("creator"),
+        rdf.literal("Literal DCTERMS Creator"),
+      );
+
+      resourceMap.setCreatorName("Updated Creator");
+
+      const updatedCreatorStatements = creatorStatements(resourceMap);
+      updatedCreatorStatements
+        .filter((statement) => statement.object.termType === "Literal")
+        .should.deep.equal([]);
+      updatedCreatorStatements
+        .filter((statement) => statement.object.equals(existingCreatorNode))
+        .length.should.equal(2);
+      resourceMap.getSummary().creatorName.should.equal("Updated Creator");
     });
 
     it("preserves unrelated identifiers when changing the resource map PID", () => {
@@ -1440,7 +1555,7 @@ define([
         resourceMapPid: "resource_map_urn:uuid:old.1",
       });
 
-      ResourceMapGraph.synchronizeCoreGraph(resourceMap);
+      GraphNormalization.synchronizeCoreGraph(resourceMap);
       resourceMap.graph.add(
         rdf.sym(resourceMap.resourceMapUri),
         resourceMap.ns.DCTERMS("identifier"),
@@ -1461,7 +1576,7 @@ define([
           undefined,
         )
         .map((statement) =>
-          ResourceMapGraph.getLiteralLikeObjectValue(statement.object),
+          ResourceMapCommon.getLiteralLikeObjectValue(statement.object),
         )
         .filter(Boolean)
         .should.have.members([
@@ -1526,7 +1641,7 @@ define([
           undefined,
         )
         .map((statement) =>
-          ResourceMapGraph.getLiteralLikeObjectValue(statement.object),
+          ResourceMapCommon.getLiteralLikeObjectValue(statement.object),
         )
         .filter(Boolean)
         .should.include(newPid);
@@ -1585,12 +1700,14 @@ define([
 
       resourceMap.replaceMember("data.1", "data.renamed.1");
 
-      ResourceMapGraph.collectMemberPids(resourceMap).should.have.members([
-        "meta.1",
-        "data.renamed.1",
-        "derived.1",
-        "program.1",
-      ]);
+      resourceMap
+        .getMemberPids()
+        .should.have.members([
+          "meta.1",
+          "data.renamed.1",
+          "derived.1",
+          "program.1",
+        ]);
       expect(resourceMap.getMember("data.1")).to.equal(null);
       resourceMap.getMember("data.renamed.1").should.deep.include({
         pid: "data.renamed.1",
@@ -1598,7 +1715,7 @@ define([
         atLocations: ["data/data.csv"],
         displayAtLocations: ["data/data.csv"],
       });
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([
+      resourceMap.getDocumentationLinks().should.deep.equal([
         {
           metadataPid: "meta.1",
           dataPid: "data.renamed.1",
@@ -1640,7 +1757,7 @@ define([
       });
       const customMemberUri = "https://example.org/custom/member/data.1";
 
-      ResourceMapGraph.replaceNodeValue(
+      GraphMutation.replaceNodeValue(
         resourceMap,
         resourceMap.getNodeUriForPid("data.1"),
         customMemberUri,
@@ -1663,7 +1780,7 @@ define([
           undefined,
         )
         .map((statement) =>
-          ResourceMapGraph.getLiteralLikeObjectValue(statement.object),
+          ResourceMapCommon.getLiteralLikeObjectValue(statement.object),
         )
         .filter(Boolean)
         .should.deep.equal(["data.custom.1"]);
@@ -1692,7 +1809,7 @@ define([
       resourceMap.setLocation(oldPid, "data/old.csv");
       const oldCanonicalUri = `${TEST_RESOLVE_BASE}/doi:10.5063%2FF1%2BOLDDATA`;
 
-      ResourceMapGraph.replaceNodeValue(
+      GraphMutation.replaceNodeValue(
         resourceMap,
         oldCanonicalUri,
         "https://example.org/custom/member/old-data",
@@ -1700,7 +1817,6 @@ define([
       resourceMap.provenance.addWasDerivedFrom("derived.1", oldPid);
       resourceMap.provenance.addUsedByProgram(oldPid, "program.1", {
         executionId: "urn:uuid:exec.replace.member.weird.1",
-        agentUri: "https://orcid.org/0000-0000-0000-9999",
       });
 
       resourceMap.replaceMember(oldPid, newPid);
@@ -1712,7 +1828,7 @@ define([
         atLocations: ["data/old.csv"],
         displayAtLocations: ["data/old.csv"],
       });
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([
+      resourceMap.getDocumentationLinks().should.deep.equal([
         {
           metadataPid: "meta.1",
           dataPid: newPid,
@@ -1729,7 +1845,7 @@ define([
           dataPid: newPid,
           programPid: "program.1",
           executionId: "urn:uuid:exec.replace.member.weird.1",
-          agentUri: "https://orcid.org/0000-0000-0000-9999",
+          agentUri: null,
         },
       ]);
 
@@ -1749,7 +1865,7 @@ define([
           undefined,
         )
         .map((statement) =>
-          ResourceMapGraph.getLiteralLikeObjectValue(statement.object),
+          ResourceMapCommon.getLiteralLikeObjectValue(statement.object),
         )
         .filter(Boolean)
         .should.not.include(oldPid);
@@ -1772,9 +1888,93 @@ define([
         ],
       });
 
-      expect(() => resourceMap.replaceMember("data.1", "data.2")).to.throw(
-        /already aggregated/,
-      );
+      let caught = null;
+      try {
+        resourceMap.replaceMember("data.1", "data.2");
+      } catch (error) {
+        caught = error;
+      }
+
+      expect(caught).to.be.instanceOf(Error);
+      caught.message.should.match(/already aggregated/);
+      caught.code.should.equal("memberAlreadyAggregated");
+      caught.details.should.deep.equal({
+        oldPid: "data.1",
+        newPid: "data.2",
+      });
+      resourceMap
+        .getMemberPids()
+        .should.have.members(["meta.1", "data.1", "data.2"]);
+    });
+
+    it("ignores removeMember calls for PIDs that are not in the graph", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:rm.remove.absent.1",
+        memberPids: ["meta.1", "data.1"],
+      });
+      resourceMap.markSaved();
+
+      resourceMap.removeMember("never.aggregated.1").should.equal(resourceMap);
+
+      resourceMap.getMemberPids().should.have.members(["meta.1", "data.1"]);
+      resourceMap.hasUnsavedChanges().should.equal(false);
+    });
+
+    it("rolls back every nested mutation when the outer mutation fails", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:rm.rollback.nested.1",
+        memberPids: ["meta.1", "data.1", "source.1"],
+      });
+
+      resourceMap.markSaved();
+
+      expect(() =>
+        resourceMap.mutateGraph(
+          () => {
+            // Inner mutations succeed before the outer mutator throws; the
+            // outer rollback must undo them too.
+            resourceMap.provenance.addWasDerivedFrom("data.1", "source.1");
+            resourceMap.setLocation("data.1", "data/rolled-back.csv");
+            throw new Error("Outer mutation failed");
+          },
+          { rollbackOnError: true },
+        ),
+      ).to.throw("Outer mutation failed");
+
+      resourceMap.provenance.getWasDerivedFromLinks().should.deep.equal([]);
+      resourceMap.getMember("data.1").atLocations.should.deep.equal([]);
+      resourceMap.hasUnsavedChanges().should.equal(false);
+    });
+
+    it("throws on XML that cannot be parsed", () => {
+      expect(() =>
+        ResourceMap.fromXml("resource_map_urn:uuid:rm.bad.xml.1", "   "),
+      ).to.throw("resourceMapXml required");
+      expect(() =>
+        ResourceMap.fromXml("resource_map_urn:uuid:rm.bad.xml.2", "<rdf:RDF>", {
+          parseBase: TEST_RESOLVE_BASE,
+        }),
+      ).to.throw();
+    });
+
+    it("throws a parse error for well-formed XML that is invalid RDF/XML", () => {
+      // Well-formed XML, so it passes the DataONE XML preflight, but rdflib
+      // halts on a node carrying both rdf:about and rdf:ID.
+      const invalidRdfXml = [
+        '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">',
+        '  <rdf:Description rdf:about="https://example.org/a" rdf:ID="b"/>',
+        "</rdf:RDF>",
+      ].join("\n");
+
+      expect(() =>
+        ResourceMap.fromXml(
+          "resource_map_urn:uuid:rm.bad.rdf.1",
+          invalidRdfXml,
+          {
+            parseBase: TEST_RESOLVE_BASE,
+          },
+        ),
+      ).to.throw("Parse failed");
     });
 
     it("auto-creates a self-documenting link for metadata-only packages", () => {
@@ -1785,7 +1985,7 @@ define([
       });
       const metadataNode = rdf.sym(resourceMap.getNodeUriForPid("meta.only.1"));
 
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([
+      resourceMap.getDocumentationLinks().should.deep.equal([
         {
           metadataPid: "meta.only.1",
           dataPid: "meta.only.1",
@@ -1814,7 +2014,7 @@ define([
         xml,
       );
 
-      ResourceMapGraph.collectDocLinks(reparsed).should.deep.equal([
+      reparsed.getDocumentationLinks().should.deep.equal([
         {
           metadataPid: "meta.only.1",
           dataPid: "meta.only.1",
@@ -1829,7 +2029,7 @@ define([
         documentationLinks: [],
       });
 
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([
+      resourceMap.getDocumentationLinks().should.deep.equal([
         {
           metadataPid: "solo.member.1",
           dataPid: "solo.member.1",
@@ -1900,10 +2100,8 @@ define([
       );
       resourceMap.removeMember("data.1");
 
-      ResourceMapGraph.collectMemberPids(resourceMap).should.not.include(
-        "data.1",
-      );
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([
+      resourceMap.getMemberPids().should.not.include("data.1");
+      resourceMap.getDocumentationLinks().should.deep.equal([
         {
           metadataPid: "meta.1",
           dataPid: "derived.1",
@@ -1953,7 +2151,7 @@ define([
       resourceMap.setLocation("derived.1", "data/derived.csv");
       const removedCanonicalUri = `${TEST_RESOLVE_BASE}/doi:10.5063%2FF1%2BREMOVE`;
 
-      ResourceMapGraph.replaceNodeValue(
+      GraphMutation.replaceNodeValue(
         resourceMap,
         removedCanonicalUri,
         "https://example.org/custom/member/remove",
@@ -1968,10 +2166,8 @@ define([
 
       resourceMap.removeMember(removedPid);
 
-      ResourceMapGraph.collectMemberPids(resourceMap).should.not.include(
-        removedPid,
-      );
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([
+      resourceMap.getMemberPids().should.not.include(removedPid);
+      resourceMap.getDocumentationLinks().should.deep.equal([
         {
           metadataPid: "meta.1",
           dataPid: "derived.1",
@@ -2020,7 +2216,7 @@ define([
       xml.should.contain("data.1");
     });
 
-    it("keeps serialization pure and requires an explicit normalize step for repair", () => {
+    it("does not rerun import repair during serialization or normalization", () => {
       const resourceMap = createBaseResourceMap({
         resourceMapPid: "resource_map_urn:uuid:rm.serialize.normalize.1",
         memberPids: ["meta.1", "data.1"],
@@ -2035,7 +2231,7 @@ define([
       const customUri = "https://example.org/custom/member/serialize";
 
       resourceMap.mutateGraph(() => {
-        ResourceMapGraph.replaceNodeValue(resourceMap, canonicalUri, customUri);
+        GraphMutation.replaceNodeValue(resourceMap, canonicalUri, customUri);
       });
 
       const rawXml = resourceMap.serialize({ validate: false });
@@ -2045,8 +2241,7 @@ define([
       resourceMap.normalize();
 
       const normalizedXml = resourceMap.serialize({ validate: false });
-      normalizedXml.should.not.contain(customUri);
-      normalizedXml.should.contain(resourceMap.pidToUri("data.1"));
+      normalizedXml.should.contain(customUri);
     });
 
     it("treats a sole remaining member as self-documenting package structure", () => {
@@ -2063,16 +2258,16 @@ define([
 
       resourceMap.removeMember("meta.1");
 
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([]);
+      resourceMap.getDocumentationLinks().should.deep.equal([]);
       getIssueCodes(resourceMap.validate()).should.not.include(
         "missingPackageStructure",
       );
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([]);
+      resourceMap.getDocumentationLinks().should.deep.equal([]);
       resourceMap.serialize({ validate: true }).should.be.a("string");
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([]);
+      resourceMap.getDocumentationLinks().should.deep.equal([]);
 
       resourceMap.normalize();
-      ResourceMapGraph.collectDocLinks(resourceMap).should.deep.equal([
+      resourceMap.getDocumentationLinks().should.deep.equal([
         {
           metadataPid: "data.1",
           dataPid: "data.1",
@@ -2221,10 +2416,7 @@ define([
       );
 
       getIssueCodes(resourceMap.validate()).should.not.include(
-        "missingIsDescribedBy",
-      );
-      getIssueCodes(resourceMap.validate()).should.not.include(
-        "missingMemberIdentifier",
+        "invalidPackageStructure",
       );
 
       const xml = resourceMap.serialize({ validate: true });
@@ -2234,10 +2426,9 @@ define([
         "resource_map_urn:uuid:rm.fix.1",
         xml,
       );
-      const repairedCodes = getIssueCodes(reparsed.validate());
-
-      repairedCodes.should.not.include("missingIsDescribedBy");
-      repairedCodes.should.not.include("missingMemberIdentifier");
+      getIssueCodes(reparsed.validate()).should.not.include(
+        "invalidPackageStructure",
+      );
       reparsed.graph
         .statementsMatching(
           rdf.sym(`${TEST_RESOLVE_BASE}/resource_map_doi:10.18739%2FA22Z9V`),
@@ -2245,34 +2436,32 @@ define([
           undefined,
         )
         .map((statement) =>
-          ResourceMapGraph.getLiteralLikeObjectValue(statement.object),
+          ResourceMapCommon.getLiteralLikeObjectValue(statement.object),
         )
         .should.include("resource_map_doi:10.18739/A22Z9V");
     });
 
-    it("repairs malformed managed identifiers during canonicalization", () => {
+    it("repairs malformed managed identifiers during import repair", () => {
       const resourceMap = createMalformedArtifactResourceMap();
 
       getIssueCodes(resourceMap.validate()).should.not.include(
-        "missingMemberIdentifier",
+        "invalidPackageStructure",
       );
-      resourceMap.mutateGraph(() => {}, { syncAfter: true });
+      GraphNormalization.repairBrokenGraph(resourceMap);
 
-      ResourceMapGraph.collectMemberPids(resourceMap).should.deep.equal([
-        "meta.1",
-      ]);
+      resourceMap.getMemberPids().should.deep.equal(["meta.1"]);
       getIssueCodes(resourceMap.validate()).should.not.include(
-        "missingMemberIdentifier",
+        "invalidPackageStructure",
       );
     });
 
-    it("repairs malformed creator names during canonicalization", () => {
+    it("repairs malformed creator names during import repair", () => {
       const resourceMap = createMalformedArtifactResourceMap();
-      resourceMap.mutateGraph(() => {}, { syncAfter: true });
+      GraphNormalization.repairBrokenGraph(resourceMap);
 
-      ResourceMapGraph.getCreatorName(resourceMap).should.equal(
-        "DataONE Java Client Library",
-      );
+      resourceMap
+        .getSummary()
+        .creatorName.should.equal("DataONE Java Client Library");
     });
   });
 });

@@ -4,8 +4,7 @@ define([
   "rdflib",
   "models/resourceMap/ResourceMap",
   "models/resourceMap/GraphMutation",
-  "common/ValidationUtilities",
-], (rdf, ResourceMap, GraphMutation, ValidationUtilities) => {
+], (rdf, ResourceMap, GraphMutation) => {
   const TEST_RESOLVE_BASE = "https://cn.test.com/resolve/base/url";
   /**
    * Build a test resolve URI.
@@ -13,8 +12,6 @@ define([
    * @returns {string} Test resolve URI.
    */
   const resolveUrl = (path) => `${TEST_RESOLVE_BASE}/${path}`;
-
-  const { createValidationReport } = ValidationUtilities;
 
   /**
    * Join RDF/XML fixture lines.
@@ -35,16 +32,9 @@ define([
   }
 
   /**
-   * Return warning codes from validation issues.
-   * @param {object[]} issues Validation issues.
-   * @returns {Array<string|null>} Warning codes.
-   */
-  function getWarningCodes(issues) {
-    return createValidationReport(issues).warnings.map((issue) => issue.code);
-  }
-
-  /**
-   * Create a canonical ResourceMap fixture.
+   * Create a canonical ResourceMap fixture. By default the first member
+   * documents the second (or itself for one-member packages) so the fixture
+   * validates cleanly.
    * @param {object} [options] Fixture options.
    * @returns {ResourceMap} Test resource map.
    */
@@ -56,24 +46,17 @@ define([
     resolveBase = TEST_RESOLVE_BASE,
     provenance = {},
   } = {}) {
-    const normalizedDocumentationLinks =
-      documentationLinks === null
-        ? memberPids.length > 1
-          ? [
-              {
-                metadataPid: memberPids[0],
-                dataPid: memberPids[1],
-              },
-            ]
-          : memberPids.length === 1
-            ? [
-                {
-                  metadataPid: memberPids[0],
-                  dataPid: memberPids[0],
-                },
-              ]
-            : []
-        : documentationLinks;
+    let normalizedDocumentationLinks = documentationLinks;
+    if (documentationLinks === null) {
+      normalizedDocumentationLinks = memberPids.length
+        ? [
+            {
+              metadataPid: memberPids[0],
+              dataPid: memberPids[1] || memberPids[0],
+            },
+          ]
+        : [];
+    }
 
     return ResourceMap.create({
       resourceMapPid,
@@ -83,6 +66,78 @@ define([
       resolveBase,
       provenance,
     });
+  }
+
+  /**
+   * Write raw execution scaffolding statements directly into the graph,
+   * bypassing the Provenance API. Used to simulate executions found in
+   * parsed legacy resource maps.
+   * @param {ResourceMap} resourceMap Test resource map.
+   * @param {object} [options] Scaffold options.
+   * @param {string} [options.executionId] Named-node URI and identifier value.
+   * Ignored when `executionNode` is given.
+   * @param {object} [options.executionNode] Pre-built execution node, e.g. a
+   * blank node.
+   * @param {object} [options.associationNode] Pre-built association node.
+   * @param {string} [options.programPid] Program to link via
+   * `prov:qualifiedAssociation`/`prov:hadPlan`.
+   * @param {string} [options.agentUri] Agent to attach to the association.
+   * @param {boolean} [options.typed] Add the `provone:Execution` type triple.
+   * @param {boolean} [options.identified] Add the `dcterms:identifier`
+   * literal.
+   * @returns {{executionNode: object, associationNode: object}} Created nodes.
+   */
+  function addExecutionScaffold(
+    resourceMap,
+    {
+      executionId,
+      executionNode = null,
+      associationNode = null,
+      programPid = null,
+      agentUri = null,
+      typed = true,
+      identified = true,
+    } = {},
+  ) {
+    const execution = executionNode || rdf.sym(executionId);
+    const association = associationNode || rdf.blankNode();
+    const add = (subject, predicate, object) =>
+      GraphMutation.addStatementIfMissing(
+        resourceMap,
+        subject,
+        predicate,
+        object,
+      );
+
+    if (typed) {
+      add(execution, resourceMap.ns.RDF("type"), resourceMap.ns.PROVONE("Execution"));
+    }
+    if (identified) {
+      add(
+        execution,
+        resourceMap.ns.DCTERMS("identifier"),
+        rdf.literal(
+          executionId || execution.value,
+          undefined,
+          resourceMap.ns.XSD("string"),
+        ),
+      );
+    }
+    if (programPid || agentUri || associationNode) {
+      add(execution, resourceMap.ns.PROV("qualifiedAssociation"), association);
+    }
+    if (programPid) {
+      add(
+        association,
+        resourceMap.ns.PROV("hadPlan"),
+        rdf.sym(resourceMap.getNodeUriForPid(programPid)),
+      );
+    }
+    if (agentUri) {
+      add(association, resourceMap.ns.PROV("agent"), rdf.sym(agentUri));
+    }
+
+    return { executionNode: execution, associationNode: association };
   }
 
   const MALFORMED_IDENTIFIER_VALUE =
@@ -331,9 +386,9 @@ define([
     MISSING_IDENTIFIER_XML,
     PREFIX_ALIAS_CREATOR_XML,
     TEST_RESOLVE_BASE,
+    addExecutionScaffold,
     createBaseResourceMap,
     createMalformedArtifactResourceMap,
     getIssueCodes,
-    getWarningCodes,
   };
 });

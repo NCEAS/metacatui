@@ -4,9 +4,8 @@ define([
   "rdflib",
   "common/ValueUtilities",
   "models/resourceMap/ResourceMapCommon",
-  "models/resourceMap/GraphRead",
   "models/resourceMap/GraphMutation",
-], (rdf, ValueUtilities, ResourceMapCommon, GraphRead, GraphMutation) => {
+], (rdf, ValueUtilities, ResourceMapCommon, GraphMutation) => {
   const {
     dedupeArray,
     isNonEmptyString,
@@ -74,11 +73,11 @@ define([
     const useCanonicalMemberUris = memberPids !== null;
     const normalizedMemberPids = useCanonicalMemberUris
       ? memberPids
-      : GraphRead.collectMemberPids(resourceMap);
+      : resourceMap.getGraphState().getMemberPids();
     normalizedMemberPids.forEach((memberPid) => {
       const memberUri = useCanonicalMemberUris
         ? resourceMap.pidToUri(memberPid)
-        : GraphRead.findNodeUriForPid(resourceMap, memberPid);
+        : resourceMap.getGraphState().findNodeUriForPid(memberPid);
       if (!memberUri) {
         return;
       }
@@ -101,38 +100,13 @@ define([
   }
 
   /**
-   * Build a stable dedupe key for one RDF term.
-   * @param {NamedNode|BlankNode|Literal|null|undefined} term RDF term.
-   * @returns {string} Stable term key.
-   */
-  function buildTermKey(term) {
-    if (!term) {
-      return "null";
-    }
-
-    const datatypeValue =
-      term.termType === "Literal" ? term.datatype?.value || "" : "";
-    const languageValue = term.termType === "Literal" ? term.lang || "" : "";
-    return ResourceMapCommon.buildKey([
-      term.termType || "",
-      term.value || "",
-      languageValue,
-      datatypeValue,
-    ]);
-  }
-
-  /**
    * Remove duplicate RDF statements from the graph.
    * @param {ResourceMap} resourceMap Resource map whose graph is updated.
    */
   function dedupeStatements(resourceMap) {
     const seen = new Set();
     resourceMap.graph.statements.slice().forEach((statement) => {
-      const key = ResourceMapCommon.buildKey([
-        buildTermKey(statement.subject),
-        buildTermKey(statement.predicate),
-        buildTermKey(statement.object),
-      ]);
+      const key = ResourceMapCommon.statementKey(statement);
       if (seen.has(key)) {
         GraphMutation.removeStatement(resourceMap, statement);
         return;
@@ -180,7 +154,9 @@ define([
       undefined,
     );
     const removeValues = identifierStatements
-      .map((statement) => GraphRead.getLiteralLikeObjectValue(statement.object))
+      .map((statement) =>
+        ResourceMapCommon.getLiteralLikeObjectValue(statement.object),
+      )
       .filter(
         (value) =>
           isNonEmptyString(value) &&
@@ -197,7 +173,7 @@ define([
    */
   function repairMalformedResourceArtifacts(resourceMap) {
     resourceMap.graph.statements.slice().forEach((statement) => {
-      const malformed = GraphRead.extractMalformedResourceValue(
+      const malformed = ResourceMapCommon.extractMalformedResourceValue(
         statement.object?.value,
       );
       if (!malformed) {
@@ -233,7 +209,7 @@ define([
   ) {
     const normalizedPid = requireNonEmptyString(
       pid,
-      "GraphNormalization.discoverEquivalentNodeUris requires a PID",
+      "GraphNormalization.discoverEquivalentNodeUrisFromIndex requires a PID",
     );
     const discoveredUris = [];
 
@@ -255,143 +231,6 @@ define([
     });
 
     return dedupeArray(discoveredUris);
-  }
-
-  /**
-   * Discover aggregation URIs using a prebuilt PID index.
-   * @param {ResourceMap} resourceMap Resource map whose graph is inspected.
-   * @param {Map<string, string>} pidByUri Indexed URI-to-PID map.
-   * @param {Map<string, string[]>} pidToUris Indexed PID-to-URI map.
-   * @returns {string[]} Aggregation URI candidates.
-   */
-  function discoverAggregationNodeUrisFromIndex(
-    resourceMap,
-    pidByUri,
-    pidToUris,
-  ) {
-    const discoveredUris = [];
-    const resourceMapUriCandidates = discoverEquivalentNodeUrisFromIndex(
-      pidToUris,
-      resourceMap.resourceMapPid,
-      { includeFragments: false },
-    );
-
-    resourceMapUriCandidates.forEach((resourceMapUri) => {
-      if (isNonEmptyString(resourceMapUri)) {
-        discoveredUris.push(`${resourceMapUri}#aggregation`);
-      }
-    });
-
-    resourceMap.graph
-      .statementsMatching(
-        undefined,
-        resourceMap.ns.ORE("isDescribedBy"),
-        undefined,
-      )
-      .forEach((statement) => {
-        if (
-          pidByUri.get(statement.object?.value) === resourceMap.resourceMapPid
-        ) {
-          discoveredUris.push(statement.subject?.value);
-        }
-      });
-
-    resourceMap.graph
-      .statementsMatching(undefined, resourceMap.ns.ORE("describes"), undefined)
-      .forEach((statement) => {
-        if (
-          pidByUri.get(statement.subject?.value) === resourceMap.resourceMapPid
-        ) {
-          discoveredUris.push(statement.object?.value);
-        }
-      });
-
-    return dedupeArray(discoveredUris.filter(isNonEmptyString));
-  }
-
-  /**
-   * Collect recoverable aggregated member PIDs from legacy membership statements.
-   * @param {ResourceMap} resourceMap Resource map whose graph is inspected.
-   * @returns {string[]} Recoverable aggregated member PIDs.
-   */
-  function collectRecoverableMemberPids(resourceMap) {
-    /* eslint-disable-next-line no-use-before-define */
-    const aggregationUris = new Set(discoverAggregationNodeUris(resourceMap));
-    const memberPids = [];
-    resourceMap.graph.statements.forEach((statement) => {
-      if (
-        statement.predicate?.value === resourceMap.ns.ORE("aggregates").value &&
-        aggregationUris.has(statement.subject?.value)
-      ) {
-        const pid = GraphRead.recoverPidFromNode(
-          resourceMap,
-          statement.object,
-          {
-            allowBareValue: true,
-          },
-        );
-        if (pid) memberPids.push(pid);
-      }
-
-      if (
-        statement.predicate?.value ===
-          resourceMap.ns.ORE("isAggregatedBy").value &&
-        aggregationUris.has(statement.object?.value)
-      ) {
-        const pid = GraphRead.recoverPidFromNode(
-          resourceMap,
-          statement.subject,
-          {
-            allowBareValue: true,
-          },
-        );
-        if (pid) memberPids.push(pid);
-      }
-    });
-
-    return dedupeArray(memberPids);
-  }
-
-  /**
-   * Collect recoverable typed Data/Program PIDs that are not already excluded.
-   * @param {ResourceMap} resourceMap Resource map whose graph is inspected.
-   * @param {string[]} [excludedPids] PIDs to exclude from recovery.
-   * @returns {string[]} Recoverable typed PIDs.
-   */
-  function collectRecoverableTypedPids(resourceMap, excludedPids = []) {
-    const excludedPidSet = new Set(
-      (Array.isArray(excludedPids) ? excludedPids : [excludedPids])
-        .map((pid) => normalizeText(pid))
-        .filter(isNonEmptyString),
-    );
-    const recoverablePids = [];
-
-    resourceMap.graph
-      .statementsMatching(undefined, resourceMap.ns.RDF("type"), undefined)
-      .forEach((statement) => {
-        if (
-          !CANONICALIZABLE_TYPED_NODE_URIS.has(
-            normalizeText(statement.object?.value),
-          )
-        ) {
-          return;
-        }
-
-        const pid = GraphRead.recoverPidFromNode(
-          resourceMap,
-          statement.subject,
-          {
-            allowBareValue: true,
-          },
-        );
-        if (!pid || excludedPidSet.has(pid)) {
-          return;
-        }
-
-        recoverablePids.push(pid);
-      });
-
-    return dedupeArray(recoverablePids);
   }
 
   /**
@@ -427,7 +266,7 @@ define([
         return;
       }
 
-      const identifierValue = GraphRead.getLiteralLikeObjectValue(
+      const identifierValue = ResourceMapCommon.getLiteralLikeObjectValue(
         statement.object,
       );
       if (
@@ -438,36 +277,11 @@ define([
       }
     });
 
-    /**
-     * Recover a PID for one indexed URI.
-     * @param {string} uri Named-node URI.
-     * @returns {string|null} Recovered PID.
-     */
-    const recoverPidForUri = (uri) => {
-      const directPid =
-        identifierByUri.get(uri) || resourceMap.constructor.uriToPid(uri);
-      if (isNonEmptyString(directPid)) {
-        return directPid;
-      }
-
-      const fragmentlessUri = uri.split("#")[0];
-      if (fragmentlessUri !== uri) {
-        const fragmentlessPid =
-          identifierByUri.get(fragmentlessUri) ||
-          resourceMap.constructor.uriToPid(fragmentlessUri);
-        if (isNonEmptyString(fragmentlessPid)) {
-          return fragmentlessPid;
-        }
-      }
-
-      return (
-        GraphRead.recoverBarePidValue(uri) ||
-        GraphRead.recoverBarePidValue(fragmentlessUri)
-      );
-    };
-
     Array.from(pidByUri.keys()).forEach((uri) => {
-      const pid = recoverPidForUri(uri);
+      const pid = ResourceMapCommon.recoverPidFromUri(resourceMap, uri, {
+        identifierForUri: identifierByUri,
+        allowBareValue: true,
+      });
       if (!isNonEmptyString(pid)) {
         return;
       }
@@ -560,187 +374,62 @@ define([
   }
 
   /**
-   * Replace every subject/object node value that appears in a rewrite map.
+   * Remove Data/Program type triples already implied by provenance edges.
+   * These roles are derived in ResourceMapState and materialized again during
+   * serialization; only unsupported type triples remain explicit annotations.
    * @param {ResourceMap} resourceMap Resource map whose graph is updated.
-   * @param {Map<string, string>} replacementMap Old-to-new node value mapping.
    */
-  function replaceNodeValues(resourceMap, replacementMap) {
-    if (!(replacementMap instanceof Map) || replacementMap.size === 0) {
-      return;
-    }
-
-    resourceMap.graph.statements.slice().forEach((statement) => {
-      const nextSubjectValue = replacementMap.get(statement.subject?.value);
-      const nextObjectValue = replacementMap.get(
-        statement.object?.termType === "NamedNode"
-          ? statement.object.value
-          : null,
-      );
-
-      if (!nextSubjectValue && !nextObjectValue) {
-        return;
-      }
-
-      const nextSubject = nextSubjectValue
-        ? rdf.sym(nextSubjectValue)
-        : statement.subject;
-      const nextObject = nextObjectValue
-        ? rdf.sym(nextObjectValue)
-        : statement.object;
-
-      GraphMutation.removeStatement(resourceMap, statement);
-      GraphMutation.addStatementIfMissing(
-        resourceMap,
-        nextSubject,
-        statement.predicate,
-        nextObject,
-      );
-    });
-  }
-
-  /**
-   * Discover every URI currently acting as the same PID in the graph.
-   * @param {ResourceMap} resourceMap Resource map whose graph is inspected.
-   * @param {string} pid PID whose equivalent URIs are requested.
-   * @param {object} [options] Discovery options.
-   * @param {boolean} [options.allowBareValue] Whether bare values may count as PID equivalents.
-   * @param {boolean} [options.includeFragments] Whether fragment URIs should be returned directly.
-   * @returns {string[]} Equivalent node URIs.
-   */
-  function discoverEquivalentNodeUris(
-    resourceMap,
-    pid,
-    { allowBareValue = false, includeFragments = false } = {},
-  ) {
-    const normalizedPid = requireNonEmptyString(
-      pid,
-      "GraphNormalization.discoverEquivalentNodeUris requires a PID",
-    );
-    const discoveredUris = [];
-    const statements = resourceMap.graph.statements || [];
-
-    /**
-     * Add one matching named-node URI to the candidate list.
-     * @param {NamedNode|BlankNode|Literal|null|undefined} node Candidate node.
-     */
-    const collectCandidateUri = (node) => {
-      if (node?.termType !== "NamedNode") {
-        return;
-      }
-
-      const recoveredPid = GraphRead.recoverPidFromNode(resourceMap, node, {
-        allowBareValue,
-      });
-      if (recoveredPid !== normalizedPid) {
-        return;
-      }
-
-      if (includeFragments || !node.value.includes("#")) {
-        discoveredUris.push(node.value);
-      }
-
-      if (includeFragments) {
-        return;
-      }
-
-      const fragmentlessValue = node.value.split("#")[0];
-      if (fragmentlessValue !== node.value) {
-        discoveredUris.push(fragmentlessValue);
-      }
-    };
-
-    statements.forEach((statement) => {
-      collectCandidateUri(statement.subject);
-      collectCandidateUri(statement.object);
-    });
-
-    return dedupeArray(discoveredUris);
-  }
-
-  /**
-   * Discover legacy aggregation URIs linked to the current resource map.
-   * @param {ResourceMap} resourceMap Resource map whose graph is inspected.
-   * @returns {string[]} Aggregation URI candidates.
-   */
-  function discoverAggregationNodeUris(resourceMap) {
-    const discoveredUris = [];
-    const resourceMapUriCandidates = discoverEquivalentNodeUris(
-      resourceMap,
-      resourceMap.resourceMapPid,
-      { allowBareValue: true },
-    );
-
-    resourceMapUriCandidates.forEach((resourceMapUri) => {
-      if (isNonEmptyString(resourceMapUri)) {
-        discoveredUris.push(`${resourceMapUri}#aggregation`);
-      }
-    });
+  function removeDerivedRoleTypeAssertions(resourceMap) {
+    const dataNodes = [];
+    const programNodes = [];
 
     resourceMap.graph
       .statementsMatching(
         undefined,
-        resourceMap.ns.ORE("isDescribedBy"),
+        resourceMap.ns.PROV("wasDerivedFrom"),
         undefined,
       )
-      .forEach((statement) => {
-        const describedByPid = GraphRead.recoverPidFromNode(
-          resourceMap,
-          statement.object,
-          { allowBareValue: true },
-        );
-        if (describedByPid === resourceMap.resourceMapPid) {
-          discoveredUris.push(statement.subject?.value);
-        }
-      });
-
+      .forEach(({ subject, object }) => dataNodes.push(subject, object));
     resourceMap.graph
-      .statementsMatching(undefined, resourceMap.ns.ORE("describes"), undefined)
+      .statementsMatching(
+        undefined,
+        resourceMap.ns.PROV("wasGeneratedBy"),
+        undefined,
+      )
+      .forEach(({ subject }) => dataNodes.push(subject));
+    resourceMap.graph
+      .statementsMatching(undefined, resourceMap.ns.PROV("used"), undefined)
+      .forEach(({ object }) => dataNodes.push(object));
+    resourceMap.graph
+      .statementsMatching(undefined, resourceMap.ns.PROV("hadPlan"), undefined)
+      .forEach(({ object }) => programNodes.push(object));
+
+    const dataNodeKeys = new Set(
+      ResourceMapCommon.dedupeNodes(dataNodes).map(ResourceMapCommon.nodeKey),
+    );
+    const programNodeKeys = new Set(
+      ResourceMapCommon.dedupeNodes(programNodes).map(ResourceMapCommon.nodeKey),
+    );
+    resourceMap.graph
+      .statementsMatching(undefined, resourceMap.ns.RDF("type"), undefined)
+      .filter(
+        ({ subject, object }) =>
+          (object?.value === resourceMap.ns.PROVONE("Data").value &&
+            dataNodeKeys.has(ResourceMapCommon.nodeKey(subject))) ||
+          (object?.value === resourceMap.ns.PROVONE("Program").value &&
+            programNodeKeys.has(ResourceMapCommon.nodeKey(subject))),
+      )
       .forEach((statement) => {
-        const subjectPid = GraphRead.recoverPidFromNode(
-          resourceMap,
-          statement.subject,
-          { allowBareValue: true },
-        );
-        if (subjectPid === resourceMap.resourceMapPid) {
-          discoveredUris.push(statement.object?.value);
-        }
+        GraphMutation.removeStatement(resourceMap, statement);
       });
-
-    return dedupeArray(discoveredUris.filter(isNonEmptyString));
   }
 
   /**
-   * Collapse all equivalent node URIs for one PID onto one canonical URI.
-   * @param {ResourceMap} resourceMap Resource map whose graph is updated.
-   * @param {string} pid PID being canonicalized.
-   * @param {string} canonicalUri Canonical node URI to keep.
-   * @param {object} [options] Canonicalization options.
-   * @param {boolean} [options.allowBareValue] Whether bare values may be canonicalized.
-   * @param {boolean} [options.includeFragments] Whether fragment variants should be canonicalized directly.
-   */
-  function canonicalizePidNode(
-    resourceMap,
-    pid,
-    canonicalUri,
-    { allowBareValue = false, includeFragments = false } = {},
-  ) {
-    discoverEquivalentNodeUris(resourceMap, pid, {
-      allowBareValue,
-      includeFragments,
-    }).forEach((legacyUri) => {
-      if (legacyUri !== canonicalUri) {
-        GraphMutation.replaceNodeValue(resourceMap, legacyUri, canonicalUri);
-      }
-    });
-
-    canonicalizeIdentifierStatements(resourceMap, canonicalUri, pid);
-  }
-
-  /**
-   * Canonicalize the managed package graph in place.
+   * Repair malformed and legacy managed-node shapes after parsing or adopting
+   * an existing graph.
    * @param {ResourceMap} resourceMap Resource map whose graph is updated.
    */
-  function canonicalizeManagedGraph(resourceMap) {
+  function repairBrokenGraph(resourceMap) {
     repairMalformedResourceArtifacts(resourceMap);
 
     const canonicalResourceMapUri = resourceMap.pidToUri(
@@ -750,16 +439,22 @@ define([
     const { pidByUri, pidToUris } = buildCanonicalizationIndex(resourceMap);
     const replacementMap = new Map();
 
-    discoverEquivalentNodeUrisFromIndex(pidToUris, resourceMap.resourceMapPid, {
-      includeFragments: false,
-    }).forEach((legacyUri) => {
+    const resourceMapUris = discoverEquivalentNodeUrisFromIndex(
+      pidToUris,
+      resourceMap.resourceMapPid,
+      { includeFragments: false },
+    );
+    resourceMapUris.forEach((legacyUri) => {
       if (legacyUri !== canonicalResourceMapUri) {
         replacementMap.set(legacyUri, canonicalResourceMapUri);
       }
     });
 
     const aggregationUris = new Set(
-      discoverAggregationNodeUrisFromIndex(resourceMap, pidByUri, pidToUris),
+      ResourceMapCommon.collectAssociatedAggregationUris(resourceMap, {
+        pidFromNode: (node) => pidByUri.get(node?.value) || null,
+        resourceMapUris,
+      }),
     );
     aggregationUris.forEach((legacyUri) => {
       if (legacyUri !== canonicalAggregationUri) {
@@ -789,7 +484,11 @@ define([
       [resourceMap.resourceMapPid, ...managedMemberPids],
     );
     typedPids.forEach((pid) => {
-      const canonicalUri = resourceMap.pidToUri(pid);
+      const canonicalUri =
+        ResourceMapCommon.isExternalDirectUriPid(pid) &&
+        !managedMemberPids.includes(pid)
+          ? pid
+          : resourceMap.pidToUri(pid);
       discoverEquivalentNodeUrisFromIndex(pidToUris, pid, {
         includeFragments: true,
       }).forEach((legacyUri) => {
@@ -799,7 +498,7 @@ define([
       });
     });
 
-    replaceNodeValues(resourceMap, replacementMap);
+    GraphMutation.replaceNodeValues(resourceMap, replacementMap);
     /* eslint-disable no-param-reassign */
     resourceMap.resourceMapUri = canonicalResourceMapUri;
     resourceMap.aggregationUri = canonicalAggregationUri;
@@ -818,28 +517,21 @@ define([
       );
     });
     typedPids.forEach((pid) => {
-      canonicalizeIdentifierStatements(
-        resourceMap,
-        resourceMap.pidToUri(pid),
-        pid,
-      );
+      const canonicalUri =
+        ResourceMapCommon.isExternalDirectUriPid(pid) &&
+        !managedMemberPids.includes(pid)
+          ? pid
+          : resourceMap.pidToUri(pid);
+      canonicalizeIdentifierStatements(resourceMap, canonicalUri, pid);
     });
 
-    synchronizeCoreGraph(resourceMap, managedMemberPids);
-
+    removeDerivedRoleTypeAssertions(resourceMap);
     dedupeStatements(resourceMap);
   }
 
   return {
-    canonicalizeIdentifierStatements,
-    canonicalizeManagedGraph,
-    canonicalizePidNode,
-    collectRecoverableMemberPids,
-    collectRecoverableTypedPids,
     dedupeStatements,
-    discoverAggregationNodeUris,
-    discoverEquivalentNodeUris,
-    repairMalformedResourceArtifacts,
+    repairBrokenGraph,
     synchronizeCoreGraph,
   };
 });

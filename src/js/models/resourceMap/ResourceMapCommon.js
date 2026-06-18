@@ -1,7 +1,16 @@
 "use strict";
 
-define(["common/ValueUtilities"], (ValueUtilities) => {
-  const { dedupeBy, hasOwn, isPlainObject, sortBy } = ValueUtilities;
+define(["common/UrlUtilities", "common/ValueUtilities"], (
+  UrlUtilities,
+  ValueUtilities,
+) => {
+  const {
+    dedupeBy,
+    isNonEmptyString,
+    normalizeText,
+    safeDecodeURIComponent,
+    sortBy,
+  } = ValueUtilities;
 
   /**
    * Error raised when a requested ResourceMap edit conflicts with graph state.
@@ -26,111 +35,278 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     }
   }
 
-  /**
-   * Infer ordered key parts from one known resource-map object shape.
-   * @private
-   * @param {Array<*>|object|*} value Key input.
-   * @param {string|null} [type] Optional explicit key shape.
-   * @returns {Array<*>} Ordered key parts.
-   */
-  function inferKeyParts(value, type = null) {
-    if (Array.isArray(value)) {
-      return value;
-    }
-
-    if (!isPlainObject(value)) {
-      return [value];
-    }
-
-    let inferredType = type;
-    if (!inferredType) {
-      if (
-        hasOwn(value, "operation") &&
-        hasOwn(value, "subjectPid") &&
-        hasOwn(value, "predicate")
-      ) {
-        inferredType = "fieldEdit";
-      } else if (
-        hasOwn(value, "subjectPid") &&
-        hasOwn(value, "predicate") &&
-        hasOwn(value, "objectPid")
-      ) {
-        inferredType = "chartRelationship";
-      } else if (hasOwn(value, "derivedPid") && hasOwn(value, "sourcePid")) {
-        inferredType = "wasDerivedFrom";
-      } else if (hasOwn(value, "metadataPid") && hasOwn(value, "dataPid")) {
-        inferredType = "documentationLink";
-      } else if (hasOwn(value, "dataPid") && hasOwn(value, "programPid")) {
-        inferredType = "executionProgram";
-      } else if (
-        hasOwn(value, "programPid") &&
-        hasOwn(value, "previousProgramPid")
-      ) {
-        inferredType = "programLineage";
-      } else if (hasOwn(value, "pid") && hasOwn(value, "className")) {
-        inferredType = "typeAssertion";
-      } else if (hasOwn(value, "programPid")) {
-        inferredType = "programExecution";
-      }
-    }
-
-    switch (inferredType) {
-      case "fieldEdit":
-        return [
-          value.operation,
-          value.subjectPid,
-          value.predicate,
-          value.object,
-        ];
-      case "chartRelationship":
-        return [value.subjectPid, value.predicate, value.objectPid];
-      case "wasDerivedFrom":
-        return [value.derivedPid, value.sourcePid];
-      case "documentationLink":
-        return [value.metadataPid, value.dataPid];
-      case "executionProgram":
-        return [
-          value.dataPid,
-          value.programPid,
-          value.executionId || "",
-          value.agentUri || "",
-        ];
-      case "programLineage":
-        return [
-          value.programPid,
-          value.previousProgramPid,
-          value.executionId || "",
-          value.previousExecutionId || "",
-        ];
-      case "typeAssertion":
-        return [value.pid, value.className];
-      case "programExecution":
-        return [
-          value.programPid || "",
-          value.executionId || "",
-          value.agentUri || "",
-        ];
-      default:
-        throw new Error("Unsupported key input");
-    }
-  }
-
   const ResourceMapCommon = {
     /**
-     * Build a stable key from ordered parts or a known resource-map object
-     * shape.
-     * @param {Array<*>|object|*} value Ordered key parts or a supported
-     * relationship/assertion object.
-     * @param {object} [options] Key options.
-     * @param {string} [options.type] Optional explicit key shape.
+     * Build a stable key from ordered parts
+     * @param {string[]} parts Ordered key parts
      * @returns {string} Stable serialized key.
      */
-    buildKey(value, { type = null } = {}) {
+    buildKey(parts) {
       return JSON.stringify(
-        inferKeyParts(value, type).map((part) =>
-          part == null ? "" : String(part),
-        ),
+        parts.map((part) => (part == null ? "" : String(part))),
       );
+    },
+
+    /**
+     * Build a stable identity key for one RDF node.
+     * @param {NamedNode|BlankNode|Literal|null|undefined} node RDF node.
+     * @returns {string} Stable node key.
+     */
+    nodeKey(node) {
+      return ResourceMapCommon.buildKey([
+        node?.termType || "",
+        node?.value || "",
+      ]);
+    },
+
+    /**
+     * Build a stable identity key for one RDF term, including literal type.
+     * @param {NamedNode|BlankNode|Literal|null|undefined} term RDF term.
+     * @returns {string} Stable term key.
+     */
+    termKey(term) {
+      if (!term) {
+        return "null";
+      }
+
+      return ResourceMapCommon.buildKey([
+        term.termType || "",
+        term.value || "",
+        term.termType === "Literal" ? term.lang || "" : "",
+        term.termType === "Literal" ? term.datatype?.value || "" : "",
+      ]);
+    },
+
+    /**
+     * Build a stable identity key for one RDF statement or statement pattern.
+     * @param {{subject: *, predicate: *, object: *}} statement RDF statement.
+     * @returns {string} Stable statement key.
+     */
+    statementKey(statement) {
+      return ResourceMapCommon.buildKey([
+        ResourceMapCommon.termKey(statement?.subject),
+        ResourceMapCommon.termKey(statement?.predicate),
+        ResourceMapCommon.termKey(statement?.object),
+      ]);
+    },
+
+    /**
+     * Recover the literal payload from a malformed external-client URI
+     * artifact.
+     * @param {string} value Candidate malformed URI value.
+     * @returns {{lexicalValue: string, datatypeUri: string, rawValue:
+     * string}|null} Recovered literal metadata.
+     */
+    extractMalformedResourceValue(value) {
+      const normalizedValue = normalizeText(value);
+      if (!isNonEmptyString(normalizedValue)) {
+        return null;
+      }
+
+      const decodedValue = normalizedValue
+        .replace(/&quot;/g, '"')
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">");
+      const match = decodedValue.match(
+        /^file:\/\/\/[^"]*"([\s\S]*)"\^\^<([^>]+)>$/,
+      );
+
+      return match
+        ? {
+            lexicalValue: normalizeText(match[1]),
+            datatypeUri: normalizeText(match[2]),
+            rawValue: normalizedValue,
+          }
+        : null;
+    },
+
+    /**
+     * Read a normalized string from either a literal or a recoverable malformed
+     * URI artifact.
+     * @param {NamedNode|Literal|BlankNode|null|undefined} objectNode RDF object.
+     * @returns {string|null} Recovered string value when present.
+     */
+    getLiteralLikeObjectValue(objectNode) {
+      if (objectNode?.termType === "Literal") {
+        return normalizeText(objectNode.value);
+      }
+      if (objectNode?.termType === "NamedNode") {
+        return (
+          ResourceMapCommon.extractMalformedResourceValue(objectNode.value)
+            ?.lexicalValue || null
+        );
+      }
+      return null;
+    },
+
+    /**
+     * Read a normalized string from a literal node only.
+     * @param {NamedNode|Literal|BlankNode|null|undefined} objectNode RDF object.
+     * @returns {string|null} Literal value when present.
+     */
+    getLiteralObjectValue(objectNode) {
+      return objectNode?.termType === "Literal"
+        ? normalizeText(objectNode.value)
+        : null;
+    },
+
+    /**
+     * Recover a PID-like value from a non-URL named-node string.
+     * @param {string} value Candidate node value.
+     * @returns {string|null} Recovered PID-like value.
+     */
+    recoverBarePidValue(value) {
+      const normalizedValue = normalizeText(value);
+      if (
+        !isNonEmptyString(normalizedValue) ||
+        normalizedValue.startsWith("_:")
+      ) {
+        return null;
+      }
+
+      if (/^[A-Za-z][A-Za-z0-9+.-]*:\/\/.+/.test(normalizedValue)) {
+        return null;
+      }
+
+      return normalizeText(
+        safeDecodeURIComponent(UrlUtilities.stripFragment(normalizedValue)),
+      );
+    },
+
+    /**
+     * Recover a PID from one named-node URI and an optional identifier lookup.
+     * @param {ResourceMap} resourceMap Resource map whose URI rules are used.
+     * @param {string} uri Named-node URI or value.
+     * @param {object} [options] Recovery options.
+     * @param {Map<string, string>|Function} [options.identifierForUri]
+     * Identifier lookup by URI.
+     * @param {boolean} [options.allowBareValue] Whether bare values may be PIDs.
+     * @returns {string|null} Recovered PID.
+     */
+    recoverPidFromUri(
+      resourceMap,
+      uri,
+      { identifierForUri = null, allowBareValue = false } = {},
+    ) {
+      if (!isNonEmptyString(uri)) {
+        return null;
+      }
+
+      const getIdentifier =
+        typeof identifierForUri === "function"
+          ? identifierForUri
+          : (candidateUri) => identifierForUri?.get(candidateUri);
+      const directPid =
+        getIdentifier(uri) || resourceMap.constructor.uriToPid(uri);
+      if (isNonEmptyString(directPid)) {
+        return directPid;
+      }
+
+      const fragmentlessUri = UrlUtilities.stripFragment(uri);
+      if (fragmentlessUri !== uri) {
+        const fragmentlessPid =
+          getIdentifier(fragmentlessUri) ||
+          resourceMap.constructor.uriToPid(fragmentlessUri);
+        if (isNonEmptyString(fragmentlessPid)) {
+          return fragmentlessPid;
+        }
+      }
+
+      if (!allowBareValue) {
+        return null;
+      }
+
+      return (
+        ResourceMapCommon.recoverBarePidValue(uri) ||
+        ResourceMapCommon.recoverBarePidValue(fragmentlessUri)
+      );
+    },
+
+    /**
+     * Collect aggregation URIs associated with the current resource map.
+     * @param {ResourceMap} resourceMap Resource map whose graph is inspected.
+     * @param {object} [options] Discovery options.
+     * @param {Function} [options.pidFromNode] PID resolver for named nodes.
+     * @param {string[]} [options.resourceMapUris] Equivalent resource map URIs.
+     * @returns {string[]} Associated aggregation URIs.
+     */
+    collectAssociatedAggregationUris(
+      resourceMap,
+      { pidFromNode = () => null, resourceMapUris = [] } = {},
+    ) {
+      const associatedUris = new Set([resourceMap.aggregationUri]);
+      resourceMapUris.filter(isNonEmptyString).forEach((uri) => {
+        associatedUris.add(`${uri}#aggregation`);
+      });
+
+      resourceMap.graph.statements.forEach((statement) => {
+        if (
+          statement.predicate?.value ===
+            resourceMap.ns.ORE("describes").value &&
+          statement.object?.termType === "NamedNode" &&
+          pidFromNode(statement.subject) === resourceMap.resourceMapPid
+        ) {
+          associatedUris.add(statement.object.value);
+        }
+
+        if (
+          statement.predicate?.value ===
+            resourceMap.ns.ORE("isDescribedBy").value &&
+          statement.subject?.termType === "NamedNode" &&
+          pidFromNode(statement.object) === resourceMap.resourceMapPid
+        ) {
+          associatedUris.add(statement.subject.value);
+        }
+      });
+
+      return Array.from(associatedUris).filter(isNonEmptyString);
+    },
+
+    /**
+     * Sort records by explicit ordered fields.
+     * @param {Array<object>} values Records to sort.
+     * @param {string[]} fields Ordered field names.
+     * @returns {Array<object>} Sorted shallow copy.
+     */
+    sortByFields(values, fields) {
+      return sortBy(values, (value) =>
+        ResourceMapCommon.buildKey(fields.map((field) => value?.[field])),
+      );
+    },
+
+    /**
+     * Sort a provenance summary for deterministic output.
+     * @param {object} [summary] Provenance summary.
+     * @returns {object} Sorted provenance summary.
+     */
+    sortProvenanceSummary(summary = {}) {
+      return {
+        wasDerivedFrom: ResourceMapCommon.sortByFields(
+          summary?.wasDerivedFrom,
+          ["derivedPid", "sourcePid"],
+        ),
+        generatedByPrograms: ResourceMapCommon.sortByFields(
+          summary?.generatedByPrograms,
+          ["dataPid", "programPid", "executionId", "agentUri"],
+        ),
+        usedByPrograms: ResourceMapCommon.sortByFields(
+          summary?.usedByPrograms,
+          ["dataPid", "programPid", "executionId", "agentUri"],
+        ),
+        wasInformedByPrograms: ResourceMapCommon.sortByFields(
+          summary?.wasInformedByPrograms,
+          [
+            "programPid",
+            "previousProgramPid",
+            "executionId",
+            "previousExecutionId",
+          ],
+        ),
+        typeAssertions: ResourceMapCommon.sortByFields(
+          summary?.typeAssertions,
+          ["pid", "className"],
+        ),
+      };
     },
 
     /**
@@ -140,67 +316,22 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
      */
     dedupeNodes(nodes) {
       return dedupeBy((nodes || []).filter(Boolean), (node) =>
-        ResourceMapCommon.buildKey([node?.termType || "", node?.value || ""]),
+        ResourceMapCommon.nodeKey(node),
       );
     },
 
     /**
-     * Sort one array of keyed values by the canonical resource-map key.
-     * @param {Array<object|Array<*>|*>} values Values to sort.
-     * @returns {Array<object|Array<*>|*>} Sorted shallow copy.
+     * Test whether an external provenance PID can identify its RDF node
+     * directly instead of through a DataONE resolve URI.
+     * @param {string} pid PID to inspect.
+     * @returns {boolean} Whether the PID is an absolute URN or URI.
      */
-    sortByBuildKey(values) {
-      return sortBy(Array.isArray(values) ? [...values] : [], (value) =>
-        ResourceMapCommon.buildKey(value),
+    isExternalDirectUriPid(pid) {
+      const normalizedPid = normalizeText(pid);
+      return (
+        /^urn:/i.test(normalizedPid) ||
+        /^[A-Za-z][A-Za-z0-9+.-]*:\/\/.+/.test(normalizedPid)
       );
-    },
-
-    /**
-     * Reconcile two keyed collections by removing missing items and adding new
-     * ones.
-     * @param {Array<*>} currentValues Current values.
-     * @param {Array<*>} nextValues Desired next values.
-     * @param {object} options Reconciliation options.
-     * @param {Function} [options.key] Key builder.
-     * @param {Function} [options.remove] Callback for values absent from next.
-     * @param {Function} [options.add] Callback for values absent from current.
-     * @returns {{currentByKey: Map<string, *>, nextByKey: Map<string, *>}}
-     * Reconciliation lookup maps.
-     */
-    reconcileByKey(
-      currentValues,
-      nextValues,
-      {
-        key = (value) => ResourceMapCommon.buildKey(value),
-        remove = null,
-        add = null,
-      } = {},
-    ) {
-      const currentByKey = new Map(
-        (Array.isArray(currentValues) ? currentValues : []).map((value) => [
-          key(value),
-          value,
-        ]),
-      );
-      const nextByKey = new Map(
-        (Array.isArray(nextValues) ? nextValues : []).map((value) => [
-          key(value),
-          value,
-        ]),
-      );
-
-      currentByKey.forEach((value, valueKey) => {
-        if (!nextByKey.has(valueKey)) {
-          remove?.(value, valueKey);
-        }
-      });
-      nextByKey.forEach((value, valueKey) => {
-        if (!currentByKey.has(valueKey)) {
-          add?.(value, valueKey);
-        }
-      });
-
-      return { currentByKey, nextByKey };
     },
 
     ResourceMapConflictError,
