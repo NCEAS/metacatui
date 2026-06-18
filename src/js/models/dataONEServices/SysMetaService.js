@@ -1,30 +1,8 @@
 define([
   "models/dataONEServices/DataONEService",
   "models/sysmeta/SystemMetadata",
-  "common/UrlUtilities",
   "common/ValueUtilities",
-], (DataONEService, SystemMetadata, UrlUtilities, ValueUtilities) => {
-  /**
-   * Default DataONEHttpClient options for SysMetaService
-   * @type {DataONEHttpClient#DataONEHttpClientOptions}
-   */
-  const DEFAULT_CLIENT_OPTIONS = {
-    // baseUrl added at runtime
-    timeoutMs: 2 * 60 * 1000, // 2 minutes
-    allowedHttpMethods: ["GET", "POST", "PUT"],
-    headerNamesForDedup: ["Authorization"],
-    responseTypes: ["text"],
-  };
-
-  /**
-   * Default PersistentStorage options for SysMetaService
-   * @type {PersistentStorage#PersistentStorageOptions}
-   */
-  const DEFAULT_STORAGE_OPTIONS = {
-    ttlMs: 60 * 60 * 1000, // 1 hour
-    schemaVersion: 1,
-  };
-
+], (DataONEService, SystemMetadata, ValueUtilities) => {
   /**
    * Service for fetching and caching DataONE system metadata.
    * @class SysMetaService
@@ -32,58 +10,12 @@ define([
    */
   class SysMetaService extends DataONEService {
     /**
-     * @param {object} [options] Options for the SysMetaService
-     * @param {string} options.baseUrl Base URL for the DataONE endpoint
-     * @param {DataONEHttpClient#DataONEHttpClientOptions} [options.clientConfig]
-     * DataONEHttpClient configuration
-     * @param {PersistentStorage#PersistentStorageOptions} [options.storageConfig]
-     * Storage configuration
-     * @param {boolean} [options.persistPrivate] Allow caching private datas
-     * @param {boolean} [options.defaultAuth] Default auth behavior
-     * @param {Function} [options.getToken] Override token resolver function
-     * @param {Function} [options.getUserName] Optional function to get the
-     * current user name, used for caching keys.
+     * @param {object} [options] Options for the SysMetaService. See
+     * {@link DataONEService.optionsFromDescriptor} for the shared option shape.
+     * @param {string} [options.baseUrl] Base URL for the DataONE endpoint.
      */
-    constructor({
-      baseUrl = "",
-      clientConfig = {},
-      storageConfig = {},
-      persistPrivate = true,
-      defaultAuth = true,
-      getToken,
-      getUserName,
-    } = {}) {
-      const url =
-        baseUrl || globalThis.MetacatUI?.appModel?.get("metaServiceUrl");
-      const urlNormalized = UrlUtilities.normalizeUrl(url);
-
-      const instanceKeys = storageConfig.instanceKeys
-        ? [...storageConfig.instanceKeys]
-        : [];
-      instanceKeys.push("SysMetaService", urlNormalized);
-
-      const storageConfigWithDefaults = {
-        ...DEFAULT_STORAGE_OPTIONS,
-        ...storageConfig,
-        instanceKeys,
-      };
-
-      super({
-        baseUrl: urlNormalized,
-        clientConfig: SysMetaService.buildClientConfig({
-          defaults: DEFAULT_CLIENT_OPTIONS,
-          overrides: clientConfig,
-          baseUrl: urlNormalized,
-          requiredMethods: ["GET", "POST", "PUT"],
-          requiredResponseTypes: ["text"],
-          requiredHeaderNames: ["Authorization"],
-        }),
-        storageConfig: storageConfigWithDefaults,
-        persistPrivate,
-        defaultAuth,
-        getToken,
-        getUserName,
-      });
+    constructor(options = {}) {
+      super(SysMetaService.optionsFromDescriptor(options));
     }
 
     /**
@@ -199,7 +131,23 @@ define([
     }
   }
 
-  SysMetaService.endpoint = "sysmeta";
+  /** @type {DataONEService#DataONEServiceConfig} */
+  SysMetaService.config = {
+    endpoint: "sysmeta",
+    appModelKeys: ["metaServiceUrl"],
+    client: {
+      timeoutMs: 2 * 60 * 1000, // 2 minutes
+      methods: ["GET", "POST", "PUT"],
+      responseTypes: ["text"],
+      dedupeHeaders: ["Authorization"],
+    },
+    storage: {
+      ttlMs: 60 * 60 * 1000, // 1 hour
+      schemaVersion: 1,
+    },
+    persistPrivate: true,
+    defaultAuth: true,
+  };
   SysMetaService.SystemMetadata = SystemMetadata;
 
   return SysMetaService;

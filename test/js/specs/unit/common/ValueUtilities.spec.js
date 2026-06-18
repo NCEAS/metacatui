@@ -822,5 +822,20 @@ define(["common/ValueUtilities", "common/UrlUtilities"], function (
         expect(value).to.equal("text/plain");
       });
     });
+
+    describe("makeUUID", function () {
+      it("generates the supported UUID formats", function () {
+        expect(ValueUtilities.makeUUID()).to.match(/^urn:uuid:[\w-]+$/);
+        expect(ValueUtilities.makeUUID({ prefix: "resource_map_" })).to.match(
+          /^resource_map_urn:uuid:[\w-]+$/,
+        );
+        expect(ValueUtilities.makeUUID({ sep: "-" })).to.match(
+          /^urn-uuid-[\w-]+$/,
+        );
+        expect(
+          ValueUtilities.makeUUID({ scheme: "", nid: "", sep: "" }),
+        ).to.match(/^[\w-]+$/);
+      });
+    });
   });
 });

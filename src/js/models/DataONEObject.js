@@ -2,7 +2,6 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "uuid",
   "he",
   "collections/AccessPolicy",
   "common/Utilities",
@@ -13,7 +12,6 @@ define([
   $,
   _,
   Backbone,
-  uuid,
   he,
   AccessPolicy,
   Utilities,
@@ -62,7 +60,7 @@ define([
           originMemberNode: null,
           authoritativeMemberNode: null,
           replica: [],
-          seriesId: null, // uuid.v4(), (decide if we want to auto-set this)
+          seriesId: null, // ValueUtilities.makeUUID(), (decide if we want to auto-set this)
           mediaType: null,
           fileName: null,
           // Non-system metadata attributes:
@@ -75,7 +73,7 @@ define([
           readPermission: null,
           isPublic: null,
           dateModified: null,
-          id: `urn:uuid:${uuid.v4()}`,
+          id: ValueUtilities.makeUUID(),
           sizeStr: null,
           type: "", // Data, Metadata, or DataPackage
           formatType: "",
@@ -638,7 +636,7 @@ define([
         } else {
           // Create an ID if there isn't one
           if (!this.get("id")) {
-            this.set("id", `urn:uuid:${uuid.v4()}`);
+            this.set("id", ValueUtilities.makeUUID());
           }
 
           // Add the identifier to the XHR data
@@ -1433,7 +1431,7 @@ define([
 
         // Create a new seriesId, if there isn't one, and if this model specifies that one is required
         if (!this.get("seriesId") && this.get("createSeriesId")) {
-          this.set("seriesId", `urn:uuid:${uuid.v4()}`);
+          this.set("seriesId", ValueUtilities.makeUUID());
         }
 
         // Check to see if the old pid documents or is documented by itself
@@ -1444,9 +1442,9 @@ define([
         if (id) {
           this.set("id", id);
         } else if (this.get("type") == "DataPackage") {
-          this.set("id", `resource_map_urn:uuid:${uuid.v4()}`);
+          this.set("id", ValueUtilities.makeUUID({ prefix: "resource_map_" }));
         } else {
-          this.set("id", `urn:uuid:${uuid.v4()}`);
+          this.set("id", ValueUtilities.makeUUID());
         }
 
         // Remove the old pid from the documents list if present

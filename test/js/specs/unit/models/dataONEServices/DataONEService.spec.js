@@ -136,7 +136,7 @@ define([
     });
 
     describe("shared client helpers", () => {
-      it("buildClientConfig normalizes baseUrl and merges required client arrays", () => {
+      it("buildClientConfig normalizes baseUrl and unions default/override client arrays", () => {
         const config = DataONEService.buildClientConfig({
           defaults: {
             allowedHttpMethods: ["get"],
@@ -149,19 +149,34 @@ define([
             headerNamesForDedup: ["Accept"],
           },
           baseUrl: "https://example.org/",
-          requiredMethods: ["POST"],
-          requiredResponseTypes: ["json"],
-          requiredHeaderNames: ["Content-Type"],
         });
 
         config.baseUrl.should.equal("https://example.org");
-        config.allowedHttpMethods.should.deep.equal(["GET", "PUT", "POST"]);
-        config.responseTypes.should.deep.equal(["blob", "text", "json"]);
+        config.allowedHttpMethods.should.deep.equal(["GET", "PUT"]);
+        config.responseTypes.should.deep.equal(["blob", "text"]);
         config.headerNamesForDedup.should.deep.equal([
           "Authorization",
           "Accept",
-          "Content-Type",
         ]);
+      });
+
+      it("buildClientConfig omits empty arrays so the client keeps its defaults", () => {
+        const config = DataONEService.buildClientConfig({
+          baseUrl: "https://example.org",
+        });
+
+        config.should.not.have.property("allowedHttpMethods");
+        config.should.not.have.property("responseTypes");
+        config.should.not.have.property("headerNamesForDedup");
+      });
+
+      it("buildPidPath encodes the PID and appends a query string", () => {
+        DataONEService.buildPidPath(" doi:10.5063/abc ").should.equal(
+          "doi:10.5063%2Fabc",
+        );
+        DataONEService.buildPidPath("doi:10.5063/abc", {
+          query: "action=write",
+        }).should.equal("doi:10.5063%2Fabc?action=write");
       });
 
       it("pickRequestOptions only forwards defined request keys", () => {
@@ -193,6 +208,95 @@ define([
 
         expect(() => ExampleService.normalizePid("")).to.throw(
           /ExampleService: pid is required/,
+        );
+      });
+    });
+
+    describe("descriptor helpers", () => {
+      class DescribedService extends DataONEService {}
+      DescribedService.config = {
+        endpoint: "described",
+        appModelKeys: ["primaryUrl", "fallbackUrl"],
+        client: {
+          timeoutMs: 1234,
+          methods: ["GET", "POST"],
+          responseTypes: ["text"],
+          dedupeHeaders: ["Authorization"],
+        },
+        storage: { ttlMs: 500 },
+        persistPrivate: false,
+        defaultAuth: false,
+      };
+
+      it("resolveBaseUrl prefers an explicit URL", () => {
+        DescribedService.resolveBaseUrl("https://explicit.example.org/").should.equal(
+          "https://explicit.example.org",
+        );
+      });
+
+      it("resolveBaseUrl walks appModelKeys in order", () => {
+        state.sandbox.stub(globalThis, "MetacatUI").value({
+          appModel: {
+            get(key) {
+              return key === "fallbackUrl" ? "https://fallback.example.org" : null;
+            },
+          },
+        });
+
+        DescribedService.resolveBaseUrl().should.equal(
+          "https://fallback.example.org",
+        );
+      });
+
+      it("clientDefaults maps the descriptor client block to client option names", () => {
+        DescribedService.clientDefaults().should.deep.equal({
+          timeoutMs: 1234,
+          allowedHttpMethods: ["GET", "POST"],
+          responseTypes: ["text"],
+          headerNamesForDedup: ["Authorization"],
+        });
+      });
+
+      it("buildStorageConfig namespaces instance keys by service name and base URL", () => {
+        const storageConfig = DescribedService.buildStorageConfig(
+          { instanceKeys: ["caller"] },
+          "https://example.org",
+        );
+
+        storageConfig.ttlMs.should.equal(500);
+        storageConfig.instanceKeys.should.deep.equal([
+          "caller",
+          "DescribedService",
+          "https://example.org",
+        ]);
+      });
+
+      it("optionsFromDescriptor builds normalized super() options", () => {
+        const options = DescribedService.optionsFromDescriptor({
+          baseUrl: "https://example.org/",
+        });
+
+        options.baseUrl.should.equal("https://example.org");
+        options.clientConfig.baseUrl.should.equal("https://example.org");
+        options.clientConfig.allowedHttpMethods.should.deep.equal([
+          "GET",
+          "POST",
+        ]);
+        options.persistPrivate.should.equal(false);
+        options.defaultAuth.should.equal(false);
+        options.storageConfig.instanceKeys.should.deep.equal([
+          "DescribedService",
+          "https://example.org",
+        ]);
+      });
+
+      it("optionsFromDescriptor throws a named error when no base URL resolves", () => {
+        state.sandbox
+          .stub(globalThis, "MetacatUI")
+          .value({ appModel: { get: () => null } });
+
+        expect(() => DescribedService.optionsFromDescriptor()).to.throw(
+          /DescribedService: baseUrl is required/,
         );
       });
     });

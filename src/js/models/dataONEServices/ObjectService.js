@@ -1,16 +1,9 @@
 define([
   "models/dataONEServices/DataONEService",
   "models/dataONEServices/DataONEHttpClient",
-  "common/DataONEXmlUtilities",
   "common/UrlUtilities",
   "common/ValueUtilities",
-], (
-  DataONEService,
-  DataONEHttpClient,
-  DataONEXmlUtilities,
-  UrlUtilities,
-  ValueUtilities,
-) => {
+], (DataONEService, DataONEHttpClient, UrlUtilities, ValueUtilities) => {
   /**
    * Default DataONEHttpClient options for ObjectService reads.
    * @type {DataONEHttpClient#DataONEHttpClientOptions}
@@ -24,6 +17,14 @@ define([
 
   /**
    * Default DataONEHttpClient options for ObjectService writes.
+   *
+   * Retries are disabled by default because create/update are non-idempotent:
+   * a POST/PUT that committed on the server but then surfaced a retryable
+   * status (e.g. a 502/504 from an intermediary still processing the request,
+   * or a client-side timeout) would otherwise be replayed, producing a
+   * duplicate object or a committed-but-reported-as-failed write. Callers that
+   * need bounded retries for a specific, safe-to-replay operation can opt in
+   * via a per-request `retry` override.
    * @type {DataONEHttpClient#DataONEHttpClientOptions}
    */
   const DEFAULT_WRITE_CLIENT_OPTIONS = {
@@ -31,6 +32,11 @@ define([
     allowedHttpMethods: ["POST", "PUT"],
     headerNamesForDedup: ["Authorization", "Content-Type", "Accept"],
     responseTypes: ["text"],
+    retry: {
+      maxRetries: 0,
+      retryOn: [],
+      retryNetworkErrors: false,
+    },
   };
 
   /**
@@ -72,9 +78,6 @@ define([
           defaults: DEFAULT_READ_CLIENT_OPTIONS,
           overrides: clientConfig,
           baseUrl: normalizedReadBaseUrl,
-          requiredMethods: ["GET"],
-          requiredResponseTypes: ["json", "arrayBuffer", "blob", "text"],
-          requiredHeaderNames: ["Authorization", "Accept"],
         }),
         defaultAuth: resolvedDefaultAuth,
         getToken,
@@ -87,9 +90,6 @@ define([
         defaults: DEFAULT_WRITE_CLIENT_OPTIONS,
         overrides: clientConfig,
         baseUrl: "",
-        requiredMethods: ["POST", "PUT"],
-        requiredResponseTypes: ["text"],
-        requiredHeaderNames: ["Authorization", "Content-Type", "Accept"],
       });
     }
 
@@ -153,7 +153,7 @@ define([
         formData.append("newPid", newPid);
       }
       const sysMetaBlob = new Blob([sysMetaXml], { type: "application/xml" });
-      formData.append("sysmeta", sysMetaBlob, "sysmeta.xml");
+      formData.append("sysmeta", sysMetaBlob, "sysmeta");
       this.appendObjectBody(formData, object, fileName);
       return formData;
     }
@@ -167,25 +167,18 @@ define([
      * @returns {object} Normalized request options.
      */
     buildTransferRequest(path, method, body, options = {}) {
-      const transferOptions = this.constructor.pickRequestOptions(options);
       const transport =
-        transferOptions.transport === undefined
-          ? "fetch"
-          : transferOptions.transport;
+        options.transport === undefined ? "fetch" : options.transport;
 
-      return this.constructor.withDefaultAccept(
-        {
-          ...transferOptions,
-          path,
-          encodePath: false,
-          method,
-          transport,
-          dedupe: false,
-          responseType: "text",
-          body,
-        },
-        "text/xml",
-      );
+      return this.constructor.buildRequestOptions({
+        options,
+        path,
+        method,
+        body,
+        accept: "text/xml",
+        dedupe: false,
+        extra: { transport },
+      });
     }
 
     /**
@@ -276,18 +269,11 @@ define([
       context,
       options = {},
     ) {
-      const response = await this.requestWithClient(
-        this.getWriteClient(operation),
-        this.buildTransferRequest(path, method, body, options),
-      );
-
-      return {
-        ...response,
-        data: DataONEXmlUtilities.parseIdentifierResponse(
-          response?.data,
-          context,
-        ),
-      };
+      return this.sendParsedIdentifierRequest({
+        client: this.getWriteClient(operation),
+        requestOptions: this.buildTransferRequest(path, method, body, options),
+        context,
+      });
     }
 
     /**
@@ -302,7 +288,7 @@ define([
       const { responseType = "blob", ...requestOptions } = options;
       return this.request({
         ...requestOptions,
-        path: this.constructor.encodePidPath(normalizedPid),
+        path: this.constructor.buildPidPath(normalizedPid),
         encodePath: false,
         method: "GET",
         responseType,
@@ -396,7 +382,20 @@ define([
     }
   }
 
-  ObjectService.endpoint = "object";
+  /**
+   * @type {DataONEService#DataONEServiceConfig}
+   * ObjectService resolves separate read and write base URLs (see
+   * {@link ObjectService.resolveReadBaseUrl} and
+   * {@link ObjectService#resolveWriteBaseUrl}), so it keeps a custom
+   * constructor rather than using the shared descriptor resolution. The
+   * `appModelKeys` here document the read-side fallback order.
+   */
+  ObjectService.config = {
+    endpoint: "object",
+    appModelKeys: ["objectServiceUrl", "resolveServiceUrl"],
+    persistPrivate: false,
+    defaultAuth: true,
+  };
 
   return ObjectService;
 });

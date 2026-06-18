@@ -123,6 +123,28 @@ define([
           /pid is required/i,
         );
       });
+
+      it("classifies transient identifier errors for local fallback", () => {
+        const timeout = new Error("timed out");
+        timeout.name = "TimeoutError";
+        const network = new Error("network failed");
+        network.code = "NETWORK_ERROR";
+        const server = new Error("server failed");
+        server.status = 503;
+        const unauthorized = new Error("not authorized");
+        unauthorized.status = 401;
+
+        IdentifierService.isTransientIdentifierError(timeout).should.equal(
+          true,
+        );
+        IdentifierService.isTransientIdentifierError(network).should.equal(
+          true,
+        );
+        IdentifierService.isTransientIdentifierError(server).should.equal(true);
+        IdentifierService.isTransientIdentifierError(unauthorized).should.equal(
+          false,
+        );
+      });
     });
 
     describe("generateIdentifier", () => {

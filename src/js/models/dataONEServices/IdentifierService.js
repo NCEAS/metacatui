@@ -1,21 +1,8 @@
 define([
   "models/dataONEServices/DataONEService",
-  "common/DataONEXmlUtilities",
   "common/UrlUtilities",
   "common/ValueUtilities",
-], (DataONEService, DataONEXmlUtilities, UrlUtilities, ValueUtilities) => {
-  /**
-   * Default DataONEHttpClient options for IdentifierService.
-   * @type {DataONEHttpClient#DataONEHttpClientOptions}
-   */
-  const DEFAULT_CLIENT_OPTIONS = {
-    // baseUrl added at runtime
-    timeoutMs: null,
-    allowedHttpMethods: ["POST"],
-    headerNamesForDedup: ["Authorization", "Content-Type", "Accept"],
-    responseTypes: ["text"],
-  };
-
+], (DataONEService, UrlUtilities, ValueUtilities) => {
   /**
    * Service for DataONE identifier generation and reservation.
    * @class IdentifierService
@@ -24,36 +11,21 @@ define([
    */
   class IdentifierService extends DataONEService {
     /**
-     * @param {object} [options] Service options.
+     * @param {object} [options] Service options. See
+     * {@link DataONEService.optionsFromDescriptor} for the shared option shape.
      * @param {string} [options.baseUrl] CN DataONE API base URL (for example,
      * `https://cn.dataone.org/cn/v2`).
-     * @param {DataONEHttpClient#DataONEHttpClientOptions} [options.clientConfig] Client configuration.
-     * @param {Function} [options.getToken] Override token resolver function.
      */
-    constructor({ baseUrl = "", clientConfig = {}, getToken } = {}) {
-      const resolvedBaseUrl = IdentifierService.resolveBaseUrl(baseUrl);
-
-      super({
-        baseUrl: resolvedBaseUrl,
-        clientConfig: IdentifierService.buildClientConfig({
-          defaults: DEFAULT_CLIENT_OPTIONS,
-          overrides: clientConfig,
-          baseUrl: resolvedBaseUrl,
-          requiredMethods: ["POST"],
-          requiredResponseTypes: ["text"],
-          requiredHeaderNames: ["Authorization", "Content-Type", "Accept"],
-        }),
-        persistPrivate: false,
-        defaultAuth: true,
-        getToken,
-      });
+    constructor(options = {}) {
+      super(IdentifierService.optionsFromDescriptor(options));
     }
 
     /**
      * Resolve the CN DataONE API base URL for identifier operations. If no
-     * baseUrl is provided, then the configured url in AppModel will be used.
+     * baseUrl is provided, it is composed from the configured CN base URL and
+     * service path in AppModel.
      * @param {string} [baseUrl] Candidate base URL.
-     * @returns {string} Normalized base URL.
+     * @returns {string} Normalized base URL, or an empty string when unresolved.
      */
     static resolveBaseUrl(baseUrl = "") {
       const appModel = globalThis.MetacatUI?.appModel;
@@ -79,7 +51,7 @@ define([
         });
       }
 
-      throw new Error("IdentifierService: baseUrl is required");
+      return "";
     }
 
     /**
@@ -134,24 +106,21 @@ define([
     }
 
     /**
-     * Build the request options for an identifier endpoint.
-     * @param {string} path Identifier endpoint path.
-     * @param {FormData} body Request payload.
-     * @param {object} [options] Request options.
-     * @returns {object} Normalized request options.
+     * Whether identifier generation failed for a transient network reason.
+     * Callers may use this to decide whether local UUID fallback is acceptable.
+     * @param {Error} error Identifier-service error.
+     * @returns {boolean} Whether local UUID fallback is allowed.
      */
-    buildIdentifierRequest(path, body, options = {}) {
-      return this.constructor.withDefaultAccept(
-        {
-          ...this.constructor.pickRequestOptions(options),
-          auth: true,
-          path,
-          method: "POST",
-          dedupe: false,
-          responseType: "text",
-          body,
-        },
-        "text/xml",
+    static isTransientIdentifierError(error) {
+      const status = Number(error?.status);
+      return (
+        error?.name === "TimeoutError" ||
+        error?.name === "TypeError" ||
+        error?.isTimeout === true ||
+        error?.code === "NETWORK_ERROR" ||
+        status === 0 ||
+        status === 408 ||
+        status >= 500
       );
     }
 
@@ -164,17 +133,18 @@ define([
      * @returns {Promise<DataONEHttpResponse>} Parsed identifier response.
      */
     async sendIdentifierRequest(path, body, context, options = {}) {
-      const response = await this.request(
-        this.buildIdentifierRequest(path, body, options),
-      );
-
-      return {
-        ...response,
-        data: DataONEXmlUtilities.parseIdentifierResponse(
-          response?.data,
-          context,
-        ),
-      };
+      return this.sendParsedIdentifierRequest({
+        requestOptions: this.constructor.buildRequestOptions({
+          options,
+          path,
+          method: "POST",
+          body,
+          accept: "text/xml",
+          dedupe: false,
+          auth: true,
+        }),
+        context,
+      });
     }
 
     /**
@@ -211,7 +181,18 @@ define([
     }
   }
 
-  IdentifierService.endpoint = "identifier";
+  /** @type {DataONEService#DataONEServiceConfig} */
+  IdentifierService.config = {
+    endpoint: "identifier",
+    client: {
+      timeoutMs: null,
+      methods: ["POST"],
+      responseTypes: ["text"],
+      dedupeHeaders: ["Authorization", "Content-Type", "Accept"],
+    },
+    persistPrivate: false,
+    defaultAuth: true,
+  };
 
   return IdentifierService;
 });

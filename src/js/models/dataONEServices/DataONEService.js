@@ -2,6 +2,7 @@ define([
   "md5",
   "models/dataONEServices/DataONEHttpClient",
   "models/PersistentStorage",
+  "common/DataONEXmlUtilities",
   "common/UrlUtilities",
   "common/Utilities",
   "common/ValueUtilities",
@@ -9,6 +10,7 @@ define([
   md5,
   DataONEHttpClient,
   PersistentStorage,
+  DataONEXmlUtilities,
   UrlUtilities,
   Utilities,
   ValueUtilities,
@@ -21,11 +23,41 @@ define([
    * always uses singleton instances of DataONEHttpClient and PersistentStorage
    * to ensure that deduplication and caching work properly across all service
    * instances with the same configuration.
+   * Subclasses describe themselves with a static {@link DataONEService.config}
+   * descriptor (endpoint name, the AppModel URL keys used to resolve a base
+   * URL, default HTTP client options, storage defaults, and auth defaults).
+   * The base class turns that descriptor into the constructor options via
+   * {@link DataONEService.optionsFromDescriptor}, so most subclasses only need
+   * a one-line constructor plus their domain methods.
    * @class DataONEService
    * @since 0.0.0
    * @classcategory Models/DataONEServices
    */
   class DataONEService {
+    /**
+     * Declarative service descriptor. Subclasses override this (assigned after
+     * the class body) to standardize endpoint, base-URL resolution, client and
+     * storage defaults, and auth behavior.
+     * @typedef {object} DataONEServiceConfig
+     * @property {string} [endpoint] Short DataONE endpoint name, e.g. `object`.
+     * @property {string[]} [appModelKeys] AppModel config keys tried in order
+     * to resolve a base URL when one is not passed explicitly.
+     * @property {object} [client] Default HTTP client options, using friendly
+     * names: `timeoutMs`, `retry`, `methods`, `responseTypes`, `dedupeHeaders`.
+     * @property {object} [storage] Default PersistentStorage options.
+     * @property {boolean} [persistPrivate] Default private-cache behavior.
+     * @property {boolean} [defaultAuth] Default auth behavior.
+     */
+
+    /** @returns {string} Service name used in errors and storage scoping. */
+    static get serviceName() {
+      return this.name || "DataONEService";
+    }
+
+    /** @returns {string|null} Configured DataONE endpoint name. */
+    static get endpoint() {
+      return this.config?.endpoint ?? null;
+    }
     /**
      * @param {object} [options] Options for the service instance.
      * @param {string} options.baseUrl Base URL for the DataONE endpoint, e.g.
@@ -54,6 +86,7 @@ define([
       this.defaultAuth = normalized.defaultAuth;
       this.client = DataONEHttpClient.get(normalized.clientConfig);
       this.storageConfig = normalized.storageConfig;
+      this.endpoint = this.constructor.config?.endpoint ?? null;
 
       // functions get lost during normalization, use originals
       if (typeof sourceOptions.getToken === "function") {
@@ -103,26 +136,17 @@ define([
     }
 
     /**
-     * Merge client configuration with normalized required methods and response
-     * types.
+     * Merge default and caller-provided client options. The method, response
+     * type, and dedupe-header lists are merged as a union (defaults are always
+     * preserved; overrides can only add), so service defaults double as the
+     * required set and never need to be re-declared.
      * @param {object} [params] Client configuration params.
      * @param {object} [params.defaults] Default client options.
      * @param {object} [params.overrides] Caller-provided client options.
      * @param {string} [params.baseUrl] Base URL for the client.
-     * @param {string[]} [params.requiredMethods] Required HTTP methods.
-     * @param {string[]} [params.requiredResponseTypes] Required response types.
-     * @param {string[]} [params.requiredHeaderNames] Required header names for
-     * dedupe.
      * @returns {object} Normalized client configuration.
      */
-    static buildClientConfig({
-      defaults = {},
-      overrides = {},
-      baseUrl,
-      requiredMethods = [],
-      requiredResponseTypes = [],
-      requiredHeaderNames = [],
-    } = {}) {
+    static buildClientConfig({ defaults = {}, overrides = {}, baseUrl } = {}) {
       const normalizeArray = (value, mapper) =>
         (Array.isArray(value) ? value : [])
           .map((entry) => ValueUtilities.normalizeText(entry))
@@ -137,35 +161,123 @@ define([
         ),
       );
 
+      const config = { ...defaults, ...overrides, baseUrl: resolvedBaseUrl };
+      const applyArray = (key, values) => {
+        const deduped = ValueUtilities.dedupeArray(values);
+        // Omit empty lists so DataONEHttpClient falls back to its own defaults.
+        if (deduped.length) {
+          config[key] = deduped;
+        } else {
+          delete config[key];
+        }
+      };
+
+      applyArray("allowedHttpMethods", [
+        ...normalizeArray(defaults.allowedHttpMethods, (v) => v.toUpperCase()),
+        ...normalizeArray(overrides.allowedHttpMethods, (v) => v.toUpperCase()),
+      ]);
+      applyArray("responseTypes", [
+        ...normalizeArray(defaults.responseTypes, (v) => v.toLowerCase()),
+        ...normalizeArray(overrides.responseTypes, (v) => v.toLowerCase()),
+      ]);
+      applyArray("headerNamesForDedup", [
+        ...normalizeArray(defaults.headerNamesForDedup, (v) => v),
+        ...normalizeArray(overrides.headerNamesForDedup, (v) => v),
+      ]);
+      return config;
+    }
+
+    /**
+     * Translate the friendly {@link DataONEServiceConfig} `client` block into
+     * DataONEHttpClient option names.
+     * @returns {object} Default client options for {@link buildClientConfig}.
+     */
+    static clientDefaults() {
+      const client = this.config?.client || {};
+      const defaults = {};
+      if (client.timeoutMs !== undefined) defaults.timeoutMs = client.timeoutMs;
+      if (client.retry !== undefined) defaults.retry = client.retry;
+      if (client.methods) defaults.allowedHttpMethods = client.methods;
+      if (client.responseTypes) defaults.responseTypes = client.responseTypes;
+      if (client.dedupeHeaders) {
+        defaults.headerNamesForDedup = client.dedupeHeaders;
+      }
+      return defaults;
+    }
+
+    /**
+     * Resolve a base URL from an explicit value, then the descriptor's
+     * `appModelKeys` in order. Subclasses with composite URLs override this.
+     * @param {string} [explicitBaseUrl] Caller-provided base URL.
+     * @returns {string} Normalized base URL, or an empty string when unresolved.
+     */
+    static resolveBaseUrl(explicitBaseUrl = "") {
+      const explicit = UrlUtilities.normalizeUrl(explicitBaseUrl);
+      if (explicit) return explicit;
+
+      const appModel = globalThis.MetacatUI?.appModel;
+      const keys = this.config?.appModelKeys || [];
+      for (let i = 0; i < keys.length; i += 1) {
+        const url = UrlUtilities.normalizeUrl(appModel?.get?.(keys[i]));
+        if (url) return url;
+      }
+      return "";
+    }
+
+    /**
+     * Build a PersistentStorage config namespaced by service name and base URL.
+     * @param {object} [callerStorageConfig] Caller-provided storage options.
+     * @param {string} baseUrl Resolved base URL.
+     * @returns {object} Storage config with namespaced instance keys.
+     */
+    static buildStorageConfig(callerStorageConfig = {}, baseUrl) {
+      const source =
+        callerStorageConfig && typeof callerStorageConfig === "object"
+          ? callerStorageConfig
+          : {};
+      const callerKeys = Array.isArray(source.instanceKeys)
+        ? [...source.instanceKeys]
+        : [];
       return {
-        ...defaults,
-        ...overrides,
-        baseUrl: resolvedBaseUrl,
-        allowedHttpMethods: ValueUtilities.dedupeArray([
-          ...normalizeArray(defaults.allowedHttpMethods, (value) =>
-            value.toUpperCase(),
-          ),
-          ...normalizeArray(overrides.allowedHttpMethods, (value) =>
-            value.toUpperCase(),
-          ),
-          ...normalizeArray(requiredMethods, (value) => value.toUpperCase()),
-        ]),
-        responseTypes: ValueUtilities.dedupeArray([
-          ...normalizeArray(defaults.responseTypes, (value) =>
-            value.toLowerCase(),
-          ),
-          ...normalizeArray(overrides.responseTypes, (value) =>
-            value.toLowerCase(),
-          ),
-          ...normalizeArray(requiredResponseTypes, (value) =>
-            value.toLowerCase(),
-          ),
-        ]),
-        headerNamesForDedup: ValueUtilities.dedupeArray([
-          ...normalizeArray(defaults.headerNamesForDedup, (value) => value),
-          ...normalizeArray(overrides.headerNamesForDedup, (value) => value),
-          ...normalizeArray(requiredHeaderNames, (value) => value),
-        ]),
+        ...(this.config?.storage || {}),
+        ...source,
+        instanceKeys: [...callerKeys, this.serviceName, baseUrl],
+      };
+    }
+
+    /**
+     * Build {@link DataONEService} constructor options from the static
+     * descriptor and caller options. Subclasses pass the result to `super()`.
+     * @param {object} [options] Caller-provided service options.
+     * @returns {object} Normalized constructor options.
+     */
+    static optionsFromDescriptor(options = {}) {
+      const source = options && typeof options === "object" ? options : {};
+      const config = this.config || {};
+      const baseUrl = this.resolveBaseUrl(source.baseUrl);
+      ValueUtilities.requireNonEmptyString(
+        baseUrl,
+        `${this.serviceName}: baseUrl is required`,
+      );
+
+      return {
+        baseUrl,
+        clientConfig: this.buildClientConfig({
+          defaults: this.clientDefaults(),
+          overrides: source.clientConfig,
+          baseUrl,
+        }),
+        storageConfig: this.buildStorageConfig(source.storageConfig, baseUrl),
+        persistPrivate:
+          typeof source.persistPrivate === "boolean"
+            ? source.persistPrivate
+            : config.persistPrivate,
+        defaultAuth:
+          typeof source.defaultAuth === "boolean"
+            ? source.defaultAuth
+            : config.defaultAuth,
+        getToken: source.getToken,
+        getUserName: source.getUserName,
       };
     }
 
@@ -223,6 +335,19 @@ define([
       return UrlUtilities.encodeDataONEPidForPath(
         this.normalizePid(pid, label, message),
       );
+    }
+
+    /**
+     * Build a request path from a PID, encoded as a single path segment, with
+     * an optional query string. Always pair with `encodePath: false`.
+     * @param {*} pid Candidate identifier.
+     * @param {object} [options] Path options.
+     * @param {string} [options.query] Query string appended after `?`.
+     * @returns {string} Encoded PID path.
+     */
+    static buildPidPath(pid, { query } = {}) {
+      const encoded = this.encodePidPath(pid);
+      return query ? `${encoded}?${query}` : encoded;
     }
 
     /**
@@ -340,6 +465,33 @@ define([
     }
 
     /**
+     * Send a request whose body is a DataONE identifier response and parse the
+     * returned XML. Shared by services that POST/PUT and read back an
+     * identifier (e.g. IdentifierService, ObjectService).
+     * @param {object} params Request params.
+     * @param {DataONEHttpClient} [params.client] Client to use. Defaults to the
+     * service's primary client when omitted.
+     * @param {object} params.requestOptions Options from
+     * {@link DataONEService.buildRequestOptions}.
+     * @param {string} params.context Error/parse context label.
+     * @returns {Promise<DataONEHttpResponse>} Response with parsed identifier
+     * data.
+     */
+    async sendParsedIdentifierRequest({ client, requestOptions, context } = {}) {
+      const response = client
+        ? await this.requestWithClient(client, requestOptions)
+        : await this.request(requestOptions);
+
+      return {
+        ...response,
+        data: DataONEXmlUtilities.parseIdentifierResponse(
+          response?.data,
+          context,
+        ),
+      };
+    }
+
+    /**
      * Use the path as the cache key by default, but allow an override if
      * desired.
      * @param {string} path Path relative to baseUrl.
@@ -410,6 +562,52 @@ define([
       );
 
       return normalizedOptions;
+    }
+
+    /**
+     * Build normalized request options for a single DataONE call. Centralizes
+     * the option-picking, default Accept header, path encoding, and the common
+     * `responseType`/`dedupe`/`auth`/`body` wiring shared by the services.
+     * @param {object} params Request params.
+     * @param {object} [params.options] Caller request options to forward.
+     * @param {string} params.path Path relative to baseUrl.
+     * @param {string} params.method HTTP method.
+     * @param {string} [params.accept] Default Accept header value.
+     * @param {string} [params.responseType] Response type, defaults to `text`.
+     * @param {*} [params.body] Request body.
+     * @param {boolean} [params.dedupe] Dedupe override.
+     * @param {boolean} [params.auth] Auth override.
+     * @param {boolean} [params.encodePath] Whether the client should re-encode
+     * the path. Defaults to false because callers pass pre-encoded PID paths.
+     * @param {object} [params.extra] Additional request options to merge in,
+     * e.g. `transport`.
+     * @returns {object} Normalized request options.
+     */
+    static buildRequestOptions({
+      options = {},
+      path,
+      method,
+      accept,
+      responseType = "text",
+      body,
+      dedupe,
+      auth,
+      encodePath = false,
+      extra = {},
+    } = {}) {
+      const built = {
+        ...this.pickRequestOptions(options),
+        path,
+        method,
+        responseType,
+        encodePath,
+        ...extra,
+      };
+      if (body !== undefined) built.body = body;
+      if (dedupe !== undefined) built.dedupe = dedupe;
+      if (auth !== undefined) built.auth = auth;
+
+      return accept ? this.withDefaultAccept(built, accept) : built;
     }
 
     /**
@@ -573,6 +771,9 @@ define([
       await store.clear();
     }
   }
+
+  /** @type {DataONEServiceConfig} Base descriptor; subclasses override. */
+  DataONEService.config = {};
 
   return DataONEService;
 });

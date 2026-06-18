@@ -53,6 +53,28 @@ define([
         service.writeBaseUrl.should.equal("https://example.org/object/write");
       });
 
+      it("disables retries on the write client because create/update are non-idempotent", () => {
+        const service = new ObjectService({
+          readBaseUrl: "https://example.org/object/read/",
+          writeBaseUrl: "https://example.org/object/write/",
+        });
+
+        service.writeClientConfig.retry.should.deep.equal({
+          maxRetries: 0,
+          retryOn: [],
+          retryNetworkErrors: false,
+        });
+
+        const writeClient = service.getWriteClient("create");
+        writeClient.retryPolicy.maxRetries.should.equal(0);
+        writeClient.retryPolicy.maxAttempts.should.equal(1);
+        writeClient.retryPolicy.retryOn.should.deep.equal([]);
+        writeClient.retryPolicy.retryNetworkErrors.should.equal(false);
+
+        // Reads stay retryable: GET is idempotent.
+        service.client.retryPolicy.maxRetries.should.be.above(0);
+      });
+
       it("falls back to the app model objectServiceUrl on an MN", () => {
         globalThis.MetacatUI = {
           appModel: {
@@ -266,6 +288,7 @@ define([
         opts.body.should.be.instanceof(FormData);
         opts.body.get("pid").should.equal("pid.1");
         opts.body.get("sysmeta").should.be.instanceof(Blob);
+        opts.body.get("sysmeta").name.should.equal("sysmeta");
         opts.body.get("object").name.should.equal("data.txt");
         (await opts.body.get("sysmeta").text()).should.equal(
           "<systemMetadata></systemMetadata>",

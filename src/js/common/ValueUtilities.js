@@ -1,6 +1,6 @@
 "use strict";
 
-define(["md5"], (md5) => {
+define(["md5", "uuid"], (md5, uuid) => {
   const KIBIBYTE = 1024;
   const MEBIBYTE = KIBIBYTE * 1024;
   const GIBIBYTE = MEBIBYTE * 1024;
@@ -926,6 +926,20 @@ define(["md5"], (md5) => {
 
       const value = obj[key];
       return normalizeValue ? normalizeValue(value) : value;
+    },
+
+    /**
+     * Generate a UUID with an optional prefix.
+     * @param {object} [options] UUID generation options.
+     * @param {string} options.prefix Optional prefix for the UUID.
+     * @param {string} options.scheme URI scheme (default: "urn").
+     * @param {string} options.nid Namespace identifier (default: "uuid").
+     * @param {string} options.sep Separator between components (default: ":").
+     * @returns {string} Generated UUID string.
+     * @since 0.0.0
+     */
+    makeUUID({ prefix = "", scheme = "urn", nid = "uuid", sep = ":" } = {}) {
+      return `${prefix}${scheme}${sep}${nid}${sep}${uuid.v4()}`;
     },
   };
 
