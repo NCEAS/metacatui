@@ -1250,11 +1250,18 @@ define([
      */
     normalize({ markDirty = false } = {}) {
       try {
-        // Keep the graph in the XML shape that historically works best with
-        // DataONE indexing for one-member packages before normalizing it.
-        this.ensureSoloMemberSelfDocumentation();
-        this.normalizeGraph({ markDirty });
-        return this;
+        // Normalization reads one stable pre-mutation projection. Build it
+        // before the outer mutation so nested normalization steps can reuse it.
+        this.getGraphState().getIndex();
+        return this.mutateGraph(
+          () => {
+            // Keep the graph in the XML shape that historically works best with
+            // DataONE indexing for one-member packages before normalizing it.
+            this.ensureSoloMemberSelfDocumentation();
+            this.normalizeGraph({ markDirty });
+          },
+          { markDirty, rollbackOnError: true },
+        );
       } catch (error) {
         const msg = error?.message || "Unknown normalization error";
         throw new Error(`Normalize failed: ${msg}`);
