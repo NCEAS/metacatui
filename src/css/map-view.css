@@ -2081,6 +2081,34 @@ other class: .ui-slider-range */
     flex-shrink: 0;
   }
 
+  /* Simple layout: image floated left, title + description wrap around it.
+     Description starts to the right of the image below the title, and when
+     the text overflows past the image height it wraps to the full card width. */
+  .viewfinder-zoom-preset__header--simple {
+    display: block;
+    overflow: hidden; /* clearfix — contains the float */
+    gap: 0;
+
+    .viewfinder-zoom-preset__image {
+      float: left;
+      margin: 0 0.75rem 0.25rem 0;
+    }
+
+    .viewfinder-zoom-preset__meta {
+      display: block; /* plain block so text flows around the float */
+      gap: 0;
+    }
+
+    .viewfinder-zoom-preset__title {
+      margin-block-start: 0; /* remove the grid-alignment offset */
+    }
+
+    .viewfinder-zoom-preset__description {
+      margin-top: 0.35rem;
+      /* no overflow:hidden here — must NOT create a new BFC so the float wrapping works */
+    }
+  }
+
   .viewfinder-zoom-preset__meta {
     display: flex;
     flex-direction: column;

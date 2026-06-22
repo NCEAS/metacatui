@@ -19,6 +19,7 @@ define([
     description: `${BASE_CLASS}__description`,
     header: `${BASE_CLASS}__header`,
     headerNoImage: `${BASE_CLASS}__header--no-image`,
+    headerSimple: `${BASE_CLASS}__header--simple`,
     image: `${BASE_CLASS}__image`,
     layer: `${BASE_CLASS}__layer`,
     layerContent: `${BASE_CLASS}__layer-content`,
