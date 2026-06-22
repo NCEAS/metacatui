@@ -3,10 +3,10 @@
 define([
   "underscore",
   "backbone",
-  "text!templates/maps/viewfinder/viewfinder-zoom-preset.html",
+  "text!templates/maps/viewfinder/viewfinder-card.html",
 ], (_, Backbone, Template) => {
   // The base classname to use for this View's template elements.
-  const BASE_CLASS = "viewfinder-zoom-preset";
+  const BASE_CLASS = "viewfinder-card";
   // The HTML classes to use for this view's HTML elements.
   const CLASS_NAMES = {
     active: `${BASE_CLASS}--active`,

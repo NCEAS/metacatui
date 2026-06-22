@@ -1967,7 +1967,7 @@ other class: .ui-slider-range */
     padding-top: 1.5rem;
   }
 
-  .viewfinder__zoom-presets {
+  .viewfinder__cards {
     flex-grow: 1;
     overflow: auto;
   }
@@ -2026,7 +2026,7 @@ other class: .ui-slider-range */
 
 /*****************************************************************************************
  *
- * Zoom Preset Cards
+ * Viewfinder Cards
  *
  * Cards in the viewfinder that represent a point of interest. Each card has:
  *   - A header with an optional image (left) and metadata (right): title, date, authors
@@ -2039,19 +2039,19 @@ other class: .ui-slider-range */
  *
  */
 
-.viewfinder-zoom-presets {
+.viewfinder-cards {
   display: flex;
   flex-direction: column;
   padding: 0 1.5rem 1rem 1.5rem;
   row-gap: 0.5rem;
 }
 
-.viewfinder-zoom-preset {
+.viewfinder-card {
   border-radius: var(--map-border-radius-big);
   border: 1px solid
     var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
 
-  .viewfinder-zoom-preset__card {
+  .viewfinder-card__card {
     display: flex;
     flex-direction: column;
     padding: 1.1rem;
@@ -2060,7 +2060,7 @@ other class: .ui-slider-range */
 
   /* ---- Header: image (left) + metadata (right) ---- */
 
-  .viewfinder-zoom-preset__header {
+  .viewfinder-card__header {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 0.75rem;
@@ -2068,11 +2068,11 @@ other class: .ui-slider-range */
   }
 
   /* When there is no image, the header collapses to a single column */
-  .viewfinder-zoom-preset__header--no-image {
+  .viewfinder-card__header--no-image {
     grid-template-columns: 1fr;
   }
 
-  .viewfinder-zoom-preset__image {
+  .viewfinder-card__image {
     width: 5.5rem;
     aspect-ratio: 1 / 1;
     object-fit: cover;
@@ -2084,39 +2084,39 @@ other class: .ui-slider-range */
   /* Simple layout: image floated left, title + description wrap around it.
      Description starts to the right of the image below the title, and when
      the text overflows past the image height it wraps to the full card width. */
-  .viewfinder-zoom-preset__header--simple {
+  .viewfinder-card__header--simple {
     display: block;
     overflow: hidden; /* clearfix — contains the float */
     gap: 0;
 
-    .viewfinder-zoom-preset__image {
+    .viewfinder-card__image {
       float: left;
       margin: 0 0.75rem 0.25rem 0;
     }
 
-    .viewfinder-zoom-preset__meta {
+    .viewfinder-card__meta {
       display: block; /* plain block so text flows around the float */
       gap: 0;
     }
 
-    .viewfinder-zoom-preset__title {
+    .viewfinder-card__title {
       margin-block-start: 0; /* remove the grid-alignment offset */
     }
 
-    .viewfinder-zoom-preset__description {
+    .viewfinder-card__description {
       margin-top: 0.35rem;
       /* no overflow:hidden here — must NOT create a new BFC so the float wrapping works */
     }
   }
 
-  .viewfinder-zoom-preset__meta {
+  .viewfinder-card__meta {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
     min-width: 0;
   }
 
-  .viewfinder-zoom-preset__title {
+  .viewfinder-card__title {
     color: var(--portal-col-primary-6, white);
     font-weight: 600;
     font-size: 1.05rem;
@@ -2124,7 +2124,7 @@ other class: .ui-slider-range */
     margin-block-start: calc((1em - 1lh) / 2);
   }
 
-  .viewfinder-zoom-preset__date {
+  .viewfinder-card__date {
     color: var(--portal-col-neutral-5, white);
     font-size: 0.75rem;
     display: flex;
@@ -2137,7 +2137,7 @@ other class: .ui-slider-range */
     }
   }
 
-  .viewfinder-zoom-preset__authors {
+  .viewfinder-card__authors {
     color: var(--portal-col-neutral-5, white);
     display: -webkit-box;
     font-size: 0.75rem;
@@ -2149,7 +2149,7 @@ other class: .ui-slider-range */
 
   /* ---- Description ---- */
 
-  .viewfinder-zoom-preset__description {
+  .viewfinder-card__description {
     color: var(--portal-col-neutral-7, white);
     font-size: 0.85rem;
     line-height: 1.45;
@@ -2157,14 +2157,14 @@ other class: .ui-slider-range */
 
   /* ---- Action buttons ---- */
 
-  .viewfinder-zoom-preset__actions {
+  .viewfinder-card__actions {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
   }
 
   /* CTA (primary) buttons */
-  .viewfinder-zoom-preset__cta-button {
+  .viewfinder-card__cta-button {
     width: 100%;
     display: flex;
     align-items: center;
@@ -2176,7 +2176,7 @@ other class: .ui-slider-range */
   }
 
   /* View Layers (secondary) button: plain gray text, no button outline */
-  .viewfinder-zoom-preset__view-layers-button {
+  .viewfinder-card__view-layers-button {
     align-self: center;
     display: flex;
     align-items: center;
@@ -2188,18 +2188,18 @@ other class: .ui-slider-range */
     color: var(--portal-col-neutral-5, #aaa);
   }
 
-  .viewfinder-zoom-preset__view-layers-button:hover {
+  .viewfinder-card__view-layers-button:hover {
     color: var(--portal-col-primary-6, white);
     filter: none;
   }
 
-  .viewfinder-zoom-preset__cta-button:hover {
+  .viewfinder-card__cta-button:hover {
     border-color: var(--portal-col-primary-4);
     filter: none;
   }
 
   /* Active state on the card wrapper — one card highlighted at a time */
-  &.viewfinder-zoom-preset--active {
+  &.viewfinder-card--active {
     background-color: var(
       --portal-col-primary-1,
       var(--map-col-bkg-lighter__deprecate)
@@ -2212,19 +2212,19 @@ other class: .ui-slider-range */
   }
 
   /* When View Layers is the active button, layer badges expand and the text turns blue */
-  &.viewfinder-zoom-preset--layers-active {
-    .viewfinder-zoom-preset__layers {
+  &.viewfinder-card--layers-active {
+    .viewfinder-card__layers {
       grid-template-rows: 1fr;
       padding: 0 1.1rem 1rem;
     }
   }
 
-  .viewfinder-zoom-preset__view-layers-button--active {
+  .viewfinder-card__view-layers-button--active {
     color: var(--portal-col-primary-6, white);
   }
 
   /* The other buttons that were clicked turn dark blue (filled) */
-  .viewfinder-zoom-preset__cta-button--active {
+  .viewfinder-card__cta-button--active {
     background-color: var(
       --portal-col-primary-6,
       var(--map-col-highlight__deprecate)
@@ -2233,13 +2233,13 @@ other class: .ui-slider-range */
     border-color: var(--portal-col-primary-5);
   }
 
-  .viewfinder-zoom-preset__cta-button--active:hover {
+  .viewfinder-card__cta-button--active:hover {
     filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.15));
   }
 
   /* ---- Layer badges (informational only, collapsed until View Layers is active) ---- */
 
-  .viewfinder-zoom-preset__layers {
+  .viewfinder-card__layers {
     display: grid;
     grid-template-rows: 0fr;
     overflow: hidden;
@@ -2249,7 +2249,7 @@ other class: .ui-slider-range */
       padding 0.3s ease;
   }
 
-  .viewfinder-zoom-preset__layers-inner {
+  .viewfinder-card__layers-inner {
     min-height: 0;
     overflow: hidden;
     display: grid;
@@ -2257,7 +2257,7 @@ other class: .ui-slider-range */
     gap: 0.5rem;
   }
 
-  .viewfinder-zoom-preset__layer {
+  .viewfinder-card__layer {
     align-items: center;
     background: var(
       rgb(from var(--portal-col-neutral-2) r g b / 50%),
@@ -2271,7 +2271,7 @@ other class: .ui-slider-range */
     min-width: 0;
     padding: 0 0.75rem 0 0.5rem;
 
-    .viewfinder-zoom-preset__layer-content {
+    .viewfinder-card__layer-content {
       overflow: hidden;
       text-overflow: ellipsis;
       text-wrap: nowrap;

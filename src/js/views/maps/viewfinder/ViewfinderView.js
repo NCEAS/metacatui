@@ -24,7 +24,7 @@ define([
   // The HTML classes to use for this view's HTML elements.
   const CLASS_NAMES = {
     searchView: `${BASE_CLASS}__search`,
-    viewfinderCardsView: `${BASE_CLASS}__zoom-presets`,
+    viewfinderCardsView: `${BASE_CLASS}__cards`,
   };
 
   /**

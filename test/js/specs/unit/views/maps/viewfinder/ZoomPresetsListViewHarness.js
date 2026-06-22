@@ -9,7 +9,7 @@ define([
     }
 
     getZoomPresets() {
-      return this.view.$el.find(".viewfinder-zoom-preset");
+      return this.view.$el.find(".viewfinder-card");
     }
 
     clickZoomPresetAt(index) {

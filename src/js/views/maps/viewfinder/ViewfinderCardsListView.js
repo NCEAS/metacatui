@@ -6,7 +6,7 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
   ViewfinderCardView,
 ) => {
   // The base classname to use for this View's template elements.
-  const BASE_CLASS = "viewfinder-zoom-presets";
+  const BASE_CLASS = "viewfinder-cards";
 
   /**
    * @class ViewfinderCardsListView

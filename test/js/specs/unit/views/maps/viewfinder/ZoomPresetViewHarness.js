@@ -8,7 +8,7 @@ define([], function () {
 
     /** Click the "View Layers" button to trigger the select/zoom action. */
     click() {
-      this.view.$el.find(".viewfinder-zoom-preset__view-layers-button").click();
+      this.view.$el.find(".viewfinder-card__view-layers-button").click();
     }
 
     /**
@@ -17,7 +17,7 @@ define([], function () {
      */
     clickCta(index = 0) {
       this.view.$el
-        .find(`.viewfinder-zoom-preset__cta-button[data-cta-index="${index}"]`)
+        .find(`.viewfinder-card__cta-button[data-cta-index="${index}"]`)
         .click();
     }
 
@@ -26,19 +26,19 @@ define([], function () {
     }
 
     isActive() {
-      return this.view.$el.hasClass("viewfinder-zoom-preset--active");
+      return this.view.$el.hasClass("viewfinder-card--active");
     }
 
     getTitle() {
-      return this.view.$el.find(".viewfinder-zoom-preset__title").text();
+      return this.view.$el.find(".viewfinder-card__title").text();
     }
 
     getDescription() {
-      return this.view.$el.find(".viewfinder-zoom-preset__description").text();
+      return this.view.$el.find(".viewfinder-card__description").text();
     }
 
     getEnabledLayers() {
-      return this.view.$el.find(".viewfinder-zoom-preset__layers").text();
+      return this.view.$el.find(".viewfinder-card__layers").text();
     }
   };
 });
