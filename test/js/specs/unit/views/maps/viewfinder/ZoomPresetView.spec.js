@@ -2,16 +2,16 @@
 
 define([
   "underscore",
-  "views/maps/viewfinder/ZoomPresetView",
-  "models/maps/viewfinder/ZoomPresetModel",
+  "views/maps/viewfinder/ViewfinderCardView",
+  "models/maps/viewfinder/ViewfinderCardModel",
   "models/maps/GeoPoint",
   // The file extension is required for files loaded from the /test directory.
   "/test/js/specs/unit/views/maps/viewfinder/ZoomPresetViewHarness.js",
   "/test/js/specs/shared/clean-state.js",
 ], (
   _,
-  ZoomPresetView,
-  ZoomPresetModel,
+  ViewfinderCardView,
+  ViewfinderCardModel,
   GeoPoint,
   ZoomPresetViewHarness,
   cleanState,
@@ -19,7 +19,7 @@ define([
   const should = chai.should();
   const expect = chai.expect;
 
-  describe("ZoomPresetView Test Suite", () => {
+  describe("ViewfinderCardView Test Suite", () => {
     const state = cleanState(() => {
       const sandbox = sinon.createSandbox();
       const title = "Some preset";
@@ -30,14 +30,14 @@ define([
       });
       const description = "For testing the view";
       const enabledLayerLabels = ["Layer 1", "Layer 2"];
-      const preset = new ZoomPresetModel({
+      const preset = new ViewfinderCardModel({
         title,
         geoPoint,
         description,
         enabledLayerLabels,
       });
       const selectCallbackSpy = sandbox.spy();
-      const view = new ZoomPresetView({
+      const view = new ViewfinderCardView({
         preset,
         selectCallback: selectCallbackSpy,
       });
@@ -64,8 +64,8 @@ define([
       state.testContainer.remove();
     });
 
-    it("creates a ZoomPresetView instance", () => {
-      state.view.should.be.instanceof(ZoomPresetView);
+    it("creates a ViewfinderCardView instance", () => {
+      state.view.should.be.instanceof(ViewfinderCardView);
     });
 
     it("starts inactive", () => {

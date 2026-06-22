@@ -7,7 +7,7 @@ define([], function () {
     }
 
     hasZoomPresets() {
-      return !!this.view.getZoomPresets().html();
+      return !!this.view.getViewfinderCards().html();
     }
   };
 });

@@ -7,7 +7,7 @@ define([
   "collections/maps/MapAssets",
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
-  "collections/maps/viewfinder/ZoomPresetCategories",
+  "collections/maps/viewfinder/ViewfinderCardCategories",
 ], (
   $,
   _,
@@ -15,7 +15,7 @@ define([
   MapAssets,
   Interactions,
   AssetCategories,
-  ZoomPresetCategories,
+  ViewfinderCardCategories,
 ) => {
   /**
    * Determine if array is empty.
@@ -106,14 +106,16 @@ define([
        * feedback section. showFeedback must be true for this to be shown.
        * @property {string} [globeBaseColor=null] - The base color of the globe
        * when no layer is shown.
-       * @property {MapConfig#ZoomPresets} [zoomPresets=null] - A predefined
-       * list of locations with an enabled list of layer IDs to be shown the
-       * zoom presets UI, or an object with a URL to fetch the presets from.
-       * Requires `showViewfinder` to be true as this UI appears within the
-       * ViewfinderView. UI appears within the ViewfinderView.
-       * @property {MapConfig#ZoomPresetCategory[]} [zoomPresetCategories=null]
-       * Instead of a simple list of zoom presets, an array that groups zoom
-       * presets into categories with a label and optional icon.
+       * @property {MapConfig#ViewfinderCards} [viewfinderCards=null] - A
+       * predefined list of locations with an enabled list of layer IDs to be
+       * shown in the viewfinder UI, or an object with a URL to fetch the cards
+       * from. Requires `showViewfinder` to be true as this UI appears within
+       * the ViewfinderView. Also accepts the legacy key `zoomPresets` for
+       * backward compatibility.
+       * @property {MapConfig#ViewfinderCardCategory[]} [viewfinderCardCategories=null]
+       * Instead of a simple list of viewfinder cards, an array that groups
+       * cards into categories with a label and optional icon. Also accepts the
+       * legacy key `zoomPresetCategories` for backward compatibility.
        * @example
        * {
        *   "homePosition": {
@@ -238,10 +240,10 @@ define([
        * feedback section.
        * @property {string} [globeBaseColor=null] - The base color of the globe
        * when no layer is shown.
-       * @property {ZoomPresets} [zoomPresets=null] - A Backbone.Collection of a
-       * predefined list of locations with an enabled list of layer IDs to be
-       * shown the zoom presets UI. Requires `showViewfinder` to be true as this
-       * UI appears within the ViewfinderView. UI appears within the
+       * @property {ViewfinderCards} [viewfinderCards=null] - A
+       * Backbone.Collection of a predefined list of locations with an enabled
+       * list of layer IDs to be shown in the viewfinder UI. Requires
+       * `showViewfinder` to be true as this UI appears within the
        * ViewfinderView.
        */
       defaults() {
@@ -275,7 +277,7 @@ define([
           showFeedback: false,
           feedbackText: null,
           globeBaseColor: null,
-          zoomPresets: null,
+          viewfinderCards: null,
           activeVisualizationUrl: null,
         };
       },
@@ -310,31 +312,38 @@ define([
             this.set("terrains", new MapAssets(config.terrains));
           }
 
-          // Zoom presets can be conif'ed as a simple array of presets (or a URL
-          // to fetch), or as an array of grouped presets with label, icon, etc.
-          // Convert simple presets to a category, if present. Then can handle
+          // Viewfinder cards can be config'd as a simple array of cards (or a
+          // URL to fetch), or as an array of grouped cards with label, icon,
+          // etc. Convert simple cards to a category, if present. Then handle
           // everything consistently as categories.
-          const simplePresets = config.zoomPresets;
-          let categoryPresets = config.zoomPresetCategories;
+          // Support both new keys (viewfinderCards / viewfinderCardCategories)
+          // and legacy keys (zoomPresets / zoomPresetCategories) for backward
+          // compatibility with existing portal configurations.
+          const simpleCards = config.viewfinderCards ?? config.zoomPresets;
+          let categoryCards =
+            config.viewfinderCardCategories ?? config.zoomPresetCategories;
 
-          if (!isNonEmptyArray(categoryPresets) && simplePresets) {
-            const catetory = {
+          if (!isNonEmptyArray(categoryCards) && simpleCards) {
+            const category = {
               // Use default label & icon from original implementation.
               label: "Zoom to...",
               icon: "plane",
               expanded: true,
-              zoomPresets: simplePresets,
+              // Use the legacy key so ViewfinderCardCategory can resolve it.
+              zoomPresets: simpleCards,
             };
-            categoryPresets = [catetory];
+            categoryCards = [category];
           }
-          if (categoryPresets?.length) {
+          if (categoryCards?.length) {
             const opts = { mapModel: this, parse: true };
             this.set(
-              "zoomPresetsCollection",
-              new ZoomPresetCategories(categoryPresets, opts),
+              "viewfinderCardsCollection",
+              new ViewfinderCardCategories(categoryCards, opts),
             );
           }
           // Remove attrs automatically set by Backbone from the config
+          this.unset("viewfinderCards");
+          this.unset("viewfinderCardCategories");
           this.unset("zoomPresets");
           this.unset("zoomPresetCategories");
         }

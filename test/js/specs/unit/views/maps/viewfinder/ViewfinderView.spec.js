@@ -4,11 +4,18 @@ define([
   "underscore",
   "views/maps/viewfinder/ViewfinderView",
   "models/maps/Map",
-  "collections/maps/viewfinder/ZoomPresets",
+  "collections/maps/viewfinder/ViewfinderCards",
   // The file extension is required for files loaded from the /test directory.
   "/test/js/specs/unit/views/maps/viewfinder/ViewfinderViewHarness.js",
   "/test/js/specs/shared/clean-state.js",
-], (_, ViewfinderView, Map, ZoomPresets, ViewfinderViewHarness, cleanState) => {
+], (
+  _,
+  ViewfinderView,
+  Map,
+  ViewfinderCards,
+  ViewfinderViewHarness,
+  cleanState,
+) => {
   const should = chai.should();
   const expect = chai.expect;
 

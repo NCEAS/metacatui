@@ -2294,7 +2294,7 @@ other class: .ui-slider-range */
  *
  * A full-screen overlay that appears above the map and renders an external
  * visualization application in an iframe. Opened by the "Explore in App"
- * button on a ZoomPreset card that has an `iframeUrl` configured.
+ * button on a ViewfinderCard that has an `iframeUrl` configured.
  *
  * Hidden by default; shown by adding the --open modifier class.
  *

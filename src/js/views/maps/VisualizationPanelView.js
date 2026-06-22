@@ -35,7 +35,7 @@ define(["backbone", "utils/isTrustedUrl"], (Backbone, isTrustedUrl) => {
    * @class VisualizationPanelView
    * @classdesc A full-screen overlay panel that displays an external
    * visualization application in an iframe above the map. Opened by clicking
-   * the "Explore in App" button on a ZoomPresetView card that has an
+   * the "Explore in App" button on a ViewfinderCardView card that has an
    * `iframeUrl` configured. Closed by the close button, the Escape key, or
    * when a different card action is triggered.
    *

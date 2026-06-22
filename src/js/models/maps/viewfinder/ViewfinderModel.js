@@ -36,8 +36,8 @@ define([
        * @property {Prediction[]} predictions a list of Predictions models that
        * correspond to the user's search query.
        * @property {string} query the user's search query.
-       * @property {ZoomPresetCategories|null} zoomPresets is the collection of
-       * ZoomPresets available in the current map.
+       * @property {ViewfinderCardCategories|null} viewfinderCards is the
+       * collection of ViewfinderCards available in the current map.
        * @since 2.28.0
        */
       defaults() {
@@ -46,7 +46,7 @@ define([
           focusIndex: -1,
           predictions: [],
           query: "",
-          zoomPresets: null,
+          viewfinderCards: null,
         };
       },
 
@@ -59,7 +59,7 @@ define([
         this.geocoderSearch = new GeocoderSearch();
         this.mapModel = mapModel;
 
-        this.set("zoomPresets", mapModel.get("zoomPresetsCollection"));
+        this.set("viewfinderCards", mapModel.get("viewfinderCardsCollection"));
       },
 
       /**
@@ -179,13 +179,13 @@ define([
       },
 
       /**
-       * Select a ZoomPresetModel from the list of presets and navigate there.
+       * Select a ViewfinderCardModel from the list of cards and navigate there.
        * This function hides all layers that are not to be visible according to
-       * the ZoomPresetModel configuration.
-       * @param {ZoomPresetModel} preset A user selected preset for which to
+       * the ViewfinderCardModel configuration.
+       * @param {ViewfinderCardModel} preset A user selected card for which to
        * enable layers and navigate.
        */
-      selectZoomPreset(preset) {
+      selectViewfinderCard(preset) {
         const enabledLayerIds = preset.get("enabledLayerIds");
         this.mapModel.get("allLayers").forEach((layer) => {
           const isVisible = enabledLayerIds.includes(layer.get("layerId"));
@@ -209,6 +209,16 @@ define([
           // close any open feature panels
           this.mapModel.selectFeatures([]);
         }
+      },
+
+      /**
+       * Backward-compatibility alias for selectViewfinderCard.
+       * @deprecated Use selectViewfinderCard instead.
+       * @param {ViewfinderCardModel} preset The card to select.
+       * @returns {void}
+       */
+      selectZoomPreset(preset) {
+        return this.selectViewfinderCard(preset);
       },
 
       /**
