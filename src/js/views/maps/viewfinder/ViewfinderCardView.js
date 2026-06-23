@@ -11,11 +11,9 @@ define([
   const CLASS_NAMES = {
     active: `${BASE_CLASS}--active`,
     actions: `${BASE_CLASS}__actions`,
-    authors: `${BASE_CLASS}__authors`,
     card: `${BASE_CLASS}__card`,
     ctaButton: `${BASE_CLASS}__cta-button`,
     ctaButtonActive: `${BASE_CLASS}__cta-button--active`,
-    date: `${BASE_CLASS}__date`,
     description: `${BASE_CLASS}__description`,
     header: `${BASE_CLASS}__header`,
     headerNoImage: `${BASE_CLASS}__header--no-image`,
@@ -33,8 +31,6 @@ define([
   };
   // A function that does nothing. Can be safely called as a default callback.
   const noop = () => {};
-  // Maximum character length for the rendered author list before truncating.
-  const MAX_AUTHORS_LENGTH = 50;
 
   /**
    * Handler registry: maps a ViewfinderCardAction `type` string to a function
@@ -60,44 +56,24 @@ define([
         window.open(action.url, "_blank", "noopener,noreferrer");
       }
     },
+    /**
+     * Zooms the map and enables layers. Delegates to the view's
+     * selectCallback so the model handles the navigation logic.
+     * @param {ViewfinderCardAction} action
+     * @param {ViewfinderCardView} view
+     */
+    map(action, view) {
+      view.selectCallback(action);
+    },
   };
 
   /**
-   * Truncates an authors array to fit within MAX_AUTHORS_LENGTH characters.
-   * If the full joined string exceeds the limit, authors are added one at a
-   * time until the next name would exceed the limit, then "+N more..." is
-   * appended for the remaining count.
-   * @param {string[]} authors Array of author name strings.
-   * @returns {string} The display string, possibly truncated.
-   */
-  function truncateAuthors(authors) {
-    if (!authors || !authors.length) return "";
-    const full = authors.join(", ");
-    if (full.length <= MAX_AUTHORS_LENGTH) return full;
-    let display = "";
-    let count = 0;
-    for (let i = 0; i < authors.length; i += 1) {
-      const candidate = i === 0 ? authors[i] : `${display}, ${authors[i]}`;
-      if (candidate.length > MAX_AUTHORS_LENGTH) break;
-      display = candidate;
-      count += 1;
-    }
-    if (count === 0) {
-      return `${authors[0].slice(0, MAX_AUTHORS_LENGTH - 3)}...`;
-    }
-    const remaining = authors.length - count;
-    return remaining > 0 ? `${display}, +${remaining} more...` : display;
-  }
-
-  /**
    * @class ViewfinderCardView
-   * @classdesc Shows the title, description, optional metadata, and action
-   * buttons for a configured location within a MapView. Card variants:
-   * - Basic: "View Layers" button zooms and toggles relevant layers.
-   * - Virtual Tour: adds "Open in Browser" button opening `tabUrl` in a new
-   *   tab.
-   * - Visualization App: adds "Explore in App" button opening `iframeUrl` in
-   *   a full-screen overlay above the map.
+   * @classdesc Shows the title, description, and action buttons for a
+   * configured location within a MapView. Action buttons are driven by
+   * `ctaActions` on the model; 'map' type actions (secondary ordinality) render
+   * as a plain-text "View Layers" style link, while 'iframe'/'tab' type actions
+   * (primary ordinality) render as bordered buttons.
    * The card body itself is not interactive — all actions are explicit buttons.
    * @classcategory Views/Maps/Viewfinder
    * @name ViewfinderCardView
@@ -130,15 +106,25 @@ define([
 
       /**
        * Zoom to the card's location and toggle the relevant layers. Closes
-       * any open visualization overlay first.
+       * any open visualization overlay first. When the clicked button carries
+       * a `data-cta-index` attribute it is a 'map'-type ctaAction; the
+       * corresponding action object is forwarded to `selectCallback` so the
+       * model can use its specific coordinates and layerIds.
+       * @param {MouseEvent} [e] The click event, if triggered from the DOM.
        */
-      selectLayers() {
+      selectLayers(e) {
+        const btn =
+          e?.currentTarget ??
+          this.el.querySelector(`.${CLASS_NAMES.viewLayersButton}`);
+        const ctaIndex = btn?.dataset?.ctaIndex;
+        const action =
+          ctaIndex !== undefined
+            ? this.preset.get("ctaActions")[Number(ctaIndex)]
+            : undefined;
         this.onActivate(this);
         this.closeVisualizationCallback();
-        this.setActive(
-          this.el.querySelector(`.${CLASS_NAMES.viewLayersButton}`),
-        );
-        this.selectCallback();
+        this.setActive(btn);
+        this.selectCallback(action);
       },
 
       /**
@@ -167,11 +153,13 @@ define([
           buttonEl?.classList.contains(CLASS_NAMES.viewLayersButton) ?? false;
         this.el.classList.toggle(CLASS_NAMES.layersActive, isLayersButton);
         this.el
-          .querySelector(`.${CLASS_NAMES.viewLayersButton}`)
-          ?.classList.toggle(
-            CLASS_NAMES.viewLayersButtonActive,
-            isLayersButton,
-          );
+          .querySelectorAll(`.${CLASS_NAMES.viewLayersButton}`)
+          .forEach((btn) => {
+            btn.classList.toggle(
+              CLASS_NAMES.viewLayersButtonActive,
+              btn === buttonEl,
+            );
+          });
         this.el.querySelectorAll(`.${CLASS_NAMES.ctaButton}`).forEach((btn) => {
           btn.classList.toggle(CLASS_NAMES.ctaButtonActive, btn === buttonEl);
         });
@@ -183,8 +171,10 @@ define([
       resetActiveState() {
         this.el.classList.remove(CLASS_NAMES.active, CLASS_NAMES.layersActive);
         this.el
-          .querySelector(`.${CLASS_NAMES.viewLayersButton}`)
-          ?.classList.remove(CLASS_NAMES.viewLayersButtonActive);
+          .querySelectorAll(`.${CLASS_NAMES.viewLayersButton}`)
+          .forEach((btn) =>
+            btn.classList.remove(CLASS_NAMES.viewLayersButtonActive),
+          );
         this.el.querySelectorAll(`.${CLASS_NAMES.ctaButton}`).forEach((btn) => {
           btn.classList.remove(CLASS_NAMES.ctaButtonActive);
         });
@@ -236,14 +226,7 @@ define([
        */
       render() {
         this.templateVars.preset = this.preset.toJSON();
-        this.templateVars.preset.authorsDisplay = truncateAuthors(
-          this.templateVars.preset.authors,
-        );
         this.el.innerHTML = _.template(Template)(this.templateVars);
-        if (!this.templateVars.preset.image) {
-          const header = this.el.querySelector(`.${CLASS_NAMES.header}`);
-          if (header) header.classList.add(CLASS_NAMES.headerNoImage);
-        }
       },
     },
   );

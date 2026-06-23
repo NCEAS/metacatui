@@ -174,8 +174,8 @@ define([
 
         const viewfinderCardsListView = new ViewfinderCardsListView({
           viewfinderCards,
-          selectViewfinderCard: (card) => {
-            this.viewfinderModel.selectViewfinderCard(card);
+          selectViewfinderCard: (card, action) => {
+            this.viewfinderModel.selectViewfinderCard(card, action);
           },
           openVisualization: (url) => {
             this.viewfinderModel.openVisualization(url);

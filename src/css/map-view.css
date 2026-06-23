@@ -2124,29 +2124,6 @@ other class: .ui-slider-range */
     margin-block-start: calc((1em - 1lh) / 2);
   }
 
-  .viewfinder-card__date {
-    color: var(--portal-col-neutral-5, white);
-    font-size: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-
-    i {
-      font-size: 0.85rem;
-      color: var(--portal-col-neutral-4);
-    }
-  }
-
-  .viewfinder-card__authors {
-    color: var(--portal-col-neutral-5, white);
-    display: -webkit-box;
-    font-size: 0.75rem;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-  }
-
   /* ---- Description ---- */
 
   .viewfinder-card__description {
@@ -2184,7 +2161,9 @@ other class: .ui-slider-range */
     background: transparent;
     gap: 0.5rem;
     font-size: 0.95rem;
+    font-family: inherit;
     border: none;
+    cursor: pointer;
     color: var(--portal-col-neutral-5, #aaa);
   }
 

@@ -4,7 +4,8 @@ define([
   "underscore",
   "backbone",
   "models/maps/viewfinder/ViewfinderCardModel",
-], (_, Backbone, ViewfinderCardModel) => {
+  "models/maps/GeoPoint",
+], (_, Backbone, ViewfinderCardModel, GeoPoint) => {
   // The LEO Network domain for viewfinder cards. This is used to determine
   // if the cards are from the LEO Network and to use as the base URL for
   // images.
@@ -43,32 +44,23 @@ define([
    * Configuration options for a viewfinder card in the MapConfig.
    * @typedef {object} MapConfig#ViewfinderCard
    * @property {string} title The displayed title for the card.
-   * @property {number} [latitude] The latitude of the card location.
-   * @property {number} [longitude] The longitude of the card location.
-   * @property {number} [height] The height (camera altitude) of the card
-   * location in meters.
-   * @property {string} [description] A brief description of the layers and
-   * location.
-   * @property {string[]} enabledLayerIds A list of layer IDs which are to be
-   * enabled for this card. Must match the IDs of layers in the
-   * MapConfig#MapAssetConfig.
-   * @property {string[]} enabledLayerLabels A corresponding list of layer
-   * labels which are enabled for this card.
+   * @property {string} description A brief description of the card.
+   * @property {ViewfinderCardAction[]} [ctaActions] A list of call-to-action
+   * buttons. Supported types:
+   * - `iframe`: opens a URL in the full-screen visualization overlay; requires
+   *   `url`, `label`, and optional `icon`.
+   * - `tab`: opens a URL in a new browser tab; requires `url`, `label`, and
+   *   optional `icon`.
+   * - `map`: zooms the map to a location and/or toggles layers; requires
+   *   `latitude` and `longitude`, and optional `height`, `layerIds`, and
+   *   `featureIds`.
    * @property {string} [image] An optional URL to a preview image shown in
    * the card.
-   * @property {string} [date] An optional display date string shown in the
-   * card (e.g. "2024 June 26").
-   * @property {string[]} [authors] An optional list of author names to
-   * display in the card.
-   * @property {ViewfinderCardAction[]} [ctaActions] An optional list of
-   * call-to-action buttons to display on the card. Each entry must have a
-   * `type` ('iframe' or 'tab'), a `url`, a `label`, and may also have an
-   * optional `icon` (FontAwesome class). 'iframe' opens the URL in the
-   * full-screen visualization overlay; 'tab' opens it in a new browser tab.
-   * Note that the View Layers button is always present and does not need to
-   * be included in this list.
+   * @property {number} [latitude] Camera latitude for the "View Layers" button.
+   * @property {number} [longitude] Camera longitude for the "View Layers" button.
+   * @property {number} [height] Camera altitude (metres) for the "View Layers" button.
+   * @property {string[]} [layerIds] Layer IDs toggled by the "View Layers" button.
    */
-
   /**
    * @class ViewfinderCards
    * @classdesc A ViewfinderCards collection is a group of ViewfinderCardModel
@@ -142,14 +134,38 @@ define([
         const map = options.mapModel || this.mapModel;
         const allLayers = map.get("allLayers");
 
-        let featureLayer = null;
-
         const viewfinderCards = response.map((cardObj) => {
+          // Apply defaults to any explicit 'map' ctaActions: secondary
+          // ordinality, 'View Layers' label, and eye icon.
+          const ctaActions = (
+            Array.isArray(cardObj.ctaActions) ? [...cardObj.ctaActions] : []
+          ).map((action) => {
+            if (action.type !== "map") return action;
+            return {
+              ordinality: "secondary",
+              label: "View Layers",
+              icon: "eye-open",
+              ...action,
+            };
+          });
+
+          // Collect layerIds from top-level AND from any explicit map
+          // ctaActions so all relevant layers appear in the badge display.
+          const topLevelLayerIds = cardObj.layerIds || [];
+          const ctaMapLayerIds = ctaActions
+            .filter((a) => a.type === "map")
+            .flatMap((a) => a.layerIds || []);
+          const uniqueMapLayerIds = [
+            ...new Set([...topLevelLayerIds, ...ctaMapLayerIds]),
+          ];
+
           const enabledLayerIds = [];
           const enabledLayerLabels = [];
+          let featureLayer = null;
+
           allLayers.models.forEach((layer) => {
             const layerId = layer.get("layerId");
-            if (cardObj.layerIds?.find((id) => id === layerId)) {
+            if (uniqueMapLayerIds.includes(layerId)) {
               enabledLayerIds.push(layerId);
               enabledLayerLabels.push(layer.get("label"));
             }
@@ -158,30 +174,41 @@ define([
             }
           });
 
-          return new ViewfinderCardModel(
-            {
-              description: cardObj.description,
-              enabledLayerLabels,
-              enabledLayerIds,
-              position: {
-                latitude: cardObj.latitude,
-                longitude: cardObj.longitude,
-                height: cardObj.height,
-              },
-              title: cardObj.title,
-              image: cardObj.image,
-              featureId: cardObj.featureId,
-              isLEONetwork: cardObj.isLEONetwork === true,
-              featureLayerId: cardObj.featureLayerId || null,
-              featureLayer,
-              authors: cardObj.authors || [],
-              ctaActions: Array.isArray(cardObj.ctaActions)
-                ? cardObj.ctaActions
-                : [],
-              date: cardObj.date || null,
-            },
-            { parse: true },
-          );
+          // Synthesize a secondary 'map' ctaAction from the top-level
+          // position fields if any are present, and append it after any
+          // explicit ctaActions.
+          let geoPoint = null;
+          if (cardObj.latitude != null || cardObj.longitude != null) {
+            geoPoint = new GeoPoint({
+              latitude: cardObj.latitude,
+              longitude: cardObj.longitude,
+              height: cardObj.height,
+            });
+            ctaActions.push({
+              type: "map",
+              ordinality: "secondary",
+              label: "View Layers",
+              icon: "eye-open",
+              latitude: cardObj.latitude,
+              longitude: cardObj.longitude,
+              height: cardObj.height,
+              layerIds: uniqueMapLayerIds,
+            });
+          }
+
+          return new ViewfinderCardModel({
+            description: cardObj.description,
+            enabledLayerLabels,
+            enabledLayerIds,
+            geoPoint,
+            title: cardObj.title,
+            image: cardObj.image,
+            featureId: cardObj.featureId,
+            isLEONetwork: cardObj.isLEONetwork === true,
+            featureLayerId: cardObj.featureLayerId || null,
+            featureLayer,
+            ctaActions,
+          });
         });
 
         return viewfinderCards;

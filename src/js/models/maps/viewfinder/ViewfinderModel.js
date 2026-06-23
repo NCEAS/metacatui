@@ -180,20 +180,41 @@ define([
 
       /**
        * Select a ViewfinderCardModel from the list of cards and navigate there.
-       * This function hides all layers that are not to be visible according to
-       * the ViewfinderCardModel configuration.
-       * @param {ViewfinderCardModel} preset A user selected card for which to
-       * enable layers and navigate.
+       * When `action` is a 'map' type ctaAction, its `layerIds` and coordinates
+       * are used directly. Otherwise falls back to the preset's `enabledLayerIds`
+       * and `geoPoint` for backward compatibility.
+       * @param {ViewfinderCardModel} preset A user selected card.
+       * @param {ViewfinderCardAction} [action] The specific 'map' ctaAction
+       * that was activated. When omitted, the preset's own fields are used.
        */
-      selectViewfinderCard(preset) {
-        const enabledLayerIds = preset.get("enabledLayerIds");
+      selectViewfinderCard(preset, action) {
+        let enabledLayerIds;
+        let geoPoint;
+
+        if (action && action.type === "map") {
+          enabledLayerIds = action.layerIds || [];
+          if (action.latitude != null && action.longitude != null) {
+            geoPoint = new GeoPoint({
+              latitude: action.latitude,
+              longitude: action.longitude,
+              height: action.height,
+            });
+          }
+        } else {
+          // Backward compat: read directly from the preset model attributes.
+          enabledLayerIds = preset.get("enabledLayerIds") || [];
+          geoPoint = preset.get("geoPoint");
+        }
+
         this.mapModel.get("allLayers").forEach((layer) => {
           const isVisible = enabledLayerIds.includes(layer.get("layerId"));
           // Show or hide the layer according to the preset.
           layer.set("visible", isVisible);
         });
 
-        this.mapModel.zoomTo(preset.get("geoPoint"));
+        if (geoPoint) {
+          this.mapModel.zoomTo(geoPoint);
+        }
 
         // If this preset corresponds to a specific feature, select it on the
         // map.

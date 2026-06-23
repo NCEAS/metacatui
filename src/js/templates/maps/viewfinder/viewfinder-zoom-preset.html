@@ -1,6 +1,5 @@
 <div class="<%= classNames.card %>">
-  <% var hasMeta = preset.date || preset.authorsDisplay; %>
-  <% if (preset.image && !hasMeta) { %>
+  <% if (preset.image) { %>
     <div class="<%= classNames.header %> <%= classNames.headerSimple %>">
       <img class="<%= classNames.image %>" src="<%= preset.image %>" alt="<%= preset.title %> preview image" />
       <div class="<%= classNames.meta %>">
@@ -12,22 +11,8 @@
     </div>
   <% } else { %>
     <div class="<%= classNames.header %>">
-      <% if (preset.image) { %>
-        <img class="<%= classNames.image %>" src="<%= preset.image %>" alt="<%= preset.title %> preview image" />
-      <% } %>
       <div class="<%= classNames.meta %>">
         <div class="<%= classNames.title %>"><%= preset.title %></div>
-        <% if (preset.date) { %>
-          <div class="<%= classNames.date %>">
-            <i class="icon icon-calendar-empty"></i>
-            <%= preset.date %>
-          </div>
-        <% } %>
-        <% if (preset.authorsDisplay) { %>
-          <div class="<%= classNames.authors %>">
-            By: <%= preset.authorsDisplay %>
-          </div>
-        <% } %>
       </div>
     </div>
     <% if (preset.description) { %>
@@ -36,15 +21,13 @@
   <% } %>
   <div class="<%= classNames.actions %>">
     <% preset.ctaActions.forEach(function(action, i) { %>
-      <button class="<%= classNames.ctaButton %> map-view__button map-view__button--emphasis" data-cta-index="<%= i %>">
+      <% var ordinality = action.ordinality || (action.type === 'map' ? 'secondary' : 'primary'); %>
+      <% var btnClass = ordinality === 'secondary' ? 'map-view__button' : 'map-view__button map-view__button--emphasis'; %>
+      <button class="<%= classNames.ctaButton %> <%= btnClass %>" data-cta-index="<%= i %>">
         <% if (action.icon) { %><i class="icon icon-<%= action.icon %>"></i><% } %>
         <%= action.label %>
       </button>
     <% }); %>
-    <button class="<%= classNames.viewLayersButton %> map-view__button">
-      <i class="icon icon-eye-open"></i>
-      View Layers
-    </button>
   </div>
 </div>
 <% if (preset.enabledLayerLabels && preset.enabledLayerLabels.length) { %>

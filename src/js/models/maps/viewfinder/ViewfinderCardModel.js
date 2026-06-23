@@ -8,12 +8,8 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
   /**
    * @class ViewfinderCardModel
    * @classdesc ViewfinderCardModel represents a point of interest on a map that
-   * can be configured within a MapView. Supports three card variants:
-   * - Basic: zoom + toggle layers via "View Layers" button
-   * - Virtual Tour: adds a "Open in Browser" button that opens `tabUrl` in a
-   *   new tab
-   * - Visualization App: adds an "Explore in App" button that opens `iframeUrl`
-   *   in a full-screen overlay above the map
+   * can be configured within a MapView. Each card requires a title,
+   * description, and at least one ctaAction of type 'iframe', 'tab', or 'map'.
    * @classcategory Models/Maps
    * @augments Backbone.Model
    * @since 2.29.0
@@ -22,32 +18,43 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
     /** @lends ViewfinderCardModel.prototype */ {
       /**
        * @typedef {object} ViewfinderCardAction
-       * @property {'iframe'|'tab'} type The action type. 'iframe' opens the
-       * URL in the full-screen visualization overlay; 'tab' opens it in a new
-       * browser tab.
-       * @property {string} url The URL to open.
+       * @property {'iframe'|'tab'|'map'} type The action type.
+       * - 'iframe': opens a URL in the visualization overlay above the map.
+       * - 'tab': opens a URL in a new browser tab.
+       * - 'map': zooms the map to a location and/or toggles layers.
+       * @property {'primary'|'secondary'} [ordinality] Visual rendering style.
+       * 'primary' renders as a bordered/filled button (the default for
+       * 'iframe' and 'tab' actions). 'secondary' renders as plain text with an
+       * icon and no border (the default for 'map' actions).
        * @property {string} label The button label.
-       * @property {string} [icon] FontAwesome icon class for the button.
+       * @property {string} [icon] FontAwesome icon name for the button.
+       * @property {string} [url] The URL to open (required for 'iframe'/'tab').
+       * @property {number} [latitude] Latitude to zoom to (for 'map').
+       * @property {number} [longitude] Longitude to zoom to (for 'map').
+       * @property {number} [height] Camera altitude in meters (for 'map').
+       * @property {string[]} [layerIds] Layer IDs to enable (for 'map').
+       * @property {string[]} [featureIds] Feature IDs to select (for 'map').
        */
 
       /**
        * @typedef {object} ViewfinderCardModelOptions
        * @property {string} title The displayed title for the card.
-       * @property {GeoPoint|null} [geoPoint] The location representing this
-       * card, including height information. If absent, the "View Layers"
-       * button toggles layers without zooming.
-       * @property {string} description A brief description of the layers and
-       * location.
-       * @property {string[]} enabledLayerIds A list of layer IDs which are to
-       * be enabled for this card.
-       * @property {string[]} enabledLayerLabels A list of layer labels which
-       * are enabled for this card.
+       * @property {string} description A brief description of the card.
+       * @property {ViewfinderCardAction[]} [ctaActions] Explicit CTA buttons.
+       * Any top-level position fields will synthesize an additional 'map'
+       * action that is appended after these.
+       * @property {number} [latitude] Camera latitude. Synthesized into a
+       * 'map' ctaAction with secondary ordinality, label "View Layers", and
+       * the eye icon.
+       * @property {number} [longitude] Camera longitude (paired with latitude).
+       * @property {number} [height] Camera altitude in metres.
+       * @property {string[]} [layerIds] Layer IDs enabled by the map action.
+       * @property {string[]} [enabledLayerIds] Resolved layer IDs for display.
+       * @property {string[]} [enabledLayerLabels] Resolved layer labels shown
+       * as informational badges when the map action is active.
        * @property {string} [image] URL or path to a preview image for the card.
-       * @property {string} [date] Display date string, e.g. "March 2024".
-       * @property {string[]} [authors] Names of authors/creators to display.
-       * @property {ViewfinderCardAction[]} [ctaActions] CTA buttons to display
-       * above the "View Layers" button. Each entry declares the action type,
-       * URL, label, and optional icon.
+       * @property {GeoPoint|null} [geoPoint] Backward-compat: location used
+       * when no 'map' ctaAction is present.
        */
 
       /**
@@ -56,9 +63,7 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        */
       defaults() {
         return {
-          authors: [],
           ctaActions: [],
-          date: null,
           description: "",
           enabledLayerIds: [],
           enabledLayerLabels: [],
@@ -69,24 +74,68 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
       },
 
       /**
-       * Parse incoming data to create a ViewfinderCardModel.
-       * @param {object} data The data to parse
-       * @param {object} [data.position] The latitude, longitude, and height of
-       * this ViewfinderCardModel's GeoPoint. If absent, geoPoint is null and
-       * zoom actions are skipped.
-       * @returns {object} An object containing the GeoPoint and all remaining
-       * ViewfinderCardModel properties.
+       * Parse incoming data to create a ViewfinderCardModel. Handles the
+       * legacy `position` field and synthesizes a 'map' ctaAction (with
+       * secondary ordinality, "View Layers" label, and eye icon) from any
+       * top-level `latitude`/`longitude`/`height`/`layerIds` fields or from
+       * the legacy `position` object. The synthesized action is appended after
+       * any explicitly provided ctaActions.
+       * @param {object} data The raw data to parse.
+       * @param {object} [data.position] Legacy {latitude, longitude, height}.
+       * @param {number} [data.latitude] Top-level latitude.
+       * @param {number} [data.longitude] Top-level longitude.
+       * @param {number} [data.height] Top-level camera altitude in metres.
+       * @param {string[]} [data.layerIds] Top-level layer IDs.
+       * @param {ViewfinderCardAction[]} [data.ctaActions] Explicit actions.
+       * @returns {object} The parsed attributes.
        */
-      parse({ position, ...rest }) {
-        const geoPoint = position
-          ? new GeoPoint({
-              latitude: position.latitude,
-              longitude: position.longitude,
-              height: position.height,
-            })
-          : null;
+      parse({
+        position,
+        latitude,
+        longitude,
+        height,
+        layerIds,
+        ctaActions = [],
+        ...rest
+      }) {
+        const lat = latitude ?? position?.latitude ?? null;
+        const lng = longitude ?? position?.longitude ?? null;
+        const alt = height ?? position?.height ?? null;
+        const ids = layerIds ?? [];
 
-        return { geoPoint, ...rest };
+        // Apply defaults to any explicit 'map' ctaActions.
+        const normalizedActions = ctaActions.map((action) => {
+          if (action.type !== "map") return action;
+          return {
+            ordinality: "secondary",
+            label: "View Layers",
+            icon: "eye-open",
+            ...action,
+          };
+        });
+
+        const allActions = [...normalizedActions];
+        let geoPoint = null;
+
+        if (lat != null || lng != null) {
+          geoPoint = new GeoPoint({
+            latitude: lat,
+            longitude: lng,
+            height: alt,
+          });
+          allActions.push({
+            type: "map",
+            ordinality: "secondary",
+            label: "View Layers",
+            icon: "eye-open",
+            latitude: lat,
+            longitude: lng,
+            height: alt,
+            layerIds: ids,
+          });
+        }
+
+        return { geoPoint, ctaActions: allActions, ...rest };
       },
     },
   );

@@ -77,8 +77,8 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
         this.children = this.viewfinderCards?.models?.map((card) => {
           const view = new ViewfinderCardView({
             preset: card,
-            selectCallback: () => {
-              this.selectViewfinderCard(card);
+            selectCallback: (action) => {
+              this.selectViewfinderCard(card, action);
             },
             ctaCallback: (url) => {
               this.openVisualization(url);
