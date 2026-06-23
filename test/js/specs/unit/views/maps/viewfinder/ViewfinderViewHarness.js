@@ -6,8 +6,13 @@ define([], function () {
       this.view = view;
     }
 
-    hasZoomPresets() {
+    hasViewfinderCards() {
       return !!this.view.getViewfinderCards().html();
+    }
+
+    /** @deprecated Use hasViewfinderCards instead. */
+    hasZoomPresets() {
+      return this.hasViewfinderCards();
     }
   };
 });

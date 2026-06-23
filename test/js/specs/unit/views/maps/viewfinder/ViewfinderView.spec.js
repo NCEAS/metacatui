@@ -49,7 +49,7 @@ define([
       state.view.should.be.instanceof(ViewfinderView);
     });
 
-    it("shows zoom presets UI when enabled in config", () => {
+    it("shows viewfinder cards UI when enabled in config", () => {
       const view = new ViewfinderView(
         {
           model: new Map({ zoomPresets: [{}], allLayers: { models: [] } }),
@@ -60,11 +60,11 @@ define([
       const harness = new ViewfinderViewHarness(view);
       view.render();
 
-      expect(harness.hasZoomPresets()).to.be.true;
+      expect(harness.hasViewfinderCards()).to.be.true;
     });
 
-    it("does not show zoom presets UI when disabled in config", () => {
-      expect(state.harness.hasZoomPresets()).to.be.false;
+    it("does not show viewfinder cards UI when disabled in config", () => {
+      expect(state.harness.hasViewfinderCards()).to.be.false;
     });
   });
 });
