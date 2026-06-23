@@ -12,8 +12,8 @@ define([
     active: `${BASE_CLASS}--active`,
     actions: `${BASE_CLASS}__actions`,
     card: `${BASE_CLASS}__card`,
-    ctaButton: `${BASE_CLASS}__cta-button`,
-    ctaButtonActive: `${BASE_CLASS}__cta-button--active`,
+    buttonPrimary: `${BASE_CLASS}__button-primary`,
+    buttonPrimaryActive: `${BASE_CLASS}__button-primary--active`,
     description: `${BASE_CLASS}__description`,
     header: `${BASE_CLASS}__header`,
     headerNoImage: `${BASE_CLASS}__header--no-image`,
@@ -26,8 +26,8 @@ define([
     layersInner: `${BASE_CLASS}__layers-inner`,
     meta: `${BASE_CLASS}__meta`,
     title: `${BASE_CLASS}__title`,
-    viewLayersButton: `${BASE_CLASS}__view-layers-button`,
-    viewLayersButtonActive: `${BASE_CLASS}__view-layers-button--active`,
+    buttonSecondary: `${BASE_CLASS}__button-secondary`,
+    buttonSecondaryActive: `${BASE_CLASS}__button-secondary--active`,
   };
   // A function that does nothing. Can be safely called as a default callback.
   const noop = () => {};
@@ -71,8 +71,8 @@ define([
    * @class ViewfinderCardView
    * @classdesc Shows the title, description, and action buttons for a
    * configured location within a MapView. Action buttons are driven by
-   * `ctaActions` on the model; 'map' type actions (secondary ordinality) render
-   * as a plain-text "View Layers" style link, while 'iframe'/'tab' type actions
+   * `buttons` on the model; 'map' type actions (secondary ordinality) render
+   * as a plain-text secondary link, while 'iframe'/'tab' type actions
    * (primary ordinality) render as bordered buttons.
    * The card body itself is not interactive — all actions are explicit buttons.
    * @classcategory Views/Maps/Viewfinder
@@ -99,15 +99,15 @@ define([
        */
       events() {
         return {
-          [`click .${CLASS_NAMES.viewLayersButton}`]: "selectLayers",
-          [`click .${CLASS_NAMES.ctaButton}`]: "handleCtaClick",
+          [`click .${CLASS_NAMES.buttonSecondary}`]: "selectLayers",
+          [`click .${CLASS_NAMES.buttonPrimary}`]: "handleButtonClick",
         };
       },
 
       /**
        * Zoom to the card's location and toggle the relevant layers. Closes
        * any open visualization overlay first. When the clicked button carries
-       * a `data-cta-index` attribute it is a 'map'-type ctaAction; the
+       * a `data-button-index` attribute it is a 'map'-type button; the
        * corresponding action object is forwarded to `selectCallback` so the
        * model can use its specific coordinates and layerIds.
        * @param {MouseEvent} [e] The click event, if triggered from the DOM.
@@ -115,11 +115,11 @@ define([
       selectLayers(e) {
         const btn =
           e?.currentTarget ??
-          this.el.querySelector(`.${CLASS_NAMES.viewLayersButton}`);
-        const ctaIndex = btn?.dataset?.ctaIndex;
+          this.el.querySelector(`.${CLASS_NAMES.buttonSecondary}`);
+        const buttonIndex = btn?.dataset?.buttonIndex;
         const action =
-          ctaIndex !== undefined
-            ? this.preset.get("ctaActions")[Number(ctaIndex)]
+          buttonIndex !== undefined
+            ? this.preset.get("buttons")[Number(buttonIndex)]
             : undefined;
         this.onActivate(this);
         this.closeVisualizationCallback();
@@ -128,14 +128,14 @@ define([
       },
 
       /**
-       * Dispatch a CTA button click to the registered handler for the action
-       * type. Closes any open visualization overlay first.
-       * @param {MouseEvent} e The click event from a `.cta-button` element.
+       * Dispatch a primary button click to the registered handler for the
+       * action type. Closes any open visualization overlay first.
+       * @param {MouseEvent} e The click event from a `.button-primary` element.
        */
-      handleCtaClick(e) {
+      handleButtonClick(e) {
         const btn = e.currentTarget;
-        const index = Number(btn.dataset.ctaIndex);
-        const action = this.preset.get("ctaActions")[index];
+        const index = Number(btn.dataset.buttonIndex);
+        const action = this.preset.get("buttons")[index];
         if (!action) return;
         this.onActivate(this);
         this.closeVisualizationCallback();
@@ -149,20 +149,25 @@ define([
        */
       setActive(buttonEl) {
         this.el.classList.add(CLASS_NAMES.active);
-        const isLayersButton =
-          buttonEl?.classList.contains(CLASS_NAMES.viewLayersButton) ?? false;
-        this.el.classList.toggle(CLASS_NAMES.layersActive, isLayersButton);
+        const isSecondary =
+          buttonEl?.classList.contains(CLASS_NAMES.buttonSecondary) ?? false;
+        this.el.classList.toggle(CLASS_NAMES.layersActive, isSecondary);
         this.el
-          .querySelectorAll(`.${CLASS_NAMES.viewLayersButton}`)
+          .querySelectorAll(`.${CLASS_NAMES.buttonSecondary}`)
           .forEach((btn) => {
             btn.classList.toggle(
-              CLASS_NAMES.viewLayersButtonActive,
+              CLASS_NAMES.buttonSecondaryActive,
               btn === buttonEl,
             );
           });
-        this.el.querySelectorAll(`.${CLASS_NAMES.ctaButton}`).forEach((btn) => {
-          btn.classList.toggle(CLASS_NAMES.ctaButtonActive, btn === buttonEl);
-        });
+        this.el
+          .querySelectorAll(`.${CLASS_NAMES.buttonPrimary}`)
+          .forEach((btn) => {
+            btn.classList.toggle(
+              CLASS_NAMES.buttonPrimaryActive,
+              btn === buttonEl,
+            );
+          });
       },
 
       /**
@@ -171,13 +176,15 @@ define([
       resetActiveState() {
         this.el.classList.remove(CLASS_NAMES.active, CLASS_NAMES.layersActive);
         this.el
-          .querySelectorAll(`.${CLASS_NAMES.viewLayersButton}`)
+          .querySelectorAll(`.${CLASS_NAMES.buttonSecondary}`)
           .forEach((btn) =>
-            btn.classList.remove(CLASS_NAMES.viewLayersButtonActive),
+            btn.classList.remove(CLASS_NAMES.buttonSecondaryActive),
           );
-        this.el.querySelectorAll(`.${CLASS_NAMES.ctaButton}`).forEach((btn) => {
-          btn.classList.remove(CLASS_NAMES.ctaButtonActive);
-        });
+        this.el
+          .querySelectorAll(`.${CLASS_NAMES.buttonPrimary}`)
+          .forEach((btn) => {
+            btn.classList.remove(CLASS_NAMES.buttonPrimaryActive);
+          });
       },
 
       /** Values meant to be used by the rendered HTML template. */

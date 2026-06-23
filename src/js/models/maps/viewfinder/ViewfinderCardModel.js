@@ -40,11 +40,11 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        * @typedef {object} ViewfinderCardModelOptions
        * @property {string} title The displayed title for the card.
        * @property {string} description A brief description of the card.
-       * @property {ViewfinderCardAction[]} [ctaActions] Explicit CTA buttons.
+       * @property {ViewfinderCardAction[]} [buttons] Explicit action buttons.
        * Any top-level position fields will synthesize an additional 'map'
        * action that is appended after these.
        * @property {number} [latitude] Camera latitude. Synthesized into a
-       * 'map' ctaAction with secondary ordinality, label "View Layers", and
+       * 'map' button with secondary ordinality, label "View Layers", and
        * the eye icon.
        * @property {number} [longitude] Camera longitude (paired with latitude).
        * @property {number} [height] Camera altitude in metres.
@@ -54,7 +54,7 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        * as informational badges when the map action is active.
        * @property {string} [image] URL or path to a preview image for the card.
        * @property {GeoPoint|null} [geoPoint] Backward-compat: location used
-       * when no 'map' ctaAction is present.
+       * when no 'map' button is present.
        */
 
       /**
@@ -63,7 +63,7 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        */
       defaults() {
         return {
-          ctaActions: [],
+          buttons: [],
           description: "",
           enabledLayerIds: [],
           enabledLayerLabels: [],
@@ -87,6 +87,7 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        * @param {number} [data.height] Top-level camera altitude in metres.
        * @param {string[]} [data.layerIds] Top-level layer IDs.
        * @param {ViewfinderCardAction[]} [data.ctaActions] Explicit actions.
+       * @param data.buttons
        * @returns {object} The parsed attributes.
        */
       parse({
@@ -95,7 +96,7 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
         longitude,
         height,
         layerIds,
-        ctaActions = [],
+        buttons = [],
         ...rest
       }) {
         const lat = latitude ?? position?.latitude ?? null;
@@ -103,8 +104,8 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
         const alt = height ?? position?.height ?? null;
         const ids = layerIds ?? [];
 
-        // Apply defaults to any explicit 'map' ctaActions.
-        const normalizedActions = ctaActions.map((action) => {
+        // Apply defaults to any explicit 'map' buttons.
+        const normalizedActions = buttons.map((action) => {
           if (action.type !== "map") return action;
           return {
             ordinality: "secondary",
@@ -135,7 +136,7 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
           });
         }
 
-        return { geoPoint, ctaActions: allActions, ...rest };
+        return { geoPoint, buttons: allActions, ...rest };
       },
     },
   );

@@ -2140,8 +2140,8 @@ other class: .ui-slider-range */
     gap: 0.4rem;
   }
 
-  /* CTA (primary) buttons */
-  .viewfinder-card__cta-button {
+  /* Primary buttons */
+  .viewfinder-card__button-primary {
     width: 100%;
     display: flex;
     align-items: center;
@@ -2152,8 +2152,8 @@ other class: .ui-slider-range */
     font-size: 0.95rem;
   }
 
-  /* View Layers (secondary) button: plain gray text, no button outline */
-  .viewfinder-card__view-layers-button {
+  /* Secondary buttons: plain text, no border */
+  .viewfinder-card__button-secondary {
     align-self: center;
     display: flex;
     align-items: center;
@@ -2167,12 +2167,12 @@ other class: .ui-slider-range */
     color: var(--portal-col-neutral-5, #aaa);
   }
 
-  .viewfinder-card__view-layers-button:hover {
+  .viewfinder-card__button-secondary:hover {
     color: var(--portal-col-primary-6, white);
     filter: none;
   }
 
-  .viewfinder-card__cta-button:hover {
+  .viewfinder-card__button-primary:hover {
     border-color: var(--portal-col-primary-4);
     filter: none;
   }
@@ -2198,12 +2198,12 @@ other class: .ui-slider-range */
     }
   }
 
-  .viewfinder-card__view-layers-button--active {
+  .viewfinder-card__button-secondary--active {
     color: var(--portal-col-primary-6, white);
   }
 
   /* The other buttons that were clicked turn dark blue (filled) */
-  .viewfinder-card__cta-button--active {
+  .viewfinder-card__button-primary--active {
     background-color: var(
       --portal-col-primary-6,
       var(--map-col-highlight__deprecate)
@@ -2212,7 +2212,7 @@ other class: .ui-slider-range */
     border-color: var(--portal-col-primary-5);
   }
 
-  .viewfinder-card__cta-button--active:hover {
+  .viewfinder-card__button-primary--active:hover {
     filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.15));
   }
 

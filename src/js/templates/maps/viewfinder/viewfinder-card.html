@@ -20,21 +20,21 @@
     <% } %>
   <% } %>
   <div class="<%= classNames.actions %>">
-    <% preset.ctaActions.forEach(function(action, i) { %>
+    <% preset.buttons.forEach(function(action, i) { %>
       <% if (action.ordinality === 'secondary') { %>
-        <button class="<%= classNames.viewLayersButton %>" data-cta-index="<%= i %>">
+        <button class="<%= classNames.buttonSecondary %>" data-button-index="<%= i %>">
           <i class="icon icon-<%= action.icon || 'eye-open' %>"></i>
           <%= action.label %>
         </button>
       <% } else { %>
-        <button class="<%= classNames.ctaButton %> map-view__button map-view__button--emphasis" data-cta-index="<%= i %>">
+        <button class="<%= classNames.buttonPrimary %> map-view__button map-view__button--emphasis" data-button-index="<%= i %>">
           <% if (action.icon) { %><i class="icon icon-<%= action.icon %>"></i><% } %>
           <%= action.label %>
         </button>
       <% } %>
     <% }); %>
-    <% if (preset.geoPoint && !preset.ctaActions.length) { %>
-      <button class="<%= classNames.viewLayersButton %>">
+    <% if (preset.geoPoint && !preset.buttons.length) { %>
+      <button class="<%= classNames.buttonSecondary %>">
         <i class="icon icon-eye-open"></i>
         View Layers
       </button>

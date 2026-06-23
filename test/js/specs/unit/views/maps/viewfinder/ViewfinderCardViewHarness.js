@@ -8,16 +8,16 @@ define([], function () {
 
     /** Click the "View Layers" button to trigger the select/zoom action. */
     click() {
-      this.view.$el.find(".viewfinder-card__view-layers-button").click();
+      this.view.$el.find(".viewfinder-card__button-secondary").click();
     }
 
     /**
      * Click the CTA button at the given index (0-based).
      * @param {number} [index=0]
      */
-    clickCta(index = 0) {
+    clickButton(index = 0) {
       this.view.$el
-        .find(`.viewfinder-card__cta-button[data-cta-index="${index}"]`)
+        .find(`.viewfinder-card__button-primary[data-button-index="${index}"]`)
         .click();
     }
 

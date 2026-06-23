@@ -20,13 +20,19 @@
     <% } %>
   <% } %>
   <div class="<%= classNames.actions %>">
-    <% preset.ctaActions.forEach(function(action, i) { %>
-      <% var ordinality = action.ordinality || (action.type === 'map' ? 'secondary' : 'primary'); %>
-      <% var btnClass = ordinality === 'secondary' ? 'map-view__button' : 'map-view__button map-view__button--emphasis'; %>
-      <button class="<%= classNames.ctaButton %> <%= btnClass %>" data-cta-index="<%= i %>">
-        <% if (action.icon) { %><i class="icon icon-<%= action.icon %>"></i><% } %>
-        <%= action.label %>
-      </button>
+    <% preset.buttons.forEach(function(action, i) { %>
+      <% var isSecondary = action.ordinality === 'secondary'; %>
+      <% if (isSecondary) { %>
+        <button class="<%= classNames.buttonSecondary %>" data-button-index="<%= i %>">
+          <% if (action.icon) { %><i class="icon icon-<%= action.icon %>"></i><% } %>
+          <%= action.label %>
+        </button>
+      <% } else { %>
+        <button class="<%= classNames.buttonPrimary %> map-view__button map-view__button--emphasis" data-button-index="<%= i %>">
+          <% if (action.icon) { %><i class="icon icon-<%= action.icon %>"></i><% } %>
+          <%= action.label %>
+        </button>
+      <% } %>
     <% }); %>
   </div>
 </div>

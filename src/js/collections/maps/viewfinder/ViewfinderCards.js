@@ -45,7 +45,7 @@ define([
    * @typedef {object} MapConfig#ViewfinderCard
    * @property {string} title The displayed title for the card.
    * @property {string} description A brief description of the card.
-   * @property {ViewfinderCardAction[]} [ctaActions] A list of call-to-action
+   * @property {ViewfinderCardAction[]} [buttons] A list of action buttons.
    * buttons. Supported types:
    * - `iframe`: opens a URL in the full-screen visualization overlay; requires
    *   `url`, `label`, and optional `icon`.
@@ -135,10 +135,10 @@ define([
         const allLayers = map.get("allLayers");
 
         const viewfinderCards = response.map((cardObj) => {
-          // Apply defaults to any explicit 'map' ctaActions: secondary
+          // Apply defaults to any explicit 'map' buttons: secondary
           // ordinality, 'View Layers' label, and eye icon.
-          const ctaActions = (
-            Array.isArray(cardObj.ctaActions) ? [...cardObj.ctaActions] : []
+          const buttons = (
+            Array.isArray(cardObj.buttons) ? [...cardObj.buttons] : []
           ).map((action) => {
             if (action.type !== "map") return action;
             return {
@@ -150,9 +150,9 @@ define([
           });
 
           // Collect layerIds from top-level AND from any explicit map
-          // ctaActions so all relevant layers appear in the badge display.
+          // buttons so all relevant layers appear in the badge display.
           const topLevelLayerIds = cardObj.layerIds || [];
-          const ctaMapLayerIds = ctaActions
+          const ctaMapLayerIds = buttons
             .filter((a) => a.type === "map")
             .flatMap((a) => a.layerIds || []);
           const uniqueMapLayerIds = [
@@ -174,9 +174,9 @@ define([
             }
           });
 
-          // Synthesize a secondary 'map' ctaAction from the top-level
+          // Synthesize a secondary 'map' button from the top-level
           // position fields if any are present, and append it after any
-          // explicit ctaActions.
+          // explicit buttons.
           let geoPoint = null;
           if (cardObj.latitude != null || cardObj.longitude != null) {
             geoPoint = new GeoPoint({
@@ -184,7 +184,7 @@ define([
               longitude: cardObj.longitude,
               height: cardObj.height,
             });
-            ctaActions.push({
+            buttons.push({
               type: "map",
               ordinality: "secondary",
               label: "View Layers",
@@ -207,7 +207,7 @@ define([
             isLEONetwork: cardObj.isLEONetwork === true,
             featureLayerId: cardObj.featureLayerId || null,
             featureLayer,
-            ctaActions,
+            buttons,
           });
         });
 
