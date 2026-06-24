@@ -33,7 +33,6 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        * @property {number} [longitude] Longitude to zoom to (for 'map').
        * @property {number} [height] Camera altitude in meters (for 'map').
        * @property {string[]} [layerIds] Layer IDs to enable (for 'map').
-       * @property {string[]} [featureIds] Feature IDs to select (for 'map').
        */
 
       /**

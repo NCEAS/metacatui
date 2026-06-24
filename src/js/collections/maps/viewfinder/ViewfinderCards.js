@@ -52,8 +52,7 @@ define([
    * - `tab`: opens a URL in a new browser tab; requires `url`, `label`, and
    *   optional `icon`.
    * - `map`: zooms the map to a location and/or toggles layers; requires
-   *   `latitude` and `longitude`, and optional `height`, `layerIds`, and
-   *   `featureIds`.
+   *   `latitude` and `longitude`, and optional `height`, and `layerIds`.
    * @property {string} [image] An optional URL to a preview image shown in
    * the card.
    * @property {number} [latitude] Camera latitude for the "View Layers" button.
