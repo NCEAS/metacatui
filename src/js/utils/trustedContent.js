@@ -26,8 +26,8 @@ define([], () => {
 
   /**
    * Normalize a trusted content source entry to a consistent shape.
-   * @param {string|{url: string, permissions?: string[]}} source
-   * @returns {{url: string, permissions: string[]}|null}
+   * @param {string|{url: string, permissions: (string[]|undefined)}} source Source entry from configuration.
+   * @returns {{url: string, permissions: string[]}|null} Normalized source object or null when invalid.
    */
   function normalizeTrustedContentSource(source) {
     if (typeof source === "string") {
@@ -54,7 +54,7 @@ define([], () => {
   /**
    * Resolve the trusted content source entry that matches the given URL.
    * @param {string} url The URL to test.
-   * @returns {{url: string, permissions: string[]}|null}
+   * @returns {{url: string, permissions: string[]}|null} Matching trusted source entry, or null when no match is found.
    */
   function getTrustedContentSource(url) {
     const sources = MetacatUI?.appModel?.get("trustedContentSources") ?? [];
@@ -67,15 +67,14 @@ define([], () => {
       return null;
     }
 
-    for (const source of sources) {
-      const normalized = normalizeTrustedContentSource(source);
-      if (!normalized) continue;
-      if (patternToRegex(normalized.url).test(url)) {
-        return normalized;
-      }
-    }
+    const matchedSource = sources
+      .map(normalizeTrustedContentSource)
+      .find(
+        (normalized) =>
+          normalized && patternToRegex(normalized.url).test(url),
+      );
 
-    return null;
+    return matchedSource ?? null;
   }
 
   /**
