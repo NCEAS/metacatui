@@ -277,9 +277,18 @@ MetacatUI.AppConfig = {
     "https://*arcticdata.io",
     "https://cosima.nceas.ucsb.edu*",
     "https://shirlysteph.github.io/salmon-storymap/",
-    "https://water-timeseries.streamlit.app*",
-    "https://virtualice.byrd.osu.edu/alaska-permafrost/*",
-    "https://virtualice.byrd.osu.edu/permafrost/*",
+    {
+      url: "https://water-timeseries.streamlit.app*",
+      permissions: ["allow-scripts", "allow-same-origin"],
+    },
+    {
+      url: "https://virtualice.byrd.osu.edu/alaska-permafrost/*",
+      permissions: ["allow-scripts", "allow-same-origin"],
+    },
+    {
+      url: "https://virtualice.byrd.osu.edu/permafrost/*",
+      permissions: ["allow-scripts", "allow-same-origin"],
+    },
   ],
   ...(MetacatUI.AppConfig || {}),
 };

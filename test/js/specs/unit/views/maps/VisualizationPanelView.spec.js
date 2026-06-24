@@ -2,15 +2,16 @@
 
 define([
   "views/maps/VisualizationPanelView",
+  "utils/trustedContent",
   // The file extension is required for files loaded from the /test directory.
   "/test/js/specs/shared/clean-state.js",
-], (VisualizationPanelView, cleanState) => {
+], (VisualizationPanelView, trustedContent, cleanState) => {
   const expect = chai.expect;
 
   /**
    * Build a minimal MetacatUI stub whose appModel returns the given
    * trustedContentSources array.
-   * @param {string[]} sources
+   * @param {Array.<string|{url: string, permissions?: string[]}>} sources
    * @returns {object}
    */
   function makeMetacatUI(sources) {
@@ -44,7 +45,9 @@ define([
       const TRUSTED_URL = "https://trusted.example.com/app";
 
       const state = cleanState(() => {
-        globalThis.MetacatUI = makeMetacatUI(["https://trusted.example.com/*"]);
+        globalThis.MetacatUI = makeMetacatUI([
+          { url: "https://trusted.example.com/*" },
+        ]);
 
         const view = new VisualizationPanelView();
         view.render();
@@ -145,7 +148,23 @@ define([
         expect(iframe.getAttribute("src")).to.include("trusted.example.com");
       });
 
-      it("applies the hardcoded sandbox attribute for a trusted URL", () => {
+      it("defaults the sandbox attribute to allow-scripts for a trusted URL", () => {
+        state.view.open(TRUSTED_URL);
+
+        const iframe = state.view.el.querySelector(
+          ".visualization-panel__iframe",
+        );
+        expect(iframe.getAttribute("sandbox")).to.equal("allow-scripts");
+      });
+
+      it("applies explicit sandbox permissions from trustedContentSources", () => {
+        globalThis.MetacatUI = makeMetacatUI([
+          {
+            url: "https://trusted.example.com/*",
+            permissions: ["allow-scripts", "allow-same-origin"],
+          },
+        ]);
+
         state.view.open(TRUSTED_URL);
 
         const iframe = state.view.el.querySelector(

@@ -1,6 +1,6 @@
 "use strict";
 
-define(["backbone", "utils/isTrustedUrl"], (Backbone, isTrustedUrl) => {
+define(["backbone", "utils/trustedContent"], (Backbone, trustedContent) => {
   const BASE_CLASS = "visualization-panel";
   const CLASS_NAMES = {
     body: `${BASE_CLASS}__body`,
@@ -45,7 +45,6 @@ define(["backbone", "utils/isTrustedUrl"], (Backbone, isTrustedUrl) => {
    * @classcategory Views/Maps
    * @name VisualizationPanelView
    * @augments Backbone.View
-   * @since 2.x.0 TODO: add version when released
    * @constructs VisualizationPanelView
    */
   const VisualizationPanelView = Backbone.View.extend(
@@ -92,8 +91,11 @@ define(["backbone", "utils/isTrustedUrl"], (Backbone, isTrustedUrl) => {
           `.${CLASS_NAMES.untrustedLink}`,
         );
 
-        if (isTrustedUrl(url)) {
-          iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+        if (trustedContent.isTrustedUrl(url)) {
+          iframe.setAttribute(
+            "sandbox",
+            trustedContent.getTrustedIframeSandbox(url),
+          );
           iframe.src = url;
           iframe.style.display = "";
           untrusted.style.display = "none";

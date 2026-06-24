@@ -5,11 +5,7 @@
  * are not from a trusted source
  */
 
-define(["showdown", "utils/isTrustedUrl"], (showdown, isTrustedUrl) => {
-  /**
-   * The sandbox value applied to all trusted iframes.
-   */
-  const SANDBOX = "allow-scripts allow-same-origin";
+define(["showdown", "utils/trustedContent"], (showdown, trustedContent) => {
 
   /**
    * Allowlisted iframe attributes that are safe to forward from the author's
@@ -56,15 +52,15 @@ define(["showdown", "utils/isTrustedUrl"], (showdown, isTrustedUrl) => {
    * Replace iFrames that are NOT from trusted sources with a link to the
    * source URL (or plain text for unsafe protocols). Reconstruct trusted
    * iFrames from an attribute allowlist — dropping event handlers, srcdoc,
-   * and any other potentially dangerous attributes — and enforce the hardcoded
-   * sandbox value.
+  * and any other potentially dangerous attributes — and apply the sandbox
+  * permissions resolved from the trusted content source configuration.
    * @param {string} iframe - The full iframe tag
    * @param {string} src - The src attribute of the iframe
    * @returns {string} - The sanitised iframe or fallback markup
    */
   const secureIFrame = (iframe, src) => {
     // Untrusted: render as a safe link for http(s) sources, plain text otherwise
-    if (!isTrustedUrl(src)) {
+    if (!trustedContent.isTrustedUrl(src)) {
       if (isSafeProtocol(src)) {
         const escaped = src
           .replace(/&/g, "&amp;")
@@ -77,7 +73,11 @@ define(["showdown", "utils/isTrustedUrl"], (showdown, isTrustedUrl) => {
     }
 
     // Trusted: rebuild the tag from the allowlist only
-    let attrs = `src="${src}" sandbox="${SANDBOX}"`;
+    const sandbox = trustedContent.getTrustedIframeSandbox(src);
+    let attrs = `src="${src}"`;
+    if (sandbox) {
+      attrs += ` sandbox="${sandbox}"`;
+    }
     ALLOWED_ATTRS.forEach((name) => {
       const value = extractAttr(iframe, name);
       if (value !== null) {

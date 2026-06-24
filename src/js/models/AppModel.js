@@ -16,8 +16,8 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
     /** @lends AppModel.prototype */ {
       defaults: _.extend(
         /** @lends AppConfig.prototype */ {
-          //TODO: These attributes are stored in the AppModel, but shouldn't be set in the AppConfig,
-          //so we need to add docs for them in a separate place
+          // TODO: These attributes are stored in the AppModel, but shouldn't be set in the AppConfig,
+          // so we need to add docs for them in a separate place
           headerType: "default",
           searchHistory: [],
           page: 0,
@@ -185,7 +185,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * important information.
            * If this attribute is left blank, no message will display, even if there is a start and end time specified.
            * If there are is no start or end time specified, this message will display until you remove it here.
-           *
            * @type {string}
            * @default null
            * @since 2.11.4
@@ -262,7 +261,8 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            */
           disableQueryPOSTs: false,
 
-          /** If set to true, some parts of the app will use the Solr Join Query syntax
+          /**
+           * If set to true, some parts of the app will use the Solr Join Query syntax
            * when sending queries to the `/query/solr` DataONE API.
            * If this is not enabled, then some parts of the UI may not work if a query has too
            * many characters or has too many boolean clauses. This impacts the "Metrics" tabs of portals/collections,
@@ -298,7 +298,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
 
           /**
            * Enable to show Whole Tale features
-           * @type {Boolean}
+           * @type {boolean}
            * @default false
            */
           showWholeTaleFeatures: false,
@@ -317,25 +317,25 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             "https://girder.wholetale.org/api/v1/integration/dataone",
 
           /**
-       * A list of all the required fields in the EML Editor.
-       * Any field set to `true` will prevent the user from saving the Editor until a value has been given
-       * Any EML field not supported in this list cannot be required.
-       * @type {object}
-       * @property {boolean} abstract - Default: true
-       * @property {boolean} alternateIdentifier - Default: false
-       * @property {boolean} dataSensitivity Default: false
-       * @property {boolean} funding - Default: false
-       * @property {boolean} generalTaxonomicCoverage - Default: false
-       * @property {boolean} taxonCoverage - Default: false. If true, at least one taxonomic rank and value will be required.
-       * @property {boolean} geoCoverage - Default: false. If true, at least one geographic coverage description and point/bounding box will be required.
-       * @property {boolean} intellectualRights - Default: true
-       * @property {boolean} keywordSets - Default: false. If true, at least one keyword will be required.
-       * @property {boolean} methods - Default: false. If true, at least one method step will be required.
-       * @property {boolean} samplingDescription - Default: false
-       * @property {boolean} studyExtentDescription - Default: false
-       * @property {boolean} temporalCoverage - Default: false. If true, at least a beginDate will be required.
-       * @property {boolean} title - Default: true. EML documents always require a title. Only set this to false if you are extending MetacatUI to ensure a title another way.
-       * @default {
+           * A list of all the required fields in the EML Editor.
+           * Any field set to `true` will prevent the user from saving the Editor until a value has been given
+           * Any EML field not supported in this list cannot be required.
+           * @type {object}
+           * @property {boolean} abstract - Default: true
+           * @property {boolean} alternateIdentifier - Default: false
+           * @property {boolean} dataSensitivity Default: false
+           * @property {boolean} funding - Default: false
+           * @property {boolean} generalTaxonomicCoverage - Default: false
+           * @property {boolean} taxonCoverage - Default: false. If true, at least one taxonomic rank and value will be required.
+           * @property {boolean} geoCoverage - Default: false. If true, at least one geographic coverage description and point/bounding box will be required.
+           * @property {boolean} intellectualRights - Default: true
+           * @property {boolean} keywordSets - Default: false. If true, at least one keyword will be required.
+           * @property {boolean} methods - Default: false. If true, at least one method step will be required.
+           * @property {boolean} samplingDescription - Default: false
+           * @property {boolean} studyExtentDescription - Default: false
+           * @property {boolean} temporalCoverage - Default: false. If true, at least a beginDate will be required.
+           * @property {boolean} title - Default: true. EML documents always require a title. Only set this to false if you are extending MetacatUI to ensure a title another way.
+           * @default {
                      abstract: true,
                      alternateIdentifier: false,
                      funding: false,
@@ -351,26 +351,26 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
                      temporalCoverage: false,
                      title: true
                    }
-        * @example
-        *  {
-        *    abstract: true,
-        *    alternateIdentifier: false,
-        *    funding: false,
-        *    dataSensitivity: true,
-        *    generalTaxonomicCoverage: false,
-        *    taxonCoverage: false,
-        *    geoCoverage: false,
-        *    intellectualRights: true,
-        *    keywordSets: false,
-        *    methods: false,
-        *    samplingDescription: false,
-        *    studyExtentDescription: false,
-        *    temporalCoverage: false,
-        *    title: true,
-        *    contact: true,
-        *    principalInvestigator: true
-        *  }
-       */
+           * @example
+           *  {
+           *    abstract: true,
+           *    alternateIdentifier: false,
+           *    funding: false,
+           *    dataSensitivity: true,
+           *    generalTaxonomicCoverage: false,
+           *    taxonCoverage: false,
+           *    geoCoverage: false,
+           *    intellectualRights: true,
+           *    keywordSets: false,
+           *    methods: false,
+           *    samplingDescription: false,
+           *    studyExtentDescription: false,
+           *    temporalCoverage: false,
+           *    title: true,
+           *    contact: true,
+           *    principalInvestigator: true
+           *  }
+           */
           emlEditorRequiredFields: {
             abstract: true,
             alternateIdentifier: false,
@@ -410,23 +410,23 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           emlEditorRequiredFields_EMLParty: {},
 
           /**
-      * An array of science metadata format IDs that are editable in MetacatUI.
-      * Metadata documents with these format IDs will have an Edit button and will be
-      * editable in the Editor Views.
-      * This should only be changed if you have extended MetacatUI to edit a new format,
-      * or if you want to disable editing of a specific format ID.
-      * @type {string[]}
-      * @default [
+           * An array of science metadata format IDs that are editable in MetacatUI.
+           * Metadata documents with these format IDs will have an Edit button and will be
+           * editable in the Editor Views.
+           * This should only be changed if you have extended MetacatUI to edit a new format,
+           * or if you want to disable editing of a specific format ID.
+           * @type {string[]}
+           * @default [
         "eml://ecoinformatics.org/eml-2.1.1",
         "https://eml.ecoinformatics.org/eml-2.2.0"
       ]
-      * @example
-      *  [
-      *    "eml://ecoinformatics.org/eml-2.1.1",
-      *    "https://eml.ecoinformatics.org/eml-2.2.0"
-      *  ]
-      * @readonly
-      */
+           * @example
+           *  [
+           *    "eml://ecoinformatics.org/eml-2.1.1",
+           *    "https://eml.ecoinformatics.org/eml-2.2.0"
+           *  ]
+           * @readonly
+           */
           editableFormats: [
             "eml://ecoinformatics.org/eml-2.1.1",
             "https://eml.ecoinformatics.org/eml-2.2.0",
@@ -492,22 +492,22 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           editorSaveButtonText: "Save dataset",
 
           /**
-      * A list of keyword thesauri options for the user to choose from in the EML Editor.
-      * A "None" option will also always display.
-      * @type {object[]}
-      * @property {string} label - A readable and short label for the keyword thesaurus that is displayed in the UI
-      * @property {string} thesaurus - The exact keyword thesaurus name that will be saved in the EML
-      * @since 2.10.0
-      * @default [{
+           * A list of keyword thesauri options for the user to choose from in the EML Editor.
+           * A "None" option will also always display.
+           * @type {object[]}
+           * @property {string} label - A readable and short label for the keyword thesaurus that is displayed in the UI
+           * @property {string} thesaurus - The exact keyword thesaurus name that will be saved in the EML
+           * @since 2.10.0
+           * @default [{
                   label: "GCMD",
                   thesaurus: "NASA Global Change Master Directory (GCMD)"
                 }]
-      * @example
-      *  [{
-      *    label: "GCMD",
-      *    thesaurus: "NASA Global Change Master Directory (GCMD)"
-      *  }]
-      */
+           * @example
+           *  [{
+           *    label: "GCMD",
+           *    thesaurus: "NASA Global Change Master Directory (GCMD)"
+           *  }]
+           */
           emlKeywordThesauri: [
             {
               label: "GCMD",
@@ -526,7 +526,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           /**
            * The URL of a webpage that shows more information about Data Sensitivity and DataTags. This will be used
            * for links in help text throughout the app, such as next to Data Sensitivity questions in the dataset editor.
-           *
            * @type {string}
            * @default "http://datatags.org"
            * @since 2.19.0
@@ -534,23 +533,22 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           dataSensitivityInfoURL: "http://datatags.org",
 
           /**
-      * In the editor, sometimes it is useful to have guided questions for the Methods section
-      * in addition to the generic numbered method steps. These custom methods are defined here
-      * as an array of literal objects that define each custom Methods question. Custom methods
-      * are serialized to the EML as regular method steps, but with an unchangeable title, defined here,
-      * in order to identify them.
-      *
-      * @typedef {object} CustomEMLMethod
-      * @property {string[]} titleOptions One or more titles that may exist in an EML Method Step that identify that Method Step as a custom method type. THe first title in the array is serialized to the EML XML.
-      * @property {string} id A unique identifier for this custom method type.
-      * @property {boolean} required If true, this custom method will be a required field for submission in the EML editor.
-      * @example [{
+           * In the editor, sometimes it is useful to have guided questions for the Methods section
+           * in addition to the generic numbered method steps. These custom methods are defined here
+           * as an array of literal objects that define each custom Methods question. Custom methods
+           * are serialized to the EML as regular method steps, but with an unchangeable title, defined here,
+           * in order to identify them.
+           * @typedef {object} CustomEMLMethod
+           * @property {string[]} titleOptions One or more titles that may exist in an EML Method Step that identify that Method Step as a custom method type. THe first title in the array is serialized to the EML XML.
+           * @property {string} id A unique identifier for this custom method type.
+           * @property {boolean} required If true, this custom method will be a required field for submission in the EML editor.
+           * @example [{
                     "titleOptions": ["Ethical Research Procedures"],
                     "id": "ethical-research-procedures",
                     "required": false
                   }]
-      * @since 2.19.0
-      */
+           * @since 2.19.0
+           */
           /**
            * In the editor, sometimes it is useful to have guided questions for the Methods section
            * in addition to the generic numbered method steps. These custom methods are defined here
@@ -565,7 +563,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           /**
            * Configuration options for a drop down list of taxa.
            * @typedef {object} AppConfig#quickAddTaxaList
-           * @type {Object}
+           * @type {object}
            * @property {string} label - The label for the dropdown menu
            * @property {string} placeholder - The placeholder text for the input field
            * @property {EMLTaxonCoverage#taxonomicClassification[]} taxa - The list of taxa to show in the dropdown menu
@@ -629,7 +627,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            */
           baseUrl:
             window.location.origin ||
-            window.location.protocol + "//" + window.location.host,
+            `${window.location.protocol}//${window.location.host}`,
 
           /**
            * The directory that metacat is installed in at the `baseUrl`. For example, if you
@@ -687,7 +685,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * The URL for the DataONE getPackage() API. This URL is contructed dynamically when the
            * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
            * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/MN_APIs.html#MNPackage.getPackage)
-           *
            * @type {string}
            */
           packageServiceUrl: null,
@@ -821,7 +818,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           /** @deprecated since 2.36.0 */
           enableCILogonSignIn: false,
 
-          /** @deprecated since 2.36.0*/
+          /** @deprecated since 2.36.0 */
           signInUrl: null,
           /**
            * The URL for the DataONE Sign Out API
@@ -1063,7 +1060,8 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * @default false
            */
           displayDatasetControls: true,
-          /** Hide metrics display for SolrResult models that match the given properties.
+          /**
+           * Hide metrics display for SolrResult models that match the given properties.
            *  Properties can be functions, which are given the SolrResult model value as a parameter.
            * Turn off all dataset metrics displays using the {@link AppConfig#displayDatasetMetrics}
            * @type {object}
@@ -1188,23 +1186,23 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           allowAccessPolicyChangesDatasetsForSubjects: [],
 
           /**
-      * The default {@link AccessPolicy} set on new objects uploaded to the repository.
-      * Each literal object here gets set directly on an {@link AccessRule} model.
-      * See the {@link AccessRule} list of default attributes for options on what to set here.
-      * @see {@link AccessRule}
-      * @type {object[]}
-      * @since 2.9.0
-      * @default [{
+           * The default {@link AccessPolicy} set on new objects uploaded to the repository.
+           * Each literal object here gets set directly on an {@link AccessRule} model.
+           * See the {@link AccessRule} list of default attributes for options on what to set here.
+           * @see {@link AccessRule}
+           * @type {object[]}
+           * @since 2.9.0
+           * @default [{
                   subject: "public",
                   read: true
                 }]
-      * @example
-      * [{
-      *   subject: "public",
-      *   read: true
-      * }]
-      * // This example would assign public access to all new objects created in MetacatUI.
-      */
+           * @example
+           * [{
+           *   subject: "public",
+           *   read: true
+           * }]
+           * // This example would assign public access to all new objects created in MetacatUI.
+           */
           defaultAccessPolicy: [
             {
               subject: "public",
@@ -1231,25 +1229,25 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           accessPolicyName: "Sharing options",
 
           /**
-      * @type {object}
-      * @property {boolean} accessRuleOptions.read  - If true, users will be able to give others read access to their DataONE objects
-      * @property {boolean} accessRuleOptions.write - If true, users will be able to give others write access to their DataONE objects
-      * @property {boolean} accessRuleOptions.changePermission - If true, users will be able to give others changePermission access to their DataONE objects
-      * @since 2.9.0
-      * @default {
+           * @type {object}
+           * @property {boolean} accessRuleOptions.read  - If true, users will be able to give others read access to their DataONE objects
+           * @property {boolean} accessRuleOptions.write - If true, users will be able to give others write access to their DataONE objects
+           * @property {boolean} accessRuleOptions.changePermission - If true, users will be able to give others changePermission access to their DataONE objects
+           * @since 2.9.0
+           * @default {
                   read: true,
                   write: true,
                   changePermission: true
                 }
-      * @example
-      * {
-      *   read: true,
-      *   write: true,
-      *   changePermission: false
-      * }
-      * // This example would enable users to edit the read and write access to files,
-      * // but not change ownership, in the Access Policy View.
-      */
+           * @example
+           * {
+           *   read: true,
+           *   write: true,
+           *   changePermission: false
+           * }
+           * // This example would enable users to edit the read and write access to files,
+           * // but not change ownership, in the Access Policy View.
+           */
           accessRuleOptions: {
             read: true,
             write: true,
@@ -1444,8 +1442,8 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             sectionTitle: true,
             sectionIntroduction: false,
             logo: false,
-            //The following fields are not yet supported as required fields in the portal editor
-            //TODO: Add support for requiring the below fields
+            // The following fields are not yet supported as required fields in the portal editor
+            // TODO: Add support for requiring the below fields
             sectionImage: false,
             acknowledgments: false,
             acknowledgmentsLogos: false,
@@ -1695,7 +1693,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * their projects information.
            *
            * If the configuration is not set, set the default projects list in the views using it.
-           *
            * @type {string}
            * @private
            * @since 2.20.0 #TODO Update version here.
@@ -1737,19 +1734,22 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * patterns that are considered secure for embedding content in
            * iframes, especially when rendering user-generated Markdown content.
            *
-           * Each source in the list can include wildcards (`*`) to match any
-           * subdomain or path. For example, `"https://*.dataone.org/*"` matches
-           * any subdomain of `dataone.org` over HTTPS, and `"*arcticdata.io*"`
-           * matches any URL containing `arcticdata.io`.
+           * Each source in the list can be either a string URL pattern or an
+           * object with `url` and optional `permissions`. For example,
+           * `"https://*.dataone.org/*"` matches any subdomain of `dataone.org`
+           * over HTTPS, and `{ url: "https://example.org/*", permissions: ["allow-scripts", "allow-same-origin"] }`
+           * allows the trusted iframe to use the listed sandbox permissions.
+           * When `permissions` is omitted, trusted iframes default to only
+           * `allow-scripts`.
            *
            * Set to an empty array or a falsy value to disable all embedded content.
-           *
-           * @type {string[]}
+           * @type {Array.<string|{url: string, permissions?: string[]}>}
            * @since 2.32.0
            */
           trustedContentSources: [],
 
-          /** If true, then archived content is available in the search index.
+          /**
+           * If true, then archived content is available in the search index.
            * Set to false if this MetacatUI is using a Metacat version before 2.10.0
            * @type {boolean}
            * @default true
@@ -1863,8 +1863,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * a duplicate of a field that does exist, but presented with a different label (and
            * even with different {@link operatorOptions operator options} or
            * {@link valueSelectUImap value input} if needed).
-           *
-           * @typedef {Object} SpecialField
+           * @typedef {object} SpecialField
            * @property {string} name - A unique ID to represent this field. It must not match
            * the name of any other query fields.
            * @property {string[]} fields - The list of real query fields that this abstracted
@@ -1879,7 +1878,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * is used to determine whether a pre-existing Query Rule should be displayed as one
            * of these special fields, or as a field from the query API. Setting values means
            * that the values set on the Query Rule model must exactly match the values set.
-           *
            * @since 2.15.0
            */
 
@@ -1889,9 +1887,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * select from when building a query in the EditCollectionView. This can be used to
            * add abstracted fields which are a combination of multiple query fields, or to add
            * a duplicate field that has a different label.
-           *
            * @type {SpecialField[]}
-           *
            * @since 2.15.0
            */
           collectionQuerySpecialFields: [
@@ -1930,7 +1926,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * strings - they are OR'ed at the end of queries. They are also given an "OR"
            * operator and fieldsOperator attribute when parsed.
            * @type {string[]}
-           *
            * @since 2.17.0
            */
           queryIdentifierFields: ["id", "identifier", "seriesId", "isPartOf"],
@@ -1953,8 +1948,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * The names of the query fields that may require special treatment in the
            * UI. For example, upgrade the view for a Filter from a FilterView to
            * a SemanticFilterView or to block certain UIBuilders in FilterEditorView
-           *  that don't make sense for a semantic field.
-           *
+           * that don't make sense for a semantic field.
            * @type {string[]}
            * @since 2.22.0
            */
@@ -2231,7 +2225,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            *    identifier: "urn:node:METACAT",
            *    baseURL: "https://my-metacat.org/metacat/d1/mn"
            *  }]
-           *
            * @since 2.14.0
            */
           alternateRepositories: [],
@@ -2314,7 +2307,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            */
           dataonePlusName: "DataONE Plus",
 
-          //These two DataONE Plus Preview attributes are for a special DataONE Plus tag of MetacatUI
+          // These two DataONE Plus Preview attributes are for a special DataONE Plus tag of MetacatUI
           // and won't be released in an offical MetacatUI version, since they will be replaced by bookkeeper
           dataonePlusPreviewMode: false,
           dataonePlusPreviewPortals: [],
@@ -2428,7 +2421,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * This Bioportal REST API URL is used by the experimental and unsupported AnnotatorView to get multiple ontology class info at once.
            * @deprecated
            */
-          //bioportalBatchUrl: "https://data.bioontology.org/batch"
+          // bioportalBatchUrl: "https://data.bioontology.org/batch"
 
           /**
            * The packageFormat is the identifier for the version of bagit used when downloading data packages. The format should
@@ -2450,7 +2443,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            *
            * Currently, this feature is only used in the DataPackageModel when fetching the
            * list of DataONE member models.
-           *
            * @type {number}
            * @default 0
            * @example 20
@@ -2468,7 +2460,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            *
            * Currently, this feature is only used in the DataPackageModel when uploading files
            * to the DataONE API.
-           *
            * @type {number}
            * @default 0
            * @example 20
@@ -2498,100 +2489,100 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
 
       defaultView: "data",
 
-      initialize: function () {
-        //If no base URL is specified, then user the DataONE CN base URL
+      initialize() {
+        // If no base URL is specified, then user the DataONE CN base URL
         if (!this.get("baseUrl")) {
           this.set("baseUrl", this.get("d1CNBaseUrl"));
           this.set("d1Service", this.get("d1CNService"));
         }
 
-        //Set the DataONE MN API URLs
+        // Set the DataONE MN API URLs
         this.set(this.getDataONEMNAPIs());
 
-        //Determine if this instance of MetacatUI is pointing to a CN, rather than a MN
+        // Determine if this instance of MetacatUI is pointing to a CN, rather than a MN
         this.set("isCN", this.get("d1Service").indexOf("cn/v2") > 0);
 
         this.set(
           "metacatServiceUrl",
-          this.get("baseUrl") + this.get("context") + "/metacat",
+          `${this.get("baseUrl") + this.get("context")}/metacat`,
         );
 
         // Metadata quality report services
-        this.set("mdqSuitesServiceUrl", this.get("mdqBaseUrl") + "/suites/");
-        this.set("mdqRunsServiceUrl", this.get("mdqBaseUrl") + "/runs/");
+        this.set("mdqSuitesServiceUrl", `${this.get("mdqBaseUrl")}/suites/`);
+        this.set("mdqRunsServiceUrl", `${this.get("mdqBaseUrl")}/runs/`);
 
-        //DataONE CN API
+        // DataONE CN API
         if (this.get("d1CNBaseUrl")) {
-          //Add a forward slash to the end of the base URL if there isn't one
-          var d1CNBaseUrl = this.get("d1CNBaseUrl");
+          // Add a forward slash to the end of the base URL if there isn't one
+          let d1CNBaseUrl = this.get("d1CNBaseUrl");
           if (d1CNBaseUrl.charAt(d1CNBaseUrl.length - 1) == "/") {
             d1CNBaseUrl = d1CNBaseUrl.substring(0, d1CNBaseUrl.length - 1);
             this.set("d1CNBaseUrl", d1CNBaseUrl);
           }
 
-          //Account services
-          if (typeof this.get("accountsUrl") != "undefined") {
+          // Account services
+          if (typeof this.get("accountsUrl") !== "undefined") {
             this.set(
               "accountsUrl",
-              d1CNBaseUrl + this.get("d1CNService") + "/accounts/",
+              `${d1CNBaseUrl + this.get("d1CNService")}/accounts/`,
             );
 
-            if (typeof this.get("pendingMapsUrl") != "undefined")
+            if (typeof this.get("pendingMapsUrl") !== "undefined")
               this.set(
                 "pendingMapsUrl",
-                this.get("accountsUrl") + "pendingmap/",
+                `${this.get("accountsUrl")}pendingmap/`,
               );
 
-            if (typeof this.get("accountsMapsUrl") != "undefined")
-              this.set("accountsMapsUrl", this.get("accountsUrl") + "map/");
+            if (typeof this.get("accountsMapsUrl") !== "undefined")
+              this.set("accountsMapsUrl", `${this.get("accountsUrl")}map/`);
 
-            if (typeof this.get("groupsUrl") != "undefined")
+            if (typeof this.get("groupsUrl") !== "undefined")
               this.set(
                 "groupsUrl",
-                d1CNBaseUrl + this.get("d1CNService") + "/groups/",
+                `${d1CNBaseUrl + this.get("d1CNService")}/groups/`,
               );
           }
 
-          if (typeof this.get("d1LogServiceUrl") != "undefined")
+          if (typeof this.get("d1LogServiceUrl") !== "undefined")
             this.set(
               "d1LogServiceUrl",
-              d1CNBaseUrl + this.get("d1CNService") + "/query/logsolr/?",
+              `${d1CNBaseUrl + this.get("d1CNService")}/query/logsolr/?`,
             );
 
           this.set(
             "nodeServiceUrl",
-            d1CNBaseUrl + this.get("d1CNService") + "/node/",
+            `${d1CNBaseUrl + this.get("d1CNService")}/node/`,
           );
           this.set(
             "resolveServiceUrl",
-            d1CNBaseUrl + this.get("d1CNService") + "/resolve/",
+            `${d1CNBaseUrl + this.get("d1CNService")}/resolve/`,
           );
           this.set(
             "reserveServiceUrl",
-            d1CNBaseUrl + this.get("d1CNService") + "/reserve",
+            `${d1CNBaseUrl + this.get("d1CNService")}/reserve`,
           );
 
-          //Token URLs
-          if (typeof this.get("tokenUrl") != "undefined") {
-            this.set("tokenUrl", d1CNBaseUrl + "/portal/" + "token");
+          // Token URLs
+          if (typeof this.get("tokenUrl") !== "undefined") {
+            this.set("tokenUrl", `${d1CNBaseUrl}/portal/` + `token`);
 
             this.set(
               "checkTokenUrl",
-              d1CNBaseUrl + this.get("d1CNService") + "/diag/subject",
+              `${d1CNBaseUrl + this.get("d1CNService")}/diag/subject`,
             );
 
-            //The sign-in and out URLs
-            if (typeof this.get("signInUrlOrcid") != "undefined") {
+            // The sign-in and out URLs
+            if (typeof this.get("signInUrlOrcid") !== "undefined") {
               this.set(
                 "signInUrlOrcid",
-                d1CNBaseUrl + "/portal/" + "oauth?action=start&target=",
+                `${d1CNBaseUrl}/portal/` + `oauth?action=start&target=`,
               );
-              this.set("signOutUrl", d1CNBaseUrl + "/portal/" + "logout");
+              this.set("signOutUrl", `${d1CNBaseUrl}/portal/` + `logout`);
             }
           }
 
           // Object format list
-          if (typeof this.get("formatsUrl") != "undefined") {
+          if (typeof this.get("formatsUrl") !== "undefined") {
             this.set(
               "formatsServiceUrl",
               d1CNBaseUrl + this.get("d1CNService") + this.get("formatsUrl"),
@@ -2607,31 +2598,31 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         }
 
         // Metadata quality report services
-        this.set("mdqSuitesServiceUrl", this.get("mdqBaseUrl") + "/suites/");
-        this.set("mdqRunsServiceUrl", this.get("mdqBaseUrl") + "/runs/");
-        this.set("mdqScoresServiceUrl", this.get("mdqBaseUrl") + "/scores/");
+        this.set("mdqSuitesServiceUrl", `${this.get("mdqBaseUrl")}/suites/`);
+        this.set("mdqRunsServiceUrl", `${this.get("mdqBaseUrl")}/runs/`);
+        this.set("mdqScoresServiceUrl", `${this.get("mdqBaseUrl")}/scores/`);
 
-        //Construct the DataONE Bookkeeper service API URLs
+        // Construct the DataONE Bookkeeper service API URLs
         if (this.get("enableBookkeeperServices")) {
           this.set(
             "bookkeeperSubscriptionsUrl",
-            this.get("bookkeeperBaseUrl") + "/subscriptions",
+            `${this.get("bookkeeperBaseUrl")}/subscriptions`,
           );
           this.set(
             "bookkeeperCustomersUrl",
-            this.get("bookkeeperBaseUrl") + "/customers",
+            `${this.get("bookkeeperBaseUrl")}/customers`,
           );
           this.set(
             "bookkeeperQuotasUrl",
-            this.get("bookkeeperBaseUrl") + "/quotas",
+            `${this.get("bookkeeperBaseUrl")}/quotas`,
           );
           this.set(
             "bookkeeperUsagesUrl",
-            this.get("bookkeeperBaseUrl") + "/usages",
+            `${this.get("bookkeeperBaseUrl")}/usages`,
           );
         }
 
-        //Construct the Fluid Earth Fever URL
+        // Construct the Fluid Earth Fever URL
         if (
           this.get("enableFeverVisualizations") &&
           this.get("feverPath") &&
@@ -2642,12 +2633,12 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
 
         this.on("change:pid", this.changePid);
 
-        //For backward-compatbility, set the theme and themeTitle variables using the
+        // For backward-compatbility, set the theme and themeTitle variables using the
         // attributes set on this model, which are taken from the AppConfig
         MetacatUI.theme = this.get("theme");
         MetacatUI.themeTitle = this.get("repositoryName");
 
-        //Set up the alternative repositories
+        // Set up the alternative repositories
         _.map(
           this.get("alternateRepositories"),
           function (repo) {
@@ -2662,67 +2653,66 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * @param {string} [baseUrl] - The baseUrl to use in the URLs. If not specified, it uses the AppModel attributes.
        * @returns {object}
        */
-      getDataONEMNAPIs: function (baseUrl) {
-        var urls = {};
+      getDataONEMNAPIs(baseUrl) {
+        const urls = {};
 
-        //Get the baseUrl from this model if one isn't given
-        if (typeof baseUrl == "undefined") {
+        // Get the baseUrl from this model if one isn't given
+        if (typeof baseUrl === "undefined") {
           var baseUrl = this.get("baseUrl");
         }
 
-        //Remove a forward slash to the end of the base URL if there is one
+        // Remove a forward slash to the end of the base URL if there is one
         if (baseUrl.charAt(baseUrl.length - 1) == "/") {
           baseUrl = baseUrl.substring(0, baseUrl.length - 1);
         }
 
-        //If the baseUrl doesn't have the full DataONE MN API structure, then construct it
+        // If the baseUrl doesn't have the full DataONE MN API structure, then construct it
         if (baseUrl.indexOf("/d1/mn") == -1) {
-          //Get the Dataone API fragment, which is either "/d1/mn/v2" or "/cn/v2"
+          // Get the Dataone API fragment, which is either "/d1/mn/v2" or "/cn/v2"
           var d1Service = this.get("d1Service");
-          if (typeof d1Service != "string" || !d1Service.length) {
+          if (typeof d1Service !== "string" || !d1Service.length) {
             d1Service = "/d1/mn/v2";
           } else if (d1Service.charAt(0) != "/") {
-            d1Service = "/" + d1Service;
+            d1Service = `/${d1Service}`;
           }
 
-          //Get the Metacat context, and make sure it starts with a forward slash
-          var context = this.get("context");
-          if (typeof context != "string" || !context.length) {
+          // Get the Metacat context, and make sure it starts with a forward slash
+          let context = this.get("context");
+          if (typeof context !== "string" || !context.length) {
             context = "";
           } else if (context.charAt(0) != "/") {
-            context = "/" + context;
+            context = `/${context}`;
           }
 
-          //Construct the base URL
+          // Construct the base URL
           baseUrl = baseUrl + context + d1Service;
         }
-        //Otherwise, just make sure the API version is appended to the base URL
+        // Otherwise, just make sure the API version is appended to the base URL
         else if (baseUrl.substring(baseUrl.length - 3) != "/v2") {
           d1Service = "/d1/mn";
-          baseUrl = baseUrl + "/v2";
+          baseUrl += "/v2";
         }
 
         // these are pretty standard, but can be customized if needed
-        urls.viewServiceUrl = baseUrl + "/views/metacatui/";
-        urls.publishServiceUrl = baseUrl + "/publish/";
-        urls.authServiceUrl = baseUrl + "/isAuthorized/";
-        urls.queryServiceUrl = baseUrl + "/query/solr/?";
-        urls.metaServiceUrl = baseUrl + "/meta/";
-        urls.packageServiceUrl =
-          baseUrl + "/packages/" + this.get("packageFormat") + "/";
+        urls.viewServiceUrl = `${baseUrl}/views/metacatui/`;
+        urls.publishServiceUrl = `${baseUrl}/publish/`;
+        urls.authServiceUrl = `${baseUrl}/isAuthorized/`;
+        urls.queryServiceUrl = `${baseUrl}/query/solr/?`;
+        urls.metaServiceUrl = `${baseUrl}/meta/`;
+        urls.packageServiceUrl = `${baseUrl}/packages/${this.get("packageFormat")}/`;
 
         if (d1Service.indexOf("mn") > 0) {
-          urls.objectServiceUrl = baseUrl + "/object/";
+          urls.objectServiceUrl = `${baseUrl}/object/`;
         }
 
         if (this.get("enableMonitorStatus")) {
-          urls.monitorStatusUrl = baseUrl + "/monitor/status";
+          urls.monitorStatusUrl = `${baseUrl}/monitor/status`;
         }
 
         return urls;
       },
 
-      changePid: function (model, name) {
+      changePid(model, name) {
         this.set("previousPid", model.previous("pid"));
       },
 
@@ -2730,21 +2720,20 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * Gets the currently-active alternative repository that is configured in this AppModel.
        * @returns {object}
        */
-      getActiveAltRepo: function () {
-        //Get the alternative repositories to use for uploading objects
-        var altRepos = this.get("alternateRepositories"),
-          activeAltRepo;
+      getActiveAltRepo() {
+        // Get the alternative repositories to use for uploading objects
+        const altRepos = this.get("alternateRepositories");
+        let activeAltRepo;
 
-        //Get the active alt repo
+        // Get the active alt repo
         if (altRepos.length && this.get("activeAlternateRepositoryId")) {
           activeAltRepo = _.findWhere(altRepos, {
             identifier: this.get("activeAlternateRepositoryId"),
           });
 
           return activeAltRepo || null;
-        } else {
-          return null;
         }
+        return null;
       },
 
       /**
@@ -2753,16 +2742,16 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * the first alt repo in the {@link AppConfig#alternateRepositories} list is used.
        * @fires AppModel#change:activeAlternateRepositoryId
        */
-      setActiveAltRepo: function () {
-        //Get the alternative repositories to use for uploading objects
-        var altRepos = this.get("alternateRepositories"),
-          defaultAltRepo;
+      setActiveAltRepo() {
+        // Get the alternative repositories to use for uploading objects
+        const altRepos = this.get("alternateRepositories");
+        let defaultAltRepo;
 
         if (!altRepos.length) {
           return;
         }
 
-        //If a default alt repo is configured, set that as the active alt repo
+        // If a default alt repo is configured, set that as the active alt repo
         if (this.get("defaultAlternateRepositoryId")) {
           defaultAltRepo = _.findWhere(altRepos, {
             identifier: this.get("defaultAlternateRepositoryId"),
@@ -2772,7 +2761,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           }
         }
 
-        //Otherwise, use the first alt repo in the list
+        // Otherwise, use the first alt repo in the list
         if (!defaultAltRepo) {
           this.set("activeAlternateRepositoryId", altRepos[0].identifier);
         }
@@ -2783,8 +2772,8 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * configured, this will fetch the taxa from the repository. Otherwise,
        * it will return the object set on the quickAddTaxa attribute.
        */
-      getQuickAddTaxa: function () {
-        var taxa = this.get("quickAddTaxa");
+      getQuickAddTaxa() {
+        const taxa = this.get("quickAddTaxa");
         if (typeof taxa === "object") return taxa;
         if (typeof taxa !== "string") return null;
 
@@ -2816,23 +2805,22 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * @param {string} id A unique ID for the CSS styles which has not been used
        * anywhere else in the app.
        */
-      addCSS: function (css, id) {
+      addCSS(css, id) {
         try {
           if (!MetacatUI.loadedCSS) {
             MetacatUI.loadedCSS = [];
           }
           if (!MetacatUI.loadedCSS.includes(id)) {
             MetacatUI.loadedCSS.push(id);
-            var style = document.createElement("style");
+            const style = document.createElement("style");
             style.id = id;
             style.appendChild(document.createTextNode(css));
             document.querySelector("head").appendChild(style);
           }
         } catch (error) {
           console.log(
-            "There was an error adding CSS to the app" +
-              ". Error details: " +
-              error,
+            `There was an error adding CSS to the app` +
+              `. Error details: ${error}`,
           );
         }
       },
@@ -2844,23 +2832,22 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * anywhere else in the app. The same ID used to add the CSS with
        * {@link AppModel#addCSS}
        */
-      removeCSS: function (id) {
+      removeCSS(id) {
         try {
           if (!MetacatUI.loadedCSS) {
             MetacatUI.loadedCSS = [];
           }
           if (MetacatUI.loadedCSS.includes(id)) {
             MetacatUI.loadedCSS = MetacatUI.loadedCSS.filter((e) => e !== id);
-            var sheet = document.querySelector("head #" + id);
+            const sheet = document.querySelector(`head #${id}`);
             if (sheet) {
               sheet.remove();
             }
           }
         } catch (error) {
           console.log(
-            "There was an error removing CSS from the app" +
-              ". Error details: " +
-              error,
+            `There was an error removing CSS from the app` +
+              `. Error details: ${error}`,
           );
         }
       },
@@ -2869,7 +2856,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * Reset the web document's title to the default
        * @since 2.25.0
        */
-      resetTitle: function () {
+      resetTitle() {
         this.set("title", this.defaults.title);
       },
 
@@ -2877,7 +2864,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * Reset the web document's description to the default
        * @since 2.25.0
        */
-      resetDescription: function () {
+      resetDescription() {
         this.set("description", this.defaults.description);
       },
 
@@ -2888,7 +2875,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * @returns {string} - The DOI string without any prefixes.
        * @since 2.26.0
        */
-      removeAllDOIPrefixes: function (str) {
+      removeAllDOIPrefixes(str) {
         if (!str) return "";
         // Remove https and http prefixes
         str = str.replace(/^(https?:\/\/)?/, "");
@@ -2902,10 +2889,11 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
       /**
        * Check if a string is a valid DOI.
        * @param {string} doi - The string to check.
+       * @param str
        * @returns {boolean} - True if the string is a valid DOI, false otherwise.
        * @since 2.26.0
        */
-      isDOI: function (str) {
+      isDOI(str) {
         try {
           if (!str) return false;
           str = this.removeAllDOIPrefixes(str);
@@ -2926,11 +2914,11 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * @returns {string} - The DOI URL
        * @since 2.23.0
        */
-      DOItoURL: function (str) {
+      DOItoURL(str) {
         if (!str) return "";
         str = this.removeAllDOIPrefixes(str);
         if (!this.isDOI(str)) return "";
-        return "https://doi.org/" + str;
+        return `https://doi.org/${str}`;
       },
 
       /**
@@ -2942,12 +2930,12 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * @returns {string} - The DOI string, including the "doi:" prefix
        * @since 2.26.0
        */
-      URLtoDOI: function (url) {
+      URLtoDOI(url) {
         if (!url) return "";
         const doiURLRegex =
           /https?:\/\/(dx\.)?doi\.org\/(doi:)?(10\.[0-9]{4,}(?:[.][0-9]+)*\/[^\s"<>]+)/;
         const doiURLMatch = url.match(doiURLRegex);
-        if (doiURLMatch) return "doi:" + doiURLMatch[3];
+        if (doiURLMatch) return `doi:${doiURLMatch[3]}`;
         return "";
       },
     },
