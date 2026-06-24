@@ -2029,12 +2029,13 @@ other class: .ui-slider-range */
  * Viewfinder Cards
  *
  * Cards in the viewfinder that represent a point of interest. Each card has:
- *   - A header with an optional image (left) and metadata (right): title, date, authors
- *   - An optional description
- *   - Action buttons: "View Layers" (always), "Open in Browser" (if tabUrl), and/or
- *     "Explore in App" (if iframeUrl)
- *   - Informational layer badges showing which layers will be toggled
- *
+ *   - A title, description, and one or more action buttons
+ *   - Action buttons: are either primary (for the main action) or secondary (for less important actions)
+ *     primary or secondary is determined by ordinality with legacy top-level lat, lng, height, and layerid
+ *     attributes creating a secondary View Layers button and Map type action by default. 
+ *   - Informational collapsable layer badges which expand to show which layers are toggled
+ *   - An optional hero image which appears behind the title at the top of the card
+ * 
  * The card body is not interactive — all actions are explicit buttons.
  *
  */
@@ -2043,88 +2044,67 @@ other class: .ui-slider-range */
   display: flex;
   flex-direction: column;
   padding: 0 1.5rem 1rem 1.5rem;
-  row-gap: 0.5rem;
+  row-gap: 0.75rem;
 }
 
 .viewfinder-card {
   border-radius: var(--map-border-radius-big);
   border: 1px solid
     var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
-  .viewfinder-card__card {
+  /* ---- Hero: full-width image with vignette and title overlay ---- */
+
+  .viewfinder-card__hero {
+    position: relative;
+  }
+
+  .viewfinder-card__image {
+    width: 100%;
+    height: 6.5rem;
+    object-fit: cover;
+    display: block;
+  }
+
+  .viewfinder-card__hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 40%,
+      rgba(0, 0, 0, 0.75) 90%
+    );
+    pointer-events: none;
+  }
+
+  .viewfinder-card__hero .viewfinder-card__title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.75rem;
+    z-index: 1;
+    color: white;
+  }
+
+  /* ---- Card body ---- */
+
+  .viewfinder-card__body {
     display: flex;
     flex-direction: column;
     padding: 1.1rem;
     row-gap: 0.75rem;
   }
 
-  /* ---- Header: image (left) + metadata (right) ---- */
-
-  .viewfinder-card__header {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.75rem;
-    align-items: start;
-  }
-
-  /* When there is no image, the header collapses to a single column */
-  .viewfinder-card__header--no-image {
-    grid-template-columns: 1fr;
-  }
-
-  .viewfinder-card__image {
-    width: 5.5rem;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    border-radius: var(--map-border-radius-small);
-    display: block;
-    flex-shrink: 0;
-  }
-
-  /* Simple layout: image floated left, title + description wrap around it.
-     Description starts to the right of the image below the title, and when
-     the text overflows past the image height it wraps to the full card width. */
-  .viewfinder-card__header--simple {
-    display: block;
-    overflow: hidden; /* clearfix — contains the float */
-    gap: 0;
-
-    .viewfinder-card__image {
-      float: left;
-      margin: 0 0.75rem 0.25rem 0;
-    }
-
-    .viewfinder-card__meta {
-      display: block; /* plain block so text flows around the float */
-      gap: 0;
-    }
-
-    .viewfinder-card__title {
-      margin-block-start: 0; /* remove the grid-alignment offset */
-    }
-
-    .viewfinder-card__description {
-      margin-top: 0.35rem;
-      /* no overflow:hidden here — must NOT create a new BFC so the float wrapping works */
-    }
-  }
-
-  .viewfinder-card__meta {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    min-width: 0;
-  }
-
+  /* Title for cards without images */
   .viewfinder-card__title {
     color: var(--portal-col-primary-6, white);
     font-weight: 600;
     font-size: 1.05rem;
     line-height: 1.3;
-    margin-block-start: calc((1em - 1lh) / 2);
   }
-
-  /* ---- Description ---- */
 
   .viewfinder-card__description {
     color: var(--portal-col-neutral-7, white);
@@ -2137,12 +2117,11 @@ other class: .ui-slider-range */
   .viewfinder-card__actions {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 0.4rem;
   }
 
-  /* Primary buttons */
   .viewfinder-card__button-primary {
-    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2150,14 +2129,20 @@ other class: .ui-slider-range */
     text-align: center;
     white-space: normal;
     font-size: 0.95rem;
+    width: 100%;
+    border-color: var(--portal-col-primary-2);
+    color: var(--portal-col-primary-6, white);
+  }
+
+  .viewfinder-card__button-primary:hover {
+    border-color: var(--portal-col-primary-4);
+    filter: none;
   }
 
   /* Secondary buttons: plain text, no border */
   .viewfinder-card__button-secondary {
-    align-self: center;
     display: flex;
     align-items: center;
-    width: fit-content;
     background: transparent;
     gap: 0.5rem;
     font-size: 0.95rem;
@@ -2172,12 +2157,7 @@ other class: .ui-slider-range */
     filter: none;
   }
 
-  .viewfinder-card__button-primary:hover {
-    border-color: var(--portal-col-primary-4);
-    filter: none;
-  }
-
-  /* Active state on the card wrapper — one card highlighted at a time */
+  /* Active state on the card wrapper */
   &.viewfinder-card--active {
     background-color: var(
       --portal-col-primary-1,
@@ -2187,10 +2167,10 @@ other class: .ui-slider-range */
       --portal-col-primary-6,
       var(--map-col-highlight__deprecate)
     );
-    box-shadow: 0 0 0 1px var(--portal-col-primary-3, transparent) inset;
+    box-shadow: 1px 2px rgba(0, 0, 0, 0.15);
   }
 
-  /* When View Layers is the active button, layer badges expand and the text turns blue */
+  /* When View Layers is active, expand the layer badges */
   &.viewfinder-card--layers-active {
     .viewfinder-card__layers {
       grid-template-rows: 1fr;
@@ -2202,7 +2182,6 @@ other class: .ui-slider-range */
     color: var(--portal-col-primary-6, white);
   }
 
-  /* The other buttons that were clicked turn dark blue (filled) */
   .viewfinder-card__button-primary--active {
     background-color: var(
       --portal-col-primary-6,
@@ -2216,7 +2195,7 @@ other class: .ui-slider-range */
     filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.15));
   }
 
-  /* ---- Layer badges (informational only, collapsed until View Layers is active) ---- */
+  /* ---- Layer badges (collapsed until View Layers is active) ---- */
 
   .viewfinder-card__layers {
     display: grid;
