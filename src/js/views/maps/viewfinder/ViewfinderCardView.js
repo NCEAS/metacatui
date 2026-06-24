@@ -38,15 +38,15 @@ define([
   const CTA_HANDLERS = {
     /**
      * Opens the URL in the full-screen visualization overlay.
-     * @param {ViewfinderCardAction} action
-     * @param {ViewfinderCardView} view
+     * @param {ViewfinderCardAction} action Action object with a `url` property.
+     * @param {ViewfinderCardView} view The card view that was clicked, which has a `ctaCallback` to open the overlay.
      */
     iframe(action, view) {
       view.ctaCallback(action.url);
     },
     /**
      * Opens the URL in a new browser tab.
-     * @param {ViewfinderCardAction} action
+     * @param {ViewfinderCardAction} action Action object with a `url` property.
      */
     tab(action) {
       if (action.url) {
@@ -56,8 +56,8 @@ define([
     /**
      * Zooms the map and enables layers. Delegates to the view's
      * selectCallback so the model handles the navigation logic.
-     * @param {ViewfinderCardAction} action
-     * @param {ViewfinderCardView} view
+     * @param {ViewfinderCardAction} action Action object with `latitude`, `longitude`, and `layerIds` properties.
+     * @param {ViewfinderCardView} view The card view that was clicked, which has a `selectCallback` to zoom and toggle layers.
      */
     map(action, view) {
       view.selectCallback(action);

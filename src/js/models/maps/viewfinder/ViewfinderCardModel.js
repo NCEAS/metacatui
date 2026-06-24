@@ -75,19 +75,18 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
 
       /**
        * Parse incoming data to create a ViewfinderCardModel. Handles the
-       * legacy `position` field and synthesizes a 'map' ctaAction (with
+       * legacy `position` field and synthesizes a 'map' button action (with
        * secondary ordinality, "View Layers" label, and eye icon) from any
        * top-level `latitude`/`longitude`/`height`/`layerIds` fields or from
        * the legacy `position` object. The synthesized action is appended after
-       * any explicitly provided ctaActions.
+       * any explicitly provided buttons.
        * @param {object} data The raw data to parse.
        * @param {object} [data.position] Legacy {latitude, longitude, height}.
        * @param {number} [data.latitude] Top-level latitude.
        * @param {number} [data.longitude] Top-level longitude.
        * @param {number} [data.height] Top-level camera altitude in metres.
        * @param {string[]} [data.layerIds] Top-level layer IDs.
-       * @param {ViewfinderCardAction[]} [data.ctaActions] Explicit actions.
-       * @param data.buttons
+       * @param {ViewfinderCardAction[]} [data.buttons] Explicit button actions.
        * @returns {object} The parsed attributes.
        */
       parse({
