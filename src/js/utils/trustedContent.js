@@ -70,8 +70,7 @@ define([], () => {
     const matchedSource = sources
       .map(normalizeTrustedContentSource)
       .find(
-        (normalized) =>
-          normalized && patternToRegex(normalized.url).test(url),
+        (normalized) => normalized && patternToRegex(normalized.url).test(url),
       );
 
     return matchedSource ?? null;
