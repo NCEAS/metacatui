@@ -10,6 +10,12 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
    * @classdesc ViewfinderCardModel represents a point of interest on a map that
    * can be configured within a MapView. Each card requires a title,
    * description, and at least one ctaAction of type 'iframe', 'tab', or 'map'.
+   * This class was generalized from ZoomPresetModel and was renamed for clarity
+   * when zoom presets were deprecated in favor of more generalized viewfinder
+   * cards in 0.0.0, but the legacy zoom preset configuration format is still supported
+   * for backward compatibility. Top level latitude, longitude, height, and
+   * layerIds fields are synthesized into a 'map' action button with secondary
+   * ordinality, a "View Layers" label, and eye icon.
    * @classcategory Models/Maps
    * @augments Backbone.Model
    * @since 2.29.0
@@ -17,6 +23,9 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
   const ViewfinderCardModel = Backbone.Model.extend(
     /** @lends ViewfinderCardModel.prototype */ {
       /**
+       * Configuration options to describe a single action button on a
+       * ViewfinderCard. Added when zoom presets were deprecated in favor
+       * of generalized viewfinder cards in 0.0.0.
        * @typedef {object} ViewfinderCardAction
        * @property {'iframe'|'tab'|'map'} type The action type.
        * - 'iframe': opens a URL in the visualization overlay above the map.
@@ -36,6 +45,9 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        */
 
       /**
+       * Configuration options for a ViewfinderCardModel. Extended from
+       * ZoomPresetModelOptions when zoom presets were deprecated in favor
+       * of generalized viewfinder cards in 0.0.0.
        * @typedef {object} ViewfinderCardModelOptions
        * @property {string} title The displayed title for the card.
        * @property {string} description A brief description of the card.
@@ -73,12 +85,14 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
       },
 
       /**
-       * Parse incoming data to create a ViewfinderCardModel. Handles the
-       * legacy `position` field and synthesizes a 'map' button action (with
-       * secondary ordinality, "View Layers" label, and eye icon) from any
-       * top-level `latitude`/`longitude`/`height`/`layerIds` fields or from
-       * the legacy `position` object. The synthesized action is appended after
-       * any explicitly provided buttons.
+       * Extended from ZoomPresetModel's Parse() when zoom presets were deprecated
+       * in favor of generalized viewfinder cards in 0.0.0. Parses incoming data to
+       * create a ViewfinderCardModel. Handles the legacy `position` field
+       * and synthesizes a 'map' button action (with secondary ordinality,
+       * "View Layers" label, and eye icon) from any top-level
+       * `latitude`/`longitude`/`height`/`layerIds` fields or from
+       * the legacy `position` object. The synthesized action is appended
+       * after any explicitly provided buttons.
        * @param {object} data The raw data to parse.
        * @param {object} [data.position] Legacy {latitude, longitude, height}.
        * @param {number} [data.latitude] Top-level latitude.

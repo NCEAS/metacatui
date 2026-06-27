@@ -107,11 +107,11 @@ define([
        * @property {string} [globeBaseColor=null] - The base color of the globe
        * when no layer is shown.
        * @property {MapConfig#ViewfinderCards} [viewfinderCards=null] - A
-       * predefined list of locations with an enabled list of layer IDs to be
-       * shown in the viewfinder UI, or an object with a URL to fetch the cards
-       * from. Requires `showViewfinder` to be true as this UI appears within
-       * the ViewfinderView. Also accepts the legacy key `zoomPresets` for
-       * backward compatibility.
+       * predefined list of ViewfinderCards to be shown in the viewfinder UI,
+       * or an object with a URL to fetch the cards from. Requires `showViewfinder`
+       * to be true as this UI appears within the ViewfinderView. Viewfinder Cards
+       * were generalized from zoom presets so this also accepts the legacy key
+       * `zoomPresets` for backward compatibility.
        * @property {MapConfig#ViewfinderCardCategory[]} [viewfinderCardCategories=null]
        * Instead of a simple list of viewfinder cards, an array that groups
        * cards into categories with a label and optional icon. Also accepts the
@@ -242,9 +242,11 @@ define([
        * when no layer is shown.
        * @property {ViewfinderCards} [viewfinderCards=null] - A
        * Backbone.Collection of a predefined list of locations with an enabled
-       * list of layer IDs to be shown in the viewfinder UI. Requires
+       * list of layer IDs, content to open in an embedded iframe, or links to
+       * external content to be shown in a new tab. Requires
        * `showViewfinder` to be true as this UI appears within the
-       * ViewfinderView.
+       * ViewfinderView. Viewfinder Cards were generalized from zoom presets
+       * so this also accepts the legacy key `zoomPresets` for backward compatibility.
        */
       defaults() {
         return {

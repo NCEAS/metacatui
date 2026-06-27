@@ -7,6 +7,7 @@ define([
 ], (_, Backbone, Template) => {
   // The base classname to use for this View's template elements.
   const BASE_CLASS = "viewfinder-card";
+
   // The HTML classes to use for this view's HTML elements.
   const CLASS_NAMES = {
     active: `${BASE_CLASS}--active`,
@@ -26,6 +27,7 @@ define([
     buttonSecondary: `${BASE_CLASS}__button-secondary`,
     buttonSecondaryActive: `${BASE_CLASS}__button-secondary--active`,
   };
+
   // A function that does nothing. Can be safely called as a default callback.
   const noop = () => {};
 
@@ -34,12 +36,14 @@ define([
    * that carries out the action. Add entries here to support new action types
    * without modifying ViewfinderCardView itself.
    * @type {Object<string, function(ViewfinderCardAction, ViewfinderCardView): void>}
+   * @since 0.0.0
    */
-  const CTA_HANDLERS = {
+  const BUTTON_ACTION_HANDLERS = {
     /**
      * Opens the URL in the full-screen visualization overlay.
      * @param {ViewfinderCardAction} action Action object with a `url` property.
      * @param {ViewfinderCardView} view The card view that was clicked, which has a `ctaCallback` to open the overlay.
+     * @since 0.0.0
      */
     iframe(action, view) {
       view.ctaCallback(action.url);
@@ -47,6 +51,7 @@ define([
     /**
      * Opens the URL in a new browser tab.
      * @param {ViewfinderCardAction} action Action object with a `url` property.
+     * @since 0.0.0
      */
     tab(action) {
       if (action.url) {
@@ -58,6 +63,7 @@ define([
      * selectCallback so the model handles the navigation logic.
      * @param {ViewfinderCardAction} action Action object with `latitude`, `longitude`, and `layerIds` properties.
      * @param {ViewfinderCardView} view The card view that was clicked, which has a `selectCallback` to zoom and toggle layers.
+     * @since 0.0.0
      */
     map(action, view) {
       view.selectCallback(action);
@@ -66,17 +72,21 @@ define([
 
   /**
    * @class ViewfinderCardView
-   * @classdesc Shows the title, description, and action buttons for a
-   * configured location within a MapView. Action buttons are driven by
-   * `buttons` on the model; 'map' type actions (secondary ordinality) render
-   * as a plain-text secondary link, while 'iframe'/'tab' type actions
-   * (primary ordinality) render as bordered buttons.
-   * The card body itself is not interactive — all actions are explicit buttons.
+   * @classdesc This class was generalized from ZoomPresetView when
+   * zoom presets were deprecated in favor of viewfinder cards in 0.0.0.
+   * It shows the title, description, and action buttons for a configured card
+   * within a MapView. Cards can also contain an image hero banner behind the
+   * title. Action buttons have two styles determined by their ordinality
+   * and are driven by `buttons` on the model with configurable text and icons.
+   * 'map' type actions (secondary ordinality) render as a plain-text
+   * secondary link, while 'iframe'/'tab' type actions (primary ordinality)
+   * render as bordered buttons. The card body itself is no longer interactive —
+   * all interactions are explicit buttons.
    * @classcategory Views/Maps/Viewfinder
    * @name ViewfinderCardView
    * @augments Backbone.View
    * @screenshot views/maps/viewfinder/ViewfinderCardView.png
-   * @since 2.29.0
+   * @since 0.0.0
    * @constructs ViewfinderCardView
    */
   const ViewfinderCardView = Backbone.View.extend(
@@ -137,7 +147,7 @@ define([
         this.onActivate(this);
         this.closeVisualizationCallback();
         this.setActive(btn);
-        CTA_HANDLERS[action.type]?.(action, this);
+        BUTTON_ACTION_HANDLERS[action.type]?.(action, this);
       },
 
       /**

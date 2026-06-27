@@ -1,6 +1,9 @@
 "use strict";
 
-define(["backbone", "utils/trustedContent"], (Backbone, trustedContent) => {
+define(["backbone", "common/TrustedContentUtilities"], (
+  Backbone,
+  trustedContent,
+) => {
   const BASE_CLASS = "visualization-panel";
   const CLASS_NAMES = {
     body: `${BASE_CLASS}__body`,
@@ -35,9 +38,9 @@ define(["backbone", "utils/trustedContent"], (Backbone, trustedContent) => {
    * @class VisualizationPanelView
    * @classdesc A full-screen overlay panel that displays an external
    * visualization application in an iframe above the map. Opened by clicking
-   * the "Explore in App" button on a ViewfinderCardView card that has an
-   * `iframeUrl` configured. Closed by the close button, the Escape key, or
-   * when a different card action is triggered.
+   * an 'iframe' type button on a ViewfinderCardView card. Closed by clicking
+   * the close button in the upper right, pressing the Escape key, or by clicking
+   * another card action.
    *
    * Security: the iframe `src` is only set when the URL matches the app's
    * `trustedContentSources` configuration. Untrusted URLs are displayed as a
@@ -46,6 +49,8 @@ define(["backbone", "utils/trustedContent"], (Backbone, trustedContent) => {
    * @name VisualizationPanelView
    * @augments Backbone.View
    * @constructs VisualizationPanelView
+   * @screenshot views/maps/VisualizationPanelView.png
+   * @since 0.0.0
    */
   const VisualizationPanelView = Backbone.View.extend(
     /** @lends VisualizationPanelView.prototype */ {

@@ -5,7 +5,7 @@
  * are not from a trusted source
  */
 
-define(["showdown", "utils/trustedContent"], (showdown, trustedContent) => {
+define(["showdown", "common/TrustedContentUtilities"], (showdown, trustedContent) => {
 
   /**
    * Allowlisted iframe attributes that are safe to forward from the author's

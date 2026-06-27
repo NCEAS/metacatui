@@ -23,13 +23,17 @@ define([
 
   /**
    * Configuration options for preset map locations and enabled layers that
-   * will be shown in the viewfinder UI.
+   * will be shown in the viewfinder UI. Renamed from ZoomPresets
+   * for clarity when zoom presets were deprecated in favor of
+   * more generalized viewfinder cards in 0.0.0.
    * @typedef {MapConfig#ViewfinderCard[]|MapConfig#LeoNetworkViewfinderCardConfig} MapConfig#ViewfinderCards
    * @since 2.35.0
    */
 
   /**
    * A configuration object for fetching viewfinder cards from the LEO Network.
+   * Renamed from LeoNetworkZoomPresetConfig for clarity when zoom presets were
+   * deprecated in favor of more generalized viewfinder cards in 0.0.0.
    * @typedef {object} MapConfig#LeoNetworkViewfinderCardConfig
    * @property {string} url The URL to fetch the GeoJSON of viewfinder cards
    * from the LEO Network, e.g.
@@ -42,6 +46,8 @@ define([
 
   /**
    * Configuration options for a viewfinder card in the MapConfig.
+   * Extended from ZoomPreset for clarity when zoom presets were
+   * deprecated in favor of more generalized viewfinder cards in 0.0.0.
    * @typedef {object} MapConfig#ViewfinderCard
    * @property {string} title The displayed title for the card.
    * @property {string} description A brief description of the card.
@@ -59,12 +65,16 @@ define([
    * @property {number} [longitude] Camera longitude for the "View Layers" button.
    * @property {number} [height] Camera altitude (metres) for the "View Layers" button.
    * @property {string[]} [layerIds] Layer IDs toggled by the "View Layers" button.
+   * @since 0.0.0
    */
+
   /**
    * @class ViewfinderCards
    * @classdesc A ViewfinderCards collection is a group of ViewfinderCardModel
-   * models that provide a location and list of layers to make visible when
-   * the user selects.
+   * models that provide a location and list of layers to make visible
+   * and/or allow the user to open content in an iframe or new tab. Renamed
+   * from ZoomPresets for clarity when zoom presets were deprecated in favor
+   * of more generalized viewfinder cards in 0.0.0.
    * @classcategory Collections/Maps
    * @augments Backbone.Collection
    * @since 2.29.0
@@ -97,7 +107,10 @@ define([
 
       /**
        * Parse the configured viewfinder cards or the GeoJSON response from
-       * the LEO Network.
+       * the LEO Network. Extended from the ZoomPresets parse method
+       * when zoom presets were deprecated in favor of more generalized
+       * viewfinder cards in 0.0.0. Applies default ordinality, labels, and icons and
+       * synthesizes legacy top-level parameters into a map type button action.
        * @param {object[]|object} resp The configured cards passed to parse
        * may be one of:
        *    1. custom cards directly from a map config: a list of objects with
@@ -215,7 +228,9 @@ define([
 
       /**
        * Parse the GeoJSON response from the LEO Network to extract viewfinder
-       * card data.
+       * card data. Functionality remains unchanged but this was updated to
+       * return ViewfinderCards instead of the legacy ZoomPresets format when
+       * zoom presets were deprecated in 0.0.0.
        * @param {GeoJSON} response The GeoJSON response from the LEO Network.
        * @returns {object[]} An array of objects representing viewfinder cards.
        * @since 2.35.0

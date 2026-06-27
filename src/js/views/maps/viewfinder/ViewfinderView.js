@@ -86,7 +86,8 @@ define([
       },
 
       /**
-       * Get the ViewfinderCardsView element.
+       * Get the ViewfinderCardsView element. Renamed from getZoomPresets
+       * when zoom presets were deprecated in favor of viewfinder cards in 0.0.0.
        * @returns {JQuery} The ViewfinderCardsView element.
        * @since 2.29.0
        */
@@ -108,7 +109,9 @@ define([
 
       /**
        * Determine where to place a ViewfinderCardsView for a given category,
-       * based on the order of categories in the collection.
+       * based on the order of categories in the collection. Renamed from
+       * getZoomPresetsPlacement when zoom presets were deprecated in favor of
+       * viewfinder cards in 0.0.0.
        * @param {ViewfinderCardCategory} category The category of viewfinder
        * cards to determine placement for.
        * @returns {string|object} "prepend" to add to the beginning of the list,
@@ -157,7 +160,10 @@ define([
       },
 
       /**
-       * Render child ViewfinderCardsListView and append to DOM.
+       * Render child ViewfinderCardsListView and append to DOM. Extended from
+       * renderZoomPresetsView when zoom presets were deprecated in favor of
+       * generalized viewfinder cards in 0.0.0. Adds piping for visualization
+       * panel as well.
        * @param {ViewfinderCardCategory} category The category of viewfinder
        * cards to render.
        * @since 2.29.0

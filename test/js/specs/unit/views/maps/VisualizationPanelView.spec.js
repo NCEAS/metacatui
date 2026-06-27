@@ -2,7 +2,7 @@
 
 define([
   "views/maps/VisualizationPanelView",
-  "utils/trustedContent",
+  "common/TrustedContentUtilities",
   // The file extension is required for files loaded from the /test directory.
   "/test/js/specs/shared/clean-state.js",
 ], (VisualizationPanelView, trustedContent, cleanState) => {

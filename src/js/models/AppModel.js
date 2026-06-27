@@ -1736,6 +1736,18 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * embed external content. This property is used to define URLs or URL
            * patterns that are considered secure for embedding content in
            * iframes, especially when rendering user-generated Markdown content.
+           * 
+           * The list can include string urls (which will automatically be 
+           * given "allow-scripts" permissions) and/or objects that specify 
+           * a url and a string array of iframe permissions for embedding the 
+           * content eg:  
+           *  trustedContentSources: [
+           *    "https://*arcticdata.io",
+           *    {
+           *      url: "https://virtualice.byrd.osu.edu/alaska-permafrost/*",
+           *      permissions: ["allow-scripts", "allow-same-origin"],
+           *    },
+           *  ]
            *
            * Each source in the list can include wildcards (`*`) to match any
            * subdomain or path. For example, `"https://*.dataone.org/*"` matches
@@ -1744,7 +1756,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            *
            * Set to an empty array or a falsy value to disable all embedded content.
            *
-           * @type {string[]}
+           * @type {string[]|object[]}
            * @since 2.32.0
            */
           trustedContentSources: [],

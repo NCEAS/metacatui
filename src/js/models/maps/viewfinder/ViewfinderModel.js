@@ -37,7 +37,9 @@ define([
        * correspond to the user's search query.
        * @property {string} query the user's search query.
        * @property {ViewfinderCardCategories|null} viewfinderCards is the
-       * collection of ViewfinderCards available in the current map.
+       * collection of ViewfinderCards available in the current map. Renamed from
+       * zoomPresets when zoom presets were deprecated in favor of more generalized
+       * viewfinder cards.
        * @since 2.28.0
        */
       defaults() {
@@ -164,6 +166,7 @@ define([
        * Open a visualization app in the full-screen iframe overlay by setting
        * the activeVisualizationUrl attribute on the map model.
        * @param {string} url The URL to load in the iframe overlay.
+       * @since 0.0.0
        */
       openVisualization(url) {
         this.mapModel.set({ activeVisualizationUrl: url });
@@ -172,13 +175,16 @@ define([
       /**
        * Close the visualization overlay by clearing activeVisualizationUrl on
        * the map model.
+       * @since 0.0.0
        */
       closeVisualization() {
         this.mapModel.set({ activeVisualizationUrl: null });
       },
 
       /**
-       * Select a ViewfinderCardModel from the list of cards and navigate there.
+       * Extended from ZoomPresetModel's selectZoomPreset() when zoom presets
+       * were deprecated in favor of generalized viewfinder cards. Select a
+       * ViewfinderCardModel from the list of cards and navigate there.
        * When `action` is a 'map' type ctaAction, its `layerIds` and coordinates
        * are used directly. Otherwise falls back to the preset's `enabledLayerIds`
        * and `geoPoint` for backward compatibility.
@@ -200,7 +206,7 @@ define([
             });
           }
         } else {
-          // Backward compat: read directly from the preset model attributes.
+          // Backward compat: read directly from the legacy zoom preset model attributes.
           enabledLayerIds = preset.get("enabledLayerIds") || [];
           geoPoint = preset.get("geoPoint");
         }

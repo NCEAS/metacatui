@@ -1,7 +1,7 @@
 "use strict";
 
 define([
-  "utils/trustedContent",
+  "common/TrustedContentUtilities",
   // The file extension is required for files loaded from the /test directory.
   "/test/js/specs/shared/clean-state.js",
 ], (trustedContent, cleanState) => {

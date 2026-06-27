@@ -9,11 +9,14 @@ define([
   /**
    * @classdesc A ViewfinderCardCategory Model contains metadata about a group
    * of viewfinder cards in a Map, including a label, optional icon, and
-   * whether the category is expanded by default in the Viewfinder UI.
+   * whether the category is expanded by default in the Viewfinder UI. It was
+   * generalized from the ZoomPresetCategory model and renamed for clarity when
+   * zoom presets were deprecated in favor of viewfinder cards in 0.0.0.
    * @classcategory Models/Maps
    * @class ViewfinderCardCategory
    * @name ViewfinderCardCategory
    * @augments Backbone.Model
+   * @screenshot views/maps/viewfinder/ViewfinderCardCategoryView.png
    * @since 2.35.0
    * @constructs ViewfinderCardCategory
    */
@@ -27,8 +30,9 @@ define([
 
       /**
        * Configuration options for a viewfinder card category. Must have
-       * viewfinderCards OR a url. Also accepts the legacy key `zoomPresets`
-       * for backward compatibility with existing portal configurations.
+       * viewfinderCards OR a url. It was renamed from ZoomPresetCategory and
+       * still accepts the legacy key `zoomPresets` for backward compatibility
+       * with existing portal configurations.
        * @typedef {object} MapConfig#ViewfinderCardCategory
        * @property {string} label The label to show for this category in the
        * viewfinder UI.
