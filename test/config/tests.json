@@ -13,7 +13,7 @@
     "./js/specs/unit/views/maps/viewfinder/SearchView.spec.js",
     "./js/specs/unit/views/maps/viewfinder/ViewfinderView.spec.js",
     "./js/specs/unit/views/maps/VisualizationPanelView.spec.js",
-    "./js/specs/unit/common/isTrustedURL.spec.js",
+    "./js/specs/unit/common/isTrustedUrl.spec.js",
     "./js/specs/unit/views/maps/ExpansionPanelView.spec.js",
     "./js/specs/unit/collections/SolrResults.spec.js",
     "./js/specs/unit/models/Search.spec.js",
