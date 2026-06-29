@@ -131,7 +131,11 @@ define([
         this.onActivate(this);
         this.closeVisualizationCallback();
         this.setActive(btn);
-        this.selectCallback(action);
+        if (action?.type && BUTTON_ACTION_HANDLERS[action.type]) {
+          BUTTON_ACTION_HANDLERS[action.type](action, this);
+        } else {
+          this.selectCallback(action);
+        }
       },
 
       /**

@@ -88,6 +88,48 @@ define([
       expect(state.selectCallbackSpy.callCount).to.equal(1);
     });
 
+    it("opens iframe actions even when rendered as secondary", () => {
+      const sandbox = sinon.createSandbox();
+      const ctaCallbackSpy = sandbox.spy();
+      const selectCallbackSpy = sandbox.spy();
+      const card = new ViewfinderCardModel({
+        title: "Iframe preset",
+        description: "For testing iframe actions",
+        buttons: [
+          {
+            type: "iframe",
+            ordinality: "secondary",
+            label: "View dashboard",
+            url: "https://water-timeseries.streamlit.app/",
+          },
+        ],
+      });
+      const view = new ViewfinderCardView({
+        preset: card,
+        ctaCallback: ctaCallbackSpy,
+        selectCallback: selectCallbackSpy,
+      });
+      view.render();
+      const harness = new ViewfinderCardViewHarness(view);
+      const testContainer = document.createElement("div");
+      testContainer.id = "iframe-test-container";
+      testContainer.append(view.el);
+      document.body.append(testContainer);
+
+      try {
+        harness.click();
+
+        expect(ctaCallbackSpy.callCount).to.equal(1);
+        expect(ctaCallbackSpy.firstCall.args[0]).to.equal(
+          "https://water-timeseries.streamlit.app/",
+        );
+        expect(selectCallbackSpy.callCount).to.equal(0);
+      } finally {
+        sandbox.restore();
+        testContainer.remove();
+      }
+    });
+
     it("can reset selected state", () => {
       state.harness.click();
       state.harness.reset();
