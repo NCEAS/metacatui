@@ -248,6 +248,16 @@ define([
         expect(trustedContent.isTrustedUrl("https://c.example.com/page")).to.be
           .false;
       });
+
+      it("matches host-looking patterns against the URL origin only", () => {
+        globalThis.MetacatUI = makeMetacatUI([{ url: "https://*example.com" }]);
+
+        expect(
+          trustedContent.isTrustedUrl(
+            "https://evil.com/path?target=example.com",
+          ),
+        ).to.be.false;
+      });
     });
 
     // ------------------------------------------------------------------ //

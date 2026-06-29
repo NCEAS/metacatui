@@ -82,12 +82,18 @@ define([], () => {
           return null;
         }
 
+        const parsedUrl = new URL(url);
+
         const matchedSource = sources
           .map(TrustedContentUtilities.normalizeTrustedContentSource)
           .find(
             (normalized) =>
               normalized &&
-              TrustedContentUtilities.patternToRegex(normalized.url).test(url),
+              TrustedContentUtilities.patternToRegex(normalized.url).test(
+                /^(https?:\/\/[^/?#]+)$/i.test(normalized.url)
+                  ? parsedUrl.origin
+                  : parsedUrl.href,
+              ),
           );
 
         return matchedSource ?? null;
