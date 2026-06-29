@@ -186,16 +186,23 @@ define([
             }
           });
 
-          // Synthesize a secondary 'map' button from the top-level
-          // position fields if any are present, and append it after any
-          // explicit buttons.
+          // Synthesize a secondary legacy 'map' button from top-level
+          // position fields only when no explicit map button is present.
+          // This preserves backward compatibility while allowing multiple
+          // explicit map buttons in the newer configs.
           let geoPoint = null;
+          const hasExplicitMapButton = buttons.some((b) => b.type === "map");
           if (cardObj.latitude != null || cardObj.longitude != null) {
             geoPoint = new GeoPoint({
               latitude: cardObj.latitude,
               longitude: cardObj.longitude,
               height: cardObj.height,
             });
+          }
+          if (
+            !hasExplicitMapButton &&
+            (cardObj.latitude != null || cardObj.longitude != null)
+          ) {
             buttons.push({
               type: "map",
               ordinality: "secondary",
