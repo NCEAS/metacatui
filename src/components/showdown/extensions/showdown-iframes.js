@@ -23,21 +23,6 @@ define(["showdown", "common/TrustedContentUtilities"], (showdown, trustedContent
     /<iframe[^>]*?\bsrc="([^"]*)"[^>]*?>([\s\S]*?)(<\/iframe>)?/g;
 
   /**
-   * Return true when the URL uses the http: or https: scheme. Used to decide
-   * whether an untrusted src is safe to render as a plain link.
-   * @param {string} url
-   * @returns {boolean}
-   */
-  function isSafeProtocol(url) {
-    try {
-      const { protocol } = new URL(url);
-      return protocol === "http:" || protocol === "https:";
-    } catch {
-      return false;
-    }
-  }
-
-  /**
    * Extract the value of a single quoted attribute from a raw HTML tag string.
    * @param {string} tag The raw opening tag text.
    * @param {string} name Attribute name.
@@ -61,7 +46,7 @@ define(["showdown", "common/TrustedContentUtilities"], (showdown, trustedContent
   const secureIFrame = (iframe, src) => {
     // Untrusted: render as a safe link for http(s) sources, plain text otherwise
     if (!trustedContent.isTrustedUrl(src)) {
-      if (isSafeProtocol(src)) {
+      if (trustedContent.isHttpUrl(src)) {
         const escaped = src
           .replace(/&/g, "&amp;")
           .replace(/"/g, "&quot;")

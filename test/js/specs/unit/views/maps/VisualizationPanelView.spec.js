@@ -209,6 +209,40 @@ define([
         expect(link.getAttribute("href")).to.include("untrusted.example.com");
       });
 
+      it("keeps a clickable fallback link for untrusted http(s) URLs", () => {
+        globalThis.MetacatUI = makeMetacatUI([]);
+        state.view.open("http://untrusted.example.com/app");
+
+        const link = state.view.el.querySelector(
+          ".visualization-panel__untrusted-link",
+        );
+        const message = state.view.el.querySelector(
+          ".visualization-panel__untrusted-message",
+        );
+
+        expect(link.getAttribute("href")).to.equal(
+          "http://untrusted.example.com/app",
+        );
+        expect(link.style.display).to.not.equal("none");
+        expect(message.textContent).to.include("not in the list of trusted");
+      });
+
+      it("does not render a clickable fallback for unsafe protocols", () => {
+        globalThis.MetacatUI = makeMetacatUI([]);
+        state.view.open("javascript:alert(1)");
+
+        const link = state.view.el.querySelector(
+          ".visualization-panel__untrusted-link",
+        );
+        const message = state.view.el.querySelector(
+          ".visualization-panel__untrusted-message",
+        );
+
+        expect(link.getAttribute("href")).to.be.null;
+        expect(link.style.display).to.equal("none");
+        expect(message.textContent).to.include("protocol is unsafe");
+      });
+
       it("still opens the panel for an untrusted URL", () => {
         globalThis.MetacatUI = makeMetacatUI([]);
         state.view.open(UNTRUSTED_URL);

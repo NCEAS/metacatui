@@ -11,6 +11,7 @@ define(["backbone", "common/TrustedContentUtilities"], (
     header: `${BASE_CLASS}__header`,
     iframe: `${BASE_CLASS}__iframe`,
     open: `${BASE_CLASS}--open`,
+    untrustedMessage: `${BASE_CLASS}__untrusted-message`,
     untrusted: `${BASE_CLASS}__untrusted`,
     untrustedLink: `${BASE_CLASS}__untrusted-link`,
   };
@@ -25,7 +26,7 @@ define(["backbone", "common/TrustedContentUtilities"], (
         title="Visualization"
       ></iframe>
       <div class="${CLASS_NAMES.untrusted}" style="display:none">
-        <p>This content cannot be displayed here because its source is not in the list of trusted sources.</p>
+        <p class="${CLASS_NAMES.untrustedMessage}">This content cannot be displayed here because its source is not in the list of trusted sources.</p>
         <a class="${CLASS_NAMES.untrustedLink} map-view__button map-view__button--emphasis" target="_blank" rel="noopener noreferrer">
           <i class="icon icon-external-link"></i>
           Open in Browser
@@ -91,6 +92,9 @@ define(["backbone", "common/TrustedContentUtilities"], (
        */
       open(url) {
         const iframe = this.el.querySelector(`.${CLASS_NAMES.iframe}`);
+        const untrustedMessage = this.el.querySelector(
+          `.${CLASS_NAMES.untrustedMessage}`,
+        );
         const untrusted = this.el.querySelector(`.${CLASS_NAMES.untrusted}`);
         const untrustedLink = this.el.querySelector(
           `.${CLASS_NAMES.untrustedLink}`,
@@ -108,8 +112,21 @@ define(["backbone", "common/TrustedContentUtilities"], (
           iframe.removeAttribute("sandbox");
           iframe.removeAttribute("src");
           iframe.style.display = "none";
-          untrustedLink.href = url;
-          untrustedLink.textContent = url;
+
+          if (trustedContent.isHttpUrl(url)) {
+            untrustedMessage.textContent =
+              "This content cannot be displayed here because its source is not in the list of trusted sources.";
+            untrustedLink.href = url;
+            untrustedLink.textContent = url;
+            untrustedLink.style.display = "";
+          } else {
+            untrustedMessage.textContent =
+              "This content cannot be displayed here because the URL protocol is unsafe.";
+            untrustedLink.removeAttribute("href");
+            untrustedLink.textContent = "";
+            untrustedLink.style.display = "none";
+          }
+
           untrusted.style.display = "";
         }
 

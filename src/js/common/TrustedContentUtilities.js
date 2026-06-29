@@ -78,10 +78,7 @@ define([], () => {
         const sources = MetacatUI?.appModel?.get("trustedContentSources") ?? [];
         if (!sources.length) return null;
 
-        try {
-          const { protocol } = new URL(url);
-          if (protocol !== "http:" && protocol !== "https:") return null;
-        } catch {
+        if (!TrustedContentUtilities.isHttpUrl(url)) {
           return null;
         }
 
@@ -111,6 +108,21 @@ define([], () => {
        */
       isTrustedUrl(url) {
         return TrustedContentUtilities.getTrustedContentSource(url) !== null;
+      },
+
+      /**
+       * Return true when the URL uses the `http:` or `https:` protocol.
+       * @param {string} url URL to validate.
+       * @returns {boolean} `true` when protocol is HTTP(S).
+       * @since 0.0.0
+       */
+      isHttpUrl(url) {
+        try {
+          const { protocol } = new URL(url);
+          return protocol === "http:" || protocol === "https:";
+        } catch {
+          return false;
+        }
       },
 
       /**

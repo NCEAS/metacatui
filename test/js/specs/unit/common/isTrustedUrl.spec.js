@@ -35,6 +35,29 @@ define([
     });
 
     // ------------------------------------------------------------------ //
+    // URL protocol helper
+    // ------------------------------------------------------------------ //
+    describe("isHttpUrl", () => {
+      it("returns true for https URLs", () => {
+        expect(trustedContent.isHttpUrl("https://example.com/path")).to.be.true;
+      });
+
+      it("returns true for http URLs", () => {
+        expect(trustedContent.isHttpUrl("http://example.com/path")).to.be.true;
+      });
+
+      it("returns false for non-http protocols", () => {
+        expect(trustedContent.isHttpUrl("javascript:alert(1)")).to.be.false;
+        expect(trustedContent.isHttpUrl("data:text/html,<h1>hi</h1>")).to.be
+          .false;
+      });
+
+      it("returns false for invalid URLs", () => {
+        expect(trustedContent.isHttpUrl("not a url")).to.be.false;
+      });
+    });
+
+    // ------------------------------------------------------------------ //
     // Empty / missing configuration
     // ------------------------------------------------------------------ //
     describe("when trustedContentSources is empty", () => {
