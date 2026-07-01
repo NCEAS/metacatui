@@ -1,5 +1,5 @@
 define([], () => {
-  const DEFAULT_PERMISSIONS = ["allow-scripts"];
+  const DEFAULT_PERMISSIONS = ["allow-scripts", "allow-same-origin"];
 
   /**
    * @namespace TrustedContentUtilities
@@ -12,6 +12,28 @@ define([], () => {
   const TrustedContentUtilities =
     /** @lends TrustedContentUtilities.prototype */ {
       DEFAULT_PERMISSIONS,
+
+      /**
+       * Get the default iframe sandbox permissions from app config.
+       * Falls back to {@link TrustedContentUtilities.DEFAULT_PERMISSIONS} when
+       * not configured.
+       * @returns {string[]} Default iframe sandbox permissions.
+       * @since 2.33.0
+       */
+      getDefaultIframePermissions() {
+        const configuredPermissions = MetacatUI?.appModel?.get(
+          "defaultIframePermissions",
+        );
+
+        if (
+          Array.isArray(configuredPermissions) &&
+          configuredPermissions.length
+        ) {
+          return configuredPermissions;
+        }
+
+        return DEFAULT_PERMISSIONS;
+      },
 
       /**
        * Convert a URL pattern with wildcards to a RegExp.
@@ -47,8 +69,11 @@ define([], () => {
        * @since 0.0.0
        */
       normalizeTrustedContentSource(source) {
+        const defaultPermissions =
+          TrustedContentUtilities.getDefaultIframePermissions();
+
         if (typeof source === "string") {
-          return { url: source, permissions: DEFAULT_PERMISSIONS };
+          return { url: source, permissions: defaultPermissions };
         }
 
         if (
@@ -64,7 +89,7 @@ define([], () => {
           permissions:
             Array.isArray(source.permissions) && source.permissions.length
               ? source.permissions
-              : DEFAULT_PERMISSIONS,
+              : defaultPermissions,
         };
       },
 

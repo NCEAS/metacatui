@@ -14,10 +14,14 @@ define([
    * @param {Array.<string|{url: string, permissions?: string[]}>} sources
    * @returns {object}
    */
-  function makeMetacatUI(sources) {
+  function makeMetacatUI(sources, defaultIframePermissions = null) {
     return {
       appModel: {
         get(key) {
+          if (key === "defaultIframePermissions") {
+            return defaultIframePermissions;
+          }
+
           return key === "trustedContentSources" ? sources : null;
         },
       },
@@ -148,13 +152,31 @@ define([
         expect(iframe.getAttribute("src")).to.include("trusted.example.com");
       });
 
-      it("defaults the sandbox attribute to allow-scripts for a trusted URL", () => {
+      it("defaults the sandbox attribute to allow-scripts and allow-same-origin for a trusted URL", () => {
         state.view.open(TRUSTED_URL);
 
         const iframe = state.view.el.querySelector(
           ".visualization-panel__iframe",
         );
-        expect(iframe.getAttribute("sandbox")).to.equal("allow-scripts");
+        expect(iframe.getAttribute("sandbox")).to.equal(
+          "allow-scripts allow-same-origin",
+        );
+      });
+
+      it("uses configured default iframe permissions for a trusted URL", () => {
+        globalThis.MetacatUI = makeMetacatUI(
+          ["https://trusted.example.com/*"],
+          ["allow-scripts", "allow-same-origin"],
+        );
+
+        state.view.open(TRUSTED_URL);
+
+        const iframe = state.view.el.querySelector(
+          ".visualization-panel__iframe",
+        );
+        expect(iframe.getAttribute("sandbox")).to.equal(
+          "allow-scripts allow-same-origin",
+        );
       });
 
       it("applies explicit sandbox permissions from trustedContentSources", () => {

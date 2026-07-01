@@ -13,10 +13,14 @@ define([
    * @param {Array.<string|{url: string, permissions?: string[]}>} sources
    * @returns {object}
    */
-  function makeMetacatUI(sources) {
+  function makeMetacatUI(sources, defaultIframePermissions = null) {
     return {
       appModel: {
         get(key) {
+          if (key === "defaultIframePermissions") {
+            return defaultIframePermissions;
+          }
+
           return key === "trustedContentSources" ? sources : null;
         },
       },
@@ -264,7 +268,7 @@ define([
     // sandbox permissions resolution
     // ------------------------------------------------------------------ //
     describe("sandbox permissions resolution", () => {
-      it("defaults to allow-scripts for trusted sources without permissions", () => {
+      it("defaults to allow-scripts and allow-same-origin for trusted sources without permissions", () => {
         globalThis.MetacatUI = makeMetacatUI([
           { url: "https://trusted.example.com/*" },
         ]);
@@ -273,7 +277,7 @@ define([
           trustedContent.getTrustedIframeSandbox(
             "https://trusted.example.com/app",
           ),
-        ).to.equal("allow-scripts");
+        ).to.equal("allow-scripts allow-same-origin");
       });
 
       it("joins explicit permissions for trusted sources", () => {
@@ -283,6 +287,19 @@ define([
             permissions: ["allow-scripts", "allow-same-origin"],
           },
         ]);
+
+        expect(
+          trustedContent.getTrustedIframeSandbox(
+            "https://trusted.example.com/app",
+          ),
+        ).to.equal("allow-scripts allow-same-origin");
+      });
+
+      it("uses app-configured default iframe permissions", () => {
+        globalThis.MetacatUI = makeMetacatUI(
+          [{ url: "https://trusted.example.com/*" }],
+          ["allow-scripts", "allow-same-origin"],
+        );
 
         expect(
           trustedContent.getTrustedIframeSandbox(
