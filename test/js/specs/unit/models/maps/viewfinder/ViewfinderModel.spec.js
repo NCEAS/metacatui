@@ -6,8 +6,8 @@ define([
   "models/maps/Map",
   "models/geocoder/Prediction",
   "models/geocoder/GeocodedLocation",
-  "models/maps/viewfinder/ZoomPresetModel",
-  "collections/maps/viewfinder/ZoomPresets",
+  "models/maps/viewfinder/ViewfinderCardModel",
+  "collections/maps/viewfinder/ViewfinderCards",
   "models/maps/GeoPoint",
   // The file extension is required for files loaded from the /test directory.
   "/test/js/specs/shared/clean-state.js",
@@ -17,8 +17,8 @@ define([
   Map,
   Prediction,
   GeocodedLocation,
-  ZoomPresetModel,
-  ZoomPresets,
+  ViewfinderCardModel,
+  ViewfinderCards,
   GeoPoint,
   cleanState,
 ) => {
@@ -82,7 +82,7 @@ define([
       state.model.should.be.instanceof(ViewfinderModel);
     });
 
-    it("sets zoom presets field from Map model", () => {
+    it("sets viewfinder cards field from Map model", () => {
       const mapModel = new Map({
         zoomPresets: [{ layerIds: [] }],
         layers: [{}],
@@ -91,8 +91,8 @@ define([
       const model = new ViewfinderModel({ mapModel });
 
       // Reference equality.
-      expect(model.get("zoomPresets").at(0)).to.equal(
-        mapModel.get("zoomPresetsCollection").at(0),
+      expect(model.get("viewfinderCards").at(0)).to.equal(
+        mapModel.get("viewfinderCardsCollection").at(0),
       );
     });
 
@@ -351,14 +351,14 @@ define([
       });
     });
 
-    describe("selecting a zoom preset", () => {
+    describe("selecting a viewfinder card", () => {
       it("shows all enabled layers", () => {
         const setSpy = state.sandbox.spy(
           state.model.mapModel.get("allLayers").models[0],
           "set",
         );
-        state.model.selectZoomPreset(
-          new ZoomPresetModel(
+        state.model.selectViewfinderCard(
+          new ViewfinderCardModel(
             {
               position: {
                 latitude: 55,
@@ -380,8 +380,8 @@ define([
           state.model.mapModel.get("allLayers").models[1],
           "set",
         );
-        state.model.selectZoomPreset(
-          new ZoomPresetModel(
+        state.model.selectViewfinderCard(
+          new ViewfinderCardModel(
             {
               position: {
                 latitude: 55,
@@ -404,8 +404,8 @@ define([
           longitude: 66,
           height: 7777,
         });
-        state.model.selectZoomPreset(
-          new ZoomPresetModel(
+        state.model.selectViewfinderCard(
+          new ViewfinderCardModel(
             {
               enabledLayerIds: ["layer1"],
               position: { latitude: 55, longitude: 66, height: 7777 },

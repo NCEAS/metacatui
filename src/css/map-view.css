@@ -89,6 +89,7 @@
   --map-z-index-top-shadow: calc(var(--map-z-index-base) + 1);
   --map-z-index-layer-details: calc(var(--map-z-index-top-shadow) + 1);
   --map-z-index-feature-info: calc(var(--map-z-index-layer-details) + 1);
+  --map-z-index-visualization-panel: calc(var(--map-z-index-feature-info) + 1);
 }
 
 /* hide the credits until we can find a better placement for them */
@@ -1966,14 +1967,16 @@ other class: .ui-slider-range */
     padding-top: 1.5rem;
   }
 
-  .viewfinder__zoom-presets {
+  .viewfinder__cards {
     flex-grow: 1;
     overflow: auto;
   }
 }
 
-.viewfinder-search__search-input {
-  margin: 0 1.5rem;
+.viewfinder-search {
+  .viewfinder-search__search-input {
+    margin: 0 1.5rem;
+  }
 }
 
 .viewfinder-predictions {
@@ -2021,121 +2024,303 @@ other class: .ui-slider-range */
   }
 }
 
-.viewfinder-zoom-presets {
+/*****************************************************************************************
+ *
+ * Viewfinder Cards
+ *
+ * Cards in the viewfinder that represent a point of interest. Each card has:
+ *   - A title, description, and one or more action buttons
+ *   - Action buttons: are either primary (for the main action) or secondary (for less important actions)
+ *     primary or secondary is determined by ordinality with legacy top-level lat, lng, height, and layerid
+ *     attributes creating a secondary View Layers button and Map type action by default. 
+ *   - Informational collapsable layer badges which expand to show which layers are toggled
+ *   - An optional hero image which appears behind the title at the top of the card
+ * 
+ * The card body is not interactive — all actions are explicit buttons.
+ *
+ */
+
+.viewfinder-cards {
   display: flex;
   flex-direction: column;
-  padding: 0.1rem 1.5rem 1rem 1.5rem;
-  row-gap: 0.5rem;
+  padding: 0 1.5rem 1rem 1.5rem;
+  row-gap: 0.75rem;
+}
 
-  .viewfinder-zoom-preset__preset {
-    border-radius: var(--map-border-radius-big);
-    border: 1px solid
-      var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
-    cursor: pointer;
+.viewfinder-card {
+  border-radius: var(--map-border-radius-big);
+  border: 1px solid
+    var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  /* ---- Hero: full-width image with vignette and title overlay ---- */
+
+  .viewfinder-card__hero {
+    position: relative;
+  }
+
+  .viewfinder-card__image {
+    width: 100%;
+    height: 6.5rem;
+    object-fit: cover;
+    display: block;
+  }
+
+  .viewfinder-card__hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 40%,
+      rgba(0, 0, 0, 0.75) 90%
+    );
+    pointer-events: none;
+  }
+
+  .viewfinder-card__hero .viewfinder-card__title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.75rem;
+    z-index: 1;
+    color: white;
+  }
+
+  /* ---- Card body ---- */
+
+  .viewfinder-card__body {
     display: flex;
     flex-direction: column;
-    padding: 1.1rem 1.1rem 1rem 1.4rem;
-    row-gap: 0.5rem;
+    padding: 1.1rem;
+    row-gap: 0.75rem;
+  }
 
-    &:hover {
-      background-color: var(
-        --portal-col-primary-1,
-        var(--map-col-bkg-lighter__deprecate)
-      );
+  /* Title for cards without images */
+  .viewfinder-card__title {
+    color: var(--portal-col-primary-6, white);
+    font-weight: 600;
+    font-size: 1.05rem;
+    line-height: 1.3;
+  }
 
-      .viewfinder-zoom-preset__layer {
-        background-color: var(
-          rgb(from var(--portal-col-primary-2) r g b / 50%),
-          var(--map-col-bkg__deprecate)
-        );
+  .viewfinder-card__description {
+    color: var(--portal-col-neutral-7, white);
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
 
-        .viewfinder-zoom-preset__layer-content {
-          color: var(--portal-col-primary-6);
+  /* ---- Action buttons ---- */
 
-          i {
-            color: var(--portal-col-primary-6);
-          }
-        }
-      }
-    }
+  .viewfinder-card__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
 
-    .viewfinder-zoom-preset__title {
-      color: var(--portal-col-primary-6, white);
-      font-weight: 600;
-    }
+  .viewfinder-card__button-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-align: center;
+    white-space: normal;
+    font-size: 0.95rem;
+    width: 100%;
+    border-color: var(--portal-col-primary-2);
+    color: var(--portal-col-primary-6, white);
+  }
 
-    .viewfinder-zoom-preset__description {
-      color: var(--portal-col-neutral-7, white);
-      font-size: 0.85rem;
-      margin-bottom: 0.5rem;
-    }
+  .viewfinder-card__button-primary:hover {
+    border-color: var(--portal-col-primary-4);
+    filter: none;
+  }
 
-    .viewfinder-zoom-preset__layers {
-      column-gap: 0.5rem;
-      display: flex;
-      flex-wrap: wrap;
-      row-gap: 0.5rem;
-    }
+  /* Secondary buttons: plain text, no border */
+  .viewfinder-card__button-secondary {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
+    color: var(--portal-col-neutral-5, #aaa);
+  }
 
-    .viewfinder-zoom-preset__layer {
-      align-items: center;
-      background: var(
-        rgb(from var(--portal-col-neutral-2) r g b / 50%),
-        var(--map-col-bkg-lighter__deprecate)
-      );
-      border-radius: var(--map-border-radius-big);
-      display: flex;
-      height: 1.5rem;
-      justify-content: center;
-      padding: 0 1rem 0 0.5rem;
+  .viewfinder-card__button-secondary:hover {
+    color: var(--portal-col-primary-6, white);
+    filter: none;
+  }
 
-      .viewfinder-zoom-preset__layer-content {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        text-wrap: nowrap;
-        color: var(--portal-col-neutral-5, white);
-        font-size: 0.8rem;
-        max-width: 10rem;
+  /* Active state on the card wrapper */
+  &.viewfinder-card--active {
+    background-color: var(
+      --portal-col-primary-1,
+      var(--map-col-bkg-lighter__deprecate)
+    );
+    border-color: var(
+      --portal-col-primary-6,
+      var(--map-col-highlight__deprecate)
+    );
+    box-shadow: 1px 2px rgba(0, 0, 0, 0.15);
+  }
 
-        i {
-          padding: 0 0.25rem;
-          color: var(--portal-col-primary-6, white);
-        }
-      }
+  /* When View Layers is active, expand the layer badges */
+  &.viewfinder-card--layers-active {
+    .viewfinder-card__layers {
+      grid-template-rows: 1fr;
+      padding: 0 1.1rem 1rem;
     }
   }
 
-  .viewfinder-zoom-preset__image {
-    float: left;
-    margin: 0.3rem 0.5rem 0 0;
+  .viewfinder-card__button-secondary--active {
+    color: var(--portal-col-primary-6, white);
+  }
+
+  .viewfinder-card__button-primary--active {
+    background-color: var(
+      --portal-col-primary-6,
+      var(--map-col-highlight__deprecate)
+    );
+    color: var(--portal-col-neutral-00, white);
+    border-color: var(--portal-col-primary-5);
+  }
+
+  .viewfinder-card__button-primary--active:hover {
+    filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.15));
+  }
+
+  /* ---- Layer badges (collapsed until View Layers is active) ---- */
+
+  .viewfinder-card__layers {
+    display: grid;
+    grid-template-rows: 0fr;
+    overflow: hidden;
+    padding: 0 1.1rem;
+    transition:
+      grid-template-rows 0.3s ease,
+      padding 0.3s ease;
+  }
+
+  .viewfinder-card__layers-inner {
+    min-height: 0;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .viewfinder-card__layer {
+    align-items: center;
+    background: var(
+      rgb(from var(--portal-col-neutral-2) r g b / 50%),
+      var(--map-col-bkg-lighter__deprecate)
+    );
     border-radius: var(--map-border-radius-big);
-    max-width: 90px;
-    max-height: 90px;
-  }
+    cursor: text;
+    display: flex;
+    height: 1.5rem;
+    justify-content: flex-start;
+    min-width: 0;
+    padding: 0 0.75rem 0 0.5rem;
 
-  .viewfinder-zoom-preset.viewfinder-zoom-preset--active
-    .viewfinder-zoom-preset__preset {
-    background-color: var(--portal-col-primary-6, #15324e);
+    .viewfinder-card__layer-content {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-wrap: nowrap;
+      color: var(--portal-col-primary-6, white);
+      font-size: 0.75rem;
+      max-width: 100%;
 
-    .viewfinder-zoom-preset__title,
-    .viewfinder-zoom-preset__description {
-      color: var(--portal-col-neutral-00, white);
-    }
-
-    .viewfinder-zoom-preset__layer {
-      background: var(
-        rgb(from var(--portal-col-primary-5) r g b / 50%),
-        var(--map-col-bkg__deprecate)
-      );
-
-      .viewfinder-zoom-preset__layer-content {
-        color: var(--portal-col-primary-2, white);
-
-        i {
-          color: var(--portal-col-primary-4, white);
-        }
+      i {
+        padding: 0 0.25rem;
+        color: var(--portal-col-primary-6, white);
+        font-size: 0.85rem;
       }
     }
+  }
+}
+
+/*****************************************************************************************
+ *
+ * Visualization Panel
+ *
+ * A full-screen overlay that appears above the map and renders an external
+ * visualization application in an iframe. Opened by the "Explore in App"
+ * button on a ViewfinderCard that has an `iframeUrl` configured.
+ *
+ * Hidden by default; shown by adding the --open modifier class.
+ *
+ */
+
+.visualization-panel {
+  /* Covers the entire map-view (which is position:relative) */
+  position: absolute;
+  inset: 0;
+  z-index: var(--map-z-index-visualization-panel);
+  display: none;
+  flex-direction: column;
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+  animation: fadeIn 0.2s ease-in-out;
+  pointer-events: all;
+}
+
+.visualization-panel--open {
+  display: flex;
+}
+
+.visualization-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.5rem 1rem;
+  flex-shrink: 0;
+  background-color: var(
+    --portal-col-primary-1,
+    var(--map-col-bkg-lighter__deprecate)
+  );
+  border-bottom: 1px solid var(--portal-col-primary-2);
+}
+
+.visualization-panel__close-button {
+  color: var(--portal-col-neutral-6);
+  font-size: 1rem;
+  height: 2rem;
+  width: 2rem;
+}
+
+.visualization-panel__body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.visualization-panel__iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+}
+
+/* Fallback shown when the URL is not in trustedContentSources */
+.visualization-panel__untrusted {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  color: var(--portal-col-neutral-7, white);
+  text-align: center;
+
+  p {
+    max-width: 30rem;
+    line-height: 1.5;
   }
 }
 
