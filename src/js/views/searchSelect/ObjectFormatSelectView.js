@@ -41,9 +41,10 @@ define(["views/searchSelect/SearchSelectView", "common/Utilities"], (
        * @since 2.31.0
        */
       async getObjectFormats() {
-        let formatIds = {};
+        let formats = [];
         try {
-          formatIds = await Utilities.awaitObjectFormats();
+          const objectFormats = await Utilities.awaitObjectFormats();
+          formats = objectFormats?.toJSON() || [];
         } catch (error) {
           /* eslint-disable no-console */
           console.error("Error fetching object formats:", error);
@@ -51,7 +52,7 @@ define(["views/searchSelect/SearchSelectView", "common/Utilities"], (
           return;
         }
 
-        const options = formatIds
+        const options = formats
           // Query Rules automatically include a rule for formatType="METADATA"
           // so subset to only METADATA formats
           .filter((format) => format.formatType === "METADATA")

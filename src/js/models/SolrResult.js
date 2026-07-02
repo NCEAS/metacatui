@@ -4,7 +4,8 @@ define([
   "backbone",
   "common/QueryService",
   "common/Utilities",
-], ($, _, Backbone, QueryService, Utilities) => {
+  "collections/ObjectFormats",
+], ($, _, Backbone, QueryService, Utilities, ObjectFormats) => {
   const DEFAULT_INFO_FIELDS = [
     "abstract",
     "id",
@@ -438,6 +439,7 @@ define([
       },
 
       handleGetInfoError(error) {
+        // eslint-disable-next-line no-console
         console.error(`Error getting info for ${this.get("id")}`, error);
         const status = error.status || error.cause?.status;
         const message = error.message || error.cause?.statusText || error;
@@ -588,25 +590,13 @@ define([
             // Check if this is a metadata doc
             const formatId = $(data).find("formatid").text() || "";
             model.set("formatId", formatId);
-            if (
-              formatId.indexOf("ecoinformatics.org") > -1 ||
-              formatId.indexOf("FGDC") > -1 ||
-              formatId.indexOf("INCITS") > -1 ||
-              formatId.indexOf("namespaces/netcdf") > -1 ||
-              formatId.indexOf("waterML") > -1 ||
-              formatId.indexOf("darwin") > -1 ||
-              formatId.indexOf("dryad") > -1 ||
-              formatId.indexOf("http://www.loc.gov/METS") > -1 ||
-              formatId.indexOf("ddi:codebook:2_5") > -1 ||
-              formatId.indexOf("http://www.icpsr.umich.edu/DDI") > -1 ||
-              formatId.indexOf(
-                "http://purl.org/ornl/schema/mercury/terms/v1.0",
-              ) > -1 ||
-              formatId.indexOf("datacite") > -1 ||
-              formatId.indexOf("isotc211") > -1 ||
-              formatId.indexOf("metadata") > -1
-            )
+            const objectFormats =
+              typeof MetacatUI.objectFormats?.isMetadata === "function"
+                ? MetacatUI.objectFormats
+                : new ObjectFormats();
+            if (objectFormats.isMetadata({ formatId })) {
               model.set("formatType", "METADATA");
+            }
 
             // Trigger the sync event so the app knows we found the model info
             model.trigger("sync");
