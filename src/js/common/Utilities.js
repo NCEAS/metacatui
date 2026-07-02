@@ -1,60 +1,6 @@
 "use strict";
 
 define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
-  const FORMAT_MAP = {
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-      "Microsoft Excel OpenXML",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-      "Microsoft Word OpenXML",
-    "application/vnd.ms-excel.sheet.binary.macroEnabled.12":
-      "Microsoft Office Excel 2007 binary workbooks",
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-      "Microsoft Office OpenXML Presentation",
-    "application/vnd.ms-excel": "Microsoft Excel",
-    "application/msword": "Microsoft Word",
-    "application/vnd.ms-powerpoint": "Microsoft Powerpoint",
-    "text/html": "HTML",
-    "text/plain": "plain text (.txt)",
-    "video/avi": "Microsoft AVI file",
-    "video/x-ms-wmv": "Windows Media Video (.wmv)",
-    "audio/x-ms-wma": "Windows Media Audio (.wma)",
-    "application/vnd.google-earth.kml xml":
-      "Google Earth Keyhole Markup Language (KML)",
-    "http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html":
-      "annotation",
-    "application/mathematica": "Mathematica Notebook",
-    "application/postscript": "Postscript",
-    "application/rtf": "Rich Text Format (RTF)",
-    "application/xml": "XML Application",
-    "text/xml": "XML",
-    "application/x-fasta": "FASTA sequence file",
-    "nexus/1997": "NEXUS File Format for Systematic Information",
-    "anvl/erc-v02":
-      "Kernel Metadata and Electronic Resource Citations (ERCs), 2010.05.13",
-    "http://purl.org/dryad/terms/":
-      "Dryad Metadata Application Profile Version 3.0",
-    "http://datadryad.org/profile/v3.1":
-      "Dryad Metadata Application Profile Version 3.1",
-    "application/pdf": "PDF",
-    "application/zip": "ZIP file",
-    "http://www.w3.org/TR/rdf-syntax-grammar": "RDF/XML",
-    "http://www.w3.org/TR/rdfa-syntax": "RDFa",
-    "application/rdf xml": "RDF",
-    "text/turtle": "TURTLE",
-    "text/n3": "N3",
-    "application/x-gzip": "GZIP Format",
-    "application/x-python": "Python script",
-    "http://www.w3.org/2005/Atom": "ATOM-1.0",
-    "application/octet-stream": "octet stream (application file)",
-    "http://digir.net/schema/conceptual/darwin/2003/1.0/darwin2.xsd":
-      "Darwin Core, v2.0",
-    "http://rs.tdwg.org/dwc/xsd/simpledarwincore/": "Simple Darwin Core",
-    "eml://ecoinformatics.org/eml-2.1.0": "EML v2.1.0",
-    "eml://ecoinformatics.org/eml-2.1.1": "EML v2.1.1",
-    "eml://ecoinformatics.org/eml-2.0.1": "EML v2.0.1",
-    "eml://ecoinformatics.org/eml-2.0.0": "EML v2.0.0",
-    "https://eml.ecoinformatics.org/eml-2.2.0": "EML v2.2.0",
-  };
   /**
    * @namespace Utilities
    * @description Miscellaneous app/browser helpers that do not yet fit better
@@ -232,47 +178,54 @@ define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
     /**
      * Get the list of object formats from the Coordinating Node, which can be
      * used to validate media types against known formats.
-     * @returns {Promise<Array>} Promise resolving to the list of object
-     *  formats.
-     * @throws {Error} If the object formats cannot be retrieved.
+     * @returns {Promise<ObjectFormats>} Promise resolving to the local object
+     *  formats collection. The collection starts with built-in fallback formats
+     *  and starts a background refresh from the formats service when possible.
      * @since 0.0.0
      */
     async awaitObjectFormats() {
-      const app = await this.awaitMetacatUI();
-      // Ensure the object formats are cached
-      if (!app.objectFormats) {
-        app.objectFormats = new ObjectFormats();
-      }
-
-      if (app.objectFormats.length) {
-        return app.objectFormats.toJSON();
-      }
+      const app = await Utilities.awaitMetacatUI();
+      if (!app.objectFormats) app.objectFormats = new ObjectFormats();
+      const formats = app.objectFormats;
+      if (formats.hasRemoteFormats || formats.isFetching) return formats;
 
       const listener = new Backbone.Model();
-      const fetchFormats = new Promise((resolve, reject) => {
-        listener.listenToOnce(app.objectFormats, "sync", () => {
-          listener.stopListening();
-          resolve();
+      const finish = () => {
+        listener.stopListening();
+        formats.isFetching = false;
+      };
+
+      listener.listenToOnce(formats, "sync", () => {
+        Object.assign(formats, {
+          hasRemoteFormats: true,
+          usingFallback: false,
+          lastFetchError: null,
         });
-        listener.listenToOnce(
-          app.objectFormats,
-          "error",
-          (_collection, response) => {
-            listener.stopListening();
-            reject(
-              new Error(
-                `Failed to fetch object formats: ${response?.status || ""} ${response?.statusText || ""}`.trim(),
-              ),
-            );
-          },
-        );
-        // eslint-disable-next-line no-underscore-dangle
-        if (!app.objectFormats._events?.sync) {
-          app.objectFormats.fetch();
-        }
+        finish();
       });
-      await fetchFormats;
-      return app.objectFormats.toJSON();
+      listener.listenToOnce(formats, "error", (_collection, response) => {
+        const errText =
+          response?.responseText || response?.status || "Unknown error";
+        formats.lastFetchError = new Error(
+          `Failed to fetch object formats: ${errText}`,
+        );
+        finish();
+      });
+
+      if (typeof formats.fetch !== "function") {
+        finish();
+        return formats;
+      }
+
+      formats.isFetching = true;
+      try {
+        formats.fetch();
+      } catch (error) {
+        formats.lastFetchError = error;
+        finish();
+      }
+
+      return formats;
     },
 
     /**
@@ -284,7 +237,7 @@ define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
      * @since 0.0.0
      */
     getFriendlyFormat(formatId) {
-      return FORMAT_MAP[formatId] || formatId;
+      return ObjectFormats.getFriendlyFormat(formatId);
     },
   };
 

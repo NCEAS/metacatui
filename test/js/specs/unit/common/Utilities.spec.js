@@ -1,7 +1,24 @@
-define(["common/Utilities"], function (Utilities) {
+define(["collections/ObjectFormats", "common/Utilities"], function (
+  ObjectFormats,
+  Utilities,
+) {
   var expect = chai.expect;
 
   describe("Utilities", function () {
+    let originalMetacatUI;
+
+    beforeEach(function () {
+      originalMetacatUI = window.MetacatUI;
+    });
+
+    afterEach(function () {
+      if (typeof originalMetacatUI === "undefined") {
+        delete window.MetacatUI;
+      } else {
+        window.MetacatUI = originalMetacatUI;
+      }
+    });
+
     describe("tryParseCSVHeader", function () {
       var parse = Utilities.tryParseCSVHeader;
 
@@ -26,20 +43,6 @@ define(["common/Utilities"], function (Utilities) {
     });
 
     describe("awaitMetacatUI", function () {
-      let originalMetacatUI;
-
-      beforeEach(function () {
-        originalMetacatUI = window.MetacatUI;
-      });
-
-      afterEach(function () {
-        if (typeof originalMetacatUI === "undefined") {
-          delete window.MetacatUI;
-        } else {
-          window.MetacatUI = originalMetacatUI;
-        }
-      });
-
       it("resolves the requested MetacatUI property when available", async function () {
         const appUserModel = { id: "user" };
         window.MetacatUI = { appUserModel };
@@ -115,6 +118,29 @@ define(["common/Utilities"], function (Utilities) {
         });
 
         expect(result).to.equal("https://example.org/service");
+      });
+    });
+
+    describe("awaitObjectFormats", function () {
+      it("returns formats and allows retry after a fetch failure", async function () {
+        const formats = new ObjectFormats();
+        formats.fetch = sinon.stub().callsFake(function () {
+          this.trigger("error", this);
+        });
+        window.MetacatUI = { objectFormats: formats };
+
+        const result = await Utilities.awaitObjectFormats();
+
+        expect(result).to.equal(formats);
+        expect(formats.isFetching).to.equal(false);
+        expect(formats.hasRemoteFormats).to.equal(false);
+        expect(formats.lastFetchError.message).to.equal(
+          "Failed to fetch object formats: Unknown error",
+        );
+
+        await Utilities.awaitObjectFormats();
+
+        expect(formats.fetch.calledTwice).to.equal(true);
       });
     });
   });
