@@ -58,9 +58,10 @@ define([
     static get endpoint() {
       return this.config?.endpoint ?? null;
     }
+
     /**
-     * @param {object} [options] Options for the service instance.
-     * @param {string} options.baseUrl Base URL for the DataONE endpoint, e.g.
+     * @param {object} [options] Options for the service instance
+     * @param {string} options.baseUrl Base URL for the DataONE endpoint, e.g
      * https://cn.dataone.org/cn/v2
      * @param {DataONEHttpClient#DataONEHttpClientOptions} [options.clientConfig]
      * DataONEHttpClient options
@@ -99,8 +100,8 @@ define([
 
     /**
      * Normalize the options used to construct a new instance.
-     * @param {object} options Options passed to the constructor.
-     * @returns {object} Normalized options.
+     * @param {object} options Options passed to the constructor
+     * @returns {object} Normalized options
      */
     static normalizeOptions(options = {}) {
       const normalized = JSON.parse(JSON.stringify(options));
@@ -140,11 +141,11 @@ define([
      * type, and dedupe-header lists are merged as a union (defaults are always
      * preserved; overrides can only add), so service defaults double as the
      * required set and never need to be re-declared.
-     * @param {object} [params] Client configuration params.
-     * @param {object} [params.defaults] Default client options.
-     * @param {object} [params.overrides] Caller-provided client options.
-     * @param {string} [params.baseUrl] Base URL for the client.
-     * @returns {object} Normalized client configuration.
+     * @param {object} [params] Client configuration params
+     * @param {object} [params.defaults] Default client options
+     * @param {object} [params.overrides] Caller-provided client options
+     * @param {string} [params.baseUrl] Base URL for the client
+     * @returns {object} Normalized client configuration
      */
     static buildClientConfig({ defaults = {}, overrides = {}, baseUrl } = {}) {
       const normalizeArray = (value, mapper) =>
@@ -190,7 +191,7 @@ define([
     /**
      * Translate the friendly {@link DataONEServiceConfig} `client` block into
      * DataONEHttpClient option names.
-     * @returns {object} Default client options for {@link buildClientConfig}.
+     * @returns {object} Default client options for {@link buildClientConfig}
      */
     static clientDefaults() {
       const client = this.config?.client || {};
@@ -208,8 +209,8 @@ define([
     /**
      * Resolve a base URL from an explicit value, then the descriptor's
      * `appModelKeys` in order. Subclasses with composite URLs override this.
-     * @param {string} [explicitBaseUrl] Caller-provided base URL.
-     * @returns {string} Normalized base URL, or an empty string when unresolved.
+     * @param {string} [explicitBaseUrl] Caller-provided base URL
+     * @returns {string} Normalized base URL, or an empty string when unresolved
      */
     static resolveBaseUrl(explicitBaseUrl = "") {
       const explicit = UrlUtilities.normalizeUrl(explicitBaseUrl);
@@ -226,11 +227,11 @@ define([
 
     /**
      * Build a PersistentStorage config namespaced by service name and base URL.
-     * @param {object} [callerStorageConfig] Caller-provided storage options.
-     * @param {string} baseUrl Resolved base URL.
-     * @returns {object} Storage config with namespaced instance keys.
+     * @param {object} [callerStorageConfig] Caller-provided storage options
+     * @param {string} baseUrl Resolved base URL
+     * @returns {object} Storage config with namespaced instance keys
      */
-    static buildStorageConfig(callerStorageConfig = {}, baseUrl) {
+    static buildStorageConfig(callerStorageConfig = {}, baseUrl = "") {
       const source =
         callerStorageConfig && typeof callerStorageConfig === "object"
           ? callerStorageConfig
@@ -248,8 +249,8 @@ define([
     /**
      * Build {@link DataONEService} constructor options from the static
      * descriptor and caller options. Subclasses pass the result to `super()`.
-     * @param {object} [options] Caller-provided service options.
-     * @returns {object} Normalized constructor options.
+     * @param {object} [options] Caller-provided service options
+     * @returns {object} Normalized constructor options
      */
     static optionsFromDescriptor(options = {}) {
       const source = options && typeof options === "object" ? options : {};
@@ -283,9 +284,9 @@ define([
 
     /**
      * Pick defined request options from a candidate options object.
-     * @param {object} [options] Candidate options.
-     * @param {string[]} [keys] Keys to retain when defined.
-     * @returns {object} Selected options.
+     * @param {object} [options] Candidate options
+     * @param {string[]} [keys] Keys to retain when defined
+     * @returns {object} Selected options
      */
     static pickRequestOptions(
       options = {},
@@ -311,10 +312,10 @@ define([
 
     /**
      * Normalize and validate a PID-like identifier.
-     * @param {*} pid Candidate identifier.
-     * @param {string} [label] Field label for error reporting.
-     * @param {string} [message] Error message override.
-     * @returns {string} Trimmed PID.
+     * @param {*} pid Candidate identifier
+     * @param {string} [label] Field label for error reporting
+     * @param {string} [message] Error message override
+     * @returns {string} Trimmed PID
      */
     static normalizePid(
       pid,
@@ -326,10 +327,10 @@ define([
 
     /**
      * Encode a PID as a single URL path segment.
-     * @param {*} pid Candidate identifier.
-     * @param {string} [label] Field label for error reporting.
-     * @param {string} [message] Error message override.
-     * @returns {string} Encoded PID path segment.
+     * @param {*} pid Candidate identifier
+     * @param {string} [label] Field label for error reporting
+     * @param {string} [message] Error message override
+     * @returns {string} Encoded PID path segment
      */
     static encodePidPath(pid, label = "pid", message = undefined) {
       return UrlUtilities.encodeDataONEPidForPath(
@@ -340,10 +341,10 @@ define([
     /**
      * Build a request path from a PID, encoded as a single path segment, with
      * an optional query string. Always pair with `encodePath: false`.
-     * @param {*} pid Candidate identifier.
-     * @param {object} [options] Path options.
-     * @param {string} [options.query] Query string appended after `?`.
-     * @returns {string} Encoded PID path.
+     * @param {*} pid Candidate identifier
+     * @param {object} [options] Path options
+     * @param {string} [options.query] Query string appended after `?`
+     * @returns {string} Encoded PID path
      */
     static buildPidPath(pid, { query } = {}) {
       const encoded = this.encodePidPath(pid);
@@ -353,7 +354,7 @@ define([
     /**
      * If user is logged in, get a key based on their username; otherwise,
      * return a "public" scope key.
-     * @returns {Promise<string>} Promise resolving to the scope key.
+     * @returns {Promise<string>} Promise resolving to the scope key
      */
     async scopeKey() {
       const userName = await this.getUserName();
@@ -363,7 +364,7 @@ define([
     /**
      * Get a PersistentStorage instance automatically scoped by the logged in
      * user, using the configuration options provided to the constructor.
-     * @returns {PersistentStorage} Storage instance.
+     * @returns {PersistentStorage} Storage instance
      */
     async getStore() {
       const scopeKey = await this.scopeKey();
@@ -375,7 +376,7 @@ define([
 
     /**
      * Wait for the MetacatUI app user model to be available, and return it.
-     * @returns {Promise<Backbone.Model>} Promise resolving to the user model.
+     * @returns {Promise<Backbone.Model>} Promise resolving to the user model
      */
     static async awaitUserModel() {
       await Utilities.awaitMetacatUI({ appName: "appUserModel" });
@@ -411,7 +412,7 @@ define([
 
     /**
      * Resolve an auth token from MetacatUI when available.
-     * @returns {Promise<string>} Promise resolving to an auth token.
+     * @returns {Promise<string>} Promise resolving to an auth token
      */
     async getToken() {
       const userModel = await this.constructor.awaitUserModel();
@@ -429,7 +430,7 @@ define([
 
     /**
      * Determine the token to use, if any, for a request.
-     * @param {boolean} [auth] Whether to use authentication for this request.
+     * @param {boolean} [auth] Whether to use authentication for this request
      * If set to false, no token will be used. If true, getToken() will be
      * called. When undefined, defaultAuth is used.
      * @returns {Promise<string|null>} Promise resolving to the token, or null
@@ -446,8 +447,8 @@ define([
 
     /**
      * Send a request through a specific DataONEHttpClient instance.
-     * @param {DataONEHttpClient} client Client instance to use.
-     * @param {object} [options] Request options.
+     * @param {DataONEHttpClient} client Client instance to use
+     * @param {object} [options] Request options
      * @returns {Promise<DataONEHttpResponse>} Promise resolving to the
      * response.
      */
@@ -468,16 +469,20 @@ define([
      * Send a request whose body is a DataONE identifier response and parse the
      * returned XML. Shared by services that POST/PUT and read back an
      * identifier (e.g. IdentifierService, ObjectService).
-     * @param {object} params Request params.
+     * @param {object} params Request params
      * @param {DataONEHttpClient} [params.client] Client to use. Defaults to the
      * service's primary client when omitted.
      * @param {object} params.requestOptions Options from
      * {@link DataONEService.buildRequestOptions}.
-     * @param {string} params.context Error/parse context label.
+     * @param {string} params.context Error/parse context label
      * @returns {Promise<DataONEHttpResponse>} Response with parsed identifier
      * data.
      */
-    async sendParsedIdentifierRequest({ client, requestOptions, context } = {}) {
+    async sendParsedIdentifierRequest({
+      client,
+      requestOptions,
+      context,
+    } = {}) {
       const response = client
         ? await this.requestWithClient(client, requestOptions)
         : await this.request(requestOptions);
@@ -494,9 +499,9 @@ define([
     /**
      * Use the path as the cache key by default, but allow an override if
      * desired.
-     * @param {string} path Path relative to baseUrl.
-     * @param {string|null|undefined} [cacheKey] Cache key override.
-     * @returns {string} Resolved cache key.
+     * @param {string} path Path relative to baseUrl
+     * @param {string|null|undefined} [cacheKey] Cache key override
+     * @returns {string} Resolved cache key
      */
     static resolveCacheKey(path, cacheKey) {
       return cacheKey !== undefined && cacheKey !== null ? cacheKey : path;
@@ -505,9 +510,9 @@ define([
     /**
      * Merge request headers with defaults case-insensitively. Caller-provided
      * headers always win, while preserving caller casing.
-     * @param {object} [requestHeaders] Request-specific headers.
-     * @param {object} [defaultHeaders] Default headers to apply when missing.
-     * @returns {object} Merged headers.
+     * @param {object} [requestHeaders] Headers for the request
+     * @param {object} [defaultHeaders] Default headers to apply when missing
+     * @returns {object} Merged headers
      */
     static mergeHeadersWithDefaults(requestHeaders = {}, defaultHeaders = {}) {
       const merged = {};
@@ -539,9 +544,9 @@ define([
 
     /**
      * Apply a default Accept header when one is not already provided.
-     * @param {object} [options] Request options.
-     * @param {string} [accept] Default Accept header value.
-     * @returns {object} Options object with merged headers.
+     * @param {object} [options] Request options
+     * @param {string} [accept] Default Accept header value
+     * @returns {object} Options object with merged headers
      */
     static withDefaultAccept(options = {}, accept = "text/xml") {
       const normalizedOptions =
@@ -568,20 +573,20 @@ define([
      * Build normalized request options for a single DataONE call. Centralizes
      * the option-picking, default Accept header, path encoding, and the common
      * `responseType`/`dedupe`/`auth`/`body` wiring shared by the services.
-     * @param {object} params Request params.
-     * @param {object} [params.options] Caller request options to forward.
-     * @param {string} params.path Path relative to baseUrl.
-     * @param {string} params.method HTTP method.
-     * @param {string} [params.accept] Default Accept header value.
-     * @param {string} [params.responseType] Response type, defaults to `text`.
-     * @param {*} [params.body] Request body.
-     * @param {boolean} [params.dedupe] Dedupe override.
-     * @param {boolean} [params.auth] Auth override.
+     * @param {object} params Request params
+     * @param {object} [params.options] Caller request options to forward
+     * @param {string} params.path Path relative to baseUrl
+     * @param {string} params.method HTTP method
+     * @param {string} [params.accept] Default Accept header value
+     * @param {string} [params.responseType] Response type, defaults to `text`
+     * @param {*} [params.body] Request body
+     * @param {boolean} [params.dedupe] Dedupe override
+     * @param {boolean} [params.auth] Auth override
      * @param {boolean} [params.encodePath] Whether the client should re-encode
      * the path. Defaults to false because callers pass pre-encoded PID paths.
      * @param {object} [params.extra] Additional request options to merge in,
      * e.g. `transport`.
-     * @returns {object} Normalized request options.
+     * @returns {object} Normalized request options
      */
     static buildRequestOptions({
       options = {},
@@ -629,8 +634,8 @@ define([
      * Send a request via the DataONEHttpClient.
      * @param {object} [options] Request options passed to
      * {@link DataONEHttpClient#request}, plus auth controls.
-     * @param {string} options.path Path relative to baseUrl.
-     * @param {boolean} [options.auth] Whether to resolve a token automatically.
+     * @param {string} options.path Path relative to baseUrl
+     * @param {boolean} [options.auth] Whether to resolve a token automatically
      * @returns {Promise<DataONEHttpResponse>} Promise resolving to the
      * response.
      */
@@ -640,15 +645,15 @@ define([
 
     /**
      * Download data from a path with optional caching.
-     * @param {string} path Path relative to baseUrl.
+     * @param {string} path Path relative to baseUrl
      * @param {object} [options] Options passed to
      * {@link DataONEHttpClient#request} (except `path`), plus cache controls.
-     * @param {boolean} [options.auth] Whether to resolve a token automatically.
+     * @param {boolean} [options.auth] Whether to resolve a token automatically
      * @param {boolean} [options.useCache] Whether to cache responses, default
      * true.
-     * @param {string} [options.cacheKey] Cache key override.
-     * @param {number|null} [options.cacheTtlMs] Cache TTL override.
-     * @returns {Promise<*>} Promise resolving to response data.
+     * @param {string} [options.cacheKey] Cache key override
+     * @param {number|null} [options.cacheTtlMs] Cache TTL override
+     * @returns {Promise<*>} Promise resolving to response data
      */
     async download(path, options = {}) {
       const {
@@ -685,11 +690,11 @@ define([
 
     /**
      * Upload data to a path.
-     * @param {string} path Path relative to baseUrl.
+     * @param {string} path Path relative to baseUrl
      * @param {object} [options] Options passed to
      * {@link DataONEHttpClient#request} (except `path`), plus cache controls.
-     * @param {boolean} [options.auth] Whether to resolve a token automatically.
-     * @param {string} [options.cacheKey] Cache key override.
+     * @param {boolean} [options.auth] Whether to resolve a token automatically
+     * @param {string} [options.cacheKey] Cache key override
      * @returns {Promise<DataONEHttpResponse>} Promise resolving to the
      * response.
      */
@@ -713,8 +718,8 @@ define([
 
     /**
      * Get a cached value scoped by the current user.
-     * @param {string} key Cache key.
-     * @returns {Promise<*>} Promise resolving to the cached value.
+     * @param {string} key Cache key
+     * @returns {Promise<*>} Promise resolving to the cached value
      */
     async getCached(key) {
       if (!key) return null;
@@ -726,7 +731,7 @@ define([
 
     /**
      * Check whether a value exists in the cache for the current user scope.
-     * @param {string} key Cache key.
+     * @param {string} key Cache key
      * @returns {Promise<boolean>} Promise resolving to whether the value is
      * cached.
      */
@@ -737,11 +742,11 @@ define([
 
     /**
      * Store a value in the cache for the current user scope.
-     * @param {string} key Cache key.
-     * @param {*} value Value to store.
-     * @param {object} [options] Cache scope options.
-     * @param {number|null} [options.ttlMs] Override cache TTL in ms.
-     * @returns {Promise<*>} Promise resolving to the stored value.
+     * @param {string} key Cache key
+     * @param {*} value Value to store
+     * @param {object} [options] Cache scope options
+     * @param {number|null} [options.ttlMs] Override cache TTL in ms
+     * @returns {Promise<*>} Promise resolving to the stored value
      */
     async setCached(key, value, { ttlMs } = {}) {
       if (!key) return value;
@@ -753,8 +758,8 @@ define([
 
     /**
      * Remove a cached value for the current user scope.
-     * @param {string} key Cache key.
-     * @returns {Promise<void>} Promise resolving when removal completes.
+     * @param {string} key Cache key
+     * @returns {Promise<void>} Promise resolving when removal completes
      */
     async removeCached(key) {
       if (!key) return;
@@ -764,7 +769,7 @@ define([
 
     /**
      * Clear the cache for the current user scope.
-     * @returns {Promise<void>} Promise resolving when the cache is cleared.
+     * @returns {Promise<void>} Promise resolving when the cache is cleared
      */
     async clearCache() {
       const store = await this.getStore();
