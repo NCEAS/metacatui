@@ -1,6 +1,7 @@
-define(["common/ValueUtilities", "common/UrlUtilities"], function (
+define(["common/ValueUtilities", "common/UrlUtilities", "md5"], function (
   ValueUtilities,
   UrlUtilities,
+  md5,
 ) {
   var expect = chai.expect;
 
@@ -820,6 +821,64 @@ define(["common/ValueUtilities", "common/UrlUtilities"], function (
           },
         );
         expect(value).to.equal("text/plain");
+      });
+    });
+
+    describe("calculateBlobChecksum", function () {
+      it("calculates known MD5 checksums", async function () {
+        const empty = await ValueUtilities.calculateBlobChecksum(new Blob([]));
+        const hello = await ValueUtilities.calculateBlobChecksum(
+          new Blob(["hello"]),
+        );
+
+        expect(empty).to.deep.equal({
+          value: "d41d8cd98f00b204e9800998ecf8427e",
+          algorithm: "MD5",
+        });
+        expect(hello).to.deep.equal({
+          value: "5d41402abc4b2a76b9719d911017c592",
+          algorithm: "MD5",
+        });
+      });
+
+      it("calculates a multi-chunk checksum and reports progress", async function () {
+        const content = "x".repeat(2 ** 20 + 10);
+        const progress = [];
+
+        const checksum = await ValueUtilities.calculateBlobChecksum(
+          new Blob([content]),
+          {
+            onProgress: (update) => progress.push(update),
+          },
+        );
+
+        expect(checksum.value).to.equal(md5(content));
+        expect(progress.length).to.equal(2);
+        expect(progress.at(-1)).to.deep.equal({
+          loaded: content.length,
+          total: content.length,
+          percent: 100,
+        });
+      });
+
+      it("stops between chunks when aborted", async function () {
+        const controller = new AbortController();
+        let thrown = null;
+
+        try {
+          await ValueUtilities.calculateBlobChecksum(
+            new Blob(["x".repeat(2 ** 20 + 10)]),
+            {
+              signal: controller.signal,
+              onProgress: () => controller.abort(),
+            },
+          );
+        } catch (error) {
+          thrown = error;
+        }
+
+        expect(thrown).to.be.instanceof(Error);
+        expect(thrown.name).to.equal("AbortError");
       });
     });
 

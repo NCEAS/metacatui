@@ -66,6 +66,27 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
       });
     });
 
+    describe("getXMLSafeID", () => {
+      it("returns null for nullish or blank identifiers", () => {
+        expect(XMLUtilities.getXMLSafeID()).to.equal(null);
+        expect(XMLUtilities.getXMLSafeID(null)).to.equal(null);
+        expect(XMLUtilities.getXMLSafeID("   ")).to.equal(null);
+      });
+
+      it("trims identifiers and coerces non-null values to strings", () => {
+        expect(XMLUtilities.getXMLSafeID("  urn:uuid:test.1  ")).to.equal(
+          "urn-uuid-test.1",
+        );
+        expect(XMLUtilities.getXMLSafeID(1234)).to.equal("1234");
+      });
+
+      it("replaces legacy XML ID characters", () => {
+        expect(XMLUtilities.getXMLSafeID("urn:uuid:a<b&amp;c")).to.equal(
+          "urn-uuid-a-bc",
+        );
+      });
+    });
+
     describe("parseXmlString", () => {
       it("parses valid XML strings", () => {
         const xml = XMLUtilities.parseXmlString(
@@ -372,7 +393,7 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
           "application/xml",
         );
 
-        XMLUtilities.getRequiredElementText(xml, "identifier").should.equal(
+        expect(XMLUtilities.getRequiredElementText(xml, "identifier")).to.equal(
           "urn:uuid:test.2",
         );
       });
@@ -383,7 +404,7 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
           "application/xml",
         );
 
-        XMLUtilities.getRequiredElementText(xml, "identifier").should.equal(
+        expect(XMLUtilities.getRequiredElementText(xml, "identifier")).to.equal(
           "urn:uuid:test.1",
         );
       });
@@ -411,7 +432,7 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
           "application/xml",
         );
 
-        XMLUtilities.getRequiredElementText(xml, "identifier").should.equal(
+        expect(XMLUtilities.getRequiredElementText(xml, "identifier")).to.equal(
           "urn:uuid:test.1",
         );
       });
@@ -422,10 +443,9 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
           "application/xml",
         );
 
-        XMLUtilities.getRequiredElementText(
-          xml,
-          "nodeReference",
-        ).should.equal("urn:node:KNB");
+        expect(
+          XMLUtilities.getRequiredElementText(xml, "nodeReference"),
+        ).to.equal("urn:node:KNB");
       });
     });
 
@@ -437,8 +457,8 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
           "create",
         );
 
-        result.value.should.equal("urn:uuid:test.3");
-        result.xml.should.be.instanceof(Document);
+        expect(result.value).to.equal("urn:uuid:test.3");
+        expect(result.xml).to.be.instanceof(Document);
       });
 
       it("surfaces context in parse failures", () => {
@@ -458,8 +478,8 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
           "node lookup",
         );
 
-        result.value.should.equal("urn:node:ARCTIC");
-        result.xml.should.be.instanceof(Document);
+        expect(result.value).to.equal("urn:node:ARCTIC");
+        expect(result.xml).to.be.instanceof(Document);
       });
     });
 

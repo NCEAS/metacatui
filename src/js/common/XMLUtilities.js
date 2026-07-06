@@ -65,6 +65,23 @@ define([], () => {
     },
 
     /**
+     * Convert an identifier to the legacy XML-safe ID form used by rendered
+     * metadata annotations.
+     * @param {*} id Identifier.
+     * @returns {string|null} XML-safe ID, or null for empty input.
+     * @since 0.0.0
+     */
+    getXMLSafeID(id) {
+      if (id === undefined || id === null) return null;
+      const normalized = String(id).trim();
+      if (!normalized) return null;
+      return normalized
+        .replace(/</g, "-")
+        .replace(/:/g, "-")
+        .replace(/&[a-zA-Z0-9]+;/g, "");
+    },
+
+    /**
      * Parse an XML string into a Document.
      * @param {string} xmlString XML text to parse.
      * @param {string} [context] Context label for parse errors.

@@ -1,10 +1,15 @@
 "use strict";
 
-define(["md5", "uuid"], (md5, uuid) => {
+define(["md5", "uuid", "common/ErrorUtilities"], (
+  md5,
+  uuid,
+  ErrorUtilities,
+) => {
   const KIBIBYTE = 1024;
   const MEBIBYTE = KIBIBYTE * 1024;
   const GIBIBYTE = MEBIBYTE * 1024;
   const TEBIBYTE = GIBIBYTE * 1024;
+  const CHECKSUM_CHUNK_SIZE = 2 ** 20;
 
   /**
    * Generic helpers for normalizing, comparing, and serializing values.
@@ -929,6 +934,56 @@ define(["md5", "uuid"], (md5, uuid) => {
     },
 
     /**
+     * Calculate a checksum for a Blob without loading the entire Blob at once.
+     * @param {Blob} blob Blob to checksum.
+     * @param {object} [options] Checksum options.
+     * @param {string} [options.algorithm] Checksum algorithm.
+     * @param {AbortSignal} [options.signal] Abort signal.
+     * @param {Function} [options.onProgress] Progress callback.
+     * @returns {Promise<{value: string, algorithm: string}>} Checksum result.
+     * @since 0.0.0
+     */
+    async calculateBlobChecksum(
+      blob,
+      { algorithm = "MD5", signal, onProgress } = {},
+    ) {
+      if (!(blob instanceof Blob)) {
+        throw new Error("ValueUtilities.calculateBlobChecksum requires a Blob");
+      }
+
+      const normalizedAlgorithm = String(algorithm).toUpperCase();
+      if (normalizedAlgorithm !== "MD5") {
+        throw new Error(`Unsupported checksum algorithm: ${algorithm}`);
+      }
+      ErrorUtilities.throwIfAborted(signal);
+
+      const hash = md5.create();
+      let loaded = 0;
+
+      while (loaded < blob.size) {
+        ErrorUtilities.throwIfAborted(signal);
+        // Chunks must be read and hashed in byte order.
+        // eslint-disable-next-line no-await-in-loop
+        const buffer = await blob
+          .slice(loaded, loaded + CHECKSUM_CHUNK_SIZE)
+          .arrayBuffer();
+        ErrorUtilities.throwIfAborted(signal);
+        hash.update(buffer);
+        loaded += buffer.byteLength;
+        onProgress?.({
+          loaded,
+          total: blob.size,
+          percent: (loaded / blob.size) * 100,
+        });
+      }
+
+      return {
+        value: hash.hex(),
+        algorithm: normalizedAlgorithm,
+      };
+    },
+
+    /**
      * Generate a UUID with an optional prefix.
      * @param {object} [options] UUID generation options.
      * @param {string} options.prefix Optional prefix for the UUID.
@@ -940,6 +995,37 @@ define(["md5", "uuid"], (md5, uuid) => {
      */
     makeUUID({ prefix = "", scheme = "urn", nid = "uuid", sep = ":" } = {}) {
       return `${prefix}${scheme}${sep}${nid}${sep}${uuid.v4()}`;
+    },
+
+    /**
+     * Extract the file extension from a filename, returning it in lowercase.
+     * @param {string} filename Filename string.
+     * @returns {string} File extension in lowercase, or empty string if none
+     * found.
+     * @since 0.0.0
+     */
+    extractFileExtension(filename) {
+      if (!filename) return "";
+      const lastDotIndex = filename.lastIndexOf(".");
+      if (lastDotIndex === -1) return "";
+      return filename.substring(lastDotIndex + 1).toLowerCase();
+    },
+
+    /**
+     * Check if a value matches a wildcard pattern.
+     * @param {string} value Value to check. If not a string, returns false.
+     * @param {string} pattern Wildcard pattern that includes `*` as a wildcard
+     * character.
+     * @returns {boolean} True if the value matches the pattern, false
+     * otherwise.
+     * @since 0.0.0
+     */
+    matchWildcard(value, pattern) {
+      if (typeof value !== "string" || typeof pattern !== "string") {
+        return false;
+      }
+      const regex = ValueUtilities.wildcardToRegex(pattern);
+      return regex.test(value);
     },
   };
 
