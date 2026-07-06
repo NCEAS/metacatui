@@ -1,8 +1,9 @@
 define([
   "models/dataONEServices/DataONEService",
+  "common/ErrorUtilities",
   "common/UrlUtilities",
   "common/ValueUtilities",
-], (DataONEService, UrlUtilities, ValueUtilities) => {
+], (DataONEService, ErrorUtilities, UrlUtilities, ValueUtilities) => {
   /**
    * Service for DataONE identifier generation and reservation.
    * @class IdentifierService
@@ -114,9 +115,8 @@ define([
     static isTransientIdentifierError(error) {
       const status = Number(error?.status);
       return (
-        error?.name === "TimeoutError" ||
+        ErrorUtilities.isTimeoutError(error) ||
         error?.name === "TypeError" ||
-        error?.isTimeout === true ||
         error?.code === "NETWORK_ERROR" ||
         status === 0 ||
         status === 408 ||

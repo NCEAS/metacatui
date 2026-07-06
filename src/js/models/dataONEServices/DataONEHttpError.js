@@ -1,4 +1,7 @@
-define(["models/dataONEServices/HttpRetryPolicy"], (HttpRetryPolicy) => {
+define([
+  "models/dataONEServices/HttpRetryPolicy",
+  "common/DataONEXmlUtilities",
+], (HttpRetryPolicy, DataONEXmlUtilities) => {
   // The max length for error body text to retain.
   const DEFAULT_MAX_ERROR_BODY = 8192;
 
@@ -77,11 +80,21 @@ define(["models/dataONEServices/HttpRetryPolicy"], (HttpRetryPolicy) => {
         rawBody,
         bodyLimit,
       );
+      const dataONEError = resolvedBodyText
+        ? DataONEXmlUtilities.parseErrorXml(
+            resolvedBodyText,
+            "DataONE error response",
+          )
+        : null;
+      const parsedDataONEError =
+        dataONEError?.status === "invalid_xml" ? null : dataONEError;
 
       // Derive a sensible message if none was provided
       let resolvedMessage = "";
       if (typeof message === "string" && message.length > 0) {
         resolvedMessage = message;
+      } else if (parsedDataONEError?.message) {
+        resolvedMessage = parsedDataONEError.message;
       } else if (error?.message) {
         resolvedMessage = error.message;
       } else if (resolvedNetworkError) {
@@ -104,6 +117,9 @@ define(["models/dataONEServices/HttpRetryPolicy"], (HttpRetryPolicy) => {
       this.networkError = resolvedNetworkError;
       this.headers = resolvedHeaders;
       this.originalError = error || null;
+      this.dataONEErrorName = parsedDataONEError?.name || null;
+      this.errorCode = parsedDataONEError?.status || null;
+      this.detailCode = parsedDataONEError?.detailCode || null;
     }
 
     /**

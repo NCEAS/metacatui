@@ -3,9 +3,23 @@ define([
   "common/UrlUtilities",
   "models/dataONEServices/HttpRetryPolicy",
   "models/dataONEServices/DataONEHttpError",
+  "common/ErrorUtilities",
   "common/ValueUtilities",
-], (md5, UrlUtilities, HttpRetryPolicy, DataONEHttpError, ValueUtilities) => {
+], (
+  md5,
+  UrlUtilities,
+  HttpRetryPolicy,
+  DataONEHttpError,
+  ErrorUtilities,
+  ValueUtilities,
+) => {
   const { getCaseInsensitive } = ValueUtilities;
+  const {
+    abortableDelay,
+    createAbortError,
+    createTimeoutError,
+    isTimeoutError,
+  } = ErrorUtilities;
 
   /**
    * Header names that affect request deduplication. Defaults.
@@ -57,74 +71,6 @@ define([
     headerNamesForDedup: DEFAULT_HEADER_NAMES_DEDUP,
     responseTypes: DEFAULT_RESPONSE_TYPES,
   };
-
-  /**
-   * Create an AbortError with the provided reason.
-   * @param {string} [reason] Abort reason, defaults to "Aborted"
-   * @returns {Error} Error with name set to AbortError
-   */
-  const abortError = (reason = "Aborted") => {
-    const err = new Error(reason);
-    err.name = "AbortError";
-    return err;
-  };
-
-  /**
-   * Create a TimeoutError with the provided reason.
-   * @param {string} [reason] Timeout reason, defaults to "Request timed out"
-   * @returns {Error} Error with name set to TimeoutError
-   */
-  const timeoutError = (reason = "Request timed out") => {
-    const err = new Error(reason);
-    err.name = "TimeoutError";
-    err.code = "ETIMEDOUT";
-    err.isTimeout = true;
-    return err;
-  };
-
-  /**
-   * Delay for a specified duration with optional abort support.
-   * @param {number} ms Delay duration in milliseconds
-   * @param {AbortSignal} [signal] Abort signal to cancel the delay
-   * @returns {Promise<void>} Resolves after the delay or rejects on abort
-   */
-  const sleep = (ms, signal) =>
-    new Promise((resolve, reject) => {
-      if (!Number.isFinite(ms) || ms <= 0) {
-        if (signal?.aborted) {
-          reject(abortError(signal.reason));
-        } else {
-          resolve();
-        }
-        return;
-      }
-
-      let timeoutId;
-
-      let onAbort; // To avoid defined before use eslint error
-
-      const cleanup = () => {
-        clearTimeout(timeoutId);
-        signal?.removeEventListener("abort", onAbort);
-      };
-
-      onAbort = () => {
-        cleanup();
-        reject(abortError(signal.reason));
-      };
-
-      if (signal?.aborted) {
-        reject(abortError(signal.reason));
-        return;
-      }
-
-      signal?.addEventListener("abort", onAbort, { once: true });
-
-      timeoutId = setTimeout(() => {
-        cleanup();
-        resolve();
-      }, ms);
-    });
 
   /**
    * Configuration options for {@link DataONEHttpClient}.
@@ -651,14 +597,13 @@ define([
             response,
             attempt,
             url,
-            message: `Request failed with status ${response.status}`,
             status: response.status,
           });
         } catch (err) {
           // Stop all processing and throw immediately if the request was
           // aborted by the caller
-          if (signal?.aborted && err?.name !== "TimeoutError") {
-            throw abortError(signal.reason);
+          if (signal?.aborted && !isTimeoutError(err)) {
+            throw createAbortError(signal.reason);
           }
 
           const normalized =
@@ -668,7 +613,7 @@ define([
                   error: err,
                   url,
                   attempt,
-                  networkError: err?.name === "TimeoutError" || undefined,
+                  networkError: isTimeoutError(err) || undefined,
                 });
 
           lastError = normalized;
@@ -684,7 +629,7 @@ define([
 
           const retryAfterMs = retryPolicy.parseRetryAfter(normalized.headers);
           const delay = retryPolicy.computeDelay({ attempt, retryAfterMs });
-          await sleep(delay, signal);
+          await abortableDelay(delay, signal);
         }
       }
       /* eslint-enable no-await-in-loop */
@@ -745,7 +690,7 @@ define([
         timeoutMs !== undefined ? timeoutMs : this.timeoutMs;
 
       if (effectiveTimeout && effectiveTimeout > 0) {
-        timeoutErr = timeoutError();
+        timeoutErr = createTimeoutError();
         timeoutId = setTimeout(() => {
           timedOut = true;
           controller.abort();
@@ -777,7 +722,7 @@ define([
 
         // If the caller aborted, preserve abort semantics.
         if (abortedByCaller) {
-          throw abortError(signal?.reason);
+          throw createAbortError(signal?.reason);
         }
 
         throw error;
@@ -842,7 +787,7 @@ define([
         };
 
         if (signal?.aborted) {
-          finalize(reject, abortError(signal.reason));
+          finalize(reject, createAbortError(signal.reason));
           return;
         }
 
@@ -898,15 +843,15 @@ define([
         };
 
         xhr.ontimeout = () => {
-          finalize(reject, timeoutError());
+          finalize(reject, createTimeoutError());
         };
 
         xhr.onabort = () => {
           if (abortedByCaller || signal?.aborted) {
-            finalize(reject, abortError(signal?.reason));
+            finalize(reject, createAbortError(signal?.reason));
             return;
           }
-          finalize(reject, abortError());
+          finalize(reject, createAbortError());
         };
 
         try {
@@ -984,25 +929,22 @@ define([
      * @private
      */
     static async readBody(response, responseType) {
-      const responseCopy = response.clone();
-      try {
-        switch (responseType.toLocaleLowerCase()) {
-          case "json":
-            return await response.json();
-          case "arraybuffer":
-            return await response.arrayBuffer();
-          case "blob":
-            return await response.blob();
-          case "text":
-          default:
-            return await response.text();
+      switch (responseType.toLocaleLowerCase()) {
+        case "json": {
+          const text = await response.text();
+          try {
+            return JSON.parse(text);
+          } catch (_error) {
+            return text;
+          }
         }
-      } catch (e) {
-        // If parsing fails, fall back to text where possible
-        if (responseType !== "text") {
-          return responseCopy.text();
-        }
-        throw e;
+        case "arraybuffer":
+          return response.arrayBuffer();
+        case "blob":
+          return response.blob();
+        case "text":
+        default:
+          return response.text();
       }
     }
 

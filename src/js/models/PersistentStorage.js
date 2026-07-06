@@ -1,4 +1,8 @@
-define(["localforage", "common/ValueUtilities"], (localforage, ValueUtilities) => {
+define(["localforage", "common/ErrorUtilities", "common/ValueUtilities"], (
+  localforage,
+  ErrorUtilities,
+  ValueUtilities,
+) => {
   // Default TTL: 1 hour
   const DEFAULT_TTL_MS = 60 * 60 * 1000;
   // Change this when making breaking schema changes
@@ -175,16 +179,7 @@ define(["localforage", "common/ValueUtilities"], (localforage, ValueUtilities) =
      * condition
      */
     static isQuotaError(e) {
-      const quotaMessages = [
-        "QuotaExceededError",
-        "QUOTA_EXCEEDED_ERR",
-        "QUOTA_BYTES_EXCEEDED",
-        "quota",
-        "exceeded",
-      ];
-      let msg = typeof e === "string" ? e : e?.message || "";
-      msg = msg.toLowerCase();
-      return quotaMessages.some((qm) => msg.includes(qm.toLowerCase()));
+      return ErrorUtilities.isQuotaError(e);
     }
 
     /**
