@@ -1,7 +1,7 @@
-define([
-  "/test/js/specs/shared/clean-state.js",
-  "common/UrlUtilities",
-], (cleanState, UrlUtilities) => {
+define(["/test/js/specs/shared/clean-state.js", "common/UrlUtilities"], (
+  cleanState,
+  UrlUtilities,
+) => {
   const should = chai.should();
   const expect = chai.expect;
 
@@ -28,23 +28,24 @@ define([
       UrlUtilities.urlLikeToString(
         new URL("https://example.org/path"),
       ).should.equal("https://example.org/path");
-      expect(UrlUtilities.urlLikeToString({ href: "https://example.org" })).to
-        .equal(null);
+      expect(
+        UrlUtilities.urlLikeToString({ href: "https://example.org" }),
+      ).to.equal(null);
     });
 
     it("splits url suffixes and absolute urls into their component parts", () => {
-      UrlUtilities.splitUrlSuffix("https://example.org/path?x=1#frag").should.deep.equal(
-        {
-          base: "https://example.org/path",
-          suffix: "?x=1#frag",
-        },
-      );
-      UrlUtilities.splitAbsoluteUrl("https://example.org/path/to/object").should.deep.equal(
-        {
-          prefix: "https://example.org",
-          path: "/path/to/object",
-        },
-      );
+      UrlUtilities.splitUrlSuffix(
+        "https://example.org/path?x=1#frag",
+      ).should.deep.equal({
+        base: "https://example.org/path",
+        suffix: "?x=1#frag",
+      });
+      UrlUtilities.splitAbsoluteUrl(
+        "https://example.org/path/to/object",
+      ).should.deep.equal({
+        prefix: "https://example.org",
+        path: "/path/to/object",
+      });
       UrlUtilities.splitAbsoluteUrl("path/to/object").should.deep.equal({
         prefix: "",
         path: "path/to/object",
@@ -70,9 +71,9 @@ define([
       UrlUtilities.encodeRFC3986PathSegment("urn:uuid:member.1").should.equal(
         "urn:uuid:member.1",
       );
-      UrlUtilities.encodeRFC3986PathSegment("pid+with plus/segment~").should.equal(
-        "pid+with%20plus%2Fsegment~",
-      );
+      UrlUtilities.encodeRFC3986PathSegment(
+        "pid+with plus/segment~",
+      ).should.equal("pid+with%20plus%2Fsegment~");
     });
 
     it("encodes DataONE PID path segments using RFC3986 path-segment rules plus plus-sign escaping", () => {
@@ -82,30 +83,30 @@ define([
       UrlUtilities.encodeDataONEPidForPath("urn:uuid:member.1").should.equal(
         "urn:uuid:member.1",
       );
-      UrlUtilities.encodeDataONEPidForPath("pid+with plus/segment~").should.equal(
-        "pid%2Bwith%20plus%2Fsegment~",
-      );
+      UrlUtilities.encodeDataONEPidForPath(
+        "pid+with plus/segment~",
+      ).should.equal("pid%2Bwith%20plus%2Fsegment~");
     });
 
     it("decodes RFC3986 path segments and preserves DataONE plus-sign handling", () => {
-      UrlUtilities.decodeRFC3986PathSegment("pid+with%20plus%2Fsegment~").should.equal(
-        "pid+with plus/segment~",
-      );
-      UrlUtilities.decodeDataONEPidFromPath("pid+with%20plus%2Fsegment~").should.equal(
-        "pid+with plus/segment~",
-      );
-      UrlUtilities.decodeDataONEPidFromPath("pid%2Bwith%20plus%2Fsegment~").should.equal(
-        "pid+with plus/segment~",
-      );
+      UrlUtilities.decodeRFC3986PathSegment(
+        "pid+with%20plus%2Fsegment~",
+      ).should.equal("pid+with plus/segment~");
+      UrlUtilities.decodeDataONEPidFromPath(
+        "pid+with%20plus%2Fsegment~",
+      ).should.equal("pid+with plus/segment~");
+      UrlUtilities.decodeDataONEPidFromPath(
+        "pid%2Bwith%20plus%2Fsegment~",
+      ).should.equal("pid+with plus/segment~");
     });
 
     it("decodes over-escaped encodeURIComponent output for DataONE PIDs", () => {
       UrlUtilities.decodeDataONEPidFromPath("doi%3A10.5063%2Fabc").should.equal(
         "doi:10.5063/abc",
       );
-      UrlUtilities.decodeDataONEPidFromPath("urn%3Auuid%3Amember.1").should.equal(
-        "urn:uuid:member.1",
-      );
+      UrlUtilities.decodeDataONEPidFromPath(
+        "urn%3Auuid%3Amember.1",
+      ).should.equal("urn:uuid:member.1");
     });
 
     it("encodes individual path segments", () => {
@@ -119,7 +120,9 @@ define([
     });
 
     it("should not change already encoded paths", () => {
-      const encoded = UrlUtilities.encodePathSegments("/object/pid%3Aabc%2F123");
+      const encoded = UrlUtilities.encodePathSegments(
+        "/object/pid%3Aabc%2F123",
+      );
       encoded.should.equal("/object/pid%3Aabc%2F123");
     });
 
@@ -314,9 +317,10 @@ define([
     });
 
     it("does not coerce non-url-like values such as numbers", () => {
-      UrlUtilities.normalizeUrl(12345, "https://fallback.example/").should.equal(
-        "https://fallback.example",
-      );
+      UrlUtilities.normalizeUrl(
+        12345,
+        "https://fallback.example/",
+      ).should.equal("https://fallback.example");
       UrlUtilities.normalizeUrl(12345).should.equal("");
     });
 
@@ -330,18 +334,14 @@ define([
     it("can ensure a trailing slash without disturbing query strings or hashes", () => {
       UrlUtilities.normalizeUrl("https://example.org/path?x=1#frag", "", {
         trailingSlash: "ensure",
-      }).should.equal(
-        "https://example.org/path/?x=1#frag",
-      );
+      }).should.equal("https://example.org/path/?x=1#frag");
     });
 
     it("normalizes trailing slashes consistently", () => {
       const url = "https://example.org/path///?x=1#frag";
       UrlUtilities.normalizeUrl(url, "", {
         trailingSlash: "ensure",
-      }).should.equal(
-        "https://example.org/path/?x=1#frag",
-      );
+      }).should.equal("https://example.org/path/?x=1#frag");
     });
 
     it("preserves query parameters and hashes during default normalization", () => {
@@ -351,14 +351,52 @@ define([
     });
 
     it("strips fragments and returns the last path segment", () => {
-      UrlUtilities.stripFragment("https://example.org/object/pid#frag").should.equal(
-        "https://example.org/object/pid",
-      );
+      UrlUtilities.stripFragment(
+        "https://example.org/object/pid#frag",
+      ).should.equal("https://example.org/object/pid");
       UrlUtilities.getLastPathSegment(
         "https://example.org/object/pid%3Aabc?x=1#frag",
       ).should.equal("pid%3Aabc");
       UrlUtilities.getLastPathSegment("https://example.org").should.equal("");
       UrlUtilities.getLastPathSegment("pid:abc").should.equal("pid:abc");
+    });
+
+    it("builds object download URLs from an explicit base URL", () => {
+      UrlUtilities.getObjectDownloadUrl("doi:10.5063/F1/2", {
+        baseUrl: "https://repo.example/object",
+      }).should.equal("https://repo.example/object/doi%3A10.5063%2FF1%2F2");
+    });
+
+    it("defaults object download URLs to resolve before object service", () => {
+      const originalMetacatUI = globalThis.MetacatUI;
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        appModel: {
+          get: state.sandbox.stub().callsFake((key) => {
+            if (key === "resolveServiceUrl") {
+              return "https://repo.example/resolve/";
+            }
+            if (key === "objectServiceUrl") {
+              return "https://repo.example/object/";
+            }
+            return "";
+          }),
+        },
+      };
+
+      try {
+        UrlUtilities.getObjectDownloadUrl("data 1").should.equal(
+          "https://repo.example/resolve/data%201",
+        );
+      } finally {
+        globalThis.MetacatUI = originalMetacatUI;
+      }
+    });
+
+    it("treats an explicit empty object download base as unavailable", () => {
+      UrlUtilities.getObjectDownloadUrl("data.1", { baseUrl: "" }).should.equal(
+        "",
+      );
     });
 
     it("extracts base URLs with optional required path segments", () => {

@@ -449,6 +449,29 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     },
 
     /**
+     * Get a direct object download URL for the given PID.
+     * @param {string} pid DataONE object PID.
+     * @param {object} [options] URL options.
+     * @param {string} [options.baseUrl] Explicit object/resolve service base
+     * URL. Defaults to resolveServiceUrl, then objectServiceUrl.
+     * @returns {string} Object download URL, or "" when unavailable.
+     * @since 0.0.0
+     */
+    getObjectDownloadUrl(pid, options = {}) {
+      const { baseUrl } = options;
+      const root =
+        "baseUrl" in options
+          ? baseUrl
+          : MetacatUI.appModel.get("resolveServiceUrl") ||
+            MetacatUI.appModel.get("objectServiceUrl") ||
+            "";
+      if (!pid || !root) return "";
+      return `${UrlUtilities.normalizeUrl(root, "", {
+        trailingSlash: "ensure",
+      })}${encodeURIComponent(pid)}`;
+    },
+
+    /**
      * Get a URL for viewing a DataONE object with the given PID.
      * @param {string} pid ID for the DataONE object.
      * @returns {string} URL for viewing the object.
