@@ -1,6 +1,12 @@
 "use strict";
 
-define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
+define(["backbone", "collections/ObjectFormats", "common/ValueUtilities"], (
+  Backbone,
+  ObjectFormats,
+  ValueUtilities,
+) => {
+  const DEFAULT_MAX_CONCURRENT = 4;
+
   /**
    * @namespace Utilities
    * @description Miscellaneous app/browser helpers that do not yet fit better
@@ -26,6 +32,89 @@ define(["backbone", "collections/ObjectFormats"], (Backbone, ObjectFormats) => {
         .replace(/>/g, "&gt;")
         .replace(/'/g, "&apos;")
         .replace(/"/g, "&quot;");
+    },
+
+    DEFAULT_MAX_CONCURRENT,
+
+    /**
+     * Run work with one concurrency limit and no batch abstraction.
+     * @param {Array<*>} items Items to process.
+     * @param {Function} worker Async item worker.
+     * @param {object} [options] Processing options.
+     * @param {number} [options.maxConcurrent] Worker limit.
+     * @param {AbortSignal} [options.signal] Abort signal.
+     * @param {boolean} [options.stopOnError] Stop scheduling after an error.
+     * @param {Function} [options.onItemComplete] Called after each item
+     *   settles.
+     * @returns {Promise<object>} Collected errors.
+     * @since 0.0.0
+     */
+    async processConcurrently(
+      items,
+      worker,
+      {
+        maxConcurrent = DEFAULT_MAX_CONCURRENT,
+        signal,
+        stopOnError = true,
+        onItemComplete,
+      } = {},
+    ) {
+      let nextIndex = 0;
+      let stopScheduling = false;
+      const errors = [];
+
+      const runWorker = async () => {
+        while (
+          !signal?.aborted &&
+          !stopScheduling &&
+          nextIndex < items.length
+        ) {
+          const index = nextIndex;
+          nextIndex += 1;
+          try {
+            // Workers in each slot run serially to enforce maxConcurrent.
+            // eslint-disable-next-line no-await-in-loop
+            await worker(items[index], index);
+          } catch (error) {
+            errors.push({ item: items[index], error, index });
+            if (stopOnError) stopScheduling = true;
+          } finally {
+            if (typeof onItemComplete === "function") {
+              onItemComplete(items[index], index);
+            }
+          }
+        }
+      };
+
+      await Promise.all(
+        Array.from({ length: Math.min(maxConcurrent, items.length) }, () =>
+          runWorker(),
+        ),
+      );
+      errors.sort((a, b) => a.index - b.index);
+      return { errors };
+    },
+
+    /**
+     * Resolve and validate a positive concurrency limit from a caller value, an
+     * app setting, or the project default.
+     * @param {string} appModelKey App model setting key (e.g. "batchSizeFetch").
+     * @param {number} [maxConcurrent] Caller-provided limit; falls back to the
+     *   app setting, then {@link Utilities.DEFAULT_MAX_CONCURRENT}.
+     * @returns {number} Positive integer limit.
+     * @since 0.0.0
+     */
+    resolveMaxConcurrent(
+      appModelKey,
+      maxConcurrent = ValueUtilities.normalizePositiveInteger(
+        globalThis.MetacatUI?.appModel?.get?.(appModelKey),
+        DEFAULT_MAX_CONCURRENT,
+      ),
+    ) {
+      return ValueUtilities.requirePositiveInteger(
+        maxConcurrent,
+        "maxConcurrent must be a positive integer",
+      );
     },
 
     /**

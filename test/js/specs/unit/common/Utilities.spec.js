@@ -19,6 +19,35 @@ define(["collections/ObjectFormats", "common/Utilities"], function (
       }
     });
 
+    describe("processConcurrently", function () {
+      it("limits concurrent work and collects errors by input order", async function () {
+        let active = 0;
+        let maxActive = 0;
+        const completed = [];
+
+        const result = await Utilities.processConcurrently(
+          [1, 2, 3],
+          async (item) => {
+            active += 1;
+            maxActive = Math.max(maxActive, active);
+            await new Promise((resolve) => {
+              setTimeout(resolve, 0);
+            });
+            active -= 1;
+            completed.push(item);
+            if (item === 2) throw new Error("bad item");
+          },
+          { maxConcurrent: 2, stopOnError: false },
+        );
+
+        expect(maxActive).to.be.at.most(2);
+        expect(completed).to.have.members([1, 2, 3]);
+        expect(result.errors).to.have.length(1);
+        expect(result.errors[0].item).to.equal(2);
+        expect(result.errors[0].index).to.equal(1);
+      });
+    });
+
     describe("tryParseCSVHeader", function () {
       var parse = Utilities.tryParseCSVHeader;
 
