@@ -30,20 +30,12 @@ define(["jquery"], ($) => {
    * @property {string} [groupField] Field to group by (if `group` is true).
    * @property {number} [groupLimit] Limit of groups to return (if `group` is
    * true).
+   * @property {AbortSignal} [signal] Signal used to cancel the fetch request.
    * @property {Array.<Array.<string>>} [extraParams] Extra arbitrary parameters
    * to include in the query. Formatted as key-value pairs in an array, e.g.,
    * `[['key', 'val'], ['key2', 'val2']]`.
    * @property {boolean} [disableQueryPOSTs] Disable POST requests for queries?
    */
-
-  /**
-   * Possible values for the formatType field.
-   */
-  const FORMAT_TYPES = Object.freeze({
-    RESOURCE: "RESOURCE",
-    METADATA: "METADATA",
-    DATA: "DATA",
-  });
 
   /**
    * QueryService provides methods to execute Solr queries against the
@@ -153,16 +145,7 @@ define(["jquery"], ($) => {
       };
 
       if (shouldPost) {
-        const fd = new FormData();
-        Object.entries(queryParams).forEach(([k, v]) => {
-          // TODO: Handle groups and other complex types if needed.... make a separate method?
-          if (Array.isArray(v)) {
-            v.forEach((item) => fd.append(k, item));
-          } else {
-            fd.append(k, v);
-          }
-        });
-        fetchOptions.body = fd;
+        fetchOptions.body = QueryService.toFormData(queryParams);
       } else {
         const qs = QueryService.toQueryString(queryParams);
         urlBase += (urlBase.includes("?") ? "" : "?") + qs;
@@ -174,6 +157,7 @@ define(["jquery"], ($) => {
           ...MetacatUI.appUserModel.createFetchSettings(),
         };
       }
+      if (opts.signal) fetchOptions.signal = opts.signal;
 
       const res = await fetch(urlBase, fetchOptions);
       if (!res.ok) {
@@ -611,6 +595,25 @@ define(["jquery"], ($) => {
     }
 
     /**
+     * Convert an object to FormData. Handles arrays by appending each item with
+     * the same key.
+     * @param {object} obj The object to convert.
+     * @returns {FormData} The FormData payload.
+     * @since 0.0.0
+     */
+    static toFormData(obj) {
+      const fd = new FormData();
+      Object.entries(obj).forEach(([k, v]) => {
+        if (Array.isArray(v)) {
+          v.forEach((item) => fd.append(k, item));
+        } else {
+          fd.append(k, v);
+        }
+      });
+      return fd;
+    }
+
+    /**
      * Build GET ajax settings for a query.
      * @param {string} urlBase The base URL for the query service.
      * @param {object} queryParams The query parameters to include.
@@ -633,18 +636,10 @@ define(["jquery"], ($) => {
      * @returns {object} jQuery AJAX settings object.
      */
     static buildPostSettings(urlBase, queryParams) {
-      const fd = new FormData();
-      Object.entries(queryParams).forEach(([k, v]) => {
-        if (Array.isArray(v)) {
-          v.forEach((item) => fd.append(k, item));
-        } else {
-          fd.append(k, v);
-        }
-      });
       return {
         url: urlBase,
         type: "POST",
-        data: fd,
+        data: QueryService.toFormData(queryParams),
         contentType: false,
         processData: false,
         dataType: "json",
@@ -663,8 +658,6 @@ define(["jquery"], ($) => {
       return { ...ajaxOpts, ...auth };
     }
   }
-
-  QueryService.FORMAT_TYPES = FORMAT_TYPES;
 
   return QueryService;
 });

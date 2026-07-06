@@ -100,6 +100,7 @@
     "./js/specs/unit/models/schemaOrg/SchemaOrg.spec.js",
     "./js/specs/unit/common/ErrorUtilities.spec.js",
     "./js/specs/unit/common/Utilities.spec.js",
+    "./js/specs/unit/common/EMLUtilities.spec.js",
     "./js/specs/unit/common/ValueUtilities.spec.js",
     "./js/specs/unit/common/XMLTypes.spec.js",
     "./js/specs/unit/common/ValidationUtilities.spec.js",

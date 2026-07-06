@@ -1,6 +1,6 @@
 "use strict";
 
-define([], () => {
+define(["common/XMLUtilities"], (XMLUtilities) => {
   /**
    * @namespace EMLUtilities
    * @description A generic utility object that contains functions used
@@ -10,6 +10,23 @@ define([], () => {
    * @since 2.34.0
    */
   const EMLUtilities = /** @lends EMLUtilities.prototype */ {
+    /**
+     * Clean text so it can be safely serialized into EML XML.
+     * @param {*} value Candidate text value.
+     * @returns {*} Cleaned text, or the original non-string value.
+     * @since 0.0.0
+     */
+    cleanXMLText(value) {
+      if (typeof value !== "string") return value;
+
+      const text = value
+        .trim()
+        .replace(/<\s*[^>]*>/g, (xmlNode) =>
+          xmlNode.replace(/>/g, "&gt;").replace(/</g, "&lt;"),
+        );
+      return XMLUtilities.removeInvalidXmlCharacters(text);
+    },
+
     /**
      * Climbs up the model hierarchy until it finds the EML model
      * @param {Backbone.Model} model - The starting model
@@ -47,6 +64,20 @@ define([], () => {
       // Remove any namespace declarations
       str = str.replace(/xmlns(:\w+)?="[^"]*"/g, "");
       return str;
+    },
+
+    /**
+     * Mark the active package as edited after an EML model or view change.
+     * @since 0.0.0
+     */
+    markRootDataPackageChanged() {
+      const dataPackage = MetacatUI.rootDataPackage;
+      if (
+        typeof dataPackage?.recordUserEdit === "function" &&
+        !dataPackage.isEditLocked?.()
+      ) {
+        dataPackage.recordUserEdit("metadata:changed", {});
+      }
     },
   };
 
