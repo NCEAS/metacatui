@@ -148,7 +148,8 @@
     "./js/specs/unit/models/dataONEServices/DataONEHttpError.spec.js",
     "./js/specs/unit/models/dataONEServices/HttpRetryPolicy.spec.js",
     "./js/specs/unit/models/dataONEServices/ViewService.spec.js",
-    "./js/specs/unit/models/viewService/ViewServiceDoc.spec.js"
+    "./js/specs/unit/models/viewService/ViewServiceDoc.spec.js",
+    "./js/specs/unit/models/dataONEServices/AuthorizationService.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",
