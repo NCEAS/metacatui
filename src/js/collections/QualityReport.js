@@ -94,7 +94,6 @@ define([
           const check = result.get("check");
           const status = result.get("status");
           // simple cases
-          // always blue for info and skip
           if (check.level === "INFO") {
             color = "BLUE";
             return color;
