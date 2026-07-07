@@ -36,8 +36,10 @@ define([
        * @property {Prediction[]} predictions a list of Predictions models that
        * correspond to the user's search query.
        * @property {string} query the user's search query.
-       * @property {ZoomPresetCategories|null} zoomPresets is the collection of
-       * ZoomPresets available in the current map.
+       * @property {ViewfinderCardCategories|null} viewfinderCards is the
+       * collection of ViewfinderCards available in the current map. Renamed from
+       * zoomPresets when zoom presets were deprecated in favor of more generalized
+       * viewfinder cards.
        * @since 2.28.0
        */
       defaults() {
@@ -46,19 +48,19 @@ define([
           focusIndex: -1,
           predictions: [],
           query: "",
-          zoomPresets: null,
+          viewfinderCards: null,
         };
       },
 
       /**
-       * @param {Map} mapModel is the Map model that the ViewfinderModel is
+       * @param {Map} mapModel The Map model that the ViewfinderModel is
        * managing for the corresponding ViewfinderView.
        */
       initialize({ mapModel }) {
         this.geocoderSearch = new GeocoderSearch();
         this.mapModel = mapModel;
 
-        this.set("zoomPresets", mapModel.get("zoomPresetsCollection"));
+        this.set("viewfinderCards", mapModel.get("viewfinderCardsCollection"));
       },
 
       /**
@@ -161,21 +163,63 @@ define([
       },
 
       /**
-       * Select a ZoomPresetModel from the list of presets and navigate there.
-       * This function hides all layers that are not to be visible according to
-       * the ZoomPresetModel configuration.
-       * @param {ZoomPresetModel} preset A user selected preset for which to
-       * enable layers and navigate.
+       * Open a visualization app in the full-screen iframe overlay by setting
+       * the activeVisualizationUrl attribute on the map model.
+       * @param {string} url The URL to load in the iframe overlay.
+       * @since 0.0.0
        */
-      selectZoomPreset(preset) {
-        const enabledLayerIds = preset.get("enabledLayerIds");
+      openVisualization(url) {
+        this.mapModel.set({ activeVisualizationUrl: url });
+      },
+
+      /**
+       * Close the visualization overlay by clearing activeVisualizationUrl on
+       * the map model.
+       * @since 0.0.0
+       */
+      closeVisualization() {
+        this.mapModel.set({ activeVisualizationUrl: null });
+      },
+
+      /**
+       * Extended from ZoomPresetModel's selectZoomPreset() when zoom presets
+       * were deprecated in favor of generalized viewfinder cards. Select a
+       * ViewfinderCardModel from the list of cards and navigate there.
+       * When `action` is a 'map' type ctaAction, its `layerIds` and coordinates
+       * are used directly. Otherwise falls back to the preset's `enabledLayerIds`
+       * and `geoPoint` for backward compatibility.
+       * @param {ViewfinderCardModel} preset A user selected card.
+       * @param {ViewfinderCardAction} [action] The specific 'map' ctaAction
+       * that was activated. When omitted, the preset's own fields are used.
+       */
+      selectViewfinderCard(preset, action) {
+        let enabledLayerIds;
+        let geoPoint;
+
+        if (action && action.type === "map") {
+          enabledLayerIds = action.layerIds || [];
+          if (action.latitude != null && action.longitude != null) {
+            geoPoint = new GeoPoint({
+              latitude: action.latitude,
+              longitude: action.longitude,
+              height: action.height,
+            });
+          }
+        } else {
+          // Backward compat: read directly from the legacy zoom preset model attributes.
+          enabledLayerIds = preset.get("enabledLayerIds") || [];
+          geoPoint = preset.get("geoPoint");
+        }
+
         this.mapModel.get("allLayers").forEach((layer) => {
           const isVisible = enabledLayerIds.includes(layer.get("layerId"));
           // Show or hide the layer according to the preset.
           layer.set("visible", isVisible);
         });
 
-        this.mapModel.zoomTo(preset.get("geoPoint"));
+        if (geoPoint) {
+          this.mapModel.zoomTo(geoPoint);
+        }
 
         // If this preset corresponds to a specific feature, select it on the
         // map.
@@ -191,6 +235,16 @@ define([
           // close any open feature panels
           this.mapModel.selectFeatures([]);
         }
+      },
+
+      /**
+       * Backward-compatibility alias for selectViewfinderCard.
+       * @deprecated Use selectViewfinderCard instead.
+       * @param {ViewfinderCardModel} preset The card to select.
+       * @returns {void}
+       */
+      selectZoomPreset(preset) {
+        return this.selectViewfinderCard(preset);
       },
 
       /**

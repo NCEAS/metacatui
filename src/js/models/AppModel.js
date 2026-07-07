@@ -1,15 +1,18 @@
-define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
+define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
   "use strict";
+
+  // Remove any trailing slashes from a URL
+  const NORMALIZE_URL = (url) => url.replace(/\/+$/, "");
 
   /**
    * @class AppModel
    * @classdesc A utility model that contains top-level configuration and storage for the application
    * @name AppModel
-   * @extends Backbone.Model
-   * @constructor
+   * @augments Backbone.Model
+   * @class
    * @classcategory Models
    */
-  var AppModel = Backbone.Model.extend(
+  const AppModel = Backbone.Model.extend(
     /** @lends AppModel.prototype */ {
       defaults: _.extend(
         /** @lends AppConfig.prototype */ {
@@ -439,10 +442,14 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           editorSerializationFormat: "https://eml.ecoinformatics.org/eml-2.2.0",
 
           /**
-           * The XML schema location the dataset editor will use when creating new EML. This should
-           * correspond with {@link AppConfig#editorSerializationFormat}
+           * The XML schema location the dataset editor will use when creating
+           * new EML. This should correspond with
+           * {@link AppConfig#editorSerializationFormat}. Note there must be an
+           * even number of values in this string, with each pair consisting of
+           * a namespace URI and the schema location URL for that namespace.
            * @type {string}
-           * @default "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd"
+           * @default "https://eml.ecoinformatics.org/eml-2.2.0
+           * https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd"
            * @readonly
            * @since 2.13.0
            */
@@ -761,9 +768,9 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
           /**
            * The base URL for the ORCID REST services
            * @type {string}
-           * @default "https:/orcid.org"
+           * @default "https://pub.orcid.org/"
            */
-          orcidBaseUrl: "https:/orcid.org",
+          orcidBaseUrl: "https://pub.orcid.org/",
 
           /**
            * The URL for the ORCID search API, which can be used to search for information
@@ -1729,6 +1736,18 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * embed external content. This property is used to define URLs or URL
            * patterns that are considered secure for embedding content in
            * iframes, especially when rendering user-generated Markdown content.
+           * 
+           * The list can include string urls (which will automatically be 
+           * given the configured default iframe permissions) and/or objects that specify 
+           * a url and a string array of iframe permissions for embedding the 
+           * content eg:  
+           *  trustedContentSources: [
+           *    "https://*arcticdata.io",
+           *    {
+           *      url: "https://virtualice.byrd.osu.edu/alaska-permafrost/*",
+           *      permissions: ["allow-scripts", "allow-same-origin"],
+           *    },
+           *  ]
            *
            * Each source in the list can include wildcards (`*`) to match any
            * subdomain or path. For example, `"https://*.dataone.org/*"` matches
@@ -1737,10 +1756,19 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            *
            * Set to an empty array or a falsy value to disable all embedded content.
            *
-           * @type {string[]}
+           * @type {string[]|object[]}
            * @since 2.32.0
            */
           trustedContentSources: [],
+
+          /**
+           * The default iframe sandbox permissions applied to trusted content
+           * sources that do not explicitly define a `permissions` array.
+           * @type {string[]}
+           * @default ["allow-scripts", "allow-same-origin"]
+           * @since 0.0.0
+           */
+          defaultIframePermissions: ["allow-scripts", "allow-same-origin"],
 
           /** If true, then archived content is available in the search index.
            * Set to false if this MetacatUI is using a Metacat version before 2.10.0
@@ -2477,6 +2505,14 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
            * @since 2.32.1
            */
           fileDownloadTimeout: 0,
+
+          /**
+           * Whether to show or hide the version history view for each dataset.
+           * @type {boolean}
+           * @default true
+           * @since 0.0.0
+           */
+          showVersionHistory: true,
         },
         MetacatUI.AppConfig,
       ),
@@ -2582,13 +2618,13 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
               d1CNBaseUrl + this.get("d1CNService") + this.get("formatsUrl"),
             );
           }
+        }
 
-          //ORCID search
-          if (typeof this.get("orcidBaseUrl") != "undefined")
-            this.set(
-              "orcidSearchUrl",
-              this.get("orcidBaseUrl") + "/search/orcid-bio?q=",
-            );
+        // ORCID search
+        const orcidBaseUrl = this.get("orcidBaseUrl");
+        if (orcidBaseUrl) {
+          const searchUrl = `${NORMALIZE_URL(orcidBaseUrl)}/v3.0/expanded-search/?q=`;
+          this.set("orcidSearchUrl", searchUrl);
         }
 
         // Metadata quality report services

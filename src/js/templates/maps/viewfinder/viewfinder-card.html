@@ -1,0 +1,49 @@
+<% if (preset.image) { %>
+  <div class="<%= classNames.hero %>">
+    <img class="<%= classNames.image %>" src="<%= preset.image %>" alt="<%= preset.title %> preview image" />
+    <div class="<%= classNames.title %>"><%= preset.title %></div>
+  </div>
+<% } %>
+<div class="<%= classNames.body %>">
+  <% if (!preset.image) { %>
+    <div class="<%= classNames.title %>"><%= preset.title %></div>
+  <% } %>
+  <% if (preset.description) { %>
+    <div class="<%= classNames.description %>"><%= preset.description %></div>
+  <% } %>
+  <div class="<%= classNames.actions %>">
+    <% preset.buttons.forEach(function(action, i) { %>
+      <% if (action.ordinality === 'secondary') { %>
+        <button class="<%= classNames.buttonSecondary %>" data-button-index="<%= i %>">
+          <i class="icon icon-<%= action.icon || 'eye-open' %>"></i>
+          <%= action.label %>
+        </button>
+      <% } else { %>
+        <button class="<%= classNames.buttonPrimary %> map-view__button map-view__button--emphasis" data-button-index="<%= i %>">
+          <% if (action.icon) { %><i class="icon icon-<%= action.icon %>"></i><% } %>
+          <%= action.label %>
+        </button>
+      <% } %>
+    <% }); %>
+    <% if (preset.geoPoint && !preset.buttons.length) { %>
+      <button class="<%= classNames.buttonSecondary %>">
+        <i class="icon icon-eye-open"></i>
+        View Layers
+      </button>
+    <% } %>
+  </div>
+</div>
+<% if (preset.enabledLayerLabels && preset.enabledLayerLabels.length) { %>
+  <div class="<%= classNames.layers %>">
+    <div class="<%= classNames.layersInner %>">
+      <% _.each(preset.enabledLayerLabels, label => { %>
+        <div class="<%= classNames.layer %>" title="<%= label %>">
+          <div class="<%= classNames.layerContent %>">
+            <i class="icon icon-eye-open"></i>
+            <%= label %>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+<% } %>

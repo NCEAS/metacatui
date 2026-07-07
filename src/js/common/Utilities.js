@@ -1,6 +1,6 @@
 "use strict";
 
-define([], () => {
+define(["md5"], (md5) => {
   const KIBIBYTE = 1024;
   const MEBIBYTE = KIBIBYTE * 1024;
   const GIBIBYTE = MEBIBYTE * 1024;
@@ -199,6 +199,320 @@ define([], () => {
     },
 
     /**
+     * Stringify any value deterministically, where order doesn't impact the
+     * result. All object keys and array items are sorted in a consistent way.
+     * Normalizes undefined to null. Useful for creating unique keys based on
+     * the content of an object, e.g. for keying a cache or singleton instance.
+     * @param {*} val The value to stringify.
+     * @param {object} [options] Options object.
+     * @param {boolean} [options.ignoreCase] Whether to convert all string
+     * values to lower case before stringifying, for case-insensitive
+     * comparisons. Default is true. Note when ignoreCase is true, normalized
+     * object keys can collide (e.g., "A" and "a").
+     * @param {WeakSet} [options.processed] WeakSet tracking visited objects.
+     * @param {boolean} [options.orderMatters] Whether to preserve array order
+     * during stringification. Default is false (arrays are sorted).
+     * @returns {string} A string that is consistent regardless of the order of
+     * keys in objects or items in arrays, etc.
+     * @throws {Error} If a circular reference is detected.
+     * @since 0.0.0
+     */
+    stableStringify(
+      val,
+      options = {
+        ignoreCase: true,
+        orderMatters: false,
+        processed: new WeakSet(),
+      },
+    ) {
+      const { ignoreCase = true, orderMatters = false, processed } = options;
+      const seen = processed instanceof WeakSet ? processed : new WeakSet();
+      const nextOpts = { ignoreCase, orderMatters, processed: seen };
+      // Object.prototype.toString (-> e.g., "[object Date]") is more reliable
+      // than typeof or val.constructor.name, e.g. when minified
+      const rawTag = Object.prototype.toString.call(val);
+      const type = rawTag.slice(8, -1).toLowerCase();
+      let newString;
+
+      if (val === undefined || val === null) {
+        return "null";
+      }
+      if (type === "string") {
+        const trimmed = val.trim();
+        return ignoreCase ? trimmed.toLowerCase() : trimmed;
+      }
+
+      switch (type) {
+        case "number":
+        case "boolean":
+        case "bigint":
+          newString = String(val);
+          break;
+        case "function":
+        case "generatorfunction":
+        case "asyncfunction":
+          newString = `${md5(Function.prototype.toString.call(val))}`;
+          break;
+        case "symbol": {
+          const key = Symbol.keyFor(val);
+          const desc = val.description || "";
+          newString = key ? `global:${key}` : `local:${desc}`;
+          break;
+        }
+        case "date":
+          newString = val.toISOString();
+          break;
+        case "regexp":
+        case "url":
+          newString = val.toString();
+          break;
+        case "error":
+          newString = val.toString();
+          // Errors get prefixed with "Error:" in toString
+          newString = newString.toLowerCase().startsWith("error:")
+            ? newString.slice(6).trim()
+            : newString;
+          break;
+        default:
+          if (typeof val !== "object") {
+            newString =
+              typeof val.toString === "function" ? val.toString() : String(val);
+          }
+      }
+
+      if (newString && newString !== "[object Object]") {
+        return Utilities.stableStringify(`${type}:${newString}`, {
+          ignoreCase,
+          processed: seen,
+        });
+      }
+
+      // For objects, we need to recursively normalize properties/items. We also
+      // need to track seen objects to detect circular references and avoid
+      // infinite recursion.
+      if (seen.has(val)) {
+        throw new Error("Utilities.stableStringify: circular reference");
+      }
+
+      seen.add(val);
+
+      let normalized;
+      if (val instanceof Map) {
+        const entries = [];
+        val.forEach((mapValue, mapKey) => {
+          entries.push([
+            Utilities.stableStringify(mapKey, nextOpts),
+            Utilities.stableStringify(mapValue, nextOpts),
+          ]);
+        });
+        entries.sort((a, b) =>
+          JSON.stringify(a).localeCompare(JSON.stringify(b)),
+        );
+        normalized = { type: "Map", entries };
+      } else if (val instanceof Set) {
+        const values = Array.from(val, (item) =>
+          Utilities.stableStringify(item, nextOpts),
+        );
+        values.sort((a, b) =>
+          JSON.stringify(a).localeCompare(JSON.stringify(b)),
+        );
+        normalized = { type: "Set", values };
+      } else if (Array.isArray(val)) {
+        const normalizedItems = val.map((item) =>
+          Utilities.stableStringify(item, nextOpts),
+        );
+        if (!orderMatters) {
+          normalizedItems.sort((a, b) =>
+            JSON.stringify(a).localeCompare(JSON.stringify(b)),
+          );
+        }
+        normalized = normalizedItems;
+      } else {
+        // Plain object
+        const keys = Object.keys(val).sort();
+        const result = {};
+        keys.forEach((key) => {
+          const newKey = Utilities.stableStringify(key, nextOpts);
+          result[newKey] = Utilities.stableStringify(val[key], nextOpts);
+        });
+        normalized = result;
+      }
+
+      seen.delete(val);
+      return JSON.stringify(normalized);
+    },
+
+    /**
+     * Normalize a URL string by trimming whitespace and removing trailing slashes.
+     * @param {string} url The URL to normalize.
+     * @param {string} [fallback] A fallback URL to use if url is empty.
+     * @returns {string} Normalized URL, or empty string if not available.
+     * @since 0.0.0
+     */
+    normalizeUrl(url, fallback = "") {
+      let resolved = url;
+      if (typeof resolved === "string" && !resolved.trim()) {
+        resolved = "";
+      }
+      if (!resolved) {
+        resolved = fallback;
+      }
+      if (!resolved) return "";
+      let urlString =
+        typeof resolved === "string" ? resolved : String(resolved);
+      urlString = urlString.trim();
+      if (!urlString) return "";
+      // Remove trailing slashes (including before query/hash)
+      return urlString.replace(/\/+(?=($|[?#]))/, "");
+    },
+
+    /**
+     * Build a unique string to represent an instance of a class, or generally,
+     * to uniquely identify a set of options or properties. The key is built
+     * from an object (e.g. config options for a class instance) by
+     * concatenating the values of specified fields. Only includes fields that
+     * have non-null/undefined values.
+     * @param {object} options The object containing the keys and values to
+     * build the key from.
+     * @param {string[]} keys The names of fields required to build the instance
+     * key. If a value for the key is available, it will be included. Otherwise
+     * it will be skipped.
+     * @param {object} [normalizers] Optional object mapping field names to
+     * normalizer functions that take the raw value and return a normalized
+     * value to use for the key, for example, to normalize URLs or make strings
+     * case-insensitive.
+     * @param {string} [separator] Separator to use between key parts. Default
+     * is "|".
+     * @param {boolean} [encode] If true, the resulting key will be run through
+     * md5 to shorten it and ensure it's a valid string for use as a key.
+     * Default is true.
+     * @returns {string} The generated instance key, which is a concatenation of
+     * the specified fields and their values, with non-string values converted
+     * to strings. If encode is true, this will be an md5 hash of the
+     * concatenated string.
+     * @throws {Error} If keys is not a non-empty array, or if buildInstanceKey
+     * is not a function.
+     * @since 0.0.0
+     */
+    buildInstanceKey(
+      options = {},
+      keys = [],
+      normalizers = {},
+      separator = "|",
+      encode = true,
+    ) {
+      if (!Array.isArray(keys) || keys.length === 0) {
+        throw new Error(
+          "Utilities.buildInstanceKey: keys must be a non-empty array",
+        );
+      }
+      const parts = keys.map((field) => {
+        const normalizer = normalizers[field];
+        const raw = options?.[field];
+        const value =
+          typeof normalizer === "function" ? normalizer(raw, options) : raw;
+        let normalizedValue = value;
+        if (typeof normalizedValue === "string") {
+          normalizedValue = normalizedValue.trim();
+        }
+        if (normalizedValue !== null && normalizedValue !== undefined) {
+          return `${field}:${String(normalizedValue)}`;
+        }
+        return null;
+      });
+      const longKey = parts.filter(Boolean).join(separator);
+      if (encode) return md5(longKey);
+      return longKey;
+    },
+
+    /**
+     * Get or create a singleton instance for a class.
+     * @param {Function} ClassRef Class reference.
+     * @param {object} [options] Options passed to the class constructor for
+     * this instance.
+     * @param {Function} buildInstanceKey Function that builds a unique key for
+     * the instance based on the options. This is used to allow multiple
+     * singletons for the same class with different options. The function will
+     * be passed the options object and should return a string key.
+     * @returns {object} The singleton instance.
+     * @since 0.0.0
+     */
+    getSingleton(ClassRef, options, buildInstanceKey) {
+      if (!ClassRef) {
+        throw new Error("Utilities.getSingleton: ClassRef is required");
+      }
+      // eslint-disable-next-line no-param-reassign
+      if (!ClassRef.instances) ClassRef.instances = new Map();
+      if (!(ClassRef.instances instanceof Map)) {
+        throw new Error("Utilities.getSingleton: instances must be a Map");
+      }
+      if (typeof buildInstanceKey !== "function") {
+        throw new Error(
+          "Utilities.getSingleton: buildInstanceKey must be a function",
+        );
+      }
+      const key = buildInstanceKey(options);
+      if (!ClassRef.instances.has(key)) {
+        const instance = new ClassRef(options);
+        instance.singletonInstanceKey = key;
+        ClassRef.instances.set(key, instance);
+      }
+      return ClassRef.instances.get(key);
+    },
+
+    /**
+     * Wait for the global MetacatUI object to be available, and optionally for
+     * a specific property on it to be defined. Useful when needing to access
+     * the app user model or other properties that may not be available
+     * immediately when a module is loaded.
+     * @param {object} [options] Options object.
+     * @param {number} [options.maxAttempts] Maximum number of attempts.
+     * @param {number} [options.delay] Delay between attempts in ms.
+     * @param {string} [options.property] Optional property name to wait for on
+     * the MetacatUI object. If provided, the Promise won't resolve until that
+     * property is available and not undefined. Otherwise, just waits for the
+     * global MetacatUI object itself.
+     * @returns {Promise<object>} Promise resolving to the app user model.
+     * @throws {Error} If the user model is not available in time.
+     * @since 0.0.0
+     */
+    async awaitMetacatUI({
+      maxAttempts = 20,
+      delay = 200,
+      property = "",
+    } = {}) {
+      let attempts = 0;
+      while (attempts < maxAttempts) {
+        attempts += 1;
+        if (typeof MetacatUI !== "undefined" && MetacatUI !== null) {
+          // If we're just waiting for the global object, return it now
+          if (!property) {
+            return MetacatUI;
+          }
+          const value =
+            MetacatUI[property] || (MetacatUI.get && MetacatUI.get(property));
+          // If we're waiting for a specific property, check if it's defined
+          // yet and if not, continue waiting
+          if (value !== "undefined") {
+            return value;
+          }
+        }
+        // Otherwise, wait the attempt delay and try again.
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((resolve) => {
+          setTimeout(resolve, delay);
+        });
+      }
+
+      // If we reach here, we failed to get the appUserModel
+      let message = "Unable to retrieve MetacatUI";
+      if (property) {
+        message += `.${property}`;
+      }
+      throw new Error(message);
+    },
+
+    /**
      * Removes default values from a model's JSON representation
      * @param {Backbone.Model} model - The model to remove defaults from
      * @param {string[]} [removeProps] - An array of additional properties to remove from the model
@@ -259,6 +573,28 @@ define([], () => {
       // Replace "*" with ".*" for multi-character wildcard
       const regexString = `^${escaped.replace(/\*/g, ".*")}$`;
       return new RegExp(regexString, "i"); // "i" = case-insensitive, if desired
+    },
+
+    /**
+     * Get a value from a plain object using a case-insensitive key.
+     * @param {object} obj Source object
+     * @param {string} keyName Key name to look up (case-insensitive)
+     * @param {Function} [normalizeValue] Optional value normalizer
+     * @returns {*} The matched value, or undefined if not found
+     * @since 0.0.0
+     */
+    getCaseInsensitive(obj, keyName, normalizeValue) {
+      if (!obj || !keyName) return undefined;
+
+      const target = String(keyName).toLowerCase();
+      const key = Object.keys(obj).find(
+        (k) => String(k).toLowerCase() === target,
+      );
+
+      if (!key) return undefined;
+
+      const value = obj[key];
+      return normalizeValue ? normalizeValue(value) : value;
     },
   };
 
