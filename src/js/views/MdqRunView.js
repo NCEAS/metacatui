@@ -89,7 +89,7 @@ define([
       status: "GREY",
       icon: "chevron-sign-right",
       buildTitle: ({ count }) =>
-        `Skipped ${count} ${PLURAL(count)}${count ? ` that ${count === 1 ? "is" : "are"} not applicable.` : "."}`
+        `Skipped ${count} ${PLURAL(count)}${count ? ` that ${count === 1 ? "is" : "are"} not applicable.` : "."}`,
     },
   ];
 
@@ -753,11 +753,21 @@ define([
        * @param {object} groupedResults - The results grouped by status
        */
       drawScoreChart(results, groupedResults) {
+        const chartContainer = this.$(".format-charts-data");
+        if (!chartContainer) return;
+
         const greenCount = groupedResults.GREEN.length;
         const yellowCount = groupedResults.ORANGE.length;
         const redCount = groupedResults.RED.length;
-
         const dataCount = greenCount + yellowCount + redCount;
+
+        if (dataCount === 0) {
+          chartContainer.html(
+            `<h2 class='data fallback'>No scored checks were run for this dataset.</h2>` +
+              `<p>Informational and skipped checks are not included in the overall assessment score.</p>`,
+          );
+          return;
+        }
 
         const data = [
           {
@@ -768,12 +778,12 @@ define([
           {
             label: "Warn",
             count: yellowCount,
-            perc: yellowCount / results.length,
+            perc: yellowCount / dataCount,
           },
           {
             label: "Fail",
             count: redCount,
-            perc: redCount / results.length,
+            perc: redCount / dataCount,
           },
         ];
 
@@ -781,10 +791,10 @@ define([
 
         // If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
         if (!d3) {
-          this.$(".format-charts-data").html(
+          chartContainer.html(
             `<h2 class='${svgClass} fallback'>${MetacatUI.appView.commaSeparateNumber(
               dataCount,
-            )} data files</h2>`,
+            )} checks</h2>`,
           );
 
           return;
@@ -806,7 +816,7 @@ define([
             return name;
           },
         });
-        this.$(".format-charts-data").html(donut.render().el);
+        chartContainer.html(donut.render().el);
       },
 
       /**
