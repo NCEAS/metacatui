@@ -89,7 +89,7 @@ define([
       status: "GREY",
       icon: "chevron-sign-right",
       buildTitle: ({ count }) =>
-        `Skipped ${count} ${PLURAL(count)}${count ? " that are not applicable." : "."}`,
+        `Skipped ${count} ${PLURAL(count)}${count ? ` that ${count === 1 ? "is" : "are"} not applicable.` : "."}`
     },
   ];
 
