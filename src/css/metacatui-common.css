@@ -6,6 +6,7 @@
 
   --color-private: #ff7600;
   --color-info: #3a87ad;
+  --color-error: #a94442;
 
   --color-neutral-2: #cccccc;
   --color-neutral-6: #656565;
@@ -303,6 +304,10 @@ header .citation {
 .btn,
 .btn-primary {
   background-image: none;
+}
+.btn.error {
+  color: var(--color-error);
+  border-color: var(--color-error);
 }
 .inline-buttons {
   margin-bottom: 20px;

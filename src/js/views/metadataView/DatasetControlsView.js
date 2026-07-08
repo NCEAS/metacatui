@@ -731,9 +731,9 @@ define([
             buttonClass: "success",
           },
           error: {
-            icon: "exclamation-triangle",
+            icon: "exclamation",
             text: text || "Error",
-            buttonClass: "danger",
+            buttonClass: "error",
           },
           default: { restore: true },
         };
