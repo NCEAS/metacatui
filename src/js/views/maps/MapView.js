@@ -11,6 +11,7 @@ define([
   "views/maps/ToolbarView",
   "views/maps/FeatureInfoView",
   "views/maps/LayerDetailsView",
+  "views/maps/VisualizationPanelView",
   // CSS
   `text!${MetacatUI.root}/css/map-view.css`,
 ], (
@@ -24,6 +25,7 @@ define([
   ToolbarView,
   FeatureInfoView,
   LayerDetailsView,
+  VisualizationPanelView,
   // CSS
   MapCSS,
 ) => {
@@ -81,7 +83,7 @@ define([
       },
 
       /**
-       * @typedef {object} ViewfinderViewOptions
+       * @typedef {object} MapViewOptions
        * @property {Map} model The map model that contains the configs for this map view.
        * @property {boolean} isPortalMap Indicates whether the map view is a part of a
        * portal, which is styled differently.
@@ -132,7 +134,45 @@ define([
         if (this.model.get("showFeatureInfo")) {
           this.renderFeatureInfo();
         }
+        this.renderVisualizationPanel();
         return this;
+      },
+
+      /**
+       * Renders the full-screen visualization overlay panel and wires it to
+       * the map model's activeVisualizationUrl attribute.
+       * @returns {VisualizationPanelView} Returns the rendered panel view.
+       * @since 0.0.0
+       */
+      renderVisualizationPanel() {
+        const view = this;
+        view.visualizationPanel = new VisualizationPanelView();
+        view.visualizationPanel.render();
+        view.subElements.mapWidgetContainer.appendChild(
+          view.visualizationPanel.el,
+        );
+
+        view.stopListening(view.model, "change:activeVisualizationUrl");
+        view.listenTo(
+          view.model,
+          "change:activeVisualizationUrl",
+          (model, url) => {
+            if (url) {
+              view.visualizationPanel.open(url);
+            } else {
+              view.visualizationPanel.close();
+            }
+          },
+        );
+
+        // Keep map model in sync when the panel is closed via its own button
+        // or the Escape key (which triggers the "close" event on the panel).
+        view.stopListening(view.visualizationPanel, "close");
+        view.listenTo(view.visualizationPanel, "close", () => {
+          view.model.set({ activeVisualizationUrl: null });
+        });
+
+        return view.visualizationPanel;
       },
 
       /**
@@ -235,6 +275,7 @@ define([
           this.toolbar,
           this.featureInfo,
           this.layerDetails,
+          this.visualizationPanel,
         ];
       },
 

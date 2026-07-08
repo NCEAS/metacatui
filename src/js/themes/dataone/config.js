@@ -160,6 +160,7 @@ MetacatUI.AppConfig = Object.assign(
     displayDatasetQualityMetric: true,
 
     // iFrames in portals
+    defaultIframePermissions: ["allow-scripts", "allow-same-origin"],
     trustedContentSources: [
       "https://*ecoinformatics.org*",
       "https://*arcticdata.io",

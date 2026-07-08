@@ -47,7 +47,7 @@ define([
         expect(map.has("layers")).to.be.false;
       });
 
-      it("sets zoomPresets from config with layers", () => {
+      it("sets viewfinderCards from config with layers (legacy zoomPresets key)", () => {
         const map = new Map({
           zoomPresets: [
             {
@@ -64,15 +64,15 @@ define([
 
         expect(
           map
-            .get("zoomPresetsCollection")
+            .get("viewfinderCardsCollection")
             .at(0)
-            .get("zoomPresets")
+            .get("viewfinderCards")
             .at(0)
             .get("title"),
         ).to.equal("Zoom 1");
       });
 
-      it("sets zoomPresets from config with layerCategories", () => {
+      it("sets viewfinderCards from config with layerCategories (legacy zoomPresets key)", () => {
         const map = new Map({
           zoomPresets: [
             {
@@ -89,9 +89,9 @@ define([
 
         expect(
           map
-            .get("zoomPresetsCollection")
+            .get("viewfinderCardsCollection")
             .at(0)
-            .get("zoomPresets")
+            .get("viewfinderCards")
             .at(0)
             .get("title"),
         ).to.equal("Zoom 1");
@@ -115,9 +115,9 @@ define([
         // Deep equality check with .to.eql
         expect(
           map
-            .get("zoomPresetsCollection")
+            .get("viewfinderCardsCollection")
             .at(0)
-            .get("zoomPresets")
+            .get("viewfinderCards")
             .at(0)
             .get("enabledLayerIds"),
         ).to.eql(["layer1"]);
