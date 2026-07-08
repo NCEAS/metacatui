@@ -107,10 +107,10 @@ define([
        * @property {string} [globeBaseColor=null] - The base color of the globe
        * when no layer is shown.
        * @property {boolean} [debug=false] - Enables Cesium's built-in map
-       * debugging aids, such as tile coordinate overlays, terrain wireframes,
-       * and a camera position overlay. This does not automatically enable
-       * layer-specific debug flags like 3D Tiles `debugShowGeometricError`;
-       * those can still be passed directly through a layer's
+       * debugging aids, such as tile coordinate and grid imagery overlays, an
+       * FPS counter, and a camera position overlay. This does not automatically
+       * enable layer-specific debug flags like 3D Tiles `debugShowGeometricError`;
+       * those can still be passed directly through a layer's `cesiumOptions`.
        * `cesiumOptions`.
        * @property {boolean} [show3DTilesInspector=false] - Whether or not to
        * show Cesium's built-in 3D Tiles inspector widget for tileset
