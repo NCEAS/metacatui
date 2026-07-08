@@ -47,6 +47,8 @@ require.config({
     rdflib: MetacatUI.root + "/components/rdflib.min",
     x2js: MetacatUI.root + "/components/xml2json",
     he: MetacatUI.root + "/components/he",
+    dataoneNotifications:
+      MetacatUI.root + "/components/dataone-notifications.bundle.umd",
     citation: MetacatUI.root + "/components/citation.min",
     promise: MetacatUI.root + "/components/es6-promise.min",
     metacatuiConnectors: MetacatUI.root + "/js/connectors/Filters-Search",
