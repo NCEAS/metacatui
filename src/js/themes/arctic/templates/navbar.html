@@ -10,40 +10,49 @@
 			<nav role="navigation" itemscope="" itemtype="http://schema.org/SiteNavigationElement" id="main-nav">
 				<ul id="menu-main-navigation" class="nav top-nav">
 					<li class="dropdown">
+						<a class="dropdown-toggle" data-toggle="dropdown">About</a>
+						<ul class="dropdown-menu sub-menu">
+							<li><a href="/about/">About Us</a></li>
+							<li><a href="/team/">Our Team</a></li>
+							<li><a href="/science-advisory-board/">Advisory Board</a></li>
+						</ul>
+					</li>
+					<li class="dropdown">
 						<a class="dropdown-toggle" data-toggle="dropdown">Data</a>
 						<ul class="dropdown-menu sub-menu">
-			        		<li><a href="<%= MetacatUI.root %>/data" class="show-new-search">Search</a></li>
-			        		<li><a href="<%= MetacatUI.root %>/profile">Summary</a></li>
-                  			<li><a href="<%= MetacatUI.root %>/portals">Portals</a></li>
-							<li><a href="/preservation">Data Preservation</a></li>
-			        	</ul>
-		        	</li>
+							<li><a href="<%= MetacatUI.root %>" class="show-new-search">Search</a></li>
+							<li><a href="<%= MetacatUI.root %>/profile">Summary</a></li>
+							<li><a href="<%= MetacatUI.root %>/portals">Portals</a></li>
+							<li><a href="/preservation/">Data Preservation</a></li>
+							<li><a href="/data-ethics/">Ethical Arctic Research Practices</a></li>
+						</ul>
+					</li>
 					<li class="dropdown">
 						<a>Support</a>
 						<ul class="dropdown-menu sub-menu">
-							<li><a href="/support">Support Info</a></li>
-							<li><a href="/working-with-data">Working with Data</a></li>
-							<li><a href="/data-portals">About Data Portals</a></li>
-			        		<li><a href="/q-and-a">Frequently Asked Questions</a></li>
-			        	</ul>
-			        </li>
+							<li><a href="/submit/">Data Submission Guidelines</a></li>
+							<li><a href="/support/">Support Info</a></li>
+							<li><a href="/working-with-data/">Working with Data</a></li>
+							<li><a href="/data-portals/">About Data Portals</a></li>
+							<li><a href="/q-and-a/">FAQ</a></li>
+						</ul>
+					</li>
 					<li class="dropdown">
 						<a>Community</a>
 						<ul class="dropdown-menu sub-menu">
-							<li><a href="/social-sciences">Social Science Resources</a></li>
-							<li><a href="/category/blog">Blog</a></li>
-							<li><a href="/social-scientific-data-workshop/">Arctic Social Science Data Workshop</a></li>
-			        		<li><a href="/science-advisory-board">Science Advisory Board</a></li>
-			       		</ul>
+							<li><a href="/social-sciences/">Social Science Resources</a></li>
+							<li><a href="/category/all/blog/">News &amp; Features</a></li>
+							<li><a href="/arctic-data-center-newsletters/">Newsletter</a></li>
+						</ul>
 					</li>
 					<li class="dropdown">
 						<a>Learn</a>
 						<ul class="dropdown-menu sub-menu">
-							<li><a href="/training">Upcoming Courses</a></li>
-							<li><a href="/past-courses">Past Courses</a></li>
-			        	</ul>
+							<li><a href="/training/">Upcoming Courses</a></li>
+							<li><a href="/past-courses/">Past Courses</a></li>
+						</ul>
 					</li>
-			    	<li><a href="<%= MetacatUI.root %>/submit">Submit Data</a></li>
+					<li><a href="<%= MetacatUI.root %>/submit">Submit Data</a></li>
 
 					<% if (loggedIn) { %>
         		<li class="dropdown minimal-nav">

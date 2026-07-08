@@ -1744,6 +1744,18 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * patterns that are considered secure for embedding content in
            * iframes, especially when rendering user-generated Markdown content.
            *
+           * The list can include string urls (which will automatically be
+           * given the configured default iframe permissions) and/or objects that specify
+           * a url and a string array of iframe permissions for embedding the
+           * content eg:
+           *  trustedContentSources: [
+           *    "https://*arcticdata.io",
+           *    {
+           *      url: "https://virtualice.byrd.osu.edu/alaska-permafrost/*",
+           *      permissions: ["allow-scripts", "allow-same-origin"],
+           *    },
+           *  ]
+           *
            * Each source in the list can include wildcards (`*`) to match any
            * subdomain or path. For example, `"https://*.dataone.org/*"` matches
            * any subdomain of `dataone.org` over HTTPS, and `"*arcticdata.io*"`
@@ -1751,10 +1763,19 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            *
            * Set to an empty array or a falsy value to disable all embedded content.
            *
-           * @type {string[]}
+           * @type {string[]|object[]}
            * @since 2.32.0
            */
           trustedContentSources: [],
+
+          /**
+           * The default iframe sandbox permissions applied to trusted content
+           * sources that do not explicitly define a `permissions` array.
+           * @type {string[]}
+           * @default ["allow-scripts", "allow-same-origin"]
+           * @since 2.37.0
+           */
+          defaultIframePermissions: ["allow-scripts", "allow-same-origin"],
 
           /** If true, then archived content is available in the search index.
            * Set to false if this MetacatUI is using a Metacat version before 2.10.0
@@ -2314,6 +2335,64 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           bookkeeperCustomersUrl: null,
 
           /**
+           * Enable the DataONE Notification Service integration. When true, MetacatUI will
+           * expose helper models that allow users to manage notification subscriptions.
+           * @type {boolean}
+           * @default false
+           * @since 2.37.0
+           */
+          enableNotificationService: false,
+
+          /**
+           * The base URL for the DataONE Notification Service API. This must point to the
+           * service root that exposes resources such as `/datasetChanges`.
+           * When not provided, the NotificationService client must be instantiated with a
+           * specific URL, or the feature should remain disabled.
+           * @type {string|null}
+           * @default null
+           * @since 2.37.0
+           */
+          notificationServiceUrl: null,
+
+          /**
+           * The version of the Notification Service API to use when making
+           * requests.
+           * {@link AppConfig#notificationServiceUrl}.
+           * @type {string}
+           * @default "v1"
+           * @since 2.37.0
+           */
+          notificationServiceApiVersion: "v1",
+
+          /**
+           * The set of resource types supported by the Notification Service for
+           * this repository, as well as the user-facing label and description
+           * for each resource type.
+           * @type {Array.<{type: string, label: string, description: string}>}
+           * @since 2.37.0
+           */
+          notificationServiceResourceTypes: [
+            {
+              type: "datasetChanges",
+              label: "Dataset Changes",
+              description:
+                "Be notified when new data, documentation improvements, or corrections become available",
+            },
+            // Not yet supported:
+            // {
+            //   type: "citations",
+            //   label: "Citations",
+            //   description: "Get notified when someone cites the dataset",
+            // },
+            // {
+            //   type: "downloads",
+            //   label: "Downloads",
+            //   description:
+            //     "Get notified when the dataset or any files within it are downloaded",
+            // },
+          ],
+
+          /**
            * The name of the DataONE Plus membership plan, which is used in messaging throughout the UI.
            * This is only used if the enableBookkeeperServices setting is set to true.
            * @type {string}
@@ -2496,7 +2575,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * Whether to show or hide the version history view for each dataset.
            * @type {boolean}
            * @default true
-           * @since 0.0.0
+           * @since 2.37.0
            */
           showVersionHistory: true,
         },

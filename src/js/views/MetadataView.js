@@ -336,7 +336,7 @@ define([
        * status code and message if they exist.
        * @param {string|number} status The status code of the error
        * @param {string} message The error message
-       * @since 0.0.0
+       * @since 2.37.0
        */
       onModelError(status, message) {
         this.stopListeningToModelGetInfo();
@@ -366,7 +366,7 @@ define([
        * type of the object and render the view accordingly. If the format type
        * is data or a resource map, then attempt to find the metadata that
        * describes the object.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       onModelSync() {
         this.stopListeningToModelGetInfo();
@@ -394,7 +394,7 @@ define([
        * the metadata that describes this resource map and navigate to that
        * metadata view. If no metadata doc is found, it will show a message to
        * the user.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       async resolveMetadataForResMap() {
         const resMapId = this.model.get("id");
@@ -438,7 +438,7 @@ define([
        * and navigate to that metadata view. If no metadata docs are found, it
        * will show a message to the user.
        * TODO: move to a model or service.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       async resolveMetadataForData() {
         // Get the metadata pids that document this data object
@@ -865,7 +865,7 @@ define([
       /**
        * Check if a PID exists via SysMeta when Solr returns a 404. If SysMeta
        * exists, this object may still be indexing.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       async showIndexingOrNotFound() {
         const pid = this.model.get("id") || this.pid;
@@ -1092,7 +1092,7 @@ define([
        * @param {string} pid - The PID of the object to get sysmeta for
        * @returns {Promise<object>} The system metadata for the object, or null
        * if it can't be retrieved
-       * @since 0.0.0
+       * @since 2.37.0
        */
       async getSysMeta(pid) {
         if (!pid) return null;
@@ -2983,10 +2983,10 @@ define([
           const responseText = await response.text();
 
           if (!response.ok) {
-            const description = XMLUtilities.extractTextBySelectors(responseText, [
-              "description",
-              "d1\\:description",
-            ]);
+            const description = XMLUtilities.extractTextBySelectors(
+              responseText,
+              ["description", "d1\\:description"],
+            );
             throw new Error(
               description ||
                 response.statusText ||

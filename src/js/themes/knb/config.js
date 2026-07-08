@@ -95,6 +95,7 @@ MetacatUI.AppConfig = Object.assign(
       "Creating new portals is a feature currently only available to a select group of Beta testers. You should still be able to access your existing portals. Please contact us with any questions at the email address below.",
 
     // iFrames in portals
+    defaultIframePermissions: ["allow-scripts", "allow-same-origin"],
     trustedContentSources: [
       "https://*ecoinformatics.org*",
       "https://cosima.nceas.ucsb.edu*",

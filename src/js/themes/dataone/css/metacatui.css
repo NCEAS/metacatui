@@ -544,6 +544,10 @@ textarea::-webkit-input-placeholder {
   background-color: white;
 }
 
+.PortalView #Content .portal-view {
+  margin-bottom: 3.5rem;
+}
+
 .portal-view,
 .portal-view .portal-section-content,
 .portal-view h2,

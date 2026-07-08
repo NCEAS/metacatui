@@ -1,12 +1,13 @@
 {
   "name": "metacatui",
-  "version": "2.36.2",
+  "version": "2.37.0",
   "description": "MetacatUI: A client-side web interface for DataONE data repositories",
   "main": "server.js",
   "dependencies": {
     "@actions/core": "^1.9.1",
     "cheerio": "^1.0.0-rc.11",
-    "express": "^4.21.2",
+"dataone-notifications": "git+https://github.com/DataONEorg/notification-service-js.git#fbe72ce2bc49362af83e763b18a6364d4aa28c4b",
+    "express": "^4.22.1",
     "fomantic-ui": "^2.9.4",
     "puppeteer": "^22.15.0"
   },
@@ -39,7 +40,8 @@
     "format": "prettier --write .",
     "format-check": "prettier --check .",
     "lint": "eslint src",
-    "lint-fix": "eslint --fix src"
+    "lint-fix": "eslint --fix src",
+    "update-notifications": "npm install git+https://github.com/DataONEorg/notification-service-js.git && cd node_modules/dataone-notifications && npm install --ignore-scripts && npm run build && cd ../.. && cp node_modules/dataone-notifications/dist/dataone-notifications.bundle.umd.js src/components/ && rm -rf node_modules/dataone-notifications"
   },
   "repository": {
     "type": "git",

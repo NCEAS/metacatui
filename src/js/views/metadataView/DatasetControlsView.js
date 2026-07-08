@@ -5,6 +5,8 @@ define([
   "models/MetricsModel",
   "views/MetricView",
   "views/citations/CitationModalView",
+  "views/notifications/NotificationModalView",
+  "common/Utilities",
   "common/ValueUtilities",
 ], (
   $,
@@ -13,6 +15,8 @@ define([
   MetricsModel,
   MetricView,
   CitationModalView,
+  NotificationModalView,
+  Utilities,
   ValueUtilities,
 ) => {
   "use strict";
@@ -168,6 +172,7 @@ define([
         // placeholder for future implementation
         notifications: {
           container: CLASS_NAMES.notificationsContainer,
+          id: "notifications-btn",
           render: "renderNotifications",
           text: "Watch",
           icon: "bell",
@@ -234,6 +239,8 @@ define([
       events() {
         const events = {};
         events[`click #${this.buttons.cite.id}`] = "openCitationModal";
+        events[`click #${this.buttons.notifications.id}`] =
+          "openNotificationsModal";
         events[`click #${this.buttons.publish.id}`] = "publish";
         return events;
       },
@@ -270,11 +277,13 @@ define([
         /**
          * @typedef {object} DatasetControlsViewModel
          * @property {string} [pid] - The dataset identifier for this page.
-         * @property {SolrResults|EML211} [metadataModel] - The associated metadata model.
+         * @property {SolrResults|EML211} [metadataModel] - The associated
+         * metadata model.
          * @property {Function} [publishMethod] - Method to publish the dataset.
-         * @property {boolean} [hasWritePermission] - Whether the current user has
-         * write permission for the dataset.
-         * @property {MetricsModel} [metricsModel] - The metrics model for this dataset.
+         * @property {boolean} [hasWritePermission] - Whether the current user
+         * has write permission for the dataset.
+         * @property {MetricsModel} [metricsModel] - The metrics model for this
+         * dataset.
          */
         this.viewModel = new Backbone.Model({
           pid,
@@ -283,6 +292,7 @@ define([
           hasWritePermission: options.hasWritePermission === true,
           metricsModel,
         });
+        this.notificationsSavedTimer = null;
       },
 
       /**
@@ -317,6 +327,8 @@ define([
        * destroyed because the modal is modified externally (see renderCite()).
        */
       reset(destroyCitationModal = false) {
+        this.clearNotificationsSavedIndicator();
+
         // Remove all the subviews
         this.subviews.forEach((subview) => {
           if (typeof subview.onClose === "function") {
@@ -325,6 +337,7 @@ define([
           subview.remove();
         });
         this.subviews = [];
+        this.notificationsModal = null;
 
         // Remove all the buttons
         Object.entries(this.buttons).forEach(([name]) =>
@@ -567,11 +580,33 @@ define([
         return dropdownMenu;
       },
 
-      // placeholder for future implementation
+      /**
+       * Render the notifications button when the feature is enabled.
+       * @returns {HTMLElement|null} The rendered button, or null if skipped.
+       */
       renderNotifications() {
-        // Don't render yet
-        return null;
-        // this.renderButton("notifications");
+        if (!APP_GET("enableNotificationService")) return null;
+
+        const button = this.renderButton("notifications");
+        if (!button) return null;
+
+        if (!this.notificationsModal) {
+          const notificationView = new NotificationModalView({
+            pid: this.viewModel.get("pid"),
+            metadataModel: this.viewModel.get("metadataModel"),
+            buttonEl: button,
+          }).render();
+          this.subviews.push(notificationView);
+          this.notificationsModal = notificationView;
+          this.stopListening(notificationView);
+          this.listenTo(
+            notificationView,
+            "subscriptions:saved",
+            this.showNotificationsSavedIndicator,
+          );
+        }
+
+        return button;
       },
 
       /**
@@ -692,8 +727,16 @@ define([
             icon: "spinner icon-spin",
             text: text || "Processing...",
           },
-          success: { icon: "check", text: text || "Success!" },
-          error: { icon: "exclamation-triangle", text: text || "Error" },
+          success: {
+            icon: "check",
+            text: text || "Success!",
+            buttonClass: "success",
+          },
+          error: {
+            icon: "exclamation",
+            text: text || "Error",
+            buttonClass: "error",
+          },
           default: { restore: true },
         };
 
@@ -709,17 +752,53 @@ define([
         // Apply new markup
         buttonEl.innerHTML = `<i class='icon icon-${config.icon}'></i> ${config.text}`;
         buttonEl.classList.add(state === "progress" ? "disabled" : state);
+        if (config.buttonClass) buttonEl.classList.add(config.buttonClass);
         if (state === "progress") buttonEl.disabled = true;
       },
 
-      // --------------------------------------------------------
-      // MODEL LOGIC: Methods below belong in a model (TODO)
-      // --------------------------------------------------------
+      /**
+       * Temporarily show that notification changes were saved.
+       * @since 2.37.0
+       */
+      showNotificationsSavedIndicator() {
+        this.clearNotificationsSavedIndicator(true);
+        this.updateButtonState("notifications", "Saved", "success");
+
+        this.notificationsSavedTimer = setTimeout(() => {
+          this.updateButtonState("notifications", null, "default");
+          this.notificationsSavedTimer = null;
+        }, 2500);
+      },
+
+      /**
+       * Clear the temporary saved indicator timeout.
+       * @param {boolean} [restore] Whether to restore the Watch button now.
+       * @since 2.37.0
+       */
+      clearNotificationsSavedIndicator(restore = false) {
+        if (this.notificationsSavedTimer) {
+          clearTimeout(this.notificationsSavedTimer);
+          this.notificationsSavedTimer = null;
+        }
+
+        if (restore) {
+          this.updateButtonState("notifications", null, "default");
+        }
+      },
 
       /** Open the citation modal, creating and rendering it if needed. */
       openCitationModal() {
         this.citationModal?.show();
       },
+
+      openNotificationsModal() {
+        this.clearNotificationsSavedIndicator(true);
+        this.notificationsModal?.show();
+      },
+
+      // --------------------------------------------------------
+      // MODEL LOGIC: Methods below belong in a model (TODO)
+      // --------------------------------------------------------
 
       /**
        * Check if the current formatId is supported by the metadata quality
@@ -855,8 +934,8 @@ define([
        * the view during initialization. Updates the button to show progress,
        * success, or error states.
        * @param {Event} event - The click event
-       * @returns {Promise|null} A promise that resolves/rejects when
-       * publishing is complete, or undefined if publishing did not start.
+       * @returns {Promise|null} A promise that resolves/rejects when publishing
+       * is complete, or undefined if publishing did not start.
        */
       publish(event) {
         event?.preventDefault?.();

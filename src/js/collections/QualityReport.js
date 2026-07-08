@@ -94,13 +94,12 @@ define([
           const check = result.get("check");
           const status = result.get("status");
           // simple cases
-          // always blue for info and skip
           if (check.level === "INFO") {
             color = "BLUE";
             return color;
           }
           if (status === "SKIP") {
-            color = "BLUE";
+            color = "GREY";
             return color;
           }
           // always green for success
@@ -137,6 +136,9 @@ define([
         }
         if (!groupedResults.RED) {
           groupedResults.RED = [];
+        }
+        if (!groupedResults.GREY) {
+          groupedResults.GREY = [];
         }
 
         // if (groupedResults.BLUE) {
