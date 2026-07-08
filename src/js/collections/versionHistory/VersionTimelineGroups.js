@@ -36,7 +36,7 @@ define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
    * Backbone collection representing grouped timeline entries for the version
    * history view. Each group is a contiguous segment of versions in chain order
    * that share the same calendar day (or "Unknown Date" label).
-   * @since 0.0.0
+   * @since 2.37.0
    * @class VersionTimelineGroups
    * @classdesc A collection of Backbone models, each representing a contiguous
    * segment of versions for a specific date label/date.

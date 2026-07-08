@@ -1766,7 +1766,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * sources that do not explicitly define a `permissions` array.
            * @type {string[]}
            * @default ["allow-scripts", "allow-same-origin"]
-           * @since 0.0.0
+           * @since 2.37.0
            */
           defaultIframePermissions: ["allow-scripts", "allow-same-origin"],
 
@@ -2332,7 +2332,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * expose helper models that allow users to manage notification subscriptions.
            * @type {boolean}
            * @default false
-           * @since 0.0.0
+           * @since 2.37.0
            */
           enableNotificationService: false,
 
@@ -2343,7 +2343,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * specific URL, or the feature should remain disabled.
            * @type {string|null}
            * @default null
-           * @since 0.0.0
+           * @since 2.37.0
            */
           notificationServiceUrl: null,
 
@@ -2353,7 +2353,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * {@link AppConfig#notificationServiceUrl}.
            * @type {string}
            * @default "v1"
-           * @since 0.0.0
+           * @since 2.37.0
            */
           notificationServiceApiVersion: "v1",
 
@@ -2362,7 +2362,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * this repository, as well as the user-facing label and description
            * for each resource type.
            * @type {Array.<{type: string, label: string, description: string}>}
-           * @since 0.0.0
+           * @since 2.37.0
            */
           notificationServiceResourceTypes: [
             {
@@ -2568,7 +2568,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * Whether to show or hide the version history view for each dataset.
            * @type {boolean}
            * @default true
-           * @since 0.0.0
+           * @since 2.37.0
            */
           showVersionHistory: true,
         },

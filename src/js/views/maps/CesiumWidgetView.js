@@ -235,7 +235,7 @@ define([
       /**
        * Returns true when the map config enables Cesium debug mode.
        * @returns {boolean}
-       * @since 0.0.0
+       * @since 2.37.0
        */
       isDebugEnabled() {
         return Boolean(this.model?.get("debug"));
@@ -245,7 +245,7 @@ define([
        * Returns true when the map config enables the Cesium 3D Tiles
        * inspector.
        * @returns {boolean}
-       * @since 0.0.0
+       * @since 2.37.0
        */
       is3DTilesInspectorEnabled() {
         return Boolean(this.model?.get("show3DTilesInspector"));
@@ -295,7 +295,7 @@ define([
 
       /**
        * Enable Cesium's built-in map debugging aids for development.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       enableDebugMode() {
         this.scene.debugShowFramesPerSecond = true;
@@ -316,7 +316,7 @@ define([
       /**
        * Add the Cesium 3D Tiles inspector stylesheet to the app once, when
        * the inspector is actually needed.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       load3DTilesInspectorCSS() {
         const cssID = "cesium3DTilesInspector";
@@ -335,7 +335,7 @@ define([
       /**
        * Create and render Cesium's built-in 3D Tiles inspector widget.
        * @returns {Cesium.Cesium3DTilesInspector|null} The inspector widget.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       render3DTilesInspector() {
         if (
@@ -393,7 +393,7 @@ define([
       /**
        * Create the camera debug overlay if it doesn't exist yet.
        * @returns {HTMLElement|null} The overlay element.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       renderDebugCameraOverlay() {
         if (!this.isDebugEnabled() || !this.el) {
@@ -411,7 +411,7 @@ define([
 
       /**
        * Update the text shown in the camera debug overlay.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       updateDebugCameraOverlay() {
         const overlay = this.renderDebugCameraOverlay();
@@ -437,7 +437,7 @@ define([
 
       /**
        * Log a summary of the currently configured layers when debug mode is on.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       logDebugLayerSummary() {
         const allLayers = this.model.get("allLayers");
@@ -457,7 +457,7 @@ define([
        * Log a single layer event when debug mode is on.
        * @param {string} action The event that occurred.
        * @param {MapAsset} mapAsset The layer involved.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       logDebugLayerEvent(action, mapAsset) {
         if (!this.isDebugEnabled() || !mapAsset) {

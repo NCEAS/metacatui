@@ -51,7 +51,7 @@ define(["backbone", "common/TrustedContentUtilities"], (
    * @augments Backbone.View
    * @constructs VisualizationPanelView
    * @screenshot views/maps/VisualizationPanelView.png
-   * @since 0.0.0
+   * @since 2.37.0
    */
   const VisualizationPanelView = Backbone.View.extend(
     /** @lends VisualizationPanelView.prototype */ {

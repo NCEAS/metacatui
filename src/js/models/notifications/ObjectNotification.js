@@ -35,7 +35,7 @@ define(["backbone", "dataoneNotifications"], (
    * single DataONE object identifier.
    * @classcategory Models
    * @augments Backbone.Model
-   * @since 0.0.0
+   * @since 2.37.0
    */
   const ObjectNotification = Backbone.Model.extend(
     /** @lends ObjectNotification.prototype */ {

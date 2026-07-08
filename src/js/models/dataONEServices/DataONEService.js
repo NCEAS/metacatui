@@ -13,7 +13,7 @@ define([
    * to ensure that deduplication and caching work properly across all service
    * instances with the same configuration.
    * @class DataONEService
-   * @since 0.0.0
+   * @since 2.37.0
    * @classcategory Models/DataONEServices
    */
   class DataONEService {

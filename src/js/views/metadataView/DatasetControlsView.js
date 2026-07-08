@@ -756,7 +756,7 @@ define([
 
       /**
        * Temporarily show that notification changes were saved.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       showNotificationsSavedIndicator() {
         this.clearNotificationsSavedIndicator(true);
@@ -771,7 +771,7 @@ define([
       /**
        * Clear the temporary saved indicator timeout.
        * @param {boolean} [restore] Whether to restore the Watch button now.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       clearNotificationsSavedIndicator(restore = false) {
         if (this.notificationsSavedTimer) {

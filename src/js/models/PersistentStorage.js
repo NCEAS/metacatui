@@ -33,7 +33,7 @@ define(["localforage", "common/Utilities"], (localforage, Utilities) => {
    * helper to ensure a single instance per namespace and schema version is
    * used.
    * @class PersistentStorage
-   * @since 0.0.0
+   * @since 2.37.0
    */
   class PersistentStorage {
     /**

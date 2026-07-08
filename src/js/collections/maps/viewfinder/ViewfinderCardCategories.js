@@ -11,7 +11,7 @@ define([
    * ViewfinderCardCategory models. Each category groups a ViewfinderCards
    * collection used by the Viewfinder UI. This component was generalized
    * from ZoomPresetsCollection and was renamed for clarity when the
-   * zoom presets were deprecated in favor of viewfinder cards in 0.0.0.
+   * zoom presets were deprecated in favor of viewfinder cards in 2.37.0.
    * @classcategory Collections/Maps
    * @class ViewfinderCardCategories
    * @augments Backbone.Collection

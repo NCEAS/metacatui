@@ -11,7 +11,7 @@ define([
    * of viewfinder cards in a Map, including a label, optional icon, and
    * whether the category is expanded by default in the Viewfinder UI. It was
    * generalized from the ZoomPresetCategory model and renamed for clarity when
-   * zoom presets were deprecated in favor of viewfinder cards in 0.0.0.
+   * zoom presets were deprecated in favor of viewfinder cards in 2.37.0.
    * @classcategory Models/Maps
    * @class ViewfinderCardCategory
    * @name ViewfinderCardCategory

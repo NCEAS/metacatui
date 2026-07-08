@@ -140,7 +140,7 @@ define(["md5"], (md5) => {
      * @param {number} [digits=2] The number of decimal places to display.
      * @param {string} [fallback=""] The value to return when `value` is not finite.
      * @returns {string} A fixed-decimal number string or the fallback value.
-     * @since 0.0.0
+     * @since 2.37.0
      */
     formatFixedNumber(value, digits = 2, fallback = "") {
       return Number.isFinite(value) ? value.toFixed(digits) : fallback;
@@ -227,7 +227,7 @@ define(["md5"], (md5) => {
      * @returns {string} A string that is consistent regardless of the order of
      * keys in objects or items in arrays, etc.
      * @throws {Error} If a circular reference is detected.
-     * @since 0.0.0
+     * @since 2.37.0
      */
     stableStringify(
       val,
@@ -359,7 +359,7 @@ define(["md5"], (md5) => {
      * @param {string} url The URL to normalize.
      * @param {string} [fallback] A fallback URL to use if url is empty.
      * @returns {string} Normalized URL, or empty string if not available.
-     * @since 0.0.0
+     * @since 2.37.0
      */
     normalizeUrl(url, fallback = "") {
       let resolved = url;
@@ -404,7 +404,7 @@ define(["md5"], (md5) => {
      * concatenated string.
      * @throws {Error} If keys is not a non-empty array, or if buildInstanceKey
      * is not a function.
-     * @since 0.0.0
+     * @since 2.37.0
      */
     buildInstanceKey(
       options = {},
@@ -447,7 +447,7 @@ define(["md5"], (md5) => {
      * singletons for the same class with different options. The function will
      * be passed the options object and should return a string key.
      * @returns {object} The singleton instance.
-     * @since 0.0.0
+     * @since 2.37.0
      */
     getSingleton(ClassRef, options, buildInstanceKey) {
       if (!ClassRef) {
@@ -486,7 +486,7 @@ define(["md5"], (md5) => {
      * global MetacatUI object itself.
      * @returns {Promise<object>} Promise resolving to the app user model.
      * @throws {Error} If the user model is not available in time.
-     * @since 0.0.0
+     * @since 2.37.0
      */
     async awaitMetacatUI({
       maxAttempts = 20,
@@ -593,7 +593,7 @@ define(["md5"], (md5) => {
      * @param {string} keyName Key name to look up (case-insensitive)
      * @param {Function} [normalizeValue] Optional value normalizer
      * @returns {*} The matched value, or undefined if not found
-     * @since 0.0.0
+     * @since 2.37.0
      */
     getCaseInsensitive(obj, keyName, normalizeValue) {
       if (!obj || !keyName) return undefined;

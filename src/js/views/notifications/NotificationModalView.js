@@ -99,7 +99,7 @@ define([
    * single DataONE object identifier.
    * @classcategory Views
    * @augments Backbone.View
-   * @since 0.0.0
+   * @since 2.37.0
    * @screenshot views/notifications/NotificationModalView.png
    */
   const NotificationModalView = Backbone.View.extend(
