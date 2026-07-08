@@ -374,6 +374,55 @@
   height: 100%;
 }
 
+.cesium-debug-overlay,
+.cesium-performanceDisplay {
+  min-width: 7rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--map-border-radius-small);
+  background: rgba(19, 28, 43, 0.82);
+  box-shadow: var(--map-shadow-md);
+  color: #fff;
+  font-family: monospace;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  white-space: pre-line;
+  pointer-events: none;
+  text-align: left;
+  border: none;
+
+.cesium-debug-overlay,
+.cesium-performanceDisplay-defaultContainer {
+  z-index: var(--map-z-index-base);
+  position: absolute;
+  bottom: 1rem;
+}
+
+.cesium-debug-overlay {
+  right: 1rem;
+}
+
+.cesium-performanceDisplay-defaultContainer {
+  right: 12rem;
+}
+
+.cesium-performanceDisplay {
+  min-width: 7rem;
+}
+
+.cesium-3d-tiles-inspector-container {
+  position: absolute;
+  top: 4rem;
+  right: 1rem;
+  z-index: var(--map-z-index-base);
+  max-height: calc(100% - 5rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.cesium-3d-tiles-inspector-container h3 {
+  line-height: unset;
+}
+
 /*****************************************************************************************
  *
  * Scale Bar

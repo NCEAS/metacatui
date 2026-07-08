@@ -135,6 +135,18 @@ define(["md5"], (md5) => {
     },
 
     /**
+     * Format a finite number using a fixed number of decimal places.
+     * @param {number} value The number value to be formatted.
+     * @param {number} [digits=2] The number of decimal places to display.
+     * @param {string} [fallback=""] The value to return when `value` is not finite.
+     * @returns {string} A fixed-decimal number string or the fallback value.
+     * @since 0.0.0
+     */
+    formatFixedNumber(value, digits = 2, fallback = "") {
+      return Number.isFinite(value) ? value.toFixed(digits) : fallback;
+    },
+
+    /**
      * Calculate the number of decimal places we should use based on the range of the data.
      * @param {number} range The range of data values.
      * @returns {number} The number of decimal places we should use.

@@ -106,12 +106,24 @@ define([
        * feedback section. showFeedback must be true for this to be shown.
        * @property {string} [globeBaseColor=null] - The base color of the globe
        * when no layer is shown.
+       * @property {boolean} [debug=false] - Enables Cesium's built-in map
+       * debugging aids, such as tile coordinate and grid imagery overlays, an
+       * FPS counter, and a camera position overlay. This does not automatically
+       * enable layer-specific debug flags like 3D Tiles
+       * `debugShowGeometricError`; those can still be passed directly through a
+       * layer's `cesiumOptions`. `cesiumOptions`.
+       * @property {boolean} [show3DTilesInspector=false] - Whether or not to
+       * show Cesium's built-in 3D Tiles inspector widget for tileset debugging.
+       * @property {MapConfig#ZoomPresets} [zoomPresets] @deprecated use
+       * ViewfinderCards instead.
+       * @property {MapConfig#ZoomPresetCategory[]} [zoomPresetCategories] @deprecated
+       * use ViewfinderCardCategories instead.
        * @property {MapConfig#ViewfinderCards} [viewfinderCards=null] - A
-       * predefined list of ViewfinderCards to be shown in the viewfinder UI,
-       * or an object with a URL to fetch the cards from. Requires `showViewfinder`
-       * to be true as this UI appears within the ViewfinderView. Viewfinder Cards
-       * were generalized from zoom presets so this also accepts the legacy key
-       * `zoomPresets` for backward compatibility.
+       * predefined list of ViewfinderCards to be shown in the viewfinder UI, or
+       * an object with a URL to fetch the cards from. Requires `showViewfinder`
+       * to be true as this UI appears within the ViewfinderView. Viewfinder
+       * Cards were generalized from zoom presets so this also accepts the
+       * legacy key `zoomPresets` for backward compatibility.
        * @property {MapConfig#ViewfinderCardCategory[]} [viewfinderCardCategories=null]
        * Instead of a simple list of viewfinder cards, an array that groups
        * cards into categories with a label and optional icon. Also accepts the
@@ -240,6 +252,11 @@ define([
        * feedback section.
        * @property {string} [globeBaseColor=null] - The base color of the globe
        * when no layer is shown.
+       * @property {boolean} [debug=false] - Enables Cesium's built-in map
+       * debugging aids and overlays for development.
+       * @property {boolean} [show3DTilesInspector=false] - Whether or not to
+       * show Cesium's built-in 3D Tiles inspector widget.
+       * @property {ZoomPresets} [zoomPresets] - @deprecated use ViewfinderCards instead.
        * @property {ViewfinderCards} [viewfinderCards=null] - A
        * Backbone.Collection of a predefined list of locations with an enabled
        * list of layer IDs, content to open in an embedded iframe, or links to
@@ -279,6 +296,8 @@ define([
           showFeedback: false,
           feedbackText: null,
           globeBaseColor: null,
+          debug: false,
+          show3DTilesInspector: false,
           viewfinderCards: null,
           activeVisualizationUrl: null,
         };
