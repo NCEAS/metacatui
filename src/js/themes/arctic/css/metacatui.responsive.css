@@ -16,14 +16,6 @@
   .DataCatalog #Content {
     max-width: 100%;
   }
-  footer .logos {
-    width: 470px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  footer .adc-contact {
-    width: 470px;
-  }
   #logo {
     font-size: 1.4em;
   }
@@ -171,8 +163,12 @@
     margin-left: 7px;
   }
 
-  footer .show-in-map-mode a {
-    margin-left: 25%;
+  /************** Footer ****************/
+  :root {
+    --footer-height: 500px;
+  }
+  #Content {
+    padding-bottom: 520px; /* Keeps footer down */
   }
 
   /** Temporary Message */
@@ -189,7 +185,7 @@
   }
 
   #Content {
-    padding-bottom: 785px; /* Keeps footer down */
+    padding-bottom: 700px; /* Keeps footer down */
     margin-top: 0px;
   }
 
@@ -203,30 +199,21 @@
   /* div#inner-header */
 
   /************** Footer ****************/
-  #Footer {
-    height: 775px; /* Keeps footer down */
-  }
-
-  footer div.help-items,
-  footer .logos {
-    width: 100%;
-    min-width: 100%;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-  }
-  footer .logos > a {
-    margin: 10px;
-  }
-
-  /* contact info */
-  footer nav.footer-links.col-1-4.offset-1-4 {
-    margin: 0;
+  :root {
+    --footer-height: 680px;
   }
 }
+/* Tablets (landscape) ----------- */
+@media only screen and (min-width: 768px) and (max-width: 900px) {
+  /************** Footer ****************/
+  :root {
+    --footer-height: 450px;
+  }
+  #Content {
+    padding-bottom: 470px; /* Keeps footer down */
+  }
+}
+
 /* Mobile navigation styles */
 @media only screen and (max-width: 900px) {
   #main-nav .dropdown-menu {
