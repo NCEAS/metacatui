@@ -140,7 +140,7 @@ define(["backbone", "dataoneNotifications"], (
       /**
        * Save selected resource types by subscribing and unsubscribing as needed.
        * @param {string[]} selectedResourceTypes Selected resource type names.
-       * @returns {Promise<{changed: boolean, resourceTypes: string[], stale?: boolean}>}
+       * @returns {Promise.<{changed: boolean, resourceTypes: Array.<string>, stale: (boolean|undefined)}>}
        * Save result.
        */
       async saveSubscriptions(selectedResourceTypes) {
