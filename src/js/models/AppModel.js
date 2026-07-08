@@ -1736,6 +1736,18 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * embed external content. This property is used to define URLs or URL
            * patterns that are considered secure for embedding content in
            * iframes, especially when rendering user-generated Markdown content.
+           * 
+           * The list can include string urls (which will automatically be 
+           * given the configured default iframe permissions) and/or objects that specify 
+           * a url and a string array of iframe permissions for embedding the 
+           * content eg:  
+           *  trustedContentSources: [
+           *    "https://*arcticdata.io",
+           *    {
+           *      url: "https://virtualice.byrd.osu.edu/alaska-permafrost/*",
+           *      permissions: ["allow-scripts", "allow-same-origin"],
+           *    },
+           *  ]
            *
            * Each source in the list can include wildcards (`*`) to match any
            * subdomain or path. For example, `"https://*.dataone.org/*"` matches
@@ -1744,10 +1756,19 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            *
            * Set to an empty array or a falsy value to disable all embedded content.
            *
-           * @type {string[]}
+           * @type {string[]|object[]}
            * @since 2.32.0
            */
           trustedContentSources: [],
+
+          /**
+           * The default iframe sandbox permissions applied to trusted content
+           * sources that do not explicitly define a `permissions` array.
+           * @type {string[]}
+           * @default ["allow-scripts", "allow-same-origin"]
+           * @since 0.0.0
+           */
+          defaultIframePermissions: ["allow-scripts", "allow-same-origin"],
 
           /** If true, then archived content is available in the search index.
            * Set to false if this MetacatUI is using a Metacat version before 2.10.0
@@ -2348,14 +2369,14 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
               type: "datasetChanges",
               label: "Dataset Changes",
               description:
-                "Get notified when the metadata changes or when files are added, removed, or replaced",
-            },
-            {
-              type: "citations",
-              label: "Citations",
-              description: "Get notified when someone cites the dataset",
+                "Be notified when new data, documentation improvements, or corrections become available",
             },
             // Not yet supported:
+            // {
+            //   type: "citations",
+            //   label: "Citations",
+            //   description: "Get notified when someone cites the dataset",
+            // },
             // {
             //   type: "downloads",
             //   label: "Downloads",

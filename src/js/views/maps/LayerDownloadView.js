@@ -9,22 +9,44 @@ define(["underscore", "backbone"], (_, Backbone) => {
     checkbox: `${BASE_CLASS}__checkbox`,
     title: `${BASE_CLASS}__title`,
     content: `${BASE_CLASS}__content`,
+    contentVisible: `${BASE_CLASS}__content--visible`,
+    dropdown: `${BASE_CLASS}__dropdown`,
+    resolutionDropdown: `${BASE_CLASS}__dropdown--resolution`,
+    fileTypeDropdown: `${BASE_CLASS}__dropdown--file-type`,
+    dropdownLabel: `${BASE_CLASS}__dropdown-label`,
+    dropdownWrapper: `${BASE_CLASS}__dropdown-wrapper`,
+    dropdownContainer: `${BASE_CLASS}__dropdown-container`,
+    information: `${BASE_CLASS}__information`,
+    informationWarning: `${BASE_CLASS}__information--warning`,
+    informationWmts: `${BASE_CLASS}__information--wmts`,
+    error: "error",
+  };
 
-    dropdown: "downloads-dropdown",
-    resolutionDropdown: "resolution-dropdown",
-    fileTypeDropdown: "fileType-downloads-dropdown",
-    dropdownWrapper: "downloads-dropdown-wrapper",
-    dropdownContainer: "downloads-dropdown-container",
-    fileSizeBox: "downloads-textbox",
+  const MESSAGES = {
+    selectResolutionAndFormat:
+      "Select resolution and file format to download...",
+    selectFormat: "Select file format to download...",
   };
 
   /**
    * @class LayerDownloadView
-   * @classdesc A self-contained panel row for a single downloadable map layer.
-   * Renders a header with a checkbox (for selection) and the layer name, plus
-   * a content area with resolution and file-format dropdowns and a file-size
-   * label. The label shows an orange warning when dropdowns are incomplete and
-   * switches to a success state once a format is chosen.
+   * @classdesc A component of {@link DownloadPanelView}. Renders an expandable
+   * row for a single downloadable map layer: a header with a checkbox and layer
+   * name, and a collapsible content area with resolution and file-format
+   * dropdowns and an informational label with instructions and an estimated
+   * file size.
+   *
+   * This view is tightly coupled to its parent by design — it reads
+   * `dropdownOptions` and `zoomLevels` from the parent to populate its
+   * dropdowns, and calls back into parent methods (`layerSelection`,
+   * `fileTypeSelection`, `getRawFileSize`, `updateTextbox`) to update
+   * panel-level state. It is not intended for use outside of
+   * `DownloadPanelView`.
+   *
+   * When the resolution selection is invalidated, this view triggers a
+   * `"download:invalidated"` event (with `layerID` as the argument) rather than
+   * mutating the parent's `dataDownloadLinks` directly. The parent is
+   * responsible for listening to that event and cleaning up its own state.
    * @classcategory Views/Maps
    * @name LayerDownloadView
    * @augments Backbone.View
@@ -47,6 +69,44 @@ define(["underscore", "backbone"], (_, Backbone) => {
       className: BASE_CLASS,
 
       /**
+       * The primary HTML template for this view.
+       * @type {Underscore.template}
+       */
+      template: _.template(`
+        <div class="${CLASS_NAMES.header}">
+          <input type="checkbox" class="${CLASS_NAMES.checkbox}" />
+          <span class="${CLASS_NAMES.title}"><%- layerName %></span>
+        </div>
+        <div class="${CLASS_NAMES.content}">
+          <div class="${CLASS_NAMES.dropdownContainer}">
+            <div class="${CLASS_NAMES.dropdownWrapper}">
+              <label class="${CLASS_NAMES.dropdownLabel}" for="<%- resolutionDropdownId %>"><%- resolutionLabel %></label>
+              <select id="<%- resolutionDropdownId %>" class="${CLASS_NAMES.dropdown} ${CLASS_NAMES.resolutionDropdown}">
+                <option value="<%- resolutionDefaultValue %>" disabled selected><%- resolutionDefaultText %></option>
+              </select>
+            </div>
+            <div class="${CLASS_NAMES.dropdownWrapper}">
+              <label class="${CLASS_NAMES.dropdownLabel}" for="<%- fileTypeDropdownId %>"><%- fileTypeLabel %></label>
+              <select id="<%- fileTypeDropdownId %>" class="${CLASS_NAMES.dropdown} ${CLASS_NAMES.fileTypeDropdown}" disabled>
+                <option value="<%- fileTypeDefaultValue %>" disabled selected><%- fileTypeDefaultText %></option>
+              </select>
+            </div>
+          </div>
+          <span class="${CLASS_NAMES.information} ${CLASS_NAMES.informationWarning}"><%- initialMessage %></span>
+        </div>
+      `),
+
+      /** @inheritdoc */
+      events() {
+        const CN = CLASS_NAMES;
+        return {
+          [`change .${CN.checkbox}`]: "handleCheckboxChange",
+          [`change .${CN.resolutionDropdown}`]: "handleResolutionChange",
+          [`change .${CN.fileTypeDropdown}`]: "handleFileTypeChange",
+        };
+      },
+
+      /**
        * Initialise the view.
        * @param {object} options - Options for the view.
        * @param {object} options.item - The layer data object for this row.
@@ -56,6 +116,18 @@ define(["underscore", "backbone"], (_, Backbone) => {
       initialize({ item, downloadPanelView }) {
         this.item = item;
         this.downloadPanelView = downloadPanelView;
+
+        // State is stored as plain instance properties rather than a Backbone
+        // model. A model would add testability and reactivity (change events),
+        // but the cost outweighs the benefit here: these three properties are
+        // only consumed by one parent view in a single synchronous loop, and
+        // there is no async lifecycle or cross-view reactivity requirement.
+        // If the parent ever needs to react to individual layer state changes
+        // (e.g. recompute a running total the moment a file type is chosen)
+        // rather than polling all views at once, switching to a model-backed
+        // approach with listenTo(layerModel, "change:selectedFileType", ...)
+        // would become worthwhile.
+
         /** Whether the layer is currently selected for download. */
         this.isSelected = false;
         /** The currently selected resolution zoom level (string). */
@@ -64,19 +136,28 @@ define(["underscore", "backbone"], (_, Backbone) => {
         this.selectedFileType = "";
       },
 
+      /** @inheritdoc */
+      remove() {
+        this.downloadPanelView = null;
+        Backbone.View.prototype.remove.call(this);
+      },
+
       /** @returns {boolean} Whether the content section is currently visible. */
       isExpanded() {
-        return this.$el.hasClass("show-content");
+        return (
+          this.contentEl?.classList.contains(CLASS_NAMES.contentVisible) ??
+          false
+        );
       },
 
       /** Show the content section without changing the checkbox state. */
       expand() {
-        this.$el.addClass("show-content");
+        this.contentEl?.classList.add(CLASS_NAMES.contentVisible);
       },
 
       /** Hide the content section without changing the checkbox state. */
       collapse() {
-        this.$el.removeClass("show-content");
+        this.contentEl?.classList.remove(CLASS_NAMES.contentVisible);
       },
 
       /**
@@ -85,220 +166,155 @@ define(["underscore", "backbone"], (_, Backbone) => {
        */
       resetDropdowns() {
         const { dropdownOptions } = this.downloadPanelView;
-        if (this.resolutionDropdown) {
-          this.resolutionDropdown.value =
+        if (this.resolutionDropdownEl) {
+          this.resolutionDropdownEl.value =
             dropdownOptions.resolution.defaultValue;
         }
-        if (this.fileTypeDropdown) {
-          this.fileTypeDropdown.disabled = true;
-          this.fileTypeDropdown.value = dropdownOptions.fileType.defaultValue;
+        if (this.fileTypeDropdownEl) {
+          this.fileTypeDropdownEl.disabled = true;
+          this.fileTypeDropdownEl.value = dropdownOptions.fileType.defaultValue;
         }
         this.selectedResolution = "";
         this.selectedFileType = "";
-        if (this.fileSizeInfoBox) {
-          this.fileSizeInfoBox.textContent =
-            "Select resolution and file format to download...";
-          this.fileSizeInfoBox.classList.remove("error", "wmts-copy");
-          this.fileSizeInfoBox.classList.add("downloads-textbox--warning");
+        // Notify the parent to remove any stale download link for this layer,
+        this.trigger("download:invalidated", this.item.layerID);
+        if (this.informationEl) {
+          this.informationEl.textContent = MESSAGES.selectResolutionAndFormat;
+          this.informationEl.classList.remove(
+            CLASS_NAMES.error,
+            CLASS_NAMES.informationWmts,
+          );
+          this.informationEl.classList.add(CLASS_NAMES.informationWarning);
         }
       },
 
       /**
-       * Render the complete panel: a header row with [checkbox] [title] [caret]
-       * and a collapsible content section with the download controls.
+       * Handles changes to the layer checkbox. If checked, selects the layer
+       * and expands the content; if unchecked, deselects, collapses, and resets
+       * the dropdowns.
+       */
+      handleCheckboxChange() {
+        if (this.checkboxEl.checked) {
+          this.isSelected = true;
+          this.expand();
+        } else {
+          this.isSelected = false;
+          this.collapse();
+          this.resetDropdowns();
+        }
+        this.downloadPanelView.layerSelection();
+      },
+
+      /**
+       * Handles changes to the resolution dropdown. Enables the file-type
+       * dropdown, clears the file-type selection, removes stale download links,
+       * and updates the info box and save-button state.
+       */
+      handleResolutionChange() {
+        this.selectedResolution = this.resolutionDropdownEl.value;
+        this.fileTypeDropdownEl.disabled = false;
+        this.fileTypeDropdownEl.value =
+          this.downloadPanelView.dropdownOptions.fileType.defaultValue;
+        this.selectedFileType = "";
+        // Notify the parent to remove the stale download link for this layer
+        this.trigger("download:invalidated", this.item.layerID);
+        this.informationEl.textContent = MESSAGES.selectFormat;
+        this.informationEl.classList.add(CLASS_NAMES.informationWarning);
+        this.informationEl.classList.remove(
+          CLASS_NAMES.error,
+          CLASS_NAMES.informationWmts,
+        );
+
+        this.downloadPanelView.layerSelection();
+      },
+
+      /**
+       * Handles changes to the file-type dropdown. Calculates the estimated
+       * file size and updates the info box and save-button state.
+       */
+      handleFileTypeChange() {
+        const { item, downloadPanelView } = this;
+        this.selectedFileType = this.fileTypeDropdownEl.value;
+        this.informationEl.classList.remove(CLASS_NAMES.informationWarning);
+        downloadPanelView.fileTypeSelection(item.layerID);
+        const fileSize = downloadPanelView.getRawFileSize(
+          this.resolutionDropdownEl.value,
+          this.fileTypeDropdownEl.value,
+          item.layerID,
+          item.fullDownloadLink,
+          item.pngDownloadLink,
+          item.gpkgDownloadLink,
+          item.ID,
+          item.layerName,
+          item.wmtsDownloadLink,
+          item.metadataPid,
+          item.tiffDownloadLink,
+        );
+        downloadPanelView.updateLayerInfoEl(
+          this.informationEl,
+          fileSize,
+          this.fileTypeDropdownEl.value,
+          item.layerID,
+        );
+      },
+
+      /**
+       * Render the complete panel: a header row with [checkbox] [title] and
+       * a collapsible content section with the download controls.
        * @returns {LayerDownloadView} this
        */
       render() {
-        this.$el.empty();
-        const view = this;
         const { item, downloadPanelView } = this;
-
-        // ── Header row ────────────────────────────────────────────────────────
-        const header = document.createElement("div");
-        header.classList.add(CLASS_NAMES.header);
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.classList.add(CLASS_NAMES.checkbox);
-        this.checkbox = checkbox;
-
-        const titleSpan = document.createElement("span");
-        titleSpan.classList.add(CLASS_NAMES.title);
-        titleSpan.textContent = item.layerName;
-
-        header.appendChild(checkbox);
-        header.appendChild(titleSpan);
-
-        // ── Content section ───────────────────────────────────────────────────
-        const content = document.createElement("div");
-        content.classList.add(CLASS_NAMES.content);
-
-        // Pruned file-type options per layer configuration
-        const fileTypeOptions = {
-          tif: "Geotiff",
-          png: "PNG",
-          wmts: "WMTS file",
-          gpkg: "Geopackage",
-        };
-        if (item.tiffDownloadLink == null) delete fileTypeOptions.tif;
-        if (item.pngDownloadLink == null) delete fileTypeOptions.png;
-        if (item.wmtsDownloadLink == null) delete fileTypeOptions.wmts;
-        if (item.gpkgDownloadLink == null) delete fileTypeOptions.gpkg;
-
-        // Resolution dropdown
-        const resolutionDropdownWrapper = document.createElement("div");
-        resolutionDropdownWrapper.classList.add(CLASS_NAMES.dropdownWrapper);
-
+        const { dropdownOptions, zoomLevels } = downloadPanelView;
         const resolutionDropdownId = `resolution-dropdown-${item.layerID}`;
-        const resolutionLabel = document.createElement("label");
-        resolutionLabel.textContent =
-          downloadPanelView.dropdownOptions.resolution.label;
-        resolutionLabel.htmlFor = resolutionDropdownId;
-
-        const resolutionDropdown = document.createElement("select");
-        resolutionDropdown.id = resolutionDropdownId;
-        resolutionDropdown.classList.add(
-          CLASS_NAMES.dropdown,
-          CLASS_NAMES.resolutionDropdown,
-        );
-
-        const defaultResolutionOption = document.createElement("option");
-        defaultResolutionOption.value =
-          downloadPanelView.dropdownOptions.resolution.defaultValue;
-        defaultResolutionOption.textContent =
-          downloadPanelView.dropdownOptions.resolution.defaultText;
-        defaultResolutionOption.disabled = true;
-        defaultResolutionOption.selected = true;
-        resolutionDropdown.appendChild(defaultResolutionOption);
-
-        Object.entries(downloadPanelView.zoomLevels).forEach(
-          ([zoomLevel, pixelResolution]) => {
-            const option = document.createElement("option");
-            option.value = zoomLevel;
-            option.textContent = `${zoomLevel} - ${pixelResolution}`;
-            resolutionDropdown.appendChild(option);
-          },
-        );
-
-        resolutionDropdownWrapper.appendChild(resolutionLabel);
-        resolutionDropdownWrapper.appendChild(resolutionDropdown);
-        this.resolutionDropdown = resolutionDropdown;
-
-        // File-type dropdown
-        const fileTypeDropdownWrapper = document.createElement("div");
-        fileTypeDropdownWrapper.classList.add(CLASS_NAMES.dropdownWrapper);
-
         const fileTypeDropdownId = `fileType-dropdown-${item.layerID}`;
-        const fileTypeLabel = document.createElement("label");
-        fileTypeLabel.textContent =
-          downloadPanelView.dropdownOptions.fileType.label;
-        fileTypeLabel.htmlFor = fileTypeDropdownId;
 
-        const fileTypeDropdown = document.createElement("select");
-        fileTypeDropdown.id = fileTypeDropdownId;
-        fileTypeDropdown.classList.add(
-          CLASS_NAMES.dropdown,
-          CLASS_NAMES.fileTypeDropdown,
+        this.el.innerHTML = this.template({
+          layerName: item.layerName,
+          resolutionDropdownId,
+          resolutionLabel: dropdownOptions.resolution.label,
+          resolutionDefaultValue: dropdownOptions.resolution.defaultValue,
+          resolutionDefaultText: dropdownOptions.resolution.defaultText,
+          fileTypeDropdownId,
+          fileTypeLabel: dropdownOptions.fileType.label,
+          fileTypeDefaultValue: dropdownOptions.fileType.defaultValue,
+          fileTypeDefaultText: dropdownOptions.fileType.defaultText,
+          initialMessage: MESSAGES.selectResolutionAndFormat,
+        });
+
+        // Cache element references for use in event handlers and helper methods
+        this.checkboxEl = this.el.querySelector(`.${CLASS_NAMES.checkbox}`);
+        this.resolutionDropdownEl = this.el.querySelector(
+          `.${CLASS_NAMES.resolutionDropdown}`,
         );
-        fileTypeDropdown.disabled = true; // enabled only once a resolution is chosen
+        this.fileTypeDropdownEl = this.el.querySelector(
+          `.${CLASS_NAMES.fileTypeDropdown}`,
+        );
+        this.informationEl = this.el.querySelector(
+          `.${CLASS_NAMES.information}`,
+        );
+        this.contentEl = this.el.querySelector(`.${CLASS_NAMES.content}`);
 
-        const defaultFileTypeOption = document.createElement("option");
-        defaultFileTypeOption.value =
-          downloadPanelView.dropdownOptions.fileType.defaultValue;
-        defaultFileTypeOption.textContent =
-          downloadPanelView.dropdownOptions.fileType.defaultText;
-        defaultFileTypeOption.disabled = true;
-        defaultFileTypeOption.selected = true;
-        fileTypeDropdown.appendChild(defaultFileTypeOption);
-
-        Object.entries(fileTypeOptions).forEach(([fileType, fileTypeName]) => {
+        // Append zoom-level options to the resolution dropdown
+        Object.entries(zoomLevels).forEach(([zoomLevel, pixelResolution]) => {
           const option = document.createElement("option");
-          option.value = fileType;
-          option.textContent = fileTypeName;
-          fileTypeDropdown.appendChild(option);
+          option.value = zoomLevel;
+          option.textContent = `${zoomLevel} - ${pixelResolution}`;
+          this.resolutionDropdownEl.appendChild(option);
         });
 
-        fileTypeDropdownWrapper.appendChild(fileTypeLabel);
-        fileTypeDropdownWrapper.appendChild(fileTypeDropdown);
-        this.fileTypeDropdown = fileTypeDropdown;
-
-        const dropdownContainer = document.createElement("div");
-        dropdownContainer.classList.add(CLASS_NAMES.dropdownContainer);
-        dropdownContainer.appendChild(resolutionDropdownWrapper);
-        dropdownContainer.appendChild(fileTypeDropdownWrapper);
-
-        const fileSizeInfoBox = document.createElement("span");
-        fileSizeInfoBox.classList.add(
-          CLASS_NAMES.fileSizeBox,
-          "downloads-textbox--warning",
-        );
-        fileSizeInfoBox.textContent =
-          "Select resolution and file format to download...";
-        this.fileSizeInfoBox = fileSizeInfoBox;
-
-        content.appendChild(dropdownContainer);
-        content.appendChild(fileSizeInfoBox);
-
-        // ── Assemble ──────────────────────────────────────────────────────────
-        this.el.appendChild(header);
-        this.el.appendChild(content);
-
-        // ── Event listeners ───────────────────────────────────────────────────
-
-        // Checking the checkbox selects the layer and expands the content;
-        // unchecking deselects, collapses, and resets the dropdowns.
-        checkbox.addEventListener("change", () => {
-          if (checkbox.checked) {
-            view.isSelected = true;
-            view.expand();
-          } else {
-            view.isSelected = false;
-            view.collapse();
-            view.resetDropdowns();
-          }
-          downloadPanelView.layerSelection();
-        });
-
-        // Resolution change: enable file-type dropdown, clear its value,
-        // delete stale download links, update hint, recalculate button state
-        resolutionDropdown.addEventListener("change", () => {
-          view.selectedResolution = resolutionDropdown.value;
-          fileTypeDropdown.disabled = false;
-          fileTypeDropdown.value = defaultFileTypeOption.value;
-          view.selectedFileType = "";
-
-          delete downloadPanelView.dataDownloadLinks[item.layerID];
-
-          fileSizeInfoBox.textContent = "Select file format to download...";
-          fileSizeInfoBox.classList.add("downloads-textbox--warning");
-          fileSizeInfoBox.classList.remove("error", "wmts-copy");
-          downloadPanelView.layerSelection();
-        });
-
-        // File-type change: recalculate file size and notify parent
-        fileTypeDropdown.addEventListener("change", () => {
-          view.selectedFileType = fileTypeDropdown.value;
-          fileSizeInfoBox.classList.remove("downloads-textbox--warning");
-          downloadPanelView.fileTypeSelection(item.layerID);
-          const fileSize = downloadPanelView.getRawFileSize(
-            resolutionDropdown.value,
-            fileTypeDropdown.value,
-            item.layerID,
-            item.fullDownloadLink,
-            item.pngDownloadLink,
-            item.gpkgDownloadLink,
-            item.ID,
-            item.layerName,
-            item.wmtsDownloadLink,
-            item.metadataPid,
-            item.tiffDownloadLink,
-          );
-          downloadPanelView.updateTextbox(
-            fileSizeInfoBox,
-            fileSize,
-            fileTypeDropdown.value,
-            item.layerID,
-          );
+        // Append only file-type options that have a corresponding download link
+        [
+          [item.tiffDownloadLink, "tif", "Geotiff"],
+          [item.pngDownloadLink, "png", "PNG"],
+          [item.wmtsDownloadLink, "wmts", "WMTS file"],
+          [item.gpkgDownloadLink, "gpkg", "Geopackage"],
+        ].forEach(([link, value, text]) => {
+          if (link == null) return;
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = text;
+          this.fileTypeDropdownEl.appendChild(option);
         });
 
         return this;

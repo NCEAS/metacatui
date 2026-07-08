@@ -96,6 +96,7 @@ define([
         linkActive: "toolbar__link--active",
         content: "toolbar__content",
         contentActive: "toolbar__content--active",
+        contentDownload: "toolbar__content--download",
       },
 
       /**
@@ -469,6 +470,11 @@ define([
         const contentContainer = document.createElement("div");
         // Add the class that identifies a toolbar section's content
         contentContainer.classList.add(this.classes.content);
+        // If this section uses the DownloadPanelView, mark it so CSS can give it
+        // shrink-wrap flex sizing without relying on the :has() selector.
+        if (sectionOption.view === DownloadPanelView) {
+          contentContainer.classList.add(this.classes.contentDownload);
+        }
         // Render the toolbar section view
         // Merge the icon and label with the other section options
         const viewOptions = {

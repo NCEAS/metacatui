@@ -14,10 +14,12 @@
 }
 
 .mdq-results {
+  --col-bkg-grey: #ededed;
   --col-bkg-red: #fbd6d6;
   --col-bkg-green: #dff0d8;
   --col-bkg-blue: #d9edf7;
   --col-bkg-orange: #fcf8e3;
+  --col-text-grey: #535353;
   --col-text-red: #811010;
   --col-text-green: #0a7035;
   --col-text-blue: #0f5f95;
@@ -120,5 +122,11 @@
   .content.mdq-results__item--orange {
     --item-bkg-color: var(--col-bkg-orange);
     --item-text-color: var(--col-text-orange);
+  }
+
+  .title.mdq-results__item--grey,
+  .content.mdq-results__item--grey {
+    --item-bkg-color: var(--col-bkg-grey);
+    --item-text-color: var(--col-text-grey);
   }
 }

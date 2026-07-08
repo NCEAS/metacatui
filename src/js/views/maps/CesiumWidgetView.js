@@ -300,10 +300,16 @@ define([
       enableDebugMode() {
         this.scene.debugShowFramesPerSecond = true;
         this.scene.globe.showSkirts = false;
-        this.showImageryGrid();
+
+        // Avoid duplicating debug imagery layers/log spam if render() is called multiple times.
+        if (!this._debugImageryGridShown) {
+          this.showImageryGrid();
+          this._debugImageryGridShown = true;
+          this.logDebugLayerSummary();
+        }
+
         this.renderDebugCameraOverlay();
         this.updateDebugCameraOverlay();
-        this.logDebugLayerSummary();
         this.requestRender();
       },
 

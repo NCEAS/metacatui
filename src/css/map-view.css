@@ -89,6 +89,7 @@
   --map-z-index-top-shadow: calc(var(--map-z-index-base) + 1);
   --map-z-index-layer-details: calc(var(--map-z-index-top-shadow) + 1);
   --map-z-index-feature-info: calc(var(--map-z-index-layer-details) + 1);
+  --map-z-index-visualization-panel: calc(var(--map-z-index-feature-info) + 1);
 }
 
 /* hide the credits until we can find a better placement for them */
@@ -388,7 +389,6 @@
   pointer-events: none;
   text-align: left;
   border: none;
-  color: #fff;
 }
 
 .cesium-debug-overlay,
@@ -543,7 +543,8 @@ represents 1 unit of the given distance measurement. */
 
 .toolbar__content {
   /* TODO: remove temp styles */
-  height: 100%;
+  flex: 1 1 0;
+  min-height: 0;
   width: 100%;
   justify-content: center;
   /* hide unless the content section is active */
@@ -562,6 +563,15 @@ represents 1 unit of the given distance measurement. */
 .toolbar__content--active {
   display: flex;
   position: relative;
+}
+
+/* The download panel is in-flow at the bottom of the flex column. It should
+   only take as much vertical space as its content needs — not stretch to fill
+   the remaining height the way sibling toolbar__content panels do. */
+.toolbar__content--download {
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow: visible;
 }
 
 .toolbar__link {
@@ -1464,11 +1474,17 @@ other class: .ui-slider-range */
  *
  * Draw Tool
  *
- * Panel for drawing polygons in the map
+ * Panel for drawing polygons in the map (used in download panel)
  *
  */
 
-.draw__button {
+.draw-tool {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.draw-tool__button {
   position: relative;
   font-family: inherit;
   font-size: 100%;
@@ -1487,29 +1503,23 @@ other class: .ui-slider-range */
   margin: 0 25px;
 }
 
-.draw-tool {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  .icon {
-    color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
-  }
-
-  .draw__button--disable .icon {
-    color: var(--portal-col-neutral-4, var(--map-col-text__deprecate));
-  }
-}
-
-.draw__button--active {
+.draw-tool__button--active {
   background-color: var(
     --portal-col-primary-6,
     var(--map-col-highlight__deprecate)
   );
-  color: var(--portal-col-neutral-00);
+  color: var(--portal-col-neutral-00, var(--map-col-text__deprecate));
 }
 
-.custom-circle {
+.draw-tool__button--disable {
+  color: var(
+    --portal-col-neutral-4,
+    var(--portal-col-text-subtle__deprecate, #6b7280)
+  );
+  cursor: not-allowed;
+}
+
+.draw-tool__button-icon-wrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1518,22 +1528,31 @@ other class: .ui-slider-range */
   border-radius: 50%;
   padding: 0.5rem;
   background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
-  border: 2px solid var(--portal-col-primary-3);
-  color: #333;
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
   font-size: 20px;
-  border: 1px solid var(--portal-col-primary-2);
+  border: 1px solid
+    var(--portal-col-primary-2, var(--map-col-bkg-lightest__deprecate));
 }
 
-.draw-button-label {
+.draw-tool__button-icon-wrap--disabled {
+  opacity: 0.75;
+  color: var(
+    --portal-col-neutral-4,
+    var(--portal-col-text-subtle__deprecate, #6b7280)
+  );
+}
+
+.draw-tool__button-label {
   display: none; /* Hide the label by default */
   position: absolute;
-  background-color: rgba(
-    0,
-    0,
-    0,
-    0.7
-  ); /* Optional: Add a semi-transparent background */
-  color: #fff; /* Label text color */
+  background-color: var(
+    --portal-col-neutral-7,
+    var(--map-col-bkg-lightest__deprecate)
+  );
+  color: var(
+    --portal-col-neutral-00,
+    var(--map-col-text__deprecate)
+  ); /* Label text color */
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -1545,48 +1564,45 @@ other class: .ui-slider-range */
   margin-top: 5px;
 }
 
-.draw__button:hover .draw-button-label {
+/* :hover triggering a descendant is the only pure-CSS way to implement a tooltip. */
+/* The JS alternative (toggling a --visible BEM modifier on mouseenter/mouseleave) adds unnecessary complexity */
+.draw-tool__button:hover .draw-tool__button-label {
   display: block;
 }
 
+/*****************************************************************************************
+ *
+ * Download Panel
+ *
+ * Panel for downloading data from the map. 
+ * Contains:
+ *   - a header
+ *   - instructions
+ *   - a list of downloadable data layers (download-panel__data-list)
+ *   - the draw-tool for selecting a custom area to download
+ */
+
 .download-panel {
   display: flex;
-  position: fixed;
-  width: var(--map-width-toolbar-wide);
-  left: 0;
+  width: 100%;
   flex-direction: column;
   padding-bottom: 1rem;
-  z-index: 2;
   align-items: center;
   justify-content: space-between; /* Pushes elements apart */
   gap: 0.1rem;
-  bottom: 0;
   border-width: 1px 0;
   border-top: 1px solid
     var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
   background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
 }
 
-.download-panel-close__button {
-  /* override default button styles */
-  font-family: inherit;
-  font-size: 100%;
-  line-height: 1.15;
-  margin: 0;
-  overflow: visible;
-  text-transform: none;
-  border: 0;
-  border-radius: var(--map-border-radius-big);
-  background: var(--portal-col-neutral-00, var(--map-col-buttons__deprecate));
-  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
-  white-space: nowrap;
-  text-decoration: none;
-  padding: 0.25rem 0.5rem;
-  cursor: pointer;
+/* The only style unique to the close button is its right margin; all other
+   styles come from .map-view__button which is added in the template. */
+.download-panel__close-button {
   margin-right: 30px;
 }
 
-.header-container {
+.download-panel__header {
   display: flex;
   justify-content: space-between; /* Push label and button apart */
   align-items: center;
@@ -1596,13 +1612,13 @@ other class: .ui-slider-range */
 }
 
 /* Group icon and label in a flex container */
-.label-container {
+.download-panel__title-group {
   display: flex;
   align-items: center; /* Ensures both icon & text align properly */
   gap: 8px; /* Adds spacing between icon and text */
 }
 
-.download__label {
+.download-panel__title {
   margin: 0;
   font-size: 20px;
   font-weight: 700;
@@ -1612,23 +1628,23 @@ other class: .ui-slider-range */
   margin-bottom: 3px;
 }
 
-.download-panel .label-container {
+/* !important is required to override portal-theme rules such as `.portal-view h3`
+   (specificity 0,1,1) which would otherwise force the colour to white regardless
+   of the BEM modifier. No structural selector relationship is implied. */
+.download-panel__title {
   color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
-  .download__label {
-    color: currentColor;
-  }
 }
 
-.icon-download-alt {
-  font-size: 20px; /* Adjust icon size */
-  vertical-align: bottom; /* Ensures inline alignment */
+.download-panel__icon {
+  font-size: 20px;
+  vertical-align: bottom;
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
 }
 
-.download-data-list__panel {
+.download-panel__instructions {
   display: block; /* To display the panel below */
   width: calc(100% - 60px);
   padding-top: 0;
-  color: black;
   font-size: 0.825rem;
   font-weight: 400;
   margin: 0 0.5rem;
@@ -1638,91 +1654,94 @@ other class: .ui-slider-range */
   text-overflow: ellipsis;
 }
 
-.download-data-list {
+.download-panel__progress-container {
+  width: 100%;
+  background-color: var(
+    --portal-col-neutral-2,
+    var(--map-col-bkg-lightest__deprecate)
+  );
+  border-radius: 5px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.download-panel__progress-bar {
+  width: 0%;
+  height: 18px;
+  background-color: var(
+    --portal-col-primary-6,
+    var(--map-col-highlight__deprecate)
+  );
+  text-align: center;
+  color: var(--portal-col-neutral-00, var(--map-col-text__deprecate));
+  line-height: 18px;
+  font-size: 10px;
+  border-radius: 5px;
+  transition: width 0.4s;
+}
+.download-panel__progress-bar--no-data {
+  width: 0%;
+  height: 18px;
+  text-align: center;
+  color: var(--portal-col-neutral-8, var(--map-col-bkg__deprecate));
+  line-height: 18px;
+  font-size: 10px;
+  border-radius: 5px;
+  transition: width 0.4s;
+  background-color: var(--portal-col-highlight-1, #fffcf4);
+}
+
+.download-panel__data-list {
   display: block;
   width: calc(100% - 60px);
   margin: 5px 0 15px 0;
   padding-top: 0;
-  color: black;
+  color: var(--portal-col-neutral-7);
   overflow-y: auto; /* Enable vertical scrolling */
-  max-height: 150px; /* Fixed height for the list */
+  max-height: 200px; /* Fixed height for the list */
   /* Styling the scrollbar */
   scrollbar-width: thin; /* For Firefox */
-  scrollbar-color: #888 #f0f0f0; /* For Firefox */
+  scrollbar-color: var(--portal-col-neutral-4, #888)
+    var(--portal-col-neutral-1, #f0f0f0); /* For Firefox */
 }
 
 /* For Chrome, Edge, and Safari */
-.download-data-list::-webkit-scrollbar {
+.download-panel__data-list::-webkit-scrollbar {
   width: 12px; /* Width of the scrollbar */
 }
 
-.download-data-list::-webkit-scrollbar-track {
-  background: #f0f0f0; /* Background of the scrollbar track */
+.download-panel__data-list::-webkit-scrollbar-track {
+  background: var(
+    --portal-col-neutral-1,
+    #f0f0f0
+  ); /* Background of the scrollbar track */
 }
 
-.download-data-list::-webkit-scrollbar-thumb {
-  background-color: #888; /* Color of the scrollbar thumb */
+.download-panel__data-list::-webkit-scrollbar-thumb {
+  background-color: var(
+    --portal-col-neutral-4,
+    #888
+  ); /* Color of the scrollbar thumb */
   border-radius: 6px; /* Rounded edges */
-  border: 2px solid #f0f0f0; /* Adds some space between thumb and track */
+  border: 2px solid var(--portal-col-neutral-1, #f0f0f0); /* Adds some space between thumb and track */
 }
 
-.download-data-list::-webkit-scrollbar-thumb:hover {
-  background-color: #555; /* Darker thumb when hovered */
+.download-panel__data-list::-webkit-scrollbar-thumb:hover {
+  background-color: var(
+    --portal-col-neutral-5,
+    #555
+  ); /* Darker thumb when hovered */
 }
 
-.checkbox-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+/*****************************************************************************************
+ *
+ * Layer Download
+ *
+ * A LayerDownloadView block within the download data list.
+ * Shows information about a downloadable layer, and allows the user to select it for download, configure options, and see size details.
+ *
+ */
 
-.checkbox-item input {
-  margin-top: 3px;
-  cursor: pointer;
-  width: 14px;
-  height: 14px;
-  display: inline-block;
-  vertical-align: middle;
-  position: relative;
-}
-
-.checkbox-item label {
-  /* font-size: 14px; */
-  margin-top: 5px;
-  cursor: pointer;
-  font-size: 0.825rem;
-  font-weight: 400;
-  color: var(--portal-col-neutral-7);
-  text-overflow: ellipsis;
-  line-height: 16px; /* Matches checkbox height */
-  display: inline-block;
-}
-
-.download-submit-btn {
-  margin-top: 10px;
-  padding: 8px 12px;
-  background-color: var(--portal-col-primary-6, var(--map-col-bkg__deprecate));
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  text-align: center;
-  margin-bottom: 20px;
-  width: calc(100% - 60px);
-}
-
-.download-submit-btn:hover {
-  background-color: var(--portal-col-primary-3, var(--map-col-bkg__deprecate));
-}
-
-.download-submit-btn:disabled {
-  background-color: gray; /* Change color to indicate disabled state */
-  cursor: not-allowed;
-  opacity: 0.6; /* Reduce opacity to make it look disabled */
-}
-
-/* Layer download panel: header row and collapsible content */
 .layer-download__header {
   display: grid;
   grid-template-columns: min-content auto min-content;
@@ -1748,17 +1767,17 @@ other class: .ui-slider-range */
   display: none;
 }
 
-.layer-download.show-content .layer-download__content {
+.layer-download__content--visible {
   display: block;
 }
 
-.downloads-dropdown-container {
+.layer-download__dropdown-container {
   padding-top: 5px;
   display: flex;
   gap: 20px; /* Space between dropdowns */
 }
 
-.downloads-dropdown-wrapper {
+.layer-download__dropdown-wrapper {
   color: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
   display: flex;
   align-items: center; /* Align label and dropdown vertically */
@@ -1767,33 +1786,58 @@ other class: .ui-slider-range */
   justify-content: flex-end; /* Align items at the bottom */
   height: 100%; /* Ensure the container has height to align */
 }
-.downloads-dropdown-wrapper label {
+
+.layer-download__dropdown-label {
   font-size: 12px;
   white-space: nowrap;
   margin-bottom: 0;
-  color: var(--portal-col-neutral-7);
+  color: var(--portal-col-neutral-7, var(--map-col-text__deprecate));
 }
 
-.downloads-dropdown {
+.layer-download__dropdown {
   margin-bottom: 0;
-  padding: 0px 2px; /* Add padding for better appearance */
+  padding: 0px 2px;
   font-size: 10px;
   width: 65%; /* Adjust based on container */
-  max-width: 120px; /* Prevents it from getting too wide */
+  max-width: 120px;
   height: 18px;
-  background-color: #faf9f6;
-  color: var(--portal-col-neutral-7);
-  border: 1px solid #ccc; /* Light border for the dropdown */
-  border-radius: 4px; /* Rounded corners */
+  background-color: var(
+    --portal-col-neutral-1,
+    var(--map-col-bkg-lightest__deprecate)
+  );
+  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
+  border: 1px solid
+    var(--portal-col-neutral-4, var(--map-col-bkg-lightest__deprecate));
+  border-radius: 4px;
   margin-left: 5px;
 }
 
-.downloads-dropdown option {
-  font-size: 12px; /* Adjust option font size */
-  color: var(--portal-col-neutral-7);
+/* It seems native <option> elements inside a <select> cannot be given BEM classes in most browsers */
+.layer-download__dropdown option {
+  font-size: 12px;
+  color: var(--portal-col-neutral-7, var(--map-col-text__deprecate));
 }
 
-.downloads-textbox {
+/* Cancel browser-default opacity on disabled selects so we can set explicit
+   muted-but-legible colours ourselves on both light and dark themes. */
+.layer-download__dropdown:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+  color: var(
+    --portal-col-neutral-5,
+    var(--portal-col-text-subtle__deprecate, #6b7280)
+  );
+  background-color: var(
+    --portal-col-neutral-2,
+    var(--map-col-bkg-lightest__deprecate)
+  );
+  border-color: var(
+    --portal-col-neutral-3,
+    var(--map-col-bkg-lightest__deprecate)
+  );
+}
+
+.layer-download__information {
   margin: 5px 6px 8px 16px;
   padding: 3px 5px;
   line-height: 1;
@@ -1802,74 +1846,34 @@ other class: .ui-slider-range */
   display: block;
 }
 
-.downloads-textbox--warning {
+.layer-download__information--warning {
   color: var(--portal-col-warning, #b45309);
 }
 
-.downloads-textbox--warning::before {
+.layer-download__information--warning::before {
   content: "\26A0\FE0F  "; /* ⚠ warning sign */
 }
 
-.wmts-copy {
-  background: var(--portal-col-neutral-1, var(--map-col-text__deprecate));
+.layer-download__information--wmts {
+  background: var(
+    --portal-col-neutral-1,
+    var(--map-col-bkg-lightest__deprecate)
+  );
   border-radius: 5px;
   border: 1px solid
     var(--portal-col-primary-2, var(--map-col-bkg-lightest__deprecate));
+  color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
   display: flex;
   justify-content: space-between;
 }
 
-.download-status-container {
-  width: 100%;
-  background-color: #c8c7c7c4;
-  border-radius: 5px;
-  margin-top: 10px;
-  overflow: hidden;
-}
-
-.progress-bar {
-  width: 0%;
-  height: 18px;
-  background-color: var(
-    --portal-col-primary-6,
-    var(--map-col-text__deprecate)
-  ) !important;
-  text-align: center;
-  color: white;
-  line-height: 18px;
-  font-size: 10px;
-  border-radius: 5px;
-  transition: width 0.4s;
-}
-.progress-bar-no-data {
-  width: 0%;
-  height: 18px;
-  text-align: center;
-  color: rgb(3, 3, 3);
-  line-height: 18px;
-  font-size: 10px;
-  border-radius: 5px;
-  transition: width 0.4s;
-  background-color: rgba(255, 255, 0, 0.172);
-}
-.draw__button--disable {
-  /* background-color: gray; */
-  color: gray;
-  cursor: not-allowed;
-  trash {
-    color: var(
-      --portal-col-primary-6,
-      var(--map-col-text__deprecate)
-    ) !important;
-  }
-}
-#copyWMTS {
+.layer-download__copy-icon {
   cursor: pointer;
-  color: var(--portal-col-neutral-7);
+  color: var(--portal-col-neutral-7, var(--map-col-text__deprecate));
 }
 
-#copyWMTS:hover {
-  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
+.layer-download__copy-icon:hover {
+  color: var(--portal-col-primary-6, #0087b5);
 }
 
 /*****************************************************************************************
@@ -2013,14 +2017,16 @@ other class: .ui-slider-range */
     padding-top: 1.5rem;
   }
 
-  .viewfinder__zoom-presets {
+  .viewfinder__cards {
     flex-grow: 1;
     overflow: auto;
   }
 }
 
-.viewfinder-search__search-input {
-  margin: 0 1.5rem;
+.viewfinder-search {
+  .viewfinder-search__search-input {
+    margin: 0 1.5rem;
+  }
 }
 
 .viewfinder-predictions {
@@ -2068,121 +2074,303 @@ other class: .ui-slider-range */
   }
 }
 
-.viewfinder-zoom-presets {
+/*****************************************************************************************
+ *
+ * Viewfinder Cards
+ *
+ * Cards in the viewfinder that represent a point of interest. Each card has:
+ *   - A title, description, and one or more action buttons
+ *   - Action buttons: are either primary (for the main action) or secondary (for less important actions)
+ *     primary or secondary is determined by ordinality with legacy top-level lat, lng, height, and layerid
+ *     attributes creating a secondary View Layers button and Map type action by default. 
+ *   - Informational collapsable layer badges which expand to show which layers are toggled
+ *   - An optional hero image which appears behind the title at the top of the card
+ * 
+ * The card body is not interactive — all actions are explicit buttons.
+ *
+ */
+
+.viewfinder-cards {
   display: flex;
   flex-direction: column;
-  padding: 0.1rem 1.5rem 1rem 1.5rem;
-  row-gap: 0.5rem;
+  padding: 0 1.5rem 1rem 1.5rem;
+  row-gap: 0.75rem;
+}
 
-  .viewfinder-zoom-preset__preset {
-    border-radius: var(--map-border-radius-big);
-    border: 1px solid
-      var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
-    cursor: pointer;
+.viewfinder-card {
+  border-radius: var(--map-border-radius-big);
+  border: 1px solid
+    var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  /* ---- Hero: full-width image with vignette and title overlay ---- */
+
+  .viewfinder-card__hero {
+    position: relative;
+  }
+
+  .viewfinder-card__image {
+    width: 100%;
+    height: 6.5rem;
+    object-fit: cover;
+    display: block;
+  }
+
+  .viewfinder-card__hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 40%,
+      rgba(0, 0, 0, 0.75) 90%
+    );
+    pointer-events: none;
+  }
+
+  .viewfinder-card__hero .viewfinder-card__title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.75rem;
+    z-index: 1;
+    color: white;
+  }
+
+  /* ---- Card body ---- */
+
+  .viewfinder-card__body {
     display: flex;
     flex-direction: column;
-    padding: 1.1rem 1.1rem 1rem 1.4rem;
-    row-gap: 0.5rem;
+    padding: 1.1rem;
+    row-gap: 0.75rem;
+  }
 
-    &:hover {
-      background-color: var(
-        --portal-col-primary-1,
-        var(--map-col-bkg-lighter__deprecate)
-      );
+  /* Title for cards without images */
+  .viewfinder-card__title {
+    color: var(--portal-col-primary-6, white);
+    font-weight: 600;
+    font-size: 1.05rem;
+    line-height: 1.3;
+  }
 
-      .viewfinder-zoom-preset__layer {
-        background-color: var(
-          rgb(from var(--portal-col-primary-2) r g b / 50%),
-          var(--map-col-bkg__deprecate)
-        );
+  .viewfinder-card__description {
+    color: var(--portal-col-neutral-7, white);
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
 
-        .viewfinder-zoom-preset__layer-content {
-          color: var(--portal-col-primary-6);
+  /* ---- Action buttons ---- */
 
-          i {
-            color: var(--portal-col-primary-6);
-          }
-        }
-      }
-    }
+  .viewfinder-card__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
 
-    .viewfinder-zoom-preset__title {
-      color: var(--portal-col-primary-6, white);
-      font-weight: 600;
-    }
+  .viewfinder-card__button-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-align: center;
+    white-space: normal;
+    font-size: 0.95rem;
+    width: 100%;
+    border-color: var(--portal-col-primary-2);
+    color: var(--portal-col-primary-6, white);
+  }
 
-    .viewfinder-zoom-preset__description {
-      color: var(--portal-col-neutral-7, white);
-      font-size: 0.85rem;
-      margin-bottom: 0.5rem;
-    }
+  .viewfinder-card__button-primary:hover {
+    border-color: var(--portal-col-primary-4);
+    filter: none;
+  }
 
-    .viewfinder-zoom-preset__layers {
-      column-gap: 0.5rem;
-      display: flex;
-      flex-wrap: wrap;
-      row-gap: 0.5rem;
-    }
+  /* Secondary buttons: plain text, no border */
+  .viewfinder-card__button-secondary {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
+    color: var(--portal-col-neutral-5, #aaa);
+  }
 
-    .viewfinder-zoom-preset__layer {
-      align-items: center;
-      background: var(
-        rgb(from var(--portal-col-neutral-2) r g b / 50%),
-        var(--map-col-bkg-lighter__deprecate)
-      );
-      border-radius: var(--map-border-radius-big);
-      display: flex;
-      height: 1.5rem;
-      justify-content: center;
-      padding: 0 1rem 0 0.5rem;
+  .viewfinder-card__button-secondary:hover {
+    color: var(--portal-col-primary-6, white);
+    filter: none;
+  }
 
-      .viewfinder-zoom-preset__layer-content {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        text-wrap: nowrap;
-        color: var(--portal-col-neutral-5, white);
-        font-size: 0.8rem;
-        max-width: 10rem;
+  /* Active state on the card wrapper */
+  &.viewfinder-card--active {
+    background-color: var(
+      --portal-col-primary-1,
+      var(--map-col-bkg-lighter__deprecate)
+    );
+    border-color: var(
+      --portal-col-primary-6,
+      var(--map-col-highlight__deprecate)
+    );
+    box-shadow: 1px 2px rgba(0, 0, 0, 0.15);
+  }
 
-        i {
-          padding: 0 0.25rem;
-          color: var(--portal-col-primary-6, white);
-        }
-      }
+  /* When View Layers is active, expand the layer badges */
+  &.viewfinder-card--layers-active {
+    .viewfinder-card__layers {
+      grid-template-rows: 1fr;
+      padding: 0 1.1rem 1rem;
     }
   }
 
-  .viewfinder-zoom-preset__image {
-    float: left;
-    margin: 0.3rem 0.5rem 0 0;
+  .viewfinder-card__button-secondary--active {
+    color: var(--portal-col-primary-6, white);
+  }
+
+  .viewfinder-card__button-primary--active {
+    background-color: var(
+      --portal-col-primary-6,
+      var(--map-col-highlight__deprecate)
+    );
+    color: var(--portal-col-neutral-00, white);
+    border-color: var(--portal-col-primary-5);
+  }
+
+  .viewfinder-card__button-primary--active:hover {
+    filter: var(--map-no-brightness-or-opacity-tweaks, brightness(1.15));
+  }
+
+  /* ---- Layer badges (collapsed until View Layers is active) ---- */
+
+  .viewfinder-card__layers {
+    display: grid;
+    grid-template-rows: 0fr;
+    overflow: hidden;
+    padding: 0 1.1rem;
+    transition:
+      grid-template-rows 0.3s ease,
+      padding 0.3s ease;
+  }
+
+  .viewfinder-card__layers-inner {
+    min-height: 0;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .viewfinder-card__layer {
+    align-items: center;
+    background: var(
+      rgb(from var(--portal-col-neutral-2) r g b / 50%),
+      var(--map-col-bkg-lighter__deprecate)
+    );
     border-radius: var(--map-border-radius-big);
-    max-width: 90px;
-    max-height: 90px;
-  }
+    cursor: text;
+    display: flex;
+    height: 1.5rem;
+    justify-content: flex-start;
+    min-width: 0;
+    padding: 0 0.75rem 0 0.5rem;
 
-  .viewfinder-zoom-preset.viewfinder-zoom-preset--active
-    .viewfinder-zoom-preset__preset {
-    background-color: var(--portal-col-primary-6, #15324e);
+    .viewfinder-card__layer-content {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-wrap: nowrap;
+      color: var(--portal-col-primary-6, white);
+      font-size: 0.75rem;
+      max-width: 100%;
 
-    .viewfinder-zoom-preset__title,
-    .viewfinder-zoom-preset__description {
-      color: var(--portal-col-neutral-00, white);
-    }
-
-    .viewfinder-zoom-preset__layer {
-      background: var(
-        rgb(from var(--portal-col-primary-5) r g b / 50%),
-        var(--map-col-bkg__deprecate)
-      );
-
-      .viewfinder-zoom-preset__layer-content {
-        color: var(--portal-col-primary-2, white);
-
-        i {
-          color: var(--portal-col-primary-4, white);
-        }
+      i {
+        padding: 0 0.25rem;
+        color: var(--portal-col-primary-6, white);
+        font-size: 0.85rem;
       }
     }
+  }
+}
+
+/*****************************************************************************************
+ *
+ * Visualization Panel
+ *
+ * A full-screen overlay that appears above the map and renders an external
+ * visualization application in an iframe. Opened by the "Explore in App"
+ * button on a ViewfinderCard that has an `iframeUrl` configured.
+ *
+ * Hidden by default; shown by adding the --open modifier class.
+ *
+ */
+
+.visualization-panel {
+  /* Covers the entire map-view (which is position:relative) */
+  position: absolute;
+  inset: 0;
+  z-index: var(--map-z-index-visualization-panel);
+  display: none;
+  flex-direction: column;
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+  animation: fadeIn 0.2s ease-in-out;
+  pointer-events: all;
+}
+
+.visualization-panel--open {
+  display: flex;
+}
+
+.visualization-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.5rem 1rem;
+  flex-shrink: 0;
+  background-color: var(
+    --portal-col-primary-1,
+    var(--map-col-bkg-lighter__deprecate)
+  );
+  border-bottom: 1px solid var(--portal-col-primary-2);
+}
+
+.visualization-panel__close-button {
+  color: var(--portal-col-neutral-6);
+  font-size: 1rem;
+  height: 2rem;
+  width: 2rem;
+}
+
+.visualization-panel__body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.visualization-panel__iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+}
+
+/* Fallback shown when the URL is not in trustedContentSources */
+.visualization-panel__untrusted {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  color: var(--portal-col-neutral-7, white);
+  text-align: center;
+
+  p {
+    max-width: 30rem;
+    line-height: 1.5;
   }
 }
 

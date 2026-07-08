@@ -66,7 +66,7 @@ define([
       status: "GREEN",
       icon: "check-sign",
       buildTitle: ({ count, totalPassable }) =>
-        `Passed ${count} ${PLURAL(count)} out of ${totalPassable} (excluding informational checks).`,
+        `Passed ${count} ${PLURAL(count)} out of ${totalPassable} (excluding informational & skipped checks).`,
     },
     {
       status: "ORANGE",
@@ -84,6 +84,12 @@ define([
       status: "BLUE",
       icon: "info-sign",
       buildTitle: ({ count }) => `${count} informational ${PLURAL(count)}.`,
+    },
+    {
+      status: "GREY",
+      icon: "chevron-sign-right",
+      buildTitle: ({ count }) =>
+        `Skipped ${count} ${PLURAL(count)}${count ? ` that ${count === 1 ? "is" : "are"} not applicable.` : "."}`,
     },
   ];
 
@@ -368,8 +374,11 @@ define([
 
         // Generate text for each status (GREEN, ORANGE, RED, BLUE)
         const counts = qualityReport.getCountsPerGroup(groupedResults);
+        const informational = counts.blue || counts.BLUE || 0;
+        const skipped = counts.grey || counts.GREY || 0;
+        const excluded = informational + skipped;
 
-        let totalPassable = counts.total - (counts.blue || counts.BLUE || 0);
+        let totalPassable = counts.total - excluded;
         if (totalPassable < 0) totalPassable = 0;
 
         REPORT_CATEGORIES.forEach((category) => {
@@ -388,13 +397,14 @@ define([
 
       /**
        * Add a category item to the accordion, which represents a
-       * category of checks (GREEN, ORANGE, RED, BLUE).
+       * category of checks (GREEN, ORANGE, RED, BLUE, GREY).
        * @param {object} category - The category object containing status, title, and icon
        * @param {object} groupedResults - The results grouped by status
        * @since 2.34.0
        */
       async addCategoryItem(category, groupedResults) {
-        // Root items are the main categories of checks, such as GREEN, ORANGE, RED, BLUE
+        // Root items are the main categories of checks, such as GREEN, ORANGE,
+        // RED, BLUE, GREY
         const CN = CLASS_NAMES;
         const { status, title, icon } = category;
         const results = groupedResults[status] || [];
@@ -743,27 +753,37 @@ define([
        * @param {object} groupedResults - The results grouped by status
        */
       drawScoreChart(results, groupedResults) {
-        const dataCount = results.length;
+        const chartContainer = this.$(".format-charts-data");
+        if (!chartContainer) return;
+
+        const greenCount = groupedResults.GREEN.length;
+        const yellowCount = groupedResults.ORANGE.length;
+        const redCount = groupedResults.RED.length;
+        const dataCount = greenCount + yellowCount + redCount;
+
+        if (dataCount === 0) {
+          chartContainer.html(
+            `<h2 class='data fallback'>No scored checks were run for this dataset.</h2>` +
+              `<p>Informational and skipped checks are not included in the overall assessment score.</p>`,
+          );
+          return;
+        }
+
         const data = [
           {
             label: "Pass",
-            count: groupedResults.GREEN.length,
-            perc: groupedResults.GREEN.length / results.length,
+            count: greenCount,
+            perc: greenCount / dataCount,
           },
           {
             label: "Warn",
-            count: groupedResults.ORANGE.length,
-            perc: groupedResults.ORANGE.length / results.length,
+            count: yellowCount,
+            perc: yellowCount / dataCount,
           },
           {
             label: "Fail",
-            count: groupedResults.RED.length,
-            perc: groupedResults.RED.length / results.length,
-          },
-          {
-            label: "Info",
-            count: groupedResults.BLUE.length,
-            perc: groupedResults.BLUE.length / results.length,
+            count: redCount,
+            perc: redCount / dataCount,
           },
         ];
 
@@ -771,10 +791,10 @@ define([
 
         // If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
         if (!d3) {
-          this.$(".format-charts-data").html(
+          chartContainer.html(
             `<h2 class='${svgClass} fallback'>${MetacatUI.appView.commaSeparateNumber(
               dataCount,
-            )} data files</h2>`,
+            )} checks</h2>`,
           );
 
           return;
@@ -796,7 +816,7 @@ define([
             return name;
           },
         });
-        this.$(".format-charts-data").html(donut.render().el);
+        chartContainer.html(donut.render().el);
       },
 
       /**
