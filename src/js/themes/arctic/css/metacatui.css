@@ -394,8 +394,14 @@ footer .footer-links {
 }
 footer .footer-links .footer-nav {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-evenly;
+  font-size: 19.2px;
+  font-weight: 500;
+}
+.menu-item a {
+  padding: 14.4px;
+  text-align: center;
+  line-height: 1.5;
 }
 footer .nav > li > a:hover {
   background-color: transparent;
@@ -416,11 +422,25 @@ footer .footer-grid {
   margin: 0 auto;
 }
 footer .acknowledgement-text {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   color: #1f254f;
   margin: 0 1em;
   max-width: 500px;
   width: 100%;
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+.footer-callout .btn.cta {
+  color: white;
+  background-color: #166f91;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: none;
+  font-size: 19.2px;
+  line-height: 1.5;
+  margin: 19.2px 0;
 }
 footer .logos {
   display: flex;
