@@ -4,6 +4,7 @@ define([
   "jquery",
   "underscore",
   "backbone",
+  "common/SearchParams",
   "models/maps/Map",
   "text!templates/maps/map.html",
   // SubViews
@@ -18,6 +19,7 @@ define([
   $,
   _,
   Backbone,
+  SearchParams,
   Map,
   Template,
   // SubViews
@@ -96,6 +98,13 @@ define([
 
         this.model = options?.model ? options.model : new Map();
         this.isPortalMap = options?.isPortalMap;
+
+        // Parse restore state once and share it with subviews through the map model.
+        this.model.set(
+          "restoreState",
+          SearchParams.parseStateFromUrl(),
+          { silent: true },
+        );
       },
 
       /**
@@ -164,6 +173,11 @@ define([
             }
           },
         );
+
+        const activeVisualizationUrl = view.model.get("activeVisualizationUrl");
+        if (activeVisualizationUrl) {
+          view.visualizationPanel.open(activeVisualizationUrl);
+        }
 
         // Keep map model in sync when the panel is closed via its own button
         // or the Escape key (which triggers the "close" event on the panel).
