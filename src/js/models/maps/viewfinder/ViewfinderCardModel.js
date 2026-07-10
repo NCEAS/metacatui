@@ -6,6 +6,103 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
   GeoPoint,
 ) => {
   /**
+   * Normalize a configured action id.
+   * @param {unknown} actionId Candidate action id.
+   * @returns {string|null} Trimmed id string, or null when invalid.
+   * @since 0.0.0
+   */
+  const normalizeActionId = (actionId) => {
+    if (typeof actionId !== "string") return null;
+    const id = actionId.trim();
+    return id.length ? id : null;
+  };
+
+  /**
+   * Build a deterministic, URL-safe fallback action id.
+   * @param {object} action The action object.
+   * @param {string} cardSeed Stable card-level seed.
+   * @param {number} index Action index within the card.
+   * @returns {string} A deterministic fallback id.
+   * @since 0.0.0
+   */
+  const buildFallbackActionId = (action, cardSeed, index) => {
+    const raw = [
+      cardSeed,
+      action?.type || "",
+      action?.label || "",
+      action?.url || "",
+      action?.latitude ?? "",
+      action?.longitude ?? "",
+      action?.height ?? "",
+      Array.isArray(action?.layerIds) ? action.layerIds.join(",") : "",
+      index,
+    ].join("|");
+
+    // Small deterministic hash for compact ids; collisions are handled below.
+    const hash = _.reduce(
+      raw,
+      (acc, char) => (acc * 31 + char.charCodeAt(0)) % 2147483647,
+      7,
+    );
+    return `vf-action-${Math.abs(hash).toString(36)}`;
+  };
+
+  /**
+   * Ensure each action has a stable, unique id for URL restore-state.
+   * @param {object[]} actions The action list for a card.
+   * @param {string} cardSeed Stable card-level seed.
+   * @returns {object[]} Actions with normalized unique ids.
+   * @since 0.0.0
+   */
+  const ensureActionIds = (actions, cardSeed) => {
+    const usedIds = new Set();
+    return actions.map((action, index) => {
+      const explicitId = normalizeActionId(action?.id);
+      const baseId = explicitId || buildFallbackActionId(action, cardSeed, index);
+      let id = baseId;
+      let suffix = 2;
+      while (usedIds.has(id)) {
+        id = `${baseId}-${suffix}`;
+        suffix += 1;
+      }
+      usedIds.add(id);
+      return {
+        ...action,
+        id,
+      };
+    });
+  };
+
+  /**
+   * Build a stable seed for fallback action ids.
+   * @param {object} attrs Model attributes.
+   * @returns {string} Stable seed text.
+   * @since 0.0.0
+   */
+  const buildCardSeed = (attrs = {}) => {
+    const { geoPoint } = attrs;
+    const latitude =
+      typeof geoPoint?.get === "function" ? geoPoint.get("latitude") : geoPoint?.latitude;
+    const longitude =
+      typeof geoPoint?.get === "function" ? geoPoint.get("longitude") : geoPoint?.longitude;
+    const height =
+      typeof geoPoint?.get === "function" ? geoPoint.get("height") : geoPoint?.height;
+
+    return [
+      attrs.title || "",
+      attrs.description || "",
+      attrs.image || "",
+      latitude ?? "",
+      longitude ?? "",
+      height ?? "",
+      Array.isArray(attrs.enabledLayerIds) ? attrs.enabledLayerIds.join(",") : "",
+      Array.isArray(attrs.enabledLayerLabels)
+        ? attrs.enabledLayerLabels.join(",")
+        : "",
+    ].join("|");
+  };
+
+  /**
    * @class ViewfinderCardModel
    * @classdesc ViewfinderCardModel represents a point of interest on a map that
    * can be configured within a MapView. Each card requires a title,
@@ -15,7 +112,8 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
    * cards in 0.0.0, but the legacy zoom preset configuration format is still supported
    * for backward compatibility. Top level latitude, longitude, height, and
    * layerIds fields are synthesized into a 'map' action button with secondary
-   * ordinality, a "View Layers" label, and eye icon.
+   * ordinality, a "View Layers" label, and eye icon. Action ids were added for 
+   * URL restore-state in 0.0.0, and are automatically generated when not explicitly provided.
    * @classcategory Models/Maps
    * @augments Backbone.Model
    * @since 2.29.0
@@ -27,6 +125,9 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        * ViewfinderCard. Added when zoom presets were deprecated in favor
        * of generalized viewfinder cards in 0.0.0.
        * @typedef {object} ViewfinderCardAction
+       * @property {string} id Unique action identifier used for URL restore
+       * (`a=` query param). Provide a stable explicit id in config for
+       * long-term link compatibility.
        * @property {'iframe'|'tab'|'map'} type The action type.
        * - 'iframe': opens a URL in the visualization overlay above the map.
        * - 'tab': opens a URL in a new browser tab.
@@ -85,6 +186,20 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
       },
 
       /**
+       * Normalize action ids on construction so direct model instantiation and
+       * collection parsing both produce URL-restorable actions.
+       * @param {ViewfinderCardModelOptions} attrs Initial model attributes.
+       * @since 0.0.0
+       */
+      initialize(attrs = {}) {
+        const buttons = Array.isArray(attrs.buttons) ? attrs.buttons : this.get("buttons") || [];
+        const actionsWithIds = ensureActionIds(buttons, buildCardSeed(attrs));
+        if (actionsWithIds.some((action, index) => action.id !== buttons[index]?.id)) {
+          this.set("buttons", actionsWithIds, { silent: true });
+        }
+      },
+
+      /**
        * Extended from ZoomPresetModel's Parse() when zoom presets were deprecated
        * in favor of generalized viewfinder cards in 0.0.0. Parses incoming data to
        * create a ViewfinderCardModel. Handles the legacy `position` field
@@ -115,6 +230,15 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
         const lng = longitude ?? position?.longitude ?? null;
         const alt = height ?? position?.height ?? null;
         const ids = layerIds ?? [];
+        const cardSeed = [
+          rest.title || "",
+          rest.description || "",
+          rest.image || "",
+          lat ?? "",
+          lng ?? "",
+          alt ?? "",
+          ids.join(","),
+        ].join("|");
 
         // Apply defaults to any explicit 'map' buttons.
         const normalizedActions = buttons.map((action) => {
@@ -148,7 +272,9 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
           });
         }
 
-        return { geoPoint, buttons: allActions, ...rest };
+        const actionsWithIds = ensureActionIds(allActions, cardSeed);
+
+        return { geoPoint, buttons: actionsWithIds, ...rest };
       },
     },
   );
