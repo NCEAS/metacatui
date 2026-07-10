@@ -130,7 +130,7 @@ define([
             : undefined;
         this.onActivate(this);
         this.closeVisualizationCallback();
-        this.setActive(btn);
+        this.setActive(btn, action);
         if (action?.type && BUTTON_ACTION_HANDLERS[action.type]) {
           BUTTON_ACTION_HANDLERS[action.type](action, this);
         } else {
@@ -150,15 +150,16 @@ define([
         if (!action) return;
         this.onActivate(this);
         this.closeVisualizationCallback();
-        this.setActive(btn);
+        this.setActive(btn, action);
         BUTTON_ACTION_HANDLERS[action.type]?.(action, this);
       },
 
       /**
        * Mark this card as active and highlight the specific clicked button.
        * @param {HTMLElement} buttonEl The button element that was activated.
+       * @param {ViewfinderCardAction} action The action object associated with the button.
        */
-      setActive(buttonEl) {
+      setActive(buttonEl, action) {
         this.el.classList.add(CLASS_NAMES.active);
         const isSecondary =
           buttonEl?.classList.contains(CLASS_NAMES.buttonSecondary) ?? false;
@@ -179,6 +180,8 @@ define([
               btn === buttonEl,
             );
           });
+
+        this.onActionActivated(action, buttonEl);
       },
 
       /**
@@ -196,6 +199,28 @@ define([
           .forEach((btn) => {
             btn.classList.remove(CLASS_NAMES.buttonPrimaryActive);
           });
+      },
+
+      /**
+       * Activate an action by index, emulating a user click.
+       * @param {number} index The index of the action button.
+       * @returns {boolean} True when activation succeeded.
+       * @since 0.0.0
+       */
+      activateActionByIndex(index) {
+        const action = this.preset.get("buttons")?.[index];
+        if (!action) return false;
+
+        const btn = this.el.querySelector(`[data-button-index="${index}"]`);
+        if (!btn) return false;
+
+        if (btn.classList.contains(CLASS_NAMES.buttonSecondary)) {
+          this.selectLayers({ currentTarget: btn });
+          return true;
+        }
+
+        this.handleButtonClick({ currentTarget: btn });
+        return true;
       },
 
       /** Values meant to be used by the rendered HTML template. */
@@ -217,6 +242,8 @@ define([
        * any button action to dismiss any currently open overlay.
        * @param {Function} [options.onActivate] Called when this card is
        * activated, so sibling cards can reset their active state.
+       * @param {Function} [options.onActionActivated] Called after an
+       * action button is activated, with the action object and button element.
        */
       initialize({
         preset,
@@ -224,6 +251,7 @@ define([
         ctaCallback,
         closeVisualizationCallback,
         onActivate,
+        onActionActivated,
       }) {
         this.preset = preset;
         this.selectCallback =
@@ -235,6 +263,8 @@ define([
             ? closeVisualizationCallback
             : noop;
         this.onActivate = typeof onActivate === "function" ? onActivate : noop;
+        this.onActionActivated =
+          typeof onActionActivated === "function" ? onActionActivated : noop;
       },
 
       /**
