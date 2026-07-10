@@ -556,22 +556,23 @@ define([
         const { heading, pitch, positionCartographic, roll } =
           this.scene.camera;
 
-        SearchParams.updateDestination({
+        const destination = {
           heading: Cesium.Math.toDegrees(heading),
           height: positionCartographic.height,
           latitude: Cesium.Math.toDegrees(positionCartographic.latitude),
           longitude: Cesium.Math.toDegrees(positionCartographic.longitude),
           pitch: Cesium.Math.toDegrees(pitch),
           roll: Cesium.Math.toDegrees(roll),
-        });
+        };
 
-        this.model.get("allLayers").forEach((layer) => {
-          const layerId = layer.get("layerId");
-          if (layerId && layer.get("visible")) {
-            SearchParams.addEnabledLayer(layerId);
-          } else {
-            SearchParams.removeEnabledLayer(layerId);
-          }
+        const enabledLayerIds = this.model
+          .get("allLayers")
+          .map((layer) => (layer.get("visible") ? layer.get("layerId") : null))
+          .filter((layerId) => typeof layerId === "string" && layerId.length);
+
+        SearchParams.updateStateInUrl({
+          destination,
+          enabledLayerIds,
         });
       },
 

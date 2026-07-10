@@ -473,17 +473,15 @@ define([
         // (for URL sharing)
         visibilityListener.listenTo(model, "change:visible", () => {
           if (!model.get("mapModel")?.get("showShareUrl")) return;
-          model
+          const enabledLayerIds = model
             .get("mapModel")
             .get("allLayers")
-            .forEach((layer) => {
-              const layerId = layer.get("layerId");
-              if (layerId && layer.get("visible")) {
-                SearchParams.addEnabledLayer(layerId);
-              } else {
-                SearchParams.removeEnabledLayer(layerId);
-              }
-            });
+            .map((layer) =>
+              layer.get("visible") ? layer.get("layerId") : null,
+            )
+            .filter((layerId) => typeof layerId === "string" && layerId.length);
+
+          SearchParams.updateStateInUrl({ enabledLayerIds });
         });
 
         // Listen for changes to the cesiumOptions object
