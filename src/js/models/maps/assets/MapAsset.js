@@ -6,7 +6,6 @@ define([
   "models/portals/PortalImage",
   "models/maps/AssetColorPalette",
   "common/IconUtilities",
-  "common/SearchParams",
   `${MetacatUI.root}/components/dayjs.min.js`,
 ], (
   _,
@@ -14,7 +13,6 @@ define([
   PortalImage,
   AssetColorPalette,
   IconUtilities,
-  SearchParams,
   dayjs,
 ) => {
   /**
@@ -458,31 +456,6 @@ define([
         });
 
         if (this.get("status") === "error") return;
-
-        // Create a model for only listening to visibility changes, since we
-        // alter the main model's visibility listener in other cases.
-        let existingListener = this.get("visibilityListener");
-        if (existingListener) {
-          existingListener.stopListening(model);
-          this.set("visibilityListener", null);
-          existingListener = null;
-        }
-        const visibilityListener = new Backbone.Model();
-        this.set("visibilityListener", visibilityListener);
-        // When the visibility of the layer changes, update the search params
-        // (for URL sharing)
-        visibilityListener.listenTo(model, "change:visible", () => {
-          if (!model.get("mapModel")?.get("showShareUrl")) return;
-          const enabledLayerIds = model
-            .get("mapModel")
-            .get("allLayers")
-            .map((layer) =>
-              layer.get("visible") ? layer.get("layerId") : null,
-            )
-            .filter((layerId) => typeof layerId === "string" && layerId.length);
-
-          SearchParams.updateStateInUrl({ enabledLayerIds });
-        });
 
         // Listen for changes to the cesiumOptions object
         this.stopListening(this, "change:cesiumOptions");

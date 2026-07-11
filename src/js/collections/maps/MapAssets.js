@@ -47,6 +47,12 @@ define([
        */
       model: function (assetConfig) {
         try {
+          // Preserve existing model instances when flattening or reusing
+          // collections so visibility/selection state remains shared.
+          if (assetConfig instanceof MapAsset) {
+            return assetConfig;
+          }
+
           // Supported types: Matches each 'type' attribute to the appropriate
           // MapAsset model. See also CesiumWidgetView.mapAssetRenderFunctions
           var mapAssetTypes = [

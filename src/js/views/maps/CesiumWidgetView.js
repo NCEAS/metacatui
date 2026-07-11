@@ -627,6 +627,13 @@ define([
             // Each layer fires 'appearanceChanged' whenever the color, opacity,
             // etc. has been updated. Re-render the scene when this happens.
             view.listenTo(layers, "appearanceChanged", view.requestRender);
+
+            // Keep URL layer state in sync for every visibility toggle.
+            view.listenTo(
+              layers,
+              "change:visible",
+              view.syncEnabledLayersToUrl,
+            );
           }
         });
         // Reset asset listeners if the layers collection is replaced
@@ -787,14 +794,37 @@ define([
           roll: Cesium.Math.toDegrees(roll),
         };
 
-        const enabledLayerIds = this.model
-          .get("allLayers")
-          .map((layer) => (layer.get("visible") ? layer.get("layerId") : null))
-          .filter((layerId) => typeof layerId === "string" && layerId.length);
+        const enabledLayerIds = this.getEnabledLayerIdsForUrlState();
 
         SearchParams.updateStateInUrl({
           destination,
           enabledLayerIds,
+        });
+      },
+
+      /**
+       * Get enabled layer ids from live layer groups for URL state sync.
+       * @returns {string[]} A normalized list of visible layer ids.
+       * @since 0.0.0
+       */
+      getEnabledLayerIdsForUrlState() {
+        const layers = this.model
+          .getLayerGroups()
+          .flatMap((group) => group?.models || []);
+
+        return layers
+          .map((layer) => (layer.get("visible") ? layer.get("layerId") : null))
+          .filter((layerId) => typeof layerId === "string" && layerId.length);
+      },
+
+      /**
+       * Sync enabled layers to URL state from current layer visibility.
+       * @since 0.0.0
+       */
+      syncEnabledLayersToUrl() {
+        if (!this.model.get("showShareUrl")) return;
+        SearchParams.updateStateInUrl({
+          enabledLayerIds: this.getEnabledLayerIdsForUrlState(),
         });
       },
 

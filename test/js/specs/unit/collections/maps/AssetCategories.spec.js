@@ -47,5 +47,22 @@ define([
         );
       });
     });
+
+    describe("getMapAssetsFlat", () => {
+      it("reuses existing MapAsset model instances", () => {
+        const firstCategoryAssets = state.collection
+          .at(0)
+          .get("mapAssets");
+        const sourceModel = firstCategoryAssets.at(0);
+
+        const flatAssets = state.collection.getMapAssetsFlat();
+        const flatModel = flatAssets.at(0);
+
+        expect(flatModel).to.equal(sourceModel);
+
+        sourceModel.set("visible", false);
+        expect(flatModel.get("visible")).to.equal(false);
+      });
+    });
   });
 });
