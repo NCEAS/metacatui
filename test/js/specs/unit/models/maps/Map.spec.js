@@ -21,11 +21,11 @@ define([
     }, beforeEach);
 
     beforeEach(() => {
-      SearchParams.clearSavedView();
+      SearchParams.clearStateInUrl();
     });
 
     afterEach(() => {
-      SearchParams.clearSavedView();
+      SearchParams.clearStateInUrl();
     });
 
     describe("Initialization", () => {

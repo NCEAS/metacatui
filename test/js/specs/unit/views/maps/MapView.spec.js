@@ -28,5 +28,28 @@ define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
         expect(portalMap.$el.hasClass("map-view__portal")).to.be.true;
       });
     });
+
+    describe("Visualization panel restore", () => {
+      it("opens the visualization panel when activeVisualizationUrl is already set", () => {
+        const view = new MapView({
+          model: new MapAsset({
+            activeVisualizationUrl: "https://example.org/app",
+            showToolbar: false,
+          }),
+        });
+        view.$el.hide();
+        document.body.appendChild(view.el);
+
+        try {
+          view.render();
+
+          expect(
+            view.el.querySelector(".visualization-panel--open"),
+          ).to.not.be.null;
+        } finally {
+          view.remove();
+        }
+      });
+    });
   });
 });

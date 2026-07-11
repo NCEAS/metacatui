@@ -120,7 +120,7 @@ define([], () => {
 
   /**
    * Normalize a state candidate into the full restore-state shape.
-   * @param {object} [state={}] Candidate state.
+   * @param {object} [state] Candidate state.
    * @returns {object} The normalized restore state.
    * @since 0.0.0
    */
@@ -282,86 +282,6 @@ define([], () => {
     replaceUrl(url);
   };
 
-  /** Clear all search parameters in URL related to save view to URL feature. */
-  const clearSavedView = () => {
-    clearStateInUrl();
-  };
-
-  /**
-   * Set the destination related URL search params and update the URL.
-   * @param {string[]} [layerIds] - Array of layerIds for encoding into the
-   * enabled layers search parameter.
-   */
-  const updateEnabledLayerParam = (layerIds) => {
-    updateStateInUrl({ enabledLayerIds: layerIds });
-  };
-
-  /**
-   * Remove a layer ID from the layers search parameter.
-   * @returns {string[]} A list of enabled layerIds or an empty array if there is
-   * no enabled layer search parameter.
-   */
-  const getEnabledLayers = () => parseStateFromUrl().enabledLayerIds;
-
-  /**
-   * Add a layer ID to the layers search parameter.
-   * @param {string} [layerId] - A layerId to add to the enabled layers search
-   * parameter.
-   */
-  const addEnabledLayer = (layerId) => {
-    if (typeof layerId !== "string") return;
-
-    const layerIds = getEnabledLayers();
-    if (!layerIds.includes(layerId)) {
-      updateEnabledLayerParam([...layerIds, layerId]);
-    }
-  };
-
-  /**
-   * Remove a layer ID from the layers search parameter.
-   * @param {string} [layerIdToRemove] - A layerId to remove from the enabled
-   * layers search parameter.
-   */
-  const removeEnabledLayer = (layerIdToRemove) => {
-    if (typeof layerIdToRemove !== "string") return;
-
-    const layerIds = getEnabledLayers();
-    updateEnabledLayerParam(
-      layerIds.filter((layerId) => layerId !== layerIdToRemove),
-    );
-  };
-
-  /**
-   * Set the destination related URL search params and update the URL.
-   * @param {object} [params] - The parameters representing a destination
-   * including information about heading, pitch, roll, latitude, longitude, and
-   * height.
-   */
-  const updateDestination = (params) => {
-    updateStateInUrl({ destination: params });
-  };
-
-  /**
-   * Get all the search parameters in URL related to a destination (excludes
-   * enabled layers).
-   * @returns {object|undefined} Undefined if the search params are missing
-   * latitude or longitude, otherwise an object that represents a destination
-   * for a Cesium map to fly to.
-   */
-  const getDestination = () => {
-    const params = parseStateFromUrl().destination;
-
-    if (
-      params.latitude == null ||
-      params.longitude == null ||
-      params.height == null
-    ) {
-      return undefined;
-    }
-
-    return params;
-  };
-
   /**
    * Get schema version from URL.
    * @returns {number} the schema version from the URL, or 0 if not present or invalid.
@@ -395,17 +315,11 @@ define([], () => {
    * @since 2.30.0
    */
   return {
-    addEnabledLayer,
-    clearSavedView,
     clearStateInUrl,
     getSchemaVersion,
-    getDestination,
-    getEnabledLayers,
     normalizeState,
     parseStateFromUrl,
-    removeEnabledLayer,
     updateActiveActionId,
-    updateDestination,
     updateOpenPanel,
     updateStateInUrl,
     writeStateToUrl,

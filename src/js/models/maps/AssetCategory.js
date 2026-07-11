@@ -73,7 +73,7 @@ define([
           throw new Error(`Category ${categoryConfig.label} has empty layers.`);
         }
 
-        const searchParamLayerIds = SearchParams.getEnabledLayers();
+        const searchParamLayerIds = SearchParams.parseStateFromUrl().enabledLayerIds;
         const layers = categoryConfig.layers.map((layer) => {
           // Consider portal configuration and URL search params.
           const visible = searchParamLayerIds.length

@@ -18,7 +18,7 @@ define([
 
   describe("CesiumWidgetView Test Suite", () => {
     const state = cleanState(() => {
-      SearchParams.clearSavedView();
+      SearchParams.clearStateInUrl();
 
       const view = new CesiumWidgetView();
 
@@ -26,7 +26,7 @@ define([
     }, beforeEach);
 
     afterEach(() => {
-      SearchParams.clearSavedView();
+      SearchParams.clearStateInUrl();
       spy.resetHistory();
     });
 
@@ -147,10 +147,12 @@ define([
       });
 
       it("flies to the destination in the URL if present", () => {
-        SearchParams.updateDestination({
-          latitude: 45,
-          longitude: 135,
-          height: 9999,
+        SearchParams.updateStateInUrl({
+          destination: {
+            latitude: 45,
+            longitude: 135,
+            height: 9999,
+          },
         });
         state.view.model.set("showShareUrl", true);
 
@@ -164,12 +166,35 @@ define([
       });
 
       it("flies to the home destination if showShareUrl feature is off", () => {
-        SearchParams.updateDestination({
-          latitude: 45,
-          longitude: 135,
-          height: 9999,
+        SearchParams.updateStateInUrl({
+          destination: {
+            latitude: 45,
+            longitude: 135,
+            height: 9999,
+          },
         });
         state.view.model.set("showShareUrl", false);
+
+        state.view.render();
+
+        expect(state.view.zoomTarget).to.deep.equal({
+          latitude: 56,
+          longitude: -65,
+          height: 10000000,
+          heading: 1,
+          roll: 0,
+          pitch: -90,
+        });
+      });
+
+      it("flies to the home destination when the URL destination is incomplete", () => {
+        SearchParams.updateStateInUrl({
+          destination: {
+            latitude: 45,
+            longitude: 135,
+          },
+        });
+        state.view.model.set("showShareUrl", true);
 
         state.view.render();
 
@@ -210,7 +235,7 @@ define([
         state.view.scene.camera.position = new Cesium.Cartesian3(1, 2, 3);
         state.view.updateSearchParams();
 
-        expect(SearchParams.getDestination()).to.deep.equal({
+        expect(SearchParams.parseStateFromUrl().destination).to.deep.equal({
           heading: 152.70043883509962,
           height: -6364361.246505877,
           latitude: 53.48500010847735,

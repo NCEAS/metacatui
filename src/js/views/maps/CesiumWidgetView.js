@@ -204,8 +204,12 @@ define([
           // Render the layers
           view.addLayers();
 
-          const destination = SearchParams.getDestination();
-          if (this.model.get("showShareUrl") && destination) {
+          const destination = SearchParams.parseStateFromUrl().destination;
+          const hasCompleteDestination =
+            destination.latitude != null &&
+            destination.longitude != null &&
+            destination.height != null;
+          if (this.model.get("showShareUrl") && hasCompleteDestination) {
             // Go to position specified in query params.
             view.flyTo(destination);
           } else {

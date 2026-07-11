@@ -22,7 +22,7 @@ define([
     }, beforeEach);
 
     afterEach(() => {
-      SearchParams.clearSavedView();
+      SearchParams.clearStateInUrl();
     });
 
     describe("Initialization", () => {
@@ -49,7 +49,7 @@ define([
       });
 
       it("changes visibility of MapAssets based on search params", () => {
-        SearchParams.addEnabledLayer("somelayer");
+        SearchParams.updateStateInUrl({ enabledLayerIds: ["somelayer"] });
         const label = "label";
         const icon = "<svg></svg>";
         const model = new AssetCategory({

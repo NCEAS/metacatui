@@ -130,6 +130,86 @@ define([
       }
     });
 
+    it("preserves an explicit action id", () => {
+      const sandbox = sinon.createSandbox();
+      const onActionActivatedSpy = sandbox.spy();
+      const card = new ViewfinderCardModel({
+        title: "Explicit ID card",
+        description: "For testing ids",
+        buttons: [
+          {
+            id: "explicit-action-id",
+            type: "iframe",
+            label: "Open app",
+            url: "https://example.org/app",
+          },
+        ],
+      });
+      const view = new ViewfinderCardView({
+        preset: card,
+        ctaCallback: sandbox.spy(),
+        onActionActivated: onActionActivatedSpy,
+      });
+      view.render();
+      const harness = new ViewfinderCardViewHarness(view);
+      const testContainer = document.createElement("div");
+      testContainer.id = "explicit-action-id-container";
+      testContainer.append(view.el);
+      document.body.append(testContainer);
+
+      try {
+        harness.clickButton(0);
+
+        expect(onActionActivatedSpy.callCount).to.equal(1);
+        const action = onActionActivatedSpy.firstCall.args[0];
+        expect(action.id).to.equal("explicit-action-id");
+      } finally {
+        sandbox.restore();
+        testContainer.remove();
+      }
+    });
+
+    it("generates a fallback action id when missing", () => {
+      const sandbox = sinon.createSandbox();
+      const onActionActivatedSpy = sandbox.spy();
+      const card = new ViewfinderCardModel(
+        {
+          title: "Generated ID card",
+          description: "For testing generated ids",
+          buttons: [
+            {
+              type: "iframe",
+              label: "Open app",
+              url: "https://example.org/generated",
+            },
+          ],
+        },
+      );
+      const view = new ViewfinderCardView({
+        preset: card,
+        ctaCallback: sandbox.spy(),
+        onActionActivated: onActionActivatedSpy,
+      });
+      view.render();
+      const harness = new ViewfinderCardViewHarness(view);
+      const testContainer = document.createElement("div");
+      testContainer.id = "generated-action-id-container";
+      testContainer.append(view.el);
+      document.body.append(testContainer);
+
+      try {
+        harness.clickButton(0);
+
+        expect(onActionActivatedSpy.callCount).to.equal(1);
+        const action = onActionActivatedSpy.firstCall.args[0];
+        expect(action.id).to.be.a("string");
+        expect(action.id).to.match(/^vf-action-/);
+      } finally {
+        sandbox.restore();
+        testContainer.remove();
+      }
+    });
+
     it("can reset selected state", () => {
       state.harness.click();
       state.harness.reset();
