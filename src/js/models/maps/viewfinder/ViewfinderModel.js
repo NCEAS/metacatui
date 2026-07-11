@@ -166,7 +166,7 @@ define([
        * Open a visualization app in the full-screen iframe overlay by setting
        * the activeVisualizationUrl attribute on the map model.
        * @param {string} url The URL to load in the iframe overlay.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       openVisualization(url) {
         this.mapModel.set({ activeVisualizationUrl: url });
@@ -175,7 +175,7 @@ define([
       /**
        * Close the visualization overlay by clearing activeVisualizationUrl on
        * the map model.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       closeVisualization() {
         this.mapModel.set({ activeVisualizationUrl: null });

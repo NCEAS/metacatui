@@ -50,7 +50,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
    * @classcategory Views/Maps
    * @name LayerDownloadView
    * @augments Backbone.View
-   * @since 0.0.0
+   * @since 2.37.0
    * @screenshot views/maps/LayerDownloadView.png
    * @constructs LayerDownloadView
    */

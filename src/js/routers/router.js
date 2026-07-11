@@ -168,7 +168,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * @param {string} pidParam The identifier of the dataset to display the
        * version history for. Typically a metadata (EML) pid, but this will work
        * for any PID with an obsoletes/obsoletedBy chain in its sysMeta.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       renderVersionHistory(pidParam) {
         if (!MetacatUI.appModel.get("showVersionHistory")) {

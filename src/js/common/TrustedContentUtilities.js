@@ -7,7 +7,7 @@ define([], () => {
    * by a theme's AppConfig and used by the showdown iframe embedding and visualization
    * panel.
    * @type {object}
-   * @since 0.0.0
+   * @since 2.37.0
    */
   const TrustedContentUtilities =
     /** @lends TrustedContentUtilities.prototype */ {
@@ -41,7 +41,7 @@ define([], () => {
        * "https://" in a pattern only matches HTTPS URLs, not HTTP.
        * @param {string} wildcardPattern The pattern, which may include "*" wildcards.
        * @returns {RegExp} Case-insensitive regex that matches the full URL.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       patternToRegex(wildcardPattern) {
         let protocol = "";
@@ -66,7 +66,7 @@ define([], () => {
        * Normalize a trusted content source entry to a consistent shape.
        * @param {string|{url: string, permissions: (string[]|undefined)}} source Source entry from configuration.
        * @returns {{url: string, permissions: string[]}|null} Normalized source object or null when invalid.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       normalizeTrustedContentSource(source) {
         const defaultPermissions =
@@ -97,7 +97,7 @@ define([], () => {
        * Resolve the trusted content source entry that matches the given URL.
        * @param {string} url The URL to test.
        * @returns {{url: string, permissions: string[]}|null} Matching trusted source entry, or null when no match is found.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       getTrustedContentSource(url) {
         const sources = MetacatUI?.appModel?.get("trustedContentSources") ?? [];
@@ -135,7 +135,7 @@ define([], () => {
        * - The URL matches at least one `trustedContentSources` pattern
        * @param {string} url The URL to test.
        * @returns {boolean} `true` when the URL is trusted.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       isTrustedUrl(url) {
         return TrustedContentUtilities.getTrustedContentSource(url) !== null;
@@ -145,7 +145,7 @@ define([], () => {
        * Return true when the URL uses the `http:` or `https:` protocol.
        * @param {string} url URL to validate.
        * @returns {boolean} `true` when protocol is HTTP(S).
-       * @since 0.0.0
+       * @since 2.37.0
        */
       isHttpUrl(url) {
         try {
@@ -160,7 +160,7 @@ define([], () => {
        * Resolve the sandbox permissions for a trusted iframe URL.
        * @param {string} url The URL to test.
        * @returns {string|null} The sandbox permissions string, or null when untrusted.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       getTrustedIframeSandbox(url) {
         const trustedContentSource =

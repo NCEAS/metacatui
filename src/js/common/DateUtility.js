@@ -6,7 +6,7 @@ define([], () => {
   /**
    * @class DateUtility
    * @classdesc Utility helpers for parsing, grouping, and formatting dates.
-   * @since 0.0.0
+   * @since 2.37.0
    */
   class DateUtility {
     /**

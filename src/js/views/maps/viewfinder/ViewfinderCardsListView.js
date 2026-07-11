@@ -12,7 +12,7 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
    * @class ViewfinderCardsListView
    * @classdesc This component was extended from ZoomPresetsListView
    * and was renamed for clarity when zoom presets were deprecated in favor
-   * of the viewfinder cards in 0.0.0. It now has wires through the functions
+   * of the viewfinder cards in 2.37.0. It now has wires through the functions
    * to open and close the visualization overlay, and to handle activation of
    * a viewfinder card.
    * @classcategory Views/Maps/Viewfinder
@@ -45,7 +45,7 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
        * visualization overlay.
        * @property {Function} [onActivate] Called when a viewfinder card is
        * activated.
-       * @since 0.0.0
+       * @since 2.37.0
        */
 
       /**

@@ -1766,7 +1766,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * sources that do not explicitly define a `permissions` array.
            * @type {string[]}
            * @default ["allow-scripts", "allow-same-origin"]
-           * @since 0.0.0
+           * @since 2.37.0
            */
           defaultIframePermissions: ["allow-scripts", "allow-same-origin"],
 
@@ -2328,6 +2328,64 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           bookkeeperCustomersUrl: null,
 
           /**
+           * Enable the DataONE Notification Service integration. When true, MetacatUI will
+           * expose helper models that allow users to manage notification subscriptions.
+           * @type {boolean}
+           * @default false
+           * @since 2.37.0
+           */
+          enableNotificationService: false,
+
+          /**
+           * The base URL for the DataONE Notification Service API. This must point to the
+           * service root that exposes resources such as `/datasetChanges`.
+           * When not provided, the NotificationService client must be instantiated with a
+           * specific URL, or the feature should remain disabled.
+           * @type {string|null}
+           * @default null
+           * @since 2.37.0
+           */
+          notificationServiceUrl: null,
+
+          /**
+           * The version of the Notification Service API to use when making
+           * requests.
+           * {@link AppConfig#notificationServiceUrl}.
+           * @type {string}
+           * @default "v1"
+           * @since 2.37.0
+           */
+          notificationServiceApiVersion: "v1",
+
+          /**
+           * The set of resource types supported by the Notification Service for
+           * this repository, as well as the user-facing label and description
+           * for each resource type.
+           * @type {Array.<{type: string, label: string, description: string}>}
+           * @since 2.37.0
+           */
+          notificationServiceResourceTypes: [
+            {
+              type: "datasetChanges",
+              label: "Dataset Changes",
+              description:
+                "Be notified when new data, documentation improvements, or corrections become available",
+            },
+            // Not yet supported:
+            // {
+            //   type: "citations",
+            //   label: "Citations",
+            //   description: "Get notified when someone cites the dataset",
+            // },
+            // {
+            //   type: "downloads",
+            //   label: "Downloads",
+            //   description:
+            //     "Get notified when the dataset or any files within it are downloaded",
+            // },
+          ],
+
+          /**
            * The name of the DataONE Plus membership plan, which is used in messaging throughout the UI.
            * This is only used if the enableBookkeeperServices setting is set to true.
            * @type {string}
@@ -2510,7 +2568,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * Whether to show or hide the version history view for each dataset.
            * @type {boolean}
            * @default true
-           * @since 0.0.0
+           * @since 2.37.0
            */
           showVersionHistory: true,
         },

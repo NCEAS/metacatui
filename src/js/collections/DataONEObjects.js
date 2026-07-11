@@ -9,7 +9,7 @@ define(["backbone", "models/DataONEObject", "common/DateUtility"], (
    * @class DataONEObjects
    * @classdesc A collection of DataONEObject models.
    * @classcategory Collections/SearchSelect
-   * @since 0.0.0
+   * @since 2.37.0
    */
   const DataONEObjects = Backbone.Collection.extend({
     /** @lends DataONEObjects.prototype */
@@ -160,7 +160,8 @@ define(["backbone", "models/DataONEObject", "common/DateUtility"], (
      * @param {string} [options.dateProp] Model property to read.
      * @param {("local"|"UTC")} [options.groupingTimeZone] Timezone used
      * to determine day boundaries.
-     * @returns {{date: Date|null, models: Backbone.Model[]}[]} Grouped models.
+     * @returns {Array.<{date: (Date|null), models: Array.<Backbone.Model>}>}
+     * Grouped models.
      */
     groupByDate({
       dateProp = "dateUploaded",

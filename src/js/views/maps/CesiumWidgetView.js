@@ -9,6 +9,7 @@ define([
   "models/maps/assets/MapAsset",
   "models/maps/assets/Cesium3DTileset",
   "models/maps/Feature",
+  "common/Utilities",
   "text!templates/maps/cesium-widget-view.html",
   "common/SearchParams",
 ], (
@@ -20,6 +21,7 @@ define([
   MapAsset,
   Cesium3DTileset,
   Feature,
+  Utilities,
   Template,
   SearchParams,
 ) => {
@@ -204,6 +206,20 @@ define([
           // Render the layers
           view.addLayers();
 
+          if (view.isDebugEnabled()) {
+            view.enableDebugMode();
+          }
+          if (view.is3DTilesInspectorEnabled()) {
+            view.render3DTilesInspector();
+          }
+
+          if (view.isDebugEnabled()) {
+            view.enableDebugMode();
+          }
+          if (view.is3DTilesInspectorEnabled()) {
+            view.render3DTilesInspector();
+          }
+
           const destination = SearchParams.parseStateFromUrl().destination;
           const hasCompleteDestination =
             destination.latitude != null &&
@@ -225,6 +241,25 @@ define([
           console.log("Failed to render a CesiumWidgetView,", e);
           // TODO: Render a fallback map or error message
         }
+      },
+
+      /**
+       * Returns true when the map config enables Cesium debug mode.
+       * @returns {boolean}
+       * @since 2.37.0
+       */
+      isDebugEnabled() {
+        return Boolean(this.model?.get("debug"));
+      },
+
+      /**
+       * Returns true when the map config enables the Cesium 3D Tiles
+       * inspector.
+       * @returns {boolean}
+       * @since 2.37.0
+       */
+      is3DTilesInspectorEnabled() {
+        return Boolean(this.model?.get("show3DTilesInspector"));
       },
 
       /**
@@ -267,6 +302,185 @@ define([
         }
 
         return view.widget;
+      },
+
+      /**
+       * Enable Cesium's built-in map debugging aids for development.
+       * @since 2.37.0
+       */
+      enableDebugMode() {
+        this.scene.debugShowFramesPerSecond = true;
+        this.scene.globe.showSkirts = false;
+
+        // Avoid duplicating debug imagery layers/log spam if render() is called multiple times.
+        if (!this._debugImageryGridShown) {
+          this.showImageryGrid();
+          this._debugImageryGridShown = true;
+          this.logDebugLayerSummary();
+        }
+
+        this.renderDebugCameraOverlay();
+        this.updateDebugCameraOverlay();
+        this.requestRender();
+      },
+
+      /**
+       * Add the Cesium 3D Tiles inspector stylesheet to the app once, when
+       * the inspector is actually needed.
+       * @since 2.37.0
+       */
+      load3DTilesInspectorCSS() {
+        const cssID = "cesium3DTilesInspector";
+
+        if (MetacatUI.loadedCSS?.includes(cssID)) {
+          return;
+        }
+
+        require([`text!${MetacatUI.root}/css/Cesium3DTilesInspector.css`], (
+          inspectorCSS,
+        ) => {
+          MetacatUI.appModel.addCSS(inspectorCSS, cssID);
+        });
+      },
+
+      /**
+       * Create and render Cesium's built-in 3D Tiles inspector widget.
+       * @returns {Cesium.Cesium3DTilesInspector|null} The inspector widget.
+       * @since 2.37.0
+       */
+      render3DTilesInspector() {
+        if (
+          !this.is3DTilesInspectorEnabled() ||
+          !this.el ||
+          !this.scene ||
+          typeof Cesium.Cesium3DTilesInspector !== "function"
+        ) {
+          return null;
+        }
+
+        this.load3DTilesInspectorCSS();
+
+        if (!this.tilesInspectorContainer) {
+          this.tilesInspectorContainer =
+            this.el.ownerDocument.createElement("div");
+          this.tilesInspectorContainer.className =
+            "cesium-3d-tiles-inspector-container";
+          this.el.appendChild(this.tilesInspectorContainer);
+        }
+
+        if (!this.tilesInspector) {
+          this.tilesInspector = new Cesium.Cesium3DTilesInspector(
+            this.tilesInspectorContainer,
+            this.scene,
+          );
+        }
+
+        return this.tilesInspector;
+      },
+
+      /**
+       * Destroy the 3D Tiles inspector widget and remove its container.
+       */
+      destroy3DTilesInspector() {
+        if (this.tilesInspector) {
+          const isDestroyed =
+            typeof this.tilesInspector.isDestroyed === "function" &&
+            this.tilesInspector.isDestroyed();
+          if (
+            !isDestroyed &&
+            typeof this.tilesInspector.destroy === "function"
+          ) {
+            this.tilesInspector.destroy();
+          }
+          this.tilesInspector = null;
+        }
+
+        if (this.tilesInspectorContainer) {
+          this.tilesInspectorContainer.remove();
+          this.tilesInspectorContainer = null;
+        }
+      },
+
+      /**
+       * Create the camera debug overlay if it doesn't exist yet.
+       * @returns {HTMLElement|null} The overlay element.
+       * @since 2.37.0
+       */
+      renderDebugCameraOverlay() {
+        if (!this.isDebugEnabled() || !this.el) {
+          return null;
+        }
+
+        if (!this.debugCameraOverlay) {
+          this.debugCameraOverlay = this.el.ownerDocument.createElement("div");
+          this.debugCameraOverlay.className = "cesium-debug-overlay";
+          this.el.appendChild(this.debugCameraOverlay);
+        }
+
+        return this.debugCameraOverlay;
+      },
+
+      /**
+       * Update the text shown in the camera debug overlay.
+       * @since 2.37.0
+       */
+      updateDebugCameraOverlay() {
+        const overlay = this.renderDebugCameraOverlay();
+        if (!overlay || !this.camera) {
+          return;
+        }
+
+        const cameraPosition = this.getCameraPosition();
+        const formatNum = (num, digits = 2) =>
+          Utilities.formatFixedNumber(num, digits, "n/a");
+        const { longitude, latitude, height, heading, pitch, roll } =
+          cameraPosition;
+        overlay.textContent = [
+          "Camera",
+          `lon: ${formatNum(longitude)}`,
+          `lat: ${formatNum(latitude)}`,
+          `height: ${formatNum(height)}`,
+          `heading: ${formatNum(heading)}`,
+          `pitch: ${formatNum(pitch)}`,
+          `roll: ${formatNum(roll)}`,
+        ].join("\n");
+      },
+
+      /**
+       * Log a summary of the currently configured layers when debug mode is on.
+       * @since 2.37.0
+       */
+      logDebugLayerSummary() {
+        const allLayers = this.model.get("allLayers");
+        const layers = allLayers
+          ? allLayers.map((layer) => ({
+              label: layer.get("label"),
+              type: layer.get("type"),
+              status: layer.get("status"),
+              visible: layer.get("visible"),
+            }))
+          : [];
+
+        console.info("[Cesium debug] Loaded layers", layers);
+      },
+
+      /**
+       * Log a single layer event when debug mode is on.
+       * @param {string} action The event that occurred.
+       * @param {MapAsset} mapAsset The layer involved.
+       * @since 2.37.0
+       */
+      logDebugLayerEvent(action, mapAsset) {
+        if (!this.isDebugEnabled() || !mapAsset) {
+          return;
+        }
+
+        console.info(`[Cesium debug] ${action}`, {
+          label: mapAsset.get("label"),
+          type: mapAsset.get("type"),
+          status: mapAsset.get("status"),
+          visible: mapAsset.get("visible"),
+        });
       },
 
       /**
@@ -492,6 +706,10 @@ define([
               "debouncedUpdateSearchParams",
             ],
           };
+          if (view.isDebugEnabled()) {
+            cameraEvents.moveEnd.push("updateDebugCameraOverlay");
+            cameraEvents.changed.push("updateDebugCameraOverlay");
+          }
           // add a listener that triggers the same event on the interactions
           // model, and runs any functions configured above.
           Object.entries(cameraEvents).forEach(([label, functions]) => {
@@ -992,7 +1210,12 @@ define([
        * {@link Map#defaults})
        */
       getCameraPosition() {
-        return this.getDegreesFromCartesian(this.camera.position);
+        return {
+          ...this.getDegreesFromCartesian(this.camera.position),
+          heading: Cesium.Math.toDegrees(this.camera.heading),
+          pitch: Cesium.Math.toDegrees(this.camera.pitch),
+          roll: Cesium.Math.toDegrees(this.camera.roll),
+        };
       },
 
       /**
@@ -1447,6 +1670,7 @@ define([
             if (!shouldRender) return false;
 
             renderFunction.call(view, cesiumModel);
+            view.logDebugLayerEvent("Rendered layer", mapAsset);
             if (listenModel) {
               listenModel.stopListening(mapAsset);
               listenModel.destroy();
@@ -1499,6 +1723,7 @@ define([
         // If there is a function for this type of asset, call it
         if (removeFunction && typeof removeFunction === "function") {
           removeFunction.call(this, cesiumModel);
+          this.logDebugLayerEvent("Removed layer", mapAsset);
         } else {
           console.log(
             "No remove function found for this type of asset",
@@ -1682,6 +1907,7 @@ define([
 
       /** Remove nav and mouse listeners when the view is closed */
       onClose() {
+        this.destroy3DTilesInspector();
         this.removeMouseListeners();
         this.removeNavigationListeners();
       },

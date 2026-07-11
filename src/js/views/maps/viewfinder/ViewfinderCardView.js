@@ -36,14 +36,14 @@ define([
    * that carries out the action. Add entries here to support new action types
    * without modifying ViewfinderCardView itself.
    * @type {Object<string, function(ViewfinderCardAction, ViewfinderCardView): void>}
-   * @since 0.0.0
+   * @since 2.37.0
    */
   const BUTTON_ACTION_HANDLERS = {
     /**
      * Opens the URL in the full-screen visualization overlay.
      * @param {ViewfinderCardAction} action Action object with a `url` property.
      * @param {ViewfinderCardView} view The card view that was clicked, which has a `ctaCallback` to open the overlay.
-     * @since 0.0.0
+     * @since 2.37.0
      */
     iframe(action, view) {
       view.ctaCallback(action.url);
@@ -51,7 +51,7 @@ define([
     /**
      * Opens the URL in a new browser tab.
      * @param {ViewfinderCardAction} action Action object with a `url` property.
-     * @since 0.0.0
+     * @since 2.37.0
      */
     tab(action) {
       if (action.url) {
@@ -63,7 +63,7 @@ define([
      * selectCallback so the model handles the navigation logic.
      * @param {ViewfinderCardAction} action Action object with `latitude`, `longitude`, and `layerIds` properties.
      * @param {ViewfinderCardView} view The card view that was clicked, which has a `selectCallback` to zoom and toggle layers.
-     * @since 0.0.0
+     * @since 2.37.0
      */
     map(action, view) {
       view.selectCallback(action);
@@ -73,7 +73,7 @@ define([
   /**
    * @class ViewfinderCardView
    * @classdesc This class was generalized from ZoomPresetView when
-   * zoom presets were deprecated in favor of viewfinder cards in 0.0.0.
+   * zoom presets were deprecated in favor of viewfinder cards in 2.37.0.
    * It shows the title, description, and action buttons for a configured card
    * within a MapView. Cards can also contain an image hero banner behind the
    * title. Action buttons have two styles determined by their ordinality
@@ -86,7 +86,7 @@ define([
    * @name ViewfinderCardView
    * @augments Backbone.View
    * @screenshot views/maps/viewfinder/ViewfinderCardView.png
-   * @since 0.0.0
+   * @since 2.37.0
    * @constructs ViewfinderCardView
    */
   const ViewfinderCardView = Backbone.View.extend(

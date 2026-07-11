@@ -203,7 +203,7 @@ define([
    * retries with backoff, optional in-flight deduplication, abort support,
    * normalized responses/errors, and timeouts. It does not know about app
    * models or TTLs; it only handles transport concerns.
-   * @since 0.0.0
+   * @since 2.37.0
    */
   class DataONEHttpClient {
     /**

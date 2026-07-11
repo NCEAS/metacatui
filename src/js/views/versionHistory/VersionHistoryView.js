@@ -103,7 +103,7 @@ define([
    * @classcategory Views/VersionHistory
    * @augments Backbone.View
    * @screenshot views/versionHistory/VersionHistoryView.png
-   * @since 0.0.0
+   * @since 2.37.0
    */
   const VersionHistoryView = Backbone.View.extend(
     /** @lends VersionHistoryView.prototype */ {

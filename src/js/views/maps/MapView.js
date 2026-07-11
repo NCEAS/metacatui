@@ -151,7 +151,7 @@ define([
        * Renders the full-screen visualization overlay panel and wires it to
        * the map model's activeVisualizationUrl attribute.
        * @returns {VisualizationPanelView} Returns the rendered panel view.
-       * @since 0.0.0
+       * @since 2.37.0
        */
       renderVisualizationPanel() {
         const view = this;
