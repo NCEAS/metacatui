@@ -213,13 +213,6 @@ define([
             view.render3DTilesInspector();
           }
 
-          if (view.isDebugEnabled()) {
-            view.enableDebugMode();
-          }
-          if (view.is3DTilesInspectorEnabled()) {
-            view.render3DTilesInspector();
-          }
-
           const destination = SearchParams.parseStateFromUrl().destination;
           const hasCompleteDestination =
             destination.latitude != null &&
@@ -571,12 +564,18 @@ define([
         view.scene.light = new Cesium.DirectionalLight({
           direction: new Cesium.Cartesian3(1, 0, 0),
         });
-        view.scene.preRender.addEventListener(function (scene, time) {
+
+        if (view.removePreRenderLightListener) {
+          view.removePreRenderLightListener();
+        }
+        view.removePreRenderLightListener = view.scene.preRender.addEventListener(
+          function (scene, time) {
           view.scene.light.direction = Cesium.Cartesian3.clone(
             scene.camera.directionWC,
             view.scene.light.direction,
           );
-        });
+          },
+        );
       },
 
       /**
@@ -685,6 +684,7 @@ define([
         this.cameraListeners.forEach(function (removeListener) {
           removeListener();
         });
+        this.cameraListeners = [];
       },
 
       /**
@@ -755,7 +755,7 @@ define([
         const events = Cesium.ScreenSpaceEventType;
 
         // Remove previous listeners if they exist.
-        view.removeMouseListeners;
+        view.removeMouseListeners();
         // Create Cesium object that handles interactions with the map.
         const handler = (view.mouseEventHandler =
           new Cesium.ScreenSpaceEventHandler(view.scene.canvas));
@@ -1939,7 +1939,12 @@ define([
       onClose() {
         this.destroy3DTilesInspector();
         this.removeMouseListeners();
+        this.removeCameraListeners();
         this.removeNavigationListeners();
+        if (this.removePreRenderLightListener) {
+          this.removePreRenderLightListener();
+          this.removePreRenderLightListener = null;
+        }
       },
     },
   );

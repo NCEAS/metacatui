@@ -299,6 +299,18 @@ define([
           state.view.el.querySelector(".cesium-3d-tiles-inspector-container"),
         ).to.equal(state.view.tilesInspectorContainer);
       });
+
+      it("runs debug and inspector initialization only once per render", () => {
+        state.view.model.set("debug", true);
+        state.view.model.set("show3DTilesInspector", true);
+        state.view.enableDebugMode = sinon.spy();
+        state.view.render3DTilesInspector = sinon.spy();
+
+        state.view.render();
+
+        expect(state.view.enableDebugMode.calledOnce).to.equal(true);
+        expect(state.view.render3DTilesInspector.calledOnce).to.equal(true);
+      });
     });
 
     describe("cleanup", () => {
@@ -318,6 +330,18 @@ define([
         expect(state.view.tilesInspector).to.equal(null);
         expect(state.view.tilesInspectorContainer).to.equal(null);
         expect(state.view.el.contains(container)).to.equal(false);
+      });
+
+      it("removes camera and preRender listeners on close", () => {
+        const removePreRenderLightListener = sinon.spy();
+        state.view.removePreRenderLightListener = removePreRenderLightListener;
+        state.view.removeCameraListeners = sinon.spy();
+
+        state.view.onClose();
+
+        expect(state.view.removeCameraListeners.calledOnce).to.equal(true);
+        expect(removePreRenderLightListener.calledOnce).to.equal(true);
+        expect(state.view.removePreRenderLightListener).to.equal(null);
       });
     });
   });
