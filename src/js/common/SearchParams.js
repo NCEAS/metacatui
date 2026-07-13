@@ -52,6 +52,7 @@ define([], () => {
     schemaVersion: 0,
     destination: {},
     enabledLayerIds: [],
+    enabledLayerStateProvided: false,
     activeActionId: null,
     openPanel: null,
     featureIds: [],
@@ -135,8 +136,11 @@ define([], () => {
           ? state.enabledLayerIds.join(",")
           : state.enabledLayerIds,
       ),
+      enabledLayerStateProvided: Boolean(state.enabledLayerStateProvided),
       featureIds: parseCommaSeparated(
-        Array.isArray(state.featureIds) ? state.featureIds.join(",") : state.featureIds,
+        Array.isArray(state.featureIds)
+          ? state.featureIds.join(",")
+          : state.featureIds,
       ),
       activeActionId: normalizeId(state.activeActionId),
       openPanel: normalizeId(state.openPanel),
@@ -185,7 +189,10 @@ define([], () => {
     const base = {
       schemaVersion,
       destination,
-      enabledLayerIds: parseCommaSeparated(url.searchParams.get(ENABLED_LAYERS_ID)),
+      enabledLayerIds: parseCommaSeparated(
+        url.searchParams.get(ENABLED_LAYERS_ID),
+      ),
+      enabledLayerStateProvided: url.searchParams.has(ENABLED_LAYERS_ID),
       activeActionId: null,
       openPanel: null,
       featureIds: [],
@@ -219,13 +226,22 @@ define([], () => {
     Object.entries(paramIdToDestinationKey).forEach(
       ([searchParamId, destinationId]) => {
         if (normalized.destination[destinationId] != null) {
-          url.searchParams.set(searchParamId, normalized.destination[destinationId]);
+          url.searchParams.set(
+            searchParamId,
+            normalized.destination[destinationId],
+          );
         }
       },
     );
 
-    if (normalized.enabledLayerIds.length) {
-      url.searchParams.set(ENABLED_LAYERS_ID, normalized.enabledLayerIds.join(","));
+    if (
+      normalized.enabledLayerStateProvided ||
+      normalized.enabledLayerIds.length
+    ) {
+      url.searchParams.set(
+        ENABLED_LAYERS_ID,
+        normalized.enabledLayerIds.join(","),
+      );
     }
 
     if (normalized.schemaVersion >= 1) {
@@ -258,6 +274,10 @@ define([], () => {
    */
   const updateStateInUrl = (partialState = {}) => {
     const current = parseStateFromUrl();
+    const hasEnabledLayerIdsUpdate = Object.prototype.hasOwnProperty.call(
+      partialState,
+      "enabledLayerIds",
+    );
     const next = {
       ...current,
       ...partialState,
@@ -266,6 +286,11 @@ define([], () => {
         ...(partialState.destination || {}),
       },
     };
+
+    if (hasEnabledLayerIdsUpdate) {
+      next.enabledLayerStateProvided = true;
+    }
+
     return writeStateToUrl(next);
   };
 

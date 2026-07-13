@@ -60,6 +60,19 @@ define([
         expect(map.get("layers").at(1).get("visible")).to.be.true;
       });
 
+      it("restores all layers as hidden when el is explicitly empty", () => {
+        SearchParams.updateStateInUrl({ enabledLayerIds: [] });
+        const map = new Map({
+          layers: [
+            { layerId: "layer-1", visible: true },
+            { layerId: "layer-2", visible: true },
+          ],
+        });
+
+        expect(map.get("layers").at(0).get("visible")).to.be.false;
+        expect(map.get("layers").at(1).get("visible")).to.be.false;
+      });
+
       it("preserves configured visibility for flat layers", () => {
         SearchParams.updateStateInUrl({ enabledLayerIds: ["layer-2"] });
         const map = new Map({
@@ -88,6 +101,28 @@ define([
 
         expect(map.get("allLayers").at(0).get("visible")).to.be.false;
         expect(map.get("allLayers").at(1).get("visible")).to.be.true;
+      });
+
+      it("defaults flat layers with undefined visibility to hidden", () => {
+        const map = new Map({
+          layers: [{ layerId: "layer-1" }, { layerId: "layer-2" }],
+        });
+
+        expect(map.get("layers").at(0).get("visible")).to.be.false;
+        expect(map.get("layers").at(1).get("visible")).to.be.false;
+      });
+
+      it("defaults categorized layers with undefined visibility to hidden", () => {
+        const map = new Map({
+          layerCategories: [
+            {
+              layers: [{ layerId: "layer-1" }, { layerId: "layer-2" }],
+            },
+          ],
+        });
+
+        expect(map.get("allLayers").at(0).get("visible")).to.be.false;
+        expect(map.get("allLayers").at(1).get("visible")).to.be.false;
       });
 
       it("sets viewfinderCards from config with layers (legacy zoomPresets key)", () => {

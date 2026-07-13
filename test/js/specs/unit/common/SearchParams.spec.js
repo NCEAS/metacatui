@@ -157,6 +157,16 @@ define(["common/SearchParams"], (SearchParams) => {
           "someotherlayer",
         ]);
       });
+
+      it("persists explicit empty enabledLayerIds as el in the URL", () => {
+        SearchParams.updateStateInUrl({ enabledLayerIds: [] });
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.has("el")).to.equal(true);
+        expect(SearchParams.parseStateFromUrl().enabledLayerIds).to.deep.equal(
+          [],
+        );
+      });
     });
 
     describe("updateStateInUrl destination", () => {

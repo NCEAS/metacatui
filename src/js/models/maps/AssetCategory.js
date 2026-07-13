@@ -13,7 +13,7 @@ define([
    * @name AssetCategory
    * @augments Backbone.Model
    * @since 2.28.0
-   * @constructor
+   * @class
    */
   const AssetCategory = Backbone.Model.extend(
     /** @lends AssetCategory.prototype */ {
@@ -74,7 +74,8 @@ define([
 
         const layers = categoryConfig.layers.map((layer) => ({
           ...layer,
-          configuredVisibility: layer.visible,
+          configuredVisibility: layer.visible === true,
+          visible: layer.visible === true,
         }));
         this.set("mapAssets", new MapAssets(layers));
 

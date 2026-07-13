@@ -324,7 +324,8 @@ define([
             const layers = new MapAssets(
               config.layers.map((layer) => ({
                 ...layer,
-                configuredVisibility: layer.visible,
+                configuredVisibility: layer.visible === true,
+                visible: layer.visible === true,
               })),
             );
             this.set("layers", layers);
@@ -448,8 +449,9 @@ define([
        * portal-configured visibility and this method is a no-op.
        */
       restoreLayerVisibilityFromUrl() {
-        const { enabledLayerIds } = SearchParams.parseStateFromUrl();
-        if (!enabledLayerIds.length) return;
+        const { enabledLayerIds, enabledLayerStateProvided } =
+          SearchParams.parseStateFromUrl();
+        if (!enabledLayerStateProvided) return;
         this.get("allLayers")?.forEach((layer) => {
           const layerId = layer.get("layerId");
           if (!layerId) return;
