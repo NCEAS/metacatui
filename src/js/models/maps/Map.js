@@ -8,6 +8,7 @@ define([
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
   "collections/maps/viewfinder/ViewfinderCardCategories",
+  "common/SearchParams",
 ], (
   $,
   _,
@@ -16,6 +17,7 @@ define([
   Interactions,
   AssetCategories,
   ViewfinderCardCategories,
+  SearchParams,
 ) => {
   /**
    * Determine if array is empty.
@@ -319,12 +321,18 @@ define([
             this.unset("layers");
             this.set("allLayers", assetCategories.getMapAssetsFlat());
           } else if (isNonEmptyArray(config.layers)) {
-            const layers = new MapAssets(config.layers);
+            const layers = new MapAssets(
+              config.layers.map((layer) => ({
+                ...layer,
+                configuredVisibility: layer.visible,
+              })),
+            );
             this.set("layers", layers);
             this.get("layers").setMapModel(this);
             this.unset("layerCategories");
             this.set("allLayers", layers);
           }
+          this.restoreLayerVisibilityFromUrl();
           // TODO: listen to changes in layerCategories and layers to update
           // allLayers. This will be necessary when we allow users to add &
           // remove layers.
@@ -430,6 +438,22 @@ define([
       resetLayerVisibility() {
         this.get("allLayers").forEach((layer) => {
           layer.set("visible", layer.get("configuredVisibility"));
+        });
+      },
+
+      /**
+       * Restore layer visibility from URL state. When the el search parameter
+       * is present, each layer with a layerId is shown or hidden based on
+       * membership in that list. When el is absent, layers keep their
+       * portal-configured visibility and this method is a no-op.
+       */
+      restoreLayerVisibilityFromUrl() {
+        const { enabledLayerIds } = SearchParams.parseStateFromUrl();
+        if (!enabledLayerIds.length) return;
+        this.get("allLayers")?.forEach((layer) => {
+          const layerId = layer.get("layerId");
+          if (!layerId) return;
+          layer.set("visible", enabledLayerIds.includes(layerId));
         });
       },
 

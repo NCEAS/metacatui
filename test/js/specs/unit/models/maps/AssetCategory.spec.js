@@ -2,9 +2,8 @@ define([
   "models/maps/AssetCategory",
   "collections/maps/MapAssets",
   "models/maps/Map",
-  "common/SearchParams",
   "/test/js/specs/shared/clean-state.js",
-], (AssetCategory, MapAssets, Map, SearchParams, cleanState) => {
+], (AssetCategory, MapAssets, Map, cleanState) => {
   const expect = chai.expect;
 
   describe("AssetCategory Test Suite", () => {
@@ -20,10 +19,6 @@ define([
 
       return { model };
     }, beforeEach);
-
-    afterEach(() => {
-      SearchParams.clearStateInUrl();
-    });
 
     describe("Initialization", () => {
       it("creates an AssetCategory instance", () => {
@@ -46,19 +41,6 @@ define([
         });
 
         expect(model.get("mapAssets").at(0).get("visible")).to.be.false;
-      });
-
-      it("changes visibility of MapAssets based on search params", () => {
-        SearchParams.updateStateInUrl({ enabledLayerIds: ["somelayer"] });
-        const label = "label";
-        const icon = "<svg></svg>";
-        const model = new AssetCategory({
-          layers: [{ layerId: "somelayer", visible: false }],
-          label,
-          icon,
-        });
-
-        expect(model.get("mapAssets").at(0).get("visible")).to.be.true;
       });
 
       it("throws if layers are missing from attrs", () => {

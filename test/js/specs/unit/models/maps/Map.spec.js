@@ -47,6 +47,49 @@ define([
         expect(map.has("layers")).to.be.false;
       });
 
+      it("changes flat layer visibility based on search params", () => {
+        SearchParams.updateStateInUrl({ enabledLayerIds: ["layer-2"] });
+        const map = new Map({
+          layers: [
+            { layerId: "layer-1", visible: true },
+            { layerId: "layer-2", visible: false },
+          ],
+        });
+
+        expect(map.get("layers").at(0).get("visible")).to.be.false;
+        expect(map.get("layers").at(1).get("visible")).to.be.true;
+      });
+
+      it("preserves configured visibility for flat layers", () => {
+        SearchParams.updateStateInUrl({ enabledLayerIds: ["layer-2"] });
+        const map = new Map({
+          layers: [
+            { layerId: "layer-1", visible: true },
+            { layerId: "layer-2", visible: false },
+          ],
+        });
+
+        expect(map.get("layers").at(0).get("configuredVisibility")).to.be.true;
+        expect(map.get("layers").at(1).get("configuredVisibility")).to.be.false;
+      });
+
+      it("changes categorized layer visibility based on search params", () => {
+        SearchParams.updateStateInUrl({ enabledLayerIds: ["layer-2"] });
+        const map = new Map({
+          layerCategories: [
+            {
+              layers: [
+                { layerId: "layer-1", visible: true },
+                { layerId: "layer-2", visible: false },
+              ],
+            },
+          ],
+        });
+
+        expect(map.get("allLayers").at(0).get("visible")).to.be.false;
+        expect(map.get("allLayers").at(1).get("visible")).to.be.true;
+      });
+
       it("sets viewfinderCards from config with layers (legacy zoomPresets key)", () => {
         const map = new Map({
           zoomPresets: [
