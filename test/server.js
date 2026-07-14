@@ -48,7 +48,17 @@ async function runTests(url) {
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
   const page = await browser.newPage();
-  await page.goto(url, { waitUntil: "networkidle0" });
+  await page.goto(url, { waitUntil: "domcontentloaded" });
+  try {
+    // Set by the test page after Mocha finishes or test loading fails.
+    await page.waitForSelector("body[data-tests-finished]", {
+      timeout: 600_000,
+    });
+  } catch {
+    await browser.close();
+    if (testType != "keep-running") server.close();
+    throw Error("The MetacatUI test run did not finish within 10 minutes.");
+  }
   const html = await page.content(); // serialized HTML of page DOM.
   await browser.close();
 
