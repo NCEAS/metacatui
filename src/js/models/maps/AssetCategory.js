@@ -72,11 +72,20 @@ define([
           throw new Error(`Category ${categoryConfig.label} has empty layers.`);
         }
 
-        const layers = categoryConfig.layers.map((layer) => ({
-          ...layer,
-          configuredVisibility: layer.visible === true,
-          visible: layer.visible === true,
-        }));
+        const layers = categoryConfig.layers.map((layer) => {
+          const configuredVisibility =
+            layer.configuredVisibility == null
+              ? layer.visible === true
+              : layer.configuredVisibility === true;
+          const visible =
+            layer.visible == null ? configuredVisibility : layer.visible === true;
+
+          return {
+            ...layer,
+            configuredVisibility,
+            visible,
+          };
+        });
         this.set("mapAssets", new MapAssets(layers));
 
         this.set("label", categoryConfig.label);

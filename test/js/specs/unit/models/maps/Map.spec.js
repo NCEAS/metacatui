@@ -1,4 +1,5 @@
 define([
+  "backbone",
   "models/maps/Map",
   "models/maps/AssetCategory",
   "collections/maps/AssetCategories",
@@ -6,6 +7,7 @@ define([
   "/test/js/specs/shared/clean-state.js",
   "common/SearchParams",
 ], (
+  Backbone,
   Map,
   AssetCategory,
   AssetCategories,
@@ -123,6 +125,60 @@ define([
 
         expect(map.get("allLayers").at(0).get("visible")).to.be.false;
         expect(map.get("allLayers").at(1).get("visible")).to.be.false;
+      });
+
+      it("uses configuredVisibility when visible is omitted for flat layers", () => {
+        const map = new Map({
+          layers: [
+            { layerId: "layer-1", configuredVisibility: true },
+            { layerId: "layer-2", configuredVisibility: false },
+          ],
+        });
+
+        expect(map.get("layers").at(0).get("configuredVisibility")).to.be.true;
+        expect(map.get("layers").at(0).get("visible")).to.be.true;
+        expect(map.get("layers").at(1).get("configuredVisibility")).to.be.false;
+        expect(map.get("layers").at(1).get("visible")).to.be.false;
+      });
+
+      it("uses configuredVisibility when visible is omitted for categorized layers", () => {
+        const map = new Map({
+          layerCategories: [
+            {
+              layers: [
+                { layerId: "layer-1", configuredVisibility: true },
+                { layerId: "layer-2", configuredVisibility: false },
+              ],
+            },
+          ],
+        });
+
+        expect(map.get("allLayers").at(0).get("configuredVisibility")).to.be.true;
+        expect(map.get("allLayers").at(0).get("visible")).to.be.true;
+        expect(map.get("allLayers").at(1).get("configuredVisibility")).to.be.false;
+        expect(map.get("allLayers").at(1).get("visible")).to.be.false;
+      });
+
+      it("preserves configuredVisibility on model instance layers", () => {
+        const layerModel = new Backbone.Model({
+          layerId: "layer-1",
+          visible: true,
+          configuredVisibility: false,
+        });
+        const map = new Map({ layers: [layerModel] });
+
+        expect(map.get("layers").at(0).get("configuredVisibility")).to.be.false;
+        expect(map.get("layers").at(0).get("visible")).to.be.true;
+      });
+
+      it("infers configuredVisibility from visible for model instance layers when missing", () => {
+        const layerModel = new Backbone.Model({
+          layerId: "layer-1",
+          visible: true,
+        });
+        const map = new Map({ layers: [layerModel] });
+
+        expect(map.get("layers").at(0).get("configuredVisibility")).to.be.true;
       });
 
       it("sets viewfinderCards from config with layers (legacy zoomPresets key)", () => {

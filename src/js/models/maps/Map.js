@@ -29,6 +29,44 @@ define([
   }
 
   /**
+   * Normalize configured and runtime visibility for a layer model/object.
+   * configuredVisibility tracks the portal-configured value, while visible
+   * tracks the current runtime value (which may be overridden from URL state).
+   *
+   * If both values are missing in config, default to hidden.
+   * @param {Backbone.Model|object} layer A layer config object or model.
+   * @returns {Backbone.Model|object} The normalized layer.
+   */
+  function normalizeLayerVisibility(layer) {
+    if (layer instanceof Backbone.Model) {
+      const configuredVisibility = layer.get("configuredVisibility");
+      const visible = layer.get("visible");
+
+      if (configuredVisibility == null) {
+        layer.set("configuredVisibility", visible === true);
+      }
+      if (visible == null) {
+        layer.set("visible", layer.get("configuredVisibility") === true);
+      }
+      return layer;
+    }
+
+    const {visible} = layer;
+    const configuredVisibility =
+      layer.configuredVisibility == null
+        ? visible === true
+        : layer.configuredVisibility === true;
+    const runtimeVisibility =
+      visible == null ? configuredVisibility : visible === true;
+
+    return {
+      ...layer,
+      configuredVisibility,
+      visible: runtimeVisibility,
+    };
+  }
+
+  /**
    * @class MapModel
    * @classdesc The Map Model contains all of the settings and options for a
    * required to render a map view.
@@ -321,12 +359,9 @@ define([
             this.unset("layers");
             this.set("allLayers", assetCategories.getMapAssetsFlat());
           } else if (isNonEmptyArray(config.layers)) {
+            const normalizedLayers = config.layers.map(normalizeLayerVisibility);
             const layers = new MapAssets(
-              config.layers.map((layer) => ({
-                ...layer,
-                configuredVisibility: layer.visible === true,
-                visible: layer.visible === true,
-              })),
+              normalizedLayers,
             );
             this.set("layers", layers);
             this.get("layers").setMapModel(this);
