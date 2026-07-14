@@ -48,6 +48,17 @@
       mocha.checkLeaks();
     </script>
     <script class="mocha-exec">
+      const runMocha = function () {
+        mocha
+          .run()
+          .on("fail", function (test, err) {
+            console.error(err.stack || err);
+          })
+          .on("end", function () {
+            document.body.dataset.testsFinished = "";
+          });
+      };
+
       const mochaExec = function () {
         /*
          * Load all the tests from the tests.json file
@@ -68,24 +79,17 @@
               document.getElementById("test-header").textContent =
                 testType + " tests";
               // Use RequireJS to load in the tests, because RequireJS will not be happy loading them in any other way
-              require(testList[testType], function () {
-                mocha.run().on("fail", function (test, err) {
-                  console.error(err.stack || err);
-                });
-              });
+              require(testList[testType], runMocha);
             } else {
               // Use RequireJS to load in the tests, because RequireJS will not be happy loading them in any other way
               let combinedTests = Object.values(testList).flat();
               require([
                 "./js/specs/shared/mock-gmaps-module.js",
                 ...combinedTests,
-              ], function () {
-                mocha.run().on("fail", function (test, err) {
-                  console.error(err.stack || err);
-                });
-              }, function (err) {
+              ], runMocha, function (err) {
                 document.getElementById("error").textContent =
                   "Error loading tests: " + JSON.stringify(err);
+                document.body.dataset.testsFinished = "";
               });
             }
           });
