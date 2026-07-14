@@ -2,15 +2,20 @@ define(["common/SearchParams"], (SearchParams) => {
   const expect = chai.expect;
   const sandbox = sinon.createSandbox();
   const stub = sandbox.stub;
+  const resetUrl = () => {
+    window.history.replaceState(null, "", window.location.pathname);
+  };
 
   describe("SearchParams Test Suite", () => {
     beforeEach(() => {
+      resetUrl();
       SearchParams.clearStateInUrl();
     });
 
     afterEach(() => {
       sandbox.restore();
 
+      resetUrl();
       SearchParams.clearStateInUrl();
     });
 
