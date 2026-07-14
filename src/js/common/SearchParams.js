@@ -16,8 +16,6 @@ define([], () => {
   const SCHEMA_VERSION_ID = "sv";
   const ACTIVE_ACTION_ID = "a";
   const OPEN_PANEL_ID = "op";
-  const FEATURE_IDS_ID = "f";
-  const LAYER_DETAIL_ID = "ld";
 
   /** The search parameter ID for enabled layers in the save to URL feature. */
   const ENABLED_LAYERS_ID = "el";
@@ -28,8 +26,6 @@ define([], () => {
     SCHEMA_VERSION_ID,
     ACTIVE_ACTION_ID,
     OPEN_PANEL_ID,
-    FEATURE_IDS_ID,
-    LAYER_DETAIL_ID,
     ENABLED_LAYERS_ID,
   ];
 
@@ -55,8 +51,6 @@ define([], () => {
     enabledLayerStateProvided: false,
     activeActionId: null,
     openPanel: null,
-    featureIds: [],
-    layerDetailId: null,
   });
 
   /**
@@ -137,14 +131,8 @@ define([], () => {
           : state.enabledLayerIds,
       ),
       enabledLayerStateProvided: Boolean(state.enabledLayerStateProvided),
-      featureIds: parseCommaSeparated(
-        Array.isArray(state.featureIds)
-          ? state.featureIds.join(",")
-          : state.featureIds,
-      ),
       activeActionId: normalizeId(state.activeActionId),
       openPanel: normalizeId(state.openPanel),
-      layerDetailId: normalizeId(state.layerDetailId),
     };
 
     const requestedSchema = Number(state.schemaVersion);
@@ -195,8 +183,6 @@ define([], () => {
       enabledLayerStateProvided: url.searchParams.has(ENABLED_LAYERS_ID),
       activeActionId: null,
       openPanel: null,
-      featureIds: [],
-      layerDetailId: null,
     };
 
     if (schemaVersion >= 1) {
@@ -252,14 +238,6 @@ define([], () => {
       if (normalized.openPanel) {
         url.searchParams.set(OPEN_PANEL_ID, normalized.openPanel);
       }
-    }
-
-    // Keep future schema keys parsed but unwritten in phase 1.
-    if (normalized.featureIds.length) {
-      url.searchParams.set(FEATURE_IDS_ID, normalized.featureIds.join(","));
-    }
-    if (normalized.layerDetailId) {
-      url.searchParams.set(LAYER_DETAIL_ID, normalized.layerDetailId);
     }
 
     replaceUrl(url);
