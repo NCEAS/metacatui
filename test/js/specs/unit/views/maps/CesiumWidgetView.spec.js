@@ -77,6 +77,7 @@ define([
         return {
           label: `layer ${type}`,
           type,
+          visible: true,
           cesiumOptions: {
             url: "https://example.com",
           },
