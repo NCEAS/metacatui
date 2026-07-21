@@ -29,23 +29,54 @@ define([
   }
 
   /**
+   * Parse layer visibility state from URL once for initialization.
+   * @returns {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}}
+   * URL-derived layer visibility state.
+   */
+  function parseLayerVisibilityStateFromUrl() {
+    const { enabledLayerIds, enabledLayerStateProvided } =
+      SearchParams.parseStateFromUrl();
+    return { enabledLayerIds, enabledLayerStateProvided };
+  }
+
+  /**
+   * Apply URL visibility override for a layer when the `el` state is present.
+   * @param {Backbone.Model|object} layer A layer model/object.
+   * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
+   * Parsed URL visibility state.
+   * @returns {boolean|undefined} The overridden visible value, if applicable.
+   */
+  function getUrlVisibilityOverride(layer, visibilityState) {
+    if (!visibilityState?.enabledLayerStateProvided) return undefined;
+    const layerId =
+      layer instanceof Backbone.Model ? layer.get("layerId") : layer.layerId;
+    if (!layerId) return undefined;
+    return visibilityState.enabledLayerIds.includes(layerId);
+  }
+
+  /**
    * Normalize configured and runtime visibility for a layer model/object.
    * configuredVisibility tracks the portal-configured value, while visible
    * tracks the current runtime value (which may be overridden from URL state).
    *
    * If both values are missing in config, default to hidden.
    * @param {Backbone.Model|object} layer A layer config object or model.
+   * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} [visibilityState]
+   * Parsed URL visibility state used to override runtime visible state.
    * @returns {Backbone.Model|object} The normalized layer.
    */
-  function normalizeLayerVisibility(layer) {
+  function normalizeLayerVisibility(layer, visibilityState) {
     if (layer instanceof Backbone.Model) {
       const configuredVisibility = layer.get("configuredVisibility");
       const visible = layer.get("visible");
+      const urlVisible = getUrlVisibilityOverride(layer, visibilityState);
 
       if (configuredVisibility == null) {
         layer.set("configuredVisibility", visible === true);
       }
-      if (visible == null) {
+      if (urlVisible != null) {
+        layer.set("visible", urlVisible);
+      } else if (visible == null) {
         layer.set("visible", layer.get("configuredVisibility") === true);
       }
       return layer;
@@ -56,14 +87,64 @@ define([
       layer.configuredVisibility == null
         ? visible === true
         : layer.configuredVisibility === true;
-    const runtimeVisibility =
-      visible == null ? configuredVisibility : visible === true;
+    const urlVisible = getUrlVisibilityOverride(layer, visibilityState);
+    let runtimeVisibility;
+    if (urlVisible != null) {
+      runtimeVisibility = urlVisible;
+    } else if (visible == null) {
+      runtimeVisibility = configuredVisibility;
+    } else {
+      runtimeVisibility = visible === true;
+    }
 
     return {
       ...layer,
       configuredVisibility,
       visible: runtimeVisibility,
     };
+  }
+
+  /**
+   * Normalize layer visibility for a list of layer configs/models.
+   * @param {Array<Backbone.Model|object>} layers Layer configs/models.
+   * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
+   * Parsed URL visibility state.
+   * @returns {Array<Backbone.Model|object>} Normalized layers.
+   */
+  function normalizeLayerListVisibility(layers, visibilityState) {
+    return layers.map((layer) => normalizeLayerVisibility(layer, visibilityState));
+  }
+
+  /**
+   * Normalize visibility for each layer in each configured category.
+   * @param {Array<Backbone.Model|object>} layerCategories Category configs/models.
+   * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
+   * Parsed URL visibility state.
+   * @returns {Array<Backbone.Model|object>} Category configs with normalized layers.
+   */
+  function normalizeLayerCategoryVisibility(layerCategories, visibilityState) {
+    return layerCategories.map((category) => {
+      const categoryLayers =
+        category instanceof Backbone.Model
+          ? category.get("layers")
+          : category?.layers;
+      if (!isNonEmptyArray(categoryLayers)) return category;
+
+      const normalizedLayers = normalizeLayerListVisibility(
+        categoryLayers,
+        visibilityState,
+      );
+
+      if (category instanceof Backbone.Model) {
+        category.set("layers", normalizedLayers);
+        return category;
+      }
+
+      return {
+        ...category,
+        layers: normalizedLayers,
+      };
+    });
   }
 
   /**
@@ -352,14 +433,22 @@ define([
       initialize(options = {}) {
         const config = options;
         if (config && config instanceof Object) {
+          const visibilityState = parseLayerVisibilityStateFromUrl();
           if (isNonEmptyArray(config.layerCategories)) {
-            const assetCategories = new AssetCategories(config.layerCategories);
+            const normalizedCategories = normalizeLayerCategoryVisibility(
+              config.layerCategories,
+              visibilityState,
+            );
+            const assetCategories = new AssetCategories(normalizedCategories);
             assetCategories.setMapModel(this);
             this.set("layerCategories", assetCategories);
             this.unset("layers");
             this.set("allLayers", assetCategories.getMapAssetsFlat());
           } else if (isNonEmptyArray(config.layers)) {
-            const normalizedLayers = config.layers.map(normalizeLayerVisibility);
+            const normalizedLayers = normalizeLayerListVisibility(
+              config.layers,
+              visibilityState,
+            );
             const layers = new MapAssets(
               normalizedLayers,
             );
@@ -368,7 +457,6 @@ define([
             this.unset("layerCategories");
             this.set("allLayers", layers);
           }
-          this.restoreLayerVisibilityFromUrl();
           // TODO: listen to changes in layerCategories and layers to update
           // allLayers. This will be necessary when we allow users to add &
           // remove layers.
@@ -474,23 +562,6 @@ define([
       resetLayerVisibility() {
         this.get("allLayers").forEach((layer) => {
           layer.set("visible", layer.get("configuredVisibility"));
-        });
-      },
-
-      /**
-       * Restore layer visibility from URL state. When the el search parameter
-       * is present, each layer with a layerId is shown or hidden based on
-       * membership in that list. When el is absent, layers keep their
-       * portal-configured visibility and this method is a no-op.
-       */
-      restoreLayerVisibilityFromUrl() {
-        const { enabledLayerIds, enabledLayerStateProvided } =
-          SearchParams.parseStateFromUrl();
-        if (!enabledLayerStateProvided) return;
-        this.get("allLayers")?.forEach((layer) => {
-          const layerId = layer.get("layerId");
-          if (!layerId) return;
-          layer.set("visible", enabledLayerIds.includes(layerId));
         });
       },
 
