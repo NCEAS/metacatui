@@ -74,6 +74,90 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
   };
 
   /**
+   * Apply default presentation for map actions.
+   * @param {object} action A card action.
+   * @returns {object} The normalized action.
+   * @since 0.0.0
+   */
+  const normalizeMapAction = (action) => {
+    if (action?.type !== "map") return action;
+    return {
+      ordinality: "secondary",
+      label: "View Layers",
+      icon: "eye-open",
+      ...action,
+    };
+  };
+
+  /**
+   * Resolve card location fields from modern and legacy config shapes.
+   * @param {object} attrs Raw card attributes.
+   * @param {object} [attrs.position] Legacy location object.
+   * @param {number} [attrs.latitude] Top-level latitude.
+   * @param {number} [attrs.longitude] Top-level longitude.
+   * @param {number} [attrs.height] Top-level height.
+   * @returns {{ latitude: number|null, longitude: number|null, height: number|null }} Location values.
+   * @since 0.0.0
+   */
+  const normalizeLocation = ({ position, latitude, longitude, height } = {}) => ({
+    latitude: latitude ?? position?.latitude ?? null,
+    longitude: longitude ?? position?.longitude ?? null,
+    height: height ?? position?.height ?? null,
+  });
+
+  /**
+   * Normalize raw card config into model attributes.
+   * @param {object} attrs Raw card attributes.
+   * @param {object} [attrs.position] Legacy location object.
+   * @param {number} [attrs.latitude] Top-level latitude.
+   * @param {number} [attrs.longitude] Top-level longitude.
+   * @param {number} [attrs.height] Top-level height.
+   * @param {string[]} [attrs.layerIds] Top-level layer ids.
+   * @param {object[]} [attrs.buttons] Card actions.
+   * @returns {object} Normalized model attributes.
+   * @since 0.0.0
+   */
+  const normalizeCardAttributes = ({
+    position,
+    latitude,
+    longitude,
+    height,
+    layerIds,
+    buttons = [],
+    ...rest
+  } = {}) => {
+    const location = normalizeLocation({ position, latitude, longitude, height });
+    const ids = Array.isArray(layerIds) ? layerIds : [];
+    const normalizedButtons = (Array.isArray(buttons) ? buttons : []).map(normalizeMapAction);
+    const hasExplicitMapButton = normalizedButtons.some((action) => action.type === "map");
+    const allActions = [...normalizedButtons];
+    let geoPoint = null;
+
+    if (location.latitude != null || location.longitude != null) {
+      geoPoint = new GeoPoint(location);
+    }
+
+    if (!hasExplicitMapButton && (location.latitude != null || location.longitude != null)) {
+      allActions.push({
+        type: "map",
+        ordinality: "secondary",
+        label: "View Layers",
+        icon: "eye-open",
+        latitude: location.latitude,
+        longitude: location.longitude,
+        height: location.height,
+        layerIds: ids,
+      });
+    }
+
+    return {
+      ...rest,
+      geoPoint,
+      buttons: allActions,
+    };
+  };
+
+  /**
    * Build a stable seed for fallback action ids.
    * @param {object} attrs Model attributes.
    * @returns {string} Stable seed text.
@@ -188,12 +272,11 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
       /**
        * Normalize action ids on construction so direct model instantiation and
        * collection parsing both produce URL-restorable actions.
-       * @param {ViewfinderCardModelOptions} attrs Initial model attributes.
        * @since 0.0.0
        */
-      initialize(attrs = {}) {
-        const buttons = Array.isArray(attrs.buttons) ? attrs.buttons : this.get("buttons") || [];
-        const actionsWithIds = ensureActionIds(buttons, buildCardSeed(attrs));
+      initialize() {
+        const buttons = this.get("buttons") || [];
+        const actionsWithIds = ensureActionIds(buttons, buildCardSeed(this.attributes));
         if (actionsWithIds.some((action, index) => action.id !== buttons[index]?.id)) {
           this.set("buttons", actionsWithIds, { silent: true });
         }
@@ -226,58 +309,20 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
         buttons = [],
         ...rest
       }) {
-        const lat = latitude ?? position?.latitude ?? null;
-        const lng = longitude ?? position?.longitude ?? null;
-        const alt = height ?? position?.height ?? null;
-        const ids = layerIds ?? [];
-        const cardSeed = [
-          rest.title || "",
-          rest.description || "",
-          rest.image || "",
-          lat ?? "",
-          lng ?? "",
-          alt ?? "",
-          ids.join(","),
-        ].join("|");
-
-        // Apply defaults to any explicit 'map' buttons.
-        const normalizedActions = buttons.map((action) => {
-          if (action.type !== "map") return action;
-          return {
-            ordinality: "secondary",
-            label: "View Layers",
-            icon: "eye-open",
-            ...action,
-          };
+        return normalizeCardAttributes({
+          position,
+          latitude,
+          longitude,
+          height,
+          layerIds,
+          buttons,
+          ...rest,
         });
-
-        const allActions = [...normalizedActions];
-        let geoPoint = null;
-
-        if (lat != null || lng != null) {
-          geoPoint = new GeoPoint({
-            latitude: lat,
-            longitude: lng,
-            height: alt,
-          });
-          allActions.push({
-            type: "map",
-            ordinality: "secondary",
-            label: "View Layers",
-            icon: "eye-open",
-            latitude: lat,
-            longitude: lng,
-            height: alt,
-            layerIds: ids,
-          });
-        }
-
-        const actionsWithIds = ensureActionIds(allActions, cardSeed);
-
-        return { geoPoint, buttons: actionsWithIds, ...rest };
       },
     },
   );
+
+  ViewfinderCardModel.normalizeCardAttributes = normalizeCardAttributes;
 
   return ViewfinderCardModel;
 });

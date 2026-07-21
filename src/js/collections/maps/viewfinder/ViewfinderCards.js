@@ -4,8 +4,7 @@ define([
   "underscore",
   "backbone",
   "models/maps/viewfinder/ViewfinderCardModel",
-  "models/maps/GeoPoint",
-], (_, Backbone, ViewfinderCardModel, GeoPoint) => {
+], (_, Backbone, ViewfinderCardModel) => {
   // The LEO Network domain for viewfinder cards. This is used to determine
   // if the cards are from the LEO Network and to use as the base URL for
   // images.
@@ -147,23 +146,12 @@ define([
         const allLayers = map.get("allLayers");
 
         const viewfinderCards = response.map((cardObj) => {
-          // Apply defaults to any explicit 'map' buttons: secondary
-          // ordinality, 'View Layers' label, and eye icon.
-          const buttons = (
-            Array.isArray(cardObj.buttons) ? [...cardObj.buttons] : []
-          ).map((action) => {
-            if (action.type !== "map") return action;
-            return {
-              ordinality: "secondary",
-              label: "View Layers",
-              icon: "eye-open",
-              ...action,
-            };
-          });
+          const normalizedCard = ViewfinderCardModel.normalizeCardAttributes(cardObj);
+          const { buttons } = normalizedCard;
 
           // Collect layerIds from top-level AND from any explicit map
           // buttons so all relevant layers appear in the badge display.
-          const topLevelLayerIds = cardObj.layerIds || [];
+          const topLevelLayerIds = Array.isArray(cardObj.layerIds) ? cardObj.layerIds : [];
           const ctaMapLayerIds = buttons
             .filter((a) => a.type === "map")
             .flatMap((a) => a.layerIds || []);
@@ -186,47 +174,14 @@ define([
             }
           });
 
-          // Synthesize a secondary legacy 'map' button from top-level
-          // position fields only when no explicit map button is present.
-          // This preserves backward compatibility while allowing multiple
-          // explicit map buttons in the newer configs.
-          let geoPoint = null;
-          const hasExplicitMapButton = buttons.some((b) => b.type === "map");
-          if (cardObj.latitude != null || cardObj.longitude != null) {
-            geoPoint = new GeoPoint({
-              latitude: cardObj.latitude,
-              longitude: cardObj.longitude,
-              height: cardObj.height,
-            });
-          }
-          if (
-            !hasExplicitMapButton &&
-            (cardObj.latitude != null || cardObj.longitude != null)
-          ) {
-            buttons.push({
-              type: "map",
-              ordinality: "secondary",
-              label: "View Layers",
-              icon: "eye-open",
-              latitude: cardObj.latitude,
-              longitude: cardObj.longitude,
-              height: cardObj.height,
-              layerIds: uniqueMapLayerIds,
-            });
-          }
-
           return new ViewfinderCardModel({
-            description: cardObj.description,
+            ...normalizedCard,
             enabledLayerLabels,
             enabledLayerIds,
-            geoPoint,
-            title: cardObj.title,
-            image: cardObj.image,
             featureId: cardObj.featureId,
             isLEONetwork: cardObj.isLEONetwork === true,
             featureLayerId: cardObj.featureLayerId || null,
             featureLayer,
-            buttons,
           });
         });
 

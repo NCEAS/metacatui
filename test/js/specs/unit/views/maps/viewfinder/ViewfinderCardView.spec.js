@@ -210,6 +210,54 @@ define([
       }
     });
 
+    it("generates fallback ids for parsed legacy map actions", () => {
+      const card = new ViewfinderCardModel(
+        {
+          title: "Parsed legacy card",
+          description: "For testing parse-time normalization",
+          position: {
+            latitude: 41,
+            longitude: -120,
+            height: 2000,
+          },
+          layerIds: ["layer-1"],
+        },
+        { parse: true },
+      );
+
+      expect(card.get("geoPoint")).to.be.instanceof(GeoPoint);
+      expect(card.get("buttons")).to.have.length(1);
+      expect(card.get("buttons")[0].id).to.match(/^vf-action-/);
+    });
+
+    it("does not synthesize a duplicate legacy map action when one is explicit", () => {
+      const card = new ViewfinderCardModel(
+        {
+          title: "Explicit map card",
+          description: "For testing explicit map normalization",
+          position: {
+            latitude: 41,
+            longitude: -120,
+            height: 2000,
+          },
+          layerIds: ["layer-1"],
+          buttons: [
+            {
+              type: "map",
+              label: "Custom map action",
+              latitude: 10,
+              longitude: 20,
+            },
+          ],
+        },
+        { parse: true },
+      );
+
+      expect(card.get("buttons")).to.have.length(1);
+      expect(card.get("buttons")[0].ordinality).to.equal("secondary");
+      expect(card.get("buttons")[0].icon).to.equal("eye-open");
+    });
+
     it("can reset selected state", () => {
       state.harness.click();
       state.harness.reset();
