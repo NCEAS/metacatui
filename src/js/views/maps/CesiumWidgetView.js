@@ -444,15 +444,17 @@ define([
        * @since 2.37.0
        */
       logDebugLayerSummary() {
-        const allLayers = this.model.get("allLayers");
-        const layers = allLayers
-          ? allLayers.map((layer) => ({
-              label: layer.get("label"),
-              type: layer.get("type"),
-              status: layer.get("status"),
-              visible: layer.get("visible"),
-            }))
-          : [];
+        const allLayers =
+          typeof this.model.getAllLayers === "function"
+            ? this.model.getAllLayers()
+            : this.model.get("allLayers")?.models || [];
+
+        const layers = allLayers.map((layer) => ({
+          label: layer.get("label"),
+          type: layer.get("type"),
+          status: layer.get("status"),
+          visible: layer.get("visible"),
+        }));
 
         console.info("[Cesium debug] Loaded layers", layers);
       },
@@ -808,9 +810,10 @@ define([
        * @since 0.0.0
        */
       getEnabledLayerIdsForUrlState() {
-        const layers = this.model
-          .getLayerGroups()
-          .flatMap((group) => group?.models || []);
+        const layers =
+          typeof this.model.getAllLayers === "function"
+            ? this.model.getAllLayers()
+            : this.model.get("allLayers")?.models || [];
 
         return layers
           .map((layer) => (layer.get("visible") ? layer.get("layerId") : null))

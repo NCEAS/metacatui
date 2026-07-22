@@ -211,7 +211,12 @@ define([
           geoPoint = preset.get("geoPoint");
         }
 
-        this.mapModel.get("allLayers").forEach((layer) => {
+        const layers =
+          typeof this.mapModel.getAllLayers === "function"
+            ? this.mapModel.getAllLayers()
+            : this.mapModel.get("allLayers")?.models || [];
+
+        layers.forEach((layer) => {
           const isVisible = enabledLayerIds.includes(layer.get("layerId"));
           // Show or hide the layer according to the preset.
           layer.set("visible", isVisible);

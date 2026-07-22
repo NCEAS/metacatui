@@ -234,7 +234,8 @@ define([
           { layers: [{ label: "layer 1" }, { label: "layer 2" }] },
           { layers: [{ label: "layer 3" }] },
         ]);
-        state.view.model.set("allLayers", assetCategories.getMapAssetsFlat());
+        state.view.model.set("layerCategories", assetCategories);
+        state.view.model.unset("layers");
 
         state.view.render();
         state.view.scene.camera.position = new Cesium.Cartesian3(1, 2, 3);

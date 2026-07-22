@@ -332,10 +332,6 @@ define([
        * @property {MapAssets} [layers = new MapAssets()] - The imagery and
        * vector data to render in the map. When layerCategories exist, this
        * property will be ignored.
-       * @property {MapAssets} [allLayers = new MapAssets()] - The assets that
-       * correspond to the layers field or the layerCategories field depending
-       * upon which is used. If layerCategories, this contains a flattened list
-       * of the assets.
        * @property {AssetCategories} [layerCategories = new AssetCategories()] -
        * A collection of layer categories to display in the tool bar. Categories
        * will be displayed in the order they appear. The array of the
@@ -443,7 +439,6 @@ define([
             assetCategories.setMapModel(this);
             this.set("layerCategories", assetCategories);
             this.unset("layers");
-            this.set("allLayers", assetCategories.getMapAssetsFlat());
           } else if (isNonEmptyArray(config.layers)) {
             const normalizedLayers = normalizeLayerListVisibility(
               config.layers,
@@ -455,11 +450,10 @@ define([
             this.set("layers", layers);
             this.get("layers").setMapModel(this);
             this.unset("layerCategories");
-            this.set("allLayers", layers);
           }
-          // TODO: listen to changes in layerCategories and layers to update
-          // allLayers. This will be necessary when we allow users to add &
-          // remove layers.
+
+          // Backward compatibility: keep legacy allLayers attribute populated.
+          this.refreshAllLayers();
 
           if (isNonEmptyArray(config.terrains)) {
             this.set("terrains", new MapAssets(config.terrains));
@@ -501,6 +495,16 @@ define([
           this.unset("zoomPresetCategories");
         }
         this.setUpInteractions();
+      },
+
+      /**
+       * Keep legacy allLayers attribute in sync for backward compatibility.
+       * @returns {MapAssets} Flattened layer collection.
+       */
+      refreshAllLayers() {
+        const allLayers = new MapAssets(this.getAllLayers());
+        this.set("allLayers", allLayers);
+        return allLayers;
       },
 
       /**
@@ -560,7 +564,7 @@ define([
        * configuration.
        */
       resetLayerVisibility() {
-        this.get("allLayers").forEach((layer) => {
+        this.getAllLayers().forEach((layer) => {
           layer.set("visible", layer.get("configuredVisibility"));
         });
       },
@@ -574,6 +578,7 @@ define([
       resetLayers() {
         const newLayers = this.defaults()?.layers || new MapAssets();
         this.set("layers", newLayers);
+        this.refreshAllLayers();
         return newLayers;
       },
 
@@ -594,6 +599,14 @@ define([
       },
 
       /**
+       * @returns {MapAsset[]} A flat list of all layer models across all layer
+       * groups.
+       */
+      getAllLayers() {
+        return this.getLayerGroups().flatMap((group) => group?.models || []);
+      },
+
+      /**
        * Add a layer or other asset to the map. This is the best way to add a
        * layer to the map because it will ensure that this map model is set on
        * the layer model. If the map is using layer categories, the layer
@@ -610,7 +623,9 @@ define([
         if (!layers) {
           layers = this.get("layers") || this.resetLayers();
         }
-        return layers.addAsset(asset, this);
+        const added = layers.addAsset(asset, this);
+        this.refreshAllLayers();
+        return added;
       },
 
       /**
@@ -620,11 +635,13 @@ define([
        */
       removeAsset(asset) {
         if (!asset) return;
-        const layers = this.get("layers");
-        if (!layers) return;
+        const layerGroups = this.getLayerGroups();
         // Remove by ID because the model is passed directly. Not sure if this
         // is a bug in the MapAssets collection or Backbone?
-        if (layers) layers.remove(asset.cid);
+        layerGroups.forEach((layers) => {
+          if (layers) layers.remove(asset.cid);
+        });
+        this.refreshAllLayers();
       },
     },
   );

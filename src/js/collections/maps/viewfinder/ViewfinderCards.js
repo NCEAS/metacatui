@@ -143,7 +143,10 @@ define([
         if (!isNonEmptyArray(response)) return [];
 
         const map = options.mapModel || this.mapModel;
-        const allLayers = map.get("allLayers");
+        const allLayers =
+          typeof map.getAllLayers === "function"
+            ? map.getAllLayers()
+            : map.get("allLayers")?.models || [];
 
         const viewfinderCards = response.map((cardObj) => {
           const normalizedCard = ViewfinderCardModel.normalizeCardAttributes(cardObj);
@@ -163,7 +166,7 @@ define([
           const enabledLayerLabels = [];
           let featureLayer = null;
 
-          allLayers.models.forEach((layer) => {
+          allLayers.forEach((layer) => {
             const layerId = layer.get("layerId");
             if (uniqueMapLayerIds.includes(layerId)) {
               enabledLayerIds.push(layerId);

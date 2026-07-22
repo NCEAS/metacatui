@@ -101,8 +101,8 @@ define([
           ],
         });
 
-        expect(map.get("allLayers").at(0).get("visible")).to.be.false;
-        expect(map.get("allLayers").at(1).get("visible")).to.be.true;
+        expect(map.getAllLayers()[0].get("visible")).to.be.false;
+        expect(map.getAllLayers()[1].get("visible")).to.be.true;
       });
 
       it("defaults flat layers with undefined visibility to hidden", () => {
@@ -123,8 +123,8 @@ define([
           ],
         });
 
-        expect(map.get("allLayers").at(0).get("visible")).to.be.false;
-        expect(map.get("allLayers").at(1).get("visible")).to.be.false;
+        expect(map.getAllLayers()[0].get("visible")).to.be.false;
+        expect(map.getAllLayers()[1].get("visible")).to.be.false;
       });
 
       it("uses configuredVisibility when visible is omitted for flat layers", () => {
@@ -153,10 +153,10 @@ define([
           ],
         });
 
-        expect(map.get("allLayers").at(0).get("configuredVisibility")).to.be.true;
-        expect(map.get("allLayers").at(0).get("visible")).to.be.true;
-        expect(map.get("allLayers").at(1).get("configuredVisibility")).to.be.false;
-        expect(map.get("allLayers").at(1).get("visible")).to.be.false;
+        expect(map.getAllLayers()[0].get("configuredVisibility")).to.be.true;
+        expect(map.getAllLayers()[0].get("visible")).to.be.true;
+        expect(map.getAllLayers()[1].get("configuredVisibility")).to.be.false;
+        expect(map.getAllLayers()[1].get("visible")).to.be.false;
       });
 
       it("preserves configuredVisibility on model instance layers", () => {
