@@ -238,7 +238,7 @@ define(["common/SearchParams"], (SearchParams) => {
         window.history.replaceState(null, "", "?foo=bar");
 
         SearchParams.updateStateInUrl({
-          openPanel: SearchParams.OPEN_PANEL_VALUES.viewfinder,
+          openPanel: "viewfinder",
         });
 
         const url = new URL(window.location.href);

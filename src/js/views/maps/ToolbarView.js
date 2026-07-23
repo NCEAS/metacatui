@@ -6,7 +6,6 @@ define([
   "text!templates/maps/toolbar.html",
   "models/maps/Map",
   "common/IconUtilities",
-  "common/SearchParams",
   // Sub-views - TODO: import these as needed
   "views/maps/LayersPanelView",
   "views/maps/HelpPanelView",
@@ -19,7 +18,6 @@ define([
   Template,
   Map,
   IconUtilities,
-  SearchParams,
   // Sub-views
   LayersPanelView,
   HelpPanel,
@@ -145,7 +143,7 @@ define([
       sectionOptions: [
         {
           label: "Viewfinder",
-          panelId: SearchParams.OPEN_PANEL_VALUES.viewfinder,
+          panelId: "viewfinder",
           icon: "globe",
           view: ViewfinderView,
           action(view, _model) {
@@ -159,7 +157,7 @@ define([
         },
         {
           label: "Layers",
-          panelId: SearchParams.OPEN_PANEL_VALUES.layers,
+          panelId: "layers",
           icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="m3.2 7.3 8.6 4.6a.5.5 0 0 0 .4 0l8.6-4.6a.4.4 0 0 0 0-.8L12.1 3a.5.5 0 0 0-.4 0L3.3 6.5a.4.4 0 0 0 0 .8Z"/><path d="M20.7 10.7 19 9.9l-6.7 3.6a.5.5 0 0 1-.4 0L5 9.9l-1.8.8a.5.5 0 0 0 0 .8l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.8Z"/><path d="m20.7 15.1-1.5-.7-7 3.8a.5.5 0 0 1-.4 0l-7-3.8-1.5.7a.5.5 0 0 0 0 .9l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.9Z"/></svg>',
           view: LayersPanelView,
           isVisible(model) {
@@ -274,6 +272,8 @@ define([
           this.isOpen = true;
         }
 
+        this.initialOpenPanelId = this.initialOpenPanelId || null;
+
         // Check whether each section should be shown, defaulting to true.
         this.sections = this.sectionOptions.filter((section) =>
           typeof section.isVisible === "function"
@@ -355,7 +355,7 @@ define([
           view.handleLinkClick(this.sectionElements[0]);
         }
 
-        view.applyOpenPanelFromUrl();
+        view.applyInitialOpenPanel();
 
         return this;
       },
@@ -381,11 +381,11 @@ define([
        * @param {SectionElement} sectionEl The section that was clicked
        */
       handleLinkClick(sectionEl) {
+        const previousPanelId = this.getActivePanelId();
         const toolbarOpen = this.isOpen;
         const sectionActive = sectionEl.isActive;
         if (toolbarOpen && sectionActive) {
           this.close();
-          this.syncOpenPanelInUrl();
           return;
         }
         if (!toolbarOpen && sectionEl.contentEl) {
@@ -397,7 +397,7 @@ define([
           }
           this.activateSection(sectionEl);
         }
-        this.syncOpenPanelInUrl();
+        this.triggerActivePanelChangeIfNeeded(previousPanelId);
       },
 
       /**
@@ -519,49 +519,42 @@ define([
        * Closes the toolbar. Also inactivates all sections.
        */
       close() {
+        const previousPanelId = this.getActivePanelId();
         this.isOpen = false;
         this.el.classList.remove(this.classes.open);
         // Ensure that no section is active when the toolbar is closed
         this.inactivateAllSections();
-        this.syncOpenPanelInUrl();
+        this.triggerActivePanelChangeIfNeeded(previousPanelId);
       },
 
       /**
-       * Return whether URL restore state updates are enabled for this map.
-       * @returns {boolean} `true` when URL restore state updates are enabled.
+       * Get the currently active panel id in the toolbar.
+       * @returns {string|null} The active panel id, or null when no panel is active.
        * @since 0.0.0
        */
-      shouldSyncUrlState() {
-        return this.model?.get("showShareUrl") === true;
-      },
-
-      /**
-       * Get the currently active restore-panel id in the toolbar.
-       * @returns {string|null} The active restore panel id, or null when no panel is active.
-       * @since 0.0.0
-       */
-      getActiveRestorePanelId() {
+      getActivePanelId() {
         if (!this.isOpen) return null;
         const active = this.sectionElements.find((section) => section.isActive);
         return active?.panelId || null;
       },
 
       /**
-       * Sync the current open panel selection to URL restore state.
+       * Trigger an event when the active panel changed.
+       * @param {string|null} previousPanelId The previously active panel id.
        * @since 0.0.0
        */
-      syncOpenPanelInUrl() {
-        if (!this.shouldSyncUrlState()) return;
-        const openPanel = this.getActiveRestorePanelId();
-        SearchParams.updateOpenPanel(openPanel);
+      triggerActivePanelChangeIfNeeded(previousPanelId) {
+        const panelId = this.getActivePanelId();
+        if (panelId === previousPanelId) return;
+        this.trigger("toolbar:activePanelChanged", panelId);
       },
 
       /**
-       * Open a toolbar section corresponding to a restore panel id.
-       * @param {string|null} panelId A restore panel id.
+       * Open a toolbar section corresponding to a panel id.
+       * @param {string|null} panelId A panel id.
        * @since 0.0.0
        */
-      openPanelByRestoreId(panelId) {
+      openPanelById(panelId) {
         if (!panelId) return;
         const section = this.sectionElements.find(
           (sectionEl) => sectionEl.panelId === panelId,
@@ -575,14 +568,11 @@ define([
       },
 
       /**
-       * Apply URL restore state for open panel when toolbar renders.
+       * Apply initial open panel state when toolbar renders.
        * @since 0.0.0
        */
-      applyOpenPanelFromUrl() {
-        if (!this.shouldSyncUrlState()) return;
-        const restoreState = this.model.get("restoreState") ||
-          SearchParams.parseStateFromUrl();
-        this.openPanelByRestoreId(restoreState.openPanel);
+      applyInitialOpenPanel() {
+        this.openPanelById(this.initialOpenPanelId);
       },
 
       /**

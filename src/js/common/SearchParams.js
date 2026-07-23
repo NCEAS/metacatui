@@ -30,16 +30,6 @@ define([], () => {
   ];
 
   /**
-   * IDs for known open panel values in schema 1.
-   * @type {{layers: string, viewfinder: string}}
-   * @since 0.0.0
-   */
-  const OPEN_PANEL_VALUES = {
-    layers: "layers",
-    viewfinder: "viewfinder",
-  };
-
-  /**
    * The normalized default state returned by parser and normalizer.
    * @returns {object} normalized state with default values.
    * @since 0.0.0
@@ -326,6 +316,5 @@ define([], () => {
     updateOpenPanel,
     updateStateInUrl,
     writeStateToUrl,
-    OPEN_PANEL_VALUES,
   };
 });

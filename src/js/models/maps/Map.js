@@ -671,8 +671,10 @@ define([
 
         const interactions = this.get("interactions");
         const cameraPosition = interactions?.get("cameraPosition");
+        const restoreState = this.get("restoreState") || {};
         const partialState = {
           enabledLayerIds: this.getEnabledLayerIdsForUrlState(),
+          openPanel: restoreState.openPanel ?? null,
         };
 
         if (isCompletePosition(cameraPosition)) {

@@ -199,9 +199,22 @@ define([
        * @returns {ToolbarView} Returns the rendered view
        */
       renderToolbar() {
+        const initialOpenPanelId = this.model.get("restoreState")?.openPanel || null;
         this.toolbar = new ToolbarView({
           el: this.subElements.toolbarContainer,
           model: this.model,
+          initialOpenPanelId,
+        });
+        this.stopListening(this.toolbar, "toolbar:activePanelChanged");
+        this.listenTo(this.toolbar, "toolbar:activePanelChanged", (panelId) => {
+          const restoreState = this.model.get("restoreState") || {};
+          if (restoreState.openPanel === panelId) return;
+
+          this.model.set("restoreState", {
+            ...restoreState,
+            openPanel: panelId,
+          });
+          this.model.updateSearchParams();
         });
         this.toolbar.render();
         return this.toolbar;
