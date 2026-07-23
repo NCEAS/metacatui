@@ -107,7 +107,7 @@ define([
       /**
        * Find a rendered card view that contains the given action id.
        * @param {string} actionId The action id to resolve.
-       * @returns {object|null} The matching rendered view and index, if found.
+       * @returns {object|null} The matching rendered view and action, if found.
        * @since 0.0.0
        */
       findRenderedAction(actionId) {
@@ -120,10 +120,10 @@ define([
             if (cardMatch) return cardMatch;
 
             const buttons = cardView.preset.get("buttons") || [];
-            const actionIndex = buttons.findIndex((action) => action?.id === actionId);
-            return actionIndex > -1
+            const action = buttons.find((candidate) => candidate?.id === actionId);
+            return action
               ? {
-                  actionIndex,
+                  action,
                   cardView,
                   categoryCid: listView.categoryCid,
                 }
@@ -157,7 +157,7 @@ define([
         if (!match) return false;
 
         this.openCategoryPanel(match.categoryCid);
-        return match.cardView.activateActionByIndex(match.actionIndex);
+        return match.cardView.restoreAction(match.action);
       },
 
       /**

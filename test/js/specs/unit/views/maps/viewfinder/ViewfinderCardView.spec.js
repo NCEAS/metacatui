@@ -130,6 +130,90 @@ define([
       }
     });
 
+      it("restores iframe actions without replaying click side effects", () => {
+        const sandbox = sinon.createSandbox();
+        const ctaCallbackSpy = sandbox.spy();
+        const onActionActivatedSpy = sandbox.spy();
+        const onActivateSpy = sandbox.spy();
+        const card = new ViewfinderCardModel({
+          title: "Restored iframe preset",
+          description: "For testing restore behavior",
+          buttons: [
+            {
+              type: "iframe",
+              ordinality: "primary",
+              label: "Open dashboard",
+              url: "https://example.org/app",
+            },
+          ],
+        });
+        const view = new ViewfinderCardView({
+          preset: card,
+          ctaCallback: ctaCallbackSpy,
+          onActionActivated: onActionActivatedSpy,
+          onActivate: onActivateSpy,
+        });
+        view.render();
+        const harness = new ViewfinderCardViewHarness(view);
+        const testContainer = document.createElement("div");
+        testContainer.id = "restore-iframe-test-container";
+        testContainer.append(view.el);
+        document.body.append(testContainer);
+
+        try {
+          const restored = view.restoreAction(card.get("buttons")[0]);
+
+          expect(restored).to.be.true;
+          expect(harness.isActive()).to.be.true;
+          expect(onActivateSpy.callCount).to.equal(1);
+          expect(onActionActivatedSpy.callCount).to.equal(0);
+          expect(ctaCallbackSpy.callCount).to.equal(1);
+          expect(ctaCallbackSpy.firstCall.args[0]).to.equal(
+            "https://example.org/app",
+          );
+        } finally {
+          sandbox.restore();
+          testContainer.remove();
+        }
+      });
+
+      it("restores tab actions without opening a new tab", () => {
+        const sandbox = sinon.createSandbox();
+        const openSpy = sandbox.stub(window, "open");
+        const card = new ViewfinderCardModel({
+          title: "Restored tab preset",
+          description: "For testing restore behavior",
+          buttons: [
+            {
+              type: "tab",
+              ordinality: "primary",
+              label: "Open external app",
+              url: "https://example.org/external",
+            },
+          ],
+        });
+        const view = new ViewfinderCardView({
+          preset: card,
+        });
+        view.render();
+        const harness = new ViewfinderCardViewHarness(view);
+        const testContainer = document.createElement("div");
+        testContainer.id = "restore-tab-test-container";
+        testContainer.append(view.el);
+        document.body.append(testContainer);
+
+        try {
+          const restored = view.restoreAction(card.get("buttons")[0]);
+
+          expect(restored).to.be.true;
+          expect(harness.isActive()).to.be.true;
+          expect(openSpy.callCount).to.equal(0);
+        } finally {
+          sandbox.restore();
+          testContainer.remove();
+        }
+      });
+
     it("preserves an explicit action id", () => {
       const sandbox = sinon.createSandbox();
       const onActionActivatedSpy = sandbox.spy();

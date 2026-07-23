@@ -158,8 +158,10 @@ define([
        * Mark this card as active and highlight the specific clicked button.
        * @param {HTMLElement} buttonEl The button element that was activated.
        * @param {ViewfinderCardAction} action The action object associated with the button.
+       * @param {object} [options] Additional activation options.
+       * @param {boolean} [options.notifyActionActivated] Whether to notify listeners.
        */
-      setActive(buttonEl, action) {
+      setActive(buttonEl, action, { notifyActionActivated = true } = {}) {
         this.el.classList.add(CLASS_NAMES.active);
         const isSecondary =
           buttonEl?.classList.contains(CLASS_NAMES.buttonSecondary) ?? false;
@@ -181,7 +183,33 @@ define([
             );
           });
 
-        this.onActionActivated(action, buttonEl);
+        if (notifyActionActivated) {
+          this.onActionActivated(action, buttonEl);
+        }
+      },
+
+      /**
+       * Restore an action from URL state without replaying click side effects.
+       * @param {ViewfinderCardAction} action The action object to restore.
+       * @returns {boolean} True when restoration succeeded.
+       * @since 0.0.0
+       */
+      restoreAction(action) {
+        const buttons = this.preset.get("buttons") || [];
+        const index = buttons.indexOf(action);
+        if (index < 0) return false;
+
+        const btn = this.el.querySelector(`[data-button-index="${index}"]`);
+        if (!btn) return false;
+
+        this.onActivate(this);
+        this.setActive(btn, action, { notifyActionActivated: false });
+
+        if (action.type === "iframe" && action.url) {
+          this.ctaCallback(action.url);
+        }
+
+        return true;
       },
 
       /**
@@ -199,28 +227,6 @@ define([
           .forEach((btn) => {
             btn.classList.remove(CLASS_NAMES.buttonPrimaryActive);
           });
-      },
-
-      /**
-       * Activate an action by index, emulating a user click.
-       * @param {number} index The index of the action button.
-       * @returns {boolean} True when activation succeeded.
-       * @since 0.0.0
-       */
-      activateActionByIndex(index) {
-        const action = this.preset.get("buttons")?.[index];
-        if (!action) return false;
-
-        const btn = this.el.querySelector(`[data-button-index="${index}"]`);
-        if (!btn) return false;
-
-        if (btn.classList.contains(CLASS_NAMES.buttonSecondary)) {
-          this.selectLayers({ currentTarget: btn });
-          return true;
-        }
-
-        this.handleButtonClick({ currentTarget: btn });
-        return true;
       },
 
       /** Values meant to be used by the rendered HTML template. */
