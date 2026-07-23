@@ -11,7 +11,6 @@ define([
   "models/maps/Feature",
   "common/Utilities",
   "text!templates/maps/cesium-widget-view.html",
-  "common/SearchParams",
 ], (
   $,
   _,
@@ -23,7 +22,6 @@ define([
   Feature,
   Utilities,
   Template,
-  SearchParams,
 ) => {
   /**
    * @class CesiumWidgetView
@@ -151,15 +149,6 @@ define([
             this.interactions.selectFeatures();
           }
 
-          this.debouncedUpdateSearchParams = _.debounce(() => {
-            this.updateSearchParams();
-          }, 150 /* milliseconds */);
-
-          this.listenTo(
-            this.model,
-            "change:searchparams",
-            this.updateSearchParams,
-          );
         } catch (e) {
           console.log("Failed to initialize a CesiumWidgetView. ", e);
         }
@@ -213,14 +202,9 @@ define([
             view.render3DTilesInspector();
           }
 
-          const destination = SearchParams.parseStateFromUrl().destination;
-          const hasCompleteDestination =
-            destination.latitude != null &&
-            destination.longitude != null &&
-            destination.height != null;
-          if (this.model.get("showShareUrl") && hasCompleteDestination) {
-            // Go to position specified in query params.
-            view.flyTo(destination);
+          const initialTarget = this.interactions.get("zoomTarget");
+          if (initialTarget) {
+            view.flyTo(initialTarget);
           } else {
             // Go to the home position, if one is set.
             view.flyHome(0);
@@ -628,13 +612,6 @@ define([
             // Each layer fires 'appearanceChanged' whenever the color, opacity,
             // etc. has been updated. Re-render the scene when this happens.
             view.listenTo(layers, "appearanceChanged", view.requestRender);
-
-            // Keep URL layer state in sync for every visibility toggle.
-            view.listenTo(
-              layers,
-              "change:visible",
-              view.syncEnabledLayersToUrl,
-            );
           }
         });
         // Reset asset listeners if the layers collection is replaced
@@ -710,9 +687,9 @@ define([
             moveEnd: [],
             moveStart: [],
             changed: [
+              "updateCameraPosition",
               "updateScale",
               "updateViewExtent",
-              "debouncedUpdateSearchParams",
             ],
           };
           if (view.isDebugEnabled()) {
@@ -777,58 +754,12 @@ define([
       },
 
       /**
-       * Update the search parameters related to the current map position
-       * and heading.
-       * @since 2.30.0
-       */
-      updateSearchParams() {
-        if (!this.model.get("showShareUrl")) return;
-
-        const { heading, pitch, positionCartographic, roll } =
-          this.scene.camera;
-
-        const destination = {
-          heading: Cesium.Math.toDegrees(heading),
-          height: positionCartographic.height,
-          latitude: Cesium.Math.toDegrees(positionCartographic.latitude),
-          longitude: Cesium.Math.toDegrees(positionCartographic.longitude),
-          pitch: Cesium.Math.toDegrees(pitch),
-          roll: Cesium.Math.toDegrees(roll),
-        };
-
-        const enabledLayerIds = this.getEnabledLayerIdsForUrlState();
-
-        SearchParams.updateStateInUrl({
-          destination,
-          enabledLayerIds,
-        });
-      },
-
-      /**
-       * Get enabled layer ids from live layer groups for URL state sync.
-       * @returns {string[]} A normalized list of visible layer ids.
+       * Push the current Cesium camera position into shared interaction state.
        * @since 0.0.0
        */
-      getEnabledLayerIdsForUrlState() {
-        const layers =
-          typeof this.model.getAllLayers === "function"
-            ? this.model.getAllLayers()
-            : this.model.get("allLayers")?.models || [];
-
-        return layers
-          .map((layer) => (layer.get("visible") ? layer.get("layerId") : null))
-          .filter((layerId) => typeof layerId === "string" && layerId.length);
-      },
-
-      /**
-       * Sync enabled layers to URL state from current layer visibility.
-       * @since 0.0.0
-       */
-      syncEnabledLayersToUrl() {
-        if (!this.model.get("showShareUrl")) return;
-        SearchParams.updateStateInUrl({
-          enabledLayerIds: this.getEnabledLayerIdsForUrlState(),
-        });
+      updateCameraPosition() {
+        if (!this.interactions) return;
+        this.interactions.setCameraPosition(this.getCameraPosition());
       },
 
       /**

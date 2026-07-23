@@ -4,7 +4,6 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "common/SearchParams",
   "models/maps/Map",
   "text!templates/maps/map.html",
   // SubViews
@@ -19,7 +18,6 @@ define([
   $,
   _,
   Backbone,
-  SearchParams,
   Map,
   Template,
   // SubViews
@@ -98,13 +96,6 @@ define([
 
         this.model = options?.model ? options.model : new Map();
         this.isPortalMap = options?.isPortalMap;
-
-        // Parse restore state once and share it with subviews through the map model.
-        this.model.set(
-          "restoreState",
-          SearchParams.parseStateFromUrl(),
-          { silent: true },
-        );
       },
 
       /**

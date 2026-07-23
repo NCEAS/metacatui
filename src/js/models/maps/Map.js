@@ -148,6 +148,20 @@ define([
   }
 
   /**
+   * Check whether a camera/destination object has complete coordinates.
+   * @param {object} position The position to validate.
+   * @returns {boolean} Whether longitude, latitude, and height are present.
+   */
+  function isCompletePosition(position) {
+    return (
+      position &&
+      typeof position.longitude === "number" &&
+      typeof position.latitude === "number" &&
+      typeof position.height === "number"
+    );
+  }
+
+  /**
    * @class MapModel
    * @classdesc The Map Model contains all of the settings and options for a
    * required to render a map view.
@@ -495,6 +509,14 @@ define([
           this.unset("zoomPresetCategories");
         }
         this.setUpInteractions();
+        this.set("restoreState", SearchParams.parseStateFromUrl(), {
+          silent: true,
+        });
+        this.debouncedUpdateSearchParams = _.debounce(() => {
+          this.updateSearchParams();
+        }, 150 /* milliseconds */);
+        this.setUpUrlStateListeners();
+        this.applyRestoreState();
       },
 
       /**
@@ -537,6 +559,113 @@ define([
        */
       getSelectedFeatures() {
         return this.get("interactions")?.get("selectedFeatures");
+      },
+
+      /**
+       * Returns true when the map should sync URL state.
+       * @returns {boolean} Whether URL sync is enabled.
+       */
+      shouldSyncUrlState() {
+        return this.get("showShareUrl") === true;
+      },
+
+      /**
+       * Apply the restored URL destination as a navigation target.
+       * @since 0.0.0
+       */
+      applyRestoreState() {
+        const restoreState = this.get("restoreState") || {};
+        if (!this.shouldSyncUrlState() || !isCompletePosition(restoreState.destination)) {
+          return;
+        }
+
+        this.zoomTo(restoreState.destination);
+      },
+
+      /**
+       * Set up listeners that keep URL state in sync with the map model.
+       * @since 0.0.0
+       */
+      setUpUrlStateListeners() {
+        const interactions = this.get("interactions");
+
+        this.stopListening(
+          this,
+          "change:layers change:layerCategories",
+          this.setUpUrlStateListeners,
+        );
+
+        if (this.urlStateLayerGroups?.length) {
+          this.urlStateLayerGroups.forEach((layers) => {
+            this.stopListening(
+              layers,
+              "change:visible",
+              this.debouncedUpdateSearchParams,
+            );
+          });
+        }
+        this.urlStateLayerGroups = [];
+
+        if (!this.shouldSyncUrlState() || !interactions) {
+          return;
+        }
+
+        this.listenTo(
+          this,
+          "change:layers change:layerCategories",
+          this.setUpUrlStateListeners,
+        );
+        this.listenTo(
+          interactions,
+          "change:cameraPosition",
+          this.debouncedUpdateSearchParams,
+        );
+
+        const layerGroups = this.getLayerGroups();
+        this.urlStateLayerGroups = layerGroups;
+        layerGroups.forEach((layers) => {
+          if (layers) {
+            this.listenTo(
+              layers,
+              "change:visible",
+              this.debouncedUpdateSearchParams,
+            );
+          }
+        });
+      },
+
+      /**
+       * Get enabled layer ids from live layer groups for URL state sync.
+       * @returns {string[]} A normalized list of visible layer ids.
+       * @since 0.0.0
+       */
+      getEnabledLayerIdsForUrlState() {
+        const layers = this.getAllLayers();
+
+        return layers
+          .map((layer) => (layer.get("visible") ? layer.get("layerId") : null))
+          .filter((layerId) => typeof layerId === "string" && layerId.length);
+      },
+
+      /**
+       * Update the search parameters related to the current map position and
+       * visible layers.
+       * @since 0.0.0
+       */
+      updateSearchParams() {
+        if (!this.shouldSyncUrlState()) return;
+
+        const interactions = this.get("interactions");
+        const cameraPosition = interactions?.get("cameraPosition");
+        const partialState = {
+          enabledLayerIds: this.getEnabledLayerIdsForUrlState(),
+        };
+
+        if (isCompletePosition(cameraPosition)) {
+          partialState.destination = cameraPosition;
+        }
+
+        SearchParams.updateStateInUrl(partialState);
       },
 
       /**
