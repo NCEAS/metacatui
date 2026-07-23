@@ -49,6 +49,25 @@ define([
         expect(map.has("layers")).to.be.false;
       });
 
+      it("restores the URL destination when share URL syncing is enabled", () => {
+        SearchParams.updateStateInUrl({
+          destination: {
+            latitude: 45,
+            longitude: 135,
+            height: 9999,
+          },
+        });
+
+        const map = new Map({ showShareUrl: false });
+        map.set("showShareUrl", true);
+
+        expect(map.get("interactions").get("zoomTarget")).to.deep.equal({
+          latitude: 45,
+          longitude: 135,
+          height: 9999,
+        });
+      });
+
       it("changes flat layer visibility based on search params", () => {
         SearchParams.updateStateInUrl({ enabledLayerIds: ["layer-2"] });
         const map = new Map({
@@ -267,6 +286,38 @@ define([
         const map = new Map({ show3DTilesInspector: true });
 
         expect(map.get("show3DTilesInspector")).to.equal(true);
+      });
+
+      it("writes camera position and enabled layers to the URL", () => {
+        const map = new Map({
+          showShareUrl: true,
+          layers: [
+            { layerId: "layer-1", visible: true },
+            { layerId: "layer-2", visible: false },
+          ],
+        });
+
+        map.get("interactions").setCameraPosition({
+          latitude: 45,
+          longitude: 135,
+          height: 9999,
+          heading: 1,
+          pitch: 2,
+          roll: 3,
+        });
+        map.updateSearchParams();
+
+        expect(SearchParams.parseStateFromUrl().destination).to.deep.equal({
+          latitude: 45,
+          longitude: 135,
+          height: 9999,
+          heading: 1,
+          pitch: 2,
+          roll: 3,
+        });
+        expect(SearchParams.parseStateFromUrl().enabledLayerIds).to.deep.equal([
+          "layer-1",
+        ]);
       });
     });
 

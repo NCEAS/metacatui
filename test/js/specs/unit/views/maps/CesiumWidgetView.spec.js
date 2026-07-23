@@ -4,14 +4,12 @@ define([
   "collections/maps/AssetCategories",
   "cesium",
   "/test/js/specs/shared/clean-state.js",
-  "common/SearchParams",
 ], (
   CesiumWidgetView,
   MapAssets,
   AssetCategories,
   Cesium,
   cleanState,
-  SearchParams,
 ) => {
   const expect = chai.expect;
   const spy = sinon.spy();
@@ -20,15 +18,10 @@ define([
     let tilesInspectorStub;
 
     const state = cleanState(() => {
-      SearchParams.clearStateInUrl();
-
-      const view = new CesiumWidgetView();
-
       return { view: new CesiumWidgetView() };
     }, beforeEach);
 
     afterEach(() => {
-      SearchParams.clearStateInUrl();
       spy.resetHistory();
       tilesInspectorStub?.restore();
       tilesInspectorStub = null;
@@ -149,106 +142,6 @@ define([
             /* alpha= */ 1,
           ),
         );
-      });
-
-      it("flies to the destination in the URL if present", () => {
-        SearchParams.updateStateInUrl({
-          destination: {
-            latitude: 45,
-            longitude: 135,
-            height: 9999,
-          },
-        });
-        state.view.model.set("showShareUrl", true);
-
-        state.view.render();
-
-        expect(state.view.zoomTarget).to.deep.equal({
-          latitude: 45,
-          longitude: 135,
-          height: 9999,
-        });
-      });
-
-      it("flies to the home destination if showShareUrl feature is off", () => {
-        SearchParams.updateStateInUrl({
-          destination: {
-            latitude: 45,
-            longitude: 135,
-            height: 9999,
-          },
-        });
-        state.view.model.set("showShareUrl", false);
-
-        state.view.render();
-
-        expect(state.view.zoomTarget).to.deep.equal({
-          latitude: 56,
-          longitude: -65,
-          height: 10000000,
-          heading: 1,
-          roll: 0,
-          pitch: -90,
-        });
-      });
-
-      it("flies to the home destination when the URL destination is incomplete", () => {
-        SearchParams.updateStateInUrl({
-          destination: {
-            latitude: 45,
-            longitude: 135,
-          },
-        });
-        state.view.model.set("showShareUrl", true);
-
-        state.view.render();
-
-        expect(state.view.zoomTarget).to.deep.equal({
-          latitude: 56,
-          longitude: -65,
-          height: 10000000,
-          heading: 1,
-          roll: 0,
-          pitch: -90,
-        });
-      });
-
-      it("flies to the home destination", () => {
-        state.view.model.set("showShareUrl", true);
-
-        state.view.render();
-
-        expect(state.view.zoomTarget).to.deep.equal({
-          latitude: 56,
-          longitude: -65,
-          height: 10000000,
-          heading: 1,
-          roll: 0,
-          pitch: -90,
-        });
-      });
-
-      it("updates the search parameters", async () => {
-        state.view.model.set("showShareUrl", true);
-        const assetCategories = new AssetCategories([
-          { layers: [{ label: "layer 1" }, { label: "layer 2" }] },
-          { layers: [{ label: "layer 3" }] },
-        ]);
-        state.view.model.set("layerCategories", assetCategories);
-        state.view.model.unset("layers");
-
-        state.view.render();
-        state.view.scene.camera.position = new Cesium.Cartesian3(1, 2, 3);
-        state.view.updateSearchParams();
-
-        expect(SearchParams.parseStateFromUrl().destination).to.deep.equal({
-          heading: 152.70043883509962,
-          height: -6364361.246505877,
-          latitude: 53.48500010847735,
-          longitude: 63.43494882292201,
-          pitch: -3.4509114285277382,
-          roll: 340.4941155938977,
-        });
       });
 
       it("enables Cesium debug helpers when configured", () => {

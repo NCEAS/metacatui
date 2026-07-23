@@ -509,6 +509,7 @@ define([
           this.unset("zoomPresetCategories");
         }
         this.setUpInteractions();
+        this.listenTo(this, "change:showShareUrl", this.handleShowShareUrlChange);
         this.set("restoreState", SearchParams.parseStateFromUrl(), {
           silent: true,
         });
@@ -567,6 +568,19 @@ define([
        */
       shouldSyncUrlState() {
         return this.get("showShareUrl") === true;
+      },
+
+      /**
+       * Re-apply restore state when share URL syncing is toggled on.
+       * @param {MapModel} _model The model that changed.
+       * @param {boolean} showShareUrl Whether URL syncing is enabled.
+       * @since 0.0.0
+       */
+      handleShowShareUrlChange(_model, showShareUrl) {
+        if (showShareUrl) {
+          this.applyRestoreState();
+          this.setUpUrlStateListeners();
+        }
       },
 
       /**
