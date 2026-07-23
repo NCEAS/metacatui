@@ -1879,6 +1879,7 @@ define([
           this.removePreRenderLightListener();
           this.removePreRenderLightListener = null;
         }
+        this.stopListening();
       },
     },
   );
