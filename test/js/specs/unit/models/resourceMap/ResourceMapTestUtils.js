@@ -1,32 +1,13 @@
 "use strict";
 
-define([
-  "rdflib",
-  "models/resourceMap/ResourceMap",
-  "models/resourceMap/GraphMutation",
-], (rdf, ResourceMap, GraphMutation) => {
+define(["rdflib", "models/resourceMap/ResourceMap"], (rdf, ResourceMap) => {
   const TEST_RESOLVE_BASE = "https://cn.test.com/resolve/base/url";
-  /**
-   * Build a test resolve URI.
-   * @param {string} path URI path suffix.
-   * @returns {string} Test resolve URI.
-   */
   const resolveUrl = (path) => `${TEST_RESOLVE_BASE}/${path}`;
 
-  /**
-   * Join RDF/XML fixture lines.
-   * @param {string[]} lines Fixture lines.
-   * @returns {string} Joined XML.
-   */
   function joinXml(lines) {
     return lines.join("\n");
   }
 
-  /**
-   * Return all validation issue codes.
-   * @param {object[]} issues Validation issues.
-   * @returns {Array<string|null>} Issue codes.
-   */
   function getIssueCodes(issues) {
     return issues.map((issue) => issue.code);
   }
@@ -43,28 +24,27 @@ define([
     memberPids = ["meta.1", "data.1"],
     documentationLinks = null,
     creatorName = "Test User",
-    resolveBase = TEST_RESOLVE_BASE,
-    provenance = {},
+    resolveServiceUrl = TEST_RESOLVE_BASE,
+    objectServiceUrl,
   } = {}) {
-    let normalizedDocumentationLinks = documentationLinks;
-    if (documentationLinks === null) {
-      normalizedDocumentationLinks = memberPids.length
+    const normalizedDocumentationLinks =
+      documentationLinks ??
+      (memberPids.length
         ? [
             {
               metadataPid: memberPids[0],
               dataPid: memberPids[1] || memberPids[0],
             },
           ]
-        : [];
-    }
+        : []);
 
     return ResourceMap.create({
       resourceMapPid,
       members: memberPids.map((pid) => ({ pid })),
       documentationLinks: normalizedDocumentationLinks,
       creatorName,
-      resolveBase,
-      provenance,
+      resolveServiceUrl,
+      objectServiceUrl,
     });
   }
 
@@ -81,7 +61,6 @@ define([
    * @param {object} [options.associationNode] Pre-built association node.
    * @param {string} [options.programPid] Program to link via
    * `prov:qualifiedAssociation`/`prov:hadPlan`.
-   * @param {string} [options.agentUri] Agent to attach to the association.
    * @param {boolean} [options.typed] Add the `provone:Execution` type triple.
    * @param {boolean} [options.identified] Add the `dcterms:identifier`
    * literal.
@@ -94,114 +73,59 @@ define([
       executionNode = null,
       associationNode = null,
       programPid = null,
-      agentUri = null,
       typed = true,
       identified = true,
     } = {},
   ) {
     const execution = executionNode || rdf.sym(executionId);
     const association = associationNode || rdf.blankNode();
-    const add = (subject, predicate, object) =>
-      GraphMutation.addStatementIfMissing(
-        resourceMap,
-        subject,
-        predicate,
-        object,
-      );
 
-    if (typed) {
-      add(execution, resourceMap.ns.RDF("type"), resourceMap.ns.PROVONE("Execution"));
-    }
-    if (identified) {
-      add(
-        execution,
-        resourceMap.ns.DCTERMS("identifier"),
-        rdf.literal(
-          executionId || execution.value,
-          undefined,
-          resourceMap.ns.XSD("string"),
-        ),
-      );
-    }
-    if (programPid || agentUri || associationNode) {
-      add(execution, resourceMap.ns.PROV("qualifiedAssociation"), association);
-    }
-    if (programPid) {
-      add(
-        association,
-        resourceMap.ns.PROV("hadPlan"),
-        rdf.sym(resourceMap.getNodeUriForPid(programPid)),
-      );
-    }
-    if (agentUri) {
-      add(association, resourceMap.ns.PROV("agent"), rdf.sym(agentUri));
-    }
+    resourceMap.mutateGraph(
+      () => {
+        const add = (subject, predicate, object) =>
+          resourceMap.graph.addStatementIfMissing({
+            subject: subject,
+            predicate: predicate,
+            object: object,
+          });
+
+        if (typed) {
+          add(
+            execution,
+            resourceMap.ns.RDF("type"),
+            resourceMap.ns.PROVONE("Execution"),
+          );
+        }
+        if (identified) {
+          add(
+            execution,
+            resourceMap.ns.DCTERMS("identifier"),
+            rdf.literal(
+              executionId || execution.value,
+              undefined,
+              resourceMap.ns.XSD("string"),
+            ),
+          );
+        }
+        if (programPid || associationNode) {
+          add(
+            execution,
+            resourceMap.ns.PROV("qualifiedAssociation"),
+            association,
+          );
+        }
+        if (programPid) {
+          add(
+            association,
+            resourceMap.ns.PROV("hadPlan"),
+            rdf.sym(resourceMap.pidToUri(programPid)),
+          );
+        }
+      },
+      { markDirty: false },
+    );
 
     return { executionNode: execution, associationNode: association };
-  }
-
-  const MALFORMED_IDENTIFIER_VALUE =
-    'file:///tmp/RtmpArtifact/"meta.1"^^<http://www.w3.org/2001/XMLSchema#string>';
-  const MALFORMED_CREATOR_NAME_VALUE =
-    'file:///tmp/RtmpArtifact/"DataONE Java Client Library"^^<http://www.w3.org/2001/XMLSchema#string>';
-  const MALFORMED_IS_AGGREGATED_BY_VALUE =
-    'file:///tmp/RtmpArtifact/"https://cn.dataone.org/cn/v1/resolve/resourceMap_legacy#aggregation"^^<http://www.w3.org/2001/XMLSchema#anyURI>';
-
-  /** @returns {ResourceMap} Resource map containing malformed RDF artifacts. */
-  function createMalformedArtifactResourceMap() {
-    const resourceMap = createBaseResourceMap({
-      resourceMapPid: "resource_map_urn:uuid:rm.malformed.1",
-      memberPids: ["meta.1"],
-      documentationLinks: [
-        {
-          metadataPid: "meta.1",
-          dataPid: "meta.1",
-        },
-      ],
-      creatorName: "Temporary Creator",
-    });
-    const resourceMapNode = rdf.sym(resourceMap.resourceMapUri);
-    const creatorNode = resourceMap.graph.statementsMatching(
-      resourceMapNode,
-      resourceMap.ns.DC("creator"),
-      undefined,
-      undefined,
-    )[0].object;
-    const memberNode = rdf.sym(resourceMap.getNodeUriForPid("meta.1"));
-
-    GraphMutation.removeStatementsMatching(
-      resourceMap,
-      creatorNode,
-      resourceMap.ns.FOAF("name"),
-      undefined,
-    );
-    GraphMutation.removeStatementsMatching(
-      resourceMap,
-      memberNode,
-      resourceMap.ns.DCTERMS("identifier"),
-      undefined,
-    );
-
-    GraphMutation.addStatement(
-      resourceMap,
-      creatorNode,
-      resourceMap.ns.FOAF("name"),
-      rdf.sym(MALFORMED_CREATOR_NAME_VALUE),
-    );
-    GraphMutation.addStatement(
-      resourceMap,
-      memberNode,
-      resourceMap.ns.DCTERMS("identifier"),
-      rdf.sym(MALFORMED_IDENTIFIER_VALUE),
-    );
-    GraphMutation.addStatement(
-      resourceMap,
-      rdf.sym("https://cn.dataone.org/cn/v1/resolve/meta.legacy"),
-      resourceMap.ns.ORE("isAggregatedBy"),
-      rdf.sym(MALFORMED_IS_AGGREGATED_BY_VALUE),
-    );
-
-    return resourceMap;
   }
 
   const COMPREHENSIVE_XML = joinXml([
@@ -368,13 +292,13 @@ define([
     `  <rdf:Description rdf:about="${resolveUrl("resource_map_urn%3Auuid%3Arm.fix.1#aggregation")}">`,
     '    <rdf:type rdf:resource="http://www.openarchives.org/ore/terms/Aggregation"/>',
     `    <ore:aggregates rdf:resource="${resolveUrl("meta.fix.1")}"/>`,
-    `    <ore:aggregates rdf:resource="${resolveUrl("resource_map_doi%3A10.18739%2FA22Z9V")}"/>`,
+    `    <ore:aggregates rdf:resource="${resolveUrl("resource_map_doi:10.18739%2FA22Z9V")}"/>`,
     "  </rdf:Description>",
     `  <rdf:Description rdf:about="${resolveUrl("meta.fix.1")}">`,
     '    <dcterms:identifier rdf:datatype="http://www.w3.org/2001/XMLSchema#string">meta.fix.1</dcterms:identifier>',
-    `    <cito:documents rdf:resource="${resolveUrl("resource_map_doi%3A10.18739%2FA22Z9V")}"/>`,
+    `    <cito:documents rdf:resource="${resolveUrl("resource_map_doi:10.18739%2FA22Z9V")}"/>`,
     "  </rdf:Description>",
-    `  <rdf:Description rdf:about="${resolveUrl("resource_map_doi%3A10.18739%2FA22Z9V")}">`,
+    `  <rdf:Description rdf:about="${resolveUrl("resource_map_doi:10.18739%2FA22Z9V")}">`,
     `    <cito:isDocumentedBy rdf:resource="${resolveUrl("meta.fix.1")}"/>`,
     "  </rdf:Description>",
     "</rdf:RDF>",
@@ -388,7 +312,6 @@ define([
     TEST_RESOLVE_BASE,
     addExecutionScaffold,
     createBaseResourceMap,
-    createMalformedArtifactResourceMap,
     getIssueCodes,
   };
 });

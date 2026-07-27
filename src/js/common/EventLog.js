@@ -8,8 +8,7 @@ define(["models/analytics/Analytics"], (Analytics) => {
   const DEFAULT_CONSOLE_LEVEL = "info";
   // The entire Analytics.js file can be blocked by privacy extensions, so
   // we need to check if it exists before using it.
-  const DEFAULT_ANALYTICS =
-    globalThis.MetacatUI?.analytics || Analytics ? new Analytics() : null;
+  const DEFAULT_ANALYTICS = Analytics ? new Analytics() : null;
 
   const LEVELS = {
     INFO: "info",
@@ -25,8 +24,8 @@ define(["models/analytics/Analytics"], (Analytics) => {
   /**
    * @class EventLog
    * @classdesc A utility class for recording events and grouping by context.
-   * Allows logging of events with a descriptive name, severity levels (info,
-   * warning, error), and sending the data to an analytics service.
+   * Allows logging of events with a descriptive name and severity levels, and
+   * provides access to the current analytics service.
    * @since 2.34.0
    */
   class EventLog {
@@ -37,32 +36,39 @@ define(["models/analytics/Analytics"], (Analytics) => {
      * events to the console. Must be one of the LEVELS or false to prevent all
      * console logging.
      * @param {Backbone.Model} [options.analyticsModel] - An existing analytics
-     * model to use for sending log events. If not provided, a new Analytics
-     * model will be created.
+     * model to use for sending events. If not provided, the current app
+     * analytics model or a no-op Analytics model will be used.
      * @param {number} [options.maxEvents] - Maximum number of events per log.
      * Defaults to 500.
      */
     constructor({
       consoleLevel = DEFAULT_CONSOLE_LEVEL,
       maxEvents = DEFAULT_MAX_EVENTS,
-      analyticsModel = DEFAULT_ANALYTICS,
+      analyticsModel = null,
     } = {}) {
-      this.id = `EventLog_${Date.now()}`;
       this.logs = new Map();
-      this.analytics =
-        analyticsModel && analyticsModel instanceof Analytics
-          ? analyticsModel
-          : DEFAULT_ANALYTICS;
+      this.analyticsModel = analyticsModel;
       this.maxEvents =
         Number.isInteger(maxEvents) && maxEvents > 0
           ? maxEvents
           : DEFAULT_MAX_EVENTS;
-      const optLevel = consoleLevel;
       try {
-        this.setConsoleLogLevel(optLevel);
+        this.setConsoleLogLevel(consoleLevel);
       } catch (e) {
         this.setConsoleLogLevel(DEFAULT_CONSOLE_LEVEL);
       }
+    }
+
+    /**
+     * Get the analytics model currently available to the event log.
+     * @returns {Backbone.Model|null} The analytics model
+     */
+    get analytics() {
+      return (
+        this.analyticsModel ||
+        globalThis.MetacatUI?.analytics ||
+        DEFAULT_ANALYTICS
+      );
     }
 
     /**
@@ -132,17 +138,6 @@ define(["models/analytics/Analytics"], (Analytics) => {
     }
 
     /**
-     * Clear all events from a log, resetting its state.
-     * @param {object} log - The log object to clear
-     */
-    clearLog(log) {
-      if (!this.logs.has(log.name)) return;
-      const logToClear = log;
-      logToClear.events = [];
-      logToClear.startTime = Date.now(); // Reset start time
-    }
-
-    /**
      * Log an event to the console with a prefix indicating the log name.
      * @param {string} message - The log message
      * @param {object} [logName] - The log object containing the log name
@@ -161,49 +156,7 @@ define(["models/analytics/Analytics"], (Analytics) => {
         console.info(`${prefix} ${message}`, meta);
       }
     }
-
-    /**
-     * Manually send a log to analytics (e.g., GA)
-     * @param {object} log - The log object to send
-     * @param {string} [eventName] - The name of the event to send to analytics
-     * @example
-     * sendToAnalytics(
-     *   resMapResolver.getLog(pid),
-     *   "resource_map_resolution_failed"
-     * );
-     */
-    sendToAnalytics(log, eventName = "EventLog") {
-      log.events.forEach((event) => {
-        const { timestamp, level, message, meta } = event;
-        this.analytics.trackCustomEvent(eventName, {
-          timestamp,
-          level,
-          message,
-          ...meta,
-        });
-      });
-    }
-
-    /**
-     * Return a log's full log for inspection
-     * @param {object} log - The log object to inspect
-     * @returns {object[]} - Array of log events
-     */
-    static getLogs(log) {
-      return log.events;
-    }
-
-    /**
-     * Optionally attach a specific analytics model (e.g. GoogleAnalytics)
-     * @param {Backbone.Model} analyticsModel - An existing analytics model to
-     * use for sending log events.
-     */
-    setAnalyticsModel(analyticsModel) {
-      this.analytics = analyticsModel;
-    }
   }
-
-  EventLog.LEVELS = LEVELS;
 
   return EventLog;
 });
