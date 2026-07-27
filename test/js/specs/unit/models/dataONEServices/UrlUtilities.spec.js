@@ -86,6 +86,9 @@ define(["/test/js/specs/shared/clean-state.js", "common/UrlUtilities"], (
       UrlUtilities.encodeDataONEPidForPath(
         "pid+with plus/segment~",
       ).should.equal("pid%2Bwith%20plus%2Fsegment~");
+      UrlUtilities.encodeDataONEPidForPath("pid:abc%2F123").should.equal(
+        "pid:abc%252F123",
+      );
     });
 
     it("decodes RFC3986 path segments and preserves DataONE plus-sign handling", () => {

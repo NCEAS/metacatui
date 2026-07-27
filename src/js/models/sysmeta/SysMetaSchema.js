@@ -18,10 +18,10 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
   const CANONICAL_XML = {
     version: "v2",
     rootNamespaceUri: XML_NS_V2,
-    rootQualifiedName: "ns3:systemMetadata",
+    rootQualifiedName: "d1_v2.0:systemMetadata",
     namespaceAttributes: [
-      { name: "xmlns:ns2", value: XML_NS_V1 },
-      { name: "xmlns:ns3", value: XML_NS_V2 },
+      { name: "xmlns:d1_v2.0", value: XML_NS_V2 },
+      { name: "xmlns:d1", value: XML_NS_V1 },
     ],
   };
 
@@ -59,6 +59,8 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
 
   // Ordered schema field definitions used for parsing, validation, and output.
   const FIELD_DEFINITIONS = [
+    // serialVersion is server-managed, optional in submitted sysmeta, and
+    // assigned by the server after write.
     {
       field: "serialVersion",
       type: "integer",
@@ -143,7 +145,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
     {
       field: "archived",
       type: "boolean",
-      defaultValue: false,
+      defaultValue: null,
       minOccurs: 0,
       maxOccurs: 1,
     },

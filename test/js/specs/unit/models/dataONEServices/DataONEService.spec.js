@@ -210,6 +210,26 @@ define([
           /ExampleService: pid is required/,
         );
       });
+
+      it("classifies ambiguous write errors", () => {
+        [
+          { name: "TimeoutError" },
+          { networkError: true },
+          {},
+          { status: 0 },
+          { status: 408 },
+          { status: 500 },
+          { status: 503 },
+        ].forEach((error) => {
+          DataONEService.isAmbiguousWriteError(error).should.equal(true);
+        });
+      });
+
+      it("does not classify client authorization errors as ambiguous writes", () => {
+        [400, 401, 403].forEach((status) => {
+          DataONEService.isAmbiguousWriteError({ status }).should.equal(false);
+        });
+      });
     });
 
     describe("descriptor helpers", () => {
@@ -229,16 +249,18 @@ define([
       };
 
       it("resolveBaseUrl prefers an explicit URL", () => {
-        DescribedService.resolveBaseUrl("https://explicit.example.org/").should.equal(
-          "https://explicit.example.org",
-        );
+        DescribedService.resolveBaseUrl(
+          "https://explicit.example.org/",
+        ).should.equal("https://explicit.example.org");
       });
 
       it("resolveBaseUrl walks appModelKeys in order", () => {
         state.sandbox.stub(globalThis, "MetacatUI").value({
           appModel: {
             get(key) {
-              return key === "fallbackUrl" ? "https://fallback.example.org" : null;
+              return key === "fallbackUrl"
+                ? "https://fallback.example.org"
+                : null;
             },
           },
         });

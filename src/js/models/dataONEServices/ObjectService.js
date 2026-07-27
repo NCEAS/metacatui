@@ -106,10 +106,26 @@ define([
       }
 
       const appModel = globalThis.MetacatUI?.appModel;
+      // MN deployments can read newly saved objects immediately. CN-only
+      // deployments have no local object service, so they read via /resolve/.
       return (
         UrlUtilities.normalizeUrl(appModel?.get?.("objectServiceUrl")) ||
         UrlUtilities.normalizeUrl(appModel?.get?.("resolveServiceUrl")) ||
         ""
+      );
+    }
+
+    /**
+     * Build the exact request URL used to read an object.
+     * @param {string} pid PID to read.
+     * @returns {string} Full object request URL.
+     * @since 0.0.0
+     */
+    getReadUrl(pid) {
+      return UrlUtilities.buildUrl(
+        this.readBaseUrl,
+        this.constructor.buildPidPath(pid),
+        { encodePath: false },
       );
     }
 

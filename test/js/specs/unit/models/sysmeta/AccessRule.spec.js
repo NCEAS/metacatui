@@ -25,6 +25,17 @@ define(["models/sysmeta/AccessRule"], (AccessRule) => {
           "write",
         ]);
       });
+
+      it("converts the legacy single-subject/boolean shape", () => {
+        const rule = new AccessRule({
+          subject: "userA",
+          read: true,
+          write: true,
+          changePermission: false,
+        });
+        expect(rule.subjects).to.deep.equal(["userA"]);
+        expect(rule.permissions).to.deep.equal(["read", "write"]);
+      });
     });
 
     describe("fromElement()", () => {
@@ -104,7 +115,8 @@ define(["models/sysmeta/AccessRule"], (AccessRule) => {
           },
           {
             field: "accessPolicy[1].permissions[0]",
-            message: "Permissions must be one of: read, write, changePermission.",
+            message:
+              "Permissions must be one of: read, write, changePermission.",
           },
         ]);
       });
@@ -142,6 +154,57 @@ define(["models/sysmeta/AccessRule"], (AccessRule) => {
 
         expect(rule.subjects).to.deep.equal(["public"]);
         expect(rule.permissions).to.deep.equal(["read"]);
+      });
+    });
+
+    describe("isAuthorized()", () => {
+      it("matches the requested subject", () => {
+        const rule = new AccessRule({
+          subjects: ["uid=editor"],
+          permissions: ["write"],
+        });
+
+        expect(rule.isAuthorized("write", "uid=editor")).to.equal(true);
+        expect(rule.isAuthorized("write", "public")).to.equal(false);
+      });
+
+      it("matches any requested subject when a list is provided", () => {
+        const rule = new AccessRule({
+          subjects: ["CN=editors,DC=dataone,DC=org"],
+          permissions: ["write"],
+        });
+
+        expect(
+          rule.isAuthorized("write", [
+            "uid=editor",
+            "CN=editors,DC=dataone,DC=org",
+          ]),
+        ).to.equal(true);
+      });
+
+      it("treats write as read access", () => {
+        const rule = new AccessRule({
+          subjects: ["uid=editor"],
+          permissions: ["write"],
+        });
+
+        expect(rule.isAuthorized("read", "uid=editor")).to.equal(true);
+        expect(rule.isAuthorized("changePermission", "uid=editor")).to.equal(
+          false,
+        );
+      });
+
+      it("treats changePermission as write and read access", () => {
+        const rule = new AccessRule({
+          subjects: ["uid=editor"],
+          permissions: ["changePermission"],
+        });
+
+        expect(rule.isAuthorized("read", "uid=editor")).to.equal(true);
+        expect(rule.isAuthorized("write", "uid=editor")).to.equal(true);
+        expect(rule.isAuthorized("changePermission", "uid=editor")).to.equal(
+          true,
+        );
       });
     });
   });

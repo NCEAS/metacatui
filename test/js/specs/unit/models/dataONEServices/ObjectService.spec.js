@@ -112,6 +112,18 @@ define([
         service.resolveWriteBaseUrl().should.equal("");
       });
 
+      it("builds the full request URL from the selected read service", () => {
+        const service = new ObjectService({
+          readBaseUrl: "https://mn.example.org/object",
+        });
+
+        service
+          .getReadUrl("doi:10.5063/example+data")
+          .should.equal(
+            "https://mn.example.org/object/doi:10.5063%2Fexample%2Bdata",
+          );
+      });
+
       it("uses the active alt repo for writes on a CN", () => {
         globalThis.MetacatUI = {
           appModel: {

@@ -216,7 +216,7 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
         expect(a.data).to.equal(undefined);
         expect(a.identifier).to.equal("");
         expect(a.formatId).to.equal(null);
-        expect(a.archived).to.equal(false);
+        expect(a.archived).to.equal(null);
         expect(a.accessPolicy).to.be.an("array").with.length(0);
         expect(a.replicas).to.be.an("array").with.length(0);
         expect(a.checksum.isEmpty()).to.equal(true);
@@ -443,11 +443,13 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
           '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
         );
         expect(xmlDoc.documentElement.namespaceURI).to.equal(XML_NS_V2);
-        expect(xmlDoc.documentElement.tagName).to.equal("ns3:systemMetadata");
-        expect(xmlDoc.documentElement.getAttribute("xmlns:ns2")).to.equal(
+        expect(xmlDoc.documentElement.tagName).to.equal(
+          "d1_v2.0:systemMetadata",
+        );
+        expect(xmlDoc.documentElement.getAttribute("xmlns:d1")).to.equal(
           XML_NS_V1,
         );
-        expect(xmlDoc.documentElement.getAttribute("xmlns:ns3")).to.equal(
+        expect(xmlDoc.documentElement.getAttribute("xmlns:d1_v2.0")).to.equal(
           XML_NS_V2,
         );
         expect(reparsed.toJSON()).to.deep.equal(sysMeta.toJSON());
@@ -458,7 +460,9 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
         const xmlDoc = new DOMParser().parseFromString(xml, "application/xml");
 
         expect(xmlDoc.documentElement.namespaceURI).to.equal(XML_NS_V2);
-        expect(xmlDoc.documentElement.tagName).to.equal("ns3:systemMetadata");
+        expect(xmlDoc.documentElement.tagName).to.equal(
+          "d1_v2.0:systemMetadata",
+        );
       });
 
       it("serializes dates in canonical DataONE XML format", () => {
@@ -714,6 +718,24 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
         expect(json.parseWarnings).to.equal(undefined);
         expect(json.data).to.equal(undefined);
         expect(json.replica).to.equal(undefined);
+      });
+    });
+
+    describe("clone()", () => {
+      it("returns an independent SystemMetadata copy", () => {
+        const source = SystemMetadata.fromXml(FULL_XML);
+        const clone = source.clone();
+
+        expect(clone).to.be.instanceOf(SystemMetadata);
+        expect(clone).to.not.equal(source);
+        expect(clone.toJSON()).to.deep.equal(source.toJSON());
+
+        clone.identifier = "changed.1";
+        clone.checksum.clear();
+        clone.accessPolicy.clear();
+        expect(source.identifier).to.equal("sample.1");
+        expect(source.checksum.value).to.not.equal(null);
+        expect(source.accessPolicy.length).to.be.greaterThan(0);
       });
     });
   });

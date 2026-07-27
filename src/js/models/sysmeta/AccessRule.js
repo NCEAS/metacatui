@@ -23,15 +23,40 @@ define([
    */
   class AccessRule {
     /**
-     * Create an AccessRule instance.
+     * Create an AccessRule instance. Accepts both the canonical
+     * `{ subjects, permissions }` shape and the legacy
+     * `collections/AccessPolicy` AccessRule shape
+     * (`{ subject, read, write, changePermission }`), so legacy access-policy
+     * editing UIs can round-trip through the typed model.
      * @param {object} [data] Initial access rule values.
      * @param {Array<string>} [data.subjects] Subjects granted access.
      * @param {Array<string>} [data.permissions] Granted permissions.
+     * @param {string} [data.subject] Legacy single-subject form
+     * @param {boolean} [data.read] Legacy read permission flag
+     * @param {boolean} [data.write] Legacy write permission flag
+     * @param {boolean} [data.changePermission] Legacy changePermission flag
      */
     constructor(data = {}) {
-      this.subjects = normalizeStringArray(data.subjects);
+      this.subjects = normalizeStringArray(
+        data.subjects != null ? data.subjects : data.subject,
+      );
+
+      let { permissions } = data;
+      if (
+        permissions == null &&
+        (data.read != null ||
+          data.write != null ||
+          data.changePermission != null)
+      ) {
+        permissions = [
+          data.read ? "read" : null,
+          data.write ? "write" : null,
+          data.changePermission ? "changePermission" : null,
+        ].filter(Boolean);
+      }
+
       this.permissions = dedupeArray(
-        normalizeStringArray(data.permissions)
+        normalizeStringArray(permissions)
           .map((permission) => normalizePermission(permission))
           .filter((permission) => permission !== null),
       );
@@ -197,6 +222,42 @@ define([
         subjects: [...this.subjects],
         permissions: [...this.permissions],
       };
+    }
+
+    /**
+     * Check whether this rule grants the requested action to a subject.
+     * @param {"read"|"write"|"changePermission"} [action] Permission to check
+     * @param {string|Array<string>|null} [subject] Subject or candidate subjects
+     * Defaults to `public` when omitted.
+     * @returns {boolean} `true` when a matching subject has the requested
+     * permission directly or through the DataONE permission hierarchy.
+     */
+    isAuthorized(action = "write", subject = null) {
+      const subjects = normalizeStringArray(subject ?? "public");
+      const normalAction = normalizePermission(action);
+      if (
+        !normalAction ||
+        !subjects.some((candidate) => this.subjects.includes(candidate))
+      ) {
+        return false;
+      }
+
+      const hasPermission = (permission) =>
+        this.permissions.includes(permission);
+
+      if (normalAction === "read") {
+        return (
+          hasPermission("read") ||
+          hasPermission("write") ||
+          hasPermission("changePermission")
+        );
+      }
+      if (normalAction === "write") {
+        return hasPermission("write") || hasPermission("changePermission");
+      }
+      return (
+        normalAction === "changePermission" && hasPermission("changePermission")
+      );
     }
   }
 

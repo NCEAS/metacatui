@@ -249,10 +249,18 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
      * @returns {string} DataONE-safe path segment.
      */
     encodeDataONEPidForPath(segment = "") {
-      return UrlUtilities.encodeRFC3986PathSegment(segment).replace(
-        /\+/g,
-        "%2B",
-      );
+      const normalized = normalizeText(segment) || "";
+      if (!normalized) return "";
+
+      // A PID is opaque identifier text, not an already encoded URL segment.
+      // In particular, literal `%2F` must become `%252F` so it cannot be
+      // confused with a PID containing `/`.
+      return encodeURIComponent(normalized)
+        .replace(
+          RFC3986_PCHAR_ESCAPE_PATTERN,
+          (match) => RFC3986_PCHAR_ESCAPES[match.toUpperCase()] || match,
+        )
+        .replace(/\+/g, "%2B");
     },
 
     /**

@@ -188,6 +188,30 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
     },
 
     /**
+     * Append a non-null value to an array stored under a string map key.
+     * @param {Map<string, Array<*>>} map Target map
+     * @param {string} key Lookup key
+     * @param {*} value Value to append
+     */
+    addMapArrayValue(map, key, value) {
+      if (!ValueUtilities.isNonEmptyString(key) || value == null) return;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(value);
+    },
+
+    /**
+     * Add a non-null value to a set stored under a string map key.
+     * @param {Map<string, Set<*>>} map Target map
+     * @param {string} key Lookup key
+     * @param {*} value Value to add
+     */
+    addMapSetValue(map, key, value) {
+      if (!ValueUtilities.isNonEmptyString(key) || value == null) return;
+      if (!map.has(key)) map.set(key, new Set());
+      map.get(key).add(value);
+    },
+
+    /**
      * Return a sorted copy of string-like values.
      * @param {Array<*>} values Values to sort as strings.
      * @returns {Array<*>} Sorted values.
@@ -222,21 +246,6 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
         ValueUtilities.sortStrings(Object.keys(source)).map((key) => [
           key,
           source[key],
-        ]),
-      );
-    },
-
-    /**
-     * Return a shallow copy of an object, cloning any array values.
-     * @param {object} record Source object whose array values should be copied.
-     * @returns {object} Shallow object copy with cloned arrays.
-     */
-    cloneObjectWithArrayValues(record) {
-      const source = ValueUtilities.isPlainObject(record) ? record : {};
-      return Object.fromEntries(
-        Object.entries(source).map(([key, value]) => [
-          key,
-          Array.isArray(value) ? [...value] : value,
         ]),
       );
     },

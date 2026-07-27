@@ -3,6 +3,7 @@ define([
   "models/dataONEServices/DataONEHttpClient",
   "models/PersistentStorage",
   "common/DataONEXmlUtilities",
+  "common/ErrorUtilities",
   "common/UrlUtilities",
   "common/Utilities",
   "common/ValueUtilities",
@@ -11,6 +12,7 @@ define([
   DataONEHttpClient,
   PersistentStorage,
   DataONEXmlUtilities,
+  ErrorUtilities,
   UrlUtilities,
   Utilities,
   ValueUtilities,
@@ -308,6 +310,26 @@ define([
         }
       });
       return picked;
+    }
+
+    /**
+     * Whether a DataONE write failure may have committed remotely.
+     * @param {Error|object} error Service error
+     * @returns {boolean} True when the write result must be verified
+     */
+    static isAmbiguousWriteError(error) {
+      const status = Number(error?.status);
+      return (
+        ErrorUtilities.isAbortError(error) ||
+        ErrorUtilities.isTimeoutError(error) ||
+        error?.networkError === true ||
+        error?.name === "TypeError" ||
+        error?.code === "NETWORK_ERROR" ||
+        Number.isNaN(status) ||
+        status === 0 ||
+        status === 408 ||
+        status >= 500
+      );
     }
 
     /**

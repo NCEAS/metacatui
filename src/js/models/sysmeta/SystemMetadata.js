@@ -90,7 +90,8 @@ define([
      */
     constructor(data = {}) {
       this.reset();
-      const normalizedValues = SystemMetadata.normalizeValues(data);
+      const values = data instanceof SystemMetadata ? data.toJSON() : data;
+      const normalizedValues = SystemMetadata.normalizeValues(values);
       Object.assign(this, normalizedValues);
     }
 
@@ -290,6 +291,11 @@ define([
         root.setAttributeNS(XMLNS_NAMESPACE_URI, name, value);
       });
 
+      // Serialize dates as-is. dateUploaded is immutable once set (overwriting
+      // it makes Metacat reject updateSystemMetadata with a 400), and the
+      // server assigns the authoritative dateUploaded/dateSysMetadataModified on
+      // write, so new objects intentionally serialize a null dateUploaded.
+
       NODE_ORDER.forEach((field) => {
         switch (field) {
           case "checksum":
@@ -369,6 +375,15 @@ define([
           ? null
           : values.mediaType.toJSON(),
       };
+    }
+
+    /**
+     * Create an independent copy of this System Metadata.
+     * @returns {SystemMetadata} Cloned System Metadata
+     * @since 0.0.0
+     */
+    clone() {
+      return new SystemMetadata(this.toJSON());
     }
 
     /**

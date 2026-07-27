@@ -116,7 +116,7 @@ define(["models/sysmeta/SysMetaSchema"], (SysMetaSchema) => {
           rightsHolder: null,
           obsoletes: null,
           obsoletedBy: null,
-          archived: false,
+          archived: null,
           dateUploaded: null,
           dateSysMetadataModified: null,
           originMemberNode: null,

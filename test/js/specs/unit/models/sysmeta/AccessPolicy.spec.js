@@ -1,7 +1,7 @@
-define([
-  "models/sysmeta/AccessPolicy",
-  "models/sysmeta/AccessRule",
-], (AccessPolicy, AccessRule) => {
+define(["models/sysmeta/AccessPolicy", "models/sysmeta/AccessRule"], (
+  AccessPolicy,
+  AccessRule,
+) => {
   const expect = chai.expect;
 
   const parseElement = (xml) =>
@@ -129,6 +129,34 @@ define([
         expect(fromPolicy).to.not.equal(source);
         expect(fromPolicy.toJSON()).to.deep.equal(source.toJSON());
       });
+
+      it("converts a legacy collections/AccessPolicy (Backbone collection)", () => {
+        // Mimic the legacy collection: a Backbone-style collection whose
+        // toJSON() yields per-subject boolean-permission rules.
+        const legacyCollection = {
+          models: [{}, {}],
+          toJSON: () => [
+            { subject: "public", read: true, write: false },
+            {
+              subject: "uid=editor",
+              read: true,
+              write: true,
+              changePermission: true,
+            },
+          ],
+        };
+
+        const policy = AccessPolicy.fromValue(legacyCollection);
+
+        expect(policy).to.be.instanceof(AccessPolicy);
+        expect(policy.toJSON()).to.deep.equal([
+          { subjects: ["public"], permissions: ["read"] },
+          {
+            subjects: ["uid=editor"],
+            permissions: ["read", "write", "changePermission"],
+          },
+        ]);
+      });
     });
 
     describe("validate()", () => {
@@ -144,7 +172,8 @@ define([
           },
           {
             field: "accessPolicy[0].permissions[0]",
-            message: "Permissions must be one of: read, write, changePermission.",
+            message:
+              "Permissions must be one of: read, write, changePermission.",
           },
         ]);
       });
@@ -182,6 +211,60 @@ define([
         json[0].subjects.push("userA");
 
         expect(policy[0].subjects).to.deep.equal(["public"]);
+      });
+    });
+
+    describe("isAuthorized()", () => {
+      it("checks the requested subject instead of defaulting to public", () => {
+        const policy = new AccessPolicy([
+          { subjects: ["public"], permissions: ["read"] },
+          { subjects: ["uid=editor"], permissions: ["write"] },
+        ]);
+
+        expect(policy.isAuthorized("write", "uid=editor")).to.equal(true);
+        expect(policy.isAuthorized("write", "public")).to.equal(false);
+      });
+
+      it("uses the DataONE permission hierarchy", () => {
+        const policy = new AccessPolicy([
+          { subjects: ["uid=manager"], permissions: ["changePermission"] },
+        ]);
+
+        expect(policy.isAuthorized("read", "uid=manager")).to.equal(true);
+        expect(policy.isAuthorized("write", "uid=manager")).to.equal(true);
+        expect(policy.isAuthorized("changePermission", "uid=manager")).to.equal(
+          true,
+        );
+      });
+
+      it("checks any subject in a provided subject list", () => {
+        const policy = new AccessPolicy([
+          {
+            subjects: ["CN=editors,DC=dataone,DC=org"],
+            permissions: ["write"],
+          },
+        ]);
+
+        expect(
+          policy.isAuthorized("write", [
+            "uid=editor",
+            "CN=editors,DC=dataone,DC=org",
+          ]),
+        ).to.equal(true);
+      });
+    });
+
+    describe("isPublic()", () => {
+      it("only treats public grants as public", () => {
+        const privatePolicy = new AccessPolicy([
+          { subjects: ["uid=editor"], permissions: ["read"] },
+        ]);
+        const publicPolicy = new AccessPolicy([
+          { subjects: ["public"], permissions: ["read"] },
+        ]);
+
+        expect(privatePolicy.isPublic()).to.equal(false);
+        expect(publicPolicy.isPublic()).to.equal(true);
       });
     });
   });

@@ -173,6 +173,16 @@ define([
     static fromValue(value) {
       if (value === undefined || value === null) return new AccessPolicy();
       if (value instanceof AccessPolicy) return new AccessPolicy(value);
+      // Legacy collections/AccessPolicy is a Backbone collection of AccessRule
+      // models; use its serialized rules so the legacy access-policy editor can
+      // save through the typed model.
+      if (
+        !Array.isArray(value) &&
+        Array.isArray(value.models) &&
+        typeof value.toJSON === "function"
+      ) {
+        return new AccessPolicy(value.toJSON());
+      }
       return new AccessPolicy(Array.isArray(value) ? value : [value]);
     }
 
@@ -213,6 +223,26 @@ define([
      */
     toJSON() {
       return Array.from(this, (rule) => rule.toJSON());
+    }
+
+    /**
+     * Check whether this policy grants the requested action to a subject.
+     * @param {"read"|"write"|"changePermission"} [action] Permission to check
+     * @param {string|Array<string>|null} [subject] Subject or candidate subjects
+     * Defaults to `public` when omitted.
+     * @returns {boolean} `true` when any access rule authorizes the request
+     */
+    isAuthorized(action = "write", subject = null) {
+      return this.some((rule) => rule.isAuthorized(action, subject));
+    }
+
+    /**
+     * Check whether this policy grants public read access.
+     * @returns {boolean} `true` when public has read access directly or through
+     * the DataONE permission hierarchy.
+     */
+    isPublic() {
+      return this.isAuthorized("read", "public");
     }
   }
 

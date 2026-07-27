@@ -144,6 +144,32 @@ define(["common/ValueUtilities", "common/UrlUtilities", "md5"], function (
       });
     });
 
+    describe("map collection helpers", function () {
+      it("appends values to arrays by key", function () {
+        const valuesByKey = new Map();
+
+        ValueUtilities.addMapArrayValue(valuesByKey, "key", "first");
+        ValueUtilities.addMapArrayValue(valuesByKey, "key", "second");
+        ValueUtilities.addMapArrayValue(valuesByKey, "", "ignored");
+        ValueUtilities.addMapArrayValue(valuesByKey, "key", null);
+
+        expect(valuesByKey.get("key")).to.deep.equal(["first", "second"]);
+        expect(valuesByKey.size).to.equal(1);
+      });
+
+      it("adds unique values to sets by key", function () {
+        const valuesByKey = new Map();
+
+        ValueUtilities.addMapSetValue(valuesByKey, "key", "value");
+        ValueUtilities.addMapSetValue(valuesByKey, "key", "value");
+        ValueUtilities.addMapSetValue(valuesByKey, " ", "ignored");
+        ValueUtilities.addMapSetValue(valuesByKey, "key", undefined);
+
+        expect([...valuesByKey.get("key")]).to.deep.equal(["value"]);
+        expect(valuesByKey.size).to.equal(1);
+      });
+    });
+
     describe("deepClone", function () {
       it("clones nested values without retaining shared references", function () {
         const source = { nested: { values: ["a"] } };
@@ -190,22 +216,6 @@ define(["common/ValueUtilities", "common/UrlUtilities", "md5"], function (
         expect(Object.keys(sorted)).to.deep.equal(["a", "b"]);
         expect(sorted).to.deep.equal({ a: 1, b: 2 });
         expect(sorted).to.not.equal(source);
-      });
-
-      it("clones array values while preserving non-array values", function () {
-        const source = {
-          prov_usedByProgram: ["script.1"],
-          atLocation: "data/file.csv",
-        };
-
-        const cloned = ValueUtilities.cloneObjectWithArrayValues(source);
-
-        expect(cloned).to.deep.equal(source);
-        expect(cloned).to.not.equal(source);
-        expect(cloned.prov_usedByProgram).to.not.equal(
-          source.prov_usedByProgram,
-        );
-        expect(cloned.atLocation).to.equal(source.atLocation);
       });
     });
 

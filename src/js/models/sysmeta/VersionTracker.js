@@ -3,8 +3,18 @@ define([
   "models/dataONEServices/SysMetaService",
   "common/UrlUtilities",
   "common/DateUtilities",
+  "common/ErrorUtilities",
+  "common/Utilities",
   "common/ValueUtilities",
-], (Backbone, SysMetaService, UrlUtilities, DateUtilities, ValueUtilities) => {
+], (
+  Backbone,
+  SysMetaService,
+  UrlUtilities,
+  DateUtilities,
+  ErrorUtilities,
+  Utilities,
+  ValueUtilities,
+) => {
   /**
    * @constant {number} DEFAULT_TTL_MS Default Time-To-Live for cached data
    * object to resource map PID mappings, in milliseconds.
@@ -305,7 +315,7 @@ define([
             }
             currentStepSysMeta = adjSysMeta;
           } catch (error) {
-            if (error?.name === "AbortError") {
+            if (ErrorUtilities.isAbortError(error)) {
               throw error;
             }
             if (error?.status !== 401 && error?.status !== 404) {
@@ -417,15 +427,16 @@ define([
      * Positive values indicate newer versions, negative values indicate older
      * versions. For example, a step of 1 gets the next version, -1 gets the
      * previous version. A step of 0 returns the original PID.
+     * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<string|null>} resolves to the PID at the given number
      * of steps, or null if no such version exists.
      */
-    async getNth(pid, steps) {
+    async getNth(pid, steps, options = {}) {
       if (typeof pid !== "string" || !pid) {
         throw new Error("Invalid PID provided");
       }
       if (steps === 0) return pid;
-      const record = await this.getVersions(pid, steps);
+      const record = await this.getVersions(pid, steps, options);
       const { versions, completedSteps } = record;
       if (Math.abs(completedSteps) < Math.abs(steps)) {
         return null;
@@ -490,9 +501,7 @@ define([
       }, uniquePids[0]);
       result.chainComplete =
         (prev?.chainComplete ?? true) && (next?.chainComplete ?? true);
-      result.endIsPrivate = Boolean(
-        prev?.endIsPrivate || next?.endIsPrivate,
-      );
+      result.endIsPrivate = Boolean(prev?.endIsPrivate || next?.endIsPrivate);
       result.endNotFound = Boolean(prev?.endNotFound || next?.endNotFound);
 
       return result;
@@ -537,6 +546,43 @@ define([
     }
 
     /**
+     * Get the conclusive latest version of each PID with bounded concurrency.
+     * @param {string[]} pids PIDs to map
+     * @param {object} [options] Version lookup options
+     * @param {number} [options.maxConcurrent] Maximum concurrent lookups
+     * @returns {Promise<string[]>} Latest-version PIDs
+     */
+    async getLatestVersions(pids, options = {}) {
+      const { maxConcurrent, ...lookupOptions } = options;
+      const latestVersions = new Array(pids.length);
+      const { errors } = await Utilities.processConcurrently(
+        pids,
+        async (pid, index) => {
+          const record = await this.getAllVersionsOneDirection(
+            pid,
+            true,
+            lookupOptions,
+          );
+          // Retaining the input PID for a partial chain looks identical to a
+          // confirmed result, so callers must not publish that fallback.
+          if (!record.chainComplete) {
+            throw new Error(`Cannot determine the latest version of "${pid}"`);
+          }
+          latestVersions[index] = record.versions.length
+            ? record.versions[record.versions.length - 1]
+            : (await this.getSysMeta(pid, lookupOptions))?.identifier || pid;
+        },
+        {
+          maxConcurrent,
+          signal: lookupOptions.signal,
+        },
+      );
+      ErrorUtilities.throwIfAborted(lookupOptions.signal);
+      if (errors.length) throw errors[0].error;
+      return latestVersions;
+    }
+
+    /**
      * Clear the entire cache, including in-memory and persistent store.
      * @returns {Promise<boolean>} resolves to true if the cache was cleared
      */
@@ -569,7 +615,7 @@ define([
             sysMeta = new SysMetaService.SystemMetadata({
               identifier: foundPid,
             });
-          } else if (e.name === "AbortError") {
+          } else if (ErrorUtilities.isAbortError(e)) {
             // Stop processing if the request was aborted by the caller
             return;
           } else {

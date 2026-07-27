@@ -1,8 +1,9 @@
 define([
   "/test/js/specs/shared/clean-state.js",
+  "/test/js/specs/shared/concurrency-tracker.js",
   "models/sysmeta/VersionTracker",
   "models/dataONEServices/SysMetaService",
-], (cleanState, VersionTracker, SysMetaService) => {
+], (cleanState, trackConcurrency, VersionTracker, SysMetaService) => {
   const should = chai.should();
   const expect = chai.expect;
 
@@ -806,6 +807,72 @@ define([
 
         latest.should.equal("pid.1");
         state.service.download.called.should.equal(false);
+      });
+
+      it("gets conclusive latest versions with bounded concurrency", async () => {
+        const concurrency = trackConcurrency();
+        const getAllVersions = state.sandbox.stub(
+          state.vt,
+          "getAllVersionsOneDirection",
+        );
+        getAllVersions.callsFake(
+          concurrency.track((pid) => ({
+            versions: [`${pid}.latest`],
+            chainComplete: true,
+          })),
+        );
+
+        const latest = await state.vt.getLatestVersions(
+          ["pid.1", "pid.2", "pid.3", "pid.4"],
+          { useCache: false, maxConcurrent: 2 },
+        );
+
+        latest.should.deep.equal([
+          "pid.1.latest",
+          "pid.2.latest",
+          "pid.3.latest",
+          "pid.4.latest",
+        ]);
+        concurrency.max.should.equal(2);
+        getAllVersions
+          .alwaysCalledWith(sinon.match.string, true, { useCache: false })
+          .should.equal(true);
+      });
+
+      it("rejects an incomplete latest-version chain", async () => {
+        state.sandbox.stub(state.vt, "getAllVersionsOneDirection").resolves({
+          versions: ["pid.2"],
+          chainComplete: false,
+        });
+
+        let caught;
+        try {
+          await state.vt.getLatestVersions(["pid.1"]);
+        } catch (error) {
+          caught = error;
+        }
+
+        caught.message.should.equal(
+          'Cannot determine the latest version of "pid.1"',
+        );
+      });
+
+      it("propagates aborts while getting latest versions", async () => {
+        const abortError = Object.assign(new Error("Aborted"), {
+          name: "AbortError",
+        });
+        state.sandbox
+          .stub(state.vt, "getAllVersionsOneDirection")
+          .rejects(abortError);
+
+        let caught;
+        try {
+          await state.vt.getLatestVersions(["pid.1"]);
+        } catch (error) {
+          caught = error;
+        }
+
+        caught.should.equal(abortError);
       });
 
       it("clears cache via SysMetaService", async () => {
