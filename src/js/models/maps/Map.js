@@ -40,6 +40,22 @@ define([
   }
 
   /**
+   * Ensure layer config entries are plain objects, not preconstructed models.
+   * @param {Array<object>} layers Candidate layer config entries.
+   * @param {string} configKey Name of the config property being validated.
+   * @throws {Error} When a Backbone model instance is provided.
+   */
+  function assertPlainLayerConfigs(layers, configKey) {
+    if (
+      layers.some((layer) => layer instanceof Backbone.Model)
+    ) {
+      throw new Error(
+        `Map configuration ${configKey} must contain plain MapAssetConfig objects, not Backbone model instances.`,
+      );
+    }
+  }
+
+  /**
    * Apply URL visibility override for a layer when the `el` state is present.
    * @param {Backbone.Model|object} layer A layer model/object.
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
@@ -60,28 +76,12 @@ define([
    * tracks the current runtime value (which may be overridden from URL state).
    *
    * If both values are missing in config, default to hidden.
-   * @param {Backbone.Model|object} layer A layer config object or model.
+   * @param {object} layer A layer config object.
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} [visibilityState]
    * Parsed URL visibility state used to override runtime visible state.
-   * @returns {Backbone.Model|object} The normalized layer.
+   * @returns {object} The normalized layer config.
    */
   function normalizeLayerVisibility(layer, visibilityState) {
-    if (layer instanceof Backbone.Model) {
-      const configuredVisibility = layer.get("configuredVisibility");
-      const visible = layer.get("visible");
-      const urlVisible = getUrlVisibilityOverride(layer, visibilityState);
-
-      if (configuredVisibility == null) {
-        layer.set("configuredVisibility", visible === true);
-      }
-      if (urlVisible != null) {
-        layer.set("visible", urlVisible);
-      } else if (visible == null) {
-        layer.set("visible", layer.get("configuredVisibility") === true);
-      }
-      return layer;
-    }
-
     const {visible} = layer;
     const configuredVisibility =
       layer.configuredVisibility == null
@@ -106,10 +106,10 @@ define([
 
   /**
    * Normalize layer visibility for a list of layer configs/models.
-   * @param {Array<Backbone.Model|object>} layers Layer configs/models.
+   * @param {Array<object>} layers Layer config objects.
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
    * Parsed URL visibility state.
-   * @returns {Array<Backbone.Model|object>} Normalized layers.
+   * @returns {Array<object>} Normalized layer configs.
    */
   function normalizeLayerListVisibility(layers, visibilityState) {
     return layers.map((layer) => normalizeLayerVisibility(layer, visibilityState));
@@ -445,6 +445,11 @@ define([
         if (config && config instanceof Object) {
           const visibilityState = parseLayerVisibilityStateFromUrl();
           if (isNonEmptyArray(config.layerCategories)) {
+            config.layerCategories.forEach((category) => {
+              if (isNonEmptyArray(category?.layers)) {
+                assertPlainLayerConfigs(category.layers, "layerCategories[].layers");
+              }
+            });
             const normalizedCategories = normalizeLayerCategoryVisibility(
               config.layerCategories,
               visibilityState,
@@ -454,6 +459,7 @@ define([
             this.set("layerCategories", assetCategories);
             this.unset("layers");
           } else if (isNonEmptyArray(config.layers)) {
+            assertPlainLayerConfigs(config.layers, "layers");
             const normalizedLayers = normalizeLayerListVisibility(
               config.layers,
               visibilityState,

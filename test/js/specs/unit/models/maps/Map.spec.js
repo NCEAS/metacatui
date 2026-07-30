@@ -178,26 +178,30 @@ define([
         expect(map.getAllLayers()[1].get("visible")).to.be.false;
       });
 
-      it("preserves configuredVisibility on model instance layers", () => {
+      it("throws when model instance layers are provided", () => {
         const layerModel = new Backbone.Model({
           layerId: "layer-1",
           visible: true,
           configuredVisibility: false,
         });
-        const map = new Map({ layers: [layerModel] });
-
-        expect(map.get("layers").at(0).get("configuredVisibility")).to.be.false;
-        expect(map.get("layers").at(0).get("visible")).to.be.true;
+        expect(() => new Map({ layers: [layerModel] })).to.throw(
+          "Map configuration layers must contain plain MapAssetConfig objects, not Backbone model instances.",
+        );
       });
 
-      it("infers configuredVisibility from visible for model instance layers when missing", () => {
+      it("throws when model instance category layers are provided", () => {
         const layerModel = new Backbone.Model({
           layerId: "layer-1",
           visible: true,
         });
-        const map = new Map({ layers: [layerModel] });
-
-        expect(map.get("layers").at(0).get("configuredVisibility")).to.be.true;
+        expect(
+          () =>
+            new Map({
+              layerCategories: [{ layers: [layerModel] }],
+            }),
+        ).to.throw(
+          "Map configuration layerCategories[].layers must contain plain MapAssetConfig objects, not Backbone model instances.",
+        );
       });
 
       it("sets viewfinderCards from config with layers (legacy zoomPresets key)", () => {
