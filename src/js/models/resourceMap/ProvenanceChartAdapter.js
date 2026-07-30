@@ -66,7 +66,6 @@ define([
         fileName: member?.getFileName() || pid,
         type: recordType,
         isDocumentedBy: member?.isDocumentedBy || [],
-        member: member || null,
         editable: recordType === "program" ? isProgramEditable(pid) : true,
       };
       recordsByPid.set(pid, record);

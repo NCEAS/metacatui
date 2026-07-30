@@ -78,7 +78,7 @@ define([
     endpoint: "publish",
     appModelKeys: ["publishServiceUrl"],
     client: {
-      timeoutMs: 2 * 60 * 1000,
+      timeoutMs: 210000, // 3.5 minutes to allow metacat to create resMap for large packages
       methods: ["PUT"],
       responseTypes: ["text"],
       dedupeHeaders: ["Authorization", "Accept"],

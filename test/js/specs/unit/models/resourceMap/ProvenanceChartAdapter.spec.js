@@ -117,7 +117,6 @@ define([
 
       program.pid.should.equal(externalProgramPid);
       program.editable.should.equal(false);
-      chai.expect(program.member).to.equal(null);
       projection.getRecord(externalProgramPid).editable.should.equal(false);
     });
 
@@ -276,7 +275,6 @@ define([
       previousProgram.editable.should.equal(false);
       currentProgram.pid.should.equal(externalProgramPid);
       currentProgram.editable.should.equal(false);
-      chai.expect(currentProgram.member).to.equal(null);
     });
 
     it("projects external relationship endpoints without synthetic fields", () => {
@@ -291,12 +289,6 @@ define([
 
       const projection = ProvenanceChartAdapter.build(dataPackage);
 
-      chai
-        .expect(projection.getRecord("external.source.1").member)
-        .to.equal(null);
-      chai
-        .expect(projection.getRecord("external.derived.1").member)
-        .to.equal(null);
       projection
         .getSources("program.1")
         .map(({ pid }) => pid)

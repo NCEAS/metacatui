@@ -32,6 +32,7 @@ define([
         });
 
         service.client.baseUrl.should.equal("https://example.org/publish");
+        service.client.timeoutMs.should.equal(210000);
         service.defaultAuth.should.equal(true);
         service.persistPrivate.should.equal(false);
       });
