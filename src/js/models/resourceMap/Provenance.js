@@ -1,127 +1,81 @@
 "use strict";
 
 define([
-  "rdflib",
   "common/ValueUtilities",
+  "models/resourceMap/RDFGraph",
   "models/resourceMap/ResourceMapCommon",
-  "models/resourceMap/GraphMutation",
   "models/resourceMap/ProvenanceExecutionMutation",
   "models/resourceMap/ProvenanceValidation",
 ], (
-  rdf,
   ValueUtilities,
+  RDFGraph,
   ResourceMapCommon,
-  GraphMutation,
   ProvenanceExecutionMutation,
   ProvenanceValidation,
 ) => {
-  const { dedupeBy, isNonEmptyString, normalizeText, requireNonEmptyString } =
-    ValueUtilities;
+  const { requireNonEmptyString } = ValueUtilities;
 
-  const EXPLICIT_TYPE_CLASS_NAMES = new Set(["Data", "Program"]);
+  const { PROV_EDGE_SPECS } = ResourceMapCommon;
 
   /**
    * @typedef {object} WasDerivedFromRelationship
-   * @property {string} derivedPid PID of the derived data object. This may be
-   * aggregated or external.
-   * @property {string} sourcePid PID of the source data object. This may be
-   * aggregated or external.
+   * @property {string} derivedPid PID of the newer data object.
+   * @property {string} sourcePid PID of the data it came from. Either object may
+   * be a package member or an external object.
    */
 
   /**
    * @typedef {object} ExecutionProgramRelationship
-   * @property {string} dataPid PID of the data object. This may be aggregated
-   * or external.
-   * @property {string} programPid Aggregated PID of the program object.
-   * @property {string|null} executionId Execution identifier linking the
-   * data/program relationship.
-   * @property {string|null} agentUri Agent URI associated with the execution,
-   * when present.
+   * @property {string} dataPid PID of data produced or consumed by a program
+   * run. The data may be a package member or an external object.
+   * @property {string} programPid PID of the program package member.
+   * @property {string|null} executionId Identifier for the program run that
+   * connects the data and program.
+   * @property {string} [executionKey] Internal graph key used when an imported
+   * program run has no identifier.
    */
 
   /**
    * @typedef {object} ProgramLineageRelationship
-   * @property {string} programPid Aggregated PID of the current program.
-   * @property {string} previousProgramPid Aggregated PID of the informing
-   * program.
-   * @property {string|null} executionId Execution identifier for the current
-   * program.
-   * @property {string|null} previousExecutionId Execution identifier for the
-   * informing program.
+   * @property {string} programPid PID of the current program package member.
+   * @property {string} previousProgramPid PID of the package member representing
+   * the program whose run informed the current run.
+   * @property {string|null} executionId Identifier for the current program run.
+   * @property {string|null} previousExecutionId Identifier for the earlier
+   * program run.
    */
 
   /**
    * @typedef {object} TypeAssertion
-   * @property {string} pid PID of the subject node.
-   * @property {string} className PROVONE class name without the namespace
-   * prefix.
+   * @property {string} pid PID of the classified object.
+   * @property {string} className PROVONE classification, such as `Data` or
+   * `Program`, without the namespace prefix.
    */
 
   /**
-   * Find the concrete execution-node pairs behind one program-lineage
-   * relationship. Pairs whose execution nodes no longer resolve are skipped.
-   * @param {ResourceMapState} graphState Pre-mutation graph projection.
-   * @param {ProgramLineageRelationship} relationship Lineage link whose
-   * execution pairs are needed.
-   * @returns {Array<{executionNode: object, previousExecutionNode: object}>}
-   * Distinct execution-node pairs.
-   */
-  function findWasInformedByExecutionPairs(graphState, relationship) {
-    const findExecution = (executionId) =>
-      graphState
-        .findNodesByIdentifier(executionId)
-        .find((node) => graphState.isExecutionNode(node));
-
-    return dedupeBy(
-      graphState
-        .getWasInformedByPrograms()
-        .filter(
-          (candidate) =>
-            candidate.programPid === relationship.programPid &&
-            candidate.previousProgramPid === relationship.previousProgramPid &&
-            candidate.executionId === relationship.executionId &&
-            candidate.previousExecutionId === relationship.previousExecutionId,
-        )
-        .flatMap(({ executionId, previousExecutionId }) => {
-          const executionNode = findExecution(executionId);
-          const previousExecutionNode = findExecution(previousExecutionId);
-          return executionNode && previousExecutionNode
-            ? [{ executionNode, previousExecutionNode }]
-            : [];
-        }),
-      ({ executionNode, previousExecutionNode }) =>
-        ResourceMapCommon.buildKey([
-          ResourceMapCommon.nodeKey(executionNode),
-          ResourceMapCommon.nodeKey(previousExecutionNode),
-        ]),
-    );
-  }
-
-  /**
-   * Query and edit package-level provenance stored in a {@link ResourceMap}.
-   * This class focuses on provenance relationships used in MetacatUI:
-   * derivations, program usage and generation, program lineage, type
-   * assertions, and validation.
+   * Read and update a package's history: which data came from other data, which
+   * programs produced or consumed it, and which program runs followed earlier
+   * runs. The relationships are stored in the Resource Map's RDF graph.
+   * @class Provenance
+   * @classcategory Models/ResourceMap
+   * @since 0.0.0
    */
   class Provenance {
     /**
      * @param {object} options Provenance options.
-     * @param {ResourceMap} options.resourceMap Resource map that owns the RDF
-     * graph.
+     * @param {ResourceMap} options.resourceMap Resource Map whose graph stores
+     * the provenance statements
      */
     constructor({ resourceMap } = {}) {
       this.resourceMap = resourceMap;
-      this.graph = resourceMap.graph;
       this.ns = resourceMap.ns;
-    }
-
-    /** @returns {ResourceMapState} Derived graph projection. */
-    getGraphState() {
-      return this.resourceMap.getGraphState();
+      this.executionMutation = new ProvenanceExecutionMutation({
+        provenance: this,
+      });
     }
 
     /**
-     * Edit the provenance graph and clear the summary cache afterwards.
+     * Apply one provenance edit and clear cached summaries afterwards.
      * @param {Function} mutator Provenance graph mutation callback.
      * @param {object} [options] Mutation options.
      * @param {boolean} [options.markDirty] Mark a successful mutation unsaved.
@@ -132,532 +86,499 @@ define([
      */
     mutateGraph(mutator, { markDirty = true, rollbackOnError = true } = {}) {
       if (!this.resourceMap.isGraphMutating()) {
-        // Provenance mutations resolve PIDs, roles, and executions from one
-        // stable pre-mutation projection. Build it once before editing.
-        this.getGraphState().getIndex();
+        // Provenance mutations resolve PIDs, roles, and executions from the
+        // state recorded before the edit. Build that state before changing the
+        // graph.
+        this.resourceMap.graphState.getIndex();
       }
       this.resourceMap.mutateGraph(mutator, { markDirty, rollbackOnError });
       return this;
     }
 
     /**
-     * Return all `prov:wasDerivedFrom` relationships between data PIDs. e.g.
-     * <prov:wasDerivedFrom rdf:resource=".../resolve/data.1"/>. This excludes
-     * literal values and blank nodes that cannot be reliably resolved to PIDs.
-     * @returns {WasDerivedFromRelationship[]} Normalized derivation
-     * relationships, e.g. [{ derivedPid: "derived.1", sourcePid: "data.1" }]
+     * Return pairs showing which data objects were created from which source
+     * data. RDF values that cannot be tied to PIDs are omitted.
+     * @returns {WasDerivedFromRelationship[]} Derivation relationships, e.g.
+     * `[{ derivedPid: "derived.1", sourcePid: "data.1" }]`
      */
     getWasDerivedFromLinks() {
-      return this.getGraphState().getWasDerivedFromLinks();
+      return this.resourceMap.graphState.getWasDerivedFromLinks();
     }
 
     /**
-     * Get program executions that generated data objects, e.g.
-     * <prov:wasGeneratedBy rdf:resource="urn:uuid:exec.1"/>
-     * @returns {ExecutionProgramRelationship[]} Normalized generation
-     * relationships, e.g. [{ dataPid: "derived.1", programPid: "program.1",
-     * executionId: "urn:uuid:exec.1" }]
+     * Return the program runs that produced data objects.
+     * @returns {ExecutionProgramRelationship[]} Generation relationships, e.g.
+     * `[{ dataPid: "derived.1", programPid: "program.1", executionId:
+     * "urn:uuid:exec.1" }]`
      */
     getGeneratedByPrograms() {
-      return this.getGraphState().getGeneratedByPrograms();
+      return this.resourceMap.graphState.getGeneratedByPrograms();
     }
 
     /**
-     * Get program executions that used data objects, e.g. <prov:used
-     * rdf:resource=".../resolve/data.1"/>
-     * @returns {ExecutionProgramRelationship[]} Normalized usage relationships,
-     * e.g. [{ dataPid: "data.1", programPid: "program.1", executionId:
-     * "urn:uuid:exec.1" }]
+     * Return the program runs that consumed data objects as inputs.
+     * @returns {ExecutionProgramRelationship[]} Usage relationships, e.g.
+     * `[{ dataPid: "data.1", programPid: "program.1", executionId:
+     * "urn:uuid:exec.1" }]`
      */
     getUsedByPrograms() {
-      return this.getGraphState().getUsedByPrograms();
+      return this.resourceMap.graphState.getUsedByPrograms();
     }
 
     /**
-     * Return program-to-program lineage inferred from execution
-     * `prov:wasInformedBy` links, e.g. <prov:wasInformedBy
-     * rdf:resource="urn:uuid:prev-exec"/>
-     * @returns {ProgramLineageRelationship[]} Normalized program-lineage
-     * relationships, e.g. [{ programPid: "program.1", previousProgramPid:
-     * "program.2" }]
+     * Return current/previous program pairs when one program run followed
+     * another (`prov:wasInformedBy`).
+     * @returns {ProgramLineageRelationship[]} Program ordering relationships,
+     * e.g. `[{ programPid: "program.1", previousProgramPid: "program.2" }]`
      */
     getWasInformedByPrograms() {
-      return this.getGraphState().getWasInformedByPrograms();
+      return this.resourceMap.graphState.getWasInformedByPrograms();
     }
 
     /**
-     * Get explicit and structurally derived PROVONE type assertions keyed by
-     * PID, e.g. <rdf:type
-     * rdf:resource="http://purl.dataone.org/provone/...#Program"/>
-     * @returns {TypeAssertion[]} PROVONE type assertions keyed by PID, e.g. [{
-     * pid: "program.1", className: "Program" }]
+     * Return `Data` and `Program` classifications that are written explicitly
+     * or inferred from how each PID is used in provenance relationships.
+     * @returns {TypeAssertion[]} Classifications keyed by PID, e.g.
+     * `[{ pid: "program.1", className: "Program" }]`
      */
     getTypeAssertions() {
-      return this.getGraphState().getTypeAssertions();
+      return this.resourceMap.graphState.getTypeAssertions();
     }
 
     /**
-     * Add a `prov:wasDerivedFrom` relationship between two data PIDs. e.g. adds
-     * <prov:wasDerivedFrom rdf:resource=".../resolve/data.1"/>
+     * Record that one data object was created from another
+     * (`derivedPid --wasDerivedFrom--> sourcePid`).
      * @param {string} derivedPid PID of the derived data node.
      * @param {string} sourcePid PID of the source data node.
      * @returns {Provenance} Updated provenance instance.
      */
     addWasDerivedFrom(derivedPid, sourcePid) {
       return this.mutateGraph(() => {
-        const derived = this.ensurePidNode(derivedPid, {
+        const derivedNode = this.ensurePidNode(derivedPid, {
           message: "Derived PID required",
         });
-        const source = this.ensurePidNode(sourcePid, {
+        const sourceNode = this.ensurePidNode(sourcePid, {
           message: "Source PID required",
         });
-        GraphMutation.addStatementIfMissing(
-          this.resourceMap,
-          derived.node,
-          this.ns.PROV("wasDerivedFrom"),
-          source.node,
-        );
+        this.resourceMap.graph.addStatementIfMissing({
+          subject: derivedNode,
+          predicate: this.ns.PROV("wasDerivedFrom"),
+          object: sourceNode,
+        });
       });
     }
 
     /**
-     * Remove a `prov:wasDerivedFrom` relationship.
+     * Remove the record that one data object was created from another.
      * @param {string} derivedPid PID of the derived data node.
      * @param {string} sourcePid PID of the source data node.
      * @returns {Provenance} Updated provenance instance.
      */
     removeWasDerivedFrom(derivedPid, sourcePid) {
-      const derived = this.resolveExistingPidNode(
+      const normalizedDerivedPid = requireNonEmptyString(
         derivedPid,
         "Derived PID required",
       );
-      const source = this.resolveExistingPidNode(
+      const normalizedSourcePid = requireNonEmptyString(
         sourcePid,
         "Source PID required",
       );
-      if (!derived || !source) return this;
+      const { graph, graphState } = this.resourceMap;
+      const statementsToRemove = graph
+        .findStatements({ predicate: this.ns.PROV("wasDerivedFrom") })
+        .filter(
+          ({ subject, object }) =>
+            graphState.pidFromNode(subject) === normalizedDerivedPid &&
+            graphState.pidFromNode(object) === normalizedSourcePid,
+        );
+      if (!statementsToRemove.length) return this;
 
       return this.mutateGraph(() => {
-        GraphMutation.removeStatementsMatching(
-          this.resourceMap,
-          derived.node,
-          this.ns.PROV("wasDerivedFrom"),
-          source.node,
-        );
+        // One chart relationship summarizes every RDF statement for this PID
+        // pair. Deleting the relationship must remove each matching statement.
+        statementsToRemove.forEach((statement) => {
+          graph.removeStatement(statement);
+        });
       });
     }
 
     /**
-     * Add a generation relationship between a data PID and a local program
-     * member. The data PID may be aggregated or external; the program must
-     * already be aggregated by the current resource map.
+     * Record that a program package member produced a data object. The data may
+     * be inside or outside the package.
      * @param {string} dataPid PID of the generated data object.
-     * @param {string} programPid PID of the aggregated program object.
-     * @param {object} [options] Optional execution metadata.
-     * @param {string} [options.executionId] Execution identifier to reuse or
-     * create.
-     * @param {string} [options.agentUri] Agent URI associated with the execution.
+     * @param {string} programPid PID of the program package member.
      * @returns {Provenance} Updated provenance instance.
      */
-    addGeneratedByProgram(dataPid, programPid, options = {}) {
-      return ProvenanceExecutionMutation.addExecutionProgramRelationship(this, {
+    addGeneratedByProgram(dataPid, programPid) {
+      return this.executionMutation.addExecutionProgramRelationship({
         dataPid,
         programPid,
-        options,
-        predicate: "wasGeneratedBy",
-        dataFromObject: false,
+        ...PROV_EDGE_SPECS.generatedByProgram,
       });
     }
 
     /**
-     * Remove a generation relationship between a data PID and a program member.
+     * Remove the record that a program produced a data object.
      * @param {string} dataPid PID of the generated data object.
      * @param {string} programPid PID of the program object.
-     * @param {object} [options] Optional execution selector.
-     * @param {string} [options.executionId] Execution identifier used to narrow
-     * removal.
      * @returns {Provenance} Updated provenance instance.
      */
-    removeGeneratedByProgram(dataPid, programPid, options = {}) {
-      return ProvenanceExecutionMutation.removeExecutionProgramRelationship(
-        this,
-        {
-          dataPid,
-          programPid,
-          options,
-          predicate: "wasGeneratedBy",
-          dataFromObject: false,
-        },
-      );
-    }
-
-    /**
-     * Add a usage relationship between a data PID and a local program member.
-     * The data PID may be aggregated or external; the program must already be
-     * aggregated by the current resource map.
-     * @param {string} dataPid PID of the used data object.
-     * @param {string} programPid PID of the aggregated program object.
-     * @param {object} [options] Optional execution metadata.
-     * @param {string} [options.executionId] Execution identifier to reuse or
-     * create.
-     * @param {string} [options.agentUri] Agent URI associated with the execution.
-     * @returns {Provenance} Updated provenance instance.
-     */
-    addUsedByProgram(dataPid, programPid, options = {}) {
-      return ProvenanceExecutionMutation.addExecutionProgramRelationship(this, {
+    removeGeneratedByProgram(dataPid, programPid) {
+      return this.executionMutation.removeExecutionProgramRelationship({
         dataPid,
         programPid,
-        options,
-        predicate: "used",
-        dataFromObject: true,
+        ...PROV_EDGE_SPECS.generatedByProgram,
       });
     }
 
     /**
-     * Remove a usage relationship between a data PID and a program member.
+     * Record that a program package member consumed a data object as input. The
+     * data may be inside or outside the package.
+     * @param {string} dataPid PID of the used data object.
+     * @param {string} programPid PID of the program package member.
+     * @returns {Provenance} Updated provenance instance.
+     */
+    addUsedByProgram(dataPid, programPid) {
+      return this.executionMutation.addExecutionProgramRelationship({
+        dataPid,
+        programPid,
+        ...PROV_EDGE_SPECS.usedByProgram,
+      });
+    }
+
+    /**
+     * Remove the record that a program consumed a data object.
      * @param {string} dataPid PID of the used data object.
      * @param {string} programPid PID of the program object.
-     * @param {object} [options] Optional execution selector.
-     * @param {string} [options.executionId] Execution identifier used to narrow
-     * removal.
      * @returns {Provenance} Updated provenance instance.
      */
-    removeUsedByProgram(dataPid, programPid, options = {}) {
-      return ProvenanceExecutionMutation.removeExecutionProgramRelationship(
-        this,
-        {
-          dataPid,
-          programPid,
-          options,
-          predicate: "used",
-          dataFromObject: true,
-        },
-      );
-    }
-
-    /**
-     * Restore one execution-lineage link from a provenance summary, e.g.
-     * <prov:wasInformedBy rdf:resource="urn:uuid:prev-exec"/>. Program lineage
-     * is read-only in the public API (see
-     * {@link Provenance#getWasInformedByPrograms}); this internal helper
-     * exists so ResourceMap builders can round-trip the summaries produced by
-     * {@link Provenance#toJSON}. Lineage links involving deleted members are
-     * removed by {@link Provenance#removeMemberReferences}.
-     * @param {ProgramLineageRelationship} relationship Lineage link to
-     * restore.
-     * @returns {Provenance} Updated provenance instance.
-     * @private
-     */
-    restoreWasInformedByLink({
-      programPid,
-      previousProgramPid,
-      executionId,
-      previousExecutionId,
-    } = {}) {
-      return this.mutateGraph(() => {
-        const normalizedProgramPid = this.resourceMap.requireExistingMemberPid(
-          programPid,
-          "Program PID required",
-        );
-        const normalizedPreviousProgramPid =
-          this.resourceMap.requireExistingMemberPid(
-            previousProgramPid,
-            "Previous program PID required",
-          );
-
-        const executionNode =
-          ProvenanceExecutionMutation.ensureExecutionForProgram(
-            this,
-            normalizedProgramPid,
-            { executionId },
-          );
-        const previousExecutionNode =
-          ProvenanceExecutionMutation.ensureExecutionForProgram(
-            this,
-            normalizedPreviousProgramPid,
-            { executionId: previousExecutionId },
-          );
-
-        GraphMutation.addStatementIfMissing(
-          this.resourceMap,
-          executionNode,
-          this.ns.PROV("wasInformedBy"),
-          previousExecutionNode,
-        );
+    removeUsedByProgram(dataPid, programPid) {
+      return this.executionMutation.removeExecutionProgramRelationship({
+        dataPid,
+        programPid,
+        ...PROV_EDGE_SPECS.usedByProgram,
       });
     }
 
     /**
-     * Remove provenance relationships that reference members being deleted.
-     * @param {string|string[]} pids PIDs being removed from the package.
-     * @returns {Provenance} Updated provenance instance.
-     */
-    removeMemberReferences(pids) {
-      const normalizedPids = new Set(
-        (Array.isArray(pids) ? pids : [pids]).map((pid) =>
-          requireNonEmptyString(pid, "PID required"),
-        ),
-      );
-      // Collect removals before mutating so read helpers see a stable graph.
-      const removals = this.collectMemberReferenceRemovals(normalizedPids);
-
-      return this.applyMemberReferenceRemovals(removals);
-    }
-
-    /**
-     * Apply member-reference removals collected before mutation begins.
+     * Apply provenance cleanup calculated before package members are removed.
      * @private
-     * @param {object} removals Collected member-reference removals.
+     * @param {object} removals Collected member reference removals.
      * @returns {Provenance} Updated provenance instance.
      */
     applyMemberReferenceRemovals(removals) {
       const {
         statementsToRemove,
         affectedExecutionNodes,
-        affectedExecutionInspections,
+        affectedAssociationNodes,
+        executionsLosingAllPlans,
       } = removals;
-      if (!statementsToRemove.length && !affectedExecutionNodes.length) {
-        return this;
-      }
-
-      return this.mutateGraph(() => {
-        // Apply statement removals first so execution cleanup sees the final
-        // post-removal graph shape.
-        this.removeCollectedStatements(statementsToRemove);
-        ResourceMapCommon.dedupeNodes(affectedExecutionNodes).forEach(
-          (executionNode) => {
-            ProvenanceExecutionMutation.cleanupExecution(
-              this,
-              executionNode,
-              affectedExecutionInspections.get(
-                ResourceMapCommon.nodeKey(executionNode),
-              ),
-            );
-          },
-        );
+      if (!statementsToRemove.length) return this;
+      statementsToRemove.forEach((statement) => {
+        this.resourceMap.graph.removeStatement(statement);
       });
+      // Keep this pass before association pruning. Otherwise removing one of
+      // several programs could expose the surviving program's sole association
+      // and make it look like a removable standalone scaffold.
+      this.removeStandaloneExecutionScaffolds(affectedExecutionNodes);
+      this.executionMutation.removeDanglingQualifiedAssociations(
+        affectedAssociationNodes,
+      );
+
+      // A batch can empty several affected blank associations at once. Recheck
+      // only executions proven against the pre-mutation graph to lose every
+      // plan; pre-existing associationless imports are not cleanup targets.
+      const associationlessExecutionNodes = RDFGraph.dedupeTerms(
+        executionsLosingAllPlans,
+      ).filter(
+        (executionNode) =>
+          this.resourceMap.graph.hasStatement({ subject: executionNode }) &&
+          !this.resourceMap.graph.hasStatement({
+            subject: executionNode,
+            predicate: this.ns.PROV("qualifiedAssociation"),
+          }),
+      );
+      this.removeStandaloneExecutionScaffolds(associationlessExecutionNodes, {
+        allowAssociationless: true,
+      });
+      return this;
     }
 
     /**
-     * Collect graph removals and cleanup targets for members being deleted.
+     * Find provenance statements and helper nodes affected by member deletion.
      * @private
      * @param {Set<string>} normalizedPids Member PIDs being removed.
-     * @returns {{statementsToRemove: object[], affectedExecutionNodes:
-     * Array<NamedNode|BlankNode>, affectedExecutionInspections: Map<string,
-     * object>}} Collected removal inputs.
+     * @returns {object} Collected statements and affected graph nodes
      */
     collectMemberReferenceRemovals(normalizedPids) {
       const removals = {
         statementsToRemove: [],
         affectedExecutionNodes: [],
+        affectedAssociationNodes: [],
+        executionsLosingAllPlans: [],
       };
 
       this.collectWasDerivedFromMemberRemovals(normalizedPids, removals);
       this.collectExecutionProgramMemberRemovals(normalizedPids, removals);
       this.collectWasInformedByMemberRemovals(normalizedPids, removals);
-      removals.affectedExecutionInspections = new Map(
-        ResourceMapCommon.dedupeNodes(removals.affectedExecutionNodes).map(
-          (executionNode) => [
-            ResourceMapCommon.nodeKey(executionNode),
-            this.getGraphState().getExecutionSummary(executionNode),
-          ],
-        ),
-      );
+      this.collectProgramPlanMemberRemovals(normalizedPids, removals);
 
       return removals;
     }
 
     /**
-     * Collect `prov:wasDerivedFrom` removals involving deleted members.
+     * Find data derivation relationships involving deleted members.
      * @private
      * @param {Set<string>} normalizedPids Member PIDs being removed.
      * @param {object} removals Shared removal collection.
      */
     collectWasDerivedFromMemberRemovals(normalizedPids, removals) {
-      const graphState = this.getGraphState();
-      this.getWasDerivedFromLinks()
+      const { graphState } = this.resourceMap;
+      this.resourceMap.graph
+        .findStatements({ predicate: this.ns.PROV("wasDerivedFrom") })
         .filter(
-          ({ derivedPid, sourcePid }) =>
-            normalizedPids.has(derivedPid) || normalizedPids.has(sourcePid),
+          ({ subject, object }) =>
+            normalizedPids.has(graphState.pidFromNode(subject)) ||
+            normalizedPids.has(graphState.pidFromNode(object)),
         )
-        .forEach(({ derivedPid, sourcePid }) => {
-          const derivedUri = graphState.findNodeUriForPid(derivedPid);
-          const sourceUri = graphState.findNodeUriForPid(sourcePid);
-          if (derivedUri && sourceUri) {
-            removals.statementsToRemove.push({
-              subject: rdf.sym(derivedUri),
-              predicate: this.ns.PROV("wasDerivedFrom"),
-              object: rdf.sym(sourceUri),
-            });
-          }
-        });
+        .forEach((statement) => removals.statementsToRemove.push(statement));
     }
 
     /**
-     * Collect generation and usage removals involving deleted members.
+     * Test whether deleting program members removes every program linked to a
+     * run.
+     * @private
+     * @param {object|null} executionSummary Execution structure to inspect
+     * @param {Set<string>} normalizedPids Member PIDs being removed
+     * @returns {boolean} Whether every exact plan belongs to a removed PID
+     */
+    removesEveryExecutionPlan(executionSummary, normalizedPids) {
+      const planNodes =
+        executionSummary?.associations.flatMap(
+          ({ planNodes: associationPlans }) => associationPlans,
+        ) || [];
+      // The PID summary omits imported plans that do not resolve to a PID.
+      // Their exact RDF nodes still share the execution, so the execution must
+      // remain.
+      return (
+        planNodes.length > 0 &&
+        planNodes.every((planNode) =>
+          normalizedPids.has(this.resourceMap.graphState.pidFromNode(planNode)),
+        )
+      );
+    }
+
+    /**
+     * Find relationships for produced or consumed data affected by member
+     * deletion.
      * @private
      * @param {Set<string>} normalizedPids Member PIDs being removed.
      * @param {object} removals Shared removal collection.
      */
     collectExecutionProgramMemberRemovals(normalizedPids, removals) {
-      const graphState = this.getGraphState();
-      // If a deleted member is itself a program, any now-orphaned executions
-      // associated with that program also need cleanup.
+      const { graphState } = this.resourceMap;
       [
-        {
-          relationships: this.getGeneratedByPrograms(),
-          predicate: "wasGeneratedBy",
-          dataFromObject: false,
-        },
-        {
-          relationships: this.getUsedByPrograms(),
-          predicate: "used",
-          dataFromObject: true,
-        },
-      ].forEach(({ relationships, predicate, dataFromObject }) => {
-        relationships
-          .filter(
-            ({ dataPid, programPid }) =>
-              normalizedPids.has(dataPid) || normalizedPids.has(programPid),
-          )
-          .forEach(({ dataPid, programPid, executionId }) => {
-            const dataUri = graphState.findNodeUriForPid(dataPid);
-            if (!dataUri) return;
+        PROV_EDGE_SPECS.generatedByProgram,
+        PROV_EDGE_SPECS.usedByProgram,
+      ].forEach(({ predicate, dataFromObject }) => {
+        this.resourceMap.graph
+          .findStatements({ predicate: this.ns.PROV(predicate) })
+          .forEach((statement) => {
+            const dataNode = dataFromObject
+              ? statement.object
+              : statement.subject;
+            const executionNode = dataFromObject
+              ? statement.subject
+              : statement.object;
+            const dataPid = graphState.pidFromNode(dataNode);
+            const removesData = normalizedPids.has(dataPid);
+            const executionSummary =
+              graphState.getExecutionSummary(executionNode);
+            const removesAllPlans = this.removesEveryExecutionPlan(
+              executionSummary,
+              normalizedPids,
+            );
+            if (!removesData && !removesAllPlans) return;
 
-            const dataNode = rdf.sym(dataUri);
-            graphState
-              .filterExecutionNodesByIdentifier(
-                graphState.getExecutionNodesForProgram(programPid),
-                executionId,
-              )
-              .forEach((executionNode) => {
-                removals.affectedExecutionNodes.push(executionNode);
-                removals.statementsToRemove.push({
-                  subject: dataFromObject ? executionNode : dataNode,
-                  predicate: this.ns.PROV(predicate),
-                  object: dataFromObject ? dataNode : executionNode,
-                });
-              });
+            removals.statementsToRemove.push(statement);
+            // Decide cleanup eligibility from the pre-mutation shape. One plan,
+            // resolved or external, is still part of a bare scaffold after its
+            // final data edge is removed. A batch must not make an imported
+            // multi-plan or multi-association run newly removable.
+            const dataRemovalLeavesBareCandidate =
+              removesData &&
+              executionSummary?.associations.length === 1 &&
+              executionSummary.associations[0].planNodes.length <= 1;
+            if (dataRemovalLeavesBareCandidate || removesAllPlans) {
+              removals.affectedExecutionNodes.push(executionNode);
+            }
           });
-      });
-
-      normalizedPids.forEach((pid) => {
-        removals.affectedExecutionNodes.push(
-          ...graphState.getExecutionNodesForProgram(pid),
-        );
       });
     }
 
     /**
-     * Collect `prov:wasInformedBy` removals involving deleted members.
+     * Find program run ordering relationships affected by deleting members.
      * @private
      * @param {Set<string>} normalizedPids Member PIDs being removed.
      * @param {object} removals Shared removal collection.
      */
     collectWasInformedByMemberRemovals(normalizedPids, removals) {
-      const graphState = this.getGraphState();
-      this.getWasInformedByPrograms()
-        .filter(
-          ({ programPid, previousProgramPid }) =>
-            normalizedPids.has(programPid) ||
-            normalizedPids.has(previousProgramPid),
-        )
-        .forEach((relationship) => {
-          findWasInformedByExecutionPairs(graphState, relationship).forEach(
-            ({ executionNode, previousExecutionNode }) => {
-              removals.affectedExecutionNodes.push(
-                executionNode,
-                previousExecutionNode,
-              );
-              removals.statementsToRemove.push({
-                subject: executionNode,
-                predicate: this.ns.PROV("wasInformedBy"),
-                object: previousExecutionNode,
-              });
-            },
+      const { graphState } = this.resourceMap;
+      this.resourceMap.graph
+        .findStatements({ predicate: this.ns.PROV("wasInformedBy") })
+        .forEach((statement) => {
+          const executionNodes = [statement.subject, statement.object];
+          const executionSummaries = executionNodes.map((executionNode) =>
+            graphState.getExecutionSummary(executionNode),
           );
+          if (executionSummaries.some((summary) => !summary)) {
+            return;
+          }
+
+          const removedExecutionNodes = executionNodes.filter(
+            (_executionNode, index) =>
+              this.removesEveryExecutionPlan(
+                executionSummaries[index],
+                normalizedPids,
+              ),
+          );
+          if (!removedExecutionNodes.length) return;
+
+          removals.affectedExecutionNodes.push(...removedExecutionNodes);
+          removals.statementsToRemove.push(statement);
         });
     }
 
     /**
-     * Remove a collected set of RDF statement patterns once each.
+     * Find links from executions to deleted program members.
      * @private
-     * @param {Array<{subject: *, predicate: *, object: *}>} statements
-     * Statement patterns to remove.
+     * @param {Set<string>} normalizedPids Member PIDs being removed
+     * @param {object} removals Shared removal collection
      */
-    removeCollectedStatements(statements) {
-      dedupeBy(statements, ResourceMapCommon.statementKey).forEach(
-        ({ subject, predicate, object }) => {
-          GraphMutation.removeStatementsMatching(
-            this.resourceMap,
-            subject,
-            predicate,
-            object,
-          );
-        },
-      );
-    }
+    collectProgramPlanMemberRemovals(normalizedPids, removals) {
+      const { graph, graphState } = this.resourceMap;
+      graph
+        .findStatements({ predicate: this.ns.PROV("hadPlan") })
+        .filter(({ object }) =>
+          normalizedPids.has(graphState.pidFromNode(object)),
+        )
+        .forEach((statement) => {
+          removals.statementsToRemove.push(statement);
+          // Remember only the association changed by this member removal.
+          removals.affectedAssociationNodes.push(statement.subject);
+          graph
+            .findStatements({
+              predicate: this.ns.PROV("qualifiedAssociation"),
+              object: statement.subject,
+            })
+            .forEach(({ subject: executionNode }) => {
+              // Eligibility is execution-wide: removing one association must
+              // not queue a run whose other association still has a plan.
+              const executionSummary =
+                graphState.getExecutionSummary(executionNode);
+              if (
+                !this.removesEveryExecutionPlan(
+                  executionSummary,
+                  normalizedPids,
+                )
+              ) {
+                return;
+              }
 
-    /**
-     * Add an explicit Data or Program annotation for a PID. Assertions already
-     * implied by a provenance relationship are derived and are not persisted.
-     * @param {string} pid PID whose subject node receives the type assertion.
-     * @param {string} className PROVONE class name or fully-qualified PROVONE
-     * URI.
-     * @returns {Provenance} Updated provenance instance.
-     */
-    addTypeAssertion(pid, className) {
-      const normalizedPid = requireNonEmptyString(pid, "PID required");
-      const normalizedClassName = this.getProvoneClassName(className);
-      if (!EXPLICIT_TYPE_CLASS_NAMES.has(normalizedClassName)) {
-        throw new Error("Only Data and Program type assertions are supported");
-      }
-      if (this.hasRole(normalizedPid, normalizedClassName)) {
-        return this;
-      }
-
-      return this.mutateGraph(() => {
-        const nodeInfo = this.ensurePidNode(normalizedPid, {
-          message: "PID required",
+              removals.affectedExecutionNodes.push(executionNode);
+              removals.executionsLosingAllPlans.push(executionNode);
+            });
         });
-        GraphMutation.addStatementIfMissing(
-          this.resourceMap,
-          nodeInfo.node,
-          this.ns.RDF("type"),
-          this.resolveProvoneClassNode(normalizedClassName),
-        );
-      });
     }
 
     /**
-     * Remove an explicit Data or Program annotation from a PID. Structurally
-     * derived role types remain visible until their relationships are removed.
-     * @param {string} pid PID whose subject node loses the type assertion.
-     * @param {string} className PROVONE class name or fully-qualified PROVONE
-     * URI.
-     * @returns {Provenance} Updated provenance instance.
+     * Remove minimal run and association nodes after their last managed
+     * relationship is removed. Preserve imported nodes that carry any
+     * additional statements.
+     * @private
+     * @param {Array<NamedNode|BlankNode>} executionNodes Candidate executions
+     * @param {object} [options] Cleanup options
+     * @param {boolean} [options.allowAssociationless] Allow a candidate
+     * that lost every plan and became associationless in the current edit
      */
-    removeTypeAssertion(pid, className) {
-      const normalizedClassName = this.getProvoneClassName(className);
-      if (!EXPLICIT_TYPE_CLASS_NAMES.has(normalizedClassName)) {
-        throw new Error("Only Data and Program type assertions are supported");
-      }
-      const existingNode = this.resolveExistingPidNode(pid, "PID required");
-      if (!existingNode) return this;
+    removeStandaloneExecutionScaffolds(
+      executionNodes,
+      { allowAssociationless = false } = {},
+    ) {
+      const { graph } = this.resourceMap;
+      const typePredicate = this.ns.RDF("type").value;
+      const identifierPredicate = this.ns.DCTERMS("identifier").value;
+      const associationPredicate = this.ns.PROV("qualifiedAssociation").value;
+      const executionType = this.ns.PROVONE("Execution").value;
+      const associationType = this.ns.PROV("Association").value;
+      const planPredicate = this.ns.PROV("hadPlan").value;
 
-      return this.mutateGraph(() => {
-        GraphMutation.removeStatementsMatching(
-          this.resourceMap,
-          existingNode.node,
-          this.ns.RDF("type"),
-          this.resolveProvoneClassNode(normalizedClassName),
+      RDFGraph.dedupeTerms(executionNodes).forEach((executionNode) => {
+        const outgoing = graph.findStatements({ subject: executionNode });
+        const associations = outgoing
+          .filter(({ predicate }) => predicate.value === associationPredicate)
+          .map(({ object }) => object);
+        const identifierStatements = outgoing.filter(
+          ({ predicate }) => predicate.value === identifierPredicate,
         );
+        const hasManagedIdentifier = RDFGraph.isBlankNode(executionNode)
+          ? identifierStatements.length <= 1
+          : identifierStatements.length === 1;
+        const isManagedExecution =
+          !graph.hasStatement({ object: executionNode }) &&
+          (associations.length === 1 ||
+            (allowAssociationless && associations.length === 0)) &&
+          hasManagedIdentifier &&
+          outgoing.every(({ predicate, object }) => {
+            if (predicate.value === associationPredicate) return true;
+            if (predicate.value === identifierPredicate) {
+              return RDFGraph.isLiteral(object);
+            }
+            return (
+              predicate.value === typePredicate &&
+              object.value === executionType
+            );
+          });
+        if (!isManagedExecution) return;
+
+        const [associationNode] = associations;
+        if (!associationNode) {
+          // Associationless cleanup is opt-in because an incomplete imported
+          // execution may have meaning of its own. Member removal enables it
+          // only after the same edit removes every plan and prunes its links.
+          graph.removeNodeReferences(executionNode);
+          return;
+        }
+
+        const associationStatements = graph.findStatements({
+          subject: associationNode,
+        });
+        const isManagedAssociation =
+          associationStatements.filter(
+            ({ predicate }) => predicate.value === planPredicate,
+          ).length <= 1 &&
+          associationStatements.every(({ predicate, object }) => {
+            // An association with prov:agent or any other imported statement
+            // contains information beyond MetacatUI's basic structure and must
+            // remain.
+            if (predicate.value === planPredicate) return true;
+            return (
+              predicate.value === typePredicate &&
+              object.value === associationType
+            );
+          });
+        if (!isManagedAssociation) return;
+
+        graph.removeNodeReferences(executionNode);
+        if (!graph.hasStatement({ object: associationNode })) {
+          graph.removeNodeReferences(associationNode);
+        }
       });
     }
 
     /**
-     * Validate provenance relationships against the currently aggregated
-     * members.
+     * Check that provenance relationships have usable PIDs and reference valid
+     * program package members.
      * @returns {object[]} Validation issues.
      */
     validate() {
@@ -665,181 +586,126 @@ define([
     }
 
     /**
-     * Normalize obvious provenance defects that can be repaired without
-     * guessing.
+     * Add missing execution type or identifier statements only when existing
+     * relationships make the repair unambiguous.
      * @param {object} [options] Normalization options.
      * @param {boolean} [options.markDirty] Mark normalization changes unsaved.
      * @returns {Provenance} Updated provenance instance.
      */
     normalize({ markDirty = false } = {}) {
-      const graphState = this.getGraphState();
-      const executionNodes = graphState.getExecutionNodes();
-      const executionInspections = new Map(
-        executionNodes.map((executionNode) => [
-          ResourceMapCommon.nodeKey(executionNode),
-          graphState.getExecutionSummary(executionNode),
-        ]),
-      );
+      const { graphState } = this.resourceMap;
+      const executionInspections = graphState
+        .getExecutionNodes()
+        .map((executionNode) => graphState.getExecutionSummary(executionNode));
 
-      this.mutateGraph(
+      return this.mutateGraph(
         () => {
-          ProvenanceExecutionMutation.normalizeExecutionGraph(
-            this,
-            executionNodes,
-            executionInspections,
-          );
+          this.executionMutation.normalizeExecutionGraph(executionInspections);
         },
         { markDirty },
       );
-      return this;
     }
 
     /**
-     * Return the canonical provenance summary used for diffs, tests, and JSON
-     * output.
-     * @returns {object} Canonical provenance summary object.
+     * Return a consistently ordered provenance summary for diffs, tests, and
+     * JSON output.
+     * @returns {object} Ordered provenance summary
      */
     toJSON() {
-      return ResourceMapCommon.sortProvenanceSummary({
-        wasDerivedFrom: this.getWasDerivedFromLinks(),
-        generatedByPrograms: this.getGeneratedByPrograms(),
-        usedByPrograms: this.getUsedByPrograms(),
-        wasInformedByPrograms: this.getWasInformedByPrograms(),
-        typeAssertions: this.getTypeAssertions(),
+      return {
+        wasDerivedFrom: ResourceMapCommon.sortByFields(
+          this.getWasDerivedFromLinks(),
+          ["derivedPid", "sourcePid"],
+        ),
+        generatedByPrograms: ResourceMapCommon.sortByFields(
+          this.getGeneratedByPrograms(),
+          ["dataPid", "programPid", "executionId"],
+        ),
+        usedByPrograms: ResourceMapCommon.sortByFields(
+          this.getUsedByPrograms(),
+          ["dataPid", "programPid", "executionId"],
+        ),
+        wasInformedByPrograms: ResourceMapCommon.sortByFields(
+          this.getWasInformedByPrograms(),
+          [
+            "programPid",
+            "previousProgramPid",
+            "executionId",
+            "previousExecutionId",
+          ],
+        ),
+        typeAssertions: ResourceMapCommon.sortByFields(
+          this.getTypeAssertions(),
+          ["pid", "className"],
+        ),
+      };
+    }
+
+    /**
+     * Create missing `rdf:type` statements that label objects as `provone:Data`
+     * or `provone:Program` based on how they participate in provenance
+     * relationships. The statements are added only to serialized output, not to
+     * the editable graph.
+     * @private
+     * @returns {Array<object>} Derived RDF type statements for serialization
+     */
+    deriveRoleTypeStatements() {
+      const { graphState } = this.resourceMap;
+      const statements = [];
+      const existingTypeKeys = new Set(
+        this.resourceMap.graph
+          .findStatements({ predicate: this.ns.RDF("type") })
+          .map(RDFGraph.buildStatementKey),
+      );
+      ["Data", "Program"].forEach((className) => {
+        const classNode = this.ns.PROVONE(className);
+        graphState.getRolePidSet(className).forEach((pid) => {
+          const uri = graphState.findNodeUriForPid(pid);
+          if (!uri) {
+            return;
+          }
+          const subject = RDFGraph.createNamedNode(uri);
+          const statement = RDFGraph.createStatement(
+            subject,
+            this.ns.RDF("type"),
+            classNode,
+          );
+          if (!existingTypeKeys.has(RDFGraph.buildStatementKey(statement))) {
+            statements.push(statement);
+          }
+        });
       });
+      return statements;
     }
 
     /**
-     * Resolve a PROVONE class name or URI into the RDF node used in the graph.
-     * @private
-     * @param {string} className PROVONE local name or fully-qualified URI.
-     * @returns {NamedNode} RDF node for the requested class.
-     */
-    resolveProvoneClassNode(className) {
-      const normalizedClassName = normalizeText(className);
-      if (!isNonEmptyString(normalizedClassName)) {
-        throw new Error("Class required");
-      }
-      if (normalizedClassName.startsWith(this.ns.PROVONE("").value)) {
-        return rdf.sym(normalizedClassName);
-      }
-      return this.ns.PROVONE(normalizedClassName);
-    }
-
-    /**
-     * Normalize a PROVONE class input to its local class name.
-     * @private
-     * @param {string} className PROVONE class name or fully-qualified URI.
-     * @returns {string} Local PROVONE class name.
-     */
-    getProvoneClassName(className) {
-      const classNode = this.resolveProvoneClassNode(className);
-      return classNode.value.slice(this.ns.PROVONE("").value.length);
-    }
-
-    /**
-     * Resolve an existing RDF node for a required PID.
-     * @private
-     * @param {string} pid PID to resolve.
-     * @param {string} message Error message used when the PID is invalid.
-     * @returns {{pid: string, node: NamedNode}|null} Existing PID node.
-     */
-    resolveExistingPidNode(pid, message) {
-      const normalizedPid = requireNonEmptyString(pid, message);
-      const nodeUri = this.getGraphState().findNodeUriForPid(normalizedPid);
-      return nodeUri ? { pid: normalizedPid, node: rdf.sym(nodeUri) } : null;
-    }
-
-    /**
-     * Resolve or create the RDF node for a provenance PID.
+     * Find the RDF node already representing a provenance PID, or create a
+     * resolve service node when none exists.
      * @private
      * @param {string} pid PID to resolve.
      * @param {object} [options] Resolution options.
-     * @param {boolean} [options.requireAggregated] Whether the PID must already
-     * be aggregated.
      * @param {string} [options.message] Error message used when the PID is
      * invalid.
-     * @returns {{pid: string, uri: string, node: NamedNode}} Resolved node
-     * summary.
+     * @returns {NamedNode} Resolved provenance node
      */
-    ensurePidNode(
-      pid,
-      { requireAggregated = false, message = "PID required" } = {},
-    ) {
-      const normalizedPid = requireAggregated
-        ? this.resourceMap.requireExistingMemberPid(pid, message)
-        : requireNonEmptyString(pid, message);
-
-      // External provenance PIDs, such as URNs or HTTP identifiers that are
-      // not aggregated members, are represented directly by their own URI.
-      // They still get an identifier statement so future PID lookups can
-      // resolve them, but they do not go through the resource map's canonical
-      // member URI machinery.
-      if (
-        !requireAggregated &&
-        ResourceMapCommon.isExternalDirectUriPid(normalizedPid) &&
-        !this.getGraphState().hasMember(normalizedPid)
-      ) {
-        GraphMutation.ensureIdentifierForUri(
-          this.resourceMap,
-          normalizedPid,
-          normalizedPid,
-        );
-        return {
-          pid: normalizedPid,
-          uri: normalizedPid,
-          node: rdf.sym(normalizedPid),
-        };
+    ensurePidNode(pid, { message = "PID required" } = {}) {
+      const normalizedPid = requireNonEmptyString(pid, message);
+      const { graphState } = this.resourceMap;
+      const member = this.resourceMap.resolveMemberNode(normalizedPid);
+      if (member) {
+        // Use the exact package member URI. Creating a URI from the PID could
+        // put the relationship on the currently configured Coordinating Node
+        // instead of the node used by the imported member, which caused issue
+        // #478.
+        this.resourceMap.ensureIdentifierForUri(member.uri, normalizedPid);
+        return member.node;
       }
 
-      return this.resourceMap.ensurePidNode(normalizedPid, {
-        createIdentifier: true,
-        requireAggregated,
-        message,
-      });
-    }
-
-    /**
-     * Test whether a PID currently has a PROVONE type assertion.
-     * @private
-     * @param {string} pid PID whose type assertion is checked.
-     * @param {string} className PROVONE class name or URI.
-     * @returns {boolean} True when the type is explicit or structurally
-     * derived.
-     */
-    hasTypeAssertion(pid, className) {
-      return this.getGraphState().hasTypeAssertion(
-        pid,
-        this.getProvoneClassName(className),
-      );
-    }
-
-    /**
-     * Collect PIDs that currently play a data role anywhere in provenance.
-     * @param {"Data"|"Program"} className PROVONE class name or URI whose role
-     * definitions are consulted.
-     * @returns {string[]} Resolvable data-role PIDs.
-     * @private
-     */
-    collectRolePids(className) {
-      return Array.from(
-        this.getGraphState().getRolePidSet(this.getProvoneClassName(className)),
-      );
-    }
-
-    /**
-     * Test whether a PID still has one structural provenance role for the
-     * requested PROVONE class.
-     * @param {string} pid PID to inspect.
-     * @param {string} className PROVONE class name or URI.
-     * @returns {boolean} True when the PID still has a matching structural
-     * role.
-     */
-    hasRole(pid, className) {
-      return this.getGraphState().hasRole(
-        pid,
-        this.getProvoneClassName(className),
-      );
+      const uri =
+        graphState.findNodeUriForPid(normalizedPid) ||
+        this.resourceMap.pidToUri(normalizedPid);
+      this.resourceMap.ensureIdentifierForUri(uri, normalizedPid);
+      return RDFGraph.createNamedNode(uri);
     }
   }
 

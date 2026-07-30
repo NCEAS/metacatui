@@ -17,18 +17,14 @@ define([
   const expect = chai.expect;
 
   describe("ResourceMapResolver Test Suite", () => {
-    const state = cleanState(
-      () => {
-        const sandbox = sinon.createSandbox();
-        const rmr = new ResourceMapResolver({
-          consoleLevel: "info",
-          metaServiceUrl: "https://example.org/sysmeta",
-        });
-        return { sandbox, rmr };
-      },
-      beforeEach,
-      afterEach,
-    );
+    const state = cleanState(() => {
+      const sandbox = sinon.createSandbox();
+      const rmr = new ResourceMapResolver({
+        consoleLevel: "info",
+        metaServiceUrl: "https://example.org/sysmeta",
+      });
+      return { sandbox, rmr };
+    }, beforeEach);
 
     afterEach(() => {
       state.sandbox.restore();
@@ -319,31 +315,45 @@ define([
         rmr.addToStorage.called.should.be.false;
       });
 
-      it("derives failure flags from qualifying log metadata", () => {
-        const { sandbox, rmr } = state;
-        const log = sandbox.stub(rmr, "log");
-        log.onFirstCall().returns({
-          events: [{ meta: { rms: [] } }, { meta: { rms: ["rm.single"] } }],
+      it("derives failure flags from the current status metadata", () => {
+        const { rmr } = state;
+        rmr.eventLog.setConsoleLogLevel(false);
+        rmr.status("obj999", "priorMiss", null, {
+          unauthorized: true,
+          rms: ["rm.old.1", "rm.old.2"],
         });
-        log.onSecondCall().returns({
-          events: [
-            {
-              meta: {
-                unauthorized: true,
-                rms: ["rm.1", "rm.2"],
-              },
-            },
-          ],
-        });
-        sandbox.stub(rmr.events, "trigger");
 
-        const ordinaryMiss = rmr.status("obj999", "allMiss", null);
+        const ordinaryMiss = rmr.status("obj999", "allMiss", null, {
+          rms: [],
+        });
         should.equal(ordinaryMiss.unauthorized, undefined);
         should.equal(ordinaryMiss.multipleRMs, undefined);
 
-        const qualifiedMiss = rmr.status("obj999", "allMiss", null);
+        const qualifiedMiss = rmr.status("obj123", "allMiss", null, {
+          unauthorized: true,
+          rms: ["rm.1", "rm.2"],
+        });
         qualifiedMiss.unauthorized.should.equal(true);
         qualifiedMiss.multipleRMs.should.equal(true);
+      });
+
+      it("does not carry an earlier authorization failure into a success", () => {
+        const { sandbox, rmr } = state;
+        rmr.eventLog.setConsoleLogLevel(false);
+        sandbox.stub(rmr, "addToStorage").resolves();
+        rmr.status("obj123", "unauthorized", null, {
+          unauthorized: true,
+        });
+
+        const result = rmr.status(
+          "obj123",
+          "foundAndValid",
+          "resource_map_obj123",
+          { source: "index" },
+        );
+
+        result.success.should.equal(true);
+        should.equal(result.unauthorized, undefined);
       });
 
       it("logs addToStorage failures without throwing", async () => {

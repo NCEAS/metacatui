@@ -18,8 +18,8 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
    * Objects may be named nodes, blank nodes, or literals such as strings,
    * dates, and numbers.
    * @property {object} [why] Optional rdflib graph/context attached to the
-   * statement. MetacatUI does not set this directly, but preserves it when
-   * restoring existing rdflib statements during rollback.
+   * statement. MetacatUI preserves this field when it restores existing rdflib
+   * statements during rollback.
    */
 
   /**
@@ -40,10 +40,10 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
 
   /**
    * @class RDFGraph
-   * @classdesc Wrapper for an rdflib graph store that provides convenient
-   * access to statements and nodes. Keeps direct rdflib store access in one
-   * place and makes it easier to update or replace the underlying library in
-   * the future.
+   * @classdesc Wrap an rdflib graph store so Resource Map code can read and
+   * change RDF statements through one small API. Direct rdflib access stays in
+   * this class.
+   * @classcategory Models/ResourceMap
    * @since 0.0.0
    */
   class RDFGraph {
@@ -82,11 +82,10 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
     }
 
     /**
-     * Read the raw lexical value from a literal term. Returns null for named
-     * nodes and blank nodes because those terms identify resources instead of
-     * storing concrete values.
+     * Read the value stored in a literal term. Return null for named nodes and
+     * blank nodes because they identify resources rather than store values.
      * @param {NamedNode|BlankNode|Literal|null|undefined} term RDF term
-     * @returns {*|null} Literal value, or null for non-literals.
+     * @returns {*|null} Literal value, or null for terms that are not literals.
      */
     static getLiteralValue(term) {
       return RDFGraph.isLiteral(term) ? term.value : null;
@@ -116,7 +115,7 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
     }
 
     /**
-     * Build a stable serialized key from ordered string-like parts.
+     * Build a stable serialized key from ordered values converted to strings.
      * @param {Array<*>} parts Ordered key parts
      * @returns {string} Stable serialized key
      */
@@ -257,10 +256,10 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
 
       incomingByBlankNode.forEach((incoming, key) => {
         if (incoming.length === 1 && !blankNodeSubjects.has(key)) {
-          // The vendored rdflib.js serializer throws when a blank node has one
-          // incoming edge but no statements describing it as a subject.
-          // Repeating the edge makes rdflib emit rdf:nodeID instead of
-          // recursing; parsing the result collapses the duplicate triple again.
+          // The vendored rdflib serializer throws when a blank node has one
+          // incoming edge and no statements where it is the subject. Duplicate
+          // that edge only in this temporary serialization list. rdflib then
+          // writes rdf:nodeID, and parsing the output collapses the duplicate.
           serializableStatements.push(incoming[0]);
         }
       });

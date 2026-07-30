@@ -382,6 +382,7 @@ define([
      * @param {Set<string>} [visitedPids] PIDs already visited in this path
      * @returns {Promise<{rm: (string|null), meta: object}>} The resolved RM PID
      * if found, and metadata about the resolution attempt
+     * @since 0.0.0
      */
     async resolveFromMetadataPids(
       metadataPids = [],
@@ -396,7 +397,6 @@ define([
           meta: {
             inputMetadataPids,
             metadataCandidates: [],
-            resolvedMetadataPids: [],
             rms: [],
           },
         };
@@ -438,7 +438,6 @@ define([
         meta: {
           inputMetadataPids,
           metadataCandidates,
-          resolvedMetadataPids: [...metadataCandidates],
           rms: rmCandidates,
         },
       };
@@ -454,6 +453,7 @@ define([
      * @param {object} [options] Version-chain lookup options
      * @param {AbortSignal} [options.signal] Signal used to cancel resolver work
      * @returns {Promise<string[]>} Latest PID from each discovered chain
+     * @since 0.0.0
      */
     async reducePidsToLatest(pids = [], options = {}) {
       let remainingPids = ValueUtilities.normalizeStringList(pids);
@@ -617,6 +617,7 @@ define([
      * @param {string} pid The PID to get the system metadata for
      * @param {object} [options] Options to SysMeta service
      * @returns {Promise<SystemMetadata>} The sysMeta for the PID
+     * @since 0.0.0
      */
     async getSysMeta(pid, options = {}) {
       return this.versionTracker.getSysMeta(pid, options);
@@ -986,15 +987,9 @@ define([
       if (rm) result.rm = rm;
       if (meta) result.meta = meta;
 
-      if (log.events.some((event) => event.meta?.unauthorized))
-        result.unauthorized = true;
-      if (
-        !rm &&
-        log.events.some(
-          (event) =>
-            Array.isArray(event.meta?.rms) && event.meta.rms.length > 1,
-        )
-      )
+      // Event logs span retries, but result flags describe only this status.
+      if (!rm && meta?.unauthorized === true) result.unauthorized = true;
+      if (!rm && Array.isArray(meta?.rms) && meta.rms.length > 1)
         result.multipleRMs = true;
 
       return result;

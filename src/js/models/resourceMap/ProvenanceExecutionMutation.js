@@ -1,437 +1,393 @@
 "use strict";
 
 /**
- * Utilities for creating, reusing, and cleaning up PROVONE Execution nodes in
- * a ResourceMap provenance graph.
+ * Create and remove the program run relationships used by provenance.
  *
- * This module supports the higher-level Provenance API methods that describe
- * relationships between data objects and programs, such as "data was generated
- * by program" or "program used data". Those public methods expose simple
- * PID-based operations, but the RDF graph stores these relationships through
- * Execution nodes and qualified associations.
+ * The public Provenance API says that a program produced or consumed data. RDF
+ * represents that history with an Execution node for the individual program
+ * run. The Execution links to an Association, and the Association links to the
+ * program through a Plan. This module manages those extra RDF nodes.
  *
- * Mutations here manage one canonical execution shape: a named execution node
- * with a `dcterms:identifier` literal, one qualified association, and one plan
- * pointing at an aggregated program. Reuse is resolved by explicit execution
- * identifier when one is provided, otherwise by the program's existing
- * execution. Unusual linked execution shapes — shared associations, multiple
- * associations, plans, or programs per execution — are left untouched and
- * reported by ProvenanceValidation. Standalone execution scaffolding is
- * removed during cleanup and normalization.
+ * MetacatUI reuses a program's run only when there is exactly one safe choice.
+ * Multiple or ambiguous imported runs remain unchanged and read only. When the
+ * final managed relationship is removed, the minimal run and association nodes
+ * created by MetacatUI are removed too; imported nodes with extra information
+ * are preserved.
  *
- * Reads come from the resource map's cached graph state (the pre-mutation
- * projection during grouped mutations); edits go through GraphMutation.
+ * During a grouped edit, reads use the state captured before editing began and
+ * writes go directly to `resourceMap.graph`.
  * @since 0.0.0
  */
 
 define([
-  "rdflib",
   "common/ValueUtilities",
+  "models/resourceMap/RDFGraph",
   "models/resourceMap/ResourceMapCommon",
-  "models/resourceMap/GraphMutation",
-], (rdf, ValueUtilities, ResourceMapCommon, GraphMutation) => {
-  const { normalizeText, requireNonEmptyString, makeUUID } = ValueUtilities;
-  const { ResourceMapConflictError } = ResourceMapCommon;
+  "models/resourceMap/ProvenanceValidation",
+], (ValueUtilities, RDFGraph, ResourceMapCommon, ProvenanceValidation) => {
+  const { requireNonEmptyString, makeUUID } = ValueUtilities;
+  const { NS, ResourceMapConflictError } = ResourceMapCommon;
 
   /**
-   * Resolve a reusable execution node by its identifier. Reuse requires the
-   * identifier to resolve to a node already typed as a PROVONE Execution;
-   * identifier matches on non-execution nodes are ignored here and surfaced
-   * by validation as identifier collisions.
-   * @param {Provenance} provenance Provenance instance whose graph is
-   * inspected.
-   * @param {string} executionId Requested execution identifier.
-   * @returns {NamedNode|BlankNode|null} Reusable execution node when found.
+   * Create the error returned when there is no single program run that can be
+   * edited safely.
+   * @param {string} programPid Program selected by the caller
+   * @returns {ResourceMapConflictError} Read only provenance conflict
    */
-  function resolveReusableExecutionByIdentifier(provenance, executionId) {
-    const graphState = provenance.resourceMap.getGraphState();
-    return (
-      graphState
-        .findNodesByIdentifier(executionId)
-        .find((node) => graphState.isExecutionNode(node)) || null
+  function programProvenanceReadOnlyError(programPid) {
+    return new ResourceMapConflictError(
+      `Program "${programPid}" is read only. Only programs with no run or one unambiguous run can be edited here.`,
+      {
+        code: "programProvenanceReadOnly",
+        details: { programPid },
+      },
     );
   }
 
   /**
-   * Resolve a reusable execution for a program. When the program already has
-   * more than one execution, the first is reused; callers that need a
-   * specific execution must pass an explicit execution identifier.
-   * @param {Provenance} provenance Provenance instance whose graph is
-   * inspected.
-   * @param {string} programPid Program PID whose execution is requested.
-   * @returns {NamedNode|BlankNode|null} Reusable execution node when found.
+   * Find a program run created earlier in the current grouped edit. Cached state
+   * describes the graph before editing began, so this direct graph lookup is
+   * needed only when that cache has no matching run.
+   * @param {Provenance} provenance Provenance instance whose graph is inspected
+   * @param {{pid: string, node: NamedNode}} programMember Exact program package
+   * member
+   * @returns {NamedNode|BlankNode|null} Pending execution node when found
    */
-  function resolveReusableExecutionForProgram(provenance, programPid) {
-    return (
-      provenance.resourceMap
-        .getGraphState()
-        .getExecutionNodesForProgram(programPid)[0] || null
+  function resolvePendingExecution(provenance, programMember) {
+    const { graph } = provenance.resourceMap;
+    const { node: programNode, pid: programPid } = programMember;
+    const associationNodes = graph
+      .findStatements({ predicate: NS.PROV("hadPlan"), object: programNode })
+      .map(({ subject }) => subject);
+    const executionNodes = RDFGraph.dedupeTerms(
+      associationNodes.flatMap((associationNode) =>
+        graph
+          .findStatements({
+            predicate: NS.PROV("qualifiedAssociation"),
+            object: associationNode,
+          })
+          .map(({ subject }) => subject),
+      ),
+    ).filter((executionNode) =>
+      graph.hasStatement({
+        subject: executionNode,
+        predicate: NS.RDF("type"),
+        object: NS.PROVONE("Execution"),
+      }),
     );
+    if (executionNodes.length > 1) {
+      throw programProvenanceReadOnlyError(programPid);
+    }
+    return executionNodes[0] || null;
   }
 
   /**
-   * Ensure an execution has an association with a plan for the program.
-   * Existing association details are reused as-is; a plan is only added when
-   * the association has none, so pre-existing graph content is never
-   * replaced.
+   * Label a node as a program run and add its identifier when either statement
+   * is missing.
+   * @param {Provenance} provenance Provenance instance whose graph is updated
+   * @param {NamedNode|BlankNode} executionNode Execution node to update
+   * @param {object} [inspection] Existing execution summary
+   */
+  function ensureExecutionIdentity(provenance, executionNode, inspection = {}) {
+    const { graph } = provenance.resourceMap;
+    if (!inspection.isExecution) {
+      graph.addStatementIfMissing({
+        subject: executionNode,
+        predicate: NS.RDF("type"),
+        object: NS.PROVONE("Execution"),
+      });
+    }
+    if (
+      RDFGraph.isNamedNode(executionNode) &&
+      !inspection.hasIdentifierLiteral
+    ) {
+      const executionId = inspection.identifier || executionNode.value;
+      graph.addStatementIfMissing({
+        subject: executionNode,
+        predicate: NS.DCTERMS("identifier"),
+        object: RDFGraph.createLiteral(executionId, NS.XSD("string")),
+      });
+    }
+  }
+
+  /**
+   * Connect a program run to the program that was executed. PROV stores this as
+   * an Association linked to a Plan that identifies the program. Reuse an
+   * existing Association and Plan, and add a program link only when none exists.
    * @param {Provenance} provenance Provenance instance whose graph is updated.
    * @param {NamedNode|BlankNode} executionNode Execution node to update.
-   * @param {string} programPid Aggregated program PID that should be linked.
-   * @param {string|null} [agentUri] Optional agent URI for the association.
+   * @param {{pid: string, node: NamedNode}} programMember Exact program package
+   * member that should be linked
    */
   function ensureAssociationForExecution(
     provenance,
     executionNode,
-    programPid,
-    agentUri = null,
+    programMember,
   ) {
-    const inspection = provenance.resourceMap
-      .getGraphState()
-      .getExecutionSummary(executionNode);
-    const [association] = inspection?.associations || [];
-    const associationNode = association?.node || rdf.blankNode();
-
-    const { node: programNode } = provenance.ensurePidNode(programPid, {
-      requireAggregated: true,
-      message: "Program not aggregated",
-    });
-    GraphMutation.addStatementIfMissing(
-      provenance.resourceMap,
-      executionNode,
-      provenance.ns.PROV("qualifiedAssociation"),
-      associationNode,
+    const { graph, graphState } = provenance.resourceMap;
+    const { node: programNode, pid: programPid } = programMember;
+    const associationNodes = RDFGraph.dedupeTerms(
+      graph
+        .findStatements({
+          subject: executionNode,
+          predicate: NS.PROV("qualifiedAssociation"),
+        })
+        .map(({ object }) => object),
     );
-    if (!association?.planNodes.length) {
-      GraphMutation.addStatementIfMissing(
-        provenance.resourceMap,
-        associationNode,
-        provenance.ns.PROV("hadPlan"),
-        programNode,
-      );
+    if (associationNodes.length > 1) {
+      throw programProvenanceReadOnlyError(programPid);
     }
-    const normalizedAgentUri = normalizeText(agentUri);
-    if (normalizedAgentUri) {
-      GraphMutation.addStatementIfMissing(
-        provenance.resourceMap,
-        associationNode,
-        provenance.ns.PROV("agent"),
-        rdf.sym(normalizedAgentUri),
-      );
+    const associationNode = associationNodes[0] || RDFGraph.createBlankNode();
+    const planNodes = RDFGraph.dedupeTerms(
+      graph
+        .findStatements({
+          subject: associationNode,
+          predicate: NS.PROV("hadPlan"),
+        })
+        .map(({ object }) => object),
+    );
+    if (planNodes.length > 1) {
+      throw programProvenanceReadOnlyError(programPid);
+    }
+    const [existingPlanNode] = planNodes;
+    if (
+      existingPlanNode &&
+      graphState.pidFromNode(existingPlanNode) !== programPid
+    ) {
+      throw programProvenanceReadOnlyError(programPid);
+    }
+
+    graph.addStatementIfMissing({
+      subject: executionNode,
+      predicate: NS.PROV("qualifiedAssociation"),
+      object: associationNode,
+    });
+    if (!planNodes.length) {
+      graph.addStatementIfMissing({
+        subject: associationNode,
+        predicate: NS.PROV("hadPlan"),
+        object: programNode,
+      });
     }
   }
 
   /**
-   * Find or create an execution node for one aggregated program.
-   * @param {Provenance} provenance Provenance instance whose graph is updated.
-   * @param {string} programPid Aggregated program PID whose execution is
-   * needed.
-   * @param {object} [options] Execution options.
-   * @param {string} [options.executionId] Execution identifier to reuse or
-   * assign to a newly created execution.
-   * @param {string} [options.agentUri] Agent URI associated with the execution.
-   * @returns {NamedNode} Existing or newly created execution node.
-   * Intended to be called inside `Provenance.mutateGraph()`.
+   * Update the program runs belonging to one provenance graph.
+   * @class ProvenanceExecutionMutation
+   * @classcategory Models/ResourceMap
+   * @since 0.0.0
    */
-  function ensureExecutionForProgram(provenance, programPid, options = {}) {
-    const normalizedProgramPid =
-      provenance.resourceMap.requireExistingMemberPid(
-        programPid,
-        "Program not aggregated",
-      );
-    const requestedExecutionId = normalizeText(options.executionId);
-    const graphState = provenance.resourceMap.getGraphState();
-    const executionNode = requestedExecutionId
-      ? resolveReusableExecutionByIdentifier(provenance, requestedExecutionId)
-      : resolveReusableExecutionForProgram(provenance, normalizedProgramPid);
+  class ProvenanceExecutionMutation {
+    /**
+     * @param {object} options Mutation options
+     * @param {Provenance} options.provenance Provenance instance being updated
+     */
+    constructor({ provenance } = {}) {
+      this.provenance = provenance;
+    }
 
-    if (executionNode) {
-      const inspection = graphState.getExecutionSummary(executionNode);
-      const hasExistingPlan = inspection.associations.some(
-        ({ planNodes }) => planNodes.length,
-      );
+    /**
+     * Find or create the single program run used to connect a program package
+     * member to data.
+     * @param {{pid: string, node: NamedNode}} programMember Exact program
+     * package member whose run is needed
+     * @returns {NamedNode|BlankNode} Existing or newly created execution node
+     * Intended to be called inside `Provenance.mutateGraph()`
+     */
+    ensureExecutionForProgram(programMember) {
+      const { provenance } = this;
+      const normalizedProgramPid = programMember.pid;
+      const { graphState } = provenance.resourceMap;
       if (
-        hasExistingPlan &&
-        !inspection.programPids.includes(normalizedProgramPid)
+        !ProvenanceValidation.isProgramExecutionEditable(
+          provenance,
+          normalizedProgramPid,
+        )
       ) {
-        throw new ResourceMapConflictError(
-          `Execution "${requestedExecutionId}" belongs to another program`,
-          {
-            code: "executionProgramConflict",
-            details: {
-              executionId: requestedExecutionId,
-              programPid: normalizedProgramPid,
-              existingProgramPids: inspection.programPids,
-            },
-          },
-        );
+        throw programProvenanceReadOnlyError(normalizedProgramPid);
+      }
+      const executionNode =
+        graphState.getExecutionNodesForProgram(normalizedProgramPid)[0] ||
+        resolvePendingExecution(provenance, programMember);
+
+      if (executionNode) {
+        const inspection = graphState.getExecutionSummary(executionNode);
+        if (!inspection) {
+          ensureAssociationForExecution(
+            provenance,
+            executionNode,
+            programMember,
+          );
+          return executionNode;
+        }
+        ensureExecutionIdentity(provenance, executionNode, inspection);
+        return executionNode;
       }
 
+      const executionId = makeUUID();
+      const newExecutionNode = RDFGraph.createNamedNode(executionId);
+
+      ensureExecutionIdentity(provenance, newExecutionNode);
       ensureAssociationForExecution(
         provenance,
-        executionNode,
-        normalizedProgramPid,
-        options.agentUri,
+        newExecutionNode,
+        programMember,
       );
-      return executionNode;
+      return newExecutionNode;
     }
 
-    const executionId = requestedExecutionId || makeUUID();
-    const newExecutionNode = rdf.sym(executionId);
+    /**
+     * Record that a program run produced or consumed a data object.
+     * @param {object} options Relationship options
+     * @param {string} options.dataPid Data PID in the relationship
+     * @param {string} options.programPid Program PID in the relationship
+     * @param {string} options.predicate PROV relationship name
+     * @param {boolean} [options.dataFromObject] Whether the data is on the
+     * object side of the RDF statement
+     * @returns {Provenance} Updated provenance instance
+     */
+    addExecutionProgramRelationship(options) {
+      const { provenance } = this;
+      const programMember = provenance.resourceMap.resolveMemberNode(
+        options.programPid,
+        {
+          required: true,
+          message: "Program PID required",
+        },
+      );
+      return provenance.mutateGraph(() => {
+        const { dataPid, predicate, dataFromObject = false } = options;
+        const dataNode = provenance.ensurePidNode(dataPid, {
+          message: "Data PID required",
+        });
+        const executionNode = this.ensureExecutionForProgram(programMember);
 
-    GraphMutation.addStatementIfMissing(
-      provenance.resourceMap,
-      newExecutionNode,
-      provenance.ns.RDF("type"),
-      provenance.ns.PROVONE("Execution"),
-    );
-    GraphMutation.addStatementIfMissing(
-      provenance.resourceMap,
-      newExecutionNode,
-      provenance.ns.DCTERMS("identifier"),
-      rdf.literal(executionId, undefined, provenance.ns.XSD("string")),
-    );
-    ensureAssociationForExecution(
-      provenance,
-      newExecutionNode,
-      normalizedProgramPid,
-      options.agentUri,
-    );
-    return newExecutionNode;
-  }
-
-  /**
-   * Add an execution-backed generation or usage relationship.
-   * @param {Provenance} provenance Provenance instance whose graph is updated.
-   * @param {object} options Relationship options.
-   * @param {string} options.dataPid Data PID in the relationship.
-   * @param {string} options.programPid Aggregated program PID in the
-   * relationship.
-   * @param {object} [options.options] Execution options forwarded to execution
-   * creation.
-   * @param {string} options.predicate PROV predicate name without the
-   * namespace.
-   * @param {boolean} [options.dataFromObject] Whether the data PID is stored in
-   * the object position.
-   * @returns {Provenance} Updated provenance instance.
-   */
-  function addExecutionProgramRelationship(
-    provenance,
-    { dataPid, programPid, options = {}, predicate, dataFromObject = false },
-  ) {
-    return provenance.mutateGraph(() => {
-      const dataInfo = provenance.ensurePidNode(dataPid, {
-        message: "Data PID required",
+        provenance.resourceMap.graph.addStatementIfMissing({
+          subject: dataFromObject ? executionNode : dataNode,
+          predicate: NS.PROV(predicate),
+          object: dataFromObject ? dataNode : executionNode,
+        });
       });
-      const programInfo = provenance.ensurePidNode(programPid, {
-        requireAggregated: true,
-        message: "Program PID required",
-      });
-      const executionNode = ensureExecutionForProgram(
-        provenance,
-        programInfo.pid,
-        options,
-      );
-
-      GraphMutation.addStatementIfMissing(
-        provenance.resourceMap,
-        dataFromObject ? executionNode : dataInfo.node,
-        provenance.ns.PROV(predicate),
-        dataFromObject ? dataInfo.node : executionNode,
-      );
-    });
-  }
-
-  /**
-   * Remove execution scaffolding when no managed provenance relationship
-   * references it.
-   * @param {Provenance} provenance Provenance instance whose graph is updated.
-   * @param {NamedNode|BlankNode} executionNode Execution node that may be
-   * removed.
-   * @param {object|null} [inspection] Pre-mutation execution summary.
-   */
-  function cleanupExecution(provenance, executionNode, inspection = null) {
-    const executionInspection =
-      inspection ||
-      provenance.resourceMap.getGraphState().getExecutionSummary(executionNode);
-    if (!executionInspection) {
-      return;
     }
 
-    const { graph, ns } = provenance;
-    const managedLinkPatterns = [
-      [undefined, ns.PROV("wasGeneratedBy"), executionNode],
-      [executionNode, ns.PROV("used"), undefined],
-      [executionNode, ns.PROV("wasInformedBy"), undefined],
-      [undefined, ns.PROV("wasInformedBy"), executionNode],
-    ];
-    const hasManagedLinks = managedLinkPatterns.some(
-      ([subject, predicate, object]) =>
-        graph.statementsMatching(subject, predicate, object, undefined).length,
-    );
-    if (hasManagedLinks) {
-      return;
-    }
-
-    executionInspection.associations.forEach(({ node: associationNode }) => {
-      const associationIsShared =
-        graph.statementsMatching(
-          undefined,
-          ns.PROV("qualifiedAssociation"),
-          associationNode,
-          undefined,
-        ).length > 1;
-      GraphMutation.removeStatementsMatching(
-        provenance.resourceMap,
-        executionNode,
-        ns.PROV("qualifiedAssociation"),
-        associationNode,
-      );
-      if (!associationIsShared) {
-        GraphMutation.removeNodeReferences(
-          provenance.resourceMap,
-          associationNode,
-        );
-      }
-    });
-
-    GraphMutation.removeNodeReferences(provenance.resourceMap, executionNode);
-  }
-
-  /**
-   * Remove an execution-backed generation or usage relationship.
-   * @param {Provenance} provenance Provenance instance whose graph is updated.
-   * @param {object} options Relationship options.
-   * @param {string} options.dataPid Data PID in the relationship.
-   * @param {string} options.programPid Program PID in the relationship.
-   * @param {object} [options.options] Execution filter options.
-   * @param {string} options.predicate PROV predicate name without the
-   * namespace.
-   * @param {boolean} [options.dataFromObject] Whether the data PID is stored in
-   * the object position.
-   * @returns {Provenance} Updated provenance instance.
-   */
-  function removeExecutionProgramRelationship(
-    provenance,
-    { dataPid, programPid, options = {}, predicate, dataFromObject = false },
-  ) {
-    const normalizedDataPid = requireNonEmptyString(
+    /**
+     * Remove the record that a program run produced or consumed a data object.
+     * @param {object} options Relationship options
+     * @param {string} options.dataPid Data PID in the relationship
+     * @param {string} options.programPid Program PID in the relationship
+     * @param {string} options.predicate PROV relationship name
+     * @param {boolean} [options.dataFromObject] Whether the data is on the
+     * object side of the RDF statement
+     * @returns {Provenance} Updated provenance instance
+     */
+    removeExecutionProgramRelationship({
       dataPid,
-      "Data PID required",
-    );
-    const normalizedProgramPid = requireNonEmptyString(
       programPid,
-      "Program PID required",
-    );
-
-    const graphState = provenance.resourceMap.getGraphState();
-    const dataUri = graphState.findNodeUriForPid(normalizedDataPid);
-    if (!dataUri) return provenance;
-
-    const dataNode = rdf.sym(dataUri);
-    const affectedExecutionNodes = graphState
-      .filterExecutionNodesByIdentifier(
-        graphState.getExecutionNodesForProgram(normalizedProgramPid),
-        options.executionId,
-      )
-      .filter((executionNode) => {
-        const subject = dataFromObject ? executionNode : dataNode;
-        const object = dataFromObject ? dataNode : executionNode;
-        return provenance.graph.statementsMatching(
-          subject,
-          provenance.ns.PROV(predicate),
-          object,
-          undefined,
-        ).length;
-      });
-    const executionInspections = new Map(
-      affectedExecutionNodes.map((executionNode) => [
-        ResourceMapCommon.nodeKey(executionNode),
-        graphState.getExecutionSummary(executionNode),
-      ]),
-    );
-
-    return provenance.mutateGraph(() => {
-      affectedExecutionNodes.forEach((executionNode) => {
-        GraphMutation.removeStatementsMatching(
-          provenance.resourceMap,
-          dataFromObject ? executionNode : dataNode,
-          provenance.ns.PROV(predicate),
-          dataFromObject ? dataNode : executionNode,
-        );
-        cleanupExecution(
-          provenance,
-          executionNode,
-          executionInspections.get(ResourceMapCommon.nodeKey(executionNode)),
-        );
-      });
-    });
-  }
-
-  /**
-   * Repair execution facts that can be inferred without guessing: a node used
-   * as an execution but missing its Execution type, and a named execution
-   * missing its identifier literal (legacy resource maps key execution lookups
-   * on identifier literals). Shapes that would require choosing between
-   * multiple possible programs or agents are left for validation to report.
-   * @param {Provenance} provenance Provenance instance whose graph is updated.
-   * @param {Array<NamedNode|BlankNode>} executionNodes Precomputed execution
-   * candidates.
-   * @param {Map<string, object>} executionInspections Precomputed execution
-   * summaries keyed by node identity.
-   * @returns {Array<NamedNode|BlankNode>} Normalized execution candidates.
-   */
-  function normalizeExecutionGraph(
-    provenance,
-    executionNodes,
-    executionInspections,
-  ) {
-    executionNodes.forEach((executionNode) => {
-      const inspection = executionInspections.get(
-        ResourceMapCommon.nodeKey(executionNode),
+      predicate,
+      dataFromObject = false,
+    }) {
+      const { provenance } = this;
+      const normalizedDataPid = requireNonEmptyString(
+        dataPid,
+        "Data PID required",
       );
-      const hasManagedLinks =
-        inspection?.hasGeneratedLinks ||
-        inspection?.hasUsedLinks ||
-        inspection?.hasWasInformedByLinks;
-      if (!hasManagedLinks) {
-        cleanupExecution(provenance, executionNode, inspection);
-        return;
-      }
-
-      if (!inspection?.isExecution) {
-        GraphMutation.addStatementIfMissing(
-          provenance.resourceMap,
-          executionNode,
-          provenance.ns.RDF("type"),
-          provenance.ns.PROVONE("Execution"),
-        );
-      }
-
+      const { pid: normalizedProgramPid } =
+        provenance.resourceMap.resolveMemberNode(programPid, {
+          required: true,
+          message: "Program PID required",
+        });
+      const { graph, graphState } = provenance.resourceMap;
       if (
-        executionNode?.termType === "NamedNode" &&
-        !inspection?.hasIdentifierLiteral
+        !ProvenanceValidation.isProgramExecutionEditable(
+          provenance,
+          normalizedProgramPid,
+        )
       ) {
-        GraphMutation.addStatementIfMissing(
-          provenance.resourceMap,
-          executionNode,
-          provenance.ns.DCTERMS("identifier"),
-          rdf.literal(
-            executionNode.value,
-            undefined,
-            provenance.ns.XSD("string"),
-          ),
-        );
+        throw programProvenanceReadOnlyError(normalizedProgramPid);
       }
-    });
+      const [executionNode] =
+        graphState.getExecutionNodesForProgram(normalizedProgramPid);
+      if (!executionNode) return provenance;
 
-    return executionNodes;
+      const statementsToRemove = graph
+        .findStatements({ predicate: NS.PROV(predicate) })
+        .filter((statement) => {
+          const dataNode = dataFromObject
+            ? statement.object
+            : statement.subject;
+          const statementExecutionNode = dataFromObject
+            ? statement.subject
+            : statement.object;
+          return (
+            RDFGraph.buildTermKey(statementExecutionNode) ===
+              RDFGraph.buildTermKey(executionNode) &&
+            graphState.pidFromNode(dataNode) === normalizedDataPid
+          );
+        });
+      if (!statementsToRemove.length) return provenance;
+
+      return provenance.mutateGraph(() => {
+        // One chart relationship summarizes every RDF edge for this data PID
+        // and program PID. Removing it must remove every matching edge.
+        statementsToRemove.forEach((statement) => {
+          graph.removeStatement(statement);
+        });
+        provenance.removeStandaloneExecutionScaffolds([executionNode]);
+      });
+    }
+
+    /**
+     * Add a missing program run type or identifier only when existing
+     * relationships make the node's role certain. Ambiguous imported structures
+     * are left untouched.
+     * @param {object[]} executionInspections Precomputed execution summaries
+     */
+    normalizeExecutionGraph(executionInspections) {
+      const { provenance } = this;
+      executionInspections.forEach((inspection) => {
+        const { node: executionNode } = inspection;
+        if (!inspection.hasManagedLinks) {
+          return;
+        }
+
+        ensureExecutionIdentity(provenance, executionNode, inspection);
+      });
+    }
+
+    /**
+     * Remove an unnamed Association node after its program link is deleted, but
+     * only when it contains no other imported information.
+     * @param {Array<BlankNode|NamedNode>} associationNodes Changed associations
+     */
+    removeDanglingQualifiedAssociations(associationNodes) {
+      const { graph } = this.provenance.resourceMap;
+      RDFGraph.dedupeTerms(associationNodes)
+        .filter((associationNode) => {
+          if (!RDFGraph.isBlankNode(associationNode)) return false;
+
+          // The canonical Association type is scaffold metadata, not
+          // enriched RDF that should retain a planless blank association.
+          return graph
+            .findStatements({ subject: associationNode })
+            .every(
+              ({ predicate, object }) =>
+                RDFGraph.buildTermKey(predicate) ===
+                  RDFGraph.buildTermKey(NS.RDF("type")) &&
+                RDFGraph.buildTermKey(object) ===
+                  RDFGraph.buildTermKey(NS.PROV("Association")),
+            );
+        })
+        .forEach((associationNode) => {
+          graph.removeStatementsMatching({
+            predicate: NS.PROV("qualifiedAssociation"),
+            object: associationNode,
+          });
+          if (!graph.hasStatement({ object: associationNode })) {
+            graph.removeNodeReferences(associationNode);
+          }
+        });
+    }
   }
 
-  return {
-    addExecutionProgramRelationship,
-    cleanupExecution,
-    ensureExecutionForProgram,
-    normalizeExecutionGraph,
-    removeExecutionProgramRelationship,
-  };
+  return ProvenanceExecutionMutation;
 });

@@ -1,550 +1,653 @@
 define([
-  "/test/js/specs/shared/clean-state.js",
   "rdflib",
-  "uuid",
-  "models/resourceMap/GraphMutation",
-  "models/resourceMap/ProvenanceExecutionMutation",
   "/test/js/specs/unit/models/resourceMap/ResourceMapTestUtils.js",
-], (
-  cleanState,
-  rdf,
-  uuid,
-  GraphMutation,
-  ProvenanceExecutionMutation,
-  testUtils,
-) => {
-  const should = chai.should();
+], (rdf, testUtils) => {
+  chai.should();
   const expect = chai.expect;
   const { addExecutionScaffold, createBaseResourceMap } = testUtils;
 
-  const state = cleanState(() => {
-    const sandbox = sinon.createSandbox();
-    return { sandbox };
-  }, beforeEach);
+  function addExecutionEdge(resourceMap, executionNode, dataPid, predicate) {
+    const dataNode = rdf.sym(resourceMap.getNodeUriForPid(dataPid));
+    resourceMap.mutateGraph(
+      () => {
+        resourceMap.graph.addStatement({
+          subject: predicate === "used" ? executionNode : dataNode,
+          predicate: resourceMap.ns.PROV(predicate),
+          object: predicate === "used" ? dataNode : executionNode,
+        });
+      },
+      { markDirty: false },
+    );
+  }
 
-  afterEach(() => {
-    state.sandbox.restore();
-  });
+  function expectReadOnly(action, programPid = "program.1") {
+    let caught;
+    try {
+      action();
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).to.be.an("error");
+    expect(caught.name).to.equal("ResourceMapConflictError");
+    expect(caught.code).to.equal("programProvenanceReadOnly");
+    expect(caught.details).to.deep.equal({ programPid });
+    expect(caught.message).to.contain(
+      "Only programs with no run or one unambiguous run can be edited here.",
+    );
+  }
 
   describe("ProvenanceExecutionMutation", () => {
-    it("reuses the same execution for the same program and execution identifier", () => {
+    it("creates and reuses one execution for a program", () => {
       const resourceMap = createBaseResourceMap({
         resourceMapPid: "resource_map_urn:uuid:exec.reuse.1",
-        memberPids: ["meta.1", "data.1", "program.1"],
-      });
-      const executionId = "urn:uuid:exec.reuse.same.1";
-
-      const firstExecutionNode =
-        ProvenanceExecutionMutation.ensureExecutionForProgram(
-          resourceMap.provenance,
-          "program.1",
-          { executionId },
-        );
-      const reusedExecutionNode =
-        ProvenanceExecutionMutation.ensureExecutionForProgram(
-          resourceMap.provenance,
-          "program.1",
-          { executionId },
-        );
-      const associationNode = resourceMap.graph.statementsMatching(
-        firstExecutionNode,
-        resourceMap.ns.PROV("qualifiedAssociation"),
-        undefined,
-      )[0].object;
-
-      reusedExecutionNode.value.should.equal(firstExecutionNode.value);
-      resourceMap.graph
-        .statementsMatching(
-          firstExecutionNode,
-          resourceMap.ns.PROV("qualifiedAssociation"),
-          undefined,
-        )
-        .length.should.equal(1);
-      resourceMap.graph
-        .statementsMatching(
-          associationNode,
-          resourceMap.ns.PROV("hadPlan"),
-          undefined,
-        )
-        .length.should.equal(1);
-      resourceMap
-        .getGraphState()
-        .getExecutionSummary(firstExecutionNode)
-        .programs.should.deep.equal([
-          {
-            programPid: "program.1",
-            agentUri: null,
-          },
-        ]);
-    });
-
-    it("reuses an identified blank-node execution during a provenance mutation", () => {
-      const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:exec.reuse.blank.1",
-        memberPids: ["meta.1", "data.1", "program.1"],
-      });
-      const executionId = "urn:uuid:exec.reuse.blank.1";
-      const { executionNode } = addExecutionScaffold(resourceMap, {
-        executionId,
-        executionNode: rdf.blankNode(),
-        programPid: "program.1",
+        memberPids: ["meta.1", "data.1", "data.2", "program.1"],
       });
 
-      resourceMap.provenance.addGeneratedByProgram("data.1", "program.1", {
-        executionId,
-      });
+      resourceMap.provenance.addGeneratedByProgram("data.1", "program.1");
+      resourceMap.provenance.addUsedByProgram("data.2", "program.1");
 
-      resourceMap
-        .getGraphState()
-        .getExecutionNodesForProgram("program.1")
-        .should.deep.equal([executionNode]);
-      resourceMap.graph
-        .statementsMatching(
-          rdf.sym(executionId),
-          resourceMap.ns.RDF("type"),
-          resourceMap.ns.PROVONE("Execution"),
-        )
-        .should.deep.equal([]);
+      const executionNodes =
+        resourceMap.graphState.getExecutionNodesForProgram("program.1");
+      executionNodes.should.have.lengthOf(1);
+      const executionId = resourceMap.graphState.getExecutionSummary(
+        executionNodes[0],
+      ).identifier;
       resourceMap.provenance.getGeneratedByPrograms().should.deep.equal([
         {
           dataPid: "data.1",
           programPid: "program.1",
           executionId,
-          agentUri: null,
+        },
+      ]);
+      resourceMap.provenance.getUsedByPrograms().should.deep.equal([
+        {
+          dataPid: "data.2",
+          programPid: "program.1",
+          executionId,
         },
       ]);
     });
 
-    it("ignores identifier matches on non-execution nodes and creates a new execution", () => {
+    it("uses exact aggregated data and program URIs when creating provenance", () => {
       const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:exec.blank.collision.1",
+        resourceMapPid: "resource_map_urn:uuid:exec.member-uri.1",
         memberPids: ["meta.1", "data.1", "program.1"],
       });
-      const executionId = "urn:uuid:exec.blank.collision.1";
-      const { executionNode: nonExecutionNode } = addExecutionScaffold(
-        resourceMap,
-        {
-          executionId,
-          executionNode: rdf.blankNode(),
-          typed: false,
+      const dataNode = rdf.sym("https://cn.dataone.org/cn/v2/resolve/data.1");
+      const programNode = rdf.sym(
+        "https://cn.dataone.org/cn/v2/resolve/program.1",
+      );
+      const currentDataUri = resourceMap.graphState.getMember("data.1").uri;
+      const currentProgramUri =
+        resourceMap.graphState.getMember("program.1").uri;
+      resourceMap.mutateGraph(
+        () => {
+          resourceMap.graph.replaceNodeValue(currentDataUri, dataNode.value);
+          resourceMap.graph.replaceNodeValue(
+            currentProgramUri,
+            programNode.value,
+          );
+          resourceMap.graph.addStatement({
+            subject: rdf.sym(currentProgramUri),
+            predicate: resourceMap.ns.DCTERMS("identifier"),
+            object: rdf.literal(
+              "program.1",
+              undefined,
+              resourceMap.ns.XSD("string"),
+            ),
+          });
         },
+        { markDirty: false },
       );
 
-      resourceMap.provenance.addGeneratedByProgram("data.1", "program.1", {
-        executionId,
+      resourceMap.graphState.getIndex();
+      resourceMap.mutateGraph(() => {
+        resourceMap.provenance.addUsedByProgram("data.1", "program.1");
+        resourceMap.provenance.addGeneratedByProgram("data.1", "program.1");
       });
 
-      // The non-execution identifier match is not reused; a new named
-      // execution is created.
+      const executionNodes =
+        resourceMap.graphState.getExecutionNodesForProgram("program.1");
+      executionNodes.should.have.lengthOf(1);
+      const [executionNode] = executionNodes;
+      const [associationNode] = resourceMap.graph
+        .findStatements({
+          subject: executionNode,
+          predicate: resourceMap.ns.PROV("qualifiedAssociation"),
+        })
+        .map(({ object }) => object);
       resourceMap.graph
-        .statementsMatching(
-          rdf.sym(executionId),
-          resourceMap.ns.RDF("type"),
-          resourceMap.ns.PROVONE("Execution"),
-        )
-        .length.should.equal(1);
+        .findStatements({
+          subject: executionNode,
+          predicate: resourceMap.ns.PROV("used"),
+          object: dataNode,
+        })
+        .should.have.lengthOf(1);
       resourceMap.graph
-        .statementsMatching(nonExecutionNode, undefined, undefined)
-        .length.should.equal(1);
+        .findStatements({
+          subject: associationNode,
+          predicate: resourceMap.ns.PROV("hadPlan"),
+          object: programNode,
+        })
+        .should.have.lengthOf(1);
     });
 
-    it("does not create execution RDF when the program is not aggregated", () => {
+    it("projects and removes all mixed-CN data edges on a sole execution", () => {
       const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:exec.invalid.program.1",
-        memberPids: ["meta.1", "data.1"],
-      });
-      const executionId = "urn:uuid:exec.invalid.program.1";
-
-      expect(() =>
-        ProvenanceExecutionMutation.ensureExecutionForProgram(
-          resourceMap.provenance,
-          "missing-program.1",
-          { executionId },
-        ),
-      ).to.throw("Program not aggregated");
-
-      resourceMap.graph
-        .statementsMatching(rdf.sym(executionId), undefined, undefined)
-        .should.deep.equal([]);
-    });
-
-    it("adds a missing plan to an existing association without disturbing its agent", () => {
-      const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:exec.reuse.association.1",
+        resourceMapPid: "resource_map_urn:uuid:exec.cross-cn.1",
         memberPids: ["meta.1", "data.1", "program.1"],
       });
-      const executionId = "urn:uuid:exec.reuse.association.1";
-      const agentNode = rdf.sym("https://orcid.org/0000-0000-0000-0012");
+      const dataNode = rdf.sym("https://cn.dataone.org/cn/v2/resolve/data.1");
+      const programNode = rdf.sym(
+        "https://cn.dataone.org/cn/v2/resolve/program.1",
+      );
+      const dataAlias = rdf.sym(resourceMap.pidToUri("data.1"));
+      const currentDataUri = resourceMap.graphState.getMember("data.1").uri;
+      const currentProgramUri =
+        resourceMap.graphState.getMember("program.1").uri;
+      resourceMap.mutateGraph(
+        () => {
+          resourceMap.graph.replaceNodeValue(currentDataUri, dataNode.value);
+          resourceMap.graph.replaceNodeValue(
+            currentProgramUri,
+            programNode.value,
+          );
+          resourceMap.graph.addStatement({
+            subject: dataAlias,
+            predicate: resourceMap.ns.DCTERMS("identifier"),
+            object: rdf.literal(
+              "data.1",
+              undefined,
+              resourceMap.ns.XSD("string"),
+            ),
+          });
+        },
+        { markDirty: false },
+      );
       const { executionNode, associationNode } = addExecutionScaffold(
         resourceMap,
         {
-          executionId,
-          agentUri: agentNode.value,
-        },
-      );
-
-      const reusedExecutionNode =
-        ProvenanceExecutionMutation.ensureExecutionForProgram(
-          resourceMap.provenance,
-          "program.1",
-          { executionId },
-        );
-
-      reusedExecutionNode.value.should.equal(executionNode.value);
-      resourceMap.graph
-        .statementsMatching(
-          executionNode,
-          resourceMap.ns.PROV("qualifiedAssociation"),
-          undefined,
-        )
-        .length.should.equal(1);
-      resourceMap.graph
-        .statementsMatching(
-          associationNode,
-          resourceMap.ns.PROV("hadPlan"),
-          rdf.sym(resourceMap.getNodeUriForPid("program.1")),
-        )
-        .length.should.equal(1);
-      resourceMap.graph
-        .statementsMatching(
-          associationNode,
-          resourceMap.ns.PROV("agent"),
-          agentNode,
-        )
-        .length.should.equal(1);
-    });
-
-    it("reuses an execution by identifier without replacing its existing plan", () => {
-      const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:exec.reuse.other.program.1",
-        memberPids: ["meta.1", "data.1", "program.1", "program.2"],
-      });
-      const executionId = "urn:uuid:exec.reuse.other.program.1";
-
-      const firstExecutionNode =
-        ProvenanceExecutionMutation.ensureExecutionForProgram(
-          resourceMap.provenance,
-          "program.1",
-          { executionId },
-        );
-      const reusedExecutionNode =
-        ProvenanceExecutionMutation.ensureExecutionForProgram(
-          resourceMap.provenance,
-          "program.2",
-          { executionId },
-        );
-
-      // Reuse by explicit identifier is the caller's choice: the execution's
-      // existing plan is kept rather than adding a second plan.
-      reusedExecutionNode.value.should.equal(firstExecutionNode.value);
-      resourceMap
-        .getGraphState()
-        .getExecutionSummary(firstExecutionNode)
-        .programPids.should.deep.equal(["program.1"]);
-    });
-
-    it("reuses the first execution when a program has multiple executions and no executionId is provided", () => {
-      const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:exec.ambiguous.program.1",
-        memberPids: ["meta.1", "data.1", "program.1"],
-      });
-
-      ProvenanceExecutionMutation.ensureExecutionForProgram(
-        resourceMap.provenance,
-        "program.1",
-        {
-          executionId: "urn:uuid:exec.ambiguous.program.1.a",
-        },
-      );
-      ProvenanceExecutionMutation.ensureExecutionForProgram(
-        resourceMap.provenance,
-        "program.1",
-        {
-          executionId: "urn:uuid:exec.ambiguous.program.1.b",
-        },
-      );
-
-      const reusedExecutionNode =
-        ProvenanceExecutionMutation.ensureExecutionForProgram(
-          resourceMap.provenance,
-          "program.1",
-        );
-
-      const programExecutionNodes = resourceMap
-        .getGraphState()
-        .getExecutionNodesForProgram("program.1");
-      programExecutionNodes.length.should.equal(2);
-      reusedExecutionNode.value.should.equal(programExecutionNodes[0].value);
-    });
-
-    it("reuses an execution with multiple associations and reports it through validation", () => {
-      const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:exec.multiple.associations.1",
-        memberPids: ["meta.1", "data.1", "program.1"],
-      });
-      const executionId = "urn:uuid:exec.multiple.associations.1";
-      const { executionNode } = addExecutionScaffold(resourceMap, {
-        executionId,
-        programPid: "program.1",
-      });
-      addExecutionScaffold(resourceMap, {
-        executionId,
-        associationNode: rdf.blankNode(),
-        programPid: "program.1",
-      });
-
-      const reusedExecutionNode =
-        ProvenanceExecutionMutation.ensureExecutionForProgram(
-          resourceMap.provenance,
-          "program.1",
-          { executionId },
-        );
-
-      reusedExecutionNode.value.should.equal(executionNode.value);
-      resourceMap.graph
-        .statementsMatching(
-          executionNode,
-          resourceMap.ns.PROV("qualifiedAssociation"),
-          undefined,
-        )
-        .length.should.equal(2);
-    });
-
-    it("reuses an execution whose association has multiple plans and reports it through validation", () => {
-      const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:exec.multiple.plans.1",
-        memberPids: ["meta.1", "data.1", "program.1", "program.2"],
-      });
-      const executionId = "urn:uuid:exec.multiple.plans.1";
-      const { executionNode, associationNode } = addExecutionScaffold(
-        resourceMap,
-        {
-          executionId,
+          executionId: "urn:uuid:exec.cross-cn.1",
           programPid: "program.1",
         },
       );
-      addExecutionScaffold(resourceMap, {
-        executionId,
-        associationNode,
-        programPid: "program.2",
-      });
+      const agent = rdf.sym("https://orcid.org/0000-0000-0000-0013");
+      const customPredicate = rdf.sym("https://example.test/vocab/input-note");
+      resourceMap.mutateGraph(
+        () => {
+          [dataNode, dataAlias].forEach((node) => {
+            resourceMap.graph.addStatement({
+              subject: node,
+              predicate: resourceMap.ns.PROV("wasGeneratedBy"),
+              object: executionNode,
+            });
+            resourceMap.graph.addStatement({
+              subject: executionNode,
+              predicate: resourceMap.ns.PROV("used"),
+              object: node,
+            });
+          });
+          resourceMap.graph.addStatement({
+            subject: associationNode,
+            predicate: resourceMap.ns.PROV("agent"),
+            object: agent,
+          });
+          resourceMap.graph.addStatement({
+            subject: executionNode,
+            predicate: customPredicate,
+            object: dataAlias,
+          });
+        },
+        { markDirty: false },
+      );
 
-      const reusedExecutionNode =
-        ProvenanceExecutionMutation.ensureExecutionForProgram(
-          resourceMap.provenance,
-          "program.1",
-          { executionId },
-        );
+      resourceMap.provenance.getGeneratedByPrograms().should.deep.equal([
+        {
+          dataPid: "data.1",
+          programPid: "program.1",
+          executionId: executionNode.value,
+        },
+      ]);
+      resourceMap.provenance.getUsedByPrograms().should.deep.equal([
+        {
+          dataPid: "data.1",
+          programPid: "program.1",
+          executionId: executionNode.value,
+        },
+      ]);
+      resourceMap.provenance.validate().should.deep.equal([]);
 
-      reusedExecutionNode.value.should.equal(executionNode.value);
+      resourceMap.provenance.removeGeneratedByProgram("data.1", "program.1");
+      resourceMap.provenance.removeUsedByProgram("data.1", "program.1");
+
       resourceMap.graph
-        .statementsMatching(
-          associationNode,
-          resourceMap.ns.PROV("hadPlan"),
-          undefined,
-        )
-        .length.should.equal(2);
+        .findStatements({
+          predicate: resourceMap.ns.PROV("wasGeneratedBy"),
+        })
+        .should.deep.equal([]);
+      resourceMap.graph
+        .findStatements({ predicate: resourceMap.ns.PROV("used") })
+        .should.deep.equal([]);
+      resourceMap.graph
+        .findStatements({
+          subject: executionNode,
+          predicate: customPredicate,
+          object: dataAlias,
+        })
+        .should.have.lengthOf(1);
+      resourceMap.graph
+        .findStatements({
+          subject: associationNode,
+          predicate: resourceMap.ns.PROV("agent"),
+          object: agent,
+        })
+        .should.have.lengthOf(1);
+      resourceMap.graph
+        .findStatements({
+          subject: executionNode,
+          predicate: resourceMap.ns.PROV("qualifiedAssociation"),
+          object: associationNode,
+        })
+        .should.have.lengthOf(1);
     });
 
-    it("cleans up orphaned executions when the final execution-program relationship is removed", () => {
+    it("reuses an execution created earlier in one grouped mutation", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:exec.reuse.grouped.1",
+        memberPids: ["meta.1", "data.1", "program.1"],
+      });
+      resourceMap.graphState.getIndex();
+
+      resourceMap.mutateGraph(() => {
+        resourceMap.provenance.addGeneratedByProgram("data.1", "program.1");
+        resourceMap.provenance.addUsedByProgram("data.1", "program.1");
+      });
+
+      resourceMap.graphState
+        .getExecutionNodesForProgram("program.1")
+        .should.have.lengthOf(1);
+      resourceMap.provenance.getGeneratedByPrograms().should.have.lengthOf(1);
+      resourceMap.provenance.getUsedByPrograms().should.have.lengthOf(1);
+    });
+
+    it("keeps one anonymous execution editable", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:exec.anonymous.1",
+        memberPids: ["meta.1", "data.1", "program.1"],
+      });
+      const { executionNode } = addExecutionScaffold(resourceMap, {
+        executionNode: rdf.blankNode(),
+        programPid: "program.1",
+        identified: false,
+      });
+
+      resourceMap.provenance.addGeneratedByProgram("data.1", "program.1");
+
+      resourceMap.graphState
+        .getExecutionNodesForProgram("program.1")
+        .should.deep.equal([executionNode]);
+      resourceMap.graph
+        .findStatements({
+          subject: rdf.sym(resourceMap.getNodeUriForPid("data.1")),
+          predicate: resourceMap.ns.PROV("wasGeneratedBy"),
+          object: executionNode,
+        })
+        .should.have.lengthOf(1);
+    });
+
+    it("keeps custom run metadata while editing the sole execution", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:exec.metadata.1",
+        memberPids: ["meta.1", "data.1", "data.2", "program.1"],
+      });
+      const { executionNode, associationNode } = addExecutionScaffold(
+        resourceMap,
+        {
+          executionId: "urn:uuid:exec.metadata.1",
+          programPid: "program.1",
+        },
+      );
+      const customPredicate = rdf.sym("https://example.test/run-time");
+      const agent = rdf.sym("https://orcid.org/0000-0000-0000-0013");
+      resourceMap.mutateGraph(
+        () => {
+          resourceMap.graph.addStatement({
+            subject: executionNode,
+            predicate: customPredicate,
+            object: rdf.literal("2026-01-15T10:00:00Z"),
+          });
+          resourceMap.graph.addStatement({
+            subject: associationNode,
+            predicate: resourceMap.ns.PROV("agent"),
+            object: agent,
+          });
+        },
+        { markDirty: false },
+      );
+
+      resourceMap.provenance.addUsedByProgram("data.1", "program.1");
+      resourceMap.provenance.addGeneratedByProgram("data.2", "program.1");
+      resourceMap.provenance.removeGeneratedByProgram("data.2", "program.1");
+
+      resourceMap.graph
+        .findStatements({
+          subject: executionNode,
+          predicate: customPredicate,
+        })
+        .should.have.lengthOf(1);
+      resourceMap.graph
+        .findStatements({
+          subject: associationNode,
+          predicate: resourceMap.ns.PROV("agent"),
+          object: agent,
+        })
+        .should.have.lengthOf(1);
+    });
+
+    it("preserves an enriched execution after its final managed edge is removed", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:exec.metadata.cleanup.1",
+        memberPids: ["meta.1", "data.1", "program.1"],
+      });
+      const { executionNode, associationNode } = addExecutionScaffold(
+        resourceMap,
+        {
+          executionId: "urn:uuid:exec.metadata.cleanup.1",
+          programPid: "program.1",
+        },
+      );
+      const customPredicate = rdf.sym("https://example.test/software-version");
+      resourceMap.mutateGraph(
+        () => {
+          resourceMap.graph.addStatement({
+            subject: executionNode,
+            predicate: customPredicate,
+            object: rdf.literal("4.5.1"),
+          });
+        },
+        { markDirty: false },
+      );
+      addExecutionEdge(resourceMap, executionNode, "data.1", "used");
+
+      resourceMap.provenance.removeUsedByProgram("data.1", "program.1");
+
+      resourceMap.graph
+        .findStatements({
+          subject: executionNode,
+          predicate: customPredicate,
+        })
+        .should.have.lengthOf(1);
+      resourceMap.graph
+        .findStatements({
+          subject: executionNode,
+          predicate: resourceMap.ns.PROV("qualifiedAssociation"),
+          object: associationNode,
+        })
+        .should.have.lengthOf(1);
+    });
+
+    it("preserves imported association metadata after its final managed edge is removed", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:exec.agent.cleanup.1",
+        memberPids: ["meta.1", "data.1", "program.1"],
+      });
+      const { executionNode, associationNode } = addExecutionScaffold(
+        resourceMap,
+        {
+          executionId: "urn:uuid:exec.agent.cleanup.1",
+          programPid: "program.1",
+        },
+      );
+      const agent = rdf.sym("https://orcid.org/0000-0000-0000-0013");
+      resourceMap.mutateGraph(
+        () => {
+          resourceMap.graph.addStatement({
+            subject: associationNode,
+            predicate: resourceMap.ns.PROV("agent"),
+            object: agent,
+          });
+        },
+        { markDirty: false },
+      );
+      addExecutionEdge(resourceMap, executionNode, "data.1", "used");
+
+      resourceMap.provenance.removeUsedByProgram("data.1", "program.1");
+
+      resourceMap.graph
+        .findStatements({
+          subject: executionNode,
+          predicate: resourceMap.ns.PROV("qualifiedAssociation"),
+          object: associationNode,
+        })
+        .should.have.lengthOf(1);
+      resourceMap.graph
+        .findStatements({
+          subject: associationNode,
+          predicate: resourceMap.ns.PROV("agent"),
+          object: agent,
+        })
+        .should.have.lengthOf(1);
+    });
+
+    it("removes a bare execution after its final managed edge is removed", () => {
       const resourceMap = createBaseResourceMap({
         resourceMapPid: "resource_map_urn:uuid:exec.cleanup.1",
         memberPids: ["meta.1", "data.1", "program.1"],
       });
 
-      state.sandbox.stub(uuid, "v4").returns("cleanup-exec-id");
+      resourceMap.provenance.addUsedByProgram("data.1", "program.1");
+      const [executionNode] =
+        resourceMap.graphState.getExecutionNodesForProgram("program.1");
+      const [associationNode] = resourceMap.graph
+        .findStatements({
+          subject: executionNode,
+          predicate: resourceMap.ns.PROV("qualifiedAssociation"),
+        })
+        .map(({ object }) => object);
 
-      ProvenanceExecutionMutation.addExecutionProgramRelationship(
-        resourceMap.provenance,
-        {
-          dataPid: "data.1",
-          programPid: "program.1",
-          predicate: "used",
-          dataFromObject: true,
-        },
-      );
+      resourceMap.provenance.removeUsedByProgram("data.1", "program.1");
 
-      const executionNode = resourceMap
-        .getGraphState()
-        .getExecutionNodesForProgram("program.1")[0];
-      should.exist(executionNode);
-
-      ProvenanceExecutionMutation.removeExecutionProgramRelationship(
-        resourceMap.provenance,
-        {
-          dataPid: "data.1",
-          programPid: "program.1",
-          predicate: "used",
-          dataFromObject: true,
-        },
-      );
-
-      resourceMap
-        .getGraphState()
-        .getExecutionNodesForProgram("program.1")
+      resourceMap.graph
+        .findStatements({ subject: executionNode })
         .should.deep.equal([]);
-      resourceMap.provenance.getUsedByPrograms().should.deep.equal([]);
       resourceMap.graph
-        .statementsMatching(
-          executionNode,
-          resourceMap.ns.DCTERMS("identifier"),
-          undefined,
-        )
-        .length.should.equal(0);
+        .findStatements({ subject: associationNode })
+        .should.deep.equal([]);
     });
 
-    it("does not clean unrelated executions for the same program", () => {
+    it("does not create execution RDF for a non-aggregated program", () => {
       const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:exec.cleanup.scope.1",
-        memberPids: ["meta.1", "data.1", "data.2", "program.1"],
-      });
-      const {
-        executionNode: unrelatedExecution,
-        associationNode: unrelatedAssociation,
-      } = addExecutionScaffold(resourceMap, {
-        executionId: "urn:uuid:exec.cleanup.unrelated.1",
-        programPid: "program.1",
-      });
-      resourceMap.provenance.addUsedByProgram("data.2", "program.1", {
-        executionId: "urn:uuid:exec.cleanup.target.1",
+        resourceMapPid: "resource_map_urn:uuid:exec.invalid.program.1",
+        memberPids: ["meta.1", "data.1"],
       });
 
-      resourceMap.provenance.removeUsedByProgram("data.2", "program.1");
-
-      resourceMap.graph
-        .statementsMatching(unrelatedExecution, undefined, undefined)
-        .length.should.be.greaterThan(0);
-      resourceMap.graph
-        .statementsMatching(
-          unrelatedExecution,
-          resourceMap.ns.PROV("qualifiedAssociation"),
-          unrelatedAssociation,
-        )
-        .length.should.equal(1);
+      expect(() =>
+        resourceMap.provenance.addUsedByProgram("data.1", "missing-program.1"),
+      ).to.throw("Program PID required");
+      resourceMap.graphState.getExecutionNodes().should.deep.equal([]);
     });
 
-    it("removes pre-existing execution scaffolding after its last relationship", () => {
+    it("refuses program provenance edits when managed membership is ambiguous", () => {
       const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:exec.cleanup.identifier.1",
+        resourceMapPid: "resource_map_urn:uuid:exec.member.ambiguous.1",
         memberPids: ["meta.1", "data.1", "program.1"],
       });
-      const dataNode = rdf.sym(resourceMap.getNodeUriForPid("data.1"));
-      const { executionNode } = addExecutionScaffold(resourceMap, {
-        executionId: "urn:uuid:exec.cleanup.identifier.1",
-        programPid: "program.1",
-        typed: false,
+      resourceMap.provenance.addUsedByProgram("data.1", "program.1");
+      const duplicateUri = "https://another-cn.example/cn/v2/resolve/program.1";
+      const duplicateNode = rdf.sym(duplicateUri);
+      const aggregationNode = rdf.sym(resourceMap.aggregationUri);
+      resourceMap.mutateGraph(
+        () => {
+          resourceMap.graph.addStatement({
+            subject: duplicateNode,
+            predicate: resourceMap.ns.DCTERMS("identifier"),
+            object: rdf.literal(
+              "program.1",
+              undefined,
+              resourceMap.ns.XSD("string"),
+            ),
+          });
+          resourceMap.graph.addStatement({
+            subject: aggregationNode,
+            predicate: resourceMap.ns.ORE("aggregates"),
+            object: duplicateNode,
+          });
+          resourceMap.graph.addStatement({
+            subject: duplicateNode,
+            predicate: resourceMap.ns.ORE("isAggregatedBy"),
+            object: aggregationNode,
+          });
+        },
+        { markDirty: false },
+      );
+      const before = resourceMap.graph
+        .getStatements()
+        .map((statement) => statement.toNT())
+        .sort();
+
+      [
+        () => resourceMap.provenance.removeUsedByProgram("data.1", "program.1"),
+        () =>
+          resourceMap.provenance.addGeneratedByProgram("data.1", "program.1"),
+      ].forEach((action) => {
+        let caught;
+        try {
+          action();
+        } catch (error) {
+          caught = error;
+        }
+        expect(caught?.name).to.equal("ResourceMapConflictError");
+        expect(caught?.code).to.equal("ambiguousMemberPid");
+        expect(caught?.details).to.deep.equal({
+          pid: "program.1",
+          memberUris: [resourceMap.pidToUri("program.1"), duplicateUri].sort(),
+        });
+        resourceMap.graph
+          .getStatements()
+          .map((statement) => statement.toNT())
+          .sort()
+          .should.deep.equal(before);
+      });
+    });
+
+    it("keeps programs with multiple executions read-only", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:exec.multiple.1",
+        memberPids: ["meta.1", "data.1", "program.1"],
+      });
+      const executions = [
+        addExecutionScaffold(resourceMap, {
+          executionId: "urn:uuid:exec.multiple.1",
+          programPid: "program.1",
+        }).executionNode,
+        addExecutionScaffold(resourceMap, {
+          executionId: "urn:uuid:exec.multiple.2",
+          programPid: "program.1",
+        }).executionNode,
+      ];
+      executions.forEach((executionNode) => {
+        addExecutionEdge(
+          resourceMap,
+          executionNode,
+          "data.1",
+          "wasGeneratedBy",
+        );
       });
 
-      GraphMutation.addStatementIfMissing(
-        resourceMap,
-        executionNode,
-        resourceMap.ns.PROV("used"),
-        dataNode,
+      expectReadOnly(() =>
+        resourceMap.provenance.removeGeneratedByProgram("data.1", "program.1"),
+      );
+      expectReadOnly(() =>
+        resourceMap.provenance.removeUsedByProgram(
+          "missing.data.1",
+          "program.1",
+        ),
       );
 
-      resourceMap.provenance.normalize();
-      resourceMap.provenance.removeUsedByProgram("data.1", "program.1", {
-        executionId: executionNode.value,
-      });
-
-      resourceMap.graph
-        .statementsMatching(executionNode, undefined, undefined)
-        .length.should.equal(0);
-      resourceMap.graph
-        .statementsMatching(undefined, undefined, executionNode)
-        .length.should.equal(0);
+      resourceMap.provenance.getGeneratedByPrograms().should.have.lengthOf(2);
     });
 
-    it("removes standalone execution association metadata", () => {
+    it("keeps an execution shared by multiple programs read-only", () => {
       const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:exec.explicit.association.1",
-        memberPids: ["meta.1", "data.1", "program.1"],
+        resourceMapPid: "resource_map_urn:uuid:exec.shared.1",
+        memberPids: ["meta.1", "data.1", "program.1", "program.2"],
       });
       const { executionNode, associationNode } = addExecutionScaffold(
         resourceMap,
         {
-          executionId: "urn:uuid:exec.explicit.association.1",
+          executionId: "urn:uuid:exec.shared.1",
           programPid: "program.1",
-          agentUri: "https://orcid.org/0000-0000-0000-0011",
         },
       );
-
-      ProvenanceExecutionMutation.cleanupExecution(
-        resourceMap.provenance,
+      addExecutionScaffold(resourceMap, {
         executionNode,
+        associationNode,
+        programPid: "program.2",
+      });
+      addExecutionEdge(resourceMap, executionNode, "data.1", "used");
+
+      expectReadOnly(() =>
+        resourceMap.provenance.removeUsedByProgram("data.1", "program.1"),
       );
 
       resourceMap.graph
-        .statementsMatching(executionNode, undefined, undefined)
-        .length.should.equal(0);
-      resourceMap.graph
-        .statementsMatching(associationNode, undefined, undefined)
-        .length.should.equal(0);
+        .findStatements({
+          subject: executionNode,
+          predicate: resourceMap.ns.PROV("used"),
+        })
+        .should.have.lengthOf(1);
     });
 
-    it("leaves shared associations of parsed executions untouched", () => {
+    it("keeps an execution with ambiguous identifiers read-only", () => {
       const resourceMap = createBaseResourceMap({
-        resourceMapPid: "resource_map_urn:uuid:exec.shared.association.1",
+        resourceMapPid: "resource_map_urn:uuid:exec.identifiers.1",
         memberPids: ["meta.1", "data.1", "program.1"],
       });
-      const dataNode = rdf.sym(resourceMap.getNodeUriForPid("data.1"));
-      const programNode = rdf.sym(resourceMap.getNodeUriForPid("program.1"));
-      const agentNode = rdf.sym("https://orcid.org/0000-0000-0000-0012");
-      const { executionNode: orphanExecution, associationNode } =
-        addExecutionScaffold(resourceMap, {
-          executionId: "urn:uuid:exec.shared.orphan.1",
-          programPid: "program.1",
-          agentUri: agentNode.value,
-        });
-      const { executionNode: activeExecution } = addExecutionScaffold(
-        resourceMap,
-        {
-          executionId: "urn:uuid:exec.shared.active.1",
-          associationNode,
-          identified: false,
+      const { executionNode } = addExecutionScaffold(resourceMap, {
+        executionNode: rdf.blankNode(),
+        executionId: "urn:uuid:exec.identifiers.1",
+        programPid: "program.1",
+      });
+      resourceMap.mutateGraph(
+        () => {
+          resourceMap.graph.addStatement({
+            subject: executionNode,
+            predicate: resourceMap.ns.DCTERMS("identifier"),
+            object: rdf.literal("urn:uuid:exec.identifiers.2"),
+          });
         },
+        { markDirty: false },
       );
 
-      GraphMutation.addStatementIfMissing(
-        resourceMap,
-        activeExecution,
-        resourceMap.ns.PROV("used"),
-        dataNode,
+      expectReadOnly(() =>
+        resourceMap.provenance.addGeneratedByProgram("data.1", "program.1"),
       );
+    });
 
-      ProvenanceExecutionMutation.cleanupExecution(
-        resourceMap.provenance,
-        orphanExecution,
+    it("keeps an execution with multiple associations read-only", () => {
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: "resource_map_urn:uuid:exec.associations.1",
+        memberPids: ["meta.1", "data.1", "program.1"],
+      });
+      const { executionNode } = addExecutionScaffold(resourceMap, {
+        executionId: "urn:uuid:exec.associations.1",
+        programPid: "program.1",
+      });
+      addExecutionScaffold(resourceMap, {
+        executionNode,
+        programPid: "program.1",
+      });
+
+      expectReadOnly(() =>
+        resourceMap.provenance.addUsedByProgram("data.1", "program.1"),
       );
-
       resourceMap.graph
-        .statementsMatching(
-          associationNode,
-          resourceMap.ns.PROV("hadPlan"),
-          programNode,
-        )
-        .length.should.equal(1);
-      resourceMap.graph
-        .statementsMatching(
-          associationNode,
-          resourceMap.ns.PROV("agent"),
-          agentNode,
-        )
-        .length.should.equal(1);
-      resourceMap.graph
-        .statementsMatching(
-          activeExecution,
-          resourceMap.ns.PROV("qualifiedAssociation"),
-          associationNode,
-        )
-        .length.should.equal(1);
-      resourceMap.graph
-        .statementsMatching(
-          orphanExecution,
-          resourceMap.ns.PROV("qualifiedAssociation"),
-          associationNode,
-        )
-        .length.should.equal(0);
+        .findStatements({
+          subject: executionNode,
+          predicate: resourceMap.ns.PROV("qualifiedAssociation"),
+        })
+        .should.have.lengthOf(2);
     });
   });
 });
