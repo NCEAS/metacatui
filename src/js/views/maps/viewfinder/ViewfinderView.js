@@ -308,18 +308,22 @@ define([
         const existingPanel = this.getViewfinderCardsPanel(category);
         if (existingPanel?.length) {
           existingPanel.replaceWith(expansionPanel.el);
-          return;
-        }
-        // otherwise, add it where it belongs according to collection order
-        const placement = this.getViewfinderCardsPlacement(category);
+        } else {
+          // otherwise, add it where it belongs according to collection order
+          const placement = this.getViewfinderCardsPlacement(category);
 
-        if (placement === "prepend") {
-          this.getViewfinderCards().prepend(expansionPanel.el);
-        } else if (placement === "append") {
-          this.getViewfinderCards().append(expansionPanel.el);
-        } else if (placement.after) {
-          placement.after.after(expansionPanel.el);
+          if (placement === "prepend") {
+            this.getViewfinderCards().prepend(expansionPanel.el);
+          } else if (placement === "append") {
+            this.getViewfinderCards().append(expansionPanel.el);
+          } else if (placement.after) {
+            placement.after.after(expansionPanel.el);
+          }
         }
+
+        // Retry URL-based action restore after cards render, which is required
+        // when a category loads cards asynchronously from a remote URL.
+        this.applyActiveActionFromUrl();
       },
 
       /** Render child SearchView and append to DOM. */
@@ -346,8 +350,6 @@ define([
         categories?.each((category) =>
           this.renderViewfinderCardsView(category),
         );
-
-        this.applyActiveActionFromUrl();
       },
     },
   );
