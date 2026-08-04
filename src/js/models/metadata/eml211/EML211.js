@@ -19,6 +19,7 @@ define([
   "models/metadata/eml211/EMLMethods",
   "collections/metadata/eml/EMLAnnotations",
   "models/metadata/eml211/EMLAnnotation",
+  "common/EMLUtilities",
 ], (
   $,
   _,
@@ -40,6 +41,7 @@ define([
   EMLMethods,
   EMLAnnotations,
   EMLAnnotation,
+  EMLUtilities,
 ) => {
   /**
    * @class EML211
@@ -139,9 +141,9 @@ define([
       units: new Units(),
 
       /** @inheritdoc */
-      initialize(attributes) {
+      initialize(attributes, options = {}) {
         // Call initialize for the super class
-        ScienceMetadata.prototype.initialize.call(this, attributes);
+        ScienceMetadata.prototype.initialize.call(this, attributes, options);
 
         // EML211-specific init goes here this.set("objectXML",
         // this.createXML());
@@ -159,14 +161,34 @@ define([
         );
 
         this.listenTo(this, "change:entities", () => {
-          this.trickleUpChange();
-          this.listenTo(this.get("entities"), "update", () => {
+          if (this.get("synced")) {
             this.trickleUpChange();
-          });
+          }
+          this.listenToEntities();
         });
+        this.listenToEntities();
 
         // Create a Unit collection
         if (!this.units.length) this.createUnits();
+      },
+
+      /**
+       * Listen for structural changes in the active entities collection.
+       * @since 0.0.0
+       */
+      listenToEntities() {
+        const previousEntities = this.previous("entities");
+        if (previousEntities) this.stopListening(previousEntities, "update");
+
+        const entities = this.get("entities");
+        if (!entities) return;
+
+        this.stopListening(entities, "update");
+        this.listenTo(entities, "update", () => {
+          if (this.get("synced")) {
+            this.trickleUpChange();
+          }
+        });
       },
 
       /** @inheritdoc */
@@ -2370,14 +2392,7 @@ define([
        * Triggers a change event on the model and all its parents.
        */
       trickleUpChange() {
-        if (
-          !MetacatUI.rootDataPackage ||
-          !MetacatUI.rootDataPackage.packageModel
-        )
-          return;
-
-        // Mark the package as changed
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+        EMLUtilities.markRootDataPackageChanged();
       },
 
       /**

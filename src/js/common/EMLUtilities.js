@@ -72,12 +72,15 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
      */
     markRootDataPackageChanged() {
       const dataPackage = MetacatUI.rootDataPackage;
-      if (
-        typeof dataPackage?.recordUserEdit === "function" &&
-        !dataPackage.isEditLocked?.()
-      ) {
-        dataPackage.recordUserEdit("metadata:changed", {});
+      if (typeof dataPackage?.recordUserEdit === "function") {
+        if (!dataPackage.isEditLocked?.()) {
+          dataPackage.recordUserEdit("metadata:changed", {});
+        }
+        return;
       }
+
+      // Older editor paths expose a collection with a packageModel.
+      dataPackage?.packageModel?.set?.("changed", true);
     },
   };
 

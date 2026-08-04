@@ -154,6 +154,43 @@ define([
         expect(attrListWithRef.isEmpty()).to.equal(false);
         expect(attrListEmpty.isEmpty()).to.equal(true);
       });
+
+      it("marks attribute content changes as non-structural", () => {
+        const attrList = new EMLAttributeList();
+        const attrs = attrList.get("emlAttributes");
+        const changeSpy = sinon.spy();
+        attrList.on("change:emlAttributes", changeSpy);
+
+        const attr = attrs.addAttribute({ attributeName: "temperature" });
+
+        expect(changeSpy.calledOnce).to.equal(true);
+        expect(changeSpy.firstCall.args[2]).to.deep.equal({
+          structural: true,
+        });
+
+        changeSpy.resetHistory();
+        attr.set("attributeName", "temperature_c");
+
+        expect(changeSpy.calledOnce).to.equal(true);
+        expect(changeSpy.firstCall.args[2]).to.deep.equal({
+          structural: false,
+        });
+      });
+
+      it("does not fire emlAttributes update for nested missing-value edits", () => {
+        const attrList = new EMLAttributeList();
+        const attrs = attrList.get("emlAttributes");
+        const attr = attrs.addAttribute({ attributeName: "quality_flag" });
+        const updateSpy = sinon.spy();
+        attrs.on("update", updateSpy);
+
+        attr.get("missingValueCodes").add({
+          code: "NA",
+          codeExplanation: "Not available",
+        });
+
+        sinon.assert.notCalled(updateSpy);
+      });
     });
   });
 });

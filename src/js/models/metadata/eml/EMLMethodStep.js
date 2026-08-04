@@ -1,9 +1,10 @@
-var required = [
+const required = [
   "jquery",
   "underscore",
   "backbone",
   "models/DataONEObject",
   "models/metadata/eml220/EMLText",
+  "common/EMLUtilities",
 ];
 
 if (MetacatUI.appModel.get("customEMLMethods").length) {
@@ -12,7 +13,15 @@ if (MetacatUI.appModel.get("customEMLMethods").length) {
 
 define(
   required,
-  function ($, _, Backbone, DataONEObject, EMLText, EMLSpecializedText) {
+  (
+    $,
+    _,
+    Backbone,
+    DataONEObject,
+    EMLText,
+    EMLUtilities,
+    EMLSpecializedText,
+  ) => {
     /**
   * @class EMLMethodStep
   * @classdesc Represents the EML Method Steps. The methodStep field allows for repeated sets of
@@ -24,7 +33,7 @@ define(
   * @extends Backbone.Model
   * @since 2.19.0
   */
-    var EMLMethodStep = Backbone.Model.extend(
+    const EMLMethodStep = Backbone.Model.extend(
       /** @lends EMLMethodStep.prototype */ {
         /**
          * Default attributes for EMLMethodSteps
@@ -316,8 +325,8 @@ define(
           }
         },
 
-        trickleUpChange: function () {
-          MetacatUI.rootDataPackage.packageModel.set("changed", true);
+        trickleUpChange() {
+          EMLUtilities.markRootDataPackageChanged();
         },
 
         formatXML: function (xmlString) {

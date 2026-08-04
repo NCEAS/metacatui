@@ -227,7 +227,10 @@ define([
       const { pid } = this;
       const formatId = this.getFormatId() || undefined;
       const model = this.isEML()
-        ? new EML211({ id: pid, formatId, synced: false })
+        ? new EML211(
+            { id: pid, formatId, synced: false },
+            { packageEvents: this._packageEvents },
+          )
         : new ScienceMetadata(
             { id: pid, formatId, synced: false },
             { packageEvents: this._packageEvents },

@@ -4,13 +4,13 @@ define([
   "backbone",
   "models/DataONEObject",
   "common/EMLUtilities",
-], function ($, _, Backbone, DataONEObject, EMLUtilities) {
+], ($, _, Backbone, DataONEObject, EMLUtilities) => {
   /**
    * @class EMLTemporalCoverage
    * @classcategory Models/Metadata/EML211
    * @extends Backbone.Model
    */
-  var EMLTemporalCoverage = Backbone.Model.extend(
+  const EMLTemporalCoverage = Backbone.Model.extend(
     /** @lends EMLTemporalCoverage.prototype */ {
       defaults: {
         objectXML: null,
@@ -213,11 +213,18 @@ define([
         return $(document.createElement("time")).html(time);
       },
 
-      trickleUpChange: function () {
+      trickleUpChange() {
+        const parentModel = this.get("parentModel");
+        const dataPackage = MetacatUI.rootDataPackage;
+        const packageMember = dataPackage?.getMember?.(
+          parentModel?.get?.("id"),
+        );
         if (
-          _.contains(MetacatUI.rootDataPackage.models, this.get("parentModel"))
-        )
-          MetacatUI.rootDataPackage.packageModel.set("changed", true);
+          _.contains(dataPackage?.models, parentModel) ||
+          packageMember?.objectModel === parentModel
+        ) {
+          EMLUtilities.markRootDataPackageChanged();
+        }
       },
 
       mergeIntoParent: function () {
