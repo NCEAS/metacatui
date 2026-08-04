@@ -5591,6 +5591,9 @@ table.download-contents.nested {
 .table .table-header {
   border-bottom: 1px solid #8da2aa;
 }
+.download-contents .table-header-title {
+  font-weight: 600;
+}
 .table-header-link {
   font-weight: normal;
 }
@@ -7933,6 +7936,48 @@ ul.side-nav-items {
   cursor: text;
 }
 
+/* Constrain file-table name cells so long file names and package titles
+   truncate instead of stretching the table. max-width: 0 keeps the cell from
+   growing to fit its content; the full text stays available via the row
+   tooltip. The viewer name is the first cell, while editor names use .name
+   because the first cell is the icon column. */
+.data-package-file-table > .data-package-item > td.name,
+.data-package-file-table > .data-package-item > td:first-child:not(.type-icon) {
+  max-width: 0;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Editor rows render the name in a block div; truncate it there too. */
+.data-package-file-table > .data-package-item > td.name div.fileTitle {
+  display: block;
+  min-width: 0;
+  width: auto;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* File-name tooltip contents (rendered inside a Fomantic popup). */
+.file-tooltip-name {
+  font-weight: 600;
+  word-break: break-word;
+}
+.file-tooltip-pid {
+  margin-top: 4px;
+  font-size: 0.9em;
+  opacity: 0.85;
+  word-break: break-all;
+}
+.file-tooltip-hint {
+  margin-top: 4px;
+  font-size: 0.9em;
+  font-style: italic;
+  opacity: 0.85;
+}
+
 .data-package-item td.error > [contenteditable] {
   border: 1.5px solid red;
   border-radius: 6px;
@@ -7962,6 +8007,9 @@ ul.side-nav-items {
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100px;
+}
+.data-package-file-table > .data-package-item > td.type {
+  max-width: 14em;
 }
 
 .data-package-item td.public {
@@ -7993,6 +8041,24 @@ ul.side-nav-items {
   margin-right: 10px;
   width: 1.4em;
 }
+.data-package-file-table > .data-package-item.root-dataset > td {
+  border-bottom: 1px solid #d5e5f2;
+}
+.data-package-file-table > .data-package-item.root-dataset > td.name,
+.data-package-file-table
+  > .data-package-item.root-dataset
+  > td:first-child:not(.type-icon) {
+  font-weight: 600;
+}
+.data-package-file-table > .data-package-item.root-dataset > td.type {
+  color: #2f617f;
+  font-weight: 300;
+}
+
+.data-package-file-table > .data-package-item.nested-dataset > td.type {
+  color: #5f6f7a;
+  font-weight: 500;
+}
 .data-package-item .btn.edit {
   width: 85px;
   color: #19b36a;
@@ -8013,7 +8079,7 @@ ul.side-nav-items {
   border-color: #ccc;
   border-width: 1px;
   border-style: solid;
-  margin-top: 6px;
+  margin-top: -1px;
   min-width: 100px;
 }
 .data-package-item .dropdown-menu .muted {
@@ -8039,6 +8105,10 @@ ul.side-nav-items {
 .data-package-item.remove-preview .type,
 .data-package-item.remove-preview .type-icon {
   opacity: 0.3;
+}
+.data-package-file-table .data-package-item [data-action-id="remove"]:hover,
+.data-package-file-table .data-package-item [data-id="remove"]:hover {
+  color: #ff0000;
 }
 .data-package-item.message-row td {
   padding-top: 3%;
@@ -9463,7 +9533,7 @@ body > #extension-is-installed {
 #data-package-table-head {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 3;
 }
 
 #data-package-table-head > .file-header > th {
@@ -9472,7 +9542,7 @@ body > #extension-is-installed {
   height: 32px;
   position: sticky;
   top: 0;
-  z-index: -2;
+  z-index: 3;
 }
 
 #data-package-table-head > .file-header > th:not(:last-child) {
@@ -9480,9 +9550,53 @@ body > #extension-is-installed {
   height: 30px;
 }
 
+#data-package-table-head > .file-header > #data-package-table-actions,
+#data-package-table-head > .file-header > #data-package-table-button {
+  right: 0;
+  z-index: 4;
+  box-shadow: -1px 0 #e3e3e3;
+}
+
 /* Table Body */
 #data-package-table-body > tr > td:first-child {
   cursor: default;
+}
+
+#data-package-table-foot > .file-listing-note-row > td {
+  background-color: #f7fafb;
+  border-top: 1px solid #d7e3e8;
+  padding: 7px 10px;
+}
+
+.file-listing-note {
+  align-items: flex-start;
+  color: #3f4a50;
+  display: flex;
+  font-size: 13px;
+  gap: 6px;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.file-listing-note > .icon {
+  color: #2f617f;
+  flex: 0 0 auto;
+  line-height: 1.35;
+  margin-top: 1px;
+}
+
+.file-listing-note > span:first-of-type {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.file-listing-note .file-listing-note-action {
+  flex: 0 0 auto;
+  margin-left: 4px;
+}
+
+.file-listing-note-status {
+  margin-left: 2px;
 }
 
 /* Table Container */
@@ -9492,6 +9606,33 @@ body > #extension-is-installed {
   overflow-y: scroll;
   border: 1px solid #e3e3e3;
   border-radius: 4px;
+  position: relative;
+  z-index: 0;
+  /* Keep table-internal sticky layers below page alerts and menus. */
+  isolation: isolate;
+}
+
+.file-table-container::after {
+  content: "";
+  position: sticky;
+  bottom: 0;
+  display: block;
+  height: 2.75em;
+  margin-top: -2.75em;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.96)
+  );
+  box-shadow: inset 0 -16px 14px -16px rgba(0, 0, 0, 0.45);
+  transition: opacity 120ms ease;
+  z-index: 5;
+}
+
+.file-table-container.has-more-below::after {
+  opacity: 1;
 }
 
 .file-table-container::-webkit-scrollbar {
@@ -9503,6 +9644,21 @@ body > #extension-is-installed {
   border-radius: 5px;
   background-color: rgba(0, 0, 0, 0.5);
   -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+.file-table-disabled {
+  opacity: 0.65;
+}
+
+.data-package-item .control {
+  cursor: pointer;
+}
+
+.file-table-disabled .fileTitle,
+.file-table-disabled .file-actions,
+.file-table-disabled [data-toggle="dropdown"],
+.file-table-disabled .control {
+  cursor: not-allowed;
 }
 
 /* Buttons */
@@ -9517,11 +9673,38 @@ body > #extension-is-installed {
     margin: 0;
   }
 }
+.data-package-item > .file-actions {
+  text-align: right;
+  white-space: nowrap;
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background-color: #fff;
+  box-shadow: -1px 0 #e3e3e3;
+}
 
-.file-actions {
-  display: flex;
-  gap: 0.5em;
-  justify-content: flex-end;
+.data-package-item > .file-actions > .action,
+.data-package-item > .file-actions > .btn-group {
+  margin-left: 0.5em;
+}
+
+.data-package-file-table > .data-package-item > .file-actions > .action.btn {
+  box-sizing: content-box;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.data-package-item > .file-actions:hover,
+.data-package-item > .file-actions:focus-within {
+  z-index: 2;
+}
+
+.table-striped > .data-package-file-table > tr:nth-child(odd) > .file-actions {
+  background-color: #f9f9f9;
+}
+
+.table-hover > .data-package-file-table > tr:hover > .file-actions {
+  background-color: #f5f5f5;
 }
 
 /* Data Package Item */
@@ -9530,6 +9713,7 @@ body > #extension-is-installed {
 }
 
 /* File Table Styles */
+.data-package-file-table > .data-package-item > .file-actions > .action.btn,
 .data-package-file-table > .data-package-item > .file-actions > .action .btn,
 .data-package-file-table
   > .data-package-item
@@ -9560,6 +9744,11 @@ body > #extension-is-installed {
   box-shadow: none;
   color: #146660;
   padding: 0.5em;
+  appearance: none;
+  -webkit-appearance: none;
+  min-width: 0;
+  min-height: 0;
+  transition: color 0.5s ease;
 }
 
 .data-package-file-table
@@ -9572,6 +9761,7 @@ body > #extension-is-installed {
   > .file-actions
   > .action
   .btn:focus,
+.data-package-file-table .data-package-item .action.btn:hover,
 .header .nav li .btn:hover,
 .header nav li .btn:focus {
   background-color: #146660;

@@ -73,6 +73,8 @@
     "./js/specs/unit/models/dataPackage/UploadResult.spec.js",
     "./js/specs/unit/models/dataPackage/DataPackageUpload.spec.js",
     "./js/specs/unit/models/dataPackage/UploadRecoveryStore.spec.js",
+    "./js/specs/unit/models/fileTable/DataPackageFileTableAdapter.spec.js",
+    "./js/specs/unit/models/fileTable/FileTableMetrics.spec.js",
     "./js/specs/unit/collections/versionHistory/VersionTimelineGroups.spec.js",
     "./js/specs/unit/views/versionHistory/ObjectVersionView.spec.js",
     "./js/specs/unit/views/versionHistory/ObjectVersionsView.spec.js",
@@ -165,7 +167,9 @@
     "./js/specs/unit/models/dataONEServices/ViewService.spec.js",
     "./js/specs/unit/models/viewService/ViewServiceDoc.spec.js",
     "./js/specs/unit/models/dataONEServices/AuthorizationService.spec.js",
-    "./js/specs/unit/models/dataONEServices/PublishService.spec.js"
+    "./js/specs/unit/models/dataONEServices/PublishService.spec.js",
+    "./js/specs/unit/models/fileTable/FileTableViewModel.spec.js",
+    "./js/specs/unit/views/fileTable/FileTableView.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",
