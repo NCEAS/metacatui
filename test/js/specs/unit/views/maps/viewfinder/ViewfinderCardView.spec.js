@@ -253,13 +253,13 @@ define([
       }
     });
 
-    it("generates a fallback action id when missing", () => {
+    it("does not assign an action id when missing", () => {
       const sandbox = sinon.createSandbox();
       const onActionActivatedSpy = sandbox.spy();
       const card = new ViewfinderCardModel(
         {
-          title: "Generated ID card",
-          description: "For testing generated ids",
+          title: "Unconfigured ID card",
+          description: "For testing missing ids",
           buttons: [
             {
               type: "iframe",
@@ -277,7 +277,7 @@ define([
       view.render();
       const harness = new ViewfinderCardViewHarness(view);
       const testContainer = document.createElement("div");
-      testContainer.id = "generated-action-id-container";
+      testContainer.id = "missing-action-id-container";
       testContainer.append(view.el);
       document.body.append(testContainer);
 
@@ -286,19 +286,18 @@ define([
 
         expect(onActionActivatedSpy.callCount).to.equal(1);
         const action = onActionActivatedSpy.firstCall.args[0];
-        expect(action.id).to.be.a("string");
-        expect(action.id).to.match(/^vf-action-/);
+        expect(action.id).to.be.undefined;
       } finally {
         sandbox.restore();
         testContainer.remove();
       }
     });
 
-    it("generates fallback ids for parsed legacy map actions", () => {
+    it("leaves parsed legacy map actions without ids by default", () => {
       const card = new ViewfinderCardModel(
         {
           title: "Parsed legacy card",
-          description: "For testing parse-time normalization",
+          description: "For testing parse-time normalization without ids",
           position: {
             latitude: 41,
             longitude: -120,
@@ -311,7 +310,7 @@ define([
 
       expect(card.get("geoPoint")).to.be.instanceof(GeoPoint);
       expect(card.get("buttons")).to.have.length(1);
-      expect(card.get("buttons")[0].id).to.match(/^vf-action-/);
+      expect(card.get("buttons")[0].id).to.be.undefined;
     });
 
     it("does not synthesize a duplicate legacy map action when one is explicit", () => {
