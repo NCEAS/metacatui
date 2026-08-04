@@ -229,6 +229,37 @@ define([
           });
       },
 
+      /**
+       * Replace a broken hero image with its configured fallback source.
+       * @param {HTMLImageElement} img The image element that failed loading.
+       * @since 0.0.0
+       */
+      applyImageFallback(img) {
+        const fallbackSrc = img?.dataset?.fallbackSrc;
+        if (!fallbackSrc) return;
+        // Prevent repeated error loops if fallback also fails.
+        img.removeAttribute("data-fallback-src");
+        if (img.getAttribute("src") !== fallbackSrc) {
+          img.setAttribute("src", fallbackSrc);
+        }
+      },
+
+      /**
+       * Wire one-time error handlers for hero images with fallback sources.
+       * @since 0.0.0
+       */
+      wireImageFallbacks() {
+        this.el
+          .querySelectorAll(`.${CLASS_NAMES.image}[data-fallback-src]`)
+          .forEach((img) => {
+            img.addEventListener(
+              "error",
+              () => this.applyImageFallback(img),
+              { once: true },
+            );
+          });
+      },
+
       /** Values meant to be used by the rendered HTML template. */
       templateVars: {
         classNames: CLASS_NAMES,
@@ -281,6 +312,7 @@ define([
       render() {
         this.templateVars.preset = this.preset.toJSON();
         this.el.innerHTML = _.template(Template)(this.templateVars);
+        this.wireImageFallbacks();
       },
     },
   );

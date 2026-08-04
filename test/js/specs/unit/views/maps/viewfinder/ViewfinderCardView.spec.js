@@ -130,6 +130,36 @@ define([
       }
     });
 
+    it("falls back to the thumbnail image when hero image loading fails", () => {
+      const card = new ViewfinderCardModel({
+        title: "Image fallback card",
+        description: "For testing hero image fallback",
+        image: "https://leonetwork.org/en/attachments/resized/IMAGE-ID",
+        imageFallback:
+          "https://leonetwork.org/en/attachments/thumbnail/IMAGE-ID",
+      });
+      const view = new ViewfinderCardView({
+        preset: card,
+      });
+      view.render();
+
+      const img = view.el.querySelector(".viewfinder-card__image");
+      expect(img).to.not.equal(null);
+      expect(img.getAttribute("src")).to.equal(
+        "https://leonetwork.org/en/attachments/resized/IMAGE-ID",
+      );
+      expect(img.getAttribute("data-fallback-src")).to.equal(
+        "https://leonetwork.org/en/attachments/thumbnail/IMAGE-ID",
+      );
+
+      img.dispatchEvent(new Event("error"));
+
+      expect(img.getAttribute("src")).to.equal(
+        "https://leonetwork.org/en/attachments/thumbnail/IMAGE-ID",
+      );
+      expect(img.hasAttribute("data-fallback-src")).to.equal(false);
+    });
+
       it("restores iframe actions without replaying click side effects", () => {
         const sandbox = sinon.createSandbox();
         const ctaCallbackSpy = sandbox.spy();

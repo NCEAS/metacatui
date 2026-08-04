@@ -88,6 +88,7 @@
     "./js/specs/unit/common/QueryService.spec.js",
     "./js/specs/unit/models/maps/AssetCategory.spec.js",
     "./js/specs/unit/collections/maps/AssetCategories.spec.js",
+    "./js/specs/unit/collections/maps/ViewfinderCards.spec.js",
     "./js/specs/unit/models/maps/Map.spec.js",
     "./js/specs/unit/views/maps/CesiumWidgetView.spec.js",
     "./js/specs/unit/views/maps/LayersPanelView.spec.js",

@@ -11,6 +11,8 @@ define([
   const LEO_NEWTORK_DOMAIN = "leonetwork.org";
   // Default height for viewfinder cards if not specified.
   const DEFAULT_HEIGHT = 800;
+  const LEO_THUMBNAIL_PATH_SEGMENT = "/thumbnail/";
+  const LEO_RESIZED_PATH_SEGMENT = "/resized/";
   /**
    * Determine if array is non-empty.
    * @param {Array} a The array in question.
@@ -18,6 +20,20 @@ define([
    */
   function isNonEmptyArray(a) {
     return a && a.length && Array.isArray(a);
+  }
+
+  /**
+   * Prefer the higher resolution LEO image path when available.
+   * @param {string|null|undefined} thumbnailUrl LEO thumbnail path.
+   * @returns {string|null} Upgraded image path, or null when unavailable.
+   * @since 0.0.0
+   */
+  function getLeoImagePath(thumbnailUrl) {
+    if (typeof thumbnailUrl !== "string" || !thumbnailUrl.length) return null;
+    return thumbnailUrl.replace(
+      LEO_THUMBNAIL_PATH_SEGMENT,
+      LEO_RESIZED_PATH_SEGMENT,
+    );
   }
 
   /**
@@ -193,9 +209,12 @@ define([
 
       /**
        * Parse the GeoJSON response from the LEO Network to extract viewfinder
-       * card data. Functionality remains unchanged but this was updated to
-       * return ViewfinderCards instead of the legacy ZoomPresets format when
-       * zoom presets were deprecated in 2.37.0.
+       * card data. This was updated to return ViewfinderCards instead of the 
+       * legacy ZoomPresets format when zoom presets were deprecated in 2.37.0,
+       * and in 0.0.0 it was updated to use the new viewfinder card format which
+       * attempts to use the resized higher res images when available and synthesizes
+       * a buttons array specifying actions which get their ID from the leonetwork
+       * id property.
        * @param {GeoJSON} response The GeoJSON response from the LEO Network.
        * @returns {object[]} An array of objects representing viewfinder cards.
        * @since 2.35.0
@@ -212,18 +231,34 @@ define([
           const { observation, id } = properties;
           const localizedDate = properties.localized_date;
           const thumbnailUrl = properties.thumbnail_url;
+          const imagePath = getLeoImagePath(thumbnailUrl);
+          const thumbnailPath =
+            typeof thumbnailUrl === "string" && thumbnailUrl.length
+              ? thumbnailUrl
+              : null;
           const { title, summary } = observation;
           const { coordinates } = geometry;
           const [longitude, latitude] = coordinates;
+          const layerIds = this.defaults?.layerIds || [];
 
           return {
             description: `<b>${localizedDate}:</b> ${summary}`,
-            layerIds: this.defaults?.layerIds || [],
-            latitude,
-            longitude,
-            height: DEFAULT_HEIGHT,
             title,
-            image: thumbnailUrl ? `${imgBaseUrl}${thumbnailUrl}` : null,
+            image: imagePath ? `${imgBaseUrl}${imagePath}` : null,
+            imageFallback:
+              thumbnailPath && thumbnailPath !== imagePath
+                ? `${imgBaseUrl}${thumbnailPath}`
+                : null,
+            buttons: [
+              {
+                id,
+                type: "map",
+                latitude,
+                longitude,
+                height: DEFAULT_HEIGHT,
+                layerIds,
+              },
+            ],
             featureId: id,
             isLEONetwork: true,
             featureLayerId: this.defaults?.featureLayerId,
