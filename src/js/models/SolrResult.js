@@ -3,9 +3,8 @@ define([
   "underscore",
   "backbone",
   "common/QueryService",
-  "common/Utilities",
   "collections/ObjectFormats",
-], ($, _, Backbone, QueryService, Utilities, ObjectFormats) => {
+], ($, _, Backbone, QueryService, ObjectFormats) => {
   const DEFAULT_INFO_FIELDS = [
     "abstract",
     "id",
@@ -213,7 +212,7 @@ define([
        * @returns {string} The specific format of this object
        */
       getFormat() {
-        return Utilities.getFriendlyFormat(this.get("formatId"));
+        return ObjectFormats.getFriendlyFormat(this.get("formatId"));
       },
 
       /**

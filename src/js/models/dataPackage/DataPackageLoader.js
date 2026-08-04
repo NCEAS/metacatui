@@ -645,13 +645,14 @@ define([
       });
       throwIfAborted(signal, "Package index manifest load cancelled");
       const results = QueryService.parseResponse(response);
-      const addOptions = {
+      dataPackage.members.add(results, {
         merge,
         onlyExisting,
         sources: ["index"],
-      };
-      dataPackage.members.add(results, addOptions);
-
+      });
+      const total = response?.response?.numFound ?? results.length;
+      // Record the total count (could be > than the number of rows fetched)
+      dataPackage.indexManifestTotal = total;
       dataPackage.indexManifestFetched = true;
       return {
         ok: true,
@@ -659,7 +660,7 @@ define([
           inputId: dataPackage.inputId,
           rootResourceMapPid: resourceMapPid,
           count: results.length,
-          total: response?.response?.numFound || results.length,
+          total,
           source: "index",
         },
       };

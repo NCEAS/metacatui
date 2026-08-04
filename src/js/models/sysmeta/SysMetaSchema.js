@@ -296,19 +296,6 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
   ).map(({ field }) => field);
 
   /**
-   * Normalize a string value against a canonical lowercase lookup table while
-   * preserving unknown values.
-   * @param {string|null|undefined} value Candidate text value.
-   * @param {Object<string, string>} canonicalByLowercase Canonical value lookup
-   * keyed by lowercase text.
-   * @returns {string|null} Canonical known value, original normalized text, or
-   * null for nullish input.
-   */
-  function normalizeCanonicalChoice(value, canonicalByLowercase) {
-    return normalizeStringChoice(value, canonicalByLowercase);
-  }
-
-  /**
    * Shared schema constants and helpers for DataONE System Metadata.
    * @namespace SysMetaSchema
    * @since 0.0.0
@@ -362,7 +349,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
      * @returns {string|null} Normalized permission value.
      */
     normalizePermission(value) {
-      return normalizeCanonicalChoice(value, PERMISSION_BY_LOWERCASE);
+      return normalizeStringChoice(value, PERMISSION_BY_LOWERCASE);
     },
 
     /**
@@ -372,7 +359,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
      * @returns {string|null} Normalized replication status value.
      */
     normalizeReplicationStatus(value) {
-      return normalizeCanonicalChoice(value, REPLICATION_STATUS_BY_LOWERCASE);
+      return normalizeStringChoice(value, REPLICATION_STATUS_BY_LOWERCASE);
     },
   };
 

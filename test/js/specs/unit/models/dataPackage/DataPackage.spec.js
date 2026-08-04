@@ -335,7 +335,54 @@ define([
     });
 
     describe("hasPrivateMembers()", () => {
-      it("throws when the resource map manifest cannot be verified", async () => {
+      it("fails closed until both manifests and the index total are available", () => {
+        const pkg = buildPackage(
+          [
+            {
+              pid: "rm.1",
+              formatType: "RESOURCE",
+              formatId: RESOURCE_MAP_FORMAT_ID,
+            },
+          ],
+          "rm.1",
+        );
+
+        pkg.hasPrivateMembers().should.equal(true);
+        pkg.resourceManifestIsFetched = true;
+        pkg.hasPrivateMembers().should.equal(true);
+        pkg.indexManifestFetched = true;
+        pkg.hasPrivateMembers().should.equal(true);
+      });
+
+      it("compares the full index match count with ResourceMap membership", () => {
+        const pkg = buildPackage(
+          [
+            { pid: "data.1", formatType: "DATA" },
+            {
+              pid: "rm.1",
+              formatType: "RESOURCE",
+              formatId: RESOURCE_MAP_FORMAT_ID,
+            },
+          ],
+          "rm.1",
+        );
+        pkg.members.add(pkg.toArray(), {
+          merge: true,
+          sources: ["resourceMap"],
+        });
+        pkg.members.add({ pid: "rm.1" }, { merge: true, sources: ["index"] });
+        pkg.resourceManifestIsFetched = true;
+        pkg.indexManifestFetched = true;
+
+        pkg.indexManifestTotal = 2;
+        pkg.hasPrivateMembers().should.equal(false);
+        pkg.indexManifestTotal = 1;
+        pkg.hasPrivateMembers().should.equal(true);
+      });
+    });
+
+    describe("getManifestFromIndex()", () => {
+      it("retains the full match count when Solr returns only one page", async () => {
         const sandbox = sinon.createSandbox();
         const pkg = buildPackage(
           [
@@ -347,27 +394,19 @@ define([
           ],
           "rm.1",
         );
+        const query = sandbox.stub(QueryService, "queryWithFetch").resolves({
+          response: {
+            numFound: 1501,
+            docs: [{ id: "rm.1" }, { id: "data.1" }],
+          },
+        });
+
         try {
-          sandbox.stub(pkg, "getManifestFromResourceMap").resolves({
-            ok: false,
-            reason: "error",
-            httpStatus: 404,
-            details: { rootResourceMapPid: "rm.1" },
-          });
-          const indexStub = sandbox.stub(pkg, "getManifestFromIndex");
+          const result = await pkg.getManifestFromIndex({ rows: 2 });
 
-          let caught = null;
-          try {
-            await pkg.hasPrivateMembers();
-          } catch (error) {
-            caught = error;
-          }
-
-          expect(caught).to.be.instanceOf(Error);
-          caught.code.should.equal("resource_map_unavailable");
-          caught.httpStatus.should.equal(404);
-          caught.rootResourceMapPid.should.equal("rm.1");
-          indexStub.called.should.equal(false);
+          result.details.count.should.equal(2);
+          result.details.total.should.equal(1501);
+          pkg.indexManifestTotal.should.equal(1501);
         } finally {
           sandbox.restore();
         }

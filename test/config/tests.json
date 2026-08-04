@@ -25,7 +25,6 @@
     "./js/specs/unit/models/notifications/ObjectNotification.spec.js",
     "./js/specs/unit/models/CrossRefModel.spec.js",
     "./js/specs/unit/collections/ProjectList.spec.js",
-    "./js/specs/unit/collections/DataPackage.spec.js",
     "./js/specs/unit/collections/DataONEObjects.spec.js",
     "./js/specs/unit/models/project/Project.spec.js",
     "./js/specs/unit/models/metadata/eml211/EML211.spec.js",
@@ -170,6 +169,7 @@
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",
-    "./js/specs/integration/models/LookupModel.js"
+    "./js/specs/integration/models/LookupModel.js",
+    "./js/specs/integration/models/dataPackage/DataPackageWorkflows.spec.js"
   ]
 }

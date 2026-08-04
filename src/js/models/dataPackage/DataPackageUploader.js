@@ -161,8 +161,8 @@ define([
      * @returns {Promise<UploadResult[]>} One result per eager upload
      */
     async uploadAddedMembers(members, options = {}) {
-      const maxConcurrent = Utilities.resolveMaxConcurrent(
-        "batchSizeUpload",
+      const maxConcurrent = Utilities.getMaxConcurrent(
+        "upload",
         options.maxConcurrent,
       );
       const uploadMembers = Values.listify(members).filter(
@@ -1035,8 +1035,8 @@ define([
      * @throws {Error} When another upload is active or upload preparation fails
      */
     async upload({ resourceMapOnly = false, signal, maxConcurrent } = {}) {
-      const resolvedMaxConcurrent = Utilities.resolveMaxConcurrent(
-        "batchSizeUpload",
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
+        "upload",
         maxConcurrent,
       );
       if (this.dataPackage.activeUpload) {
@@ -1207,8 +1207,8 @@ define([
      * @throws {Error} When the result is unrelated, stale, active, or unverifiable
      */
     async retryUpload(previousResult, { signal, maxConcurrent } = {}) {
-      const resolvedMaxConcurrent = Utilities.resolveMaxConcurrent(
-        "batchSizeUpload",
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
+        "upload",
         maxConcurrent,
       );
       if (previousResult?.dataPackage !== this.dataPackage) {

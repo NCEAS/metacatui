@@ -16,14 +16,15 @@ define(["models/PersistentStorage", "common/UrlUtilities"], (
 
   /**
    * Durable, per server store for upload recovery records. Each record captures
-   * everything needed to finish (or reconstruct) the ResourceMap write for one
-   * metadata document, keyed by that metadata PID, so a crash between "metadata
-   * committed" and "ResourceMap committed" is recoverable on the next load.
+   * everything needed to finish the exact ResourceMap write for one metadata
+   * document, keyed by that metadata PID, so a crash between "metadata
+   * committed" and "ResourceMap committed" can be replayed on the next load.
    *
    * Backed by {@link PersistentStorage} (localforage/IndexedDB), so records
    * survive a tab crash. Each record stores the exact serialized ResourceMap
-   * bytes the interrupted upload had prepared; server side reconstruction is
-   * the cross device fallback.
+   * bytes the interrupted upload had prepared. Limited server side
+   * reconstruction is a separate, explicit recovery choice when no record can
+   * be retrieved.
    * @class UploadRecoveryStore
    * @classcategory Models/DataPackage
    * @since 0.0.0
@@ -65,7 +66,7 @@ define(["models/PersistentStorage", "common/UrlUtilities"], (
         await this.storage.setItem(metadataPid, stored, {
           ttlMs: RECOVERY_TTL_MS,
         });
-      } catch (_error) {
+      } catch {
         // Recovery is best-effort; a storage failure must never fail an upload.
       }
     }
@@ -73,21 +74,22 @@ define(["models/PersistentStorage", "common/UrlUtilities"], (
     /**
      * Read a recovery record for a metadata PID.
      * @param {string} metadataPid Metadata document PID
-     * @returns {Promise<object|null>} The record, or null when absent or
-     * unreadable after retry
+     * @returns {Promise<object|null>} The stored record, or null when absent or
+     * unavailable after one retry
      */
     async get(metadataPid) {
       if (!metadataPid) return null;
       try {
         return (await this.storage.getItem(metadataPid)) || null;
-      } catch (_error) {
+      } catch {
         // Retry once, in case the first failure was a transient IndexedDB error
         // (cheap to retry and IndexedDB errors vary across browsers)
         try {
           return (await this.storage.getItem(metadataPid)) || null;
-        } catch (_retryError) {
-          // An unreadable record cannot support exact replay, so let recovery
-          // fall back to the server whether or not a local record exists.
+        } catch {
+          // If a record exists but cannot be read, then it's essentially lost.
+          // Return null so the caller can attempt server-side reconstruction
+          // instead of failing.
           return null;
         }
       }
@@ -102,7 +104,7 @@ define(["models/PersistentStorage", "common/UrlUtilities"], (
       if (!metadataPid) return;
       try {
         await this.storage.removeItem(metadataPid);
-      } catch (_error) {
+      } catch {
         // Ignore: a stale record left behind is harmless (it is re-validated
         // against the server before any repair acts on it).
       }

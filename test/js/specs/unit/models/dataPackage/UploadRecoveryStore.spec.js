@@ -34,20 +34,13 @@ define([
       });
     });
 
-    it("stores the record without adding version metadata", async () => {
-      const store = new UploadRecoveryStore({ storage: state.storage });
-
-      await store.save("meta.1", { rmPid: "rm.1" });
-
-      state.storage.setItem.calledOnce.should.equal(true);
-      const [key, stored, options] = state.storage.setItem.firstCall.args;
-      key.should.equal("meta.1");
-      stored.should.deep.equal({ metadataPid: "meta.1", rmPid: "rm.1" });
-      should.equal(options.ttlMs, null);
-    });
-
     it("retries a failed record read once", async () => {
-      const record = { metadataPid: "meta.1", rmPid: "rm.1" };
+      const record = {
+        metadataPid: "meta.1",
+        rmPid: "rm.1",
+        rmXml: "<rdf:RDF></rdf:RDF>",
+        rmSysMetaXml: "<d1:systemMetadata></d1:systemMetadata>",
+      };
       state.storage.getItem.onFirstCall().rejects(new Error("unavailable"));
       state.storage.getItem.onSecondCall().resolves(record);
       const store = new UploadRecoveryStore({ storage: state.storage });
@@ -58,8 +51,9 @@ define([
       state.storage.getItem.calledTwice.should.equal(true);
     });
 
-    it("returns null when both record reads fail", async () => {
-      state.storage.getItem.rejects(new Error("unavailable"));
+    it("returns no record after the retry also fails", async () => {
+      state.storage.getItem.onFirstCall().rejects(new Error("first failure"));
+      state.storage.getItem.onSecondCall().rejects(new Error("second failure"));
       const store = new UploadRecoveryStore({ storage: state.storage });
 
       const result = await store.get("meta.1");

@@ -103,21 +103,31 @@ define([
     /**
      * Resolve and validate a positive concurrency limit from a caller value, an
      * app setting, or the project default.
-     * @param {string} appModelKey App model setting key (e.g. "batchSizeFetch").
-     * @param {number} [maxConcurrent] Caller-provided limit; falls back to the
-     *   app setting, then {@link Utilities.DEFAULT_MAX_CONCURRENT}.
+     * @param {"upload"|"fetch"} uploadOrFetch Whether limit is for uploads or
+     * fetches
+     * @param {number} [maxConcurrent] Preferred default limit. If 0 or unset,
+     * falls back to the app setting, then
+     * {@link Utilities.DEFAULT_MAX_CONCURRENT}
      * @returns {number} Positive integer limit.
      * @since 0.0.0
      */
-    resolveMaxConcurrent(
-      appModelKey,
-      maxConcurrent = ValueUtilities.normalizePositiveInteger(
-        globalThis.MetacatUI?.appModel?.get?.(appModelKey),
-        DEFAULT_MAX_CONCURRENT,
-      ),
-    ) {
+    getMaxConcurrent(uploadOrFetch, maxConcurrent) {
+      const key = ValueUtilities.requireStringChoice(uploadOrFetch, [
+        "upload",
+        "fetch",
+      ]);
+      const mappedKeys = {
+        upload: "batchSizeUpload",
+        fetch: "batchSizeFetch",
+      };
+      const normalizedMax =
+        maxConcurrent ||
+        ValueUtilities.normalizePositiveInteger(
+          Utilities.getMetacatUIProperty(mappedKeys[key]),
+          DEFAULT_MAX_CONCURRENT,
+        );
       return ValueUtilities.requirePositiveInteger(
-        maxConcurrent,
+        normalizedMax,
         "maxConcurrent must be a positive integer",
       );
     },
@@ -725,16 +735,6 @@ define([
       }
 
       return formats;
-    },
-
-    /**
-     * Convert a format ID into a human-readable format name, if possible.
-     * @param {string} formatId Format ID to convert.
-     * @returns {string} Human-readable format name, or original format ID.
-     * @since 0.0.0
-     */
-    getFriendlyFormat(formatId) {
-      return ObjectFormats.getFriendlyFormat(formatId);
     },
   };
 

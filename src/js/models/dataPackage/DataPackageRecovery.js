@@ -12,6 +12,7 @@ define([
   "models/resourceMap/ResourceMapResolver",
   "models/dataPackage/DataPackageMember",
   "models/dataPackage/UploadRecoveryStore",
+  "collections/ObjectFormats",
 ], (
   ErrorUtilities,
   Utilities,
@@ -24,8 +25,10 @@ define([
   ResourceMapResolver,
   DataPackageMember,
   UploadRecoveryStore,
+  ObjectFormats,
 ) => {
-  const RESOURCE_MAP_FORMAT_ID = "http://www.openarchives.org/ore/terms";
+  const RESOURCE_MAP_FORMAT_ID =
+    ObjectFormats.prototype.FORMAT_IDS.RESOURCE_MAP;
 
   /**
    * Normalize system metadata (model or plain object) to a plain object.
@@ -77,13 +80,13 @@ define([
 
   /**
    * Repair a metadata document that resolves to no resource map after an upload
-   * commits the metadata but stops before writing its resource map. Two
-   * strategies are tried in order:
+   * commits the metadata but stops before writing its resource map. Exact
+   * replay is attempted first; server reconstruction is available only through
+   * explicit opt-in when recovery storage yields no local record:
    *
    *   R1 (replay): resend the exact resource map bytes the interrupted
-   *   upload had prepared, from a durable local recovery record. Object and
-   *   System Metadata bytes are exact (including any newly added files),
-   *   device local.
+   *   upload had prepared, from a durable local recovery record. Includes any
+   *   newly added files; device local.
    *
    *   R2 (reconstruct): rebuild the resource map from server state by walking
    *   the metadata's `obsoletes` chain to the previous resource map. Device
@@ -93,6 +96,10 @@ define([
    * and are self healing: the DataONE server rejects a second object that would
    * obsolete an already obsoleted map, so a map that actually committed is
    * detected rather than duplicated.
+   *
+   * TODO: we should combine the EML local drafts feature with this class so
+   * that we can also recover from unsaved EML drafts.
+   *
    * @class DataPackageRecovery
    * @classcategory Models/DataPackage
    * @since 0.0.0
@@ -138,42 +145,37 @@ define([
      * Attempt to recover an orphaned metadata document.
      * @param {string} metadataPid Orphaned metadata PID (its latest version)
      * @param {object} [options] Recovery options
+     * @param {boolean} [options.allowReconstruct] Reconstruct from the prior
+     * server ResourceMap only when local storage yields no record after its read
+     * retry. Defaults to false
      * @param {AbortSignal} [options.signal] Abort signal
      * @param {number} [options.maxConcurrent] Maximum concurrent server reads
      * @returns {Promise<object>} Result: `{ recovered, resourceMapPid, strategy }`
      * or `{ recovered: false, reason }`
      */
     async recover(metadataPid, options = {}) {
-      const pid = Values.requireNonEmptyString(
-        metadataPid,
-        "DataPackageRecovery.recover requires a metadata PID",
-      );
+      const pid = Values.requireNonEmptyString(metadataPid, "PID required");
+      const { allowReconstruct = false, ...internalOptions } = options;
       const recoveryOptions = {
-        ...options,
-        maxConcurrent: Utilities.resolveMaxConcurrent(
-          "batchSizeFetch",
-          options.maxConcurrent,
+        ...internalOptions,
+        maxConcurrent: Utilities.getMaxConcurrent(
+          "fetch",
+          internalOptions.maxConcurrent,
         ),
       };
       const replayed = await this._replayFromRecord(pid, recoveryOptions);
       if (replayed.recovered) return replayed;
-      const reconstructed = await this._reconstructFromServer(
-        pid,
-        recoveryOptions,
-      );
-      if (
-        !reconstructed.recovered &&
-        replayed.reason === "resource_map_sysmeta_unavailable"
-      ) {
+      // UploadRecoveryStore treats exhausted read failures as no record because
+      // inaccessible bytes cannot support R1. Other R1 failures preserve their
+      // reason and block R2 from discarding known package intent.
+      if (allowReconstruct !== true || replayed.reason !== "no_record")
         return replayed;
-      }
-      return reconstructed;
+      return this._reconstructFromServer(pid, recoveryOptions);
     }
 
     /**
      * R1: replay the exact ResourceMap object and System Metadata bytes the
-     * interrupted upload prepared. Legacy records rebuild System Metadata from
-     * the prior ResourceMap baseline.
+     * interrupted upload prepared.
      * @param {string} metadataPid Orphaned metadata PID
      * @param {object} [options] Options
      * @param {AbortSignal} [options.signal] Abort signal
@@ -183,43 +185,24 @@ define([
      * @throws {Error} When the recovery record cannot be verified or replayed
      */
     async _replayFromRecord(metadataPid, { signal, maxConcurrent } = {}) {
-      const record = await this.recoveryStore.get(metadataPid);
-      if (!record?.rmXml || !record?.rmPid) {
-        return { recovered: false, reason: "no_record" };
-      }
-      const rmBlob = new Blob([record.rmXml], { type: "application/xml" });
-      let rmSysMetaXml;
+      let record;
       let memberPids;
       try {
-        // Parse the stored bytes (rather than trusting a stored member list)
-        // so the presence check below matches exactly what will be written.
+        record = await this.recoveryStore.get(metadataPid);
+        if (!record) return { recovered: false, reason: "no_record" };
+        Values.requireNonEmptyString(
+          record.rmSysMetaXml,
+          "Recovery record System Metadata required",
+        );
         memberPids = ResourceMap.fromXml(record.rmPid, record.rmXml, {
           resolveServiceUrl: this.resolveServiceUrl,
           objectServiceUrl: this.objectServiceUrl,
         }).getMemberPids();
-        rmSysMetaXml = record.rmSysMetaXml || null;
-        if (!rmSysMetaXml) {
-          const priorRmSysMeta = record.obsoletesRmPid
-            ? await this._getSysMeta(record.obsoletesRmPid, signal)
-            : null;
-          if (!priorRmSysMeta) {
-            return {
-              recovered: false,
-              reason: "resource_map_sysmeta_unavailable",
-            };
-          }
-          rmSysMetaXml = await buildResourceMapSysMeta({
-            rmPid: record.rmPid,
-            rmBlob,
-            obsoletesRmPid: record.obsoletesRmPid,
-            sourceSysMeta: priorRmSysMeta,
-            signal,
-          });
-        }
       } catch (error) {
         if (ErrorUtilities.isAbortError(error) || signal?.aborted) throw error;
         return { recovered: false, reason: "record_unreadable" };
       }
+      const rmBlob = new Blob([record.rmXml], { type: "application/xml" });
       // Never publish a resource map that points at objects that did not
       // commit: confirm every referenced member is present first.
       try {
@@ -241,7 +224,7 @@ define([
           rmPid: record.rmPid,
           obsoletesRmPid: record.obsoletesRmPid || null,
           rmBlob,
-          rmSysMetaXml,
+          rmSysMetaXml: record.rmSysMetaXml,
           fileName: record.rmFileName,
         },
         "replay",

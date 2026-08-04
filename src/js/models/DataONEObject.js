@@ -4,6 +4,7 @@ define([
   "backbone",
   "he",
   "collections/AccessPolicy",
+  "collections/ObjectFormats",
   "common/Utilities",
   "common/ValueUtilities",
   "md5",
@@ -14,6 +15,7 @@ define([
   Backbone,
   he,
   AccessPolicy,
+  ObjectFormats,
   Utilities,
   ValueUtilities,
   md5,
@@ -30,7 +32,7 @@ define([
    * @classcategory Models
    * @augments Backbone.Model
    */
-  var DataONEObject = Backbone.Model.extend(
+  const DataONEObject = Backbone.Model.extend(
     /** @lends DataONEObject.prototype */ {
       type: "DataONEObject",
       selectedInEditor: false, // Has this package member been selected and displayed in the provenance editor?
@@ -156,14 +158,13 @@ define([
 
         this.on("successSaving", this.updateRelationships);
 
-        // Save a reference to this DataONEObject model in the metadataEntity model
-        // whenever the metadataEntity is set
-        this.on("change:metadataEntity", function () {
-          const entityMetadataModel = this.get("metadataEntity");
-
-          if (entityMetadataModel)
-            entityMetadataModel.set("dataONEObject", this);
-        });
+        // Keep the linked EML entity current without storing this live model on
+        // it. The new DataPackage uses the same descriptor boundary.
+        this.on(
+          "change:metadataEntity change:id change:fileName " +
+            "change:formatId change:mediaType",
+          this.syncMetadataEntityDescriptor,
+        );
 
         this.on("sync", function () {
           this.set("synced", true);
@@ -175,6 +176,39 @@ define([
 
         // Ensure the object formats are cached for this model's use
         Utilities.awaitObjectFormats();
+      },
+
+      /**
+       * Copy stable member fields to the linked EML entity.
+       */
+      syncMetadataEntityDescriptor() {
+        const entity = this.get("metadataEntity");
+        if (!entity) return;
+        const id = this.get("id");
+        const previousId = this.previous("id");
+        const parentEML = entity.get("parentModel");
+
+        if (
+          id &&
+          previousId &&
+          id !== previousId &&
+          typeof parentEML?.replaceMemberPid === "function"
+        ) {
+          parentEML.replaceMemberPid(previousId, id);
+        }
+
+        entity.setMemberDescriptor({
+          id,
+          previousId,
+          fileName: this.get("fileName"),
+          previousFileName: this.previous("fileName"),
+          formatId:
+            this.get("formatId") ||
+            this.get("mediaType") ||
+            "application/octet-stream",
+          previousFormatId:
+            this.previous("formatId") || this.previous("mediaType"),
+        });
       },
 
       /**
@@ -1304,7 +1338,7 @@ define([
        * @since 2.28.0
        */
       getFormat() {
-        return Utilities.getFriendlyFormat(this.get("formatId"));
+        return ObjectFormats.getFriendlyFormat(this.get("formatId"));
       },
 
       /**
@@ -1515,6 +1549,7 @@ define([
 
         this.set("oldPid", this.attributeCache.oldPid, { silent: true });
         this.set("id", this.attributeCache.id, { silent: true });
+        this.syncMetadataEntityDescriptor();
         this.set("obsoletes", this.attributeCache.obsoletes, { silent: true });
         this.set("obsoletedBy", this.attributeCache.obsoletedBy, {
           silent: true,
@@ -2506,11 +2541,6 @@ define([
           // Update this model
           this.set("possibleAuthMNs", possibleAuthMNs);
         }
-      },
-
-      /** @deprecated */
-      removeWhiteSpaceFromSolrFields(json) {
-        return QueryService.parseResourceMapFields(json);
       },
     },
 

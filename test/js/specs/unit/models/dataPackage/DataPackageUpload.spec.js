@@ -2020,7 +2020,7 @@ define([
         versionTracker: { getLatestVersion },
       });
 
-      const result = await executeActions(pkg, [
+      const upload = executeActions(pkg, [
         {
           phase: PHASES.DATA,
           operation: OPERATIONS.UPDATE,
@@ -2035,6 +2035,8 @@ define([
           },
         },
       ]);
+      const verificationSignal = pkg.activeUpload.controller.signal;
+      const result = await upload;
 
       result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
       result
@@ -2042,13 +2044,14 @@ define([
         .should.equal(UploadResult.Statuses.SUCCEEDED);
       result.reloadRequired.should.equal(false);
       member.remotePid.should.equal("data.2");
+      verificationSignal.should.be.instanceOf(AbortSignal);
       sinon.assert.calledOnceWithExactly(getLatestVersion, "data.1", {
         useCache: false,
-        signal: undefined,
+        signal: verificationSignal,
       });
       sinon.assert.calledOnceWithExactly(download, "data.2", {
         useCache: false,
-        signal: undefined,
+        signal: verificationSignal,
       });
     });
 

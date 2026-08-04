@@ -127,6 +127,7 @@ define([
       this.rootResourceMapPid =
         Values.normalizeText(options.rootResourceMapPid) || null;
       this.resolutionResult = null;
+      this.indexManifestTotal = null;
       this.draftRevision = 0;
       this.savedRevision = 0;
       // True when EML/metadata content has been edited since the last save. Set
@@ -1152,8 +1153,8 @@ define([
       { propagate = false, maxConcurrent, onProgress, rightsHolder } = {},
     ) {
       this.assertCanEdit();
-      const resolvedMaxConcurrent = Utilities.resolveMaxConcurrent(
-        "batchSizeFetch",
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
+        "fetch",
         maxConcurrent,
       );
       const policy = AccessPolicy.fromValue(accessPolicy);
@@ -1725,45 +1726,22 @@ define([
     }
 
     /**
-     * Check whether the resource map contains members absent from the index.
-     * @returns {Promise<boolean>} Whether the package has private members
-     * @throws {Error} When the authoritative resource map cannot be loaded
+     * Estimate whether the ResourceMap contains members absent from the index.
+     * The bagit package service can fail when any object is private.
+     * ResourceMap membership is authoritative, while the index count estimates
+     * how many members are visible to the current user. If either the
+     * ResourceMap or the index is not loaded, then this method returns true to
+     * avoid false negatives.
+     * @returns {boolean} Whether the package may have private members
      */
-    async hasPrivateMembers() {
-      // The package service can fail the whole-package ZIP when any aggregated
-      // object is private. The ResourceMap is the authoritative member list; the
-      // index only returns members the current user can see. Withhold Download
-      // All when a ResourceMap member is missing from the index, while leaving
-      // individual visible-file downloads available.
-      if (!this.resourceManifestIsFetched) {
-        const result = await this.getManifestFromResourceMap({ merge: true });
-        if (result?.ok === false) {
-          const error = new Error(
-            "Resource map unavailable for private-member check",
-          );
-          error.code = "resource_map_unavailable";
-          error.reason = result.reason || null;
-          error.httpStatus = result.httpStatus ?? null;
-          error.rootResourceMapPid =
-            result.details?.rootResourceMapPid || this.rootResourceMapPid;
-          if (result.error) error.cause = result.error;
-          throw error;
-        }
+    hasPrivateMembers() {
+      if (!this.resourceManifestIsFetched || this.indexManifestTotal == null) {
+        return true;
       }
-      const resourceMapMembers = this.members.getFromSource("resourceMap");
-      if (!this.indexManifestFetched) {
-        // Size the index fetch to the membership so a large all-public package
-        // is not truncated and misread as having private members.
-        await this.getManifestFromIndex({
-          fields: ["id"],
-          rows: resourceMapMembers.length,
-          merge: true,
-        });
-      }
-      const indexPids = new Set(
-        this.members.getFromSource("index").map((member) => member.pid),
+      return (
+        this.indexManifestTotal <
+        this.members.getFromSource("resourceMap").length
       );
-      return resourceMapMembers.some((member) => !indexPids.has(member.pid));
     }
 
     /**
@@ -1774,8 +1752,8 @@ define([
      * @returns {Promise<Array<{pid: string, error: Error}>>} Fetch failures
      */
     async fetchSysMeta(memberPids, { maxConcurrent, ...fetchOptions } = {}) {
-      const resolvedMaxConcurrent = Utilities.resolveMaxConcurrent(
-        "batchSizeFetch",
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
+        "fetch",
         maxConcurrent,
       );
       let members = this.members.toArray();
