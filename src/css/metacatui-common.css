@@ -3646,6 +3646,15 @@ add font awesome close icon */
 .access-policy-view .can-toggle {
   width: 200px;
 }
+.access-policy-view .modal-footer .apply-to-all-members-option {
+  margin: 0 2rem 0 0;
+  display: inline-block;
+  font-weight: 600;
+}
+.access-policy-view.applying .modal-body {
+  opacity: 0.65;
+  pointer-events: none;
+}
 .access-policy-view p {
   margin-bottom: 20px;
 }

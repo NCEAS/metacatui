@@ -87,19 +87,14 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
             Array.isArray(hiddenSubjects) &&
             _.contains(hiddenSubjects, this.model.get("subject"))
           ) {
-            var usersGroups = _.pluck(
-              MetacatUI.appUserModel.get("isMemberOf"),
-              "groupId",
+            const userSubjects = _.union(
+              [MetacatUI.appUserModel.get("username")],
+              _.pluck(MetacatUI.appUserModel.get("isMemberOf"), "groupId"),
+              MetacatUI.appUserModel.get("allIdentitiesAndGroups") || [],
             );
 
             //If the current user is not part of this hidden group or is not the hidden user
-            if (
-              !_.contains(
-                hiddenSubjects,
-                MetacatUI.appUserModel.get("username"),
-              ) &&
-              !_.intersection(hiddenSubjects, usersGroups).length
-            ) {
+            if (!_.contains(userSubjects, this.model.get("subject"))) {
               //Remove this view
               this.remove();
               //Exit
@@ -498,11 +493,8 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
        */
       onRemove: function () {
         //If it is the rightsHolder of the object, don't remove the view
-        if (
-          this.model.get("dataONEObject") &&
-          this.model.get("dataONEObject").get("rightsHolder") ==
-            this.model.get("subject")
-        ) {
+        const rightsHolder = this.accessPolicyView.getRightsHolder();
+        if (rightsHolder && rightsHolder === this.model.get("subject")) {
           return;
         }
 

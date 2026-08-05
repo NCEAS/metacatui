@@ -38,6 +38,12 @@
   </table>
 </div>
 <div class="modal-footer">
+  <% if (showApplyToAll) { %>
+    <label class="checkbox apply-to-all-members-option">
+      Apply to all files in this dataset
+      <input type="checkbox" class="apply-to-all-members" <%= disableApplyToAll ? "disabled" : "" %>>
+    </label>
+  <% } %>
   <a class="btn cancel" href="#" data-dismiss="modal" title="Your changes will be ignored and reset">Cancel</a>
-  <a class="btn btn-primary save" href="#" title="Save these changes">Save</a>
+  <a class="btn btn-primary apply <%= applyToDraft ? "done" : "save" %>" href="#" title="<%= applyToDraft ? "Apply these changes to the draft" : "Save these changes" %>"><%= applyToDraft ? "Done" : "Save" %></a>
 </div>

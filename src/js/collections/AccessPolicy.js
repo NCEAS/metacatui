@@ -143,28 +143,9 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
         return accessPolicyElement;
       },
 
-      /**
-       * Removes access rules that grant public access and sets an access rule
-       * that denies public read.
-       */
+      /** Removes all access rules for the public subject */
       makePrivate: function () {
-        var alreadyPrivate = false;
-
-        //Find the public access rules and remove them
-        this.each(function (accessRule) {
-          if (typeof accessRule === "undefined") return;
-
-          //If the access rule subject is `public` and they are given any kind of access,
-          if (
-            accessRule.get("subject") == "public" &&
-            (accessRule.get("read") ||
-              accessRule.get("write") ||
-              accessRule.get("changePermission"))
-          ) {
-            //Remove this AccessRule model from the collection
-            this.remove(accessRule);
-          }
-        }, this);
+        this.remove(this.where({ subject: "public" }));
       },
 
       /**
@@ -332,21 +313,6 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
         } catch (e) {
           console.error("Error getting the owners of this AccessPolicy: ", e);
         }
-      },
-
-      replaceRightsHolder: function () {
-        var owner = this.findWhere({ changePermission: true });
-
-        //Make sure the owner model was found
-        if (!owner) {
-          return;
-        }
-
-        //Set this other owner as the rightsHolder
-        this.dataONEObject.set("rightsHolder", owner.get("subject"));
-
-        //Remove them as an AccessRule in the AccessPolicy
-        this.remove(owner);
       },
     },
   );

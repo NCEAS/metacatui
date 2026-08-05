@@ -17,9 +17,25 @@ define([
   Template,
   ToggleTemplate,
 ) {
+  const SPINNER_HTML =
+    '<i class="icon icon-spinner icon-spin icon-on-left"></i>';
+
   /**
    * @class AccessPolicyView
-   * @classdesc A view of an Access Policy of a DataONEObject
+   * @classdesc Edits access policies through the legacy Backbone rule views.
+   *
+   * This view accepts two types of access policy inputs. Legacy `DataONEObject`
+   * callers pass a `collections/AccessPolicy` through `options.collection`. The
+   * view derives context from `collection.dataONEObject` and uses the existing
+   * save path. The newer DataPackage callers pass a typed System Metadata
+   * policy, explicit display context, and an apply callback.
+   *
+   * The editing controls still operate on `collections/AccessPolicy`. In the
+   * typed policy mode, the view copies the typed rules into that legacy
+   * collection and returns the edited collection through `onApply`. This keeps
+   * `PortalEditorView` on its current `DataONEObject` path during the
+   * migration. Once portal access policy editing uses typed System Metadata,
+   * remove the legacy collection mode and its save and broadcast branches.
    * @classcategory Views
    * @extends Backbone.View
    * @screenshot views/AccessPolicyView.png
@@ -70,12 +86,9 @@ define([
       cachedModels: null,
 
       /**
-       * Whether or not changes to the accessPolicy managed by this view will be
-       * broadcasted to the accessPolicy of the editor's rootDataPackage's
-       * packageModle.
-       *
-       * This implementation is very likely to change in the future as we iron out
-       * how to handle bulk accessPolicy (and other) changes.
+       * Whether this view edits package level sharing. Package level views show
+       * the apply to all control; legacy DataONEObject views also broadcast
+       * their policy through the legacy package collection.
        * @type {boolean}
        * @since 2.15.0
        */
@@ -89,22 +102,166 @@ define([
       publicToggleSection: "#public-toggle-section",
 
       /**
+       * Explicit rendering and apply context for this policy editor. This
+       * replaces the old assumption that the collection carries a target
+       * similar to a DataONEObject on `collection.dataONEObject`.
+       * @type {object}
+       */
+      policyContext: null,
+
+      /**
+       * Async apply callback supplied with an explicit policy.
+       * @type {Function|null}
+       */
+      onApply: null,
+
+      /**
+       * Whether this view is currently applying changes.
+       * @type {boolean}
+       */
+      isApplying: false,
+
+      /**
+       * Cached rightsHolder so cancelling or hiding restores edits made in the
+       * view.
+       * @type {string|null|undefined}
+       */
+      cachedRightsHolder: undefined,
+
+      /**
        * The events this view will listen to and the associated function to call.
        * @type {Object}
        */
       events: {
         "change .public-toggle-container input": "togglePrivacy",
-        "click .save": "save",
+        "click .apply": "apply",
         "click .cancel": "reset",
         "click .access-rule .remove": "handleRemove",
+        hide: "handleHide",
       },
 
       /**
-       * Creates a new AccessPolicyView
-       * @param {Object} options - A literal object with options to pass to the view
+       * Creates a view in legacy collection or explicit policy mode.
+       * @param {object} options View options
+       * @param {AccessPolicy} [options.collection] Legacy Backbone policy
+       * collection owned by a `DataONEObject`
+       * @param {Array<object>} [options.policy] Typed System Metadata policy
+       * copied into an editable legacy collection
+       * @param {object} [options.policyContext] Explicit display/editor context
+       * @param {Function} [options.onApply] Applies edits from explicit policy
+       * mode
        */
-      initialize: function (options) {
-        this.cachedModels = _.clone(this.collection.models);
+      initialize(options = {}) {
+        this.hasExplicitPolicy = Object.prototype.hasOwnProperty.call(
+          options,
+          "policy",
+        );
+        this.collection = this.hasExplicitPolicy
+          ? this.normalizeAccessPolicy(options.policy)
+          : options.collection;
+        this.onApply = this.hasExplicitPolicy ? options.onApply || null : null;
+
+        if (this.hasExplicitPolicy) {
+          this.policyContext = _.extend({}, options.policyContext);
+        } else {
+          const { dataONEObject } = this.collection;
+          this.policyContext = dataONEObject
+            ? {
+                fileName: dataONEObject.get("fileName"),
+                rightsHolder: dataONEObject.get("rightsHolder"),
+                canChangePermission: dataONEObject.get(
+                  "isAuthorized_changePermission",
+                ),
+                type: dataONEObject.type,
+              }
+            : {};
+        }
+
+        this.cachedRightsHolder = this.getRightsHolder();
+        this.cachedModels = this.collection.map((model) => model.clone());
+      },
+
+      /**
+       * Adapt a typed System Metadata policy to the Backbone collection
+       * consumed by the existing `AccessRuleView` editing UI.
+       * @param {Array<object>} policy System Metadata access policy
+       * @returns {AccessPolicy} Legacy access policy collection
+       * @since 0.0.0
+       */
+      normalizeAccessPolicy(policy) {
+        const collection = new AccessPolicy();
+
+        _.each(policy, (rule) => {
+          _.each(rule.subjects, (subject) => {
+            collection.add({
+              subject,
+              read: rule.permissions.includes("read"),
+              write: rule.permissions.includes("write"),
+              changePermission: rule.permissions.includes("changePermission"),
+            });
+          });
+        });
+
+        return collection;
+      },
+
+      /**
+       * Get the rightsHolder for the policy target.
+       * @returns {string|null|undefined} Current rightsHolder subject
+       * @since 0.0.0
+       */
+      getRightsHolder() {
+        return this.policyContext.rightsHolder;
+      },
+
+      /**
+       * Update the current rightsHolder and the legacy model when present.
+       * @param {string|null|undefined} subject New rightsHolder subject
+       * @since 0.0.0
+       */
+      setRightsHolder(subject) {
+        this.policyContext.rightsHolder = subject || null;
+        if (this.collection.dataONEObject) {
+          this.collection.dataONEObject.set("rightsHolder", subject || null);
+        }
+      },
+
+      /**
+       * Get the resource label used in modal copy.
+       * @returns {string} Display resource type
+       * @since 0.0.0
+       */
+      getResourceType() {
+        switch (this.policyContext?.type) {
+          case "Portal":
+            return MetacatUI.appModel.get("portalTermSingular");
+          case "DataPackage":
+            return "dataset";
+          case "EML":
+          case "ScienceMetadata":
+            return "metadata record";
+          case "DataONEObject":
+            return "data file";
+          case "Collection":
+            return "collection";
+          default:
+            return "resource";
+        }
+      },
+
+      /**
+       * Promote another owner access rule into the rightsHolder slot.
+       * @since 0.0.0
+       */
+      replaceRightsHolder() {
+        const owner = this.collection.findWhere({ changePermission: true });
+
+        if (!owner) {
+          return;
+        }
+
+        this.setRightsHolder(owner.get("subject"));
+        this.collection.remove(owner);
       },
 
       /**
@@ -112,50 +269,36 @@ define([
        */
       render: function () {
         try {
-          //If there is no AccessPolicy collection, then exit now
-          if (!this.collection) {
-            return;
-          }
+          this.resourceType = this.getResourceType();
 
-          var dataONEObject = this.collection.dataONEObject;
-
-          if (dataONEObject && dataONEObject.type) {
-            switch (dataONEObject.type) {
-              case "Portal":
-                this.resourceType =
-                  MetacatUI.appModel.get("portalTermSingular");
-                break;
-              case "DataPackage":
-                this.resourceType = "dataset";
-                break;
-              case "EML" || "ScienceMetadata":
-                this.resourceType = "metadata record";
-                break;
-              case "DataONEObject":
-                this.resourceType = "data file";
-                break;
-              case "Collection":
-                this.resourceType = "collection";
-                break;
-              default:
-                this.resourceType = "resource";
-                break;
-            }
-          } else {
-            this.resourceType = "resource";
-          }
+          const showApplyToAll = this.broadcast && this.hasExplicitPolicy;
+          const disableApplyToAll =
+            showApplyToAll &&
+            MetacatUI.rootDataPackage?.getNestedResourceMapMembers?.().length >
+              0;
 
           //Insert the template into this view
           this.$el.html(
             this.template({
               resourceType: this.resourceType,
-              fileName: dataONEObject.get("fileName"),
+              fileName: this.policyContext?.fileName,
+              showApplyToAll,
+              disableApplyToAll,
+              applyToDraft: this.hasExplicitPolicy,
             }),
           );
 
+          if (disableApplyToAll) {
+            this.$(".apply-to-all-members-option").popup({
+              content:
+                "Apply to all members is unavailable because this dataset contains a nested package, which is read-only in the editor.",
+              position: "top center",
+            });
+          }
+
           //If the user is not authorized to change the permissions of this object,
           // then skip rendering the rest of the AccessPolicy.
-          if (dataONEObject.get("isAuthorized_changePermission") === false) {
+          if (this.policyContext?.canChangePermission === false) {
             this.showUnauthorized();
             return;
           }
@@ -173,16 +316,13 @@ define([
             }
 
             //If this AccessRule is a duplicate of the rightsHolder, remove it from the policy and don't display it
-            if (
-              accessRule.get("subject") == dataONEObject.get("rightsHolder")
-            ) {
+            if (accessRule.get("subject") === this.getRightsHolder()) {
               modelsToRemove.push(accessRule);
               return;
             }
 
             //Create an AccessRuleView
-            var accessRuleView = new AccessRuleView();
-            accessRuleView.model = accessRule;
+            const accessRuleView = new AccessRuleView({ model: accessRule });
             accessRuleView.accessPolicyView = this;
 
             //Add the AccessRuleView to this view
@@ -239,12 +379,10 @@ define([
           enabledSubjects = [];
 
         //Get the DataONEObject that this AccessPlicy is about
-        var dataONEObject = this.collection.dataONEObject;
-
-        //If there is a DataONEObject model found, and it has a type
-        if (dataONEObject && dataONEObject.type) {
+        // If there is a target type, use it to choose the right app config.
+        if (this.policyContext?.type) {
           //Get the Portal configs from the AppConfig
-          if (dataONEObject.type == "Portal") {
+          if (this.policyContext.type === "Portal") {
             isEnabled = MetacatUI.appModel.get("showPortalPublicToggle");
             enabledSubjects = MetacatUI.appModel.get(
               "showPortalPublicToggleForSubjects",
@@ -273,7 +411,9 @@ define([
               MetacatUI.appUserModel.get("allIdentitiesAndGroups"),
             ).length)
         ) {
-          let isPublicClass = this.collection.isPublic() ? "public" : "private";
+          const isPublicClass = this.collection.isPublic()
+            ? "public"
+            : "private";
           this.$(".public-toggle-container").html(
             $(document.createElement("p"))
               .addClass("public-toggle-disabled-text " + isPublicClass)
@@ -288,7 +428,7 @@ define([
           .html(
             this.toggleTemplate({
               label: "",
-              id: this.collection.id,
+              id: this.cid,
               trueLabel: "Public",
               falseLabel: "Private",
             }),
@@ -345,12 +485,11 @@ define([
           //Create a new AccessRule model and add to the collection
           var accessRule = new AccessRule({
             read: true,
-            dataONEObject: this.collection.dataONEObject,
           });
 
           //Create a new AccessRuleView
-          var accessRuleView = new AccessRuleView();
-          accessRuleView.model = accessRule;
+          const accessRuleView = new AccessRuleView({ model: accessRule });
+          accessRuleView.accessPolicyView = this;
           accessRuleView.isNew = true;
 
           this.listenTo(accessRule, "change", this.addAccessRule);
@@ -403,27 +542,22 @@ define([
           return;
         }
 
-        //Get the DataONEObject associated with this access policy
-        var dataONEObject = this.collection.dataONEObject;
-
-        //If there is no DataONEObject associated with this access policy, then exit
-        if (!dataONEObject || !dataONEObject.get("rightsHolder")) {
+        // If there is no rightsHolder associated with this access policy, then exit
+        if (!this.getRightsHolder()) {
           return;
         }
 
         //Create an AccessRule model that represents the rightsHolder
         var accessRuleModel = new AccessRule({
-          subject: dataONEObject.get("rightsHolder"),
+          subject: this.getRightsHolder(),
           read: true,
           write: true,
           changePermission: true,
-          dataONEObject: dataONEObject,
         });
 
         //Create an AccessRuleView
-        var accessRuleView = new AccessRuleView();
+        const accessRuleView = new AccessRuleView({ model: accessRuleModel });
         accessRuleView.accessPolicyView = this;
-        accessRuleView.model = accessRuleModel;
         accessRuleView.allowChanges = MetacatUI.appModel.get(
           "allowChangeRightsHolder",
         );
@@ -469,13 +603,7 @@ define([
           }
 
           //Get the rightsHolder for this resource
-          var rightsHolder;
-          if (
-            this.collection.dataONEObject &&
-            this.collection.dataONEObject.get("rightsHolder")
-          ) {
-            rightsHolder = this.collection.dataONEObject.get("rightsHolder");
-          }
+          const rightsHolder = this.getRightsHolder();
 
           //Check if any priveleges have been removed
           if (
@@ -501,10 +629,7 @@ define([
                 this.showOwnerWarning();
 
                 if (!rightsHolder) {
-                  this.collection.dataONEObject.set(
-                    "rightsHolder",
-                    accessRuleModel.get("subject"),
-                  );
+                  this.setRightsHolder(accessRuleModel.get("subject"));
                   this.collection.remove(accessRuleModel);
                 }
               }
@@ -517,7 +642,7 @@ define([
             // demote that subject as the rightsHolder, and replace with another subject
             else if (rightsHolder == accessRuleModel.get("subject")) {
               //Replace the rightsHolder with a different subject with ownership permissions
-              this.collection.replaceRightsHolder();
+              this.replaceRightsHolder();
 
               //Add the old rightsHolder AccessRule to the AccessPolicy
               this.collection.add(accessRuleModel);
@@ -533,22 +658,23 @@ define([
 
       /**
        * Checks that there is at least one owner of this resource, and displays a warning message if not.
-       * @param {Event} e
+       * @param {Event} event Click event
        */
-      handleRemove: function (e) {
-        var accessRuleModel = $(e.target).parents(".access-rule").data("model");
-
-        //Get the rightsHolder for this resource
-        var rightsHolder;
-        if (
-          this.collection.dataONEObject &&
-          this.collection.dataONEObject.get("rightsHolder")
-        ) {
-          rightsHolder = this.collection.dataONEObject.get("rightsHolder");
+      handleRemove(event) {
+        event.preventDefault();
+        if (this.isApplying) {
+          return;
         }
 
+        const accessRuleRow = $(event.target).parents(".access-rule");
+        const accessRuleModel = accessRuleRow.data("model");
+        const accessRuleView = accessRuleRow.data("view");
+
+        //Get the rightsHolder for this resource
+        const rightsHolder = this.getRightsHolder();
+
         //If the rightsHolder was just removed,
-        if (rightsHolder == accessRuleModel.get("subject")) {
+        if (rightsHolder === accessRuleModel.get("subject")) {
           //If changing the rightsHolder is disabled, we don't need to check for owners,
           // since the rightsHolder will always be the owner.
           if (
@@ -561,11 +687,8 @@ define([
           //If there is another owner of this resource
           if (this.collection.hasOwner()) {
             //Replace the rightsHolder with a different subject with ownership permissions
-            this.collection.replaceRightsHolder();
+            this.replaceRightsHolder();
 
-            var accessRuleView = $(e.target)
-              .parents(".access-rule")
-              .data("view");
             if (accessRuleView) {
               accessRuleView.remove();
             }
@@ -681,119 +804,251 @@ define([
       /**
        * Toggles the public-read AccessRule for this resource
        */
-      togglePrivacy: function () {
-        //If this AccessPolicy is public already, make it private
-        if (this.collection.isPublic()) {
-          this.collection.makePrivate();
+      togglePrivacy(event) {
+        if (this.isApplying) {
+          return;
         }
-        //Otherwise, make it public
-        else {
+
+        this.syncPublicToggle(event.currentTarget);
+      },
+
+      /**
+       * Sync the public/private toggle state into the access policy collection.
+       * @param {HTMLElement|jQuery} [input] Public toggle input
+       * @since 0.0.0
+       */
+      syncPublicToggle(input) {
+        const publicToggle = input
+          ? $(input)
+          : this.$(".public-toggle-container input");
+        if (!publicToggle.length) {
+          return;
+        }
+
+        if (publicToggle.is(":checked")) {
           this.collection.makePublic();
+        } else {
+          this.collection.makePrivate();
         }
       },
 
       /**
-       * Saves the AccessPolicy associated with this view
+       * Apply the edited policy through the explicit callback or legacy target.
+       * @returns {Promise<void>} Resolves when the apply operation completes
+       * @since 0.0.0
        */
-      save: function () {
-        //Remove any alerts that are currently displayed
-        this.$(".alert-container").remove();
-
-        //Get the DataONE Object that this Access Policy is for
-        var dataONEObject = this.collection.dataONEObject;
-
-        if (!dataONEObject) {
+      async apply() {
+        if (this.isApplying) {
           return;
         }
 
-        // Broadcast the change across the package if appropriate
+        //Remove any alerts that are currently displayed
+        this.$(".alert-container").remove();
+
+        const { dataONEObject } = this.collection;
+
+        if (!this.onApply && !dataONEObject) {
+          return;
+        }
+
+        try {
+          this.setApplying(true);
+          this.syncPublicToggle();
+          const propagate = this.$(".apply-to-all-members").is(":checked");
+          const rightsHolder = this.getRightsHolder();
+          const applyOptions = { propagate };
+          if (rightsHolder !== this.cachedRightsHolder) {
+            applyOptions.rightsHolder = rightsHolder;
+          }
+          if (propagate) {
+            applyOptions.onProgress = ({ completed, total }) => {
+              if (!this.isApplying) {
+                return;
+              }
+
+              const message =
+                total > 0
+                  ? `Updating ${completed}/${total} files...`
+                  : "Updating files...";
+              this.$(".apply.btn").html(`${SPINNER_HTML}${message}`);
+            };
+          }
+          if (typeof this.onApply === "function") {
+            await this.onApply(this.collection, applyOptions);
+          } else {
+            await this.applyDataONEObjectPolicy(dataONEObject);
+            return;
+          }
+          this.cachedRightsHolder = this.getRightsHolder();
+          this.cachedModels = this.collection.map((model) => model.clone());
+          this.setApplying(false);
+          this.$el.modal("hide");
+          MetacatUI.appView.showAlert(
+            "Sharing changes have been applied to this draft. Submit the dataset to save them.",
+            "alert-success",
+            null,
+            null,
+            { remove: true },
+          );
+        } catch (error) {
+          this.showApplyError(error?.message || String(error));
+        }
+      },
+
+      /**
+       * Enable or disable the permission modal while changes are applied.
+       * @param {boolean} isApplying Whether apply work is in progress
+       * @since 0.0.0
+       */
+      setApplying(isApplying) {
+        this.isApplying = isApplying;
+        this.$el.toggleClass("applying", this.isApplying);
+
+        if (this.isApplying) {
+          this.$el.attr("aria-busy", "true");
+          this.$(".apply.btn")
+            .html(`${SPINNER_HTML}Updating files...`)
+            .attr("disabled", "disabled")
+            .addClass("disabled");
+          this.$(".cancel.btn, .modal-header .close")
+            .attr("disabled", "disabled")
+            .addClass("disabled")
+            .removeAttr("data-dismiss");
+          this.$(".modal-body :input, .modal-footer :input")
+            .filter(":disabled")
+            .attr("data-disabled-before-applying", "true")
+            .end()
+            .attr("disabled", "disabled");
+          return;
+        }
+
+        this.$el.removeAttr("aria-busy");
+        this.$(".apply.btn")
+          .text(this.hasExplicitPolicy ? "Done" : "Save")
+          .removeAttr("disabled")
+          .removeClass("disabled");
+        this.$(".cancel.btn")
+          .removeAttr("disabled")
+          .removeClass("disabled")
+          .attr("data-dismiss", "modal");
+        this.$(".modal-header .close")
+          .removeAttr("disabled")
+          .removeClass("disabled")
+          .attr("data-dismiss", "modal");
+        this.$(".modal-body :input, .modal-footer :input")
+          .not("[data-disabled-before-applying]")
+          .removeAttr("disabled")
+          .end()
+          .removeAttr("data-disabled-before-applying");
+      },
+
+      /**
+       * Apply this policy through the legacy DataONEObject system metadata path.
+       * @param {Backbone.Model} dataONEObject Object whose policy is being edited
+       * @returns {Promise<void>} Resolves when the save completes
+       * @since 0.0.0
+       */
+      applyDataONEObjectPolicy(dataONEObject) {
         if (this.broadcast) {
           MetacatUI.rootDataPackage.broadcastAccessPolicy(this.collection);
         }
 
-        // Don't trigger a save if the item is new and just close the modal
         if (dataONEObject.isNew()) {
-          $(this.$el).modal("hide");
-
-          return;
+          this.cachedRightsHolder = this.getRightsHolder();
+          this.cachedModels = this.collection.map((model) => model.clone());
+          this.setApplying(false);
+          this.$el.modal("hide");
+          return Promise.resolve();
         }
 
-        //Show the save progress as it is in progress, complete, in error, etc.
-        this.listenTo(
-          dataONEObject,
-          "change:uploadStatus",
-          this.showSaveProgress,
-        );
+        return new Promise((resolve, reject) => {
+          const handleProgress = (changedModel) => {
+            const status = changedModel.get("uploadStatus");
+            if (status === "p") {
+              this.$(".apply.btn")
+                .html(`${SPINNER_HTML}Saving...`)
+                .attr("disabled", "disabled");
+              return;
+            }
 
-        //Update the SystemMetadata for this object
-        dataONEObject.updateSysMeta();
+            this.stopListening(
+              dataONEObject,
+              "change:uploadStatus",
+              handleProgress,
+            );
+
+            if (status === "e") {
+              reject(new Error("Your changes could not be saved."));
+              return;
+            }
+
+            if (status !== "c") {
+              return;
+            }
+
+            this.cachedRightsHolder = this.getRightsHolder();
+            this.cachedModels = this.collection.map((model) => model.clone());
+            this.setApplying(false);
+            this.$el.modal("hide");
+            MetacatUI.appView.showAlert(
+              "Sharing changes have been saved.",
+              "alert-success",
+              null,
+              null,
+              { remove: true },
+            );
+            resolve();
+          };
+
+          this.listenTo(dataONEObject, "change:uploadStatus", handleProgress);
+          try {
+            dataONEObject.updateSysMeta();
+          } catch (error) {
+            this.stopListening(
+              dataONEObject,
+              "change:uploadStatus",
+              handleProgress,
+            );
+            reject(error);
+          }
+        });
       },
 
       /**
-       * Show visual cues in this view to show the user the status of the system metadata update.
-       * @param {DataONEObject} dataONEObject - The object being updated
+       * Show an apply failure message and restore the modal controls.
+       * @param {string} message Error message to display
+       * @since 0.0.0
        */
-      showSaveProgress: function (dataONEObject) {
-        if (!dataONEObject) {
-          return;
+      showApplyError(message) {
+        this.setApplying(false);
+
+        const msgContainer = this.$(".modal-body").length
+          ? this.$(".modal-body")
+          : this.$el;
+
+        MetacatUI.appView.showAlert(message, "alert-error", msgContainer, 0, {
+          remove: true,
+        });
+      },
+
+      /**
+       * Reset edits when the modal closes, unless an apply operation is active.
+       * @param {Event} event Bootstrap modal hide event
+       * @returns {boolean} Whether the hide can continue
+       * @since 0.0.0
+       */
+      handleHide(event) {
+        if (event.target !== this.el) {
+          return true;
         }
 
-        var status = dataONEObject.get("uploadStatus");
-
-        //When the status is "in progress"
-        if (status == "p") {
-          //Disable the Save button and change the text to say, "Saving..."
-          this.$(".save.btn").text("Saving...").attr("disabled", "disabled");
-          this.$(".cancel.btn").attr("disabled", "disabled");
-
-          return;
-        }
-        //When the status is "complete"
-        else if (status == "c") {
-          //Create a checkmark icon
-          var icon = $(document.createElement("i")).addClass(
-              "icon icon-ok icon-on-left",
-            ),
-            cancelBtn = this.$(".cancel.btn");
-          saveBtn = this.$(".save.btn");
-
-          //Disable the Save button and change the text to say, "Saving..."
-          cancelBtn.text("Saved").removeAttr("disabled");
-          saveBtn.text("Saved").prepend(icon).removeAttr("disabled");
-
-          setTimeout(function () {
-            saveBtn.empty().text("Save");
-          }, 2000);
-
-          this.cachedModels = _.clone(this.collection.models);
-
-          // Hide the modal only on a successful save
-          $(this.$el).modal("hide");
-        }
-        //When the status is "error"
-        else if (status == "e") {
-          var msgContainer = this.$(".modal-body").length
-            ? this.$(".modal-body")
-            : this.$el;
-
-          MetacatUI.appView.showAlert(
-            "Your changes could not be saved.",
-            "alert-error",
-            msgContainer,
-            0,
-            { remove: true },
-          );
-
-          //Reset the save button
-          this.$(".save.btn").text("Save").removeAttr("disabled");
+        if (this.isApplying) {
+          event.preventDefault();
+          return false;
         }
 
-        //Remove the listener for this function
-        this.stopListening(
-          dataONEObject,
-          "change:uploadStatus",
-          this.showSaveProgress,
-        );
+        this.reset();
+        return true;
       },
 
       /**
@@ -803,11 +1058,14 @@ define([
        * @since 2.15.0
        */
       reset: function () {
-        if (!this.collection || !this.cachedModels) {
+        if (this.isApplying) {
           return;
         }
 
-        this.collection.set(this.cachedModels);
+        this.stopListening();
+        this.collection.reset(this.cachedModels.map((model) => model.clone()));
+        this.setRightsHolder(this.cachedRightsHolder);
+        this.render();
       },
 
       /**
@@ -829,8 +1087,7 @@ define([
             this.resourceType +
             " has not given you permission to change the " +
             MetacatUI.appModel.get("accessPolicyName") +
-            ". Contact the owner to be added " +
-            " as another owner of this " +
+            ". Contact the owner to be added as another owner of this " +
             this.resourceType +
             ".",
           "alert-info subtle",

@@ -234,25 +234,28 @@ define([
       /**
        * Shows the AccessPolicyView for the object being edited.
        *
-       * @param {Event} e - The click event
-       * @param {Backbone.Model | null} model - The model to show the view for. If
-       *   null, defaults to the model set for the view.
+       * @param {Event} e Click event
+       * @param {Backbone.Model|null} [model] Model to show the view for
+       * @param {object} [options] Access policy view options
+       * @param {boolean} [options.packageLevel] Whether this edits package
+       * level sharing
        */
-      showAccessPolicyModal: function (e, model) {
+      showAccessPolicyModal(e, model, options = {}) {
         try {
-          // If the AccessPolicy editor is disabled in this app, or the specific
-          // .access-policy-control has theh class diasbled, then exit now
+          // Exit if the AccessPolicy editor is disabled in this app, or if the
+          // clicked control is disabled. Check the clicked control specifically,
+          // not the first one in the view, so one disabled row does not block
+          // sharing on other rows.
+          const control = $(e.currentTarget);
           if (
             !MetacatUI.appModel.get("allowAccessPolicyChanges") ||
-            this.$(".access-policy-control").attr("disabled") == "disabled" ||
-            (e.currentTarget && $(e.currentTarget).hasClass("disabled"))
+            control.attr("disabled") === "disabled" ||
+            control.hasClass("disabled")
           ) {
             return;
           }
 
-          this.renderAccessPolicy(model);
-
-          this.on("accessPolicyViewRendered", function () {
+          this.once("accessPolicyViewRendered", () => {
             //Add modal classes to the access policy view
             this.$(".access-policy-view")
               .addClass("access-policy-view-modal modal")
@@ -260,19 +263,107 @@ define([
               .modal()
               .modal("show");
           });
+
+          this.renderAccessPolicy(model, options);
         } catch (e) {
           console.error("Error trying to show the AccessPolicyView: ", e);
         }
       },
 
       /**
-       * Renders the AccessPolicyView
-       * @param {Backbone.Model} model - Optional. The Model to render the
-       *   AccessPolicy of. If not passed, method uses the Editor's model
+       * Shows a loading state in the AccessPolicy modal.
+       * @param {Event} e Click event
+       * @param {string} [message] Loading message
+       * @returns {boolean} Whether the loading modal was shown
+       * @since 0.0.0
        */
-      renderAccessPolicy: function (model) {
-        // Use specified model or default to the editor's model
-        model = model || this.model;
+      showAccessPolicyLoadingModal(e, message = "Loading sharing settings...") {
+        try {
+          const control = $(e.currentTarget);
+          if (
+            !MetacatUI.appModel.get("allowAccessPolicyChanges") ||
+            control.attr("disabled") === "disabled" ||
+            control.hasClass("disabled")
+          ) {
+            return false;
+          }
+
+          const modal = $(document.createElement("div"))
+            .addClass("access-policy-view access-policy-view-modal modal")
+            .css("height", window.outerHeight * 0.7)
+            .html(
+              `<div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4><i class="icon icon-group icon-on-left"></i>${_.escape(
+                  MetacatUI.appModel.get("accessPolicyName"),
+                )}</h4>
+              </div>
+              <div class="modal-body">
+                <p class="subtle">
+                  <i class="icon icon-spinner icon-spin icon-on-left"></i>${_.escape(message)}
+                </p>
+              </div>
+              <div class="modal-footer">
+                <a class="btn cancel" href="#" data-dismiss="modal">Cancel</a>
+              </div>`,
+            );
+
+          this.removeAccessPolicyView();
+          this.$(this.accessPolicyViewContainer).html(modal);
+          modal.modal().modal("show");
+          return true;
+        } catch (error) {
+          console.error(
+            "Error trying to show the AccessPolicyView loading modal: ",
+            error,
+          );
+          return false;
+        }
+      },
+
+      /**
+       * Shows an error in the AccessPolicy modal body.
+       * @param {string} message Error message
+       * @since 0.0.0
+       */
+      showAccessPolicyLoadError(message) {
+        const modal = this.$(
+          `${this.accessPolicyViewContainer} .access-policy-view-modal`,
+        );
+        if (!modal.length) {
+          return;
+        }
+
+        modal
+          .find(".modal-body")
+          .html(
+            `<div class="alert alert-error">${_.escape(
+              message || "Sharing settings could not be loaded.",
+            )}</div>`,
+          );
+        modal
+          .find(".modal-footer")
+          .html(
+            '<a class="btn cancel" href="#" data-dismiss="modal">Close</a>',
+          );
+      },
+
+      /**
+       * Renders the AccessPolicyView
+       * @param {Backbone.Model} [model] Model to render
+       * @param {object} [options] Access policy view options
+       * @param {Array<object>} [options.policy] System Metadata access policy
+       * @param {object} [options.policyContext] Policy display/editor context
+       * @param {Function} [options.onApply] Async apply callback
+       * @param {boolean} [options.packageLevel] Whether this edits package
+       * level sharing
+       */
+      renderAccessPolicy(model, options = {}) {
+        const hasExplicitPolicy = Object.prototype.hasOwnProperty.call(
+          options,
+          "policy",
+        );
+        const accessPolicyModel = model || this.model;
 
         try {
           //If the AccessPolicy editor is disabled in this app, then exit now
@@ -280,25 +371,42 @@ define([
             return;
           }
 
-          var thisView = this;
+          const thisView = this;
           require(["views/AccessPolicyView"], function (AccessPolicyView) {
             // Create a new AccessPolicyView using the AccessPolicy collection
-            var accessPolicyView = new AccessPolicyView({
-              collection: model.get("accessPolicy"),
-            });
+            const viewOptions = hasExplicitPolicy
+              ? {
+                  policy: options.policy,
+                  policyContext: options.policyContext,
+                  onApply: options.onApply,
+                }
+              : { collection: accessPolicyModel.get("accessPolicy") };
+            const accessPolicyView = new AccessPolicyView(viewOptions);
 
-            // Turn on accessPolicy broadcasting for metadata models
-            if (model.get("type") === "Metadata") {
-              accessPolicyView.broadcast = true;
-            }
+            // Explicit callers identify package-level sharing directly. Legacy
+            // metadata models retain their existing broadcast behavior.
+            accessPolicyView.broadcast =
+              options.packageLevel === true ||
+              (!hasExplicitPolicy &&
+                accessPolicyModel.get("type") === "Metadata");
+
+            thisView.removeAccessPolicyView();
 
             //Store a reference to the AccessPolicyView on this view
             thisView.accessPolicyView = accessPolicyView;
 
-            //Add the view to the page
-            thisView
-              .$(thisView.accessPolicyViewContainer)
-              .html(accessPolicyView.el);
+            const existingModal = thisView.$(
+              `${thisView.accessPolicyViewContainer} .access-policy-view-modal`,
+            );
+
+            if (existingModal.length) {
+              accessPolicyView.setElement(existingModal.first());
+            } else {
+              // Add the view to the page
+              thisView
+                .$(thisView.accessPolicyViewContainer)
+                .html(accessPolicyView.el);
+            }
 
             //Render the AccessPolicyView
             accessPolicyView.render();
@@ -314,6 +422,25 @@ define([
         } catch (e) {
           console.error("Error trying to render the AccessPolicyView: ", e);
         }
+      },
+
+      /**
+       * Remove the current AccessPolicyView and its editor listener.
+       * @since 0.0.0
+       */
+      removeAccessPolicyView() {
+        const { accessPolicyView } = this;
+        if (!accessPolicyView) {
+          return;
+        }
+
+        this.stopListening(
+          accessPolicyView.collection,
+          "add remove",
+          this.showControls,
+        );
+        accessPolicyView.remove();
+        this.accessPolicyView = null;
       },
 
       /**
