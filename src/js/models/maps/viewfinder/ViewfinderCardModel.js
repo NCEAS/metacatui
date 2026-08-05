@@ -140,7 +140,7 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
    * @class ViewfinderCardModel
    * @classdesc ViewfinderCardModel represents a point of interest on a map that
    * can be configured within a MapView. Each card requires a title,
-   * description, and at least one ctaAction of type 'iframe', 'tab', or 'map'.
+   * description, and at least one button action of type 'iframe', 'tab', or 'map'.
    * This class was generalized from ZoomPresetModel and was renamed for clarity
    * when zoom presets were deprecated in favor of more generalized viewfinder
    * cards in 2.37.0, but the legacy zoom preset configuration format is still supported
