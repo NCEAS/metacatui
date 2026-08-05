@@ -160,6 +160,7 @@
     "./js/specs/unit/views/uiElements/ToggleView.spec.js",
     "./js/specs/unit/views/notifications/NotificationModalView.spec.js",
     "./js/specs/unit/views/metadata/EML211EditorView.spec.js",
+    "./js/specs/unit/models/CollectionModel.spec.js",
     "./js/specs/unit/models/UserModel.spec.js",
     "./js/specs/unit/collections/ObjectFormats.spec.js",
     "./js/specs/unit/models/dataONEServices/DataONEHttpError.spec.js",
