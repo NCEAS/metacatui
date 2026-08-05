@@ -160,6 +160,7 @@
     "./js/specs/unit/views/uiElements/ToggleView.spec.js",
     "./js/specs/unit/views/notifications/NotificationModalView.spec.js",
     "./js/specs/unit/views/metadata/EML211EditorView.spec.js",
+    "./js/specs/unit/views/metadata/EML211View.spec.js",
     "./js/specs/unit/models/CollectionModel.spec.js",
     "./js/specs/unit/models/UserModel.spec.js",
     "./js/specs/unit/collections/ObjectFormats.spec.js",
@@ -171,7 +172,8 @@
     "./js/specs/unit/models/dataONEServices/PublishService.spec.js",
     "./js/specs/unit/models/fileTable/FileTableViewModel.spec.js",
     "./js/specs/unit/views/AccessPolicyView.spec.js",
-    "./js/specs/unit/views/fileTable/FileTableView.spec.js"
+    "./js/specs/unit/views/fileTable/FileTableView.spec.js",
+    "./js/specs/unit/views/metadata/AutofillAttributesView.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",

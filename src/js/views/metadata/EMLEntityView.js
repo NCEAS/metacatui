@@ -17,10 +17,31 @@ define([
   EMLAttributesView,
   EMLEntityTemplate,
 ) => {
+  const getPreviewDescriptor = (dataObject) => {
+    if (!dataObject) return null;
+    const isBackboneModel = typeof dataObject.get === "function";
+    const readField = (key) =>
+      isBackboneModel ? dataObject.get(key) : dataObject[key];
+    return {
+      id: isBackboneModel ? readField("id") : dataObject.pid,
+      formatId: isBackboneModel
+        ? readField("formatId")
+        : dataObject.getFormatId?.() ||
+          readField("formatId") ||
+          dataObject.sysMeta?.formatId,
+      mediaType: readField("mediaType"),
+      uploadFile: readField("uploadFile"),
+      isNew:
+        typeof dataObject.isNew === "function"
+          ? dataObject.isNew()
+          : Boolean(dataObject.uploadFile),
+    };
+  };
+
   /**
    * @class EMLEntityView
-   * @classdesc An EMLEntityView shows the basic attributes of a DataONEObject,
-   * as described by EML
+   * @classdesc An EMLEntityView shows the basic attributes of a data package
+   * member, as described by EML
    * @classcategory Views/Metadata
    * @screenshot views/metadata/EMLEntityView.png
    * @augments Backbone.View
@@ -49,7 +70,8 @@ define([
       /** @inheritdoc */
       initialize(options = {}) {
         this.model = options.model || new EMLEntity();
-        this.DataONEObject = options.DataONEObject;
+        const dataObject = options.dataPackageMember || options.DataONEObject;
+        this.previewDescriptor = getPreviewDescriptor(dataObject);
         this.parentView = options.parentView;
       },
 
@@ -110,21 +132,24 @@ define([
         });
       },
 
-      /**
-       * Render the preview of the DataONEObject
-       */
+      /** Render an image preview from the member descriptor snapshot */
       renderPreview() {
-        // Get the DataONEObject model
-        if (this.DataONEObject) {
-          const dataPreview = new DataPreviewView({
-            model: this.DataONEObject,
-          });
-          dataPreview.render();
-          this.$(".preview-container").html(dataPreview.el);
+        const dataPid = this.model.getDataPid();
+        const member = MetacatUI.rootDataPackage?.getMember?.(dataPid);
+        const descriptor =
+          getPreviewDescriptor(member) || this.previewDescriptor;
+        if (!descriptor) return;
 
-          if (dataPreview.$el.children().length) {
-            this.$(".description").css("width", "calc(100% - 310px)");
-          } else dataPreview.$el.remove();
+        const previewModel = new Backbone.Model(descriptor);
+        previewModel.isNew = () => descriptor.isNew;
+        const dataPreview = new DataPreviewView({ model: previewModel });
+        dataPreview.render();
+        this.$(".preview-container").html(dataPreview.el);
+
+        if (dataPreview.$el.children().length) {
+          this.$(".description").css("width", "calc(100% - 310px)");
+        } else {
+          dataPreview.$el.remove();
         }
       },
 
@@ -271,6 +296,9 @@ define([
       onHide() {
         this.showValidation();
         this.attributesView?.onClose();
+        const dataPid = this.model.getDataPid();
+        const row = this.parentView?.updateFileTableMemberStatus?.(dataPid);
+        if (!row) this.parentView?.refreshFileTable?.();
       },
 
       /**
