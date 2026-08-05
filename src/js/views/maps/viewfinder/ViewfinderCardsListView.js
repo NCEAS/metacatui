@@ -57,7 +57,7 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
         openVisualization,
         closeVisualization,
         onActivate,
-          onActionActivated,
+        onActionActivated,
       }) {
         this.children = [];
         this.viewfinderCards = viewfinderCards;

@@ -4,13 +4,7 @@ define([
   "collections/maps/AssetCategories",
   "cesium",
   "/test/js/specs/shared/clean-state.js",
-], (
-  CesiumWidgetView,
-  MapAssets,
-  AssetCategories,
-  Cesium,
-  cleanState,
-) => {
+], (CesiumWidgetView, MapAssets, AssetCategories, Cesium, cleanState) => {
   const expect = chai.expect;
   const spy = sinon.spy();
 

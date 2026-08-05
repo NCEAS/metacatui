@@ -46,9 +46,7 @@ define([
    * @throws {Error} When a Backbone model instance is provided.
    */
   function assertPlainLayerConfigs(layers, configKey) {
-    if (
-      layers.some((layer) => layer instanceof Backbone.Model)
-    ) {
+    if (layers.some((layer) => layer instanceof Backbone.Model)) {
       throw new Error(
         `Map configuration ${configKey} must contain plain MapAssetConfig objects, not Backbone model instances.`,
       );
@@ -82,7 +80,7 @@ define([
    * @returns {object} The normalized layer config.
    */
   function normalizeLayerVisibility(layer, visibilityState) {
-    const {visible} = layer;
+    const { visible } = layer;
     const configuredVisibility =
       layer.configuredVisibility == null
         ? visible === true
@@ -112,7 +110,9 @@ define([
    * @returns {Array<object>} Normalized layer configs.
    */
   function normalizeLayerListVisibility(layers, visibilityState) {
-    return layers.map((layer) => normalizeLayerVisibility(layer, visibilityState));
+    return layers.map((layer) =>
+      normalizeLayerVisibility(layer, visibilityState),
+    );
   }
 
   /**
@@ -447,7 +447,10 @@ define([
           if (isNonEmptyArray(config.layerCategories)) {
             config.layerCategories.forEach((category) => {
               if (isNonEmptyArray(category?.layers)) {
-                assertPlainLayerConfigs(category.layers, "layerCategories[].layers");
+                assertPlainLayerConfigs(
+                  category.layers,
+                  "layerCategories[].layers",
+                );
               }
             });
             const normalizedCategories = normalizeLayerCategoryVisibility(
@@ -464,9 +467,7 @@ define([
               config.layers,
               visibilityState,
             );
-            const layers = new MapAssets(
-              normalizedLayers,
-            );
+            const layers = new MapAssets(normalizedLayers);
             this.set("layers", layers);
             this.get("layers").setMapModel(this);
             this.unset("layerCategories");
@@ -515,7 +516,11 @@ define([
           this.unset("zoomPresetCategories");
         }
         this.setUpInteractions();
-        this.listenTo(this, "change:showShareUrl", this.handleShowShareUrlChange);
+        this.listenTo(
+          this,
+          "change:showShareUrl",
+          this.handleShowShareUrlChange,
+        );
         this.set("restoreState", SearchParams.parseStateFromUrl(), {
           silent: true,
         });
@@ -595,7 +600,10 @@ define([
        */
       applyRestoreState() {
         const restoreState = this.get("restoreState") || {};
-        if (!this.shouldSyncUrlState() || !isCompletePosition(restoreState.destination)) {
+        if (
+          !this.shouldSyncUrlState() ||
+          !isCompletePosition(restoreState.destination)
+        ) {
           return;
         }
 

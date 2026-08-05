@@ -148,7 +148,6 @@ define([
           if (!this.interactions.get("selectedFeatures")) {
             this.interactions.selectFeatures();
           }
-
         } catch (e) {
           console.log("Failed to initialize a CesiumWidgetView. ", e);
         }
@@ -554,14 +553,13 @@ define([
         if (view.removePreRenderLightListener) {
           view.removePreRenderLightListener();
         }
-        view.removePreRenderLightListener = view.scene.preRender.addEventListener(
-          function (scene, time) {
-          view.scene.light.direction = Cesium.Cartesian3.clone(
-            scene.camera.directionWC,
-            view.scene.light.direction,
-          );
-          },
-        );
+        view.removePreRenderLightListener =
+          view.scene.preRender.addEventListener(function (scene, time) {
+            view.scene.light.direction = Cesium.Cartesian3.clone(
+              scene.camera.directionWC,
+              view.scene.light.direction,
+            );
+          });
       },
 
       /**

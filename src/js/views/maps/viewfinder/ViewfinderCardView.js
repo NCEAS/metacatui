@@ -252,11 +252,9 @@ define([
         this.el
           .querySelectorAll(`.${CLASS_NAMES.image}[data-fallback-src]`)
           .forEach((img) => {
-            img.addEventListener(
-              "error",
-              () => this.applyImageFallback(img),
-              { once: true },
-            );
+            img.addEventListener("error", () => this.applyImageFallback(img), {
+              once: true,
+            });
           });
       },
 

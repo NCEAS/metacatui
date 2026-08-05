@@ -48,9 +48,9 @@ define([
        * @property {GeoScale} scale - The current scale of the map in
        * pixels:meters, i.e. The number of pixels on the screen that equal the
        * number of meters on the map/globe. Updated by the map widget.
-      * @property {Object} cameraPosition - The current camera position of the
-      * map widget, including longitude, latitude, height, heading, pitch, and
-      * roll. Updated by the map widget.
+       * @property {Object} cameraPosition - The current camera position of the
+       * map widget, including longitude, latitude, height, heading, pitch, and
+       * roll. Updated by the map widget.
        * @property {GeoBoundingBox} viewExtent - The extent of the currently
        * visible area in the map widget. Updated by the map widget.
        * @property {Features} hoveredFeatures - The feature that the mouse is

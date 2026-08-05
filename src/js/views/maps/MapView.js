@@ -199,7 +199,8 @@ define([
        * @returns {ToolbarView} Returns the rendered view
        */
       renderToolbar() {
-        const initialOpenPanelId = this.model.get("restoreState")?.openPanel || null;
+        const initialOpenPanelId =
+          this.model.get("restoreState")?.openPanel || null;
         this.toolbar = new ToolbarView({
           el: this.subElements.toolbarContainer,
           model: this.model,

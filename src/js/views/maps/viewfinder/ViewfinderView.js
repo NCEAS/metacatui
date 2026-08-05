@@ -113,23 +113,28 @@ define([
       findRenderedAction(actionId) {
         if (typeof actionId !== "string" || !actionId.length) return null;
 
-        const match = (this.viewfinderCardsListViews || []).reduce((foundMatch, listView) => {
-          if (foundMatch) return foundMatch;
+        const match = (this.viewfinderCardsListViews || []).reduce(
+          (foundMatch, listView) => {
+            if (foundMatch) return foundMatch;
 
-          return (listView.children || []).reduce((cardMatch, cardView) => {
-            if (cardMatch) return cardMatch;
+            return (listView.children || []).reduce((cardMatch, cardView) => {
+              if (cardMatch) return cardMatch;
 
-            const buttons = cardView.preset.get("buttons") || [];
-            const action = buttons.find((candidate) => candidate?.id === actionId);
-            return action
-              ? {
-                  action,
-                  cardView,
-                  categoryCid: listView.categoryCid,
-                }
-              : null;
-          }, null);
-        }, null);
+              const buttons = cardView.preset.get("buttons") || [];
+              const action = buttons.find(
+                (candidate) => candidate?.id === actionId,
+              );
+              return action
+                ? {
+                    action,
+                    cardView,
+                    categoryCid: listView.categoryCid,
+                  }
+                : null;
+            }, null);
+          },
+          null,
+        );
 
         if (match) return match;
 
@@ -166,8 +171,8 @@ define([
        */
       applyActiveActionFromUrl() {
         if (!this.mapModel?.get("showShareUrl")) return;
-        const restoreState = this.mapModel.get("restoreState") ||
-          SearchParams.parseStateFromUrl();
+        const restoreState =
+          this.mapModel.get("restoreState") || SearchParams.parseStateFromUrl();
         if (!restoreState.activeActionId) return;
         this.restoreActiveAction(restoreState.activeActionId);
       },

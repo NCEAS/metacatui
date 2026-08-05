@@ -2103,7 +2103,9 @@ other class: .ui-slider-range */
     var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
   overflow: hidden;
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease-in-out, border 0.2s ease-in-out;
+  transition:
+    box-shadow 0.2s ease-in-out,
+    border 0.2s ease-in-out;
 
   /* ---- Hero: full-width image with vignette and title overlay ---- */
 

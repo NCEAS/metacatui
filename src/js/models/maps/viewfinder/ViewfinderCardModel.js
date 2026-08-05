@@ -61,7 +61,12 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
    * @returns {{ latitude: number|null, longitude: number|null, height: number|null }} Location values.
    * @since 0.0.0
    */
-  const normalizeLocation = ({ position, latitude, longitude, height } = {}) => ({
+  const normalizeLocation = ({
+    position,
+    latitude,
+    longitude,
+    height,
+  } = {}) => ({
     latitude: latitude ?? position?.latitude ?? null,
     longitude: longitude ?? position?.longitude ?? null,
     height: height ?? position?.height ?? null,
@@ -88,10 +93,19 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
     buttons = [],
     ...rest
   } = {}) => {
-    const location = normalizeLocation({ position, latitude, longitude, height });
+    const location = normalizeLocation({
+      position,
+      latitude,
+      longitude,
+      height,
+    });
     const ids = Array.isArray(layerIds) ? layerIds : [];
-    const normalizedButtons = (Array.isArray(buttons) ? buttons : []).map(normalizeMapAction);
-    const hasExplicitMapButton = normalizedButtons.some((action) => action.type === "map");
+    const normalizedButtons = (Array.isArray(buttons) ? buttons : []).map(
+      normalizeMapAction,
+    );
+    const hasExplicitMapButton = normalizedButtons.some(
+      (action) => action.type === "map",
+    );
     const allActions = [...normalizedButtons];
     let geoPoint = null;
 
@@ -99,7 +113,10 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
       geoPoint = new GeoPoint(location);
     }
 
-    if (!hasExplicitMapButton && (location.latitude != null || location.longitude != null)) {
+    if (
+      !hasExplicitMapButton &&
+      (location.latitude != null || location.longitude != null)
+    ) {
       allActions.push({
         type: "map",
         ordinality: "secondary",

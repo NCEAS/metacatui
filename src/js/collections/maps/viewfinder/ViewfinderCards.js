@@ -165,12 +165,15 @@ define([
             : map.get("allLayers")?.models || [];
 
         const viewfinderCards = response.map((cardObj) => {
-          const normalizedCard = ViewfinderCardModel.normalizeCardAttributes(cardObj);
+          const normalizedCard =
+            ViewfinderCardModel.normalizeCardAttributes(cardObj);
           const { buttons } = normalizedCard;
 
           // Collect layerIds from top-level AND from any explicit map
           // buttons so all relevant layers appear in the badge display.
-          const topLevelLayerIds = Array.isArray(cardObj.layerIds) ? cardObj.layerIds : [];
+          const topLevelLayerIds = Array.isArray(cardObj.layerIds)
+            ? cardObj.layerIds
+            : [];
           const ctaMapLayerIds = buttons
             .filter((a) => a.type === "map")
             .flatMap((a) => a.layerIds || []);
@@ -209,7 +212,7 @@ define([
 
       /**
        * Parse the GeoJSON response from the LEO Network to extract viewfinder
-       * card data. This was updated to return ViewfinderCards instead of the 
+       * card data. This was updated to return ViewfinderCards instead of the
        * legacy ZoomPresets format when zoom presets were deprecated in 2.37.0,
        * and in 0.0.0 it was updated to use the new viewfinder card format which
        * attempts to use the resized higher res images when available and synthesizes

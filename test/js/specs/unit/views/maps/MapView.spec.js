@@ -43,9 +43,8 @@ define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
         try {
           view.render();
 
-          expect(
-            view.el.querySelector(".visualization-panel--open"),
-          ).to.not.be.null;
+          expect(view.el.querySelector(".visualization-panel--open")).to.not.be
+            .null;
         } finally {
           view.remove();
         }

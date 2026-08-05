@@ -7,14 +7,7 @@ define([
   "models/maps/AssetColorPalette",
   "common/IconUtilities",
   `${MetacatUI.root}/components/dayjs.min.js`,
-], (
-  _,
-  Backbone,
-  PortalImage,
-  AssetColorPalette,
-  IconUtilities,
-  dayjs,
-) => {
+], (_, Backbone, PortalImage, AssetColorPalette, IconUtilities, dayjs) => {
   /**
    * @classdesc A MapAsset Model comprises information required to fetch source data for
    * some asset or resource that is displayed in a map, such as imagery (raster) tiles,
