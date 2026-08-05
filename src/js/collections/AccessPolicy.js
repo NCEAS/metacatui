@@ -1,19 +1,19 @@
 "use strict";
 
-define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
+define(["jquery", "underscore", "backbone", "models/AccessRule"], (
   $,
   _,
   Backbone,
   AccessRule,
-) {
+) => {
   /**
    * @class AccessPolicy
    * @classdesc An AccessPolicy collection is a collection of AccessRules that specify
    * the permissions set on a DataONEObject
    * @classcategory Collections
-   * @extends Backbone.Collection
+   * @augments Backbone.Collection
    */
-  var AccessPolicy = Backbone.Collection.extend(
+  const AccessPolicy = Backbone.Collection.extend(
     /** @lends AccessPolicy.prototype */
     {
       model: AccessRule,
@@ -24,54 +24,50 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
        */
       dataONEObject: null,
 
-      initialize: function () {
-        //When a model triggers the event "removeMe", remove it from this collection
+      initialize() {
+        // When a model triggers the event "removeMe", remove it from this collection
         this.on("removeMe", this.removeAccessRule);
       },
 
       /**
        * Parses the given access policy XML and creates AccessRule models for
        * each rule in the access policy XML. Adds these models to this collection.
-       * @param {Element} The <accessPolicy> XML DOM that contains a set of
-       *   access rules.
+       * @param {Element} accessPolicyXML The `<accessPolicy>` XML element that
+       * contains the access rules
        */
-      parse: function (accessPolicyXML) {
-        var originalLength = this.length,
-          newLength = 0;
+      parse(accessPolicyXML) {
+        const originalLength = this.length;
+        let newLength = 0;
 
-        //Parse each "allow" access rule
-        _.each(
-          $(accessPolicyXML).children(),
-          function (accessRuleXML, i) {
-            var accessRuleModel;
+        // Parse each "allow" access rule
+        _.each($(accessPolicyXML).children(), (accessRuleXML, i) => {
+          let accessRuleModel;
 
-            //Update the AccessRule models that already exist in the collection, first.
-            // This is important to keep listeners thoughout the app intact.
-            if (AccessRule.prototype.isPrototypeOf(this.models[i])) {
-              accessRuleModel = this.models[i];
-            }
-            //Create new AccessRules for all others
-            else {
-              accessRuleModel = new AccessRule();
-              this.add(accessRuleModel);
-            }
+          // Update the AccessRule models that already exist in the collection, first.
+          // This is important to keep listeners thoughout the app intact.
+          if (this.models[i] instanceof AccessRule) {
+            accessRuleModel = this.models[i];
+          }
+          // Create new AccessRules for all others
+          else {
+            accessRuleModel = new AccessRule();
+            this.add(accessRuleModel);
+          }
 
-            newLength++;
+          newLength += 1;
 
-            //Reset all the values first
-            accessRuleModel.set(accessRuleModel.defaults());
-            //Parse the AccessRule model and update the model attributes
-            accessRuleModel.set(accessRuleModel.parse(accessRuleXML));
-            //Save a reference to the DataONEObbject
-            accessRuleModel.set("dataONEObject", this.dataONEObject);
-          },
-          this,
-        );
+          // Reset all the values first
+          accessRuleModel.set(accessRuleModel.defaults());
+          // Parse the AccessRule model and update the model attributes
+          accessRuleModel.set(accessRuleModel.parse(accessRuleXML));
+          // Save a reference to the DataONEObbject
+          accessRuleModel.set("dataONEObject", this.dataONEObject);
+        });
 
-        //If there are more AccessRules in this collection than were in the
+        // If there are more AccessRules in this collection than were in the
         // system metadata XML, then remove the extras
         if (originalLength > newLength) {
-          for (var i = 0; i < originalLength - newLength; i++) {
+          for (let i = 0; i < originalLength - newLength; i += 1) {
             this.pop();
           }
         }
@@ -81,38 +77,35 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
        * Creates AccessRule member models from the `defaultAccessPolicy`
        * setting in the AppModel.
        */
-      createDefaultPolicy: function () {
-        //For each access policy in the AppModel, create an AccessRule model
-        _.each(
-          MetacatUI.appModel.get("defaultAccessPolicy"),
-          function (accessRule) {
-            accessRule.dataONEObject = this.dataONEObject;
-
-            this.add(new AccessRule(accessRule));
-          },
-          this,
-        );
+      createDefaultPolicy() {
+        // For each access policy in the AppModel, create an AccessRule model
+        _.each(MetacatUI.appModel.get("defaultAccessPolicy"), (accessRule) => {
+          const attributes = _.extend({}, accessRule, {
+            dataONEObject: this.dataONEObject,
+          });
+          this.add(new AccessRule(attributes));
+        });
       },
 
       /**
        * Copies all the AccessRules from the given AccessPolicy and replaces this AccessPolicy
-       * @param {AccessPolicy} otherAccessPolicy
+       * @param {AccessPolicy} otherAccessPolicy Policy to copy
        * @fires Backbone.Collection#reset
        * @since 2.15.0
        */
-      copyAccessPolicy: function (otherAccessPolicy) {
+      copyAccessPolicy(otherAccessPolicy) {
         try {
-          let accessRules = [];
+          const accessRules = [];
 
-          //For each access policy in the AppModel, create an AccessRule model
-          otherAccessPolicy.each(function (accessRule) {
-            //Convert the AccessRule model to JSON and update the reference to the DataONEObject
-            let accessRuleJSON = accessRule.toJSON();
+          // For each access policy in the AppModel, create an AccessRule model
+          otherAccessPolicy.each((accessRule) => {
+            // Convert the AccessRule model to JSON and update the reference to the DataONEObject
+            const accessRuleJSON = accessRule.toJSON();
             accessRuleJSON.dataONEObject = this.dataONEObject;
             accessRules.push(accessRuleJSON);
-          }, this);
+          });
 
-          //Reset the Collection with these AccessRules
+          // Reset the Collection with these AccessRules
           this.reset(accessRules);
         } catch (e) {
           console.error(e);
@@ -124,17 +117,17 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
        * AccessRule models.
        * @returns {object} A XML object of the access policy or null if empty
        */
-      serialize: function () {
+      serialize() {
         if (this.length === 0) {
           return null;
         }
 
         // Create the access policy node which will contain all the rules
-        var accessPolicyElement = document.createElement("accesspolicy");
+        const accessPolicyElement = document.createElement("accesspolicy");
 
         // Serialize each AccessRule member model and add to the policy DOM
-        this.each(function (accessRule) {
-          var accessRuleNode = accessRule.serialize();
+        this.each((accessRule) => {
+          const accessRuleNode = accessRule.serialize();
           if (accessRuleNode) {
             accessPolicyElement.appendChild(accessRuleNode);
           }
@@ -144,7 +137,7 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
       },
 
       /** Removes all access rules for the public subject */
-      makePrivate: function () {
+      makePrivate() {
         this.remove(this.where({ subject: "public" }));
       },
 
@@ -152,30 +145,30 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
        * Removes any AccessRule that denies public read and adds an AccessRule
        * that allows public read
        */
-      makePublic: function () {
-        var alreadyPublic = false;
+      makePublic() {
+        let alreadyPublic = false;
 
-        //Find any public read rule and set read=true
-        this.each(function (accessRule) {
+        // Find any public read rule and set read=true
+        this.each((accessRule) => {
           if (typeof accessRule === "undefined") return;
 
-          //If the access rule subject is `public` and they are denied read access
-          if (accessRule.get("subject") == "public") {
-            //Remove this AccessRule model from the collection
+          // If the access rule subject is `public` and they are denied read access
+          if (accessRule.get("subject") === "public") {
+            // Remove this AccessRule model from the collection
             accessRule.set("read", true);
             alreadyPublic = true;
           }
         }, this);
 
-        //If this policy does not already allow the public read access, then add that rule
+        // If this policy does not already allow the public read access, then add that rule
         if (!alreadyPublic) {
-          //Create an access rule that allows public read
-          var publicAllow = new AccessRule({
+          // Create an access rule that allows public read
+          const publicAllow = new AccessRule({
             subject: "public",
             read: true,
             dataONEObject: this.dataONEObject,
           });
-          //Add this access rule
+          // Add this access rule
           this.add(publicAllow);
         }
       },
@@ -183,14 +176,14 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
       /**
        * Returns true if this access policy specifies that it is accessible to
        * the public in any way
-       * @return {boolean}
+       * @returns {boolean} Whether the policy grants public access
        */
-      isPublic: function () {
-        var isPublic = false;
+      isPublic() {
+        let isPublic = false;
 
-        this.each(function (accessRule) {
+        this.each((accessRule) => {
           if (
-            accessRule.get("subject") == "public" &&
+            accessRule.get("subject") === "public" &&
             (accessRule.get("read") ||
               accessRule.get("write") ||
               accessRule.get("changePermission"))
@@ -205,17 +198,15 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
       /**
        * Checks if the current user is authorized to perform the given action
        * based on the current access rules in this collection
-       *
-       * @param {string} action - The action to check authorization for. Can
+       * @param {string} action The action to check authorization for. Can
        *   be either `read`, `write`, or `changePermission`
-       * @return {boolean} - Returns true is the user can perform this action,
-       *   false if not.
+       * @returns {boolean} Whether the user can perform this action
        */
-      isAuthorized: function (action) {
-        if (typeof action == "undefined" || !action) return false;
+      isAuthorized(action) {
+        if (typeof action === "undefined" || !action) return false;
 
-        //Get the access rules for the user's subject or groups
-        var allSubjects = [];
+        // Get the access rules for the user's subject or groups
+        let allSubjects = [];
         if (!MetacatUI.appUserModel.get("loggedIn")) allSubjects = "public";
         else {
           allSubjects = _.union(
@@ -225,43 +216,38 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
           );
         }
 
-        //Find the access rules that match the given action and user subjects
-        var applicableRules = this.filter(function (accessRule) {
-          if (
+        // Find the access rules that match the given action and user subjects
+        const applicableRules = this.filter(
+          (accessRule) =>
             accessRule.get(action) &&
-            _.contains(allSubjects, accessRule.get("subject"))
-          ) {
-            return true;
-          }
-        }, this);
+            _.contains(allSubjects, accessRule.get("subject")),
+        );
 
         if (applicableRules.length) return true;
-        else if (
-          _.contains(allSubjects, this.dataONEObject.get("rightsHolder"))
-        )
+        if (_.contains(allSubjects, this.dataONEObject.get("rightsHolder")))
           return true;
-        else return false;
+        return false;
       },
 
       /**
        * Checks if the user is authorized to update the system metadata.
        * Updates to system metadata will fail if the user doesn't have changePermission permission,
-       * *unless* the user is performing an update() at the same time and has `write` permission
-       * @returns {boolean}
+       * unless the user is performing an update() at the same time and has
+       * `write` permission.
+       * @returns {boolean} Whether the user may update the system metadata
        * @since 2.15.0
        */
-      isAuthorizedUpdateSysMeta: function () {
+      isAuthorizedUpdateSysMeta() {
         try {
-          //Yes, if the user has changePermission
+          // Yes, if the user has changePermission
           if (this.isAuthorized("changePermission")) {
             return true;
           }
-          //Yes, if the user just uploaded this object and is saving it for the first time
-          else if (this.isAuthorized("write") && this.dataONEObject.isNew()) {
+          // Yes, if the user just uploaded this object and is saving it for the first time
+          if (this.isAuthorized("write") && this.dataONEObject.isNew()) {
             return true;
-          } else {
-            return false;
           }
+          return false;
         } catch (e) {
           console.error("Failed to determing authorization: ", e);
           return false;
@@ -272,13 +258,13 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
        * Gets the subject info for all of the subjects in this access policy.
        * Sets the subject info on each corresponding model.
        */
-      getSubjectInfo: function () {
-        //If there are more than 5 subjects in the access policy, then get the entire list of subjects in the DataONE/CN system
+      getSubjectInfo() {
+        // If there are more than 5 subjects in the access policy, then get the entire list of subjects in the DataONE/CN system
         /*  if( this.length > 5 ){
               //TODO: Get everything from the /accounts endpoint
             }
             */
-        //If there are less than 5, then send individual requests to get the subject info
+        // If there are less than 5, then send individual requests to get the subject info
         this.invoke("getSubjectInfo");
       },
 
@@ -286,32 +272,32 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"], function (
        * Remove the given AccessRule from this AccessPolicy
        * @param {AccessRule} accessRule - The AccessRule model to remove
        */
-      removeAccessRule: function (accessRule) {
+      removeAccessRule(accessRule) {
         this.remove(accessRule);
       },
 
       /**
        * Checks if there is at least one AccessRule with changePermission permission
        * in this AccessPolicy.
-       * @returns {boolean}
+       * @returns {boolean} Whether the policy contains an owner rule
        */
-      hasOwner: function () {
+      hasOwner() {
         try {
-          var owners = this.where({ changePermission: true });
+          const owners = this.where({ changePermission: true });
 
-          //Check if there are any other subjects with ownership levels
-          if (!owners || owners.length == 0) {
-            //If there is a rightsHolder, that counts as an owner
+          // Check if there are any other subjects with ownership levels
+          if (!owners || owners.length === 0) {
+            // If there is a rightsHolder, that counts as an owner
             /*  if( this.dataONEObject && this.dataONEObject.get("rightsHolder") ){
                   return true;
                 }
                 */
             return false;
-          } else {
-            return true;
           }
+          return true;
         } catch (e) {
           console.error("Error getting the owners of this AccessPolicy: ", e);
+          return false;
         }
       },
     },

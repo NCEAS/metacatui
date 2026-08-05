@@ -7,7 +7,7 @@ define([
   "views/AccessRuleView",
   "text!templates/accessPolicy.html",
   "text!templates/filters/toggleFilter.html",
-], function (
+], (
   _,
   $,
   Backbone,
@@ -16,7 +16,7 @@ define([
   AccessRuleView,
   Template,
   ToggleTemplate,
-) {
+) => {
   const SPINNER_HTML =
     '<i class="icon icon-spinner icon-spin icon-on-left"></i>';
 
@@ -37,11 +37,11 @@ define([
    * migration. Once portal access policy editing uses typed System Metadata,
    * remove the legacy collection mode and its save and broadcast branches.
    * @classcategory Views
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @screenshot views/AccessPolicyView.png
-   * @constructor
+   * @class
    */
-  var AccessPolicyView = Backbone.View.extend(
+  const AccessPolicyView = Backbone.View.extend(
     /** @lends AccessPolicyView.prototype */
     {
       /**
@@ -51,7 +51,8 @@ define([
       type: "AccessPolicy",
 
       /**
-       * The type of object/resource that this AccessPolicy is for. This is used for display purposes only.
+       * The type of object/resource that this AccessPolicy is for. This is used
+       * for display purposes only.
        * @example "dataset", "portal", "data file"
        * @type {string}
        */
@@ -70,16 +71,17 @@ define([
       collection: undefined,
 
       /**
-       * References to templates for this view. HTML files are converted to Underscore.js templates
+       * References to templates for this view. HTML files are converted to
+       * Underscore.js templates
        * @type {Underscore.Template}
        */
       template: _.template(Template),
       toggleTemplate: _.template(ToggleTemplate),
 
       /**
-       * Used to track the collection of models set on the view in order to handle
-       * undoing all changes made when we either hit Cancel or click otherwise
-       * hide the modal (such as clicking outside of it).
+       * Used to track the collection of models set on the view in order to
+       * handle undoing all changes made when we either hit Cancel or click
+       * otherwise hide the modal (such as clicking outside of it).
        * @type {AccessRule[]}
        * @since 2.15.0
        */
@@ -95,7 +97,8 @@ define([
       broadcast: false,
 
       /**
-       * A selector for the element in this view that contains the public/private toggle section
+       * A selector for the element in this view that contains the
+       * public/private toggle section
        * @type {string}
        * @since 2.15.0
        */
@@ -129,8 +132,9 @@ define([
       cachedRightsHolder: undefined,
 
       /**
-       * The events this view will listen to and the associated function to call.
-       * @type {Object}
+       * The events this view will listen to and the associated function to
+       * call.
+       * @type {object}
        */
       events: {
         "change .public-toggle-container input": "togglePrivacy",
@@ -264,10 +268,8 @@ define([
         this.collection.remove(owner);
       },
 
-      /**
-       * Renders this view
-       */
-      render: function () {
+      /** @inheritdoc */
+      render() {
         try {
           this.resourceType = this.getResourceType();
 
@@ -277,7 +279,7 @@ define([
             MetacatUI.rootDataPackage?.getNestedResourceMapMembers?.().length >
               0;
 
-          //Insert the template into this view
+          // Insert the template into this view
           this.$el.html(
             this.template({
               resourceType: this.resourceType,
@@ -296,72 +298,76 @@ define([
             });
           }
 
-          //If the user is not authorized to change the permissions of this object,
-          // then skip rendering the rest of the AccessPolicy.
+          // If the user is not authorized to change the permissions of this
+          // object, then skip rendering the rest of the AccessPolicy.
           if (this.policyContext?.canChangePermission === false) {
             this.showUnauthorized();
             return;
           }
 
-          //Show the rightsHolder as an AccessRuleView
+          // Show the rightsHolder as an AccessRuleView
           this.showRightsholder();
 
-          var modelsToRemove = [];
+          const modelsToRemove = [];
 
-          //Iterate over each AccessRule in the AccessPolicy and render a AccessRuleView
-          this.collection.each(function (accessRule) {
-            //Don't display access rules for the public since these are controlled via the public/private toggle
-            if (accessRule.get("subject") == "public") {
+          // Iterate over each AccessRule in the AccessPolicy and render a
+          // AccessRuleView
+          this.collection.each((accessRule) => {
+            // Don't display access rules for the public since these are
+            // controlled via the public/private toggle
+            if (accessRule.get("subject") === "public") {
               return;
             }
 
-            //If this AccessRule is a duplicate of the rightsHolder, remove it from the policy and don't display it
+            // If this AccessRule is a duplicate of the rightsHolder, remove it
+            // from the policy and don't display it
             if (accessRule.get("subject") === this.getRightsHolder()) {
               modelsToRemove.push(accessRule);
               return;
             }
 
-            //Create an AccessRuleView
+            // Create an AccessRuleView
             const accessRuleView = new AccessRuleView({ model: accessRule });
             accessRuleView.accessPolicyView = this;
 
-            //Add the AccessRuleView to this view
+            // Add the AccessRuleView to this view
             this.$(".access-rules-container").append(accessRuleView.el);
 
-            //Render the view
+            // Render the view
             accessRuleView.render();
 
-            //Listen to changes on the access rule, to check that there is at least one owner
+            // Listen to changes on the access rule, to check that there is at
+            // least one owner
             this.listenTo(
               accessRule,
               "change:read change:write change:changePermission",
               this.checkForOwners,
             );
-          }, this);
+          });
 
-          //Remove each AccessRule from the AccessPolicy that should be removed.
-          // We don't remove these during the collection.each() function because it
-          // messes up the .each() iteration.
+          // Remove each AccessRule from the AccessPolicy that should be
+          // removed. We don't remove these during the collection.each()
+          // function because it messes up the .each() iteration.
           this.collection.remove(modelsToRemove);
 
-          //Get the subject info for each subject in the AccessPolicy, so we can display names
+          // Get the subject info for each subject in the AccessPolicy, so we
+          // can display names
           this.collection.getSubjectInfo();
 
-          //Show a blank row at the bottom of the table for adding a new Access Rule.
+          // Show a blank row at the bottom of the table for adding a new Access
+          // Rule.
           this.addEmptyRow();
 
-          //Render various help text for this view
+          // Render various help text for this view
           this.renderHelpText();
 
-          //Render the public/private toggle, if it's enabled in the app config
+          // Render the public/private toggle, if it's enabled in the app config
           this.renderPublicToggle();
         } catch (e) {
           MetacatUI.appView.showAlert(
-            "Something went wrong while trying to display the " +
-              MetacatUI.appModel.get("accessPolicyName") +
-              ". <p>Technical details: " +
-              e.message +
-              "</p>",
+            `Something went wrong while trying to display the ${MetacatUI.appModel.get(
+              "accessPolicyName",
+            )}. <p>Technical details: ${e.message}</p>`,
             "alert-error",
             this.$el,
             null,
@@ -371,24 +377,26 @@ define([
       },
 
       /**
-       * Renders a public/private toggle that toggles the public readability of the given resource.
+       * Renders a public/private toggle that toggles the public readability of
+       * the given resource.
        */
-      renderPublicToggle: function () {
-        //Check if the public/private toggle is enabled. Default to enabling it.
-        var isEnabled = true,
-          enabledSubjects = [];
+      renderPublicToggle() {
+        // Check if the public/private toggle is enabled. Default to enabling
+        // it.
+        let isEnabled = true;
+        let enabledSubjects = [];
 
-        //Get the DataONEObject that this AccessPlicy is about
-        // If there is a target type, use it to choose the right app config.
+        // Get the DataONEObject that this AccessPlicy is about If there is a
+        // target type, use it to choose the right app config.
         if (this.policyContext?.type) {
-          //Get the Portal configs from the AppConfig
+          // Get the Portal configs from the AppConfig
           if (this.policyContext.type === "Portal") {
             isEnabled = MetacatUI.appModel.get("showPortalPublicToggle");
             enabledSubjects = MetacatUI.appModel.get(
               "showPortalPublicToggleForSubjects",
             );
           }
-          //Get the Dataset configs from the AppConfig
+          // Get the Dataset configs from the AppConfig
           else {
             isEnabled = MetacatUI.appModel.get("showDatasetPublicToggle");
             enabledSubjects = MetacatUI.appModel.get(
@@ -397,11 +405,12 @@ define([
           }
         }
 
-        //Get the public/private help text
-        let helpText = this.getPublicToggleHelpText();
+        // Get the public/private help text
+        const helpText = this.getPublicToggleHelpText();
 
-        // Or if the public toggle is limited to a set of users and/or groups, and the current user is
-        // not in that list, then display a message instead of the toggle
+        // Or if the public toggle is limited to a set of users and/or groups,
+        // and the current user is not in that list, then display a message
+        // instead of the toggle
         if (
           !isEnabled ||
           (Array.isArray(enabledSubjects) &&
@@ -416,14 +425,14 @@ define([
             : "private";
           this.$(".public-toggle-container").html(
             $(document.createElement("p"))
-              .addClass("public-toggle-disabled-text " + isPublicClass)
+              .addClass(`public-toggle-disabled-text ${isPublicClass}`)
               .text(helpText),
           );
           this.$(this.publicToggleSection).find("p.help").remove();
           return;
         }
 
-        //Render the private/public toggle
+        // Render the private/public toggle
         this.$(".public-toggle-container")
           .html(
             this.toggleTemplate({
@@ -443,7 +452,7 @@ define([
             },
           });
 
-        //If the dataset is public, check the checkbox
+        // If the dataset is public, check the checkbox
         this.$(".public-toggle-container input").prop(
           "checked",
           this.collection.isPublic(),
@@ -451,53 +460,41 @@ define([
       },
 
       /**
-       * Constructs and returns a message that explains if this resource is public or private. This message is displayed
-       * in the tooltip for the public/private toggle or in place of the toggle when the toggle is disabled. Override this
-       * function to create a custom message.
-       * @returns {string}
+       * Constructs and returns a message that explains if this resource is
+       * public or private. This message is displayed in the tooltip for the
+       * public/private toggle or in place of the toggle when the toggle is
+       * disabled. Override this function to create a custom message.
+       * @returns {string} Public or private status message
        * @since 2.15.0
        */
-      getPublicToggleHelpText: function () {
+      getPublicToggleHelpText() {
         if (this.collection.isPublic()) {
-          return (
-            "Your " +
-            this.resourceType +
-            " is public. Anyone can see this " +
-            this.resourceType +
-            " in searches or by a direct link."
-          );
-        } else {
-          return (
-            "Your " +
-            this.resourceType +
-            " is private. Only people you approve can see this " +
-            this.resourceType +
-            "."
-          );
+          return `Your ${this.resourceType} is public. Anyone can see this ${this.resourceType} in searches or by a direct link.`;
         }
+        return `Your ${this.resourceType} is private. Only people you approve can see this ${this.resourceType}.`;
       },
 
       /**
        * Render a row with input elements for adding a new AccessRule
        */
-      addEmptyRow: function () {
+      addEmptyRow() {
         try {
-          //Create a new AccessRule model and add to the collection
-          var accessRule = new AccessRule({
+          // Create a new AccessRule model and add to the collection
+          const accessRule = new AccessRule({
             read: true,
           });
 
-          //Create a new AccessRuleView
+          // Create a new AccessRuleView
           const accessRuleView = new AccessRuleView({ model: accessRule });
           accessRuleView.accessPolicyView = this;
           accessRuleView.isNew = true;
 
           this.listenTo(accessRule, "change", this.addAccessRule);
 
-          //Add the new row to the table
+          // Add the new row to the table
           this.$(".access-rules-container").append(accessRuleView.el);
 
-          //Render the AccessRuleView
+          // Render the AccessRuleView
           accessRuleView.render();
         } catch (e) {
           console.error(
@@ -508,74 +505,78 @@ define([
       },
 
       /**
-       * Adds the given AccessRule model to the AccessPolicy collection associated with this view
+       * Adds the given AccessRule model to the AccessPolicy collection
+       * associated with this view
        * @param {AccessRule} accessRule - The AccessRule to add
        */
-      addAccessRule: function (accessRule) {
-        //If this AccessPolicy already contains this AccessRule, then exit
+      addAccessRule(accessRule) {
+        // If this AccessPolicy already contains this AccessRule, then exit
         if (this.collection.contains(accessRule)) {
           return;
         }
 
-        //If there is no subject set on this AccessRule, exit
+        // If there is no subject set on this AccessRule, exit
         if (!accessRule.get("subject")) {
           return;
         }
 
-        //Add the AccessRule to the AccessPolicy
+        // Add the AccessRule to the AccessPolicy
         this.collection.push(accessRule);
 
-        //Get the name for this new person or group
+        // Get the name for this new person or group
         accessRule.getSubjectInfo();
 
-        //Render a new empty row
+        // Render a new empty row
         this.addEmptyRow();
       },
 
       /**
        * Adds an AccessRuleView that represents the rightsHolder of the object.
-       *  The rightsHolder needs to be handled specially because it's not a regular access rule in the system metadata.
+       *  The rightsHolder needs to be handled specially because it's not a
+       *  regular access rule in the system metadata.
        */
-      showRightsholder: function () {
-        //If the app is configured to hide the rightsHolder, then exit now
+      showRightsholder() {
+        // If the app is configured to hide the rightsHolder, then exit now
         if (!MetacatUI.appModel.get("displayRightsHolderInAccessPolicy")) {
           return;
         }
 
-        // If there is no rightsHolder associated with this access policy, then exit
+        // If there is no rightsHolder associated with this access policy, then
+        // exit
         if (!this.getRightsHolder()) {
           return;
         }
 
-        //Create an AccessRule model that represents the rightsHolder
-        var accessRuleModel = new AccessRule({
+        // Create an AccessRule model that represents the rightsHolder
+        const accessRuleModel = new AccessRule({
           subject: this.getRightsHolder(),
           read: true,
           write: true,
           changePermission: true,
         });
 
-        //Create an AccessRuleView
+        // Create an AccessRuleView
         const accessRuleView = new AccessRuleView({ model: accessRuleModel });
         accessRuleView.accessPolicyView = this;
         accessRuleView.allowChanges = MetacatUI.appModel.get(
           "allowChangeRightsHolder",
         );
 
-        //Add the AccessRuleView to this view
+        // Add the AccessRuleView to this view
         if (this.$(".access-rules-container .new").length) {
           this.$(".access-rules-container .new").before(accessRuleView.el);
         } else {
           this.$(".access-rules-container").append(accessRuleView.el);
         }
 
-        //Render the view
+        // Render the view
         accessRuleView.render();
 
-        //Get the name for this subject
+        // Get the name for this subject
         accessRuleModel.getSubjectInfo();
 
-        //When the access type is changed, check that there is still at least one owner.
+        // When the access type is changed, check that there is still at least
+        // one owner.
         this.listenTo(
           accessRuleModel,
           "change:read change:write change:changePermission",
@@ -584,17 +585,18 @@ define([
       },
 
       /**
-       * Checks that there is at least one owner of this resource, and displays a warning message if not.
-       * @param {AccessRule} accessRuleModel
+       * Checks that there is at least one owner of this resource, and displays
+       * a warning message if not.
+       * @param {AccessRule} accessRuleModel Rule whose permissions changed
        */
-      checkForOwners: function (accessRuleModel) {
+      checkForOwners(accessRuleModel) {
         try {
           if (!accessRuleModel) {
             return;
           }
 
-          //If changing the rightsHolder is disabled, we don't need to check for owners,
-          // since the rightsHolder will always be the owner.
+          // If changing the rightsHolder is disabled, we don't need to check
+          // for owners, since the rightsHolder will always be the owner.
           if (
             !MetacatUI.appModel.get("allowChangeRightsHolder") ||
             !MetacatUI.appModel.get("displayRightsHolderInAccessPolicy")
@@ -602,24 +604,26 @@ define([
             return;
           }
 
-          //Get the rightsHolder for this resource
+          // Get the rightsHolder for this resource
           const rightsHolder = this.getRightsHolder();
 
-          //Check if any priveleges have been removed
+          // Check if any priveleges have been removed
           if (
             !accessRuleModel.get("read") ||
             !accessRuleModel.get("write") ||
             !accessRuleModel.get("changePermission")
           ) {
-            //If there is no owner of this resource
+            // If there is no owner of this resource
             if (!this.collection.hasOwner()) {
-              //If there is no rightsHolder either, then make this person the rightsHolder
-              // or if this is the rightsHolder, keep them the rightsHolder
+              // If there is no rightsHolder either, then make this person the
+              // rightsHolder or if this is the rightsHolder, keep them the
+              // rightsHolder
               if (
                 !rightsHolder ||
-                rightsHolder == accessRuleModel.get("subject")
+                rightsHolder === accessRuleModel.get("subject")
               ) {
-                //Change this access rule back to an ownership level, since there needs to be at least one owner per object
+                // Change this access rule back to an ownership level, since
+                // there needs to be at least one owner per object
                 accessRuleModel.set({
                   read: true,
                   write: true,
@@ -632,19 +636,19 @@ define([
                   this.setRightsHolder(accessRuleModel.get("subject"));
                   this.collection.remove(accessRuleModel);
                 }
-              }
-              //If there is a rightsHolder, we don't need to do anything
-              else {
-                return;
+              } else {
+                // If there is a rightsHolder, we don't need to do anything
               }
             }
-            //If the AccessRule model that was just changed was the rightsHolder,
-            // demote that subject as the rightsHolder, and replace with another subject
-            else if (rightsHolder == accessRuleModel.get("subject")) {
-              //Replace the rightsHolder with a different subject with ownership permissions
+            // If the AccessRule model that was just changed was the
+            // rightsHolder, demote that subject as the rightsHolder, and
+            // replace with another subject
+            else if (rightsHolder === accessRuleModel.get("subject")) {
+              // Replace the rightsHolder with a different subject with
+              // ownership permissions
               this.replaceRightsHolder();
 
-              //Add the old rightsHolder AccessRule to the AccessPolicy
+              // Add the old rightsHolder AccessRule to the AccessPolicy
               this.collection.add(accessRuleModel);
             }
           }
@@ -657,7 +661,8 @@ define([
       },
 
       /**
-       * Checks that there is at least one owner of this resource, and displays a warning message if not.
+       * Checks that there is at least one owner of this resource, and displays
+       * a warning message if not.
        * @param {Event} event Click event
        */
       handleRemove(event) {
@@ -670,13 +675,13 @@ define([
         const accessRuleModel = accessRuleRow.data("model");
         const accessRuleView = accessRuleRow.data("view");
 
-        //Get the rightsHolder for this resource
+        // Get the rightsHolder for this resource
         const rightsHolder = this.getRightsHolder();
 
-        //If the rightsHolder was just removed,
+        // If the rightsHolder was just removed,
         if (rightsHolder === accessRuleModel.get("subject")) {
-          //If changing the rightsHolder is disabled, we don't need to check for owners,
-          // since the rightsHolder will always be the owner.
+          // If changing the rightsHolder is disabled, we don't need to check
+          // for owners, since the rightsHolder will always be the owner.
           if (
             !MetacatUI.appModel.get("allowChangeRightsHolder") ||
             !MetacatUI.appModel.get("displayRightsHolderInAccessPolicy")
@@ -684,37 +689,38 @@ define([
             return;
           }
 
-          //If there is another owner of this resource
+          // If there is another owner of this resource
           if (this.collection.hasOwner()) {
-            //Replace the rightsHolder with a different subject with ownership permissions
+            // Replace the rightsHolder with a different subject with ownership
+            // permissions
             this.replaceRightsHolder();
 
             if (accessRuleView) {
               accessRuleView.remove();
             }
           }
-          //If there are no other owners of this dataset, keep this person as the rightsHolder
+          // If there are no other owners of this dataset, keep this person as
+          // the rightsHolder
           else {
             this.showOwnerWarning();
           }
         } else {
-          //Remove the AccessRule from the AccessPolicy
+          // Remove the AccessRule from the AccessPolicy
           this.collection.remove(accessRuleModel);
         }
       },
 
       /**
-       * Displays a warning message in this view that the object needs at least one owner.
+       * Displays a warning message in this view that the object needs at least
+       * one owner.
        */
-      showOwnerWarning: function () {
-        //Show warning message
-        var msgContainer = this.$(".modal-body").length
+      showOwnerWarning() {
+        // Show warning message
+        const msgContainer = this.$(".modal-body").length
           ? this.$(".modal-body")
           : this.$el;
         MetacatUI.appView.showAlert(
-          "At least one person or group needs to be an owner of this " +
-            this.resourceType +
-            ".",
+          `At least one person or group needs to be an owner of this ${this.resourceType}.`,
           "alert-warning",
           msgContainer,
           2000,
@@ -725,16 +731,16 @@ define([
       /**
        * Renders help text for the form in this view
        */
-      renderHelpText: function () {
+      renderHelpText() {
         try {
-          //Create HTML that shows the access policy help text
-          var accessExplanationEl = $(document.createElement("div")),
-            listEl = $(document.createElement("ul")).addClass("unstyled");
+          // Create HTML that shows the access policy help text
+          const accessExplanationEl = $(document.createElement("div"));
+          const listEl = $(document.createElement("ul")).addClass("unstyled");
 
           accessExplanationEl.append(listEl);
 
-          //Get the AccessRule options names
-          var accessRuleOptionNames = MetacatUI.appModel.get(
+          // Get the AccessRule options names
+          let accessRuleOptionNames = MetacatUI.appModel.get(
             "accessRuleOptionNames",
           );
           if (
@@ -744,19 +750,20 @@ define([
             accessRuleOptionNames = {};
           }
 
-          //Create HTML that shows an explanation of each enabled access rule option
+          // Create HTML that shows an explanation of each enabled access rule
+          // option
           _.mapObject(
             MetacatUI.appModel.get("accessRuleOptions"),
-            function (isEnabled, accessType) {
-              //If this access type is disabled, exit
+            (isEnabled, accessType) => {
+              // If this access type is disabled, exit
               if (!isEnabled) {
                 return;
               }
 
-              var accessTypeExplanation = "",
-                accessTypeName = accessRuleOptionNames[accessType];
+              let accessTypeExplanation = "";
+              const accessTypeName = accessRuleOptionNames[accessType];
 
-              //Get explanation text for the given access type
+              // Get explanation text for the given access type
               switch (accessType) {
                 case "read":
                   accessTypeExplanation =
@@ -767,14 +774,15 @@ define([
                     " - can view and edit this content, even when it's private.";
                   break;
                 case "changePermission":
-                  accessTypeExplanation =
-                    " - can view and edit this content, even when it's private. In addition, can add and remove other people from these " +
-                    MetacatUI.appModel.get("accessPolicyName") +
-                    ".";
+                  accessTypeExplanation = ` - can view and edit this content, even when it's private. In addition, can add and remove other people from these ${MetacatUI.appModel.get(
+                    "accessPolicyName",
+                  )}.`;
+                  break;
+                default:
                   break;
               }
 
-              //Add this to the list
+              // Add this to the list
               listEl.append(
                 $(document.createElement("li")).append(
                   $(document.createElement("h5")).text(accessTypeName),
@@ -784,7 +792,8 @@ define([
             },
           );
 
-          //Add a popover to the Access column header to give more help text about the access types
+          // Add a popover to the Access column header to give more help text
+          // about the access types
           this.$(".access-icon.popover-this").popover({
             title: 'What does "Access" mean?',
             delay: {
@@ -803,6 +812,7 @@ define([
 
       /**
        * Toggles the public-read AccessRule for this resource
+       * @param {Event} event Toggle change event
        */
       togglePrivacy(event) {
         if (this.isApplying) {
@@ -842,7 +852,7 @@ define([
           return;
         }
 
-        //Remove any alerts that are currently displayed
+        // Remove any alerts that are currently displayed
         this.$(".alert-container").remove();
 
         const { dataONEObject } = this.collection;
@@ -943,8 +953,10 @@ define([
       },
 
       /**
-       * Apply this policy through the legacy DataONEObject system metadata path.
-       * @param {Backbone.Model} dataONEObject Object whose policy is being edited
+       * Apply this policy through the legacy DataONEObject system metadata
+       * path.
+       * @param {Backbone.Model} dataONEObject Object whose policy is being
+       * edited
        * @returns {Promise<void>} Resolves when the save completes
        * @since 0.0.0
        */
@@ -1057,7 +1069,7 @@ define([
        * the modal containing this view is hidden.
        * @since 2.15.0
        */
-      reset: function () {
+      reset() {
         if (this.isApplying) {
           return;
         }
@@ -1069,34 +1081,34 @@ define([
       },
 
       /**
-       * Adds messaging to this view to tell the user they are unauthorized to change the AccessPolicy
-       * of this object(s)
+       * Adds messaging to this view to tell the user they are unauthorized to
+       * change the AccessPolicy of this object(s)
        */
-      showUnauthorized: function () {
-        //Get the container element for the message
-        var msgContainer = this.$(".modal-body").length
+      showUnauthorized() {
+        // Get the container element for the message
+        const msgContainer = this.$(".modal-body").length
           ? this.$(".modal-body")
           : this.$el;
 
-        //Empty the container element
+        // Empty the container element
         msgContainer.empty();
 
-        //Show the info message
+        // Show the info message
         MetacatUI.appView.showAlert(
-          "The person who owns this " +
-            this.resourceType +
-            " has not given you permission to change the " +
-            MetacatUI.appModel.get("accessPolicyName") +
-            ". Contact the owner to be added as another owner of this " +
-            this.resourceType +
-            ".",
+          `The person who owns this ${
+            this.resourceType
+          } has not given you permission to change the ${MetacatUI.appModel.get(
+            "accessPolicyName",
+          )}. Contact the owner to be added as another owner of this ${
+            this.resourceType
+          }.`,
           "alert-info subtle",
           msgContainer,
           null,
           { remove: false },
         );
 
-        //Add an unauthorized class to this view for further styling options
+        // Add an unauthorized class to this view for further styling options
         this.$el.addClass("unauthorized");
       },
     },
