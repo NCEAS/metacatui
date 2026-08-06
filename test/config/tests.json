@@ -178,6 +178,7 @@
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",
     "./js/specs/integration/models/LookupModel.js",
-    "./js/specs/integration/models/dataPackage/DataPackageWorkflows.spec.js"
+    "./js/specs/integration/models/dataPackage/DataPackageWorkflows.spec.js",
+    "./js/specs/integration/models/dataPackage/DataPackageScale.spec.js"
   ]
 }
