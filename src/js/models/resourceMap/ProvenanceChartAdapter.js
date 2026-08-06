@@ -64,6 +64,11 @@ define([
       const record = {
         pid,
         fileName: member?.getFileName() || pid,
+        title: member?.title,
+        origin: member?.origin,
+        dateUploaded: member?.dateUploaded,
+        seriesId: member?.seriesId,
+        datasource: member?.datasource,
         type: recordType,
         isDocumentedBy: member?.isDocumentedBy || [],
         editable: recordType === "program" ? isProgramEditable(pid) : true,

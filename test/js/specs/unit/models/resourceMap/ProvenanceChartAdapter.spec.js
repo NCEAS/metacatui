@@ -31,7 +31,16 @@ define([
             objectModel: resourceMap,
           },
           { pid: "meta.1", formatType: "METADATA" },
-          { pid: "data.1", formatType: "DATA", fileName: "data.csv" },
+          {
+            pid: "data.1",
+            formatType: "DATA",
+            fileName: "data.csv",
+            title: "Measured temperatures",
+            origin: ["A. Researcher"],
+            dateUploaded: "2026-01-15T00:00:00Z",
+            seriesId: "data.series",
+            datasource: "urn:node:TEST",
+          },
           {
             pid: "image.1",
             formatType: "DATA",
@@ -81,6 +90,21 @@ define([
 
       projection.getRecord("image.1").type.should.equal("image");
       projection.getRecord("pdf.1").type.should.equal("PDF");
+    });
+
+    it("keeps the fields needed to cite package members", () => {
+      const { dataPackage } = buildPackage();
+
+      const record =
+        ProvenanceChartAdapter.build(dataPackage).getRecord("data.1");
+
+      record.should.include({
+        title: "Measured temperatures",
+        dateUploaded: "2026-01-15T00:00:00Z",
+        seriesId: "data.series",
+        datasource: "urn:node:TEST",
+      });
+      record.origin.should.deep.equal(["A. Researcher"]);
     });
 
     it("projects one editable program-level relationship", () => {

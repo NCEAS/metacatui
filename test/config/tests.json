@@ -173,6 +173,10 @@
     "./js/specs/unit/models/fileTable/FileTableViewModel.spec.js",
     "./js/specs/unit/views/AccessPolicyView.spec.js",
     "./js/specs/unit/views/MetricView.spec.js",
+    "./js/specs/unit/views/MetadataView.spec.js",
+    "./js/specs/unit/views/MetadataDocumentView.spec.js",
+    "./js/specs/unit/views/ProvChartView.spec.js",
+    "./js/specs/unit/views/ProvEntitySelectView.spec.js",
     "./js/specs/unit/views/fileTable/FileTableView.spec.js",
     "./js/specs/unit/views/metadata/AutofillAttributesView.spec.js"
   ],
