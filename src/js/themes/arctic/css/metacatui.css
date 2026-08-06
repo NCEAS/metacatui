@@ -676,7 +676,7 @@ button.btn-primary a {
   background-color: transparent;
   color: inherit;
 }
-.data-package-item .btn {
+.data-package-item .btn:not(.downloadAction) {
   color: #555;
 }
 .data-package-item .btn:hover,
