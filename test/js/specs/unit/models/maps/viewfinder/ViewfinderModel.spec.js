@@ -354,7 +354,7 @@ define([
     describe("selecting a viewfinder card", () => {
       it("shows all enabled layers", () => {
         const setSpy = state.sandbox.spy(
-          state.model.mapModel.get("allLayers").models[0],
+          state.model.mapModel.getAllLayers()[0],
           "set",
         );
         state.model.selectViewfinderCard(
@@ -377,7 +377,7 @@ define([
 
       it("hides all layers not inlcluded in enabled layers", () => {
         const setSpy = state.sandbox.spy(
-          state.model.mapModel.get("allLayers").models[1],
+          state.model.mapModel.getAllLayers()[1],
           "set",
         );
         state.model.selectViewfinderCard(

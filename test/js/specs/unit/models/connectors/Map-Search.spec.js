@@ -91,9 +91,13 @@ define([
       });
 
       it("finds and sets the first geohash layer from map", () => {
-        const geohash1 = new CesiumGeohash();
-        const geohash2 = new CesiumGeohash();
-        const map = new Map({ layers: [geohash1, geohash2] });
+        const map = new Map({
+          layers: [
+            { type: "CesiumGeohash", layerId: "geohash-1" },
+            { type: "CesiumGeohash", layerId: "geohash-2" },
+          ],
+        });
+        const geohash1 = map.get("layers").at(0);
         state.mapSearch.set("map", map);
 
         state.mapSearch.findAndSetGeohashLayer();

@@ -165,6 +165,11 @@ define([
           },
         );
 
+        const activeVisualizationUrl = view.model.get("activeVisualizationUrl");
+        if (activeVisualizationUrl) {
+          view.visualizationPanel.open(activeVisualizationUrl);
+        }
+
         // Keep map model in sync when the panel is closed via its own button
         // or the Escape key (which triggers the "close" event on the panel).
         view.stopListening(view.visualizationPanel, "close");
@@ -194,9 +199,23 @@ define([
        * @returns {ToolbarView} Returns the rendered view
        */
       renderToolbar() {
+        const initialOpenPanelId =
+          this.model.get("restoreState")?.openPanel || null;
         this.toolbar = new ToolbarView({
           el: this.subElements.toolbarContainer,
           model: this.model,
+          initialOpenPanelId,
+        });
+        this.stopListening(this.toolbar, "toolbar:activePanelChanged");
+        this.listenTo(this.toolbar, "toolbar:activePanelChanged", (panelId) => {
+          const restoreState = this.model.get("restoreState") || {};
+          if (restoreState.openPanel === panelId) return;
+
+          this.model.set("restoreState", {
+            ...restoreState,
+            openPanel: panelId,
+          });
+          this.model.updateSearchParams();
         });
         this.toolbar.render();
         return this.toolbar;

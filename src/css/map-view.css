@@ -2102,7 +2102,10 @@ other class: .ui-slider-range */
   border: 1px solid
     var(--portal-col-neutral-3, var(--map-col-bkg-lightest__deprecate));
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+  transition:
+    box-shadow 0.2s ease-in-out,
+    border 0.2s ease-in-out;
 
   /* ---- Hero: full-width image with vignette and title overlay ---- */
 
@@ -2217,7 +2220,8 @@ other class: .ui-slider-range */
       --portal-col-primary-6,
       var(--map-col-highlight__deprecate)
     );
-    box-shadow: 1px 2px rgba(0, 0, 0, 0.15);
+    /*   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+    box-shadow: 0 6px 9px rgba(0, 0, 0, 0.15);
   }
 
   /* When View Layers is active, expand the layer badges */

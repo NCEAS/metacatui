@@ -3,6 +3,7 @@
 define([
   "underscore",
   "backbone",
+  "common/SearchParams",
   "text!templates/maps/viewfinder/viewfinder.html",
   "views/maps/viewfinder/SearchView",
   "views/maps/viewfinder/ViewfinderCardsListView",
@@ -12,6 +13,7 @@ define([
 ], (
   _,
   Backbone,
+  SearchParams,
   Template,
   SearchView,
   ViewfinderCardsListView,
@@ -66,9 +68,11 @@ define([
        * @param {Map} options.model - The map model to use for this view.
        */
       initialize({ model: mapModel }) {
+        this.mapModel = mapModel;
         this.viewfinderModel = new ViewfinderModel({ mapModel });
         this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
         this.viewfinderCardsListViews = [];
+        this.expansionPanelsByCategoryCid = {};
 
         // When the visualization overlay closes, reset active button states
         // on all preset cards so none appears stuck in an active state.
@@ -80,9 +84,97 @@ define([
               this.viewfinderCardsListViews.forEach((listView) => {
                 listView.children?.forEach((child) => child.resetActiveState());
               });
+              if (mapModel.get("showShareUrl")) {
+                SearchParams.updateActiveActionId(null);
+              }
             }
           },
         );
+      },
+
+      /**
+       * Sync the active action id to the URL restore state.
+       * @param {ViewfinderCardModel} _card The card model that owns the action.
+       * @param {object} action The activated action object.
+       * @since 0.0.0
+       */
+      syncActiveActionToUrl(_card, action) {
+        if (!this.mapModel?.get("showShareUrl")) return;
+        const actionId = typeof action?.id === "string" ? action.id : null;
+        SearchParams.updateActiveActionId(actionId);
+      },
+
+      /**
+       * Find a rendered card view that contains the given action id.
+       * @param {string} actionId The action id to resolve.
+       * @returns {object|null} The matching rendered view and action, if found.
+       * @since 0.0.0
+       */
+      findRenderedAction(actionId) {
+        if (typeof actionId !== "string" || !actionId.length) return null;
+
+        const match = (this.viewfinderCardsListViews || []).reduce(
+          (foundMatch, listView) => {
+            if (foundMatch) return foundMatch;
+
+            return (listView.children || []).reduce((cardMatch, cardView) => {
+              if (cardMatch) return cardMatch;
+
+              const buttons = cardView.preset.get("buttons") || [];
+              const action = buttons.find(
+                (candidate) => candidate?.id === actionId,
+              );
+              return action
+                ? {
+                    action,
+                    cardView,
+                    categoryCid: listView.categoryCid,
+                  }
+                : null;
+            }, null);
+          },
+          null,
+        );
+
+        if (match) return match;
+
+        return null;
+      },
+
+      /**
+       * Expand the given category section if it has a panel view.
+       * @param {string} categoryCid The category CID.
+       * @since 0.0.0
+       */
+      openCategoryPanel(categoryCid) {
+        const panel = this.expansionPanelsByCategoryCid[categoryCid];
+        panel?.open();
+      },
+
+      /**
+       * Restore a previously active viewfinder action by id.
+       * @param {string} actionId The action id from URL restore state.
+       * @returns {boolean} True if action was restored.
+       * @since 0.0.0
+       */
+      restoreActiveAction(actionId) {
+        const match = this.findRenderedAction(actionId);
+        if (!match) return false;
+
+        this.openCategoryPanel(match.categoryCid);
+        return match.cardView.restoreAction(match.action);
+      },
+
+      /**
+       * Apply active action restore state from URL for schema 1.
+       * @since 0.0.0
+       */
+      applyActiveActionFromUrl() {
+        if (!this.mapModel?.get("showShareUrl")) return;
+        const restoreState =
+          this.mapModel.get("restoreState") || SearchParams.parseStateFromUrl();
+        if (!restoreState.activeActionId) return;
+        this.restoreActiveAction(restoreState.activeActionId);
       },
 
       /**
@@ -196,6 +288,9 @@ define([
               });
             });
           },
+          onActionActivated: (card, action) => {
+            this.syncActiveActionToUrl(card, action);
+          },
         });
         viewfinderCardsListView.categoryCid = category.cid;
         this.viewfinderCardsListViews = this.viewfinderCardsListViews.filter(
@@ -213,22 +308,27 @@ define([
           isSvgIcon: category.get("isSvgIcon") === true,
         });
         expansionPanel.render();
+        this.expansionPanelsByCategoryCid[category.cid] = expansionPanel;
 
         const existingPanel = this.getViewfinderCardsPanel(category);
         if (existingPanel?.length) {
           existingPanel.replaceWith(expansionPanel.el);
-          return;
-        }
-        // otherwise, add it where it belongs according to collection order
-        const placement = this.getViewfinderCardsPlacement(category);
+        } else {
+          // otherwise, add it where it belongs according to collection order
+          const placement = this.getViewfinderCardsPlacement(category);
 
-        if (placement === "prepend") {
-          this.getViewfinderCards().prepend(expansionPanel.el);
-        } else if (placement === "append") {
-          this.getViewfinderCards().append(expansionPanel.el);
-        } else if (placement.after) {
-          placement.after.after(expansionPanel.el);
+          if (placement === "prepend") {
+            this.getViewfinderCards().prepend(expansionPanel.el);
+          } else if (placement === "append") {
+            this.getViewfinderCards().append(expansionPanel.el);
+          } else if (placement.after) {
+            placement.after.after(expansionPanel.el);
+          }
         }
+
+        // Retry URL-based action restore after cards render, which is required
+        // when a category loads cards asynchronously from a remote URL.
+        this.applyActiveActionFromUrl();
       },
 
       /** Render child SearchView and append to DOM. */

@@ -57,6 +57,7 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
         openVisualization,
         closeVisualization,
         onActivate,
+        onActionActivated,
       }) {
         this.children = [];
         this.viewfinderCards = viewfinderCards;
@@ -71,6 +72,10 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
             : () => {};
         this.onActivate =
           typeof onActivate === "function" ? onActivate : () => {};
+        this.onActionActivated =
+          typeof onActionActivated === "function"
+            ? onActionActivated
+            : () => {};
       },
 
       /**
@@ -95,6 +100,9 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
                 if (child !== activeView) child.resetActiveState();
               });
               this.onActivate(activeView);
+            },
+            onActionActivated: (action) => {
+              this.onActionActivated(card, action);
             },
           });
           view.render();

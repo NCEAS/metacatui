@@ -11,7 +11,6 @@ define([
   "models/maps/Feature",
   "common/Utilities",
   "text!templates/maps/cesium-widget-view.html",
-  "common/SearchParams",
 ], (
   $,
   _,
@@ -23,7 +22,6 @@ define([
   Feature,
   Utilities,
   Template,
-  SearchParams,
 ) => {
   /**
    * @class CesiumWidgetView
@@ -150,16 +148,6 @@ define([
           if (!this.interactions.get("selectedFeatures")) {
             this.interactions.selectFeatures();
           }
-
-          this.debouncedUpdateSearchParams = _.debounce(() => {
-            this.updateSearchParams();
-          }, 150 /* milliseconds */);
-
-          this.listenTo(
-            this.model,
-            "change:searchparams",
-            this.updateSearchParams,
-          );
         } catch (e) {
           console.log("Failed to initialize a CesiumWidgetView. ", e);
         }
@@ -213,10 +201,9 @@ define([
             view.render3DTilesInspector();
           }
 
-          const destination = SearchParams.getDestination();
-          if (this.model.get("showShareUrl") && destination) {
-            // Go to position specified in query params.
-            view.flyTo(destination);
+          const initialTarget = this.interactions.get("zoomTarget");
+          if (initialTarget) {
+            view.flyTo(initialTarget);
           } else {
             // Go to the home position, if one is set.
             view.flyHome(0);
@@ -440,15 +427,17 @@ define([
        * @since 2.37.0
        */
       logDebugLayerSummary() {
-        const allLayers = this.model.get("allLayers");
-        const layers = allLayers
-          ? allLayers.map((layer) => ({
-              label: layer.get("label"),
-              type: layer.get("type"),
-              status: layer.get("status"),
-              visible: layer.get("visible"),
-            }))
-          : [];
+        const allLayers =
+          typeof this.model.getAllLayers === "function"
+            ? this.model.getAllLayers()
+            : this.model.get("allLayers")?.models || [];
+
+        const layers = allLayers.map((layer) => ({
+          label: layer.get("label"),
+          type: layer.get("type"),
+          status: layer.get("status"),
+          visible: layer.get("visible"),
+        }));
 
         console.info("[Cesium debug] Loaded layers", layers);
       },
@@ -560,12 +549,17 @@ define([
         view.scene.light = new Cesium.DirectionalLight({
           direction: new Cesium.Cartesian3(1, 0, 0),
         });
-        view.scene.preRender.addEventListener(function (scene, time) {
-          view.scene.light.direction = Cesium.Cartesian3.clone(
-            scene.camera.directionWC,
-            view.scene.light.direction,
-          );
-        });
+
+        if (view.removePreRenderLightListener) {
+          view.removePreRenderLightListener();
+        }
+        view.removePreRenderLightListener =
+          view.scene.preRender.addEventListener(function (scene, time) {
+            view.scene.light.direction = Cesium.Cartesian3.clone(
+              scene.camera.directionWC,
+              view.scene.light.direction,
+            );
+          });
       },
 
       /**
@@ -667,6 +661,7 @@ define([
         this.cameraListeners.forEach(function (removeListener) {
           removeListener();
         });
+        this.cameraListeners = [];
       },
 
       /**
@@ -690,9 +685,9 @@ define([
             moveEnd: [],
             moveStart: [],
             changed: [
+              "updateCameraPosition",
               "updateScale",
               "updateViewExtent",
-              "debouncedUpdateSearchParams",
             ],
           };
           if (view.isDebugEnabled()) {
@@ -737,7 +732,7 @@ define([
         const events = Cesium.ScreenSpaceEventType;
 
         // Remove previous listeners if they exist.
-        view.removeMouseListeners;
+        view.removeMouseListeners();
         // Create Cesium object that handles interactions with the map.
         const handler = (view.mouseEventHandler =
           new Cesium.ScreenSpaceEventHandler(view.scene.canvas));
@@ -757,33 +752,12 @@ define([
       },
 
       /**
-       * Update the search parameters related to the current map position
-       * and heading.
-       * @since 2.30.0
+       * Push the current Cesium camera position into shared interaction state.
+       * @since 0.0.0
        */
-      updateSearchParams() {
-        if (!this.model.get("showShareUrl")) return;
-
-        const { heading, pitch, positionCartographic, roll } =
-          this.scene.camera;
-
-        SearchParams.updateDestination({
-          heading: Cesium.Math.toDegrees(heading),
-          height: positionCartographic.height,
-          latitude: Cesium.Math.toDegrees(positionCartographic.latitude),
-          longitude: Cesium.Math.toDegrees(positionCartographic.longitude),
-          pitch: Cesium.Math.toDegrees(pitch),
-          roll: Cesium.Math.toDegrees(roll),
-        });
-
-        this.model.get("allLayers").forEach((layer) => {
-          const layerId = layer.get("layerId");
-          if (layerId && layer.get("visible")) {
-            SearchParams.addEnabledLayer(layerId);
-          } else {
-            SearchParams.removeEnabledLayer(layerId);
-          }
-        });
+      updateCameraPosition() {
+        if (!this.interactions) return;
+        this.interactions.setCameraPosition(this.getCameraPosition());
       },
 
       /**
@@ -1897,7 +1871,13 @@ define([
       onClose() {
         this.destroy3DTilesInspector();
         this.removeMouseListeners();
+        this.removeCameraListeners();
         this.removeNavigationListeners();
+        if (this.removePreRenderLightListener) {
+          this.removePreRenderLightListener();
+          this.removePreRenderLightListener = null;
+        }
+        this.stopListening();
       },
     },
   );

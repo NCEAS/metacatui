@@ -4,14 +4,15 @@ define([
   "underscore",
   "backbone",
   "models/maps/viewfinder/ViewfinderCardModel",
-  "models/maps/GeoPoint",
-], (_, Backbone, ViewfinderCardModel, GeoPoint) => {
+], (_, Backbone, ViewfinderCardModel) => {
   // The LEO Network domain for viewfinder cards. This is used to determine
   // if the cards are from the LEO Network and to use as the base URL for
   // images.
   const LEO_NEWTORK_DOMAIN = "leonetwork.org";
   // Default height for viewfinder cards if not specified.
   const DEFAULT_HEIGHT = 800;
+  const LEO_THUMBNAIL_PATH_SEGMENT = "/thumbnail/";
+  const LEO_RESIZED_PATH_SEGMENT = "/resized/";
   /**
    * Determine if array is non-empty.
    * @param {Array} a The array in question.
@@ -19,6 +20,20 @@ define([
    */
   function isNonEmptyArray(a) {
     return a && a.length && Array.isArray(a);
+  }
+
+  /**
+   * Prefer the higher resolution LEO image path when available.
+   * @param {string|null|undefined} thumbnailUrl LEO thumbnail path.
+   * @returns {string|null} Upgraded image path, or null when unavailable.
+   * @since 0.0.0
+   */
+  function getLeoImagePath(thumbnailUrl) {
+    if (typeof thumbnailUrl !== "string" || !thumbnailUrl.length) return null;
+    return thumbnailUrl.replace(
+      LEO_THUMBNAIL_PATH_SEGMENT,
+      LEO_RESIZED_PATH_SEGMENT,
+    );
   }
 
   /**
@@ -144,26 +159,21 @@ define([
         if (!isNonEmptyArray(response)) return [];
 
         const map = options.mapModel || this.mapModel;
-        const allLayers = map.get("allLayers");
+        const allLayers =
+          typeof map.getAllLayers === "function"
+            ? map.getAllLayers()
+            : map.get("allLayers")?.models || [];
 
         const viewfinderCards = response.map((cardObj) => {
-          // Apply defaults to any explicit 'map' buttons: secondary
-          // ordinality, 'View Layers' label, and eye icon.
-          const buttons = (
-            Array.isArray(cardObj.buttons) ? [...cardObj.buttons] : []
-          ).map((action) => {
-            if (action.type !== "map") return action;
-            return {
-              ordinality: "secondary",
-              label: "View Layers",
-              icon: "eye-open",
-              ...action,
-            };
-          });
+          const normalizedCard =
+            ViewfinderCardModel.normalizeCardAttributes(cardObj);
+          const { buttons } = normalizedCard;
 
           // Collect layerIds from top-level AND from any explicit map
           // buttons so all relevant layers appear in the badge display.
-          const topLevelLayerIds = cardObj.layerIds || [];
+          const topLevelLayerIds = Array.isArray(cardObj.layerIds)
+            ? cardObj.layerIds
+            : [];
           const ctaMapLayerIds = buttons
             .filter((a) => a.type === "map")
             .flatMap((a) => a.layerIds || []);
@@ -175,7 +185,7 @@ define([
           const enabledLayerLabels = [];
           let featureLayer = null;
 
-          allLayers.models.forEach((layer) => {
+          allLayers.forEach((layer) => {
             const layerId = layer.get("layerId");
             if (uniqueMapLayerIds.includes(layerId)) {
               enabledLayerIds.push(layerId);
@@ -186,47 +196,14 @@ define([
             }
           });
 
-          // Synthesize a secondary legacy 'map' button from top-level
-          // position fields only when no explicit map button is present.
-          // This preserves backward compatibility while allowing multiple
-          // explicit map buttons in the newer configs.
-          let geoPoint = null;
-          const hasExplicitMapButton = buttons.some((b) => b.type === "map");
-          if (cardObj.latitude != null || cardObj.longitude != null) {
-            geoPoint = new GeoPoint({
-              latitude: cardObj.latitude,
-              longitude: cardObj.longitude,
-              height: cardObj.height,
-            });
-          }
-          if (
-            !hasExplicitMapButton &&
-            (cardObj.latitude != null || cardObj.longitude != null)
-          ) {
-            buttons.push({
-              type: "map",
-              ordinality: "secondary",
-              label: "View Layers",
-              icon: "eye-open",
-              latitude: cardObj.latitude,
-              longitude: cardObj.longitude,
-              height: cardObj.height,
-              layerIds: uniqueMapLayerIds,
-            });
-          }
-
           return new ViewfinderCardModel({
-            description: cardObj.description,
+            ...normalizedCard,
             enabledLayerLabels,
             enabledLayerIds,
-            geoPoint,
-            title: cardObj.title,
-            image: cardObj.image,
             featureId: cardObj.featureId,
             isLEONetwork: cardObj.isLEONetwork === true,
             featureLayerId: cardObj.featureLayerId || null,
             featureLayer,
-            buttons,
           });
         });
 
@@ -235,9 +212,12 @@ define([
 
       /**
        * Parse the GeoJSON response from the LEO Network to extract viewfinder
-       * card data. Functionality remains unchanged but this was updated to
-       * return ViewfinderCards instead of the legacy ZoomPresets format when
-       * zoom presets were deprecated in 2.37.0.
+       * card data. This was updated to return ViewfinderCards instead of the
+       * legacy ZoomPresets format when zoom presets were deprecated in 2.37.0,
+       * and in 0.0.0 it was updated to use the new viewfinder card format which
+       * attempts to use the resized higher res images when available and synthesizes
+       * a buttons array specifying actions which get their ID from the leonetwork
+       * id property.
        * @param {GeoJSON} response The GeoJSON response from the LEO Network.
        * @returns {object[]} An array of objects representing viewfinder cards.
        * @since 2.35.0
@@ -254,18 +234,34 @@ define([
           const { observation, id } = properties;
           const localizedDate = properties.localized_date;
           const thumbnailUrl = properties.thumbnail_url;
+          const imagePath = getLeoImagePath(thumbnailUrl);
+          const thumbnailPath =
+            typeof thumbnailUrl === "string" && thumbnailUrl.length
+              ? thumbnailUrl
+              : null;
           const { title, summary } = observation;
           const { coordinates } = geometry;
           const [longitude, latitude] = coordinates;
+          const layerIds = this.defaults?.layerIds || [];
 
           return {
             description: `<b>${localizedDate}:</b> ${summary}`,
-            layerIds: this.defaults?.layerIds || [],
-            latitude,
-            longitude,
-            height: DEFAULT_HEIGHT,
             title,
-            image: thumbnailUrl ? `${imgBaseUrl}${thumbnailUrl}` : null,
+            image: imagePath ? `${imgBaseUrl}${imagePath}` : null,
+            imageFallback:
+              thumbnailPath && thumbnailPath !== imagePath
+                ? `${imgBaseUrl}${thumbnailPath}`
+                : null,
+            buttons: [
+              {
+                id,
+                type: "map",
+                latitude,
+                longitude,
+                height: DEFAULT_HEIGHT,
+                layerIds,
+              },
+            ],
             featureId: id,
             isLEONetwork: true,
             featureLayerId: this.defaults?.featureLayerId,
