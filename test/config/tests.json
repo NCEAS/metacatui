@@ -178,7 +178,8 @@
     "./js/specs/unit/views/ProvChartView.spec.js",
     "./js/specs/unit/views/ProvEntitySelectView.spec.js",
     "./js/specs/unit/views/fileTable/FileTableView.spec.js",
-    "./js/specs/unit/views/metadata/AutofillAttributesView.spec.js"
+    "./js/specs/unit/views/metadata/AutofillAttributesView.spec.js",
+    "./js/specs/unit/views/versionHistory/VersionTimelineGroupsView.spec.js"
   ],
   "integration": [
     "./js/specs/integration/collections/SolrResults.spec.js",

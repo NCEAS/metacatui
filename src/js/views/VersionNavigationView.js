@@ -3,8 +3,9 @@ define([
   "backbone",
   "models/sysmeta/VersionTracker",
   "semantic",
+  "common/ErrorUtilities",
   "common/Utilities",
-], ($, Backbone, VersionTracker, Semantic, Utilities) => {
+], ($, Backbone, VersionTracker, Semantic, ErrorUtilities, Utilities) => {
   "use strict";
 
   // Define class names used in the view
@@ -146,9 +147,12 @@ define([
        * descriptions for the tooltips
        * @param {string} [options.documentType] The type of document (e.g.
        * dataset, article, etc.) to use in the default tooltip descriptions
+       * @param {AbortSignal} [options.signal] Signal used to abort version
+       * lookups
        */
       initialize(options = {}) {
         this.pid = options.pid;
+        this.signal = options.signal || null;
         this.showAllVersionsLink = options.showAllVersionsLink !== false;
         if (
           MetacatUI.appModel &&
@@ -193,13 +197,27 @@ define([
           const metaServiceUrl = await Utilities.awaitMetacatUI({
             property: "metaServiceUrl",
           });
+          if (this.signal?.aborted) return this;
           this.versionTracker = new VersionTracker({ metaServiceUrl });
         }
 
         this.el.innerHTML = this.template();
         const { prev, next, allVersionsLink } = this.selectContainers();
-        const nextPid = await this.versionTracker.getNext(this.pid);
-        const prevPid = await this.versionTracker.getPrev(this.pid);
+        let nextPid;
+        let prevPid;
+        try {
+          nextPid = await this.versionTracker.getNext(this.pid, {
+            signal: this.signal,
+          });
+          if (this.signal?.aborted) return this;
+          prevPid = await this.versionTracker.getPrev(this.pid, {
+            signal: this.signal,
+          });
+          if (this.signal?.aborted) return this;
+        } catch (error) {
+          if (ErrorUtilities.isAbortError(error)) return this;
+          throw error;
+        }
 
         if (nextPid) {
           const nextUrl = this.getViewUrl(nextPid);

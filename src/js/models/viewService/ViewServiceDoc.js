@@ -193,7 +193,7 @@ define([
     }
 
     /**
-     * Rewrite legacy ecogrid links to resolve-service links when configured.
+     * Rewrite legacy ecogrid links to resolve service links when configured.
      * @param {DocumentFragment} root Detached parse root
      * @returns {number} Number of links rewritten
      */
@@ -220,9 +220,9 @@ define([
     }
 
     /**
-     * Rewrite one legacy ecogrid label to a resolve-service URL.
+     * Rewrite one legacy ecogrid label to a resolve service URL.
      * @param {string} link Link text that may contain an ecogrid PID
-     * @param {string} baseUrl Resolve-service base URL
+     * @param {string} baseUrl Resolve service base URL
      * @returns {{pid:string,url:string}|false} Rewrite data, or false when the
      * link cannot be rewritten.
      */

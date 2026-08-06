@@ -222,13 +222,14 @@ define([
       /**
        * Replace the models backing this group while keeping the same collection
        * reference.
-       * @param {object[]} models - Plain model attributes grouped for the date.
+       * @param {Array.<(object|Backbone.Model)>} models Models or attributes
+       * grouped for the date
        */
       setModels(models) {
         const newModels = Array.isArray(models) ? models : [];
         const hasChanges =
           this.collection.length !== newModels.length ||
-          this.collection.every((model, index) => model === newModels[index]);
+          !this.collection.every((model, index) => model === newModels[index]);
         if (hasChanges) {
           this.collection.set(newModels, {
             parse: true,

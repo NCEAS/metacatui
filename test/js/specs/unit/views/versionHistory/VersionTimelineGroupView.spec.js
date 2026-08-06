@@ -117,5 +117,19 @@ define([
         state.view.el.classList.contains("version-history-group--date-note"),
       ).to.equal(false);
     });
+
+    it("updates rows when same-length model lists change order", () => {
+      state.view.render();
+
+      state.view.setModels([state.models.at(1), state.models.at(0)]);
+
+      expect(
+        state.view.collection.map((model) => model.get("identifier")),
+      ).to.deep.equal(["p2", "p1"]);
+      const titles = Array.from(
+        state.view.el.querySelectorAll(".object-version__title"),
+      ).map((node) => node.textContent.trim());
+      expect(titles).to.deep.equal(["p2", "p1"]);
+    });
   });
 });

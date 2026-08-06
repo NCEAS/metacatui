@@ -13,6 +13,7 @@ define([
   "views/versionHistory/VersionTimelineGroupsView",
   "views/CitationView",
   "views/uiElements/ToggleView",
+  "common/ErrorUtilities",
   "common/Utilities",
   "common/DateUtilities",
   "semantic",
@@ -28,6 +29,7 @@ define([
   VersionTimelineGroupsView,
   CitationView,
   ToggleView,
+  ErrorUtilities,
   Utilities,
   DateUtilities,
   Semantic,
@@ -295,8 +297,8 @@ define([
       },
 
       /**
-       * When the toggle is changed, update the "hiddenByUI" attribute on each object
-       * model to control whether it is shown in the timeline groups.
+       * When the toggle is changed, update the "hiddenByUI" attribute on each
+       * object model to control whether it is shown in the timeline groups.
        * @param {"all"|"doi"} value The currently selected toggle value.
        */
       onToggle(value) {
@@ -305,7 +307,8 @@ define([
         this.showDOIOnly = showDOIOnly;
         let anyChanged = false;
         this.collection.each((model) => {
-          const hidden = showDOIOnly && !model.isDOI();
+          const isReferenceVersion = model.get("identifier") === this.pid;
+          const hidden = showDOIOnly && !isReferenceVersion && !model.isDOI();
           if (model.get("hiddenByUI") !== hidden) {
             model.set("hiddenByUI", hidden, { silent: true });
             anyChanged = true;
@@ -439,7 +442,7 @@ define([
           ];
           this.applyDateNotes(dateConflicts);
         } catch (error) {
-          if (error?.name === "AbortError") {
+          if (ErrorUtilities.isAbortError(error)) {
             return;
           }
 
@@ -449,8 +452,8 @@ define([
           if (isCurrent) {
             this.completed = true;
             this.chainAbortController = null;
-            // Enable the toggle now that versions have loaded (even if there was
-            // an error, some versions may have been found)
+            // Enable the toggle now that versions have loaded (even if there
+            // was an error, some versions may have been found)
             if (this.toggle) this.toggle.enable();
             this.addTooltips();
           }
@@ -596,16 +599,20 @@ define([
       },
 
       /**
-       * Apply row-level notes for detected version date conflicts, i.e.
-       * cases where the date a obsoleting version was uploaded is *earlier*
-       * than the date of the version it obsoletes.
-       * @param {VersionTracker.DateConflict[]} conflicts An array of
-       * detected version date conflicts. If not provided, any existing row
-       * notes will be cleared.
+       * Apply row-level notes for detected version date conflicts, i.e. cases
+       * where the date a obsoleting version was uploaded is *earlier* than the
+       * date of the version it obsoletes.
+       * @param {VersionTracker.DateConflict[]} conflicts An array of detected
+       * version date conflicts. If not provided, any existing row notes will be
+       * cleared.
        */
       applyDateNotes(conflicts = []) {
         this.clearDateNotes();
-        if (!this.collection || !Array.isArray(conflicts) || !conflicts.length) {
+        if (
+          !this.collection ||
+          !Array.isArray(conflicts) ||
+          !conflicts.length
+        ) {
           return;
         }
         conflicts.forEach((conflict) => {
@@ -619,8 +626,8 @@ define([
       },
 
       /**
-       * Runs when the VersionTracker notifies the view that a new version
-       * of the PID has been found.
+       * Runs when the VersionTracker notifies the view that a new version of
+       * the PID has been found.
        * @param {object} sysMeta The system metadata object for the found
        * version.
        */
@@ -632,17 +639,12 @@ define([
         // When requesting sysMeta for a series ID, Metacat returns the latest
         // version in that series. The returned sysmeta still carries the
         // requested SID in the schema's seriesId field.
-        if (
-          sysMeta.seriesId === this.pid &&
-          sysMeta.identifier !== this.pid
-        ) {
+        if (sysMeta.seriesId === this.pid && sysMeta.identifier !== this.pid) {
           // Delete the record with the series ID because we don't want it to
           // appear as a separate version in the timeline
           this.collection.remove(this.pid);
-          if (this.pid !== sysMeta.identifier) {
-            this.pid = sysMeta.identifier;
-            this.render();
-          }
+          this.pid = sysMeta.identifier;
+          this.render();
           return;
         }
 
@@ -653,6 +655,14 @@ define([
           this.numPrev = Math.abs(index);
         }
         const sysMetaData = sysMeta.toJSON();
+        // SystemMetadata.toJSON only includes schema fields. Keep
+        // VersionTracker display fields attached to the row model.
+        if (sysMeta.versionHistory) {
+          sysMetaData.versionHistory = { ...sysMeta.versionHistory };
+        }
+        if (Array.isArray(sysMeta.errors)) {
+          sysMetaData.errors = [...sysMeta.errors];
+        }
         // For merging purposes, ensure id is set to identifier
         sysMetaData.id = sysMetaData.identifier;
         this.collection.add(sysMetaData, { merge: true });
