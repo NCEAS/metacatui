@@ -42,6 +42,9 @@ define([
     // The name of the property on the MetadataView that contains the citation
     // modal
     citationModalProp: "citationModal",
+    // The name of the property on the MetadataView that contains the rendered
+    // metadata view
+    metadataViewProp: "metadataView",
     // The name of the property on the MetadataView that contains subviews
     subviewProp: "subviews",
   };
@@ -188,9 +191,12 @@ define([
        * @returns {AnnotationView[]} An array of AnnotationView instances.
        */
       getAnnotationViews() {
-        return this.metadataView[METADATA_VIEW.subviewProp].filter(
-          (view) => view?.type === ANNO_VIEW_TYPE,
-        );
+        const metadataView =
+          this.metadataView[METADATA_VIEW.metadataViewProp] ||
+          this.metadataView;
+        const subviews = metadataView[METADATA_VIEW.subviewProp] || [];
+
+        return subviews.filter((view) => view?.type === ANNO_VIEW_TYPE);
       },
 
       /**
@@ -267,9 +273,13 @@ define([
 
       /** Show previously hidden annotations in the MetadataView. */
       showAnnotations() {
-        this.hiddenSameAs?.el.style.removeProperty("display");
+        this.hiddenSameAs?.forEach((view) => {
+          view.el?.style?.removeProperty("display");
+        });
         this.hiddenSameAs = null;
-        this.hiddenDerivedFrom?.el.style.removeProperty("display");
+        this.hiddenDerivedFrom?.forEach((view) => {
+          view.el?.style?.removeProperty("display");
+        });
         this.hiddenDerivedFrom = null;
       },
 
