@@ -596,122 +596,18 @@ define([
       const member = this.requireMember(pid);
       const resourceMap = this.requireResourceMapModel();
       DataPackageMember.validateLocalFile(file);
-      const replacementSource =
-        Values.normalizeText(replacementSourcePid) || null;
-      const metadataMembers = this.getMetadataMembers().filter(
-        (metadataMember) =>
-          metadataMember.objectModel?.replaceMemberPid &&
-          metadataMember.pid !== member.pid,
-      );
-      await this._ensureSystemMetadata([member, ...metadataMembers]);
-      this.assertNotNestedResourceMap(member);
-      let replacementSourceSysMeta = null;
-      if (replacementSource) {
-        replacementSourceSysMeta =
-          replacementSource === member.remotePid && member.remoteSysMeta
-            ? member.remoteSysMeta.clone()
-            : await this.getSysMetaService().download(replacementSource, {
-                useCache: false,
-              });
-      }
-      const newPid = await this.allocatePid({ requestedPid });
-      if (newPid === pid) {
-        throw new Error("Replacement PID must differ from the current PID");
-      }
-      const metadataPidChanges = await Promise.all(
-        metadataMembers.map(async (metadataMember) => ({
-          member: metadataMember,
-          oldPid: metadataMember.pid,
-          newPid:
-            metadataMember.remotePid &&
-            metadataMember.pid === metadataMember.remotePid
-              ? await this.allocatePid()
-              : metadataMember.pid,
-        })),
-      );
-      this.assertCanEdit();
-      [member, ...metadataMembers].forEach((affectedMember) =>
-        this.assertCanEdit(affectedMember.pid),
-      );
-      const formatProperties = member.getFormatProperties?.() || {};
-      const replacementDisplay = {
-        pid,
-        fileName: member.getFileName?.() || member.fileName || null,
-        title: member.title || "",
-        size: member.size,
-        formatType: member.getFormatType?.() || member.formatType || null,
-        formatId: member.getFormatId?.() || member.formatId || null,
-        mediaType: formatProperties.mediaType || member.mediaType || null,
-        atLocations: Array.isArray(member.atLocations)
-          ? [...member.atLocations]
-          : member.atLocations,
-      };
-      // Snapshot the current state of the member and any metadata members that
-      // will be updated, so we can restore them if the replacement fails.
-      const memberSnapshots = this.constructor._snapshotMembers(
-        [member, ...metadataMembers],
-        // Only snapshot the fields that will be changed by the replacement, so
-        // we can restore them without overwriting any other edits that may have
-        // occurred in the meantime.
-        [
-          "uploadFile",
-          "contentDirty",
-          "removed",
-          "remoteState",
-          "remotePid",
-          "aggregatedPid",
-          "size",
-          "fileName",
-          "_replacementDisplay",
-          "_replacementSourcePid",
-          "_replacementSourceSysMeta",
-        ],
-      );
-      const updatedMetadataModels = [];
-      const previousPrimaryMetadataPid = this.primaryMetadataPid;
-      const previousRootResourceMapPid = this.rootResourceMapPid;
-
-      try {
-        this.constructor._mutateResourceMap(resourceMap, () => {
-          this._changeMemberPid(member, newPid);
-          metadataPidChanges.forEach((metadataPidChange) => {
-            const replacements = this._updateMetadataMemberReferences(
-              metadataPidChange.member,
-              pid,
-              newPid,
-            );
-            if (replacements) {
-              const metadataMember = metadataPidChange.member;
-              updatedMetadataModels.push(metadataMember.objectModel);
-              metadataMember.contentDirty = true;
-              metadataMember.remoteState =
-                DataPackageMember.RemoteState.PENDING;
-              if (metadataPidChange.oldPid !== metadataPidChange.newPid) {
-                this._changeMemberPid(metadataMember, metadataPidChange.newPid);
-              }
-            }
-          });
-          member._replacementDisplay = replacementDisplay;
-          member._replacementSourcePid = replacementSource;
-          member._replacementSourceSysMeta =
-            replacementSourceSysMeta?.clone?.() ||
-            replacementSourceSysMeta ||
-            null;
-          member.setLocalFile(file);
-        });
-      } catch (error) {
-        updatedMetadataModels.reverse().forEach((model) => {
-          model.replaceMemberPid(newPid, pid);
-        });
-        this.primaryMetadataPid = previousPrimaryMetadataPid;
-        this.rootResourceMapPid = previousRootResourceMapPid;
-        this._restoreMemberSnapshots(memberSnapshots);
-        this.refreshMemberGraphFields(resourceMap);
-        throw error;
-      }
+      const replacement = await this._prepareFileReplacement(pid, member, {
+        requestedPid,
+        replacementSourcePid,
+      });
+      this._applyFileReplacement(member, file, resourceMap, replacement);
 
       this.refreshMemberGraphFields(resourceMap);
-      this.recordUserEdit("member:replace", { member, oldPid: pid, newPid });
+      this.recordUserEdit("member:replace", {
+        member,
+        oldPid: pid,
+        newPid: replacement.newPid,
+      });
       // Eagerly upload the replaced content so the file table can show progress
       // and settle the row instead of leaving the member PENDING until the next
       // full package save. The eager path builds an UPDATE action when the
@@ -1170,6 +1066,169 @@ define([
         propagate,
       });
       return targets;
+    }
+
+    /**
+     * Resolve the remote state and PIDs needed to replace a file.
+     * @param {string} pid Current member PID
+     * @param {DataPackageMember} member Member being replaced
+     * @param {object} [options] Replacement options
+     * @param {string} [options.requestedPid] Optional custom replacement PID
+     * @param {string} [options.replacementSourcePid] Remote PID to obsolete
+     * @returns {Promise<object>} Prepared replacement details
+     * @private
+     */
+    async _prepareFileReplacement(
+      pid,
+      member,
+      { requestedPid, replacementSourcePid } = {},
+    ) {
+      const replacementSource =
+        Values.normalizeText(replacementSourcePid) || null;
+      const metadataMembers = this.getMetadataMembers().filter(
+        (metadataMember) =>
+          metadataMember.objectModel?.replaceMemberPid &&
+          metadataMember.pid !== member.pid,
+      );
+      await this._ensureSystemMetadata([member, ...metadataMembers]);
+      this.assertNotNestedResourceMap(member);
+
+      let replacementSourceSysMeta = null;
+      if (replacementSource) {
+        replacementSourceSysMeta =
+          replacementSource === member.remotePid && member.remoteSysMeta
+            ? member.remoteSysMeta.clone()
+            : await this.getSysMetaService().download(replacementSource, {
+                useCache: false,
+              });
+      }
+
+      const newPid = await this.allocatePid({ requestedPid });
+      if (newPid === pid) {
+        throw new Error("Replacement PID must differ from the current PID");
+      }
+      const metadataPidChanges = await Promise.all(
+        metadataMembers.map(async (metadataMember) => ({
+          member: metadataMember,
+          oldPid: metadataMember.pid,
+          newPid:
+            metadataMember.remotePid &&
+            metadataMember.pid === metadataMember.remotePid
+              ? await this.allocatePid()
+              : metadataMember.pid,
+        })),
+      );
+
+      this.assertCanEdit();
+      [member, ...metadataMembers].forEach((affectedMember) =>
+        this.assertCanEdit(affectedMember.pid),
+      );
+      const formatProperties = member.getFormatProperties?.() || {};
+
+      return {
+        pid,
+        newPid,
+        metadataPidChanges,
+        replacementSource,
+        replacementSourceSysMeta,
+        replacementDisplay: {
+          pid,
+          fileName: member.getFileName?.() || member.fileName || null,
+          title: member.title || "",
+          size: member.size,
+          formatType: member.getFormatType?.() || member.formatType || null,
+          formatId: member.getFormatId?.() || member.formatId || null,
+          mediaType: formatProperties.mediaType || member.mediaType || null,
+          atLocations: Array.isArray(member.atLocations)
+            ? [...member.atLocations]
+            : member.atLocations,
+        },
+      };
+    }
+
+    /**
+     * Apply a prepared file replacement and roll back every local mutation if
+     * it fails.
+     * @param {DataPackageMember} memberToReplace Member being replaced
+     * @param {Blob|File} file Replacement content
+     * @param {ResourceMap} resourceMap Root ResourceMap model
+     * @param {object} replacement Prepared replacement details
+     * @returns {void}
+     * @private
+     */
+    _applyFileReplacement(memberToReplace, file, resourceMap, replacement) {
+      const member = memberToReplace;
+      const {
+        pid,
+        newPid,
+        metadataPidChanges,
+        replacementDisplay,
+        replacementSource,
+        replacementSourceSysMeta,
+      } = replacement;
+      const metadataMembers = metadataPidChanges.map(
+        ({ member: metadataMember }) => metadataMember,
+      );
+      // Snapshot only fields changed by the replacement so rollback does not
+      // overwrite unrelated edits made in the meantime.
+      const memberSnapshots = this.constructor._snapshotMembers(
+        [member, ...metadataMembers],
+        [
+          "uploadFile",
+          "contentDirty",
+          "removed",
+          "remoteState",
+          "remotePid",
+          "aggregatedPid",
+          "size",
+          "fileName",
+          "_replacementDisplay",
+          "_replacementSourcePid",
+          "_replacementSourceSysMeta",
+        ],
+      );
+      const updatedMetadataModels = [];
+      const previousPrimaryMetadataPid = this.primaryMetadataPid;
+      const previousRootResourceMapPid = this.rootResourceMapPid;
+
+      try {
+        this.constructor._mutateResourceMap(resourceMap, () => {
+          this._changeMemberPid(member, newPid);
+          metadataPidChanges.forEach((metadataPidChange) => {
+            const replacements = this._updateMetadataMemberReferences(
+              metadataPidChange.member,
+              pid,
+              newPid,
+            );
+            if (replacements) {
+              const metadataMember = metadataPidChange.member;
+              updatedMetadataModels.push(metadataMember.objectModel);
+              metadataMember.contentDirty = true;
+              metadataMember.remoteState =
+                DataPackageMember.RemoteState.PENDING;
+              if (metadataPidChange.oldPid !== metadataPidChange.newPid) {
+                this._changeMemberPid(metadataMember, metadataPidChange.newPid);
+              }
+            }
+          });
+          member._replacementDisplay = replacementDisplay;
+          member._replacementSourcePid = replacementSource;
+          member._replacementSourceSysMeta =
+            replacementSourceSysMeta?.clone?.() ||
+            replacementSourceSysMeta ||
+            null;
+          member.setLocalFile(file);
+        });
+      } catch (error) {
+        updatedMetadataModels.reverse().forEach((model) => {
+          model.replaceMemberPid(newPid, pid);
+        });
+        this.primaryMetadataPid = previousPrimaryMetadataPid;
+        this.rootResourceMapPid = previousRootResourceMapPid;
+        this._restoreMemberSnapshots(memberSnapshots);
+        this.refreshMemberGraphFields(resourceMap);
+        throw error;
+      }
     }
 
     /**

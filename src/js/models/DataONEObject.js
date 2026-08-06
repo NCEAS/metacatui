@@ -180,6 +180,7 @@ define([
 
       /**
        * Copy stable member fields to the linked EML entity.
+       * @since 0.0.0
        */
       syncMetadataEntityDescriptor() {
         const entity = this.get("metadataEntity");

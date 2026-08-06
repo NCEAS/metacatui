@@ -2398,6 +2398,7 @@ ${supportDetails}`;
        * @param {boolean} [options.packageLevel] Whether apply should target the
        * whole package
        * @returns {object} AccessPolicy modal options
+       * @since 0.0.0
        */
       buildAccessPolicyModalOptions(member, { packageLevel = false } = {}) {
         const sysMeta = member.sysMeta || member.remoteSysMeta;
@@ -2919,6 +2920,104 @@ ${supportDetails}`;
       },
 
       /**
+       * Remove failed new files and restore failed replacements before saving.
+       * @param {DataPackageMember[]} packageMembers Current package members
+       * @returns {Promise<object>} Labels for files omitted from the save
+       * @private
+       * @since 0.0.0
+       */
+      async discardFailedFilesBeforeSave(packageMembers) {
+        const failedNewDataMembers = packageMembers.filter(
+          (member) =>
+            member?.isData?.() &&
+            !member.remotePid &&
+            this.isDiscardableFileUploadFailure(member),
+        );
+        const skippedNewDataFiles = failedNewDataMembers.map((member) =>
+          this.getFailedFileMessage(member),
+        );
+        const failedNewDataPids = failedNewDataMembers.map(
+          (member) => member.pid,
+        );
+        if (failedNewDataPids.length) {
+          await MetacatUI.rootDataPackage.removeMembers(failedNewDataPids);
+        }
+        const skippedFileReplacements =
+          await this.discardFailedFileReplacements();
+        return { skippedNewDataFiles, skippedFileReplacements };
+      },
+
+      /**
+       * Synchronize edited EML with its package member before upload.
+       * @returns {Promise<void>}
+       * @private
+       * @since 0.0.0
+       */
+      async syncMetadataForPackageSave() {
+        let metadataMember =
+          MetacatUI.rootDataPackage.getPrimaryMetadataMember();
+        const metadataChanged =
+          MetacatUI.rootDataPackage.hasMetadataContentEdits?.() === true ||
+          metadataMember?.contentDirty === true;
+        if (!metadataChanged) return;
+
+        if (typeof this.model.setFileName === "function") {
+          this.model.setFileName();
+        }
+        metadataMember = this.attachMetadataModelToPackage(this.model);
+        if (this.metadataEntitySyncNeeded) {
+          this.syncMetadataEntities(metadataMember);
+        }
+        if (metadataMember && !metadataMember.contentDirty) {
+          await MetacatUI.rootDataPackage.markMemberContentDirty(
+            metadataMember.pid,
+          );
+        }
+      },
+
+      /**
+       * Upload the package, retrying once without failed file replacements.
+       * @returns {Promise<object>} Final result, reload message, and skipped files
+       * @private
+       * @since 0.0.0
+       */
+      async uploadWithReplacementFallback() {
+        let result = await MetacatUI.rootDataPackage.upload();
+        let reloadMessage = getPackageSaveReloadMessage(
+          MetacatUI.rootDataPackage.toArray?.() || [],
+          result,
+        );
+        const skippedFileReplacements = [];
+
+        if (
+          !reloadMessage &&
+          result.outcome === "partial_failure" &&
+          !result.reloadRequired
+        ) {
+          const members = MetacatUI.rootDataPackage.toArray?.() || [];
+          const failedMembers = members.filter(
+            (member) => member.remoteState === "failed",
+          );
+          const failedReplacements = this.getFailedFileReplacements();
+          if (
+            failedReplacements.length &&
+            failedMembers.every((member) => failedReplacements.includes(member))
+          ) {
+            skippedFileReplacements.push(
+              ...(await this.discardFailedFileReplacements()),
+            );
+            result = await MetacatUI.rootDataPackage.upload();
+            reloadMessage = getPackageSaveReloadMessage(
+              MetacatUI.rootDataPackage.toArray?.() || [],
+              result,
+            );
+          }
+        }
+
+        return { result, reloadMessage, skippedFileReplacements };
+      },
+
+      /**
        * Saves all edits in the collection
        * @param {Event} e - The DOM Event that triggerd this function
        */
@@ -2951,22 +3050,8 @@ ${supportDetails}`;
         let skippedNewDataFiles = [];
         let skippedFileReplacements = [];
         try {
-          const failedNewDataMembers = packageMembers.filter(
-            (member) =>
-              member?.isData?.() &&
-              !member.remotePid &&
-              this.isDiscardableFileUploadFailure(member),
-          );
-          skippedNewDataFiles = failedNewDataMembers.map((member) =>
-            this.getFailedFileMessage(member),
-          );
-          const failedNewDataPids = failedNewDataMembers.map(
-            (member) => member.pid,
-          );
-          if (failedNewDataPids.length) {
-            await MetacatUI.rootDataPackage.removeMembers(failedNewDataPids);
-          }
-          skippedFileReplacements = await this.discardFailedFileReplacements();
+          ({ skippedNewDataFiles, skippedFileReplacements } =
+            await this.discardFailedFilesBeforeSave(packageMembers));
         } catch (error) {
           this.saveError(error.message || String(error));
           return;
@@ -2976,25 +3061,7 @@ ${supportDetails}`;
         this.setFileTableDisabled(true);
 
         try {
-          let metadataMember =
-            MetacatUI.rootDataPackage.getPrimaryMetadataMember();
-          const metadataChanged =
-            MetacatUI.rootDataPackage.hasMetadataContentEdits?.() === true ||
-            metadataMember?.contentDirty === true;
-          if (metadataChanged) {
-            if (typeof this.model.setFileName === "function") {
-              this.model.setFileName();
-            }
-            metadataMember = this.attachMetadataModelToPackage(this.model);
-            if (this.metadataEntitySyncNeeded) {
-              this.syncMetadataEntities(metadataMember);
-            }
-            if (metadataMember && !metadataMember.contentDirty) {
-              await MetacatUI.rootDataPackage.markMemberContentDirty(
-                metadataMember.pid,
-              );
-            }
-          }
+          await this.syncMetadataForPackageSave();
           const changedMembers =
             MetacatUI.rootDataPackage.getChangedMembers?.() || [];
           this.packageSavePrepMessage = null;
@@ -3013,37 +3080,9 @@ ${supportDetails}`;
             this.refreshFileTable();
           }
           this.toggleEnableControls();
-          let result = await MetacatUI.rootDataPackage.upload();
-          let reloadMessage = getPackageSaveReloadMessage(
-            MetacatUI.rootDataPackage.toArray?.() || [],
-            result,
-          );
-          if (
-            !reloadMessage &&
-            result.outcome === "partial_failure" &&
-            !result.reloadRequired
-          ) {
-            const members = MetacatUI.rootDataPackage.toArray?.() || [];
-            const failedMembers = members.filter(
-              (member) => member.remoteState === "failed",
-            );
-            const failedReplacements = this.getFailedFileReplacements();
-            if (
-              failedReplacements.length &&
-              failedMembers.every((member) =>
-                failedReplacements.includes(member),
-              )
-            ) {
-              skippedFileReplacements.push(
-                ...(await this.discardFailedFileReplacements()),
-              );
-              result = await MetacatUI.rootDataPackage.upload();
-              reloadMessage = getPackageSaveReloadMessage(
-                MetacatUI.rootDataPackage.toArray?.() || [],
-                result,
-              );
-            }
-          }
+          const upload = await this.uploadWithReplacementFallback();
+          const { result, reloadMessage } = upload;
+          skippedFileReplacements.push(...upload.skippedFileReplacements);
           if (!reloadMessage && result.outcome === "success") {
             this.saveSuccess(result, {
               skippedFileReplacements,
@@ -3606,6 +3645,7 @@ ${supportDetails}`;
       /**
        * Stop editing an older package until its interrupted save is recovered.
        * @param {string} metadataPid Metadata PID with a recovery record
+       * @since 0.0.0
        */
       showInterruptedSave(metadataPid) {
         const message = `
@@ -3729,6 +3769,7 @@ ${supportDetails}`;
        * @param {string} metadataPid Orphaned metadata PID to repair
        * @param {object} [recoveryOptions] Recovery strategy options
        * @returns {Promise<void>} Resolves once repair has been attempted
+       * @since 0.0.0
        */
       async repairDataset(metadataPid, recoveryOptions = {}) {
         const button = this.$(".repair-dataset");
@@ -4090,6 +4131,7 @@ ${supportDetails}`;
       /**
        * Run a pending draft save immediately. Used only when the editor is
        * closing, so normal field edits stay debounced.
+       * @since 0.0.0
        */
       flushDraftSave() {
         if (!this.draftSaveTimeout) return;
@@ -4101,7 +4143,10 @@ ${supportDetails}`;
         }
       },
 
-      /** Serialize and store a draft of the parent EML model immediately. */
+      /**
+       * Serialize and store a draft of the parent EML model immediately.
+       * @since 0.0.0
+       */
       saveDraftNow() {
         const view = this;
 
