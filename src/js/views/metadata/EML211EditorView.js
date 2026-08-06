@@ -200,6 +200,48 @@ define([
     },
     untitledDataset: "Untitled dataset",
   };
+
+  /**
+   * Return the reload message required by current package save state.
+   * @param {object[]} [members] Package members
+   * @param {object} [state] Upload result or error
+   * @returns {string|null} Required reload message, or null
+   * @private
+   * @since 0.0.0
+   */
+  function getPackageSaveReloadMessage(members = [], state = null) {
+    const failedMembers = members.filter(
+      (member) => member?.remoteState === "failed",
+    );
+    const hasStaleMember = failedMembers.some(
+      (member) => member.lastUploadError?.code === "stale_remote",
+    );
+    if (
+      state?.outcome === "stale_remote" ||
+      state?.code === "stale_remote" ||
+      hasStaleMember
+    ) {
+      return MESSAGES.saveStateStale;
+    }
+
+    const hasUncertainMember =
+      members.some((member) => member?.remoteState === "ambiguous") ||
+      failedMembers.some(
+        (member) => member.lastUploadError?.reloadRequired === true,
+      );
+    if (
+      state?.reloadRequired === true ||
+      state?.code === "reload_required" ||
+      state?.outcome === "cancelled" ||
+      isAbortError(state) ||
+      hasUncertainMember
+    ) {
+      return MESSAGES.saveStateUncertain;
+    }
+
+    return null;
+  }
+
   /**
    * @class EML211EditorView
    * @classdesc A view of a form for creating and editing EML 2.1.1 documents
@@ -346,6 +388,17 @@ define([
       packageSavePendingPids: null,
 
       /**
+       * Reload message retained after an upload leaves package state unsafe to
+       * reuse.
+       * @type {string|null}
+       * @default null
+       * @since 0.0.0
+       * @example
+       * view.packageSaveReloadMessage = "Reload before saving again.";
+       */
+      packageSaveReloadMessage: null,
+
+      /**
        * EML entity matches for the current editor file table render.
        * @type {Map<string, EMLEntity>}
        */
@@ -381,6 +434,7 @@ define([
         this.packageSaveUploadTotal = null;
         this.packageSavePrepMessage = null;
         this.packageSavePendingPids = null;
+        this.packageSaveReloadMessage = null;
         this.entityByMemberPid = null;
         this.metadataEntitySyncNeeded = true;
         this.renderId = null;
@@ -2112,6 +2166,76 @@ ${supportDetails}`;
       },
 
       /**
+       * Handle a replacement selected from a file table row.
+       * @param {Backbone.Model} rowModel File table row
+       * @returns {Promise<boolean>} False only when no file was selected
+       * @since 0.0.0
+       * @example
+       * const handled = await view.handleFileTableReplaceAction(rowModel);
+       */
+      async handleFileTableReplaceAction(rowModel) {
+        const rowId = rowModel.get("id");
+        const [file] = await this.choosePackageFiles();
+        if (!file) return false;
+
+        const member = MetacatUI.rootDataPackage.getMember?.(rowId);
+        const sourcePid = member?.remotePid || rowId;
+        this.fileTableEditInProgress = true;
+        this.toggleEnableControls();
+        this.startFileReplacementPreview(rowId, member);
+
+        try {
+          const versionTracker = MetacatUI.rootDataPackage.getVersionTracker();
+          const latestPid = await versionTracker.getLatestVersion(sourcePid, {
+            useCache: false,
+          });
+
+          if (latestPid && latestPid !== sourcePid) {
+            let latestSysMeta = null;
+            try {
+              latestSysMeta = await versionTracker.getSysMeta?.(latestPid, {
+                useCache: false,
+              });
+            } catch {
+              // The modal can still ask for confirmation with partial details.
+            }
+
+            await this.showReplaceNewestVersionModal({
+              rowId,
+              member,
+              sourceDetails: this.getReplaceFileDetails({
+                pid: sourcePid,
+                member,
+                rowModel,
+                label:
+                  rowModel.get?.("label") ||
+                  member?.getFileName?.() ||
+                  member?.fileName ||
+                  "",
+              }),
+              latestPid,
+              latestDetails: this.getReplaceFileDetails({
+                pid: latestPid,
+                sysMeta: latestSysMeta,
+                label: latestSysMeta?.fileName || "",
+              }),
+              file,
+            });
+          } else {
+            await this.replaceFileFromFileTable(rowId, file, { member });
+          }
+        } catch (error) {
+          this.showReplaceFileFailedAlert(error);
+        } finally {
+          this.fileTableEditInProgress = false;
+          this.finishFileReplacementPreview(rowId);
+          this.toggleEnableControls();
+        }
+
+        return true;
+      },
+
+      /**
        * Run the action selected for a file table row.
        * @param {Backbone.Model} rowModel File table row
        * @param {Backbone.Model} actionModel Selected row action
@@ -2145,61 +2269,7 @@ ${supportDetails}`;
         }
 
         if (actionId === "replace") {
-          const [file] = await this.choosePackageFiles();
-          if (!file) return false;
-          const member = MetacatUI.rootDataPackage.getMember?.(rowId);
-          const sourcePid = member?.remotePid || rowId;
-          this.fileTableEditInProgress = true;
-          this.toggleEnableControls();
-          this.startFileReplacementPreview(rowId, member);
-          try {
-            const versionTracker =
-              MetacatUI.rootDataPackage.getVersionTracker();
-            const latestPid = await versionTracker.getLatestVersion(sourcePid, {
-              useCache: false,
-            });
-            if (latestPid && latestPid !== sourcePid) {
-              let latestSysMeta = null;
-              try {
-                latestSysMeta = await versionTracker.getSysMeta?.(latestPid, {
-                  useCache: false,
-                });
-              } catch (_error) {
-                // The modal can still ask for confirmation with partial details.
-              }
-              await this.showReplaceNewestVersionModal({
-                rowId,
-                member,
-                sourceDetails: this.getReplaceFileDetails({
-                  pid: sourcePid,
-                  member,
-                  rowModel,
-                  label:
-                    rowModel.get?.("label") ||
-                    member?.getFileName?.() ||
-                    member?.fileName ||
-                    "",
-                }),
-                latestPid,
-                latestDetails: this.getReplaceFileDetails({
-                  pid: latestPid,
-                  sysMeta: latestSysMeta,
-                  label: latestSysMeta?.fileName || "",
-                }),
-                file,
-              });
-              return true;
-            }
-            await this.replaceFileFromFileTable(rowId, file, { member });
-            return true;
-          } catch (error) {
-            this.showReplaceFileFailedAlert(error);
-            return true;
-          } finally {
-            this.fileTableEditInProgress = false;
-            this.finishFileReplacementPreview(rowId);
-            this.toggleEnableControls();
-          }
+          return this.handleFileTableReplaceAction(rowModel);
         }
 
         if (actionId === "remove") {
@@ -2783,6 +2853,21 @@ ${supportDetails}`;
       },
 
       /**
+       * Return whether a failed file upload is known not to require a reload.
+       * @param {DataPackageMember} member Package member
+       * @returns {boolean} Whether the failed upload can be discarded
+       * @since 0.0.0
+       * @example
+       * view.isDiscardableFileUploadFailure(member); // true
+       */
+      isDiscardableFileUploadFailure(member) {
+        return (
+          member?.remoteState === "failed" &&
+          member.lastUploadError?.reloadRequired !== true
+        );
+      },
+
+      /**
        * Return failed data members that replaced an existing remote PID.
        * @returns {DataPackageMember[]} Failed replacement members
        * @since 0.0.0
@@ -2793,7 +2878,7 @@ ${supportDetails}`;
             member?.isData?.() &&
             member.remotePid &&
             member.pid !== member.remotePid &&
-            member.remoteState === "failed",
+            this.isDiscardableFileUploadFailure(member),
         );
       },
 
@@ -2847,16 +2932,30 @@ ${supportDetails}`;
           return;
         }
 
+        if (!this.model.isValid()) {
+          this.model.trigger("invalid");
+          return;
+        }
+        this.model.trigger("valid");
+
+        const packageMembers = MetacatUI.rootDataPackage.toArray?.() || [];
+        const preSaveReloadMessage =
+          this.packageSaveReloadMessage ||
+          getPackageSaveReloadMessage(packageMembers);
+        if (preSaveReloadMessage) {
+          this.packageSaveReloadMessage = preSaveReloadMessage;
+          this.saveError(preSaveReloadMessage);
+          return;
+        }
+
         let skippedNewDataFiles = [];
         let skippedFileReplacements = [];
         try {
-          const failedNewDataMembers = (
-            MetacatUI.rootDataPackage.toArray?.() || []
-          ).filter(
+          const failedNewDataMembers = packageMembers.filter(
             (member) =>
               member?.isData?.() &&
               !member.remotePid &&
-              member.remoteState === "failed",
+              this.isDiscardableFileUploadFailure(member),
           );
           skippedNewDataFiles = failedNewDataMembers.map((member) =>
             this.getFailedFileMessage(member),
@@ -2872,12 +2971,6 @@ ${supportDetails}`;
           this.saveError(error.message || String(error));
           return;
         }
-
-        if (!this.model.isValid()) {
-          this.model.trigger("invalid");
-          return;
-        }
-        this.model.trigger("valid");
 
         this.showSaving();
         this.setFileTableDisabled(true);
@@ -2921,10 +3014,19 @@ ${supportDetails}`;
           }
           this.toggleEnableControls();
           let result = await MetacatUI.rootDataPackage.upload();
-          if (result.outcome !== "success") {
-            const failedMembers = MetacatUI.rootDataPackage
-              .toArray()
-              .filter((member) => member.remoteState === "failed");
+          let reloadMessage = getPackageSaveReloadMessage(
+            MetacatUI.rootDataPackage.toArray?.() || [],
+            result,
+          );
+          if (
+            !reloadMessage &&
+            result.outcome === "partial_failure" &&
+            !result.reloadRequired
+          ) {
+            const members = MetacatUI.rootDataPackage.toArray?.() || [];
+            const failedMembers = members.filter(
+              (member) => member.remoteState === "failed",
+            );
             const failedReplacements = this.getFailedFileReplacements();
             if (
               failedReplacements.length &&
@@ -2936,15 +3038,22 @@ ${supportDetails}`;
                 ...(await this.discardFailedFileReplacements()),
               );
               result = await MetacatUI.rootDataPackage.upload();
+              reloadMessage = getPackageSaveReloadMessage(
+                MetacatUI.rootDataPackage.toArray?.() || [],
+                result,
+              );
             }
           }
-          if (result.outcome === "success") {
+          if (!reloadMessage && result.outcome === "success") {
             this.saveSuccess(result, {
               skippedFileReplacements,
               skippedNewDataFiles,
             });
           } else {
-            this.saveError(this.getUploadErrorMessage(result));
+            if (reloadMessage) {
+              this.packageSaveReloadMessage = reloadMessage;
+            }
+            this.saveError(reloadMessage || this.getUploadErrorMessage(result));
           }
         } catch (error) {
           if (error?.code === "validation_failure") {
@@ -2977,6 +3086,13 @@ ${supportDetails}`;
             return;
           }
 
+          const reloadMessage = getPackageSaveReloadMessage(
+            MetacatUI.rootDataPackage.toArray?.() || [],
+            error,
+          );
+          if (reloadMessage) {
+            this.packageSaveReloadMessage = reloadMessage;
+          }
           this.saveError(error.message || String(error));
         }
       },
@@ -2989,12 +3105,8 @@ ${supportDetails}`;
        */
       getUploadErrorMessage(result) {
         if (!result) return MESSAGES.uploadDidNotComplete;
-        if (result.reloadRequired) {
-          return MESSAGES.saveStateUncertain;
-        }
-        if (result.outcome === "stale_remote") {
-          return MESSAGES.saveStateStale;
-        }
+        const reloadMessage = getPackageSaveReloadMessage([], result);
+        if (reloadMessage) return reloadMessage;
         const details = result.getErrorMessages?.() || [];
         if (details.length) {
           return `${MESSAGES.notAllSubmitted}:\n\n${details.join("\n")}`;
@@ -3113,14 +3225,34 @@ ${supportDetails}`;
         const messageParagraph = messageContainer.find("p");
         let messageClasses = CLASS_NAMES.alertError;
 
-        const failedMembers = MetacatUI.rootDataPackage
-          .toArray()
-          .filter((member) => member.remoteState === "failed");
+        const packageMembers = MetacatUI.rootDataPackage.toArray();
+        const failedMembers = packageMembers.filter(
+          (member) => member.remoteState === "failed",
+        );
+        const hasAmbiguousMembers = packageMembers.some(
+          (member) => member.remoteState === "ambiguous",
+        );
 
-        if (
+        const hasOnlyDiscardableFileFailures =
+          !hasAmbiguousMembers &&
           failedMembers.length &&
-          failedMembers.every((member) => member.isData())
-        ) {
+          failedMembers.every(
+            (member) =>
+              member.isData() && this.isDiscardableFileUploadFailure(member),
+          );
+
+        const reloadMessage =
+          this.packageSaveReloadMessage ||
+          getPackageSaveReloadMessage(packageMembers) ||
+          ([MESSAGES.saveStateStale, MESSAGES.saveStateUncertain].includes(
+            errorMsg,
+          )
+            ? errorMsg
+            : null);
+        if (reloadMessage) {
+          this.packageSaveReloadMessage = reloadMessage;
+          messageParagraph.text(reloadMessage);
+        } else if (hasOnlyDiscardableFileFailures) {
           // Create a list of file names for the files that failed to upload
           const failedFileList = $(document.createElement("ul"));
           failedMembers.forEach((failedMember) => {
@@ -3146,23 +3278,23 @@ ${supportDetails}`;
               : `${MESSAGES.notAllSubmitted} Save the dataset again to continue without these files.`,
           );
           messageParagraph.after(failedFileList);
+        } else if (
+          this.model.get("draftSaved") &&
+          MetacatUI.appModel.get("editorSaveErrorMsgWithDraft")
+        ) {
+          messageParagraph.text(
+            MetacatUI.appModel.get("editorSaveErrorMsgWithDraft"),
+          );
+          messageClasses = CLASS_NAMES.alertWarning;
+        } else if (MetacatUI.appModel.get("editorSaveErrorMsg")) {
+          messageParagraph.text(MetacatUI.appModel.get("editorSaveErrorMsg"));
+          messageClasses = CLASS_NAMES.alertError;
         } else {
-          if (
-            this.model.get("draftSaved") &&
-            MetacatUI.appModel.get("editorSaveErrorMsgWithDraft")
-          ) {
-            messageParagraph.text(
-              MetacatUI.appModel.get("editorSaveErrorMsgWithDraft"),
-            );
-            messageClasses = CLASS_NAMES.alertWarning;
-          } else if (MetacatUI.appModel.get("editorSaveErrorMsg")) {
-            messageParagraph.text(MetacatUI.appModel.get("editorSaveErrorMsg"));
-            messageClasses = CLASS_NAMES.alertError;
-          } else {
-            messageParagraph.text(MESSAGES.notAllSubmitted);
-            messageClasses = CLASS_NAMES.alertError;
-          }
+          messageParagraph.text(MESSAGES.notAllSubmitted);
+          messageClasses = CLASS_NAMES.alertError;
+        }
 
+        if (!hasOnlyDiscardableFileFailures || reloadMessage) {
           messageParagraph.after(
             $(document.createElement("p")).append(
               $(document.createElement("a"))

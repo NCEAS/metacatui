@@ -727,6 +727,92 @@ define([
       ]);
     });
 
+    it("re-serializes metadata edited after a failed upload", async () => {
+      const { pkg, services } = await loadExistingPackage();
+      let content = "first";
+      const metadataModel = {
+        id: "meta.1",
+        set(key, value) {
+          if (key === "id") this.id = value;
+        },
+        serialize: ({ packageId }) =>
+          `<eml packageId="${packageId}">${content}</eml>`,
+        replaceMemberPid: () => 0,
+      };
+      pkg.getPrimaryMetadataMember().objectModel = metadataModel;
+      services.objectService.update
+        .onFirstCall()
+        .rejects(httpError(400, "metadata rejected"));
+
+      await pkg.markMemberContentDirty("meta.1");
+      const metadataPid = pkg.getPrimaryMetadataMember().pid;
+      const firstResult = await pkg.upload();
+      firstResult.outcome.should.equal(UploadResult.Outcomes.PARTIAL_FAILURE);
+
+      content = "second";
+      pkg.recordUserEdit("metadata:changed", {
+        member: pkg.getPrimaryMetadataMember(),
+      });
+      const secondResult = await pkg.upload();
+
+      secondResult.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+      const uploadPayloads = await Promise.all(
+        services.objectService.update
+          .getCalls()
+          .map((call) => call.args[0].object.text()),
+      );
+      const metadataPayloads = uploadPayloads.filter((text) =>
+        text.startsWith("<eml"),
+      );
+      expect(metadataPayloads).to.deep.equal([
+        `<eml packageId="${metadataPid}">first</eml>`,
+        `<eml packageId="${metadataPid}">second</eml>`,
+      ]);
+    });
+
+    it("re-serializes metadata after discarding a failed replacement", async () => {
+      const { pkg, services } = await loadExistingPackage();
+      let documentedPid = "data.1";
+      const uploadedMetadata = [];
+      const metadataModel = {
+        id: "meta.1",
+        set(key, value) {
+          if (key === "id") this.id = value;
+        },
+        serialize: ({ packageId }) =>
+          `<eml packageId="${packageId}"><entity>${documentedPid}</entity></eml>`,
+        replaceMemberPid(oldPid, newPid) {
+          if (documentedPid !== oldPid) return 0;
+          documentedPid = newPid;
+          return 1;
+        },
+      };
+      pkg.getPrimaryMetadataMember().objectModel = metadataModel;
+      services.objectService.update.callsFake(async ({ newPid, object }) => {
+        const payload = await object.text();
+        if (newPid === "data.2") {
+          throw httpError(400, "replacement rejected");
+        }
+        if (payload.startsWith("<eml")) uploadedMetadata.push(payload);
+        return { data: { identifier: newPid } };
+      });
+
+      await pkg.replaceFile("data.1", new Blob(["replacement"]), {
+        requestedPid: "data.2",
+      });
+      const metadataPid = pkg.getPrimaryMetadataMember().pid;
+      const firstResult = await pkg.upload();
+      firstResult.outcome.should.equal(UploadResult.Outcomes.PARTIAL_FAILURE);
+
+      pkg.discardFileReplacement("data.2");
+      const secondResult = await pkg.upload();
+
+      secondResult.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+      expect(uploadedMetadata).to.deep.equal([
+        `<eml packageId="${metadataPid}"><entity>data.1</entity></eml>`,
+      ]);
+    });
+
     it("rejects edits while an upload is in progress (concurrent-edit guard)", async () => {
       const { pkg } = await loadExistingPackage();
       // Simulate an in-flight upload holding the edit lock.

@@ -116,8 +116,8 @@ define([
       this.type = "DataPackage";
       this.events = { ...Backbone.Events };
       // Loaded ObjectFormats collection, injected into members so they can
-      // classify their format type synchronously. Loaded lazily (and once) via
-      // ensureObjectFormats() before any member manifest is parsed.
+      // classify their format type synchronously. Loaded lazily (and once) by
+      // DataPackageLoader before any member manifest is parsed.
       this.objectFormats = options.objectFormats || null;
       this.members = new DataPackageMembers(this.objectFormats, this.events);
       // For storing the PID or SID originally passed to resolveFromPid()
@@ -164,16 +164,6 @@ define([
       if (options.members) {
         this.members.add(options.members, addOptions);
       }
-    }
-
-    // See DataPackageLoader.reportLoadProgress().
-    async reportLoadProgress(phase, details = {}) {
-      return DataPackageLoader.reportLoadProgress(this, phase, details);
-    }
-
-    // See DataPackageLoader.ensureObjectFormats().
-    async ensureObjectFormats() {
-      return DataPackageLoader.ensureObjectFormats(this);
     }
 
     // See DataPackageLoader.resolveFromPid().
@@ -1567,8 +1557,17 @@ define([
       // This is only the final synchronous guard. Async edit methods must also
       // recheck immediately after their last await and before their first mutation.
       this.assertCanEdit();
-      if (event === "metadata:changed") {
+      const metadataChanged = event === "metadata:changed";
+      if (metadataChanged) {
         this.metadataContentEdited = true;
+      }
+      const metadataMember = this.getPrimaryMetadataMember();
+      if (
+        metadataMember?.objectModel?.serialize &&
+        (metadataChanged || metadataMember.contentDirty)
+      ) {
+        // Prepared model bytes belong to the draft that produced them.
+        metadataMember.uploadFile = null;
       }
       this.draftRevision += 1;
       this.events.trigger(event, details);

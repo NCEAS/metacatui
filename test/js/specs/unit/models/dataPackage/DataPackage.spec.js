@@ -1,6 +1,7 @@
 define([
   "/test/js/specs/shared/concurrency-tracker.js",
   "models/dataPackage/DataPackage",
+  "models/dataPackage/DataPackageLoader",
   "models/dataPackage/DataPackageMember",
   "models/dataPackage/DataPackageMembers",
   "models/dataONEServices/PublishService",
@@ -13,6 +14,7 @@ define([
 ], (
   trackConcurrency,
   DataPackage,
+  DataPackageLoader,
   DataPackageMember,
   DataPackageMembers,
   PublishService,
@@ -243,13 +245,14 @@ define([
       });
     });
 
-    describe("load progress", () => {
+    describe("DataPackageLoader load progress", () => {
       it("publishes typed phases without view text", async () => {
         const pkg = new DataPackage();
         const progress = [];
         pkg.events.on("load:progress", (event) => progress.push(event));
 
-        await pkg.reportLoadProgress(
+        await DataPackageLoader.reportLoadProgress(
+          pkg,
           DataPackage.LoadPhases.RESOURCE_MAP_DOWNLOAD,
           { rootResourceMapPid: "resource_map_1" },
         );
@@ -673,7 +676,7 @@ define([
           ],
           "resource_map_1",
         );
-        sandbox.stub(pkg, "ensureObjectFormats").resolves();
+        sandbox.stub(DataPackageLoader, "ensureObjectFormats").resolves();
         return pkg;
       }
 

@@ -1380,6 +1380,44 @@ define([
       });
     });
 
+    it("uses identities loaded while resolving the current subject", async () => {
+      const { pkg, checkAll } = makePermissionPackage({
+        authorized: false,
+        remoteSysMeta: systemMetadata({
+          rightsHolder: "uid=other",
+          accessPolicy: [
+            { subjects: ["uid=alternate"], permissions: ["write"] },
+          ],
+        }),
+      });
+      const originalMetacatUI = globalThis.MetacatUI;
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        appUserModel: null,
+      };
+      pkg.getAuthorizationService().getUserKey.callsFake(async () => {
+        globalThis.MetacatUI.appUserModel = {
+          get: (key) =>
+            ({
+              username: "uid=test",
+              identities: [],
+              identitiesUsernames: ["uid=alternate"],
+              allIdentitiesAndGroups: [],
+              isMemberOf: [],
+            })[key],
+        };
+        return "uid=test";
+      });
+
+      try {
+        await pkg._uploader.assertWritePermissions(permissionAction("write"));
+      } finally {
+        globalThis.MetacatUI = originalMetacatUI;
+      }
+
+      sinon.assert.notCalled(checkAll);
+    });
+
     it("falls back to server authorization when local policy is uncertain", async () => {
       const { pkg, checkAll } = makePermissionPackage({
         authorized: false,
@@ -1402,6 +1440,26 @@ define([
       sinon.assert.calledOnce(checkAll);
       checkAll.firstCall.args[0].should.deep.equal(["data.1"]);
       checkAll.firstCall.args[1].should.equal("changePermission");
+    });
+
+    it("deduplicates each source PID within a permission group", async () => {
+      const { pkg, checkAll } = makePermissionPackage({
+        remoteSysMetaDownloaded: false,
+      });
+      const [writeAction] = permissionAction("write");
+
+      await pkg._uploader.assertWritePermissions([
+        writeAction,
+        { ...writeAction },
+        { ...writeAction, requiredPermissions: ["changePermission"] },
+        { memberPid: "new.1", requiredPermissions: ["write"] },
+      ]);
+
+      sinon.assert.callCount(checkAll, 2);
+      checkAll.firstCall.args[0].should.deep.equal(["data.1"]);
+      checkAll.firstCall.args[1].should.equal("write");
+      checkAll.secondCall.args[0].should.deep.equal(["data.1"]);
+      checkAll.secondCall.args[1].should.equal("changePermission");
     });
 
     // Cases where local policy cannot decide and the check must defer to the

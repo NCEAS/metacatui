@@ -73,6 +73,126 @@ define([
   }
 
   /**
+   * Group unique source-object checks by required permission.
+   * @param {object[]} actions Upload actions
+   * @param {object} dataPackage Owning DataPackage instance
+   * @returns {object[]} Permission groups and their source checks
+   * @private
+   * @since 0.0.0
+   */
+  function buildWritePermissionGroups(actions, dataPackage) {
+    const checksByPermission = new Map();
+
+    actions.forEach((action) => {
+      if (!action.sourcePid) return;
+
+      action.requiredPermissions.forEach((permission) => {
+        const checks = checksByPermission.get(permission) || new Map();
+        if (!checks.has(action.sourcePid)) {
+          checks.set(action.sourcePid, dataPackage.getMember(action.memberPid));
+        }
+        checksByPermission.set(permission, checks);
+      });
+    });
+
+    return [...checksByPermission].map(([permission, checks]) => ({
+      permission,
+      checks: [...checks].map(([pid, member]) => ({ pid, member })),
+    }));
+  }
+
+  /**
+   * Collect every subject that may represent the current user.
+   * @param {object} authService Authorization service
+   * @returns {Promise<object>} Authentication state and current subjects
+   * @private
+   * @since 0.0.0
+   */
+  async function getCurrentUserAuthorizationContext(authService) {
+    const currentSubject =
+      Values.normalizeText(
+        typeof authService.getUserKey === "function"
+          ? await authService.getUserKey()
+          : globalThis.MetacatUI?.appUserModel?.get?.("username"),
+      ) || "public";
+    const isAuthenticated = currentSubject !== "public";
+    const appUserModel = globalThis.MetacatUI?.appUserModel;
+    const getUserValue = (key) =>
+      typeof appUserModel?.get === "function" ? appUserModel.get(key) : null;
+    const identitiesValue = getUserValue("identities");
+    const groupsValue = getUserValue("isMemberOf");
+    const identities = Array.isArray(identitiesValue) ? identitiesValue : [];
+    const groups = Array.isArray(groupsValue) ? groupsValue : [];
+
+    return {
+      isAuthenticated,
+      subjects: isAuthenticated
+        ? Values.dedupeStrings([
+            currentSubject,
+            getUserValue("username"),
+            ...Values.normalizeStringList(getUserValue("identitiesUsernames")),
+            ...Values.normalizeStringList(
+              getUserValue("allIdentitiesAndGroups"),
+            ),
+            ...identities.map(
+              (identity) =>
+                identity?.get?.("username") || identity?.username || identity,
+            ),
+            ...groups.map((group) => group?.groupId || group),
+          ])
+        : ["public"],
+    };
+  }
+
+  /**
+   * Determine whether fresh local System Metadata proves an allow.
+   * False means authorization is uncertain and must be checked remotely.
+   * @param {DataPackageMember} member Source package member
+   * @param {string} permission Required permission
+   * @param {object} context Current-user authorization context
+   * @param {boolean} context.isAuthenticated Whether the user is authenticated
+   * @param {string[]} context.subjects Subjects representing the current user
+   * @returns {boolean} Whether local state proves the permission
+   * @private
+   * @since 0.0.0
+   */
+  function canProvePermissionLocally(
+    member,
+    permission,
+    { isAuthenticated, subjects },
+  ) {
+    try {
+      // Local policy can prove an allow, never a denial. Only trust a fresh,
+      // fully parsed remote baseline; all uncertain cases go to the server.
+      if (!member?._remoteSysMetaDownloaded) return false;
+
+      const sysMeta = member.remoteSysMeta;
+      const parseWarnings =
+        member._remoteSysMetaParseWarnings || sysMeta?.parseWarnings;
+      if (!sysMeta || (Array.isArray(parseWarnings) && parseWarnings.length)) {
+        return false;
+      }
+
+      if (
+        isAuthenticated &&
+        subjects.includes(Values.normalizeText(sysMeta.rightsHolder))
+      ) {
+        return true;
+      }
+
+      const policy = sysMeta.accessPolicy;
+      if (typeof policy?.isAuthorized !== "function") return false;
+
+      return (
+        (isAuthenticated && policy.isAuthorized(permission, subjects)) ||
+        policy.isAuthorized(permission, "public")
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Coordinates upload preparation, execution, retry, cancellation, and recovery
    * persistence for one {@link DataPackage} instance.
    * @class DataPackageUploader
@@ -390,26 +510,9 @@ define([
       actions,
       { signal, maxConcurrent = DEFAULT_MAX_CONCURRENT, onProgress } = {},
     ) {
-      const checksByPermission = new Map();
-      actions.forEach((action) => {
-        if (!action.sourcePid) return;
-        action.requiredPermissions.forEach((permission) => {
-          const checks = checksByPermission.get(permission) || new Map();
-          if (!checks.has(action.sourcePid)) {
-            checks.set(
-              action.sourcePid,
-              this.dataPackage.getMember(action.memberPid),
-            );
-          }
-          checksByPermission.set(permission, checks);
-        });
-      });
-
-      const permissionGroups = [...checksByPermission].map(
-        ([permission, checks]) => ({
-          permission,
-          checks: [...checks].map(([pid, member]) => ({ pid, member })),
-        }),
+      const permissionGroups = buildWritePermissionGroups(
+        actions,
+        this.dataPackage,
       );
       const total = permissionGroups.reduce(
         (count, group) => count + group.checks.length,
@@ -418,68 +521,8 @@ define([
       if (!total) return;
 
       const authService = this.dataPackage.getAuthorizationService();
-      const currentSubject =
-        Values.normalizeText(
-          typeof authService.getUserKey === "function"
-            ? await authService.getUserKey()
-            : globalThis.MetacatUI?.appUserModel?.get?.("username"),
-        ) || "public";
-      const authenticatedSubject = currentSubject !== "public";
-      const appUserModel = globalThis.MetacatUI?.appUserModel;
-      const getUserValue = (key) =>
-        typeof appUserModel?.get === "function" ? appUserModel.get(key) : null;
-      const identityModels = Array.isArray(getUserValue("identities"))
-        ? getUserValue("identities")
-        : [];
-      const groupModels = Array.isArray(getUserValue("isMemberOf"))
-        ? getUserValue("isMemberOf")
-        : [];
-      const currentSubjects = authenticatedSubject
-        ? Values.dedupeStrings([
-            currentSubject,
-            getUserValue("username"),
-            ...Values.normalizeStringList(getUserValue("identitiesUsernames")),
-            ...Values.normalizeStringList(
-              getUserValue("allIdentitiesAndGroups"),
-            ),
-            ...identityModels.map(
-              (identity) =>
-                identity?.get?.("username") || identity?.username || identity,
-            ),
-            ...groupModels.map((group) => group?.groupId || group),
-          ])
-        : ["public"];
-      const isLocallyObviousAllow = (member, permission) => {
-        try {
-          // Local policy can prove an allow, never a denial. Only trust a fresh,
-          // fully parsed remote baseline; all uncertain cases go to the server.
-          if (!member?._remoteSysMetaDownloaded) return false;
-          const sysMeta = member.remoteSysMeta;
-          const parseWarnings =
-            member._remoteSysMetaParseWarnings || sysMeta?.parseWarnings;
-          if (
-            !sysMeta ||
-            (Array.isArray(parseWarnings) && parseWarnings.length)
-          ) {
-            return false;
-          }
-          if (
-            authenticatedSubject &&
-            currentSubjects.includes(Values.normalizeText(sysMeta.rightsHolder))
-          ) {
-            return true;
-          }
-          const policy = sysMeta.accessPolicy;
-          if (typeof policy?.isAuthorized !== "function") return false;
-          return (
-            (authenticatedSubject &&
-              policy.isAuthorized(permission, currentSubjects)) ||
-            policy.isAuthorized(permission, "public")
-          );
-        } catch (_error) {
-          return false;
-        }
-      };
+      const authorizationContext =
+        await getCurrentUserAuthorizationContext(authService);
 
       const denied = [];
       let completed = 0;
@@ -493,7 +536,9 @@ define([
         const sourcePids = [];
         for (let checkIndex = 0; checkIndex < checks.length; checkIndex += 1) {
           const { pid, member } = checks[checkIndex];
-          if (isLocallyObviousAllow(member, permission)) {
+          if (
+            canProvePermissionLocally(member, permission, authorizationContext)
+          ) {
             completed += 1;
             if (typeof onProgress === "function") {
               onProgress({ action: permission, completed, pid, total });

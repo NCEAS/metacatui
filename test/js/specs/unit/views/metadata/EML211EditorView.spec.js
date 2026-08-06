@@ -2354,10 +2354,128 @@ define([
       );
     });
 
-    it("shows EML validation errors before starting package upload", async function () {
+    it("uses the stale-package message before the generic reload message", function () {
+      view
+        .getUploadErrorMessage({
+          outcome: "stale_remote",
+          reloadRequired: true,
+        })
+        .should.equal(
+          "This package has been updated elsewhere. Reload the latest version before saving.",
+        );
+    });
+
+    it("uses the generic uncertain-state message for cancelled uploads", function () {
+      view
+        .getUploadErrorMessage({
+          outcome: "cancelled",
+          reloadRequired: true,
+        })
+        .should.equal(
+          "The upload state is uncertain. Reload the package before saving again.",
+        );
+    });
+
+    it("requires reload after cancellation even without an ambiguous member", async function () {
+      model.validationError = null;
+      const rootDataPackage = {
+        toArray: sandbox.stub().returns([]),
+        hasMetadataContentEdits: sandbox.stub().returns(false),
+        getChangedMembers: sandbox.stub().returns([]),
+        getPrimaryMetadataMember: sandbox.stub().returns({
+          pid: "metadata.1",
+          contentDirty: false,
+        }),
+        upload: sandbox.stub(),
+      };
+      rootDataPackage.upload
+        .onFirstCall()
+        .resolves({ outcome: "cancelled", reloadRequired: true });
+      rootDataPackage.upload.onSecondCall().resolves({ outcome: "success" });
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+      };
+      sandbox.stub(view, "showSaving");
+      sandbox.stub(view, "refreshFileTable");
+      sandbox.stub(view, "saveSuccess");
+      sandbox.stub(view, "saveError");
+
+      await view.save({ target: $("<button></button>")[0] });
+      await view.save({ target: $("<button></button>")[0] });
+
+      sinon.assert.calledOnce(rootDataPackage.upload);
+      sinon.assert.notCalled(view.saveSuccess);
+      sinon.assert.calledTwice(view.saveError);
+      view.saveError
+        .alwaysCalledWithExactly(
+          "The upload state is uncertain. Reload the package before saving again.",
+        )
+        .should.equal(true);
+    });
+
+    it("uses the stale message for an upload preparation error", async function () {
+      model.validationError = null;
+      const staleError = Object.assign(new Error("metadata superseded"), {
+        code: "stale_remote",
+        reloadRequired: true,
+      });
+      const rootDataPackage = {
+        toArray: sandbox.stub().returns([]),
+        hasMetadataContentEdits: sandbox.stub().returns(false),
+        getChangedMembers: sandbox.stub().returns([]),
+        getPrimaryMetadataMember: sandbox.stub().returns({
+          pid: "metadata.1",
+          contentDirty: false,
+        }),
+        upload: sandbox.stub().rejects(staleError),
+      };
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+        appView: {
+          showAlert: sandbox.stub(),
+        },
+      };
+      sandbox.stub(view, "showSaving");
+      sandbox.stub(view, "hideSaving");
+      sandbox.stub(view, "setFileTableDisabled");
+      sandbox.stub(view, "refreshFileTable");
+      sandbox.stub(view, "toggleEnableControls");
+
+      await view.save({ target: $("<button></button>")[0] });
+
+      sinon.assert.calledOnce(globalThis.MetacatUI.appView.showAlert);
+      const alert = globalThis.MetacatUI.appView.showAlert.firstCall.args[0];
+      alert
+        .find("p")
+        .first()
+        .text()
+        .should.equal(
+          "This package has been updated elsewhere. Reload the latest version before saving.",
+        );
+      alert.text().should.include("metadata superseded");
+    });
+
+    it("shows EML validation errors before failed-file cleanup or upload", async function () {
       const validationErrors = { title: "A title is required" };
       model.validate = sandbox.stub().returns(validationErrors);
+      const failedNewMember = {
+        pid: "data.failed",
+        remotePid: null,
+        remoteState: "failed",
+        isData: sandbox.stub().returns(true),
+      };
+      const failedReplacement = {
+        pid: "data.2",
+        remotePid: "data.1",
+        remoteState: "failed",
+        isData: sandbox.stub().returns(true),
+      };
       const rootDataPackage = {
+        toArray: sandbox.stub().returns([failedNewMember, failedReplacement]),
+        removeMembers: sandbox.stub().resolves(),
+        discardFileReplacement: sandbox.stub().resolves(),
         upload: sandbox.stub().resolves({ outcome: "success" }),
       };
       globalThis.MetacatUI = {
@@ -2370,6 +2488,8 @@ define([
 
       model.validationError.should.deep.equal(validationErrors);
       sinon.assert.notCalled(view.showSaving);
+      sinon.assert.notCalled(rootDataPackage.removeMembers);
+      sinon.assert.notCalled(rootDataPackage.discardFileReplacement);
       sinon.assert.notCalled(rootDataPackage.upload);
     });
 
@@ -2477,6 +2597,141 @@ define([
       sinon.assert.notCalled(rootDataPackage.upload);
     });
 
+    it("stops before saving an already-stale file replacement", async function () {
+      model.validationError = null;
+      const staleError = Object.assign(new Error("updated elsewhere"), {
+        code: "stale_remote",
+        reloadRequired: true,
+      });
+      const failedReplacement = {
+        pid: "data.2",
+        remotePid: "data.1",
+        remoteState: "failed",
+        fileName: "data.csv",
+        lastUploadError: staleError,
+        isData: sandbox.stub().returns(true),
+      };
+      const rootDataPackage = {
+        toArray: sandbox.stub().returns([failedReplacement]),
+        hasMetadataContentEdits: sandbox.stub().returns(false),
+        getChangedMembers: sandbox.stub().returns([]),
+        getPrimaryMetadataMember: sandbox.stub().returns({
+          pid: "metadata.1",
+          contentDirty: false,
+        }),
+        discardFileReplacement: sandbox.stub().resolves(),
+        upload: sandbox.stub().resolves({ outcome: "success" }),
+      };
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+      };
+      sandbox.stub(view, "showSaving");
+      sandbox.stub(view, "refreshFileTable");
+      sandbox.stub(view, "saveSuccess");
+      sandbox.stub(view, "saveError");
+
+      await view.save({ target: $("<button></button>")[0] });
+
+      sinon.assert.notCalled(view.showSaving);
+      sinon.assert.notCalled(rootDataPackage.discardFileReplacement);
+      sinon.assert.notCalled(rootDataPackage.upload);
+      sinon.assert.notCalled(view.saveSuccess);
+      sinon.assert.calledOnceWithExactly(
+        view.saveError,
+        "This package has been updated elsewhere. Reload the latest version before saving.",
+      );
+    });
+
+    it("stops before cleanup when metadata state is stale", async function () {
+      model.validationError = null;
+      const staleMetadata = {
+        pid: "metadata.2",
+        remoteState: "failed",
+        lastUploadError: Object.assign(new Error("updated elsewhere"), {
+          code: "stale_remote",
+          reloadRequired: true,
+        }),
+        isData: sandbox.stub().returns(false),
+      };
+      const failedReplacement = {
+        pid: "data.2",
+        remotePid: "data.1",
+        remoteState: "failed",
+        lastUploadError: new Error("replacement rejected"),
+        isData: sandbox.stub().returns(true),
+      };
+      const rootDataPackage = {
+        toArray: sandbox.stub().returns([staleMetadata, failedReplacement]),
+        hasMetadataContentEdits: sandbox.stub().returns(false),
+        getChangedMembers: sandbox.stub().returns([]),
+        getPrimaryMetadataMember: sandbox.stub().returns(staleMetadata),
+        discardFileReplacement: sandbox.stub().resolves(),
+        upload: sandbox.stub().resolves({ outcome: "success" }),
+      };
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+      };
+      sandbox.stub(view, "showSaving");
+      sandbox.stub(view, "saveSuccess");
+      sandbox.stub(view, "saveError");
+
+      await view.save({ target: $("<button></button>")[0] });
+
+      sinon.assert.notCalled(view.showSaving);
+      sinon.assert.notCalled(rootDataPackage.discardFileReplacement);
+      sinon.assert.notCalled(rootDataPackage.upload);
+      sinon.assert.notCalled(view.saveSuccess);
+      sinon.assert.calledOnceWithExactly(
+        view.saveError,
+        "This package has been updated elsewhere. Reload the latest version before saving.",
+      );
+    });
+
+    it("stops before cleanup when a package member is ambiguous", async function () {
+      model.validationError = null;
+      const ambiguousMetadata = {
+        pid: "metadata.2",
+        remoteState: "ambiguous",
+        lastUploadError: new Error("write result unknown"),
+        isData: sandbox.stub().returns(false),
+      };
+      const failedReplacement = {
+        pid: "data.2",
+        remotePid: "data.1",
+        remoteState: "failed",
+        lastUploadError: new Error("replacement rejected"),
+        isData: sandbox.stub().returns(true),
+      };
+      const rootDataPackage = {
+        toArray: sandbox.stub().returns([ambiguousMetadata, failedReplacement]),
+        hasMetadataContentEdits: sandbox.stub().returns(false),
+        getChangedMembers: sandbox.stub().returns([]),
+        getPrimaryMetadataMember: sandbox.stub().returns(ambiguousMetadata),
+        discardFileReplacement: sandbox.stub().resolves(),
+        upload: sandbox.stub().resolves({ outcome: "success" }),
+      };
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+      };
+      sandbox.stub(view, "showSaving");
+      sandbox.stub(view, "saveSuccess");
+      sandbox.stub(view, "saveError");
+
+      await view.save({ target: $("<button></button>")[0] });
+
+      sinon.assert.notCalled(view.showSaving);
+      sinon.assert.notCalled(rootDataPackage.discardFileReplacement);
+      sinon.assert.notCalled(rootDataPackage.upload);
+      sinon.assert.notCalled(view.saveSuccess);
+      sinon.assert.calledOnceWithExactly(
+        view.saveError,
+        "The upload state is uncertain. Reload the package before saving again.",
+      );
+    });
+
     it("retries a save without failed file replacements", async function () {
       model.validationError = null;
       const failedReplacement = {
@@ -2484,7 +2739,7 @@ define([
         remotePid: "data.1",
         remoteState: "pending",
         fileName: "data.csv",
-        lastUploadError: new Error("already obsolete"),
+        lastUploadError: new Error("replacement rejected"),
         isData: sandbox.stub().returns(true),
       };
       const rootDataPackage = {
@@ -2504,7 +2759,7 @@ define([
       const successResult = { outcome: "success" };
       rootDataPackage.upload.onFirstCall().callsFake(async () => {
         failedReplacement.remoteState = "failed";
-        return { outcome: "partial_failure" };
+        return { outcome: "partial_failure", reloadRequired: false };
       });
       rootDataPackage.upload.onSecondCall().resolves(successResult);
       globalThis.MetacatUI = {
@@ -2523,9 +2778,191 @@ define([
         "data.2",
       );
       sinon.assert.calledWithExactly(view.saveSuccess, successResult, {
-        skippedFileReplacements: ["data.csv - already obsolete"],
+        skippedFileReplacements: ["data.csv - replacement rejected"],
         skippedNewDataFiles: [],
       });
+    });
+
+    it("requires reload when the replacement retry becomes ambiguous", async function () {
+      model.validationError = null;
+      const failedReplacement = {
+        pid: "data.2",
+        remotePid: "data.1",
+        remoteState: "pending",
+        fileName: "data.csv",
+        lastUploadError: new Error("replacement rejected"),
+        isData: sandbox.stub().returns(true),
+      };
+      const metadataMember = {
+        pid: "metadata.2",
+        remoteState: "pending",
+        isData: sandbox.stub().returns(false),
+      };
+      const rootDataPackage = {
+        toArray: sandbox.stub().returns([failedReplacement, metadataMember]),
+        hasMetadataContentEdits: sandbox.stub().returns(false),
+        getChangedMembers: sandbox.stub().returns([]),
+        getPrimaryMetadataMember: sandbox.stub().returns(metadataMember),
+        discardFileReplacement: sandbox.stub().callsFake(async () => {
+          failedReplacement.remoteState = "uploaded";
+          failedReplacement.pid = "data.1";
+        }),
+        upload: sandbox.stub(),
+      };
+      rootDataPackage.upload.onFirstCall().callsFake(async () => {
+        failedReplacement.remoteState = "failed";
+        return { outcome: "partial_failure", reloadRequired: false };
+      });
+      rootDataPackage.upload.onSecondCall().callsFake(async () => {
+        metadataMember.remoteState = "ambiguous";
+        return { outcome: "partial_failure", reloadRequired: false };
+      });
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+      };
+      sandbox.stub(view, "showSaving");
+      sandbox.stub(view, "toggleEnableControls");
+      sandbox.stub(view, "saveSuccess");
+      sandbox.stub(view, "saveError");
+
+      await view.save({ target: $("<button></button>")[0] });
+
+      sinon.assert.calledTwice(rootDataPackage.upload);
+      sinon.assert.calledOnce(rootDataPackage.discardFileReplacement);
+      sinon.assert.notCalled(view.saveSuccess);
+      sinon.assert.calledOnceWithExactly(
+        view.saveError,
+        "The upload state is uncertain. Reload the package before saving again.",
+      );
+    });
+
+    it("does not discard or retry a stale file replacement", async function () {
+      model.validationError = null;
+      const staleError = Object.assign(new Error("updated elsewhere"), {
+        code: "stale_remote",
+        reloadRequired: true,
+      });
+      const failedReplacement = {
+        pid: "data.2",
+        remotePid: "data.1",
+        remoteState: "pending",
+        fileName: "data.csv",
+        lastUploadError: null,
+        isData: sandbox.stub().returns(true),
+      };
+      const staleResult = {
+        outcome: "stale_remote",
+        reloadRequired: true,
+      };
+      const rootDataPackage = {
+        toArray: sandbox.stub().returns([failedReplacement]),
+        hasMetadataContentEdits: sandbox.stub().returns(false),
+        getChangedMembers: sandbox.stub().returns([]),
+        getPrimaryMetadataMember: sandbox.stub().returns({
+          pid: "metadata.1",
+          contentDirty: false,
+        }),
+        discardFileReplacement: sandbox.stub().callsFake(async () => {
+          failedReplacement.remoteState = "uploaded";
+          failedReplacement.pid = "data.1";
+        }),
+        upload: sandbox.stub().callsFake(async () => {
+          failedReplacement.remoteState = "failed";
+          failedReplacement.lastUploadError = staleError;
+          return staleResult;
+        }),
+      };
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+        appView: {
+          showAlert: sandbox.stub(),
+        },
+      };
+      sandbox.stub(view, "showSaving");
+      sandbox.stub(view, "hideSaving");
+      sandbox.stub(view, "setFileTableDisabled");
+      sandbox.stub(view, "refreshFileTable");
+      sandbox.stub(view, "toggleEnableControls");
+      sandbox.stub(view, "saveSuccess");
+
+      await view.save({ target: $("<button></button>")[0] });
+
+      sinon.assert.calledOnce(rootDataPackage.upload);
+      sinon.assert.notCalled(rootDataPackage.discardFileReplacement);
+      sinon.assert.notCalled(view.saveSuccess);
+      sinon.assert.calledOnce(globalThis.MetacatUI.appView.showAlert);
+      const alert = globalThis.MetacatUI.appView.showAlert.firstCall.args[0];
+      alert
+        .find("p")
+        .first()
+        .text()
+        .should.equal(
+          "This package has been updated elsewhere. Reload the latest version before saving.",
+        );
+      alert.text().should.not.include("Save the dataset again");
+    });
+
+    it("does not discard or retry while another member is ambiguous", async function () {
+      model.validationError = null;
+      const failedReplacement = {
+        pid: "data.2",
+        remotePid: "data.1",
+        remoteState: "pending",
+        fileName: "data.csv",
+        lastUploadError: new Error("replacement rejected"),
+        isData: sandbox.stub().returns(true),
+      };
+      const ambiguousMember = {
+        pid: "metadata.2",
+        remoteState: "pending",
+        isData: sandbox.stub().returns(false),
+      };
+      const rootDataPackage = {
+        toArray: sandbox.stub().returns([failedReplacement, ambiguousMember]),
+        hasMetadataContentEdits: sandbox.stub().returns(false),
+        getChangedMembers: sandbox.stub().returns([]),
+        getPrimaryMetadataMember: sandbox.stub().returns({
+          pid: "metadata.1",
+          contentDirty: false,
+        }),
+        discardFileReplacement: sandbox.stub().resolves(),
+        upload: sandbox.stub().callsFake(async () => {
+          failedReplacement.remoteState = "failed";
+          ambiguousMember.remoteState = "ambiguous";
+          return { outcome: "partial_failure", reloadRequired: false };
+        }),
+      };
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+        appView: {
+          showAlert: sandbox.stub(),
+        },
+      };
+      sandbox.stub(view, "showSaving");
+      sandbox.stub(view, "hideSaving");
+      sandbox.stub(view, "setFileTableDisabled");
+      sandbox.stub(view, "refreshFileTable");
+      sandbox.stub(view, "toggleEnableControls");
+      sandbox.stub(view, "saveSuccess");
+
+      await view.save({ target: $("<button></button>")[0] });
+
+      sinon.assert.calledOnce(rootDataPackage.upload);
+      sinon.assert.notCalled(rootDataPackage.discardFileReplacement);
+      sinon.assert.notCalled(view.saveSuccess);
+      sinon.assert.calledOnce(globalThis.MetacatUI.appView.showAlert);
+      const alert = globalThis.MetacatUI.appView.showAlert.firstCall.args[0];
+      alert
+        .find("p")
+        .first()
+        .text()
+        .should.equal(
+          "The upload state is uncertain. Reload the package before saving again.",
+        );
+      alert.text().should.not.include("Save the dataset again");
     });
 
     it("shows model validation errors from package validation failures", async function () {
@@ -3377,6 +3814,36 @@ define([
       globalThis.MetacatUI.appView.showAlert.firstCall.args[0].should.contain(
         "ResourceMap update failed",
       );
+    });
+
+    it("does not start a replacement when file selection is cancelled", async function () {
+      const rootDataPackage = {
+        getMember: sandbox.stub(),
+        getVersionTracker: sandbox.stub(),
+      };
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+      };
+      sandbox.stub(view, "choosePackageFiles").resolves([]);
+      sandbox.stub(view, "toggleEnableControls");
+      sandbox.stub(view, "startFileReplacementPreview");
+      sandbox.stub(view, "finishFileReplacementPreview");
+      const event = { preventDefault: sandbox.stub() };
+
+      const handled = await view.handleFileTableAction(
+        new Backbone.Model({ id: "data.1" }),
+        new Backbone.Model({ id: "replace" }),
+        event,
+      );
+
+      handled.should.equal(false);
+      sinon.assert.calledOnce(event.preventDefault);
+      sinon.assert.notCalled(rootDataPackage.getMember);
+      sinon.assert.notCalled(rootDataPackage.getVersionTracker);
+      sinon.assert.notCalled(view.toggleEnableControls);
+      sinon.assert.notCalled(view.startFileReplacementPreview);
+      sinon.assert.notCalled(view.finishFileReplacementPreview);
     });
 
     it("replaces the selected file immediately when it is the latest version", async function () {

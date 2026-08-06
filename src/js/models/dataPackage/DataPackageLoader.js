@@ -130,17 +130,23 @@ define([
       const inputId = Values.requireNonEmptyString(pid, ERROR_MSGS.MISSING_PID);
       result.inputId = inputId;
       dataPackage.inputId = inputId;
-      await dataPackage.reportLoadProgress(LOAD_PHASES.OBJECT_FORMATS, {
-        inputId,
-      });
-      await dataPackage.ensureObjectFormats();
+      await DataPackageLoader.reportLoadProgress(
+        dataPackage,
+        LOAD_PHASES.OBJECT_FORMATS,
+        { inputId },
+      );
+      await DataPackageLoader.ensureObjectFormats(dataPackage);
       throwIfAborted(signal, "Data package resolution cancelled");
-      await dataPackage.reportLoadProgress(LOAD_PHASES.RESOLVE, {
-        inputId,
-      });
+      await DataPackageLoader.reportLoadProgress(
+        dataPackage,
+        LOAD_PHASES.RESOLVE,
+        { inputId },
+      );
       const resolver = new ResourceMapResolver(options.resolverOptions || {});
       resolver.events.on("update", () => {
-        dataPackage.reportLoadProgress(LOAD_PHASES.RESOLVE, { inputId });
+        DataPackageLoader.reportLoadProgress(dataPackage, LOAD_PHASES.RESOLVE, {
+          inputId,
+        });
       });
       const resolveOptions = { fields: SOLR_MANIFEST_FIELDS };
       if (signal) resolveOptions.signal = signal;
@@ -202,7 +208,8 @@ define([
               merge: true,
               sources: ["sysMeta"],
             });
-            const objectFormats = await dataPackage.ensureObjectFormats();
+            const objectFormats =
+              await DataPackageLoader.ensureObjectFormats(dataPackage);
             throwIfAborted(signal, "Data package resolution cancelled");
             const formatType = objectFormats.getFormatType(sysMeta);
             result.type = formatType || null;
@@ -309,7 +316,8 @@ define([
 
       let resourceMapResult;
       try {
-        await dataPackage.reportLoadProgress(
+        await DataPackageLoader.reportLoadProgress(
+          dataPackage,
           LOAD_PHASES.RESOURCE_MAP_MEMBERSHIP,
           {
             inputId: dataPackage.inputId,
@@ -366,7 +374,8 @@ define([
         .filter((member) => !member.getFormatType())
         .map((member) => member.pid);
       if (unclassifiedPids.length) {
-        await dataPackage.reportLoadProgress(
+        await DataPackageLoader.reportLoadProgress(
+          dataPackage,
           LOAD_PHASES.MISSING_SYSTEM_METADATA,
           {
             count: unclassifiedPids.length,
@@ -390,9 +399,11 @@ define([
       }
       const baselineMembers = [resourceMapMember, primaryMetadata];
       const baselinePids = baselineMembers.map((member) => member.pid);
-      await dataPackage.reportLoadProgress(LOAD_PHASES.EDITABLE_BASELINE, {
-        count: baselinePids.length,
-      });
+      await DataPackageLoader.reportLoadProgress(
+        dataPackage,
+        LOAD_PHASES.EDITABLE_BASELINE,
+        { count: baselinePids.length },
+      );
       const failures = await dataPackage.fetchSysMeta(baselinePids, { signal });
       const abortFailure = failures.find(({ error }) => isAbortError(error));
       if (abortFailure) throw abortFailure.error;
@@ -422,7 +433,10 @@ define([
       });
 
       if (options.fetchPrimaryMetadata && !primaryMetadata.objectModel) {
-        await dataPackage.reportLoadProgress(LOAD_PHASES.EDITABLE_METADATA);
+        await DataPackageLoader.reportLoadProgress(
+          dataPackage,
+          LOAD_PHASES.EDITABLE_METADATA,
+        );
         await primaryMetadata.fetchObject({ signal });
       }
 
@@ -621,10 +635,12 @@ define([
         };
       }
 
-      await dataPackage.reportLoadProgress(LOAD_PHASES.INDEX_MANIFEST, {
-        rootResourceMapPid: resourceMapPid,
-      });
-      await dataPackage.ensureObjectFormats();
+      await DataPackageLoader.reportLoadProgress(
+        dataPackage,
+        LOAD_PHASES.INDEX_MANIFEST,
+        { rootResourceMapPid: resourceMapPid },
+      );
+      await DataPackageLoader.ensureObjectFormats(dataPackage);
       throwIfAborted(signal, "Package index manifest load cancelled");
       const query = [
         QueryService.getQueryPart("resourceMap", resourceMapPid),
@@ -743,10 +759,12 @@ define([
           },
         };
       }
-      await dataPackage.reportLoadProgress(LOAD_PHASES.RESOURCE_MAP_DOWNLOAD, {
-        rootResourceMapPid: resourceMapPid,
-      });
-      await dataPackage.ensureObjectFormats();
+      await DataPackageLoader.reportLoadProgress(
+        dataPackage,
+        LOAD_PHASES.RESOURCE_MAP_DOWNLOAD,
+        { rootResourceMapPid: resourceMapPid },
+      );
+      await DataPackageLoader.ensureObjectFormats(dataPackage);
       throwIfAborted(signal, "Resource map manifest load cancelled");
       let resourceMap = resourceMapMember.objectModel;
       if (!resourceMap) {
@@ -782,9 +800,11 @@ define([
           return result;
         }
       }
-      await dataPackage.reportLoadProgress(LOAD_PHASES.RESOURCE_MAP_SUMMARY, {
-        rootResourceMapPid: resourceMapPid,
-      });
+      await DataPackageLoader.reportLoadProgress(
+        dataPackage,
+        LOAD_PHASES.RESOURCE_MAP_SUMMARY,
+        { rootResourceMapPid: resourceMapPid },
+      );
       throwIfAborted(signal, "Resource map manifest load cancelled");
       if (requireEditable) {
         const blockers = resourceMap.getEditBlockers?.() || [];
