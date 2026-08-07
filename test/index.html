@@ -54,40 +54,52 @@
          * Separate Unit tests from Integration tests so that they can be run separately,
          * especially unit tests which should be run continuously during development.
          * Pass the `type` URL search parameter (e.g. `/test?type=integration`) to run tests other than the default `unit` type.
+         * Pass the `spec` URL search parameter to run a single manifest-listed spec in isolation.
          */
         console.log("Fetching test JSON file");
 
         fetch("config/tests.json")
           .then((response) => response.json())
           .then((testList) => {
-            let testType = window.location.search.substring(
-              window.location.search.indexOf("type=") + 5,
-            );
+            const params = new URLSearchParams(window.location.search);
+            const testType = params.get("type") || "unit";
+            const testHeader = document.getElementById("test-header");
+            const errorEl = document.getElementById("error");
+            const specPath = params.get("spec");
+            const configuredTests = testList[testType];
 
-            if (testType && testList[testType]?.length) {
-              document.getElementById("test-header").textContent =
-                testType + " tests";
-              // Use RequireJS to load in the tests, because RequireJS will not be happy loading them in any other way
-              require(testList[testType], function () {
-                mocha.run().on("fail", function (test, err) {
-                  console.error(err.stack || err);
-                });
-              });
-            } else {
-              // Use RequireJS to load in the tests, because RequireJS will not be happy loading them in any other way
-              let combinedTests = Object.values(testList).flat();
-              require([
-                "./js/specs/shared/mock-gmaps-module.js",
-                ...combinedTests,
-              ], function () {
-                mocha.run().on("fail", function (test, err) {
-                  console.error(err.stack || err);
-                });
-              }, function (err) {
-                document.getElementById("error").textContent =
-                  "Error loading tests: " + JSON.stringify(err);
-              });
+            if (!configuredTests?.length) {
+              errorEl.textContent = `No tests configured for type "${testType}".`;
+              return;
             }
+
+            if (specPath && !configuredTests.includes(specPath)) {
+              errorEl.textContent = `Spec "${specPath}" is not listed under "${testType}" in test/config/tests.json.`;
+              return;
+            }
+
+            const testsToRun = specPath ? [specPath] : configuredTests;
+            testHeader.textContent = specPath
+              ? `${testType} test: ${specPath}`
+              : `${testType} tests`;
+
+            // Use RequireJS to load in the tests, because RequireJS will not be happy loading them in any other way
+            require([
+              "./js/specs/shared/mock-gmaps-module.js",
+              ...testsToRun,
+            ], function () {
+              mocha
+                .run()
+                .on("fail", function (test, err) {
+                  console.error(err.stack || err);
+                })
+                .on("end", function () {
+                  // Tell the headless server when every suite has completed.
+                  window.mochaFinished = true;
+                });
+            }, function (err) {
+              errorEl.textContent = `Error loading tests: ${JSON.stringify(err)}`;
+            });
           });
       };
     </script>

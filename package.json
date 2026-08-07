@@ -6,7 +6,7 @@
   "dependencies": {
     "@actions/core": "^1.9.1",
     "cheerio": "^1.0.0-rc.11",
-"dataone-notifications": "git+https://github.com/DataONEorg/notification-service-js.git#fbe72ce2bc49362af83e763b18a6364d4aa28c4b",
+    "dataone-notifications": "git+https://github.com/DataONEorg/notification-service-js.git#fbe72ce2bc49362af83e763b18a6364d4aa28c4b",
     "express": "^4.22.1",
     "fomantic-ui": "^2.9.4",
     "puppeteer": "^22.15.0"
@@ -35,6 +35,8 @@
     "jsdoc-dry-run": "jsdoc -c docs/jsdoc-templates/metacatui/conf.js -d /tmp",
     "doc": "cd docs; bundle exec jekyll serve",
     "test": "node test/server.js",
+    "test:spec": "node test/server.js unit --spec",
+    "test:integration:spec": "node test/server.js integration --spec",
     "integration-test": "node test/server.js integration",
     "view-tests": "node test/server.js keep-running",
     "format": "prettier --write .",
