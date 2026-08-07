@@ -179,14 +179,19 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         thisModel.trigger("change:coordinators");
 
         //If we don't have a current member node yet, find it
-        if (!thisModel.get("currentMemberNode")) {
+        var appModel = MetacatUI.appModel;
+        if (
+          !thisModel.get("currentMemberNode") &&
+          appModel &&
+          typeof appModel.get === "function"
+        ) {
           // Find the current member node by matching the current DataONE MN API base URL
           // with the DataONE MN API base URLs in the member list
           var thisMember = _.findWhere(thisModel.get("members"), {
             baseURL: (
-              MetacatUI.appModel.get("baseUrl") +
-              MetacatUI.appModel.get("context") +
-              MetacatUI.appModel.get("d1Service")
+              appModel.get("baseUrl") +
+              appModel.get("context") +
+              appModel.get("d1Service")
             )
               .replace("/v2", "")
               .replace("/v1", ""),
@@ -197,8 +202,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
             thisModel.set("currentMemberNode", thisMember.identifier);
 
             //If the node ID is not set in the appModel user the matching MN we found
-            if (!MetacatUI.appModel.get("nodeId"))
-              MetacatUI.appModel.set("nodeId", thisMember.identifier);
+            if (!appModel.get("nodeId") && typeof appModel.set === "function")
+              appModel.set("nodeId", thisMember.identifier);
           }
 
           //Trigger a change so the rest of the app knows we at least looked for the current MN
