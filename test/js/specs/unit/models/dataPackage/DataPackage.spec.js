@@ -2950,6 +2950,42 @@ define([
         pkg.getPrimaryMetadataMember().pid.should.equal("meta.1");
       });
 
+      it("retains matched and resolved identities when they differ", async () => {
+        const pkg = new DataPackage();
+        sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
+          pid: "resolved.1",
+          rm: "resource_map_1",
+          meta: {
+            indexMatch: {
+              id: "indexed.1",
+              formatType: "DATA",
+            },
+          },
+        });
+
+        await pkg.resolveFromPid("input.1");
+
+        pkg.getMember("indexed.1").pid.should.equal("indexed.1");
+        pkg.getMember("resolved.1").pid.should.equal("resolved.1");
+      });
+
+      it("seeds primary metadata from one resolver candidate", async () => {
+        const pkg = new DataPackage();
+        sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
+          pid: "data.1",
+          rm: "resource_map_1",
+          meta: {
+            formatType: "DATA",
+            isData: true,
+            metadataCandidates: ["meta.1"],
+          },
+        });
+
+        await pkg.resolveFromPid("data.1");
+
+        pkg.primaryMetadataPid.should.equal("meta.1");
+      });
+
       it("preserves multiple-ResourceMap resolver details", async () => {
         const pkg = new DataPackage();
         sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
@@ -3028,6 +3064,54 @@ define([
           trackMissingResourceMap,
           "annotation.1",
         );
+      });
+
+      [
+        {
+          label: "401 system metadata failure as private",
+          error: Object.assign(new Error("unauthorized"), { status: 401 }),
+          resultField: "isPrivate",
+        },
+        {
+          label: "403 system metadata failure as private",
+          error: Object.assign(new Error("forbidden"), { status: 403 }),
+          resultField: "isPrivate",
+        },
+        {
+          label: "404 system metadata failure as not found",
+          error: Object.assign(new Error("missing"), { status: 404 }),
+          resultField: "notFound",
+        },
+        {
+          label: "unexpected system metadata failure as an error",
+          error: Object.assign(new Error("service unavailable"), {
+            status: 503,
+          }),
+          resultField: "error",
+        },
+      ].forEach(({ label, error, resultField }) => {
+        it(`classifies ${label}`, async () => {
+          const pkg = new DataPackage();
+          sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
+            pid: "unresolved.1",
+            rm: null,
+            meta: {},
+          });
+          sandbox
+            .stub(ResourceMapResolver.prototype, "getSysMeta")
+            .rejects(error);
+          if (resultField === "error") sandbox.stub(console, "error");
+
+          const result = await pkg.resolveFromPid("unresolved.1");
+
+          const expected = resultField === "error" ? error : true;
+          result[resultField].should.equal(expected);
+          pkg.resolutionResult.should.equal(result);
+          sinon.assert.calledOnceWithExactly(
+            trackMissingResourceMap,
+            "unresolved.1",
+          );
+        });
       });
 
       [

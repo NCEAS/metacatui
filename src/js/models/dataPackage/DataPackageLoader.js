@@ -57,6 +57,365 @@ define([
   const { FORMAT_IDS, FORMAT_TYPES } = ObjectFormats.prototype;
   const RESOURCE_MAP_FORMAT_ID = FORMAT_IDS.RESOURCE_MAP;
   const { isAbortError, throwIfAborted } = ErrorUtilities;
+  let DataPackageLoader;
+
+  /**
+   * Classify a ResourceMap resolver result without changing package state.
+   * @param {object} resolverResult ResourceMap resolver result
+   * @param {string} inputId Input PID or SID
+   * @returns {object} Structured DataPackage resolution result
+   */
+  function classifyResolverResult(resolverResult, inputId) {
+    const meta = resolverResult.meta || {};
+    const candidateMetadataPids = meta.metadataCandidates || [];
+    const resolvedPid = resolverResult.pid || inputId;
+    const result = {
+      success: false,
+      type: meta.formatType || null,
+      isData: meta.isData || false,
+      isMetadata: meta.isMetadata || false,
+      isResourceMap: meta.isResourceMap || false,
+      resolvedPid,
+    };
+
+    if (resolverResult.multipleRMs) {
+      result.multipleRMs = true;
+      result.candidateResourceMapPids = meta.rms || [];
+      result.candidateMetadataPids = candidateMetadataPids;
+    }
+    if (resolverResult.unauthorized) result.unauthorized = true;
+
+    return result;
+  }
+
+  /**
+   * Seed package members and identity fields from a resolver result.
+   * @param {DataPackage} dataPackage Package being loaded
+   * @param {object} resolverResult ResourceMap resolver result
+   * @param {object} result Structured DataPackage resolution result
+   * @returns {void}
+   */
+  function seedResolvedPackageIdentity(dataPackage, resolverResult, result) {
+    const meta = resolverResult.meta || {};
+    const candidateMetadataPids = meta.metadataCandidates || [];
+    const { indexMatch } = meta;
+    const idMatch = indexMatch?.id;
+    const { resolvedPid } = result;
+    const addOptions = { merge: true, sources: ["resourceMapResolver"] };
+
+    if (indexMatch) {
+      dataPackage.members.add({ pid: idMatch, ...indexMatch }, addOptions);
+    }
+    if (idMatch !== resolvedPid) {
+      dataPackage.members.add({ pid: resolvedPid }, addOptions);
+    }
+    if (result.isMetadata && resolvedPid) {
+      dataPackage.primaryMetadataPid = resolvedPid;
+    } else if (candidateMetadataPids.length === 1) {
+      const [candidateMetadataPid] = candidateMetadataPids;
+      dataPackage.primaryMetadataPid = candidateMetadataPid;
+    }
+
+    if (resolverResult.rm) {
+      dataPackage.members.add(
+        {
+          pid: resolverResult.rm,
+          formatId: RESOURCE_MAP_FORMAT_ID,
+          formatType: FORMAT_TYPES.RESOURCE,
+        },
+        addOptions,
+      );
+      dataPackage.rootResourceMapPid = resolverResult.rm;
+      result.success = true;
+    }
+  }
+
+  /**
+   * Classify an unresolved object from its system metadata.
+   * @param {DataPackage} dataPackage Package being loaded
+   * @param {ResourceMapResolver} resolver Resolver used for the initial lookup
+   * @param {object} result Structured DataPackage resolution result
+   * @param {object} [options] Fallback options
+   * @param {AbortSignal} [options.signal] Abort signal
+   * @returns {Promise<void>} Resolves after the fallback attempt
+   */
+  async function applySystemMetadataFallback(
+    dataPackage,
+    resolver,
+    result,
+    { signal } = {},
+  ) {
+    const { resolvedPid } = result;
+    try {
+      const sysMeta = await resolver.getSysMeta(resolvedPid, { signal });
+      throwIfAborted(signal, "Data package resolution cancelled");
+      if (!sysMeta) {
+        result.notFound = true;
+        return;
+      }
+
+      dataPackage.members.add(sysMeta, {
+        merge: true,
+        sources: ["sysMeta"],
+      });
+      const objectFormats =
+        await DataPackageLoader.ensureObjectFormats(dataPackage);
+      throwIfAborted(signal, "Data package resolution cancelled");
+      const formatType = objectFormats.getFormatType(sysMeta);
+      result.type = formatType || null;
+      result.isData = formatType === FORMAT_TYPES.DATA;
+      result.isMetadata = formatType === FORMAT_TYPES.METADATA;
+      result.isResourceMap = sysMeta.formatId
+        ? objectFormats.isResourceMap(sysMeta)
+        : formatType === FORMAT_TYPES.RESOURCE;
+      if (formatType) {
+        dataPackage.members.add(
+          {
+            pid: resolvedPid,
+            formatId: sysMeta.formatId,
+            formatType,
+          },
+          { merge: true, sources: ["sysMeta"] },
+        );
+      }
+      result.isIndexing = true;
+      if (result.isResourceMap) {
+        result.success = true;
+        dataPackage.rootResourceMapPid = resolvedPid;
+      } else if (result.isMetadata) {
+        dataPackage.primaryMetadataPid = resolvedPid;
+      }
+    } catch (error) {
+      if (isAbortError(error)) throw error;
+      if (error?.status === 401 || error?.status === 403) {
+        result.isPrivate = true;
+      } else if (error?.status === 404) {
+        result.notFound = true;
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(`Error fetching sysMeta for PID ${resolvedPid}:`, error);
+        result.error = error;
+      }
+    }
+  }
+
+  /**
+   * Resolve and load authoritative ResourceMap membership for editing.
+   * @param {DataPackage} dataPackage Package being loaded
+   * @param {string} pid Input PID or SID for any package member
+   * @param {object} [options] Load options
+   * @param {AbortSignal} [options.signal] Abort signal
+   * @returns {Promise<DataPackageMember>} Root ResourceMap member
+   * @throws {Error} When authoritative membership cannot be loaded
+   */
+  async function loadEditableResourceMapMembership(
+    dataPackage,
+    pid,
+    options = {},
+  ) {
+    const { signal } = options;
+    try {
+      await dataPackage.resolveFromPid(pid, options);
+    } catch (error) {
+      if (isAbortError(error)) throw error;
+      if (Array.isArray(error?.issues) && error.issues.length) {
+        throw DataPackageLoader.resourceMapNotEditableError({
+          inputId: dataPackage.inputId || pid,
+          rootResourceMapPid:
+            error?.details?.resourceMapPid || error?.resourceMapPid || null,
+          issues: error.issues,
+          cause: error,
+        });
+      }
+      throw error;
+    }
+
+    const resourceMapMember = dataPackage.getRootResourceMapMember();
+    if (!resourceMapMember) {
+      const resolution = dataPackage.resolutionResult || {};
+      // Only a clean, unambiguous miss is safe to repair as orphaned metadata.
+      let reason = "missing";
+      if (resolution.multipleRMs) {
+        reason = null;
+      } else if (resolution.unauthorized || resolution.isPrivate) {
+        reason = "unauthorized";
+      } else if (resolution.error) {
+        reason = "error";
+      }
+      throw DataPackageLoader.resourceMapUnavailableError({
+        inputId: dataPackage.inputId,
+        reason,
+        httpStatus: resolution.error?.status ?? null,
+        cause: resolution.error || null,
+      });
+    }
+
+    let resourceMapResult;
+    try {
+      await DataPackageLoader.reportLoadProgress(
+        dataPackage,
+        LOAD_PHASES.RESOURCE_MAP_MEMBERSHIP,
+        {
+          inputId: dataPackage.inputId,
+        },
+      );
+      resourceMapResult = await dataPackage.getManifestFromResourceMap({
+        merge: true,
+        requireEditable: true,
+        signal,
+      });
+    } catch (error) {
+      if (isAbortError(error)) throw error;
+      if (error?.code === "resource_map_not_editable") throw error;
+      resourceMapResult = {
+        ok: false,
+        reason: "error",
+        httpStatus: error?.status ?? null,
+        error,
+      };
+    }
+    if (!resourceMapResult?.ok) {
+      throw DataPackageLoader.resourceMapUnavailableError({
+        inputId: dataPackage.inputId,
+        rootResourceMapPid: resourceMapMember.pid,
+        reason: resourceMapResult?.reason || null,
+        httpStatus: resourceMapResult?.httpStatus ?? null,
+        cause: resourceMapResult?.error || null,
+      });
+    }
+
+    dataPackage.members.retain(
+      dataPackage.members
+        .getFromSource("resourceMap")
+        .map((member) => member.pid),
+    );
+    return resourceMapMember;
+  }
+
+  /**
+   * Enrich authoritative members and require primary metadata.
+   * @param {DataPackage} dataPackage Package being loaded
+   * @param {DataPackageMember} resourceMapMember Root ResourceMap member
+   * @param {object} [options] Enrichment options
+   * @param {number|null} [options.maxMembers] Maximum editable member count
+   * @param {AbortSignal} [options.signal] Abort signal
+   * @returns {Promise<DataPackageMember>} Primary metadata member
+   * @throws {Error} When the member limit or baseline requirement fails
+   */
+  async function enrichEditableMembers(
+    dataPackage,
+    resourceMapMember,
+    { maxMembers = null, signal } = {},
+  ) {
+    const memberCount = dataPackage.members.getActiveMembers().length;
+    if (maxMembers && memberCount > maxMembers) {
+      throw DataPackageLoader.memberLimitExceededError({
+        inputId: dataPackage.inputId,
+        rootResourceMapPid: resourceMapMember.pid,
+        memberCount,
+        maxMembers,
+      });
+    }
+
+    await dataPackage.getManifestFromIndex({
+      merge: true,
+      onlyExisting: true,
+      rows: maxMembers || DEFAULT_ROWS,
+      signal,
+    });
+
+    const unclassifiedPids = dataPackage.members
+      .getActiveMembers()
+      .filter((member) => !member.getFormatType())
+      .map((member) => member.pid);
+    if (unclassifiedPids.length) {
+      await DataPackageLoader.reportLoadProgress(
+        dataPackage,
+        LOAD_PHASES.MISSING_SYSTEM_METADATA,
+        {
+          count: unclassifiedPids.length,
+        },
+      );
+      const failures = await dataPackage.fetchSysMeta(unclassifiedPids, {
+        signal,
+      });
+      const abortFailure = failures.find(({ error }) => isAbortError(error));
+      if (abortFailure) throw abortFailure.error;
+      throwIfAborted(signal, "Editable package loading cancelled");
+    }
+
+    const primaryMetadata = dataPackage.getPrimaryMetadataMember();
+    if (!primaryMetadata) {
+      throw DataPackageLoader.editableBaselineUnavailableError({
+        inputId: dataPackage.inputId,
+        rootResourceMapPid: resourceMapMember.pid,
+        missingMembers: ["primaryMetadata"],
+      });
+    }
+    return primaryMetadata;
+  }
+
+  /**
+   * Load baseline system metadata and initialize editable member state.
+   * @param {DataPackage} dataPackage Package being loaded
+   * @param {DataPackageMember} resourceMapMember Root ResourceMap member
+   * @param {DataPackageMember} primaryMetadata Primary metadata member
+   * @param {object} [options] Initialization options
+   * @param {AbortSignal} [options.signal] Abort signal
+   * @param {boolean} [options.fetchPrimaryMetadata] Whether to fetch metadata
+   * content
+   * @returns {Promise<void>} Resolves when editable state is ready
+   * @throws {Error} When required system metadata is unavailable
+   */
+  async function initializeEditableBaseline(
+    dataPackage,
+    resourceMapMember,
+    primaryMetadata,
+    { signal, fetchPrimaryMetadata = false } = {},
+  ) {
+    const baselineMembers = [resourceMapMember, primaryMetadata];
+    const baselinePids = baselineMembers.map((member) => member.pid);
+    await DataPackageLoader.reportLoadProgress(
+      dataPackage,
+      LOAD_PHASES.EDITABLE_BASELINE,
+      { count: baselinePids.length },
+    );
+    const failures = await dataPackage.fetchSysMeta(baselinePids, { signal });
+    const abortFailure = failures.find(({ error }) => isAbortError(error));
+    if (abortFailure) throw abortFailure.error;
+    throwIfAborted(signal, "Editable package loading cancelled");
+    const failedPids = Values.dedupeStrings([
+      ...failures.map(({ pid: failedPid }) => failedPid),
+      ...baselineMembers
+        .filter((member) => !member.sysMeta)
+        .map((member) => member.pid),
+    ]);
+    if (failedPids.length) {
+      throw DataPackageLoader.editableBaselineUnavailableError({
+        inputId: dataPackage.inputId,
+        rootResourceMapPid: resourceMapMember.pid,
+        failedPids,
+        causes: failures.map(({ error }) => error).filter(Boolean),
+      });
+    }
+
+    dataPackage.members.toArray().forEach((member) => {
+      member.initializeEditableState({
+        remotePid: member.pid,
+        aggregatedPid: member.pid,
+        sysMeta: member.sysMeta,
+        remoteSysMeta: member.sysMeta,
+      });
+    });
+
+    if (fetchPrimaryMetadata && !primaryMetadata.objectModel) {
+      await DataPackageLoader.reportLoadProgress(
+        dataPackage,
+        LOAD_PHASES.EDITABLE_METADATA,
+      );
+      await primaryMetadata.fetchObject({ signal });
+    }
+  }
 
   /**
    * Load and enrich data packages from resource maps and the Solr index.
@@ -64,7 +423,7 @@ define([
    * @classcategory Models/DataPackage
    * @since 0.0.0
    */
-  const DataPackageLoader = {
+  DataPackageLoader = {
     LoadPhases: LOAD_PHASES,
 
     /**
@@ -123,12 +482,7 @@ define([
      */
     async resolveFromPid(dataPackage, pid, options = {}) {
       const { signal } = options;
-      const result = {
-        success: false,
-      };
-
       const inputId = Values.requireNonEmptyString(pid, ERROR_MSGS.MISSING_PID);
-      result.inputId = inputId;
       dataPackage.inputId = inputId;
       await DataPackageLoader.reportLoadProgress(
         dataPackage,
@@ -153,106 +507,14 @@ define([
       const resMapResult = await resolver.resolve(inputId, resolveOptions);
       throwIfAborted(signal, "Data package resolution cancelled");
 
-      const meta = resMapResult.meta || {};
-      const candidateMetadataPids = meta.metadataCandidates || [];
-      const inputType = meta.formatType;
-      const resolvedPid = resMapResult.pid || inputId;
-      result.type = inputType || null;
-      result.isData = meta.isData || false;
-      result.isMetadata = meta.isMetadata || false;
-      result.isResourceMap = meta.isResourceMap || false;
-      result.resolvedPid = resolvedPid;
-      if (resMapResult.multipleRMs) {
-        result.multipleRMs = true;
-        result.candidateResourceMapPids = meta.rms || [];
-        result.candidateMetadataPids = candidateMetadataPids;
-      }
-      if (resMapResult.unauthorized) result.unauthorized = true;
+      const result = classifyResolverResult(resMapResult, inputId);
+      result.inputId = inputId;
+      seedResolvedPackageIdentity(dataPackage, resMapResult, result);
 
-      const { indexMatch } = meta;
-      const idMatch = indexMatch?.id;
-      const addOptions = { merge: true, sources: ["resourceMapResolver"] };
-
-      if (indexMatch) {
-        dataPackage.members.add({ pid: idMatch, ...indexMatch }, addOptions);
-      }
-      if (idMatch !== resolvedPid) {
-        dataPackage.members.add({ pid: resolvedPid }, addOptions);
-      }
-      if (result.isMetadata && resolvedPid) {
-        dataPackage.primaryMetadataPid = resolvedPid;
-      } else if (candidateMetadataPids.length === 1) {
-        const [candidateMetadataPid] = candidateMetadataPids;
-        dataPackage.primaryMetadataPid = candidateMetadataPid;
-      }
-
-      if (resMapResult.rm) {
-        dataPackage.members.add(
-          {
-            pid: resMapResult.rm,
-            formatId: RESOURCE_MAP_FORMAT_ID,
-            formatType: FORMAT_TYPES.RESOURCE,
-          },
-          addOptions,
-        );
-        dataPackage.rootResourceMapPid = resMapResult.rm;
-        result.success = true;
-      }
-
-      if (!result.success && !indexMatch) {
-        try {
-          const sysMeta = await resolver.getSysMeta(resolvedPid, { signal });
-          throwIfAborted(signal, "Data package resolution cancelled");
-          if (sysMeta) {
-            dataPackage.members.add(sysMeta, {
-              merge: true,
-              sources: ["sysMeta"],
-            });
-            const objectFormats =
-              await DataPackageLoader.ensureObjectFormats(dataPackage);
-            throwIfAborted(signal, "Data package resolution cancelled");
-            const formatType = objectFormats.getFormatType(sysMeta);
-            result.type = formatType || null;
-            result.isData = formatType === FORMAT_TYPES.DATA;
-            result.isMetadata = formatType === FORMAT_TYPES.METADATA;
-            result.isResourceMap = sysMeta.formatId
-              ? objectFormats.isResourceMap(sysMeta)
-              : formatType === FORMAT_TYPES.RESOURCE;
-            if (formatType) {
-              dataPackage.members.add(
-                {
-                  pid: resolvedPid,
-                  formatId: sysMeta.formatId,
-                  formatType,
-                },
-                { merge: true, sources: ["sysMeta"] },
-              );
-            }
-            result.isIndexing = true;
-            if (result.isResourceMap) {
-              result.success = true;
-              dataPackage.rootResourceMapPid = resolvedPid;
-            } else if (result.isMetadata) {
-              dataPackage.primaryMetadataPid = resolvedPid;
-            }
-          } else {
-            result.notFound = true;
-          }
-        } catch (error) {
-          if (isAbortError(error)) throw error;
-          if (error?.status === 401 || error?.status === 403) {
-            result.isPrivate = true;
-          } else if (error?.status === 404) {
-            result.notFound = true;
-          } else {
-            // eslint-disable-next-line no-console
-            console.error(
-              `Error fetching sysMeta for PID ${resolvedPid}:`,
-              error,
-            );
-            result.error = error;
-          }
-        }
+      if (!result.success && !resMapResult.meta?.indexMatch) {
+        await applySystemMetadataFallback(dataPackage, resolver, result, {
+          signal,
+        });
       }
 
       if (!result.success) {
@@ -278,167 +540,25 @@ define([
         null,
       );
 
-      try {
-        await dataPackage.resolveFromPid(pid, options);
-      } catch (error) {
-        if (isAbortError(error)) throw error;
-        if (Array.isArray(error?.issues) && error.issues.length) {
-          throw DataPackageLoader.resourceMapNotEditableError({
-            inputId: dataPackage.inputId || pid,
-            rootResourceMapPid:
-              error?.details?.resourceMapPid || error?.resourceMapPid || null,
-            issues: error.issues,
-            cause: error,
-          });
-        }
-        throw error;
-      }
-
-      const resourceMapMember = dataPackage.getRootResourceMapMember();
-      if (!resourceMapMember) {
-        const resolution = dataPackage.resolutionResult || {};
-        // Only a clean, unambiguous miss is safe to repair as orphaned metadata.
-        let reason = "missing";
-        if (resolution.multipleRMs) {
-          reason = null;
-        } else if (resolution.unauthorized || resolution.isPrivate) {
-          reason = "unauthorized";
-        } else if (resolution.error) {
-          reason = "error";
-        }
-        throw DataPackageLoader.resourceMapUnavailableError({
-          inputId: dataPackage.inputId,
-          reason,
-          httpStatus: resolution.error?.status ?? null,
-          cause: resolution.error || null,
-        });
-      }
-
-      let resourceMapResult;
-      try {
-        await DataPackageLoader.reportLoadProgress(
-          dataPackage,
-          LOAD_PHASES.RESOURCE_MAP_MEMBERSHIP,
-          {
-            inputId: dataPackage.inputId,
-          },
-        );
-        resourceMapResult = await dataPackage.getManifestFromResourceMap({
-          merge: true,
-          requireEditable: true,
-          signal,
-        });
-      } catch (error) {
-        if (isAbortError(error)) throw error;
-        if (error?.code === "resource_map_not_editable") throw error;
-        resourceMapResult = {
-          ok: false,
-          reason: "error",
-          httpStatus: error?.status ?? null,
-          error,
-        };
-      }
-      if (!resourceMapResult?.ok) {
-        throw DataPackageLoader.resourceMapUnavailableError({
-          inputId: dataPackage.inputId,
-          rootResourceMapPid: resourceMapMember.pid,
-          reason: resourceMapResult?.reason || null,
-          httpStatus: resourceMapResult?.httpStatus ?? null,
-          cause: resourceMapResult?.error || null,
-        });
-      }
-      dataPackage.members.retain(
-        dataPackage.members
-          .getFromSource("resourceMap")
-          .map((member) => member.pid),
-      );
-      const memberCount = dataPackage.members.getActiveMembers().length;
-      if (maxMembers && memberCount > maxMembers) {
-        throw DataPackageLoader.memberLimitExceededError({
-          inputId: dataPackage.inputId,
-          rootResourceMapPid: resourceMapMember.pid,
-          memberCount,
-          maxMembers,
-        });
-      }
-
-      await dataPackage.getManifestFromIndex({
-        merge: true,
-        onlyExisting: true,
-        rows: maxMembers || DEFAULT_ROWS,
-        signal,
-      });
-
-      const unclassifiedPids = dataPackage.members
-        .getActiveMembers()
-        .filter((member) => !member.getFormatType())
-        .map((member) => member.pid);
-      if (unclassifiedPids.length) {
-        await DataPackageLoader.reportLoadProgress(
-          dataPackage,
-          LOAD_PHASES.MISSING_SYSTEM_METADATA,
-          {
-            count: unclassifiedPids.length,
-          },
-        );
-        const failures = await dataPackage.fetchSysMeta(unclassifiedPids, {
-          signal,
-        });
-        const abortFailure = failures.find(({ error }) => isAbortError(error));
-        if (abortFailure) throw abortFailure.error;
-        throwIfAborted(signal, "Editable package loading cancelled");
-      }
-
-      const primaryMetadata = dataPackage.getPrimaryMetadataMember();
-      if (!primaryMetadata) {
-        throw DataPackageLoader.editableBaselineUnavailableError({
-          inputId: dataPackage.inputId,
-          rootResourceMapPid: resourceMapMember.pid,
-          missingMembers: ["primaryMetadata"],
-        });
-      }
-      const baselineMembers = [resourceMapMember, primaryMetadata];
-      const baselinePids = baselineMembers.map((member) => member.pid);
-      await DataPackageLoader.reportLoadProgress(
+      const resourceMapMember = await loadEditableResourceMapMembership(
         dataPackage,
-        LOAD_PHASES.EDITABLE_BASELINE,
-        { count: baselinePids.length },
+        pid,
+        options,
       );
-      const failures = await dataPackage.fetchSysMeta(baselinePids, { signal });
-      const abortFailure = failures.find(({ error }) => isAbortError(error));
-      if (abortFailure) throw abortFailure.error;
-      throwIfAborted(signal, "Editable package loading cancelled");
-      const failedPids = Values.dedupeStrings([
-        ...failures.map(({ pid: failedPid }) => failedPid),
-        ...baselineMembers
-          .filter((member) => !member.sysMeta)
-          .map((member) => member.pid),
-      ]);
-      if (failedPids.length) {
-        throw DataPackageLoader.editableBaselineUnavailableError({
-          inputId: dataPackage.inputId,
-          rootResourceMapPid: resourceMapMember.pid,
-          failedPids,
-          causes: failures.map(({ error }) => error).filter(Boolean),
-        });
-      }
-
-      dataPackage.members.toArray().forEach((member) => {
-        member.initializeEditableState({
-          remotePid: member.pid,
-          aggregatedPid: member.pid,
-          sysMeta: member.sysMeta,
-          remoteSysMeta: member.sysMeta,
-        });
-      });
-
-      if (options.fetchPrimaryMetadata && !primaryMetadata.objectModel) {
-        await DataPackageLoader.reportLoadProgress(
-          dataPackage,
-          LOAD_PHASES.EDITABLE_METADATA,
-        );
-        await primaryMetadata.fetchObject({ signal });
-      }
+      const primaryMetadata = await enrichEditableMembers(
+        dataPackage,
+        resourceMapMember,
+        { maxMembers, signal },
+      );
+      await initializeEditableBaseline(
+        dataPackage,
+        resourceMapMember,
+        primaryMetadata,
+        {
+          signal,
+          fetchPrimaryMetadata: options.fetchPrimaryMetadata,
+        },
+      );
 
       return dataPackage;
     },
