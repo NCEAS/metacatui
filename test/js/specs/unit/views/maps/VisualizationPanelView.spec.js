@@ -326,5 +326,122 @@ define([
         expect(closeSpy.callCount).to.equal(1);
       });
     });
+
+    describe("postMessage protocol", () => {
+      const TRUSTED_URL = "https://trusted.example.com/app";
+
+      const state = cleanState(() => {
+        globalThis.MetacatUI = makeMetacatUI(["https://trusted.example.com/*"]);
+
+        const view = new VisualizationPanelView();
+        view.render();
+        document.body.appendChild(view.el);
+
+        return { view };
+      }, beforeEach);
+
+      afterEach(() => {
+        state.view.close();
+        state.view.remove();
+      });
+
+      it("emits mcui:state for valid v1 messages from the active iframe origin", () => {
+        const stateSpy = sinon.spy();
+        state.view.on("mcui:state", stateSpy);
+        state.view.open({
+          action: {
+            id: "wt",
+            url: "https://trusted.example.com/{?lat,lon}",
+          },
+          url: TRUSTED_URL,
+        });
+
+        const iframe = state.view.el.querySelector(
+          ".visualization-panel__iframe",
+        );
+        state.view.handleMessage({
+          source: iframe.contentWindow,
+          origin: "https://trusted.example.com",
+          data: {
+            type: "mcui:state",
+            version: 1,
+            url: "https://trusted.example.com/?lat=64.1&lon=-148.4",
+          },
+        });
+
+        expect(stateSpy.callCount).to.equal(1);
+        expect(stateSpy.firstCall.args[0]).to.deep.equal({
+          action: {
+            id: "wt",
+            url: "https://trusted.example.com/{?lat,lon}",
+          },
+          version: 1,
+          url: "https://trusted.example.com/?lat=64.1&lon=-148.4",
+        });
+      });
+
+      it("ignores messages from non-matching origins", () => {
+        const stateSpy = sinon.spy();
+        state.view.on("mcui:state", stateSpy);
+        state.view.open({
+          action: {
+            id: "wt",
+            url: "https://trusted.example.com/{?lat}",
+          },
+          url: TRUSTED_URL,
+        });
+
+        const iframe = state.view.el.querySelector(
+          ".visualization-panel__iframe",
+        );
+        state.view.handleMessage({
+          source: iframe.contentWindow,
+          origin: "https://evil.example.com",
+          data: {
+            type: "mcui:state",
+            version: 1,
+            url: "https://trusted.example.com/?lat=64.1",
+          },
+        });
+
+        expect(stateSpy.callCount).to.equal(0);
+      });
+
+      it("ignores messages with unsupported type or version", () => {
+        const stateSpy = sinon.spy();
+        state.view.on("mcui:state", stateSpy);
+        state.view.open({
+          action: {
+            id: "wt",
+            url: "https://trusted.example.com/{?lat}",
+          },
+          url: TRUSTED_URL,
+        });
+
+        const iframe = state.view.el.querySelector(
+          ".visualization-panel__iframe",
+        );
+        state.view.handleMessage({
+          source: iframe.contentWindow,
+          origin: "https://trusted.example.com",
+          data: {
+            type: "other:type",
+            version: 1,
+            url: "https://trusted.example.com/?lat=64.1",
+          },
+        });
+        state.view.handleMessage({
+          source: iframe.contentWindow,
+          origin: "https://trusted.example.com",
+          data: {
+            type: "mcui:state",
+            version: 2,
+            url: "https://trusted.example.com/?lat=64.1",
+          },
+        });
+
+        expect(stateSpy.callCount).to.equal(0);
+      });
+    });
   });
 });

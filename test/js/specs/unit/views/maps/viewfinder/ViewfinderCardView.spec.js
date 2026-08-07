@@ -120,9 +120,10 @@ define([
         harness.click();
 
         expect(ctaCallbackSpy.callCount).to.equal(1);
-        expect(ctaCallbackSpy.firstCall.args[0]).to.equal(
-          "https://water-timeseries.streamlit.app/",
-        );
+        expect(ctaCallbackSpy.firstCall.args[0]).to.deep.include({
+          type: "iframe",
+          url: "https://water-timeseries.streamlit.app/",
+        });
         expect(selectCallbackSpy.callCount).to.equal(0);
       } finally {
         sandbox.restore();
@@ -198,9 +199,10 @@ define([
         expect(onActivateSpy.callCount).to.equal(1);
         expect(onActionActivatedSpy.callCount).to.equal(0);
         expect(ctaCallbackSpy.callCount).to.equal(1);
-        expect(ctaCallbackSpy.firstCall.args[0]).to.equal(
-          "https://example.org/app",
-        );
+        expect(ctaCallbackSpy.firstCall.args[0]).to.deep.include({
+          type: "iframe",
+          url: "https://example.org/app",
+        });
       } finally {
         sandbox.restore();
         testContainer.remove();
