@@ -30,7 +30,6 @@ define([
   };
   const MESSAGES = {
     chooseFiles: "Choose from files in this dataset: ",
-    chooseFrom: "Choose from: ",
     derivedDataHelp:
       " by selecting which data objects were created from transforming, changing, or updating it. ",
     inputDataHelp:
@@ -51,6 +50,14 @@ define([
       " by selecting which data object was used as a source to create it. ",
     processingHistory: "Describe the processing history of ",
   };
+  const RELATIONSHIP_MODES = {
+    derivedData: "derivedData",
+    generatingProgram: "generatingProgram",
+    programInput: "programInput",
+    programOutput: "programOutput",
+    sourceData: "sourceData",
+    usingProgram: "usingProgram",
+  };
 
   const createHelpText = (lead, fileName, tail) =>
     $(document.createElement("p"))
@@ -62,6 +69,68 @@ define([
           .text(fileName),
       )
       .append(tail);
+
+  const classifyRelationshipMode = (
+    chartType,
+    selectedEntityType,
+    contextType,
+  ) => {
+    if (chartType === "sources") {
+      if (selectedEntityType === "program") {
+        return RELATIONSHIP_MODES.generatingProgram;
+      }
+      if (contextType === "program") return RELATIONSHIP_MODES.programInput;
+      return RELATIONSHIP_MODES.sourceData;
+    }
+    if (selectedEntityType === "program") {
+      return RELATIONSHIP_MODES.usingProgram;
+    }
+    if (contextType === "program") return RELATIONSHIP_MODES.programOutput;
+    return RELATIONSHIP_MODES.derivedData;
+  };
+
+  const getPickerCopy = (mode, fileName) => {
+    if (mode === RELATIONSHIP_MODES.generatingProgram) {
+      return {
+        title: `Add the program that generated ${fileName}`,
+        lead: MESSAGES.originAndProcessing,
+        tail: MESSAGES.programGeneratedHelp,
+      };
+    }
+    if (mode === RELATIONSHIP_MODES.programInput) {
+      return {
+        title: `Add source data to ${fileName}`,
+        lead: MESSAGES.originAndProcessing,
+        tail: MESSAGES.inputDataHelp,
+      };
+    }
+    if (mode === RELATIONSHIP_MODES.sourceData) {
+      return {
+        title: `Add source data to ${fileName}`,
+        lead: MESSAGES.originAndProcessing,
+        tail: MESSAGES.sourceDataHelp,
+      };
+    }
+    if (mode === RELATIONSHIP_MODES.usingProgram) {
+      return {
+        title: `Add the program that used ${fileName}`,
+        lead: MESSAGES.processingHistory,
+        tail: MESSAGES.programUsedHelp,
+      };
+    }
+    if (mode === RELATIONSHIP_MODES.programOutput) {
+      return {
+        title: `Add derived data for ${fileName}`,
+        lead: MESSAGES.processingHistory,
+        tail: MESSAGES.programOutputHelp,
+      };
+    }
+    return {
+      title: `Add derived data for ${fileName}`,
+      lead: MESSAGES.processingHistory,
+      tail: MESSAGES.derivedDataHelp,
+    };
+  };
 
   /**
    * @class ProvChartView
@@ -1100,9 +1169,6 @@ define([
      * @returns {void}
      */
     selectProvEntities(e) {
-      let title = null;
-      let label = MESSAGES.chooseFiles;
-      let helpText = null;
       const provInfoURL = MetacatUI.appModel.get("provenanceInfoURL");
       const helpLink = provInfoURL
         ? $(document.createElement("a"))
@@ -1117,6 +1183,13 @@ define([
         : null;
       const isProgram = e.currentTarget.classList.contains("program");
       const selectEntityType = isProgram ? "program" : "data";
+      const mode = classifyRelationshipMode(
+        this.type,
+        selectEntityType,
+        this.context.type,
+      );
+      const { title, lead, tail } = getPickerCopy(mode, this.context.fileName);
+      const helpText = createHelpText(lead, this.context.fileName, tail);
       let relatedRecords = this.programs;
       if (!isProgram) {
         relatedRecords =
@@ -1125,52 +1198,6 @@ define([
       const excludedPids = new Set(
         (relatedRecords || []).map(({ pid }) => pid),
       );
-
-      // Check if the context of this ProvChart is a program or data object
-      const isContextAProgram = this.context.type === "program";
-
-      // Set the selection box labels according to the edit icon that was clicked,
-      // and the ProvChart that it was clicked in.
-      if (this.type === "sources") {
-        if (isProgram) {
-          title = `Add the program that generated ${this.context.fileName}`;
-          helpText = createHelpText(
-            MESSAGES.originAndProcessing,
-            this.context.fileName,
-            MESSAGES.programGeneratedHelp,
-          );
-        } else {
-          title = `Add source data to ${this.context.fileName}`;
-          helpText = createHelpText(
-            MESSAGES.originAndProcessing,
-            this.context.fileName,
-            isContextAProgram
-              ? MESSAGES.inputDataHelp
-              : MESSAGES.sourceDataHelp,
-          );
-        }
-      } else if (this.type === "derivations") {
-        if (isProgram) {
-          title = `Add the program that used ${this.context.fileName}`;
-          helpText = createHelpText(
-            MESSAGES.processingHistory,
-            this.context.fileName,
-            MESSAGES.programUsedHelp,
-          );
-        } else {
-          title = `Add derived data for ${this.context.fileName}`;
-          helpText = createHelpText(
-            MESSAGES.processingHistory,
-            this.context.fileName,
-            isContextAProgram
-              ? MESSAGES.programOutputHelp
-              : MESSAGES.derivedDataHelp,
-          );
-        }
-      } else {
-        title = `Add data to ${this.context.fileName}`;
-        label = MESSAGES.chooseFrom;
-      }
 
       // Add a link to a help/more info page to the help text
       if (helpLink) {
@@ -1181,7 +1208,7 @@ define([
 
       this.selectProvEntityView = new ProvEntitySelectView({
         title,
-        selectLabel: label,
+        selectLabel: MESSAGES.chooseFiles,
         additionalElements: helpText,
         selectEntityType, // Can be either "data" or "program"
         projection: this.projection,
@@ -1334,30 +1361,35 @@ define([
         action === "add" ? "addUsedByProgram" : "removeUsedByProgram";
       const wasDerivedFrom =
         action === "add" ? "addWasDerivedFrom" : "removeWasDerivedFrom";
+      const mode = classifyRelationshipMode(
+        this.type,
+        entityType,
+        this.context.type,
+      );
 
-      if (this.type === "sources" && entityType === "program") {
+      if (mode === RELATIONSHIP_MODES.generatingProgram) {
         this.dataPackage[generatedByProgram](this.context.pid, pid);
         dataRecords(this.sources).forEach((source) => {
           this.dataPackage[usedByProgram](source.pid, pid);
         });
-      } else if (this.type === "sources" && this.context.type === "program") {
+      } else if (mode === RELATIONSHIP_MODES.programInput) {
         this.dataPackage[usedByProgram](pid, this.context.pid);
         dataRecords(this.projection?.getDerivations(this.context.pid)).forEach(
           (derivation) => {
             this.dataPackage[wasDerivedFrom](derivation.pid, pid);
           },
         );
-      } else if (this.type === "sources") {
+      } else if (mode === RELATIONSHIP_MODES.sourceData) {
         this.dataPackage[wasDerivedFrom](this.context.pid, pid);
         editableRecords(this.programs).forEach((program) => {
           this.dataPackage[usedByProgram](pid, program.pid);
         });
-      } else if (entityType === "program") {
+      } else if (mode === RELATIONSHIP_MODES.usingProgram) {
         this.dataPackage[usedByProgram](this.context.pid, pid);
         dataRecords(this.derivations).forEach((derivation) => {
           this.dataPackage[generatedByProgram](derivation.pid, pid);
         });
-      } else if (this.context.type === "program") {
+      } else if (mode === RELATIONSHIP_MODES.programOutput) {
         this.dataPackage[generatedByProgram](pid, this.context.pid);
         dataRecords(this.projection?.getSources(this.context.pid)).forEach(
           (source) => {

@@ -2,6 +2,13 @@ define(["jquery", "views/ProvChartView"], ($, ProvChartView) => {
   const expect = chai.expect;
 
   describe("ProvChartView", () => {
+    const createRecord = (pid, type = "data") => ({
+      pid,
+      fileName: pid,
+      type,
+      editable: true,
+    });
+
     it("gets package membership from projection records", () => {
       const context = {
         pid: "derived.csv",
@@ -136,6 +143,164 @@ define(["jquery", "views/ProvChartView"], ($, ProvChartView) => {
       expect(selectProvEntities.callCount).to.equal(1);
       view.remove();
     });
+
+    [
+      {
+        name: "a generating program",
+        chartType: "sources",
+        entityType: "program",
+        context: createRecord("derived.csv"),
+        relatedRecords: [createRecord("source.csv")],
+        selected: createRecord("analysis.R", "program"),
+        pickerTitle: "Add the program that generated derived.csv",
+        helpText:
+          "Describe the origin and processing history of derived.csv by selecting which program, script, or code created it. ",
+        mutationCalls: [
+          ["addGeneratedByProgram", "derived.csv", "analysis.R"],
+          ["addUsedByProgram", "source.csv", "analysis.R"],
+        ],
+      },
+      {
+        name: "a program input",
+        chartType: "sources",
+        entityType: "data",
+        context: createRecord("analysis.R", "program"),
+        relatedRecords: [],
+        selected: createRecord("source.csv"),
+        projectionDerivations: [createRecord("output.csv")],
+        pickerTitle: "Add source data to analysis.R",
+        helpText:
+          "Describe the origin and processing history of analysis.R by selecting which data object was input or consumed by it. ",
+        mutationCalls: [
+          ["addUsedByProgram", "source.csv", "analysis.R"],
+          ["addWasDerivedFrom", "output.csv", "source.csv"],
+        ],
+      },
+      {
+        name: "source data",
+        chartType: "sources",
+        entityType: "data",
+        context: createRecord("derived.csv"),
+        relatedRecords: [createRecord("analysis.R", "program")],
+        selected: createRecord("source.csv"),
+        pickerTitle: "Add source data to derived.csv",
+        helpText:
+          "Describe the origin and processing history of derived.csv by selecting which data object was used as a source to create it. ",
+        mutationCalls: [
+          ["addWasDerivedFrom", "derived.csv", "source.csv"],
+          ["addUsedByProgram", "source.csv", "analysis.R"],
+        ],
+      },
+      {
+        name: "a using program",
+        chartType: "derivations",
+        entityType: "program",
+        context: createRecord("source.csv"),
+        relatedRecords: [createRecord("derived.csv")],
+        selected: createRecord("analysis.R", "program"),
+        pickerTitle: "Add the program that used source.csv",
+        helpText:
+          "Describe the processing history of source.csv by selecting a program, script, or code that used it to create another data object. ",
+        mutationCalls: [
+          ["addUsedByProgram", "source.csv", "analysis.R"],
+          ["addGeneratedByProgram", "derived.csv", "analysis.R"],
+        ],
+      },
+      {
+        name: "a program output",
+        chartType: "derivations",
+        entityType: "data",
+        context: createRecord("analysis.R", "program"),
+        relatedRecords: [],
+        selected: createRecord("output.csv"),
+        projectionSources: [createRecord("source.csv")],
+        pickerTitle: "Add derived data for analysis.R",
+        helpText:
+          "Describe the processing history of analysis.R by selecting which data objects were created by or output by it. ",
+        mutationCalls: [
+          ["addGeneratedByProgram", "output.csv", "analysis.R"],
+          ["addWasDerivedFrom", "output.csv", "source.csv"],
+        ],
+      },
+      {
+        name: "derived data",
+        chartType: "derivations",
+        entityType: "data",
+        context: createRecord("source.csv"),
+        relatedRecords: [createRecord("analysis.R", "program")],
+        selected: createRecord("derived.csv"),
+        pickerTitle: "Add derived data for source.csv",
+        helpText:
+          "Describe the processing history of source.csv by selecting which data objects were created from transforming, changing, or updating it. ",
+        mutationCalls: [
+          ["addWasDerivedFrom", "derived.csv", "source.csv"],
+          ["addGeneratedByProgram", "derived.csv", "analysis.R"],
+        ],
+      },
+    ].forEach(
+      ({
+        name,
+        chartType,
+        entityType,
+        context,
+        relatedRecords,
+        selected,
+        projectionSources = [],
+        projectionDerivations = [],
+        pickerTitle,
+        helpText,
+        mutationCalls: expectedMutationCalls,
+      }) => {
+        it(`keeps picker copy and mutation aligned for ${name}`, () => {
+          const mutationCalls = [];
+          const dataPackage = {
+            addGeneratedByProgram(...args) {
+              mutationCalls.push(["addGeneratedByProgram", ...args]);
+            },
+            addUsedByProgram(...args) {
+              mutationCalls.push(["addUsedByProgram", ...args]);
+            },
+            addWasDerivedFrom(...args) {
+              mutationCalls.push(["addWasDerivedFrom", ...args]);
+            },
+          };
+          const projection = {
+            records: [
+              context,
+              selected,
+              ...relatedRecords,
+              ...projectionSources,
+              ...projectionDerivations,
+            ],
+            getStatements: () => [],
+            getSources: () => projectionSources,
+            getDerivations: () => projectionDerivations,
+          };
+          const view = new ProvChartView({
+            [chartType]: relatedRecords,
+            context,
+            contextEl: $("<div>"),
+            dataPackage,
+            projection,
+          });
+          const button = document.createElement("button");
+          button.classList.add(entityType);
+
+          view.selectProvEntities({ currentTarget: button });
+          const renderedHelpText =
+            view.selectProvEntityView.additionalElements.clone();
+          renderedHelpText.find("a").remove();
+
+          expect(view.selectProvEntityView.title).to.equal(pickerTitle);
+          expect(renderedHelpText.text()).to.equal(helpText);
+
+          view.addProv([selected.pid], entityType);
+
+          expect(mutationCalls).to.deep.equal(expectedMutationCalls);
+          view.onClose();
+        });
+      },
+    );
 
     it("omits relationships already shown in provenance pickers", () => {
       const context = {
