@@ -4,15 +4,7 @@ define([
   "collections/maps/AssetCategories",
   "cesium",
   "/test/js/specs/shared/clean-state.js",
-  "common/SearchParams",
-], (
-  CesiumWidgetView,
-  MapAssets,
-  AssetCategories,
-  Cesium,
-  cleanState,
-  SearchParams,
-) => {
+], (CesiumWidgetView, MapAssets, AssetCategories, Cesium, cleanState) => {
   const expect = chai.expect;
   const spy = sinon.spy();
 
@@ -20,15 +12,10 @@ define([
     let tilesInspectorStub;
 
     const state = cleanState(() => {
-      SearchParams.clearSavedView();
-
-      const view = new CesiumWidgetView();
-
       return { view: new CesiumWidgetView() };
     }, beforeEach);
 
     afterEach(() => {
-      SearchParams.clearSavedView();
       spy.resetHistory();
       tilesInspectorStub?.restore();
       tilesInspectorStub = null;
@@ -77,6 +64,7 @@ define([
         return {
           label: `layer ${type}`,
           type,
+          visible: true,
           cesiumOptions: {
             url: "https://example.com",
           },
@@ -150,80 +138,6 @@ define([
         );
       });
 
-      it("flies to the destination in the URL if present", () => {
-        SearchParams.updateDestination({
-          latitude: 45,
-          longitude: 135,
-          height: 9999,
-        });
-        state.view.model.set("showShareUrl", true);
-
-        state.view.render();
-
-        expect(state.view.zoomTarget).to.deep.equal({
-          latitude: 45,
-          longitude: 135,
-          height: 9999,
-        });
-      });
-
-      it("flies to the home destination if showShareUrl feature is off", () => {
-        SearchParams.updateDestination({
-          latitude: 45,
-          longitude: 135,
-          height: 9999,
-        });
-        state.view.model.set("showShareUrl", false);
-
-        state.view.render();
-
-        expect(state.view.zoomTarget).to.deep.equal({
-          latitude: 56,
-          longitude: -65,
-          height: 10000000,
-          heading: 1,
-          roll: 0,
-          pitch: -90,
-        });
-      });
-
-      it("flies to the home destination", () => {
-        state.view.model.set("showShareUrl", true);
-
-        state.view.render();
-
-        expect(state.view.zoomTarget).to.deep.equal({
-          latitude: 56,
-          longitude: -65,
-          height: 10000000,
-          heading: 1,
-          roll: 0,
-          pitch: -90,
-        });
-      });
-
-      it("updates the search parameters", async () => {
-        state.view.model.set("showShareUrl", true);
-        const assetCategories = new AssetCategories([
-          { layers: [{ label: "layer 1" }, { label: "layer 2" }] },
-          { layers: [{ label: "layer 3" }] },
-        ]);
-        state.view.model.set("allLayers", assetCategories.getMapAssetsFlat());
-
-        state.view.render();
-        state.view.scene.camera.position = new Cesium.Cartesian3(1, 2, 3);
-        state.view.updateSearchParams();
-
-        expect(SearchParams.getDestination()).to.deep.equal({
-          heading: 152.70043883509962,
-          height: -6364361.246505877,
-          latitude: 53.48500010847735,
-          longitude: 63.43494882292201,
-          pitch: -3.4509114285277382,
-          roll: 340.4941155938977,
-        });
-      });
-
       it("enables Cesium debug helpers when configured", () => {
         state.view.model.set("debug", true);
 
@@ -274,6 +188,18 @@ define([
           state.view.el.querySelector(".cesium-3d-tiles-inspector-container"),
         ).to.equal(state.view.tilesInspectorContainer);
       });
+
+      it("runs debug and inspector initialization only once per render", () => {
+        state.view.model.set("debug", true);
+        state.view.model.set("show3DTilesInspector", true);
+        state.view.enableDebugMode = sinon.spy();
+        state.view.render3DTilesInspector = sinon.spy();
+
+        state.view.render();
+
+        expect(state.view.enableDebugMode.calledOnce).to.equal(true);
+        expect(state.view.render3DTilesInspector.calledOnce).to.equal(true);
+      });
     });
 
     describe("cleanup", () => {
@@ -293,6 +219,18 @@ define([
         expect(state.view.tilesInspector).to.equal(null);
         expect(state.view.tilesInspectorContainer).to.equal(null);
         expect(state.view.el.contains(container)).to.equal(false);
+      });
+
+      it("removes camera and preRender listeners on close", () => {
+        const removePreRenderLightListener = sinon.spy();
+        state.view.removePreRenderLightListener = removePreRenderLightListener;
+        state.view.removeCameraListeners = sinon.spy();
+
+        state.view.onClose();
+
+        expect(state.view.removeCameraListeners.calledOnce).to.equal(true);
+        expect(removePreRenderLightListener.calledOnce).to.equal(true);
+        expect(state.view.removePreRenderLightListener).to.equal(null);
       });
     });
   });

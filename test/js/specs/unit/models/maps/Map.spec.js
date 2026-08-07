@@ -1,4 +1,5 @@
 define([
+  "backbone",
   "models/maps/Map",
   "models/maps/AssetCategory",
   "collections/maps/AssetCategories",
@@ -6,6 +7,7 @@ define([
   "/test/js/specs/shared/clean-state.js",
   "common/SearchParams",
 ], (
+  Backbone,
   Map,
   AssetCategory,
   AssetCategories,
@@ -21,11 +23,11 @@ define([
     }, beforeEach);
 
     beforeEach(() => {
-      SearchParams.clearSavedView();
+      SearchParams.clearStateInUrl();
     });
 
     afterEach(() => {
-      SearchParams.clearSavedView();
+      SearchParams.clearStateInUrl();
     });
 
     describe("Initialization", () => {
@@ -45,6 +47,161 @@ define([
 
         expect(map.has("layerCategories")).to.be.true;
         expect(map.has("layers")).to.be.false;
+      });
+
+      it("restores the URL destination when share URL syncing is enabled", () => {
+        SearchParams.updateStateInUrl({
+          destination: {
+            latitude: 45,
+            longitude: 135,
+            height: 9999,
+          },
+        });
+
+        const map = new Map({ showShareUrl: false });
+        map.set("showShareUrl", true);
+
+        expect(map.get("interactions").get("zoomTarget")).to.deep.equal({
+          latitude: 45,
+          longitude: 135,
+          height: 9999,
+        });
+      });
+
+      it("changes flat layer visibility based on search params", () => {
+        SearchParams.updateStateInUrl({ enabledLayerIds: ["layer-2"] });
+        const map = new Map({
+          layers: [
+            { layerId: "layer-1", visible: true },
+            { layerId: "layer-2", visible: false },
+          ],
+        });
+
+        expect(map.get("layers").at(0).get("visible")).to.be.false;
+        expect(map.get("layers").at(1).get("visible")).to.be.true;
+      });
+
+      it("restores all layers as hidden when el is explicitly empty", () => {
+        SearchParams.updateStateInUrl({ enabledLayerIds: [] });
+        const map = new Map({
+          layers: [
+            { layerId: "layer-1", visible: true },
+            { layerId: "layer-2", visible: true },
+          ],
+        });
+
+        expect(map.get("layers").at(0).get("visible")).to.be.false;
+        expect(map.get("layers").at(1).get("visible")).to.be.false;
+      });
+
+      it("preserves configured visibility for flat layers", () => {
+        SearchParams.updateStateInUrl({ enabledLayerIds: ["layer-2"] });
+        const map = new Map({
+          layers: [
+            { layerId: "layer-1", visible: true },
+            { layerId: "layer-2", visible: false },
+          ],
+        });
+
+        expect(map.get("layers").at(0).get("configuredVisibility")).to.be.true;
+        expect(map.get("layers").at(1).get("configuredVisibility")).to.be.false;
+      });
+
+      it("changes categorized layer visibility based on search params", () => {
+        SearchParams.updateStateInUrl({ enabledLayerIds: ["layer-2"] });
+        const map = new Map({
+          layerCategories: [
+            {
+              layers: [
+                { layerId: "layer-1", visible: true },
+                { layerId: "layer-2", visible: false },
+              ],
+            },
+          ],
+        });
+
+        expect(map.getAllLayers()[0].get("visible")).to.be.false;
+        expect(map.getAllLayers()[1].get("visible")).to.be.true;
+      });
+
+      it("defaults flat layers with undefined visibility to hidden", () => {
+        const map = new Map({
+          layers: [{ layerId: "layer-1" }, { layerId: "layer-2" }],
+        });
+
+        expect(map.get("layers").at(0).get("visible")).to.be.false;
+        expect(map.get("layers").at(1).get("visible")).to.be.false;
+      });
+
+      it("defaults categorized layers with undefined visibility to hidden", () => {
+        const map = new Map({
+          layerCategories: [
+            {
+              layers: [{ layerId: "layer-1" }, { layerId: "layer-2" }],
+            },
+          ],
+        });
+
+        expect(map.getAllLayers()[0].get("visible")).to.be.false;
+        expect(map.getAllLayers()[1].get("visible")).to.be.false;
+      });
+
+      it("uses configuredVisibility when visible is omitted for flat layers", () => {
+        const map = new Map({
+          layers: [
+            { layerId: "layer-1", configuredVisibility: true },
+            { layerId: "layer-2", configuredVisibility: false },
+          ],
+        });
+
+        expect(map.get("layers").at(0).get("configuredVisibility")).to.be.true;
+        expect(map.get("layers").at(0).get("visible")).to.be.true;
+        expect(map.get("layers").at(1).get("configuredVisibility")).to.be.false;
+        expect(map.get("layers").at(1).get("visible")).to.be.false;
+      });
+
+      it("uses configuredVisibility when visible is omitted for categorized layers", () => {
+        const map = new Map({
+          layerCategories: [
+            {
+              layers: [
+                { layerId: "layer-1", configuredVisibility: true },
+                { layerId: "layer-2", configuredVisibility: false },
+              ],
+            },
+          ],
+        });
+
+        expect(map.getAllLayers()[0].get("configuredVisibility")).to.be.true;
+        expect(map.getAllLayers()[0].get("visible")).to.be.true;
+        expect(map.getAllLayers()[1].get("configuredVisibility")).to.be.false;
+        expect(map.getAllLayers()[1].get("visible")).to.be.false;
+      });
+
+      it("throws when model instance layers are provided", () => {
+        const layerModel = new Backbone.Model({
+          layerId: "layer-1",
+          visible: true,
+          configuredVisibility: false,
+        });
+        expect(() => new Map({ layers: [layerModel] })).to.throw(
+          "Map configuration layers must contain plain MapAssetConfig objects, not Backbone model instances.",
+        );
+      });
+
+      it("throws when model instance category layers are provided", () => {
+        const layerModel = new Backbone.Model({
+          layerId: "layer-1",
+          visible: true,
+        });
+        expect(
+          () =>
+            new Map({
+              layerCategories: [{ layers: [layerModel] }],
+            }),
+        ).to.throw(
+          "Map configuration layerCategories[].layers must contain plain MapAssetConfig objects, not Backbone model instances.",
+        );
       });
 
       it("sets viewfinderCards from config with layers (legacy zoomPresets key)", () => {
@@ -133,6 +290,38 @@ define([
         const map = new Map({ show3DTilesInspector: true });
 
         expect(map.get("show3DTilesInspector")).to.equal(true);
+      });
+
+      it("writes camera position and enabled layers to the URL", () => {
+        const map = new Map({
+          showShareUrl: true,
+          layers: [
+            { layerId: "layer-1", visible: true },
+            { layerId: "layer-2", visible: false },
+          ],
+        });
+
+        map.get("interactions").setCameraPosition({
+          latitude: 45,
+          longitude: 135,
+          height: 9999,
+          heading: 1,
+          pitch: 2,
+          roll: 3,
+        });
+        map.updateSearchParams();
+
+        expect(SearchParams.parseStateFromUrl().destination).to.deep.equal({
+          latitude: 45,
+          longitude: 135,
+          height: 9999,
+          heading: 1,
+          pitch: 2,
+          roll: 3,
+        });
+        expect(SearchParams.parseStateFromUrl().enabledLayerIds).to.deep.equal([
+          "layer-1",
+        ]);
       });
     });
 

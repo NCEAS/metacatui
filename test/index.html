@@ -48,6 +48,17 @@
       mocha.checkLeaks();
     </script>
     <script class="mocha-exec">
+      const runMocha = function () {
+        mocha
+          .run()
+          .on("fail", function (test, err) {
+            console.error(err.stack || err);
+          })
+          .on("end", function () {
+            document.body.dataset.testsFinished = "";
+          });
+      };
+
       const mochaExec = function () {
         /*
          * Load all the tests from the tests.json file
@@ -70,11 +81,13 @@
 
             if (!configuredTests?.length) {
               errorEl.textContent = `No tests configured for type "${testType}".`;
+              document.body.dataset.testsFinished = "";
               return;
             }
 
             if (specPath && !configuredTests.includes(specPath)) {
               errorEl.textContent = `Spec "${specPath}" is not listed under "${testType}" in test/config/tests.json.`;
+              document.body.dataset.testsFinished = "";
               return;
             }
 
@@ -87,18 +100,9 @@
             require([
               "./js/specs/shared/mock-gmaps-module.js",
               ...testsToRun,
-            ], function () {
-              mocha
-                .run()
-                .on("fail", function (test, err) {
-                  console.error(err.stack || err);
-                })
-                .on("end", function () {
-                  // Tell the headless server when every suite has completed.
-                  window.mochaFinished = true;
-                });
-            }, function (err) {
+            ], runMocha, function (err) {
               errorEl.textContent = `Error loading tests: ${JSON.stringify(err)}`;
+              document.body.dataset.testsFinished = "";
             });
           });
       };

@@ -79,9 +79,9 @@ define([
    * title. Action buttons have two styles determined by their ordinality
    * and are driven by `buttons` on the model with configurable text and icons.
    * 'map' type actions (secondary ordinality) render as a plain-text
-   * secondary link, while 'iframe'/'tab' type actions (primary ordinality)
-   * render as bordered buttons. The card body itself is no longer interactive —
-   * all interactions are explicit buttons.
+   * secondary link by default, while 'iframe'/'tab' type actions (primary 
+   * ordinality) render as bordered buttons by default. The card body itself 
+   * is no longer interactive — all interactions are explicit buttons.
    * @classcategory Views/Maps/Viewfinder
    * @name ViewfinderCardView
    * @augments Backbone.View
@@ -130,7 +130,7 @@ define([
             : undefined;
         this.onActivate(this);
         this.closeVisualizationCallback();
-        this.setActive(btn);
+        this.setActive(btn, action);
         if (action?.type && BUTTON_ACTION_HANDLERS[action.type]) {
           BUTTON_ACTION_HANDLERS[action.type](action, this);
         } else {
@@ -150,15 +150,19 @@ define([
         if (!action) return;
         this.onActivate(this);
         this.closeVisualizationCallback();
-        this.setActive(btn);
+        this.setActive(btn, action);
         BUTTON_ACTION_HANDLERS[action.type]?.(action, this);
       },
 
       /**
        * Mark this card as active and highlight the specific clicked button.
        * @param {HTMLElement} buttonEl The button element that was activated.
+       * @param {ViewfinderCardAction} action The action object associated with the button.
+       * @param {object} [options] Additional activation options.
+       * @param {boolean} [options.notifyActionActivated] Whether to notify listeners.
+       * @since 0.0.0
        */
-      setActive(buttonEl) {
+      setActive(buttonEl, action, { notifyActionActivated = true } = {}) {
         this.el.classList.add(CLASS_NAMES.active);
         const isSecondary =
           buttonEl?.classList.contains(CLASS_NAMES.buttonSecondary) ?? false;
@@ -179,6 +183,34 @@ define([
               btn === buttonEl,
             );
           });
+
+        if (notifyActionActivated) {
+          this.onActionActivated(action, buttonEl);
+        }
+      },
+
+      /**
+       * Restore an action from URL state without replaying click side effects.
+       * @param {ViewfinderCardAction} action The action object to restore.
+       * @returns {boolean} True when restoration succeeded.
+       * @since 0.0.0
+       */
+      restoreAction(action) {
+        const buttons = this.preset.get("buttons") || [];
+        const index = buttons.indexOf(action);
+        if (index < 0) return false;
+
+        const btn = this.el.querySelector(`[data-button-index="${index}"]`);
+        if (!btn) return false;
+
+        this.onActivate(this);
+        this.setActive(btn, action, { notifyActionActivated: false });
+
+        if (action.type === "iframe" && action.url) {
+          this.ctaCallback(action.url);
+        }
+
+        return true;
       },
 
       /**
@@ -195,6 +227,35 @@ define([
           .querySelectorAll(`.${CLASS_NAMES.buttonPrimary}`)
           .forEach((btn) => {
             btn.classList.remove(CLASS_NAMES.buttonPrimaryActive);
+          });
+      },
+
+      /**
+       * Replace a broken hero image with its configured fallback source.
+       * @param {HTMLImageElement} img The image element that failed loading.
+       * @since 0.0.0
+       */
+      applyImageFallback(img) {
+        const fallbackSrc = img?.dataset?.fallbackSrc;
+        if (!fallbackSrc) return;
+        // Prevent repeated error loops if fallback also fails.
+        img.removeAttribute("data-fallback-src");
+        if (img.getAttribute("src") !== fallbackSrc) {
+          img.setAttribute("src", fallbackSrc);
+        }
+      },
+
+      /**
+       * Wire one-time error handlers for hero images with fallback sources.
+       * @since 0.0.0
+       */
+      wireImageFallbacks() {
+        this.el
+          .querySelectorAll(`.${CLASS_NAMES.image}[data-fallback-src]`)
+          .forEach((img) => {
+            img.addEventListener("error", () => this.applyImageFallback(img), {
+              once: true,
+            });
           });
       },
 
@@ -217,6 +278,8 @@ define([
        * any button action to dismiss any currently open overlay.
        * @param {Function} [options.onActivate] Called when this card is
        * activated, so sibling cards can reset their active state.
+       * @param {Function} [options.onActionActivated] Called after an
+       * action button is activated, with the action object and button element.
        */
       initialize({
         preset,
@@ -224,6 +287,7 @@ define([
         ctaCallback,
         closeVisualizationCallback,
         onActivate,
+        onActionActivated,
       }) {
         this.preset = preset;
         this.selectCallback =
@@ -235,6 +299,8 @@ define([
             ? closeVisualizationCallback
             : noop;
         this.onActivate = typeof onActivate === "function" ? onActivate : noop;
+        this.onActionActivated =
+          typeof onActionActivated === "function" ? onActionActivated : noop;
       },
 
       /**
@@ -245,6 +311,7 @@ define([
       render() {
         this.templateVars.preset = this.preset.toJSON();
         this.el.innerHTML = _.template(Template)(this.templateVars);
+        this.wireImageFallbacks();
       },
     },
   );

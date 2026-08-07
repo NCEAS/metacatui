@@ -166,7 +166,7 @@ define([
        * Open a visualization app in the full-screen iframe overlay by setting
        * the activeVisualizationUrl attribute on the map model.
        * @param {string} url The URL to load in the iframe overlay.
-       * @since 2.37.0
+       * @since 0.0.0
        */
       openVisualization(url) {
         this.mapModel.set({ activeVisualizationUrl: url });
@@ -185,12 +185,16 @@ define([
        * Extended from ZoomPresetModel's selectZoomPreset() when zoom presets
        * were deprecated in favor of generalized viewfinder cards. Select a
        * ViewfinderCardModel from the list of cards and navigate there.
-       * When `action` is a 'map' type ctaAction, its `layerIds` and coordinates
-       * are used directly. Otherwise falls back to the preset's `enabledLayerIds`
-       * and `geoPoint` for backward compatibility.
+       * When `action` is a 'map' type ViewfinderCardAction, its `layerIds` and
+       * coordinates are used directly. For 'iframe' or 'tab' actions, the card
+       * view handles opening the target URL and this method is not responsible
+       * for that behavior. Otherwise it falls back to the preset's
+       * `enabledLayerIds` and `geoPoint` for backward compatibility.
        * @param {ViewfinderCardModel} preset A user selected card.
-       * @param {ViewfinderCardAction} [action] The specific 'map' ctaAction
-       * that was activated. When omitted, the preset's own fields are used.
+       * @param {ViewfinderCardAction} [action] The specific button action that was
+       * activated. Map actions use the action's layer IDs and coordinates;
+       * other action types are handled by the view layer or fall back to the
+       * preset's own fields.
        */
       selectViewfinderCard(preset, action) {
         let enabledLayerIds;
@@ -211,7 +215,12 @@ define([
           geoPoint = preset.get("geoPoint");
         }
 
-        this.mapModel.get("allLayers").forEach((layer) => {
+        const layers =
+          typeof this.mapModel.getAllLayers === "function"
+            ? this.mapModel.getAllLayers()
+            : this.mapModel.get("allLayers")?.models || [];
+
+        layers.forEach((layer) => {
           const isVisible = enabledLayerIds.includes(layer.get("layerId"));
           // Show or hide the layer according to the preset.
           layer.set("visible", isVisible);

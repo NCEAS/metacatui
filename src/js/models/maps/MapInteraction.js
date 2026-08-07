@@ -48,6 +48,9 @@ define([
        * @property {GeoScale} scale - The current scale of the map in
        * pixels:meters, i.e. The number of pixels on the screen that equal the
        * number of meters on the map/globe. Updated by the map widget.
+       * @property {Object} cameraPosition - The current camera position of the
+       * map widget, including longitude, latitude, height, heading, pitch, and
+       * roll. Updated by the map widget.
        * @property {GeoBoundingBox} viewExtent - The extent of the currently
        * visible area in the map widget. Updated by the map widget.
        * @property {Features} hoveredFeatures - The feature that the mouse is
@@ -79,6 +82,7 @@ define([
           mousePosition: new GeoPoint(),
           clickedPosition: new GeoPoint(),
           scale: new GeoScale(),
+          cameraPosition: null,
           viewExtent: new GeoBoundingBox(),
           hoveredFeatures: new Features(),
           clickedFeatures: new Features(),
@@ -283,6 +287,16 @@ define([
         }
         scaleModel.set(scale);
         return scaleModel;
+      },
+
+      /**
+       * Set the current camera position of the map widget.
+       * @param {Object} cameraPosition - The current camera position.
+       * @returns {Object} The stored camera position.
+       */
+      setCameraPosition: function (cameraPosition) {
+        this.set("cameraPosition", cameraPosition || null);
+        return this.get("cameraPosition");
       },
 
       /**

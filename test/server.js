@@ -88,27 +88,12 @@ async function runTests(url) {
   });
   const page = await browser.newPage();
   await page.goto(url, { waitUntil: "domcontentloaded" });
-  // Background requests may remain in flight after the tests finish, so wait
-  // for the explicit end-of-run flag set in index.html (or a test-loading
-  // error) before reading results. Poll with page.evaluate rather than
-  // page.waitForFunction: the latter injects puppeteer helper globals into the
-  // page, which mocha.checkLeaks() reports as test failures.
-  const deadline = Date.now() + testTimeoutMs;
-  let testsFinished = false;
-  while (!testsFinished && Date.now() < deadline) {
-    /* eslint-disable no-await-in-loop */
-    testsFinished = await page.evaluate(() => {
-      const errorEl = document.getElementById("error");
-      return (
-        window.mochaFinished === true || Boolean(errorEl && errorEl.textContent)
-      );
+  try {
+    // Set by the test page after Mocha finishes or test loading fails.
+    await page.waitForSelector("body[data-tests-finished]", {
+      timeout: testTimeoutMs,
     });
-    if (!testsFinished) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-    /* eslint-enable no-await-in-loop */
-  }
-  if (!testsFinished) {
+  } catch {
     await browser.close();
     if (!keepRunning) server.close();
     throw Error(

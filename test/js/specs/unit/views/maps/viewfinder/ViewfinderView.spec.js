@@ -66,5 +66,43 @@ define([
     it("does not show viewfinder cards UI when disabled in config", () => {
       expect(state.harness.hasViewfinderCards()).to.be.false;
     });
+
+    it("restores the matching action object through the rendered card view", () => {
+      const action = {
+        id: "action-123",
+        type: "iframe",
+        url: "https://example.org/app",
+      };
+      const restoreActionSpy = state.sandbox.stub().returns(true);
+      const openSpy = state.sandbox.spy();
+      const buttons = [action];
+      const cardView = {
+        preset: {
+          get(name) {
+            return name === "buttons" ? buttons : null;
+          },
+        },
+        restoreAction: restoreActionSpy,
+      };
+
+      state.view.viewfinderCardsListViews = [
+        {
+          categoryCid: "category-1",
+          children: [cardView],
+        },
+      ];
+      state.view.expansionPanelsByCategoryCid = {
+        "category-1": {
+          open: openSpy,
+        },
+      };
+
+      const restored = state.view.restoreActiveAction("action-123");
+
+      expect(restored).to.be.true;
+      expect(openSpy.callCount).to.equal(1);
+      expect(restoreActionSpy.callCount).to.equal(1);
+      expect(restoreActionSpy.firstCall.args[0]).to.equal(action);
+    });
   });
 });

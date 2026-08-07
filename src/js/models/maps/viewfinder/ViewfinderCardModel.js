@@ -1,21 +1,153 @@
 "use strict";
 
-define(["underscore", "backbone", "models/maps/GeoPoint"], (
-  _,
-  Backbone,
-  GeoPoint,
-) => {
+define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
+  /**
+   * Normalize a configured action id.
+   * @param {unknown} actionId Candidate action id.
+   * @returns {string|null} Trimmed id string, or null when invalid.
+   * @since 0.0.0
+   */
+  const normalizeActionId = (actionId) => {
+    if (typeof actionId !== "string") return null;
+    const id = actionId.trim();
+    return id.length ? id : null;
+  };
+
+  /**
+   * Keep only explicitly configured action ids and normalize whitespace.
+   * Actions without an explicit id are left without an id so they are
+   * excluded from URL restore-state (`a=`).
+   * @param {object[]} actions The action list for a card.
+   * @returns {object[]} Actions with normalized explicit ids.
+   * @since 0.0.0
+   */
+  const normalizeConfiguredActionIds = (actions) =>
+    actions.map((action = {}) => {
+      const explicitId = normalizeActionId(action.id);
+      if (explicitId) {
+        return {
+          ...action,
+          id: explicitId,
+        };
+      }
+
+      const { id: _id, ...rest } = action;
+      return rest;
+    });
+
+  /**
+   * Apply default presentation for map actions.
+   * @param {object} action A card action.
+   * @returns {object} The normalized action.
+   * @since 0.0.0
+   */
+  const normalizeMapAction = (action) => {
+    if (action?.type !== "map") return action;
+    return {
+      ordinality: "secondary",
+      label: "View Layers",
+      icon: "eye-open",
+      ...action,
+    };
+  };
+
+  /**
+   * Resolve card location fields from modern and legacy config shapes.
+   * @param {object} attrs Raw card attributes.
+   * @param {object} [attrs.position] Legacy location object.
+   * @param {number} [attrs.latitude] Top-level latitude.
+   * @param {number} [attrs.longitude] Top-level longitude.
+   * @param {number} [attrs.height] Top-level height.
+   * @returns {{ latitude: number|null, longitude: number|null, height: number|null }} Location values.
+   * @since 0.0.0
+   */
+  const normalizeLocation = ({
+    position,
+    latitude,
+    longitude,
+    height,
+  } = {}) => ({
+    latitude: latitude ?? position?.latitude ?? null,
+    longitude: longitude ?? position?.longitude ?? null,
+    height: height ?? position?.height ?? null,
+  });
+
+  /**
+   * Normalize raw card config into model attributes.
+   * @param {object} attrs Raw card attributes.
+   * @param {object} [attrs.position] Legacy location object.
+   * @param {number} [attrs.latitude] Top-level latitude.
+   * @param {number} [attrs.longitude] Top-level longitude.
+   * @param {number} [attrs.height] Top-level height.
+   * @param {string[]} [attrs.layerIds] Top-level layer ids.
+   * @param {object[]} [attrs.buttons] Card actions.
+   * @returns {object} Normalized model attributes.
+   * @since 0.0.0
+   */
+  const normalizeCardAttributes = ({
+    position,
+    latitude,
+    longitude,
+    height,
+    layerIds,
+    buttons = [],
+    ...rest
+  } = {}) => {
+    const location = normalizeLocation({
+      position,
+      latitude,
+      longitude,
+      height,
+    });
+    const ids = Array.isArray(layerIds) ? layerIds : [];
+    const normalizedButtons = (Array.isArray(buttons) ? buttons : []).map(
+      normalizeMapAction,
+    );
+    const hasExplicitMapButton = normalizedButtons.some(
+      (action) => action.type === "map",
+    );
+    const allActions = [...normalizedButtons];
+    let geoPoint = null;
+
+    if (location.latitude != null || location.longitude != null) {
+      geoPoint = new GeoPoint(location);
+    }
+
+    if (
+      !hasExplicitMapButton &&
+      (location.latitude != null || location.longitude != null)
+    ) {
+      allActions.push({
+        type: "map",
+        ordinality: "secondary",
+        label: "View Layers",
+        icon: "eye-open",
+        latitude: location.latitude,
+        longitude: location.longitude,
+        height: location.height,
+        layerIds: ids,
+      });
+    }
+
+    return {
+      ...rest,
+      geoPoint,
+      buttons: allActions,
+    };
+  };
+
   /**
    * @class ViewfinderCardModel
    * @classdesc ViewfinderCardModel represents a point of interest on a map that
    * can be configured within a MapView. Each card requires a title,
-   * description, and at least one ctaAction of type 'iframe', 'tab', or 'map'.
+   * description, and at least one button action of type 'iframe', 'tab', or 'map'.
    * This class was generalized from ZoomPresetModel and was renamed for clarity
    * when zoom presets were deprecated in favor of more generalized viewfinder
    * cards in 2.37.0, but the legacy zoom preset configuration format is still supported
    * for backward compatibility. Top level latitude, longitude, height, and
    * layerIds fields are synthesized into a 'map' action button with secondary
-   * ordinality, a "View Layers" label, and eye icon.
+   * ordinality, a "View Layers" label, and eye icon. Actions are only
+   * URL-restorable when they have an ID explicitly configured.
    * @classcategory Models/Maps
    * @augments Backbone.Model
    * @since 2.29.0
@@ -27,6 +159,9 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
        * ViewfinderCard. Added when zoom presets were deprecated in favor
        * of generalized viewfinder cards in 2.37.0.
        * @typedef {object} ViewfinderCardAction
+       * @property {string} id Unique action identifier used for URL restore
+       * (`a=` query param). Provide a stable explicit id in config for
+       * long-term link compatibility.
        * @property {'iframe'|'tab'|'map'} type The action type.
        * - 'iframe': opens a URL in the visualization overlay above the map.
        * - 'tab': opens a URL in a new browser tab.
@@ -85,6 +220,19 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
       },
 
       /**
+       * Normalize configured action ids on construction so direct model
+       * instantiation and collection parsing both preserve explicit URL
+       * restore-state ids.
+       * @since 0.0.0
+       */
+      initialize() {
+        const buttons = this.get("buttons") || [];
+        this.set("buttons", normalizeConfiguredActionIds(buttons), {
+          silent: true,
+        });
+      },
+
+      /**
        * Extended from ZoomPresetModel's Parse() when zoom presets were deprecated
        * in favor of generalized viewfinder cards in 2.37.0. Parses incoming data to
        * create a ViewfinderCardModel. Handles the legacy `position` field
@@ -111,47 +259,20 @@ define(["underscore", "backbone", "models/maps/GeoPoint"], (
         buttons = [],
         ...rest
       }) {
-        const lat = latitude ?? position?.latitude ?? null;
-        const lng = longitude ?? position?.longitude ?? null;
-        const alt = height ?? position?.height ?? null;
-        const ids = layerIds ?? [];
-
-        // Apply defaults to any explicit 'map' buttons.
-        const normalizedActions = buttons.map((action) => {
-          if (action.type !== "map") return action;
-          return {
-            ordinality: "secondary",
-            label: "View Layers",
-            icon: "eye-open",
-            ...action,
-          };
+        return normalizeCardAttributes({
+          position,
+          latitude,
+          longitude,
+          height,
+          layerIds,
+          buttons,
+          ...rest,
         });
-
-        const allActions = [...normalizedActions];
-        let geoPoint = null;
-
-        if (lat != null || lng != null) {
-          geoPoint = new GeoPoint({
-            latitude: lat,
-            longitude: lng,
-            height: alt,
-          });
-          allActions.push({
-            type: "map",
-            ordinality: "secondary",
-            label: "View Layers",
-            icon: "eye-open",
-            latitude: lat,
-            longitude: lng,
-            height: alt,
-            layerIds: ids,
-          });
-        }
-
-        return { geoPoint, buttons: allActions, ...rest };
       },
     },
   );
+
+  ViewfinderCardModel.normalizeCardAttributes = normalizeCardAttributes;
 
   return ViewfinderCardModel;
 });
