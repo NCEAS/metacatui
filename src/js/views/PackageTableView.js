@@ -6,9 +6,13 @@ define([
   "models/PackageModel",
   "views/DownloadButtonView",
   "text!templates/downloadContents.html",
-], function ($, _, Backbone, ValueUtilities, Package, DownloadButtonView, Template) {
+], ($, _, Backbone, ValueUtilities, Package, DownloadButtonView, Template) => {
   "use strict";
 
+  /**
+   * @deprecated Legacy package table view. Use the MetadataView/FileTableView
+   * rendering path instead. This view will be removed in a future release
+   */
   var PackageTable = Backbone.View.extend({
     template: _.template(Template),
 

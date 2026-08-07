@@ -32,6 +32,8 @@ define([
    * @classcategory Views
    * @screenshot views/DataPackageView.png
    * @augments Backbone.View
+   * @deprecated Legacy package table view. Use the MetadataView/FileTableView
+   * rendering path instead. This view will be removed in a future release
    */
   const DataPackageView = Backbone.View.extend(
     /** @lends DataPackageView.prototype */ {

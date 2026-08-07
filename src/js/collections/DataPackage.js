@@ -33,6 +33,7 @@ define([
    * @name DataPackage
    * @augments Backbone.Collection
    * @class
+   * @deprecated Use models/dataPackage/DataPackage for new package workflows
    */
   const DataPackage = Backbone.Collection.extend(
     /** @lends DataPackage.prototype */ {

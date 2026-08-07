@@ -28,6 +28,8 @@ define([
    * @classcategory Views
    * @class
    * @screenshot views/DataItemView.png
+   * @deprecated Legacy package table row view. Use the MetadataView/FileTableView
+   * rendering path instead. This view will be removed in a future release
    */
   const DataItemView = Backbone.View.extend(
     /** @lends DataItemView.prototype */ {
