@@ -351,7 +351,8 @@ define([
         // 1. Resolve the input PID to its package context.
         let result;
         try {
-          result = await dataPackage.resolveFromPid(this.pid, {
+          result = await this.resolveInput(dataPackage, {
+            renderId,
             signal: renderSignal,
           });
         } catch (error) {
@@ -363,29 +364,10 @@ define([
           this.onModelError(error?.status, error?.message || String(error));
           return this;
         }
-        if (!this.isCurrentRender(renderId)) return this;
+        if (!result || !this.isCurrentRender(renderId)) return this;
 
         // 2. Primary-object failures replace the whole page and take precedence
         // over any package handling.
-        if (result.notFound) {
-          const routeSectionMatch =
-            typeof this.pid === "string" && this.pid.match(/\?section=[^?]*$/);
-          if (routeSectionMatch && routeSectionMatch.index > 0) {
-            this.pid = this.pid.slice(0, routeSectionMatch.index);
-            try {
-              result = await dataPackage.resolveFromPid(this.pid, {
-                signal: renderSignal,
-              });
-            } catch (error) {
-              if (isAbortError(error) || !this.isCurrentRender(renderId)) {
-                return this;
-              }
-              this.onModelError(error?.status, error?.message || String(error));
-              return this;
-            }
-            if (!this.isCurrentRender(renderId)) return this;
-          }
-        }
         if (result.notFound) {
           this.showNotFound();
           return this;
@@ -426,70 +408,16 @@ define([
 
         // 4. Load the package members from the resolved resource map, keeping
         // any failure scoped so it does not block metadata that can render.
-        this.resourceMap = dataPackage.getRootResourceMapMember();
-        let packageError = null;
-        if (!this.resourceMap && unauthorizedPackage) {
-          packageError = {
-            ok: false,
-            reason: "unauthorized",
-            details: {
-              inputId: dataPackage.inputId,
-              rootResourceMapPid: dataPackage.rootResourceMapPid || null,
-            },
-          };
-        }
-        if (this.resourceMap) {
-          let useIndexFallback = false;
-          try {
-            const rmResult = await dataPackage.getManifestFromResourceMap({
-              merge: true,
-              signal: renderSignal,
-            });
-            if (!this.isCurrentRender(renderId)) return this;
-            if (rmResult && rmResult.ok === false) {
-              packageError = rmResult;
-              useIndexFallback = rmResult.reason !== "unauthorized";
-            } else {
-              await dataPackage.getManifestFromIndex({
-                merge: true,
-                onlyExisting: true,
-                signal: renderSignal,
-              });
-              if (!this.isCurrentRender(renderId)) return this;
-            }
-          } catch (error) {
-            if (isAbortError(error) || !this.isCurrentRender(renderId)) {
-              return this;
-            }
-            if (error?.code === "resource_map_not_editable") {
-              this.resourceMapEditBlockers = [...(error.issues || [])];
-              useIndexFallback = true;
-            }
-            packageError = {
-              ok: false,
-              reason: "error",
-              httpStatus: error?.status ?? null,
-              error,
-            };
-          }
-          if (useIndexFallback) {
-            try {
-              await dataPackage.getManifestFromIndex({
-                merge: true,
-                signal: renderSignal,
-              });
-              if (!this.isCurrentRender(renderId)) return this;
-            } catch (error) {
-              if (isAbortError(error) || !this.isCurrentRender(renderId)) {
-                return this;
-              }
-              console.warn(
-                "Could not load package member details from the index:",
-                error,
-              );
-            }
-          }
-        }
+        const packageLoad = await this.loadPackageMembers(
+          dataPackage,
+          unauthorizedPackage,
+          { renderId, signal: renderSignal },
+        );
+        if (!packageLoad || !this.isCurrentRender(renderId)) return this;
+        const { packageError } = packageLoad;
+        this.resourceMap = packageLoad.resourceMap;
+        this.resourceMapEditBlockers = packageLoad.resourceMapEditBlockers;
+
         this.metadata = dataPackage.getPrimaryMetadataMember();
         if (result.isResourceMap && this.metadata?.pid) {
           this.pid = this.metadata.pid;
@@ -552,20 +480,23 @@ define([
         await this.renderMetadata({ renderId, signal: renderSignal });
         if (!this.isCurrentRender(renderId)) return this;
 
-        // 7. Package details: keep the file table available even when the full
-        // listing is incomplete. The metadata row still gives users a useful
-        // download action while a quiet table note explains the limitation.
-        const fileListingState = await this.resolveFileListingState(
-          result,
-          packageError,
-          { renderId, signal: renderSignal },
-        );
-        if (!this.isCurrentRender(renderId)) return this;
-        await this.insertPackageTable(this.metadata, {
-          renderId,
-          signal: renderSignal,
-          fileListingState,
-        });
+        // 7. Package details: unresolved package ambiguity replaces only the
+        // file area. Other incomplete listings keep the file table available.
+        if (result.multipleRMs) {
+          this.showMultipleResourceMaps(result);
+        } else {
+          const fileListingState = await this.resolveFileListingState(
+            result,
+            packageError,
+            { renderId, signal: renderSignal },
+          );
+          if (!this.isCurrentRender(renderId)) return this;
+          await this.insertPackageTable(this.metadata, {
+            renderId,
+            signal: renderSignal,
+            fileListingState,
+          });
+        }
 
         // Need template rendered before we can insert breadcrumbs (i.e. not
         // showing loading message)
@@ -589,6 +520,117 @@ define([
         );
 
         return this;
+      },
+
+      /**
+       * Resolve the input PID, retrying without a trailing route section when
+       * the full value is not found
+       * @param {DataPackage} dataPackage Package used to resolve the input
+       * @param {object} [options] Render options
+       * @returns {Promise<object|null>} Resolution result, or null when a newer
+       * render starts
+       * @since 0.0.0
+       */
+      async resolveInput(dataPackage, options = {}) {
+        const { renderId, signal } = this.getRenderOptions(options);
+        let result = await dataPackage.resolveFromPid(this.pid, { signal });
+        if (!this.isCurrentRender(renderId)) return null;
+
+        const routeSectionMatch =
+          result.notFound &&
+          typeof this.pid === "string" &&
+          this.pid.match(/\?section=[^?]*$/);
+        if (!routeSectionMatch || routeSectionMatch.index <= 0) return result;
+
+        this.pid = this.pid.slice(0, routeSectionMatch.index);
+        result = await dataPackage.resolveFromPid(this.pid, { signal });
+        if (!this.isCurrentRender(renderId)) return null;
+        return result;
+      },
+
+      /**
+       * Load members from the authoritative resource map, then enrich them
+       * from the index. Fall back to index membership when the resource map
+       * cannot be loaded.
+       * @param {DataPackage} dataPackage Package receiving loaded members
+       * @param {boolean} unauthorizedPackage Whether resolution was
+       * unauthorized
+       * @param {object} [options] Render options
+       * @returns {Promise<object|null>} Package load state, or null when a newer
+       * render starts
+       * @since 0.0.0
+       */
+      async loadPackageMembers(dataPackage, unauthorizedPackage, options = {}) {
+        const { renderId, signal } = this.getRenderOptions(options);
+        const resourceMap = dataPackage.getRootResourceMapMember();
+        let resourceMapEditBlockers = [];
+        let packageError = null;
+
+        if (!resourceMap && unauthorizedPackage) {
+          packageError = {
+            ok: false,
+            reason: "unauthorized",
+            details: {
+              inputId: dataPackage.inputId,
+              rootResourceMapPid: dataPackage.rootResourceMapPid || null,
+            },
+          };
+        }
+
+        if (!resourceMap) {
+          return { resourceMap, resourceMapEditBlockers, packageError };
+        }
+
+        let useIndexFallback = false;
+        try {
+          const rmResult = await dataPackage.getManifestFromResourceMap({
+            merge: true,
+            signal,
+          });
+          if (!this.isCurrentRender(renderId)) return null;
+          if (rmResult && rmResult.ok === false) {
+            packageError = rmResult;
+            useIndexFallback = rmResult.reason !== "unauthorized";
+          } else {
+            await dataPackage.getManifestFromIndex({
+              merge: true,
+              onlyExisting: true,
+              signal,
+            });
+            if (!this.isCurrentRender(renderId)) return null;
+          }
+        } catch (error) {
+          if (isAbortError(error) || !this.isCurrentRender(renderId)) {
+            return null;
+          }
+          if (error?.code === "resource_map_not_editable") {
+            resourceMapEditBlockers = [...(error.issues || [])];
+            useIndexFallback = true;
+          }
+          packageError = {
+            ok: false,
+            reason: "error",
+            httpStatus: error?.status ?? null,
+            error,
+          };
+        }
+
+        if (useIndexFallback) {
+          try {
+            await dataPackage.getManifestFromIndex({ merge: true, signal });
+            if (!this.isCurrentRender(renderId)) return null;
+          } catch (error) {
+            if (isAbortError(error) || !this.isCurrentRender(renderId)) {
+              return null;
+            }
+            console.warn(
+              "Could not load package member details from the index:",
+              error,
+            );
+          }
+        }
+
+        return { resourceMap, resourceMapEditBlockers, packageError };
       },
 
       /**
@@ -1627,6 +1669,7 @@ define([
           members: tableMembers,
           packageId,
           packageTitle,
+          packageServiceUrl,
           packageDownloadUrl,
           formatName: this.getFriendlyFormatName,
           showMetrics: Boolean(this.metricsModel),

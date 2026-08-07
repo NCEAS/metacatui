@@ -63,6 +63,8 @@ define([
       startRender: MetadataView.prototype.startRender,
       getRenderOptions: MetadataView.prototype.getRenderOptions,
       isCurrentRender: MetadataView.prototype.isCurrentRender,
+      resolveInput: MetadataView.prototype.resolveInput,
+      loadPackageMembers: MetadataView.prototype.loadPackageMembers,
       closeMetadataView: MetadataView.prototype.closeMetadataView,
       teardownFileTableScrollIndicators:
         MetadataView.prototype.teardownFileTableScrollIndicators,
@@ -428,6 +430,74 @@ define([
         context.showNotFound.calledOnce.should.equal(true);
       });
 
+      it("stops member loading when a newer render starts after resource map retrieval", async () => {
+        sandbox
+          .stub(DataPackage.prototype, "resolveFromPid")
+          .callsFake(async function resolveFromPid() {
+            this.members.add([
+              {
+                pid: "rm.1",
+                formatType: "RESOURCE",
+                formatId: RESOURCE_MAP_FORMAT_ID,
+              },
+              { pid: "meta.1", formatType: "METADATA", title: "EML" },
+            ]);
+            this.rootResourceMapPid = "rm.1";
+            this.primaryMetadataPid = "meta.1";
+            return {
+              success: true,
+              isMetadata: true,
+              resolvedPid: "meta.1",
+            };
+          });
+        let finishResourceMapLoad;
+        let markResourceMapLoadStarted;
+        const resourceMapLoadStarted = new Promise((resolve) => {
+          markResourceMapLoadStarted = resolve;
+        });
+        sandbox
+          .stub(DataPackage.prototype, "getManifestFromResourceMap")
+          .callsFake(() => {
+            markResourceMapLoadStarted();
+            return new Promise((resolve) => {
+              finishResourceMapLoad = () => resolve({ ok: true });
+            });
+          });
+        const getManifestFromIndex = sandbox.stub(
+          DataPackage.prototype,
+          "getManifestFromIndex",
+        );
+
+        globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+        globalThis.MetacatUI.appUserModel = {};
+        const context = withRenderContext({
+          pid: null,
+          seriesId: null,
+          stopListening: sandbox.stub(),
+          listenTo: sandbox.stub(),
+          showLoading: sandbox.stub(),
+          updateLoadingText: sandbox.stub(),
+          showNotFound: sandbox.stub(),
+          onModelError: sandbox.stub(),
+          showIsPrivate: sandbox.stub(),
+          prepareCitationModel: sandbox.stub(),
+          renderMetadataShell: sandbox.stub(),
+          isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
+          abortRender: MetadataView.prototype.abortRender,
+          render: MetadataView.prototype.render,
+        });
+
+        const rendering = MetadataView.prototype.render.call(context, {
+          pid: "meta.1",
+        });
+        await resourceMapLoadStarted;
+        context.renderId = "render-new";
+        finishResourceMapLoad();
+        await rendering;
+
+        sinon.assert.notCalled(getManifestFromIndex);
+      });
+
       it("does not add index-only rows after a successful resource map load", async () => {
         sandbox
           .stub(DataPackage.prototype, "resolveFromPid")
@@ -510,6 +580,92 @@ define([
           merge: true,
           onlyExisting: true,
           signal: context.renderAbortController.signal,
+        });
+      });
+
+      [
+        {
+          title:
+            "falls back to the index when resource map membership is unavailable",
+          reason: "notFound",
+          loadsIndex: true,
+          fileListingState: "serverUnavailable",
+        },
+        {
+          title:
+            "does not use the index when resource map membership is unauthorized",
+          reason: "unauthorized",
+          loadsIndex: false,
+          fileListingState: "permissionUnavailable",
+        },
+      ].forEach(({ title, reason, loadsIndex, fileListingState }) => {
+        it(title, async () => {
+          sandbox
+            .stub(DataPackage.prototype, "resolveFromPid")
+            .callsFake(async function resolveFromPid() {
+              this.members.add([
+                {
+                  pid: "rm.1",
+                  formatType: "RESOURCE",
+                  formatId: RESOURCE_MAP_FORMAT_ID,
+                },
+                { pid: "meta.1", formatType: "METADATA", title: "EML" },
+              ]);
+              this.rootResourceMapPid = "rm.1";
+              this.primaryMetadataPid = "meta.1";
+              return {
+                success: true,
+                isMetadata: true,
+                resolvedPid: "meta.1",
+              };
+            });
+          sandbox
+            .stub(DataPackage.prototype, "getManifestFromResourceMap")
+            .resolves({ ok: false, reason });
+          const getManifestFromIndex = sandbox
+            .stub(DataPackage.prototype, "getManifestFromIndex")
+            .resolves({ ok: true });
+
+          globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+          globalThis.MetacatUI.appUserModel = {};
+          const context = withRenderContext({
+            pid: null,
+            seriesId: null,
+            stopListening: sandbox.stub(),
+            listenTo: sandbox.stub(),
+            showLoading: sandbox.stub(),
+            updateLoadingText: sandbox.stub(),
+            showNotFound: sandbox.stub(),
+            onModelError: sandbox.stub(),
+            showIsPrivate: sandbox.stub(),
+            prepareCitationModel: sandbox.stub(),
+            renderMetadataShell: sandbox.stub(),
+            checkWritePermissions: sandbox.stub().resolves(false),
+            checkProvenanceWritePermission: sandbox.stub().resolves(false),
+            renderMetadata: sandbox.stub().resolves(),
+            resolveFileListingState:
+              MetadataView.prototype.resolveFileListingState,
+            insertPackageTable: sandbox.stub(),
+            insertBreadcrumbs: sandbox.stub(),
+            insertParentLink: sandbox.stub().resolves(),
+            isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
+            abortRender: MetadataView.prototype.abortRender,
+            render: MetadataView.prototype.render,
+          });
+
+          await MetadataView.prototype.render.call(context, { pid: "meta.1" });
+
+          if (loadsIndex) {
+            sinon.assert.calledOnceWithExactly(getManifestFromIndex, {
+              merge: true,
+              signal: context.renderAbortController.signal,
+            });
+          } else {
+            sinon.assert.notCalled(getManifestFromIndex);
+          }
+          context.insertPackageTable.firstCall.args[1].fileListingState.should.equal(
+            fileListingState,
+          );
         });
       });
 
