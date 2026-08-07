@@ -538,6 +538,7 @@ define([
    * @param {Function} [options.getMemberStatus] Status resolver
    * `(member, type) => {label, title, iconClass, progress}|null`
    * @param {string} [options.packageId] Root resource map PID
+   * @param {string} [options.packageServiceUrl] Package download service URL
    * @param {boolean} [options.showShare] Whether sharing controls are shown
    * @param {object|null} [options.display] Optional confirmed remote display
    * values for unresolved failed replacements
@@ -554,6 +555,7 @@ define([
       getRowMetric = null,
       getMemberStatus = null,
       packageId = "",
+      packageServiceUrl = "",
       showShare = true,
       display = null,
       isEagerUploading = false,
@@ -596,7 +598,12 @@ define([
     if (mode === "viewer" && type === "METADATA" && fileName) {
       label = `Metadata: ${fileName}`;
     }
-    const downloadUrl = getDownloadUrl(member, resolveBaseUrl);
+    let downloadUrl = getDownloadUrl(member, resolveBaseUrl);
+    if (isNestedPackage) {
+      downloadUrl = packageServiceUrl
+        ? packageServiceUrl + encodeURIComponent(id)
+        : "";
+    }
     const customStatus =
       mode === "editor" && getMemberStatus
         ? getMemberStatus(member, type)
@@ -923,6 +930,7 @@ define([
    * @param {string} [options.packageId] Package (root resource map) PID
    * @param {string} [options.preferredDatasetRootId] Preferred synthetic root
    * id when a caller needs a stable identity across package PID changes
+   * @param {string} [options.packageServiceUrl] Package download service URL
    * @param {string} [options.packageDownloadUrl] Whole package download URL
    * @returns {object[]} Render ready rows for `FileTableViewModel#setRows`
    */
@@ -938,6 +946,7 @@ define([
       packageTitle = "",
       packageId = "",
       preferredDatasetRootId = "",
+      packageServiceUrl = "",
       packageDownloadUrl = "",
     } = options;
     const rowOptions = {
@@ -948,6 +957,7 @@ define([
       getRowMetric,
       getMemberStatus,
       packageId,
+      packageServiceUrl,
       showShare,
     };
     const datasetMode = Boolean(packageTitle || packageId);

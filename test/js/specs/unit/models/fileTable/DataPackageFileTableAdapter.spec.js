@@ -841,6 +841,7 @@ define([
           packageId: "root.rm",
           packageTitle: "Root Dataset",
           resolveBaseUrl: "https://cn.test/resolve/",
+          packageServiceUrl: "https://cn.test/package/",
         });
 
         rows.filter((r) => r.id === "dataset:root.rm").should.have.length(1);
@@ -854,6 +855,7 @@ define([
         nested.actions
           .map((action) => action.id)
           .should.deep.equal(["open-dataset", "download"]);
+        nested.downloadUrl.should.equal("https://cn.test/package/nested.rm");
       });
 
       it("tooltips the full title on package rows and the full file name on file rows (never the PID)", () => {
