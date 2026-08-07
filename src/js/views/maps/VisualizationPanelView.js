@@ -1,8 +1,13 @@
 "use strict";
 
-define(["backbone", "common/TrustedContentUtilities"], (
+define([
+  "backbone",
+  "common/TrustedContentUtilities",
+  "common/UriTemplateUtilities",
+], (
   Backbone,
   trustedContent,
+  UriTemplateUtilities,
 ) => {
   const BASE_CLASS = "visualization-panel";
   const CLASS_NAMES = {
@@ -83,14 +88,74 @@ define(["backbone", "common/TrustedContentUtilities"], (
         this.handleEscapeKey = (e) => {
           if (e.key === "Escape") this.close();
         };
+        this.handleMessage = (event) => {
+          const iframe = this.el.querySelector(`.${CLASS_NAMES.iframe}`);
+          if (!iframe || !iframe.contentWindow) return;
+          if (event?.source !== iframe.contentWindow) return;
+
+          if (
+            typeof this.activeVisualizationOrigin === "string" &&
+            this.activeVisualizationOrigin.length &&
+            event.origin !== this.activeVisualizationOrigin
+          ) {
+            return;
+          }
+
+          const data = event?.data;
+          if (!data || typeof data !== "object") return;
+          if (data.type !== "mcui:state") return;
+
+          const version = data.version == null ? 1 : Number(data.version);
+          if (!Number.isFinite(version) || version !== 1) return;
+          if (typeof data.url !== "string" || !data.url.length) return;
+
+          this.trigger("mcui:state", {
+            action: this.activeVisualizationAction || null,
+            url: data.url,
+            version,
+          });
+        };
+      },
+
+      /**
+       * Resolve expected postMessage origin for the current iframe action.
+       * @param {object|null} action The active iframe action object.
+       * @param {string} resolvedUrl The URL currently loaded in the iframe.
+       * @returns {string|null} Strict origin expected for postMessage events.
+       * @since 0.0.0
+       */
+      getExpectedMessageOrigin(action, resolvedUrl) {
+        const templateUrl =
+          typeof action?.url === "string" ? action.url : resolvedUrl;
+        if (typeof templateUrl !== "string" || !templateUrl.length) {
+          return null;
+        }
+
+        const baseUrl = UriTemplateUtilities.getTemplateBaseUrl(templateUrl);
+
+        try {
+          return new URL(baseUrl || resolvedUrl).origin;
+        } catch (_e) {
+          return null;
+        }
       },
 
       /**
        * Open the panel and load the given URL in the iframe. If the URL is
        * not trusted, show a plain link fallback instead.
-       * @param {string} url The URL to load.
+       * @param {string|object} payload The URL string to load or an object
+       * with `{ url, action }` for URL-template-aware visualizations.
        */
-      open(url) {
+      open(payload) {
+        const resolvedUrl =
+          typeof payload === "string" ? payload : payload?.url || "";
+        this.activeVisualizationAction =
+          payload && typeof payload === "object" ? payload.action || null : null;
+        this.activeVisualizationOrigin = this.getExpectedMessageOrigin(
+          this.activeVisualizationAction,
+          resolvedUrl,
+        );
+
         const iframe = this.el.querySelector(`.${CLASS_NAMES.iframe}`);
         const untrustedMessage = this.el.querySelector(
           `.${CLASS_NAMES.untrustedMessage}`,
@@ -100,12 +165,12 @@ define(["backbone", "common/TrustedContentUtilities"], (
           `.${CLASS_NAMES.untrustedLink}`,
         );
 
-        if (trustedContent.isTrustedUrl(url)) {
+        if (trustedContent.isTrustedUrl(resolvedUrl)) {
           iframe.setAttribute(
             "sandbox",
-            trustedContent.getTrustedIframeSandbox(url),
+            trustedContent.getTrustedIframeSandbox(resolvedUrl),
           );
-          iframe.src = url;
+          iframe.src = resolvedUrl;
           iframe.style.display = "";
           untrusted.style.display = "none";
         } else {
@@ -113,11 +178,11 @@ define(["backbone", "common/TrustedContentUtilities"], (
           iframe.removeAttribute("src");
           iframe.style.display = "none";
 
-          if (trustedContent.isHttpUrl(url)) {
+          if (trustedContent.isHttpUrl(resolvedUrl)) {
             untrustedMessage.textContent =
               "This content cannot be displayed here because its source is not in the list of trusted sources.";
-            untrustedLink.href = url;
-            untrustedLink.textContent = url;
+            untrustedLink.href = resolvedUrl;
+            untrustedLink.textContent = resolvedUrl;
             untrustedLink.style.display = "";
           } else {
             untrustedMessage.textContent =
@@ -132,6 +197,7 @@ define(["backbone", "common/TrustedContentUtilities"], (
 
         this.el.classList.add(CLASS_NAMES.open);
         document.addEventListener("keydown", this.handleEscapeKey);
+        window.addEventListener("message", this.handleMessage);
       },
 
       /**
@@ -142,6 +208,9 @@ define(["backbone", "common/TrustedContentUtilities"], (
         if (iframe) iframe.removeAttribute("src");
         this.el.classList.remove(CLASS_NAMES.open);
         document.removeEventListener("keydown", this.handleEscapeKey);
+        window.removeEventListener("message", this.handleMessage);
+        this.activeVisualizationAction = null;
+        this.activeVisualizationOrigin = null;
         this.trigger("close");
       },
 
@@ -150,8 +219,11 @@ define(["backbone", "common/TrustedContentUtilities"], (
        */
       onClose() {
         document.removeEventListener("keydown", this.handleEscapeKey);
+        window.removeEventListener("message", this.handleMessage);
         const iframe = this.el.querySelector(`.${CLASS_NAMES.iframe}`);
         if (iframe) iframe.removeAttribute("src");
+        this.activeVisualizationAction = null;
+        this.activeVisualizationOrigin = null;
       },
 
       /**

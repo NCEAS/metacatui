@@ -158,7 +158,10 @@ define([
           "change:activeVisualizationUrl",
           (model, url) => {
             if (url) {
-              view.visualizationPanel.open(url);
+              view.visualizationPanel.open({
+                action: model.get("activeVisualizationAction"),
+                url,
+              });
             } else {
               view.visualizationPanel.close();
             }
@@ -167,14 +170,26 @@ define([
 
         const activeVisualizationUrl = view.model.get("activeVisualizationUrl");
         if (activeVisualizationUrl) {
-          view.visualizationPanel.open(activeVisualizationUrl);
+          view.visualizationPanel.open({
+            action: view.model.get("activeVisualizationAction"),
+            url: activeVisualizationUrl,
+          });
         }
+
+        view.stopListening(view.visualizationPanel, "mcui:state");
+        view.listenTo(view.visualizationPanel, "mcui:state", (payload) => {
+          view.model.trigger("visualization:state", payload);
+        });
 
         // Keep map model in sync when the panel is closed via its own button
         // or the Escape key (which triggers the "close" event on the panel).
         view.stopListening(view.visualizationPanel, "close");
         view.listenTo(view.visualizationPanel, "close", () => {
-          view.model.set({ activeVisualizationUrl: null });
+          view.model.set({
+            activeVisualizationAction: null,
+            activeVisualizationActionId: null,
+            activeVisualizationUrl: null,
+          });
         });
 
         return view.visualizationPanel;
