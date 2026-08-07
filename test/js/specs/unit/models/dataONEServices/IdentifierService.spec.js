@@ -59,7 +59,9 @@ define([
         };
 
         const service = new IdentifierService();
-        service.client.baseUrl.should.equal("https://fallback.example.org/cn/v2");
+        service.client.baseUrl.should.equal(
+          "https://fallback.example.org/cn/v2",
+        );
         service.defaultAuth.should.equal(true);
         service.persistPrivate.should.equal(false);
       });
@@ -286,7 +288,9 @@ define([
         }
 
         expect(caught).to.be.instanceof(Error);
-        expect(caught.message).to.match(/unsupported generateIdentifier params/i);
+        expect(caught.message).to.match(
+          /unsupported generateIdentifier params/i,
+        );
       });
     });
 

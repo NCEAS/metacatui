@@ -1008,7 +1008,6 @@ define([
         this.downloadButtonView = new DownloadButtonView({
           model: dataPackage,
           view: "actionsView",
-          nested: true,
         });
 
         // Render

@@ -119,9 +119,7 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
       it("throw a ParseError for malformed XML", () => {
         expect(() =>
           XMLUtilities.parseXmlString("<root><unclosed></root>"),
-        ).to.throw(
-          XMLUtilities.ParseError,
-        );
+        ).to.throw(XMLUtilities.ParseError);
 
         expect(() =>
           XMLUtilities.parseXmlString("<root><unclosed></root>"),
@@ -190,9 +188,9 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
           "application/xml",
         );
 
-        expect(XMLUtilities.getNormalizedElementName(xml.documentElement)).to.equal(
-          "identifier",
-        );
+        expect(
+          XMLUtilities.getNormalizedElementName(xml.documentElement),
+        ).to.equal("identifier");
       });
 
       it("falls back to nodeName and handles missing nodes", () => {
@@ -214,9 +212,9 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
       });
 
       it("rejects invalid simple selectors", () => {
-        expect(XMLUtilities.parseSimpleElementSelector("dataset[role=main]")).to.equal(
-          null,
-        );
+        expect(
+          XMLUtilities.parseSimpleElementSelector("dataset[role=main]"),
+        ).to.equal(null);
         expect(
           XMLUtilities.parseSimpleElementSelector("dataset > title!"),
         ).to.equal(null);
@@ -244,12 +242,12 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
           "dataset > title",
         );
 
-        expect(descendantMatches.map((element) => element.textContent)).to.deep.equal(
-          ["Dataset title", "Nested title"],
-        );
-        expect(childMatches.map((element) => element.textContent)).to.deep.equal([
-          "Dataset title",
-        ]);
+        expect(
+          descendantMatches.map((element) => element.textContent),
+        ).to.deep.equal(["Dataset title", "Nested title"]);
+        expect(
+          childMatches.map((element) => element.textContent),
+        ).to.deep.equal(["Dataset title"]);
       });
     });
 
@@ -586,7 +584,11 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
         );
 
         expect(() =>
-          XMLUtilities.requireDocumentElement(xml, "systemMetadata", "root check"),
+          XMLUtilities.requireDocumentElement(
+            xml,
+            "systemMetadata",
+            "root check",
+          ),
         ).to.throw(/expected root <systemMetadata>/i);
       });
     });

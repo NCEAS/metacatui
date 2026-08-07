@@ -4,7 +4,7 @@ define([
   "backbone",
   "common/ValidationUtilities",
   "text!templates/registerCitation.html",
-], function ($, _, Backbone, ValidationUtilities, RegisterCitationTemplate) {
+], ($, _, Backbone, ValidationUtilities, RegisterCitationTemplate) => {
   "use strict";
 
   /**

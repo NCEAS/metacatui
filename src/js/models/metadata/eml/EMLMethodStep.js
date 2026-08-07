@@ -23,16 +23,16 @@ define(
     EMLSpecializedText,
   ) => {
     /**
-  * @class EMLMethodStep
-  * @classdesc Represents the EML Method Steps. The methodStep field allows for repeated sets of
+     * @class EMLMethodStep
+     * @classdesc Represents the EML Method Steps. The methodStep field allows for repeated sets of
             elements that document a series of procedures followed to produce a
             data object. These include text descriptions of the procedures,
             relevant literature, software, instrumentation, source data and any
             quality control measures taken.
-  * @classcategory Models/Metadata/EML
-  * @extends Backbone.Model
-  * @since 2.19.0
-  */
+     * @classcategory Models/Metadata/EML
+     * @augments Backbone.Model
+     * @since 2.19.0
+     */
     const EMLMethodStep = Backbone.Model.extend(
       /** @lends EMLMethodStep.prototype */ {
         /**
@@ -46,7 +46,7 @@ define(
          * @property {string[]} customMethodID A unique identifier for this Custom Method Step type, which is defined in {@link AppConfig#customEMLMethods}
          * @property {boolean} required If true, this method step is required in it's parent EML
          */
-        defaults: function () {
+        defaults() {
           return {
             objectXML: null,
             objectDOM: null,
@@ -58,14 +58,14 @@ define(
           };
         },
 
-        initialize: function (attributes) {
+        initialize(attributes) {
           attributes = attributes || {};
 
           if (attributes.objectDOM) {
             this.set(this.parse(attributes.objectDOM));
           } else if (attributes.customMethodID) {
             try {
-              let customMethodConfig = MetacatUI.appModel
+              const customMethodConfig = MetacatUI.appModel
                 .get("customEMLMethods")
                 .find((config) => config.id == attributes.customMethodID);
 
@@ -89,12 +89,12 @@ define(
             );
           }
 
-          //Set the required attribute
-          if (typeof attributes.required == "boolean") {
+          // Set the required attribute
+          if (typeof attributes.required === "boolean") {
             this.set("required", attributes.required);
           }
 
-          //specific attributes to listen to
+          // specific attributes to listen to
           this.on("change:instrumentation", this.trickleUpChange);
         },
 
@@ -103,7 +103,7 @@ define(
          * Used during parse() and serialize()
          * @returns {object}
          */
-        nodeNameMap: function () {
+        nodeNameMap() {
           return {
             alternateidentifier: "alternateIdentifier",
             methodstep: "methodStep",
@@ -115,42 +115,43 @@ define(
           };
         },
 
-        parse: function (objectDOM) {
-          var modelJSON = {};
+        parse(objectDOM) {
+          const modelJSON = {};
 
           if (!objectDOM) var objectDOM = this.get("objectDOM");
 
-          let $objectDOM = $(objectDOM),
-            description = $objectDOM.children("description");
+          const $objectDOM = $(objectDOM);
+          const description = $objectDOM.children("description");
 
-          //Get the titles of all the custom method steps from the App Config
-          let customMethodOptions = MetacatUI.appModel.get("customEMLMethods"),
-            customMethodTitles = _.flatten(
-              _.pluck(customMethodOptions, "titleOptions"),
-            ),
-            isCustom = false;
+          // Get the titles of all the custom method steps from the App Config
+          const customMethodOptions =
+            MetacatUI.appModel.get("customEMLMethods");
+          const customMethodTitles = _.flatten(
+            _.pluck(customMethodOptions, "titleOptions"),
+          );
+          let isCustom = false;
 
           try {
-            //If there is at least one custom method configured, check if this description is one
+            // If there is at least one custom method configured, check if this description is one
             if (customMethodOptions && customMethodOptions.length) {
-              let specializedTextAttr = EMLSpecializedText.prototype.parse(
-                  description[0],
-                ),
-                matchingCustomMethod = customMethodOptions.find((options) =>
-                  options.titleOptions.includes(specializedTextAttr.title),
-                );
+              const specializedTextAttr = EMLSpecializedText.prototype.parse(
+                description[0],
+              );
+              const matchingCustomMethod = customMethodOptions.find((options) =>
+                options.titleOptions.includes(specializedTextAttr.title),
+              );
 
               if (matchingCustomMethod) {
                 isCustom = true;
 
-                //Use the EMLSpecializedText model for custom methods
+                // Use the EMLSpecializedText model for custom methods
                 modelJSON.description = new EMLSpecializedText({
                   objectDOM: description[0],
                   type: "description",
                   titleOptions: matchingCustomMethod.titleOptions,
                   parentModel: this,
                 });
-                //Save the other configurations of this custom method to this EMLMethodStep
+                // Save the other configurations of this custom method to this EMLMethodStep
                 modelJSON.customMethodID = matchingCustomMethod.id;
                 modelJSON.required = matchingCustomMethod.required;
               }
@@ -159,7 +160,7 @@ define(
             console.error(e);
           }
 
-          //Create a regular EMLText description for non-custom methods
+          // Create a regular EMLText description for non-custom methods
           if (!isCustom) {
             modelJSON.description = new EMLText({
               objectDOM: description[0],
@@ -168,7 +169,7 @@ define(
             });
           }
 
-          //Parse the instrumentation
+          // Parse the instrumentation
           modelJSON.instrumentation = [];
           $objectDOM.children("instrumentation").each((i, el) => {
             modelJSON.instrumentation.push(el.textContent);
@@ -179,14 +180,14 @@ define(
           return modelJSON;
         },
 
-        serialize: function () {
-          var objectDOM = this.updateDOM();
+        serialize() {
+          const objectDOM = this.updateDOM();
 
           if (!objectDOM) return "";
 
-          var xmlString = objectDOM.outerHTML;
+          let xmlString = objectDOM.outerHTML;
 
-          //Camel-case the XML
+          // Camel-case the XML
           xmlString = this.formatXML(xmlString);
 
           return xmlString;
@@ -195,14 +196,14 @@ define(
         /**
          * Makes a copy of the original XML DOM and updates it with the new values from the model.
          */
-        updateDOM: function () {
-          //Return nothing if this model has only the default values
+        updateDOM() {
+          // Return nothing if this model has only the default values
           if (this.isEmpty()) {
             return;
           }
 
           try {
-            var objectDOM;
+            let objectDOM;
 
             if (this.get("objectDOM")) {
               objectDOM = this.get("objectDOM").cloneNode(true);
@@ -210,20 +211,20 @@ define(
               objectDOM = $(document.createElement("methodstep"));
             }
 
-            let $objectDOM = $(objectDOM);
+            const $objectDOM = $(objectDOM);
 
-            //Update the description
-            let description = this.get("description");
+            // Update the description
+            const description = this.get("description");
             if (description) {
-              let updatedDescription = description.updateDOM();
+              const updatedDescription = description.updateDOM();
 
-              //Descriptions are required for method steps, so if updating the DOM didn't work, don't serialize this method step.
+              // Descriptions are required for method steps, so if updating the DOM didn't work, don't serialize this method step.
               if (!updatedDescription) {
                 return;
               }
 
-              //Add the description to the method step
-              let existingDesc = $objectDOM.children("description");
+              // Add the description to the method step
+              const existingDesc = $objectDOM.children("description");
               if (existingDesc.length) {
                 existingDesc.replaceWith(updatedDescription);
               } else {
@@ -232,13 +233,13 @@ define(
             }
 
             try {
-              //Update the instrumentation
-              let instrumentation = this.get("instrumentation");
+              // Update the instrumentation
+              const instrumentation = this.get("instrumentation");
               $objectDOM.children("instrumentation").remove();
 
               if (instrumentation && instrumentation.length) {
                 instrumentation.reverse().each((i) => {
-                  let updatedI = document.createElement("instrumentation");
+                  const updatedI = document.createElement("instrumentation");
                   updatedI.textContent = i;
                   $objectDOM.children("description").after(updatedI);
                 });
@@ -266,17 +267,15 @@ define(
               "Failed to update the EMLMethodStep. Won't serialize. ",
               e,
             );
-            return;
           }
         },
 
         /**
          *  function isEmpty() - Will check if there are any values set on this model
-         * that are different than the default values and would be serialized to the EML.
-         *
-         * @return {boolean} - Returns true is this model is empty, false if not
+         *  that are different than the default values and would be serialized to the EML.
+         * @returns {boolean} - Returns true is this model is empty, false if not
          */
-        isEmpty: function () {
+        isEmpty() {
           if (!this.get("description") || this.get("description").isEmpty()) {
             return true;
           }
@@ -286,7 +285,7 @@ define(
          * Returns whether or not this Method Step is a custom one, which currently only applies to the description
          * @returns {boolean}
          */
-        isCustom: function () {
+        isCustom() {
           return this.get("description")
             ? this.get("description").type == "EMLSpecializedText"
             : false;
@@ -294,18 +293,18 @@ define(
 
         /**
          * Overloads Backbone.Model.validate() to check if this model has valid values set on it
-         * @extends Backbone.Model.validate
+         * @augments Backbone.Model.validate
          * @returns {object}
          */
-        validate: function () {
+        validate() {
           try {
-            let validationErrors = {};
+            const validationErrors = {};
 
             if (this.isCustom() && this.get("required")) {
-              let desc = this.get("description"),
-                isMissing = false;
+              const desc = this.get("description");
+              let isMissing = false;
 
-              //If there is a missing description, we need to show the required error
+              // If there is a missing description, we need to show the required error
               if (!desc) {
                 isMissing = true;
               } else if (!desc.get("text")) {
@@ -329,7 +328,7 @@ define(
           EMLUtilities.markRootDataPackageChanged();
         },
 
-        formatXML: function (xmlString) {
+        formatXML(xmlString) {
           return DataONEObject.prototype.formatXML.call(this, xmlString);
         },
       },

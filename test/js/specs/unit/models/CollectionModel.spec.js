@@ -4,13 +4,7 @@ define([
   "models/CollectionModel",
   "models/dataONEServices/DataONEHttpClient",
   "common/ValueUtilities",
-], (
-  cleanState,
-  $,
-  CollectionModel,
-  DataONEHttpClient,
-  ValueUtilities,
-) => {
+], (cleanState, $, CollectionModel, DataONEHttpClient, ValueUtilities) => {
   chai.should();
 
   describe("CollectionModel Test Suite", () => {

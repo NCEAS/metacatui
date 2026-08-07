@@ -257,11 +257,9 @@ define([
           .resolves(buildResponse("ok"));
 
         const path = "/object/pid:abc%2F123";
-        const expected = UrlUtilities.buildUrl(
-          "https://example.org",
-          path,
-          { encodePath: true },
-        );
+        const expected = UrlUtilities.buildUrl("https://example.org", path, {
+          encodePath: true,
+        });
 
         await state.client.request({ path });
 
@@ -360,11 +358,14 @@ define([
           timeoutMs: 25,
         });
 
-        client.normalizeRequestOptions({ path: "/object/1" }).timeoutMs.should
-          .equal(25);
-        client.normalizeRequestOptions({ path: "/object/1", timeoutMs: null })
+        client
+          .normalizeRequestOptions({ path: "/object/1" })
           .timeoutMs.should.equal(25);
-        client.normalizeRequestOptions({ path: "/object/1", timeoutMs: 0 })
+        client
+          .normalizeRequestOptions({ path: "/object/1", timeoutMs: null })
+          .timeoutMs.should.equal(25);
+        client
+          .normalizeRequestOptions({ path: "/object/1", timeoutMs: 0 })
           .timeoutMs.should.equal(0);
       });
 
@@ -556,11 +557,9 @@ define([
           .stub(window, "fetch")
           .resolves(buildResponse("ok"));
         const path = "/object/1?format=json";
-        const expected = UrlUtilities.buildUrl(
-          "https://example.org",
-          path,
-          { encodePath: false },
-        );
+        const expected = UrlUtilities.buildUrl("https://example.org", path, {
+          encodePath: false,
+        });
 
         await state.client.request({ path, encodePath: false });
 
@@ -1261,9 +1260,7 @@ define([
 
       it("propagates AbortError when caller aborts an xhr request", async () => {
         const controller = new AbortController();
-        const FakeXMLHttpRequest = createFakeXhrClass([
-          { type: "hold" },
-        ]);
+        const FakeXMLHttpRequest = createFakeXhrClass([{ type: "hold" }]);
         state.sandbox
           .stub(globalThis, "XMLHttpRequest")
           .callsFake(() => new FakeXMLHttpRequest());

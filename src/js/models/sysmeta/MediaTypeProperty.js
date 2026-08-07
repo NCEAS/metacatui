@@ -111,7 +111,9 @@ define([
         element.setAttribute("name", this.name);
       }
       if (this.value !== null) {
-        element.textContent = XMLUtilities.removeInvalidXmlCharacters(this.value);
+        element.textContent = XMLUtilities.removeInvalidXmlCharacters(
+          this.value,
+        );
       }
       return element;
     }

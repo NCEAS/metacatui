@@ -160,7 +160,8 @@ define(["backbone", "models/DataONEObject", "common/DateUtilities"], (
      * @param {string} [options.dateProp] Model property to read.
      * @param {("local"|"UTC")} [options.groupingTimeZone] Timezone used
      * to determine day boundaries.
-     * @returns {{date: Date|null, models: Backbone.Model[]}[]} Grouped models.
+     * @returns {Array.<{date: (Date|null), models: Array.<Backbone.Model>}>}
+     * Grouped models
      */
     groupByDate({
       dateProp = "dateUploaded",

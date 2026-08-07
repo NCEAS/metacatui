@@ -30,7 +30,11 @@ define([
      */
     static fromElement(element) {
       const context = "Checksum XML";
-      XMLUtilities.requireAllowedAttributeNames(element, ["algorithm"], context);
+      XMLUtilities.requireAllowedAttributeNames(
+        element,
+        ["algorithm"],
+        context,
+      );
       return new Checksum({
         value: element?.textContent?.trim() || null,
         algorithm: XMLUtilities.getRequiredAttribute(
@@ -115,7 +119,8 @@ define([
         errors.push(
           createValidationIssue({
             field: `${path}.value`,
-            message: "checksum value is required and must be a non-empty string.",
+            message:
+              "checksum value is required and must be a non-empty string.",
           }),
         );
       }
@@ -146,7 +151,9 @@ define([
         element.setAttribute("algorithm", this.algorithm);
       }
       if (this.value !== null) {
-        element.textContent = XMLUtilities.removeInvalidXmlCharacters(this.value);
+        element.textContent = XMLUtilities.removeInvalidXmlCharacters(
+          this.value,
+        );
       }
       return element;
     }

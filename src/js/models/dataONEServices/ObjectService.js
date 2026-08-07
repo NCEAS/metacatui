@@ -399,12 +399,12 @@ define([
   }
 
   /**
-   * @type {DataONEService#DataONEServiceConfig}
    * ObjectService resolves separate read and write base URLs (see
    * {@link ObjectService.resolveReadBaseUrl} and
    * {@link ObjectService#resolveWriteBaseUrl}), so it keeps a custom
    * constructor rather than using the shared descriptor resolution. The
    * `appModelKeys` here document the read-side fallback order.
+   * @type {DataONEService#DataONEServiceConfig}
    */
   ObjectService.config = {
     endpoint: "object",

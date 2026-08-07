@@ -737,26 +737,9 @@ define([
       },
 
       /**
-       *  Overload fetch calls for a DataPackage
-       *
-       *  This fetch function will fetch the resource map RDF XML for this
-       *  package
-       *
-       *  + Example 1: `this.fetch();`
-       *  + Example 2: `this.fetch({fetchModels: false});`
-       *  + Example 3: `this.fetch({fromIndex: true});`
-       *  + Example 4:
-       *  ```
-       *  this.fetch()
-       *  .then(function() {
-       *  console.log("Fetch complete!");
-       *  })
-       *  .catch(function() {
-       *  console.log("Fetch failed!");
-       *  });
-       *  ```
-       * @param {object} [sourceOptions] - Optional options for this fetch that get
-       * sent with the XHR request
+       * Fetch the resource map RDF XML for this package
+       * @param {object} [sourceOptions] - Optional options for this fetch that
+       * get sent with the XHR request
        *  @property {boolean} fetchModels - If false, this fetch will not fetch
        *  each model in the collection. It will only get the resource map
        *  object.

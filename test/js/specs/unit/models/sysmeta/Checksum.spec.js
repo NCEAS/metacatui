@@ -47,8 +47,9 @@ define(["models/sysmeta/Checksum"], (Checksum) => {
       });
 
       it("requires the algorithm attribute", () => {
-        expect(() => Checksum.fromElement(parseElement("<checksum>abc</checksum>")))
-          .to.throw(/required "algorithm" attribute/i);
+        expect(() =>
+          Checksum.fromElement(parseElement("<checksum>abc</checksum>")),
+        ).to.throw(/required "algorithm" attribute/i);
       });
     });
 

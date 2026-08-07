@@ -1,7 +1,7 @@
-define([
-  "models/sysmeta/ReplicaList",
-  "models/sysmeta/Replica",
-], (ReplicaList, Replica) => {
+define(["models/sysmeta/ReplicaList", "models/sysmeta/Replica"], (
+  ReplicaList,
+  Replica,
+) => {
   const expect = chai.expect;
 
   const summarizeIssues = (issues) =>

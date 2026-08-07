@@ -1,7 +1,7 @@
-define([
-  "models/sysmeta/MediaType",
-  "models/sysmeta/MediaTypeProperty",
-], (MediaType, MediaTypeProperty) => {
+define(["models/sysmeta/MediaType", "models/sysmeta/MediaTypeProperty"], (
+  MediaType,
+  MediaTypeProperty,
+) => {
   const expect = chai.expect;
 
   const parseElement = (xml) =>
@@ -99,8 +99,9 @@ define([
       it("detects when neither a name nor any properties are present", () => {
         expect(new MediaType().isEmpty()).to.equal(true);
         expect(
-          new MediaType({ properties: [{ name: "charset", value: "utf-8" }] })
-            .isEmpty(),
+          new MediaType({
+            properties: [{ name: "charset", value: "utf-8" }],
+          }).isEmpty(),
         ).to.equal(false);
       });
     });

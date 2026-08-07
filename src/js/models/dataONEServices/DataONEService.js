@@ -799,7 +799,10 @@ define([
     }
   }
 
-  /** @type {DataONEServiceConfig} Base descriptor; subclasses override. */
+  /**
+   * Base descriptor; subclasses override.
+   * @type {DataONEServiceConfig}
+   */
   DataONEService.config = {};
 
   return DataONEService;

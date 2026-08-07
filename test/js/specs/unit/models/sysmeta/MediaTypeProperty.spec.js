@@ -37,7 +37,9 @@ define(["models/sysmeta/MediaTypeProperty"], (MediaTypeProperty) => {
 
       it("requires the name attribute", () => {
         expect(() =>
-          MediaTypeProperty.fromElement(parseElement("<property>utf-8</property>")),
+          MediaTypeProperty.fromElement(
+            parseElement("<property>utf-8</property>"),
+          ),
         ).to.throw(/required "name" attribute/i);
       });
     });

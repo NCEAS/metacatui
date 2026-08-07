@@ -182,9 +182,7 @@ define([
         const fetchStub = state.sandbox
           .stub(globalThis, "fetch")
           .callsFake((url) => {
-            url.should.equal(
-              "https://example.org/sysmeta/doi:10.5063%2Fabc",
-            );
+            url.should.equal("https://example.org/sysmeta/doi:10.5063%2Fabc");
             return Promise.resolve(makeResponse(SAMPLE_XML));
           });
 

@@ -92,7 +92,9 @@ define([
 
         const service = new ObjectService();
         service.client.baseUrl.should.equal("https://mn.example.org/object");
-        service.resolveWriteBaseUrl().should.equal("https://mn.example.org/object");
+        service
+          .resolveWriteBaseUrl()
+          .should.equal("https://mn.example.org/object");
       });
 
       it("falls back to resolveServiceUrl for reads on a CN", () => {
@@ -142,7 +144,9 @@ define([
         };
 
         const service = new ObjectService();
-        service.resolveWriteBaseUrl().should.equal("https://mn.example.org/object");
+        service
+          .resolveWriteBaseUrl()
+          .should.equal("https://mn.example.org/object");
       });
 
       it("calls setActiveAltRepo once when no active alt repo is selected", () => {

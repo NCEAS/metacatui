@@ -449,9 +449,12 @@ define([], () => {
      * Require that direct child elements match an ordered schema-like sequence,
      * including min/max occurrence constraints.
      * @param {Node} node Parent XML node.
-     * @param {Array<{name:string,minOccurs?:number,maxOccurs?:number}>} definitions Ordered direct-child definitions.
+     * @param {Array.<object>} definitions Ordered direct-child definitions
+     * @param {string} definitions[].name Child element name
+     * @param {number} [definitions[].minOccurs] Minimum occurrences
+     * @param {number} [definitions[].maxOccurs] Maximum occurrences
      * @param {string} [context] Context label for errors.
-     * @returns {Map<string, Element[]>} Matching child elements by local name.
+     * @returns {Map<string, Element[]>} Matching child elements by local name
      * @throws {Error} Throws on unexpected, out-of-order, duplicate, or missing
      * child elements.
      * @since 0.0.0

@@ -110,7 +110,10 @@ define(["common/DataONEXmlUtilities"], (DataONEXmlUtilities) => {
           "<identifier>urn:uuid:test.5</identifier>",
           "application/xml",
         );
-        const xml = DataONEXmlUtilities.parseRequiredDocument(source, "reserve");
+        const xml = DataONEXmlUtilities.parseRequiredDocument(
+          source,
+          "reserve",
+        );
 
         expect(xml).to.equal(source);
       });

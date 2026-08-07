@@ -178,9 +178,9 @@ define(["common/DateUtilities"], function (DateUtilities) {
           .throws(new Error("boom"));
 
         try {
-          expect(DateUtilities.toISOString("2024-01-02T03:04:05.678Z")).to.equal(
-            "",
-          );
+          expect(
+            DateUtilities.toISOString("2024-01-02T03:04:05.678Z"),
+          ).to.equal("");
         } finally {
           isoStub.restore();
         }

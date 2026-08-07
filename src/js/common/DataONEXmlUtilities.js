@@ -1,9 +1,9 @@
 "use strict";
 
-define([
-  "common/XMLUtilities",
-  "common/ValidationUtilities",
-], (XMLUtilities, ValidationUtilities) => {
+define(["common/XMLUtilities", "common/ValidationUtilities"], (
+  XMLUtilities,
+  ValidationUtilities,
+) => {
   const { cloneValidationErrors } = ValidationUtilities;
 
   /**
@@ -63,9 +63,12 @@ define([
 
     /**
      * Convert structured DataONE error data into an Error instance.
-     * @param {{name?:string, message?:string, status?:string,
-     * detailCode?:string|null}} errorData Structured error data.
-     * @returns {Error} Error instance with DataONE metadata attached.
+     * @param {object} [errorData] Structured error data
+     * @param {string} [errorData.name] Error name
+     * @param {string} [errorData.message] Error message
+     * @param {string} [errorData.status] DataONE error status
+     * @param {string|null} [errorData.detailCode] DataONE detail code
+     * @returns {Error} Error instance with DataONE metadata attached
      */
     toError(errorData = {}) {
       const error = new Error(errorData.message || "Unknown error");
@@ -152,10 +155,7 @@ define([
      * errors.
      * @returns {{identifier:string, xml:Document}} Parsed identifier response.
      */
-    parseIdentifierResponse(
-      xmlString,
-      context = "DataONE XML response",
-    ) {
+    parseIdentifierResponse(xmlString, context = "DataONE XML response") {
       const parsed = this.parseXmlStringForRequiredElementText(
         xmlString,
         "identifier",
