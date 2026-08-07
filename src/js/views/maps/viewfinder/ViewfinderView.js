@@ -73,6 +73,10 @@ define([
         this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
         this.viewfinderCardsListViews = [];
         this.expansionPanelsByCategoryCid = {};
+        this.debouncedSyncVisualizationStateToUrl = _.debounce(
+          (payload) => this.syncVisualizationStateToUrl(payload),
+          250,
+        );
 
         // When the visualization overlay closes, reset active button states
         // on all preset cards so none appears stuck in an active state.
@@ -85,11 +89,44 @@ define([
                 listView.children?.forEach((child) => child.resetActiveState());
               });
               if (mapModel.get("showShareUrl")) {
+                const previousActionId = model.previous(
+                  "activeVisualizationActionId",
+                );
+                if (previousActionId) {
+                  SearchParams.clearActionStateInUrl(previousActionId);
+                }
                 SearchParams.updateActiveActionId(null);
               }
             }
           },
         );
+        this.listenTo(mapModel, "visualization:state", (payload) => {
+          this.debouncedSyncVisualizationStateToUrl(payload);
+        });
+      },
+
+      /**
+       * Synchronize incoming iframe URL state to namespaced parent URL params.
+       * @param {object} payload State message forwarded from VisualizationPanelView.
+       * @param {object} payload.action Active iframe action definition.
+       * @param {string} payload.url URL sent by the embedded visualization.
+       * @since 0.0.0
+       */
+      syncVisualizationStateToUrl(payload = {}) {
+        if (!this.mapModel?.get("showShareUrl")) return;
+
+        const action = payload.action || this.mapModel.get("activeVisualizationAction");
+        const actionId = typeof action?.id === "string" ? action.id.trim() : "";
+        const actionUrlTemplate =
+          typeof action?.url === "string" ? action.url : null;
+
+        if (!actionId.length || !actionUrlTemplate || !payload?.url) return;
+
+        SearchParams.syncActionStateFromVisualizationUrl({
+          actionId,
+          actionUrlTemplate,
+          visualizationUrl: payload.url,
+        });
       },
 
       /**
@@ -275,8 +312,8 @@ define([
           selectViewfinderCard: (card, action) => {
             this.viewfinderModel.selectViewfinderCard(card, action);
           },
-          openVisualization: (url) => {
-            this.viewfinderModel.openVisualization(url);
+          openVisualization: (action) => {
+            this.viewfinderModel.openVisualization(action);
           },
           closeVisualization: () => {
             this.viewfinderModel.closeVisualization();

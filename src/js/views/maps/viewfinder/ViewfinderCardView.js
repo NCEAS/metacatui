@@ -46,7 +46,7 @@ define([
      * @since 2.37.0
      */
     iframe(action, view) {
-      view.ctaCallback(action.url);
+      view.ctaCallback(action);
     },
     /**
      * Opens the URL in a new browser tab.
@@ -207,7 +207,7 @@ define([
         this.setActive(btn, action, { notifyActionActivated: false });
 
         if (action.type === "iframe" && action.url) {
-          this.ctaCallback(action.url);
+          this.ctaCallback(action);
         }
 
         return true;
@@ -272,8 +272,7 @@ define([
        * with this viewfinder card.
        * @param {Function} [options.selectCallback] Called when "View Layers" is
        * clicked. Should zoom to the card location and toggle layers.
-       * @param {Function} [options.ctaCallback] Called with (url) when
-       * "Explore in App" is clicked. Should open the visualization overlay.
+       * @param {Function} [options.ctaCallback] Called when an iframe action opens a visualization.
        * @param {Function} [options.closeVisualizationCallback] Called before
        * any button action to dismiss any currently open overlay.
        * @param {Function} [options.onActivate] Called when this card is

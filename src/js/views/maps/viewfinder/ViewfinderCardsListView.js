@@ -39,8 +39,6 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
        * viewfinder cards
        * @property {Function} selectViewfinderCard The callback function for
        * selecting a viewfinder card (zoom + toggle layers).
-       * @property {Function} [openVisualization] Called with (url) to open
-       * the visualization overlay.
        * @property {Function} [closeVisualization] Called to close the
        * visualization overlay.
        * @property {Function} [onActivate] Called when a viewfinder card is
@@ -89,8 +87,8 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
             selectCallback: (action) => {
               this.selectViewfinderCard(card, action);
             },
-            ctaCallback: (url) => {
-              this.openVisualization(url);
+            ctaCallback: (action) => {
+              this.openVisualization(action);
             },
             closeVisualizationCallback: () => {
               this.closeVisualization();

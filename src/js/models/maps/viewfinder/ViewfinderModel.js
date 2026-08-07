@@ -4,9 +4,10 @@ define([
   "underscore",
   "backbone",
   "cesium",
+  "common/SearchParams",
   "models/geocoder/GeocoderSearch",
   "models/maps/GeoPoint",
-], (_, Backbone, Cesium, GeocoderSearch, GeoPoint) => {
+], (_, Backbone, Cesium, SearchParams, GeocoderSearch, GeoPoint) => {
   const EMAIL = MetacatUI.appModel.get("emailContact");
   const NO_RESULTS_MESSAGE =
     "No search results found, try using another place name.";
@@ -165,11 +166,35 @@ define([
       /**
        * Open a visualization app in the full-screen iframe overlay by setting
        * the activeVisualizationUrl attribute on the map model.
-       * @param {string} url The URL to load in the iframe overlay.
+       * @param {object|string} actionOrUrl A configured iframe action object,
+       * or a raw URL string for backward compatibility.
        * @since 0.0.0
        */
-      openVisualization(url) {
-        this.mapModel.set({ activeVisualizationUrl: url });
+      openVisualization(actionOrUrl) {
+        if (typeof actionOrUrl === "string") {
+          this.mapModel.set({
+            activeVisualizationAction: null,
+            activeVisualizationActionId: null,
+            activeVisualizationUrl: actionOrUrl,
+          });
+          return;
+        }
+
+        if (!actionOrUrl || typeof actionOrUrl !== "object") {
+          return;
+        }
+
+        const resolvedUrl = SearchParams.resolveActionUrl(actionOrUrl);
+        if (!resolvedUrl) return;
+
+        this.mapModel.set({
+          activeVisualizationAction: actionOrUrl,
+          activeVisualizationActionId:
+            typeof actionOrUrl.id === "string" && actionOrUrl.id.trim().length
+              ? actionOrUrl.id.trim()
+              : null,
+          activeVisualizationUrl: resolvedUrl,
+        });
       },
 
       /**
@@ -178,7 +203,11 @@ define([
        * @since 2.37.0
        */
       closeVisualization() {
-        this.mapModel.set({ activeVisualizationUrl: null });
+        this.mapModel.set({
+          activeVisualizationAction: null,
+          activeVisualizationActionId: null,
+          activeVisualizationUrl: null,
+        });
       },
 
       /**
