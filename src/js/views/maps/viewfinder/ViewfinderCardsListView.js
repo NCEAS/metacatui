@@ -35,14 +35,12 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
 
       /**
        * @typedef {object} ViewfinderCardsListViewOptions
-       * @property {ViewfinderCards} viewfinderCards The collection of
-       * viewfinder cards
-       * @property {Function} selectViewfinderCard The callback function for
-       * selecting a viewfinder card (zoom + toggle layers).
-       * @property {Function} [closeVisualization] Called to close the
-       * visualization overlay.
-       * @property {Function} [onActivate] Called when a viewfinder card is
-       * activated.
+       * @property {ViewfinderCards} viewfinderCards The collection of viewfinder cards.
+       * @property {Function} onMapAction Callback for map actions from a viewfinder card (zoom + toggle layers).
+       * @property {Function} [onIframeAction] Called when an iframe action is activated and should open the visualization overlay.
+       * @property {Function} [onRequestCloseVisualization] Called to close the visualization overlay.
+       * @property {Function} [onActionUiActivated] Called after a card action button is activated in the UI.
+       * @property {Function} [onActivate] Called when a viewfinder card is activated.
        * @since 2.37.0
        */
 
@@ -51,28 +49,29 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
        */
       initialize({
         viewfinderCards,
-        selectViewfinderCard,
-        openVisualization,
-        closeVisualization,
+        onMapAction,
+        onIframeAction,
+        onRequestCloseVisualization,
         onActivate,
-        onActionActivated,
+        onActionUiActivated,
       }) {
         this.children = [];
         this.viewfinderCards = viewfinderCards;
-        this.selectViewfinderCard = selectViewfinderCard;
-        this.openVisualization =
-          typeof openVisualization === "function"
-            ? openVisualization
+        this.onMapAction =
+          typeof onMapAction === "function" ? onMapAction : () => {};
+        this.onIframeAction =
+          typeof onIframeAction === "function"
+            ? onIframeAction
             : () => {};
-        this.closeVisualization =
-          typeof closeVisualization === "function"
-            ? closeVisualization
+        this.onRequestCloseVisualization =
+          typeof onRequestCloseVisualization === "function"
+            ? onRequestCloseVisualization
             : () => {};
         this.onActivate =
           typeof onActivate === "function" ? onActivate : () => {};
-        this.onActionActivated =
-          typeof onActionActivated === "function"
-            ? onActionActivated
+        this.onActionUiActivated =
+          typeof onActionUiActivated === "function"
+            ? onActionUiActivated
             : () => {};
       },
 
@@ -84,14 +83,14 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
         this.children = this.viewfinderCards?.models?.map((card) => {
           const view = new ViewfinderCardView({
             preset: card,
-            selectCallback: (action) => {
-              this.selectViewfinderCard(card, action);
+            onMapAction: (action) => {
+              this.onMapAction(card, action);
             },
-            ctaCallback: (action) => {
-              this.openVisualization(action);
+            onIframeAction: (action) => {
+              this.onIframeAction(action);
             },
-            closeVisualizationCallback: () => {
-              this.closeVisualization();
+            onRequestCloseVisualization: () => {
+              this.onRequestCloseVisualization();
             },
             onActivate: (activeView) => {
               this.children.forEach((child) => {
@@ -99,8 +98,8 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
               });
               this.onActivate(activeView);
             },
-            onActionActivated: (action) => {
-              this.onActionActivated(card, action);
+            onActionUiActivated: (action) => {
+              this.onActionUiActivated(card, action);
             },
           });
           view.render();

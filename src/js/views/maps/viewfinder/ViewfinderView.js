@@ -309,13 +309,13 @@ define([
 
         const viewfinderCardsListView = new ViewfinderCardsListView({
           viewfinderCards,
-          selectViewfinderCard: (card, action) => {
-            this.viewfinderModel.selectViewfinderCard(card, action);
+          onMapAction: (card, action) => {
+            this.viewfinderModel.applyMapAction(card, action);
           },
-          openVisualization: (action) => {
+          onIframeAction: (action) => {
             this.viewfinderModel.openVisualization(action);
           },
-          closeVisualization: () => {
+          onRequestCloseVisualization: () => {
             this.viewfinderModel.closeVisualization();
           },
           onActivate: (activeView) => {
@@ -325,7 +325,7 @@ define([
               });
             });
           },
-          onActionActivated: (card, action) => {
+          onActionUiActivated: (card, action) => {
             this.syncActiveActionToUrl(card, action);
           },
         });
