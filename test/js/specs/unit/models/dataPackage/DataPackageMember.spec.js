@@ -736,7 +736,7 @@ define([
       beforeEach(() => {
         sandbox = sinon.createSandbox();
         sandbox
-          .stub(AuthorizationService, "getCurrentUserKey")
+          .stub(AuthorizationService.prototype, "getUserKey")
           .resolves("uid=test");
       });
       afterEach(() => sandbox.restore());
@@ -754,6 +754,33 @@ define([
         check.resolves(false);
         (await member.checkWritePermission(true)).should.equal(false);
         check.calledTwice.should.equal(true);
+      });
+
+      it("uses a supplied authorization service for the user and check", async () => {
+        const fallbackCheck = sandbox
+          .stub(AuthorizationService.prototype, "check")
+          .resolves(false);
+        const authorizationService = {
+          getUserKey: sandbox.stub().resolves("uid=package"),
+          check: sandbox.stub().resolves(true),
+        };
+        const member = new DataPackageMember({ pid: "data.1" });
+
+        const allowed = await member.checkPermission(
+          "write",
+          { refresh: true },
+          authorizationService,
+        );
+
+        allowed.should.equal(true);
+        sinon.assert.calledOnceWithExactly(authorizationService.getUserKey);
+        sinon.assert.calledOnceWithExactly(
+          authorizationService.check,
+          "data.1",
+          "write",
+          {},
+        );
+        sinon.assert.notCalled(fallbackCheck);
       });
 
       it("returns false when the authorization check throws", async () => {

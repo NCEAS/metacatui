@@ -876,9 +876,16 @@ define([
         const metadataMember = dataPackage.getPrimaryMetadataMember();
         this.updateLoadingText(MESSAGES.checkingPermissions);
         const permissionOptions = { refresh: true, signal };
+        const authorizationService = dataPackage.getAuthorizationService();
         const [resourceMapPermission, metadataPermission] = await Promise.all([
-          resourceMapMember.checkWritePermission(permissionOptions),
-          metadataMember.checkWritePermission(permissionOptions),
+          resourceMapMember.checkWritePermission(
+            permissionOptions,
+            authorizationService,
+          ),
+          metadataMember.checkWritePermission(
+            permissionOptions,
+            authorizationService,
+          ),
         ]);
         if (!this.isCurrentRender(renderId)) return null;
 
@@ -2352,6 +2359,7 @@ ${supportDetails}`;
               {
                 refresh: true,
               },
+              MetacatUI.rootDataPackage.getAuthorizationService(),
             );
           } else {
             member.isAuthorized_changePermission = true;

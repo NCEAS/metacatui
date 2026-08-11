@@ -149,15 +149,6 @@ define([
     }
 
     /**
-     * Resolve the current user key without requiring a service instance.
-     * @returns {Promise<string>} Current user subject, or "public"
-     */
-    static async getCurrentUserKey() {
-      const userModel = await this.awaitUserModel();
-      return userModel?.get?.("username") || "public";
-    }
-
-    /**
      * Normalize and validate a permission action.
      * @param {*} action Candidate action
      * @returns {string} Canonical action

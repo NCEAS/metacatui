@@ -3155,6 +3155,48 @@ define([
       });
     });
 
+    describe("checkWritePermissions()", () => {
+      let sandbox;
+      beforeEach(() => {
+        sandbox = sinon.createSandbox();
+      });
+      afterEach(() => {
+        sandbox.restore();
+      });
+
+      it("passes the package authorization service to both members", async () => {
+        const authorizationService = {};
+        const pkg = new DataPackage({
+          authorizationService,
+          members: [
+            { pid: "resource_map_1", formatType: "RESOURCE" },
+            { pid: "meta.1", formatType: "METADATA" },
+          ],
+          rootResourceMapPid: "resource_map_1",
+        });
+        const resourceMapCheck = sandbox
+          .stub(pkg.getRootResourceMapMember(), "checkWritePermission")
+          .resolves(true);
+        const metadataCheck = sandbox
+          .stub(pkg.getPrimaryMetadataMember(), "checkWritePermission")
+          .resolves(true);
+        const options = { refresh: true };
+
+        (await pkg.checkWritePermissions(options)).should.equal(true);
+
+        sinon.assert.calledOnceWithExactly(
+          resourceMapCheck,
+          options,
+          authorizationService,
+        );
+        sinon.assert.calledOnceWithExactly(
+          metadataCheck,
+          options,
+          authorizationService,
+        );
+      });
+    });
+
     describe("checkResourceMapWritePermission()", () => {
       let sandbox;
       beforeEach(() => {
@@ -3170,7 +3212,8 @@ define([
       });
 
       it("reflects the root resource map member's write permission", async () => {
-        const pkg = new DataPackage();
+        const authorizationService = {};
+        const pkg = new DataPackage({ authorizationService });
         pkg.rootResourceMapPid = "resource_map_1";
         pkg.members.add({ pid: "resource_map_1", formatType: "RESOURCE" });
         const stub = sandbox
@@ -3178,7 +3221,7 @@ define([
           .resolves(true);
 
         (await pkg.checkResourceMapWritePermission(true)).should.equal(true);
-        stub.calledWith(true).should.equal(true);
+        sinon.assert.calledOnceWithExactly(stub, true, authorizationService);
       });
 
       it("does not require metadata write permission", async () => {

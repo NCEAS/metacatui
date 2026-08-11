@@ -759,6 +759,7 @@ define([
       sandbox.stub(view, "getEditorPackageMemberLimit").returns(123);
 
       const loaded = await view.getDataPackage();
+      const authorizationService = loaded.getAuthorizationService();
 
       sinon.assert.calledOnceWithExactly(getLatestVersion, "metadata.1", {
         signal: undefined,
@@ -768,14 +769,22 @@ define([
         maxMembers: 123,
         signal: undefined,
       });
-      sinon.assert.calledOnceWithExactly(resourceMapPermission, {
-        refresh: true,
-        signal: undefined,
-      });
-      sinon.assert.calledOnceWithExactly(metadataPermission, {
-        refresh: true,
-        signal: undefined,
-      });
+      sinon.assert.calledOnceWithExactly(
+        resourceMapPermission,
+        {
+          refresh: true,
+          signal: undefined,
+        },
+        authorizationService,
+      );
+      sinon.assert.calledOnceWithExactly(
+        metadataPermission,
+        {
+          refresh: true,
+          signal: undefined,
+        },
+        authorizationService,
+      );
       loaded.should.equal(globalThis.MetacatUI.rootDataPackage);
       loaded.getRootResourceMapMember().isAuthorized_write.should.equal(true);
       loaded.getPrimaryMetadataMember().isAuthorized_write.should.equal(true);
@@ -3107,7 +3116,9 @@ define([
           },
         };
       });
+      const authorizationService = {};
       const rootDataPackage = {
+        getAuthorizationService: sandbox.stub().returns(authorizationService),
         getMember: sandbox.stub().withArgs("data.1").returns(member),
         setMemberAccessPolicy: sandbox.stub().resolves(member),
       };
@@ -3134,6 +3145,7 @@ define([
         member.checkPermission,
         "changePermission",
         { refresh: true },
+        authorizationService,
       );
       sinon.assert.callOrder(
         showAccessPolicyLoadingModal,
@@ -3178,7 +3190,9 @@ define([
         checkPermission: sandbox.stub().resolves(false),
         getFileName: () => "a.csv",
       };
+      const authorizationService = {};
       const rootDataPackage = {
+        getAuthorizationService: sandbox.stub().returns(authorizationService),
         getMember: sandbox.stub().withArgs("data.1").returns(member),
       };
       globalThis.MetacatUI = {
@@ -3205,6 +3219,7 @@ define([
         member.checkPermission,
         "changePermission",
         { refresh: true },
+        authorizationService,
       );
     });
 
@@ -3252,7 +3267,9 @@ define([
         checkPermission: sandbox.stub().resolves(true),
         getFileName: () => "resource_map_1",
       };
+      const authorizationService = {};
       const rootDataPackage = {
+        getAuthorizationService: sandbox.stub().returns(authorizationService),
         getRootResourceMapMember: sandbox.stub().returns(member),
         setPackageAccessPolicy: sandbox.stub().resolves([member]),
       };
@@ -3280,6 +3297,7 @@ define([
         member.checkPermission,
         "changePermission",
         { refresh: true },
+        authorizationService,
       );
       const options =
         showAccessPolicyModal.firstCall.args[

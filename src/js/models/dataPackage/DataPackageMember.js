@@ -1152,16 +1152,24 @@ define([
      * @param {object|boolean} [options] Options or refresh boolean
      * @param {boolean} [options.refresh] Whether to bypass the cache and check again
      * @param {AbortSignal} [options.signal] Signal used to cancel permission checks
+     * @param {AuthorizationService} [authorizationService] Service used to
+     * resolve the current user and check permission
      * @returns {Promise<boolean>} Permission result
      */
-    async checkPermission(action = "write", options = {}) {
+    async checkPermission(
+      action = "write",
+      options = {},
+      authorizationService = null,
+    ) {
       const opts =
         typeof options === "boolean" ? { refresh: options } : options || {};
       const authOpts = { ...(opts.auth || {}) };
       const requestOptions = { ...authOpts };
       if (opts.signal) requestOptions.signal = opts.signal;
 
-      const user = await AuthorizationService.getCurrentUserKey();
+      const service =
+        authorizationService || new AuthorizationService(authOpts);
+      const user = await service.getUserKey();
       this.permissions = this.permissions || {};
       if (!this.permissions[user]) {
         this.permissions[user] = {};
@@ -1175,8 +1183,7 @@ define([
       }
       let can;
       try {
-        const authService = new AuthorizationService(authOpts);
-        can = await authService.check(this.pid, action, requestOptions);
+        can = await service.check(this.pid, action, requestOptions);
       } catch (error) {
         if (ErrorUtilities.isAbortError(error)) return false;
         // eslint-disable-next-line no-console
@@ -1193,10 +1200,12 @@ define([
     /**
      * Check write permission for the current user.
      * @param {object|boolean} [options] Options or refresh boolean
+     * @param {AuthorizationService} [authorizationService] Service used to
+     * resolve the current user and check permission
      * @returns {Promise<boolean>} Write permission result
      */
-    checkWritePermission(options = {}) {
-      return this.checkPermission("write", options);
+    checkWritePermission(options = {}, authorizationService = null) {
+      return this.checkPermission("write", options, authorizationService);
     }
 
     // See XMLUtilities.getXMLSafeID().

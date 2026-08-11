@@ -1904,8 +1904,11 @@ define([
       const resourceMap = this.getRootResourceMapMember();
       const toCheck = [metadata, resourceMap].filter(Boolean);
       if (!toCheck.length) return false;
+      const authorizationService = this.getAuthorizationService();
       const results = await Promise.all(
-        toCheck.map((member) => member.checkWritePermission(options)),
+        toCheck.map((member) =>
+          member.checkWritePermission(options, authorizationService),
+        ),
       );
       return results.every((result) => result === true);
     }
@@ -1923,7 +1926,12 @@ define([
     async checkResourceMapWritePermission(options = false) {
       const resourceMap = this.getRootResourceMapMember();
       if (!resourceMap) return false;
-      return (await resourceMap.checkWritePermission(options)) === true;
+      return (
+        (await resourceMap.checkWritePermission(
+          options,
+          this.getAuthorizationService(),
+        )) === true
+      );
     }
 
     /**
