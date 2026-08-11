@@ -103,6 +103,8 @@ define([
      * stale source checks
      * @param {object} [options.versionTrackerOptions] Options used to create the
      * version tracker when one is not provided
+     * @param {object} [options.resolverOptions] Options used to create the
+     * ResourceMap resolver during package loading
      * @param {AuthorizationService} [options.authorizationService] Service used
      * for write permission checks
      * @param {object} [options.authorizationServiceOptions] Options used to
@@ -144,6 +146,7 @@ define([
       this.sysMetaServiceOptions = options.sysMetaServiceOptions || {};
       this.versionTracker = options.versionTracker || null;
       this.versionTrackerOptions = options.versionTrackerOptions || {};
+      this.resolverOptions = options.resolverOptions || {};
       this.authorizationService = options.authorizationService || null;
       this.authorizationServiceOptions =
         options.authorizationServiceOptions || {};
@@ -168,7 +171,12 @@ define([
 
     // See DataPackageLoader.resolveFromPid().
     async resolveFromPid(pid, options = {}) {
-      return DataPackageLoader.resolveFromPid(this, pid, options);
+      const resolverOptions = options.resolverOptions || this.resolverOptions;
+      this.resolverOptions = resolverOptions;
+      return DataPackageLoader.resolveFromPid(this, pid, {
+        ...options,
+        resolverOptions,
+      });
     }
 
     // See DataPackageLoader.loadEditablePackage().
@@ -1883,7 +1891,11 @@ define([
           },
         );
         if (newestRm && newestRm !== resourceMap.pid) {
-          const newDataPackage = new DataPackage();
+          const newDataPackage = new DataPackage({
+            objectFormats: this.objectFormats,
+            versionTracker,
+            resolverOptions: this.resolverOptions,
+          });
           await newDataPackage.resolveFromPid(newestRm, { signal });
           return newDataPackage.getLatestVersionPid({ signal });
         }

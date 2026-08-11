@@ -4,6 +4,7 @@ define([
   "models/dataPackage/DataPackageLoader",
   "models/dataPackage/DataPackageMember",
   "models/dataPackage/DataPackageMembers",
+  "collections/ObjectFormats",
   "models/dataONEServices/PublishService",
   "models/dataONEServices/SysMetaService",
   "models/resourceMap/ResourceMap",
@@ -17,6 +18,7 @@ define([
   DataPackageLoader,
   DataPackageMember,
   DataPackageMembers,
+  ObjectFormats,
   PublishService,
   SysMetaService,
   ResourceMap,
@@ -2831,6 +2833,70 @@ define([
     });
 
     describe("getLatestVersionPid()", () => {
+      it("preserves resolution dependencies when following a newer resource map", async () => {
+        const sandbox = sinon.createSandbox();
+        try {
+          const objectFormats = new ObjectFormats();
+          const getLatestVersion = sandbox.stub();
+          getLatestVersion
+            .withArgs("resource_map_1")
+            .resolves("resource_map_2");
+          getLatestVersion.withArgs("meta.2").resolves("meta.3");
+          const versionTracker = { getLatestVersion };
+          const resolverStorage = {};
+          const resolverOptions = {
+            metaServiceUrl: "https://example.org/sysmeta",
+            storage: resolverStorage,
+          };
+          const pkg = new DataPackage({ objectFormats, versionTracker });
+          const awaitObjectFormats = sandbox
+            .stub(Utilities, "awaitObjectFormats")
+            .rejects(new Error("should not load ObjectFormats globally"));
+          const resolve = sandbox.stub(
+            ResourceMapResolver.prototype,
+            "resolve",
+          );
+          resolve.onFirstCall().resolves({
+            pid: "resource_map_1",
+            rm: "resource_map_1",
+            meta: { formatType: "RESOURCE", isResourceMap: true },
+          });
+          resolve.onSecondCall().resolves({
+            pid: "resource_map_2",
+            rm: "resource_map_2",
+            meta: { formatType: "RESOURCE", isResourceMap: true },
+          });
+          const getManifestFromResourceMap = sandbox.stub(
+            DataPackage.prototype,
+            "getManifestFromResourceMap",
+          );
+          getManifestFromResourceMap.onFirstCall().resolves({ ok: true });
+          getManifestFromResourceMap
+            .onSecondCall()
+            .callsFake(async function () {
+              this.members.add({
+                pid: "meta.2",
+                formatType: "METADATA",
+              });
+              this.primaryMetadataPid = "meta.2";
+              return { ok: true };
+            });
+
+          await pkg.resolveFromPid("resource_map_1", { resolverOptions });
+          const latest = await pkg.getLatestVersionPid();
+
+          latest.should.equal("meta.3");
+          sinon.assert.calledTwice(getLatestVersion);
+          sinon.assert.neverCalledWith(getLatestVersion, "resource_map_2");
+          sinon.assert.notCalled(awaitObjectFormats);
+          expect(resolve.secondCall.thisValue.storage).to.equal(
+            resolverStorage,
+          );
+        } finally {
+          sandbox.restore();
+        }
+      });
+
       it("uses the injected version tracker to resolve the newest metadata PID", async () => {
         const getLatestVersion = sinon.stub().resolves("meta.2");
         const pkg = buildPackage(
