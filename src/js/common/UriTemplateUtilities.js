@@ -83,6 +83,37 @@ define(["uriTemplatesEs"], ({ UriTemplate }) => {
   };
 
   /**
+   * Append query parameters to a URL string.
+   * @param {string} urlString The base URL.
+   * @param {object} [queryParams] Query parameters to merge into the URL.
+   * @returns {string} URL with the merged query parameters.
+   * @since 0.0.0
+   */
+  const appendQueryParams = (urlString, queryParams = {}) => {
+    const url = toUrl(urlString);
+    if (!url || typeof queryParams !== "object" || !queryParams) {
+      return urlString;
+    }
+
+    Object.entries(queryParams).forEach(([key, value]) => {
+      if (value == null) return;
+
+      if (Array.isArray(value)) {
+        url.searchParams.delete(key);
+        value.forEach((item) => {
+          if (item == null) return;
+          url.searchParams.append(key, String(item));
+        });
+        return;
+      }
+
+      url.searchParams.set(key, String(value));
+    });
+
+    return url.toString();
+  };
+
+  /**
    * Extract allow-listed values from a URL using strict URI-template parsing.
    * This is intentionally brittle: the URL must satisfy `fromUri()` exactly
    * and only allow-listed values are returned.
@@ -112,6 +143,7 @@ define(["uriTemplatesEs"], ({ UriTemplate }) => {
   };
 
   return {
+    appendQueryParams,
     expandTemplate,
     extractValuesFromUrl,
     getTemplateBaseUrl,

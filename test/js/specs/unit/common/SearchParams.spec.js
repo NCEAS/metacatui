@@ -296,6 +296,27 @@ define(["common/SearchParams"], (SearchParams) => {
           "https://lostlakes.arcticdata.io/?selected_lake=b7g1zd63mmt8&lat=64.123&lon=-148.456&zoom=8#time-series-header",
         );
       });
+
+      it("appends initial query params after template expansion", () => {
+        window.history.replaceState(
+          null,
+          "",
+          "?a=wt&wt-selected_lake=b7g1zd63mmt8&wt-zoom=8",
+        );
+
+        const resolved = SearchParams.resolveActionUrl({
+          id: "wt",
+          url: "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom}{#section_id}",
+          initialQueryParams: {
+            theme: "light",
+            show_share: "false",
+          },
+        });
+
+        expect(resolved).to.equal(
+          "https://lostlakes.arcticdata.io/?selected_lake=b7g1zd63mmt8&zoom=8&theme=light&show_share=false",
+        );
+      });
     });
 
     describe("syncActionStateFromVisualizationUrl", () => {

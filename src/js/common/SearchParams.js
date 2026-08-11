@@ -419,7 +419,18 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       restoreValues,
     );
 
-    return expandedUrl || UriTemplateUtilities.getTemplateBaseUrl(action.url);
+    const resolvedUrl = expandedUrl || UriTemplateUtilities.getTemplateBaseUrl(action.url);
+    const initialQueryParams =
+      action?.initialQueryParams && typeof action.initialQueryParams === "object"
+        ? action.initialQueryParams
+        : null;
+
+    return initialQueryParams
+      ? UriTemplateUtilities.appendQueryParams(
+          resolvedUrl,
+          initialQueryParams,
+        )
+      : resolvedUrl;
   };
 
   /**
