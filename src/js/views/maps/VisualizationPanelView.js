@@ -96,6 +96,10 @@ define([
             return;
           }
 
+          if (!this.isSourceFromActiveIframe(iframe.contentWindow, event.source)) {
+            return;
+          }
+
           const data = event?.data;
           if (!data || typeof data !== "object") return;
           if (data.type !== "mcui:state") return;
@@ -118,6 +122,49 @@ define([
             version,
           });
         };
+      },
+
+      /**
+       * Check whether a postMessage source window belongs to the active
+       * iframe's browsing context. This accepts the iframe window itself and
+       * same-origin descendant frames within that iframe.
+       * @param {Window} iframeWindow The active iframe content window.
+       * @param {WindowProxy|null} sourceWindow The postMessage source window.
+       * @returns {boolean} `true` when sourceWindow is the iframe or a descendant.
+       * @since 0.0.0
+       */
+      isSourceFromActiveIframe(iframeWindow, sourceWindow) {
+        if (!iframeWindow || !sourceWindow) {
+          return false;
+        }
+
+        if (sourceWindow === iframeWindow) {
+          return true;
+        }
+
+        let currentWindow = sourceWindow;
+        let hops = 0;
+        while (currentWindow && hops < 20) {
+          if (currentWindow === iframeWindow) {
+            return true;
+          }
+
+          let parentWindow;
+          try {
+            parentWindow = currentWindow.parent;
+          } catch (_e) {
+            return false;
+          }
+
+          if (!parentWindow || parentWindow === currentWindow) {
+            return false;
+          }
+
+          currentWindow = parentWindow;
+          hops += 1;
+        }
+
+        return false;
       },
 
       /**

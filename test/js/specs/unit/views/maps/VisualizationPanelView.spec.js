@@ -460,8 +460,13 @@ define([
           url: TRUSTED_URL,
         });
 
+        const iframe = state.view.el.querySelector(
+          ".visualization-panel__iframe",
+        );
+        const nestedSource = { parent: iframe.contentWindow };
+
         state.view.handleMessage({
-          source: { nested: true },
+          source: nestedSource,
           origin: "https://trusted.example.com",
           data: {
             type: "mcui:state",
@@ -471,6 +476,33 @@ define([
         });
 
         expect(stateSpy.callCount).to.equal(1);
+      });
+
+      it("ignores same-origin messages from sources outside the active iframe", () => {
+        const stateSpy = sinon.spy();
+        state.view.on("mcui:state", stateSpy);
+        state.view.open({
+          action: {
+            id: "wt",
+            url: "https://trusted.example.com/{?lat}",
+          },
+          url: TRUSTED_URL,
+        });
+
+        const unrelatedWindow = {};
+        unrelatedWindow.parent = unrelatedWindow;
+
+        state.view.handleMessage({
+          source: unrelatedWindow,
+          origin: "https://trusted.example.com",
+          data: {
+            type: "mcui:state",
+            version: 1,
+            url: "https://trusted.example.com/?lat=64.1",
+          },
+        });
+
+        expect(stateSpy.callCount).to.equal(0);
       });
 
       it("ignores messages whose payload URL origin does not match the active iframe origin", () => {
