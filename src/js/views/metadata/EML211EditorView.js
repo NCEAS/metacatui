@@ -2529,6 +2529,8 @@ ${supportDetails}`;
           await MetacatUI.rootDataPackage.linkStagedFiles(added, {
             metadataPid,
             atLocation,
+            inheritAccessPolicy:
+              MetacatUI.appModel.get("inheritAccessPolicy") !== false,
           });
           // ResourceMap membership has changed and eager uploads may have begun,
           // so later metadata errors cannot be represented as a failed add.

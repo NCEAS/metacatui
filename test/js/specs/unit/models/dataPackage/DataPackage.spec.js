@@ -595,27 +595,12 @@ define([
         concurrency.max.should.equal(2);
       });
 
-      it("uses batchSizeFetch as the default SysMeta fetch concurrency", async () => {
-        const originalMetacatUI = globalThis.MetacatUI;
-        globalThis.MetacatUI = {
-          ...(originalMetacatUI || {}),
-          appModel: {
-            get: (key) =>
-              key === "batchSizeFetch"
-                ? "2"
-                : originalMetacatUI?.appModel?.get?.(key),
-          },
-        };
+      it("uses supplied SysMeta fetch concurrency", async () => {
+        const { pkg, concurrency } = trackedSysMetaPackage();
+        const failures = await pkg.fetchSysMeta(null, { maxConcurrent: "2" });
 
-        try {
-          const { pkg, concurrency } = trackedSysMetaPackage();
-          const failures = await pkg.fetchSysMeta();
-
-          failures.should.deep.equal([]);
-          concurrency.max.should.equal(2);
-        } finally {
-          globalThis.MetacatUI = originalMetacatUI;
-        }
+        failures.should.deep.equal([]);
+        concurrency.max.should.equal(2);
       });
 
       it("returns failures for unique requested PIDs absent from the package", async () => {
@@ -731,6 +716,30 @@ define([
         result.ok.should.equal(true);
         sinon.assert.calledOnce(getSummary);
         pkg.resourceManifestIsFetched.should.equal(true);
+      });
+
+      it("uses the package ObjectService to download the Resource Map", async () => {
+        const resourceMap = ResourceMap.create({
+          resourceMapPid: "resource_map_1",
+          resolveServiceUrl: "https://cn.example/cn/v2/resolve",
+        });
+        const pkg = packageWithResourceMapModel(null);
+        const objectService = { download: sandbox.stub() };
+        const controller = new AbortController();
+        sandbox.stub(pkg, "getObjectService").returns(objectService);
+        const fetchObject = sandbox
+          .stub(pkg.getRootResourceMapMember(), "fetchObject")
+          .resolves(resourceMap);
+
+        const result = await pkg.getManifestFromResourceMap({
+          signal: controller.signal,
+        });
+
+        result.ok.should.equal(true);
+        sinon.assert.calledOnceWithExactly(fetchObject, {
+          signal: controller.signal,
+          objectService,
+        });
       });
 
       it("preserves structured ownership issues when parsing fails", async () => {
@@ -1829,46 +1838,35 @@ define([
         });
       });
 
-      it("uses batchSizeFetch for package access-policy SysMeta fetches", async () => {
-        const originalMetacatUI = globalThis.MetacatUI;
-        globalThis.MetacatUI = {
-          ...(originalMetacatUI || {}),
-          appModel: {
-            get: (key) => (key === "batchSizeFetch" ? 2 : null),
-          },
-        };
-
-        try {
-          const { pkg } = buildEditablePackage();
-          const concurrency = trackConcurrency();
-          const progress = [];
-          pkg.sysMetaService.download = concurrency.track((pid) => {
-            const member = pkg.requireMember(pid);
-            return new SystemMetadata({
-              identifier: pid,
-              formatId: member.formatId,
-              size: 4,
-              checksum: "checksum",
-              checksumAlgorithm: "MD5",
-              submitter: "uid=test",
-              rightsHolder: "uid=test",
-            });
+      it("uses supplied package access-policy SysMeta fetch concurrency", async () => {
+        const { pkg } = buildEditablePackage();
+        const concurrency = trackConcurrency();
+        const progress = [];
+        pkg.sysMetaService.download = concurrency.track((pid) => {
+          const member = pkg.requireMember(pid);
+          return new SystemMetadata({
+            identifier: pid,
+            formatId: member.formatId,
+            size: 4,
+            checksum: "checksum",
+            checksumAlgorithm: "MD5",
+            submitter: "uid=test",
+            rightsHolder: "uid=test",
           });
+        });
 
-          await pkg.setPackageAccessPolicy([], {
-            propagate: true,
-            onProgress: (event) => progress.push(event),
-          });
+        await pkg.setPackageAccessPolicy([], {
+          propagate: true,
+          maxConcurrent: 2,
+          onProgress: (event) => progress.push(event),
+        });
 
-          concurrency.max.should.equal(2);
-          progress
-            .map((event) => event.completed)
-            .should.deep.equal([0, 1, 2, 3]);
-          progress[0].total.should.equal(3);
-          progress[progress.length - 1].total.should.equal(3);
-        } finally {
-          globalThis.MetacatUI = originalMetacatUI;
-        }
+        concurrency.max.should.equal(2);
+        progress
+          .map((event) => event.completed)
+          .should.deep.equal([0, 1, 2, 3]);
+        progress[0].total.should.equal(3);
+        progress[progress.length - 1].total.should.equal(3);
       });
     });
 
@@ -2123,53 +2121,6 @@ define([
           ...(originalMetacatUI || {}),
           appModel: {
             get: (key) => {
-              if (key === "inheritAccessPolicy") return true;
-              if (key === "defaultAccessPolicy") {
-                return [{ subject: "public", read: true }];
-              }
-              return null;
-            },
-          },
-          appUserModel: {
-            get: (key) => (key === "username" ? "uid=test" : null),
-          },
-        };
-
-        try {
-          const { pkg } = buildEditablePackage();
-          sinon.stub(pkg._uploader, "uploadAddedMembers").resolves([]);
-          pkg.getMember("meta.1").setSystemMetadata(
-            new SystemMetadata({
-              identifier: "meta.1",
-              formatId: "https://eml.ecoinformatics.org/eml-2.2.0",
-              size: 4,
-              checksum: "checksum",
-              checksumAlgorithm: "MD5",
-              submitter: "uid=test",
-              rightsHolder: "uid=test",
-              accessPolicy: [],
-            }),
-            { markDirty: false },
-          );
-
-          const staged = await pkg.stageLocalFiles([new Blob(["new data"])]);
-          const [added] = await pkg.linkStagedFiles(staged);
-          const sysMeta = await added.buildObjectSystemMetadata(
-            pkg._uploader.buildSysMetaDefaults(),
-          );
-
-          sysMeta.accessPolicy.length.should.equal(0);
-        } finally {
-          globalThis.MetacatUI = originalMetacatUI;
-        }
-      });
-
-      it("uses the default access policy when inheritance is disabled", async () => {
-        const originalMetacatUI = globalThis.MetacatUI;
-        globalThis.MetacatUI = {
-          ...(originalMetacatUI || {}),
-          appModel: {
-            get: (key) => {
               if (key === "inheritAccessPolicy") return false;
               if (key === "defaultAccessPolicy") {
                 return [{ subject: "public", read: true }];
@@ -2200,7 +2151,58 @@ define([
           );
 
           const staged = await pkg.stageLocalFiles([new Blob(["new data"])]);
-          const [added] = await pkg.linkStagedFiles(staged);
+          const [added] = await pkg.linkStagedFiles(staged, {
+            inheritAccessPolicy: true,
+          });
+          const sysMeta = await added.buildObjectSystemMetadata(
+            pkg._uploader.buildSysMetaDefaults(),
+          );
+
+          sysMeta.accessPolicy.length.should.equal(0);
+        } finally {
+          globalThis.MetacatUI = originalMetacatUI;
+        }
+      });
+
+      it("uses the default access policy when inheritance is disabled", async () => {
+        const originalMetacatUI = globalThis.MetacatUI;
+        globalThis.MetacatUI = {
+          ...(originalMetacatUI || {}),
+          appModel: {
+            get: (key) => {
+              if (key === "inheritAccessPolicy") return true;
+              if (key === "defaultAccessPolicy") {
+                return [{ subject: "public", read: true }];
+              }
+              return null;
+            },
+          },
+          appUserModel: {
+            get: (key) => (key === "username" ? "uid=test" : null),
+          },
+        };
+
+        try {
+          const { pkg } = buildEditablePackage();
+          sinon.stub(pkg._uploader, "uploadAddedMembers").resolves([]);
+          pkg.getMember("meta.1").setSystemMetadata(
+            new SystemMetadata({
+              identifier: "meta.1",
+              formatId: "https://eml.ecoinformatics.org/eml-2.2.0",
+              size: 4,
+              checksum: "checksum",
+              checksumAlgorithm: "MD5",
+              submitter: "uid=test",
+              rightsHolder: "uid=test",
+              accessPolicy: [],
+            }),
+            { markDirty: false },
+          );
+
+          const staged = await pkg.stageLocalFiles([new Blob(["new data"])]);
+          const [added] = await pkg.linkStagedFiles(staged, {
+            inheritAccessPolicy: false,
+          });
           const sysMeta = await added.buildObjectSystemMetadata(
             pkg._uploader.buildSysMetaDefaults(),
           );
@@ -3403,11 +3405,16 @@ define([
             obsoletes: "source.1",
           }),
         );
-        sandbox
+        const resolve = sandbox
           .stub(ResourceMapResolver.prototype, "resolve")
           .withArgs("published.1")
           .resolves({ rm: "resource_map.2" });
-        const pkg = buildPublishPackage({ download });
+        const resolverStorage = {};
+        const pkg = new DataPackage({
+          members: [{ pid: "source.1", formatType: "METADATA" }],
+          sysMetaService: { download },
+          resolverOptions: { storage: resolverStorage },
+        });
 
         const result = await pkg.publish();
 
@@ -3415,6 +3422,7 @@ define([
           pid: "published.1",
           resourceMapPending: false,
         });
+        resolve.firstCall.thisValue.storage.should.equal(resolverStorage);
       });
 
       it("rethrows the original ambiguous error when recovery is unconfirmed", async () => {

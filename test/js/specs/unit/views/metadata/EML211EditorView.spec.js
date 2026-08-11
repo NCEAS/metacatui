@@ -3555,6 +3555,12 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         rootDataPackage,
+        appModel: {
+          get: (key) =>
+            key === "inheritAccessPolicy"
+              ? false
+              : originalMetacatUI?.appModel?.get?.(key),
+        },
       };
       sandbox.stub(view, "toggleControls");
       sandbox.stub(view, "toggleEnableControls");
@@ -3579,6 +3585,7 @@ define([
         {
           metadataPid: "metadata.1",
           atLocation: "",
+          inheritAccessPolicy: false,
         },
       );
       sinon.assert.calledOnceWithExactly(
@@ -3628,6 +3635,12 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         rootDataPackage,
+        appModel: {
+          get: (key) =>
+            key === "inheritAccessPolicy"
+              ? false
+              : originalMetacatUI?.appModel?.get?.(key),
+        },
         appView: {
           showAlert: sandbox.stub(),
         },
@@ -3697,6 +3710,12 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         rootDataPackage,
+        appModel: {
+          get: (key) =>
+            key === "inheritAccessPolicy"
+              ? false
+              : originalMetacatUI?.appModel?.get?.(key),
+        },
       };
       sandbox.stub(view, "toggleControls");
       sandbox.stub(view, "toggleEnableControls");
@@ -3719,6 +3738,7 @@ define([
         {
           metadataPid: "metadata.1",
           atLocation: "measurements/qc",
+          inheritAccessPolicy: false,
         },
       );
       sinon.assert.calledOnceWithExactly(
@@ -3788,6 +3808,12 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         rootDataPackage,
+        appModel: {
+          get: (key) =>
+            key === "inheritAccessPolicy"
+              ? false
+              : originalMetacatUI?.appModel?.get?.(key),
+        },
         appView: {
           showAlert: sandbox.stub(),
         },
@@ -3815,6 +3841,7 @@ define([
         {
           metadataPid: "metadata.1",
           atLocation: "",
+          inheritAccessPolicy: false,
         },
       );
       sinon.assert.calledTwice(view.refreshFileTable);

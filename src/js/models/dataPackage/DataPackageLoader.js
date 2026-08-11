@@ -889,7 +889,10 @@ define([
       let resourceMap = resourceMapMember.objectModel;
       if (!resourceMap) {
         try {
-          resourceMap = await resourceMapMember.fetchObject({ signal });
+          resourceMap = await resourceMapMember.fetchObject({
+            signal,
+            objectService: dataPackage.getObjectService(),
+          });
           throwIfAborted(signal, "Resource map manifest load cancelled");
         } catch (error) {
           if (isAbortError(error)) throw error;

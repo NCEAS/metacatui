@@ -49,6 +49,21 @@ define(["backbone", "collections/ObjectFormats", "common/Utilities"], function (
       });
     });
 
+    describe("getMaxConcurrent", function () {
+      it("uses only the supplied value or project default", function () {
+        window.MetacatUI = {
+          appModel: {
+            get: () => 2,
+          },
+        };
+
+        expect(Utilities.getMaxConcurrent()).to.equal(
+          Utilities.DEFAULT_MAX_CONCURRENT,
+        );
+        expect(Utilities.getMaxConcurrent("3")).to.equal(3);
+      });
+    });
+
     describe("tryParseCSVHeader", function () {
       var parse = Utilities.tryParseCSVHeader;
 

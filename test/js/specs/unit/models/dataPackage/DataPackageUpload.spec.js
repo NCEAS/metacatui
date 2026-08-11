@@ -414,14 +414,7 @@ define([
   }
 
   describe("DataPackage upload preparation", () => {
-    it("uses batchSizeUpload as the default full-save concurrency", async () => {
-      const originalMetacatUI = globalThis.MetacatUI;
-      globalThis.MetacatUI = {
-        ...(originalMetacatUI || {}),
-        appModel: {
-          get: (key) => (key === "batchSizeUpload" ? "2" : null),
-        },
-      };
+    it("uses supplied full-save concurrency", async () => {
       const pkg = new DataPackage();
       const prepare = state.sandbox
         .stub(pkg._uploader, "_prepareUploadActions")
@@ -430,24 +423,13 @@ define([
         .stub(pkg._uploader, "_executeUploadActions")
         .resolves({ outcome: "done" });
 
-      try {
-        await pkg.upload();
+      await pkg.upload({ maxConcurrent: "2" });
 
-        prepare.firstCall.args[0].maxConcurrent.should.equal(2);
-        execute.firstCall.args[1].maxConcurrent.should.equal(2);
-      } finally {
-        globalThis.MetacatUI = originalMetacatUI;
-      }
+      prepare.firstCall.args[0].maxConcurrent.should.equal(2);
+      execute.firstCall.args[1].maxConcurrent.should.equal(2);
     });
 
-    it("uses batchSizeUpload as the default eager-upload concurrency", async () => {
-      const originalMetacatUI = globalThis.MetacatUI;
-      globalThis.MetacatUI = {
-        ...(originalMetacatUI || {}),
-        appModel: {
-          get: (key) => (key === "batchSizeUpload" ? "3" : null),
-        },
-      };
+    it("uses supplied eager-upload concurrency", async () => {
       const member = new DataPackageMember({
         pid: "data.eager",
         formatType: "DATA",
@@ -460,15 +442,13 @@ define([
         .stub(pkg._uploader, "_executeUploadActions")
         .resolves({ outcome: "done" });
 
-      try {
-        const [result] = await pkg._uploader.uploadAddedMembers([member]);
+      const [result] = await pkg._uploader.uploadAddedMembers([member], {
+        maxConcurrent: "3",
+      });
 
-        result.outcome.should.equal("done");
-        prepare.firstCall.args[1].maxConcurrent.should.equal(3);
-        execute.firstCall.args[1].maxConcurrent.should.equal(3);
-      } finally {
-        globalThis.MetacatUI = originalMetacatUI;
-      }
+      result.outcome.should.equal("done");
+      prepare.firstCall.args[1].maxConcurrent.should.equal(3);
+      execute.firstCall.args[1].maxConcurrent.should.equal(3);
     });
 
     it("saves one private-file System Metadata change without object or ResourceMap writes", async () => {
@@ -1559,6 +1539,7 @@ define([
         formatId: RESOURCE_MAP_FORMAT_ID,
         objectModel: fakeResourceMap({ memberPids: ["metadata.2"] }),
       });
+      const resolverStorage = {};
       const pkg = new DataPackage({
         members: [metadataMember, rmMember],
         objectService: {
@@ -1572,6 +1553,7 @@ define([
         versionTracker: {
           getLatestVersion: state.sandbox.stub().callsFake(async (pid) => pid),
         },
+        resolverOptions: { storage: resolverStorage },
       });
       pkg.rootResourceMapPid = "rm.2";
       const removeRecovery = state.sandbox.stub().resolves();
@@ -1591,6 +1573,7 @@ define([
 
       result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
       sinon.assert.calledOnceWithExactly(addToStorage, "metadata.2", "rm.2");
+      addToStorage.firstCall.thisValue.storage.should.equal(resolverStorage);
       sinon.assert.calledOnceWithExactly(removeRecovery, "metadata.2");
     });
 

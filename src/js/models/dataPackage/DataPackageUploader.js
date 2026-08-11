@@ -281,10 +281,7 @@ define([
      * @returns {Promise<UploadResult[]>} One result per eager upload
      */
     async uploadAddedMembers(members, options = {}) {
-      const maxConcurrent = Utilities.getMaxConcurrent(
-        "upload",
-        options.maxConcurrent,
-      );
+      const maxConcurrent = Utilities.getMaxConcurrent(options.maxConcurrent);
       const uploadMembers = Values.listify(members).filter(
         (member) => member && !member.removed,
       );
@@ -1080,10 +1077,7 @@ define([
      * @throws {Error} When another upload is active or upload preparation fails
      */
     async upload({ resourceMapOnly = false, signal, maxConcurrent } = {}) {
-      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
-        "upload",
-        maxConcurrent,
-      );
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(maxConcurrent);
       if (this.dataPackage.activeUpload) {
         throw new Error("An upload is already in progress");
       }
@@ -1252,10 +1246,7 @@ define([
      * @throws {Error} When the result is unrelated, stale, active, or unverifiable
      */
     async retryUpload(previousResult, { signal, maxConcurrent } = {}) {
-      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
-        "upload",
-        maxConcurrent,
-      );
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(maxConcurrent);
       if (previousResult?.dataPackage !== this.dataPackage) {
         throw new Error("Cannot retry an upload from another DataPackage");
       }
@@ -1848,7 +1839,9 @@ define([
           this.dataPackage.primaryMetadataPid ||
           this.dataPackage.getPrimaryMetadataMember()?.pid;
         if (metadataPid) {
-          const resolver = new ResourceMapResolver();
+          const resolver = new ResourceMapResolver(
+            this.dataPackage.resolverOptions,
+          );
           resolver
             .addToStorage(metadataPid, resourceMapAction.targetPid)
             .catch(() => {});

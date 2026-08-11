@@ -925,28 +925,14 @@ define([
         error.message.should.equal("boom");
       });
 
-      it("passes configured services when parsing a downloaded Resource Map", async () => {
-        const originalMetacatUI = globalThis.MetacatUI;
-        globalThis.MetacatUI = {
-          ...(originalMetacatUI || {}),
-          appModel: {
-            get(key) {
-              if (key === "resolveServiceUrl") {
-                return "https://cn.example/cn/v2/resolve";
-              }
-              if (key === "objectServiceUrl") {
-                return "https://mn.example/mn/v2/object";
-              }
-              return null;
-            },
-          },
-        };
-        const download = sandbox
+      it("uses a supplied ObjectService to download and parse a Resource Map", async () => {
+        sandbox
           .stub(ObjectService.prototype, "download")
-          .callsFake(function fakeDownload() {
-            this.readBaseUrl.should.equal("https://mn.example/mn/v2/object");
-            return new Blob(["<rdf:RDF/>"]);
-          });
+          .rejects(new Error("fallback ObjectService should not be used"));
+        const objectService = {
+          readBaseUrl: "https://mn.example/mn/v2/object",
+          download: sandbox.stub().resolves(new Blob(["<rdf:RDF/>"])),
+        };
         const parsedModel = { resourceMapPid: "resource_map_1" };
         const fromXml = sandbox
           .stub(ResourceMap, "fromXml")
@@ -956,23 +942,23 @@ define([
           formatType: "RESOURCE",
         });
 
-        try {
-          const model = await member.fetchObject();
+        const model = await member.fetchObject({ objectService });
 
-          model.should.equal(parsedModel);
-          sinon.assert.calledOnce(download);
-          sinon.assert.calledOnceWithExactly(
-            fromXml,
-            "resource_map_1",
-            "<rdf:RDF/>",
-            {
-              resolveServiceUrl: "https://cn.example/cn/v2/resolve",
-              objectServiceUrl: "https://mn.example/mn/v2/object",
-            },
-          );
-        } finally {
-          globalThis.MetacatUI = originalMetacatUI;
-        }
+        model.should.equal(parsedModel);
+        sinon.assert.calledOnceWithExactly(
+          objectService.download,
+          "resource_map_1",
+          {},
+        );
+        sinon.assert.calledOnceWithExactly(
+          fromXml,
+          "resource_map_1",
+          "<rdf:RDF/>",
+          {
+            resolveServiceUrl: "https://mn.example/mn/v2/object",
+            objectServiceUrl: "https://mn.example/mn/v2/object",
+          },
+        );
       });
 
       it("returns null for a data member without building a model", async () => {

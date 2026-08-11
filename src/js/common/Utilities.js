@@ -101,34 +101,16 @@ define([
     },
 
     /**
-     * Resolve and validate a positive concurrency limit from a caller value, an
-     * app setting, or the project default.
-     * @param {"upload"|"fetch"} uploadOrFetch Whether limit is for uploads or
-     * fetches
-     * @param {number} [maxConcurrent] Preferred default limit. If 0 or unset,
-     * falls back to the app setting, then
-     * {@link Utilities.DEFAULT_MAX_CONCURRENT}
+     * Resolve a positive concurrency limit from a caller value or the project
+     * default.
+     * @param {number} [maxConcurrent] Preferred limit
      * @returns {number} Positive integer limit.
      * @since 0.0.0
      */
-    getMaxConcurrent(uploadOrFetch, maxConcurrent) {
-      const key = ValueUtilities.requireStringChoice(uploadOrFetch, [
-        "upload",
-        "fetch",
-      ]);
-      const mappedKeys = {
-        upload: "batchSizeUpload",
-        fetch: "batchSizeFetch",
-      };
-      const normalizedMax =
-        maxConcurrent ||
-        ValueUtilities.normalizePositiveInteger(
-          Utilities.getMetacatUIProperty(mappedKeys[key]),
-          DEFAULT_MAX_CONCURRENT,
-        );
-      return ValueUtilities.requirePositiveInteger(
-        normalizedMax,
-        "maxConcurrent must be a positive integer",
+    getMaxConcurrent(maxConcurrent) {
+      return ValueUtilities.normalizePositiveInteger(
+        maxConcurrent,
+        DEFAULT_MAX_CONCURRENT,
       );
     },
 

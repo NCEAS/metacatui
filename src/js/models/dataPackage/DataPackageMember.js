@@ -175,6 +175,8 @@ define([
      *  - data/unknown → no model (data is fetched on demand for preview/download)
      * @param {object} [options] Fetch options
      * @param {AbortSignal} [options.signal] Signal used to cancel downloads
+     * @param {ObjectService} [options.objectService] Service used to download a
+     * Resource Map
      * @returns {Promise<object|null>} The parsed object model, or null
      */
     async fetchObject(options = {}) {
@@ -186,23 +188,14 @@ define([
       }
 
       if (this.isResourceMap()) {
-        const appModel = globalThis.MetacatUI?.appModel;
-        const resolveServiceUrl = Values.normalizeText(
-          appModel?.get?.("resolveServiceUrl"),
-        );
-        const objectServiceUrl = Values.normalizeText(
-          appModel?.get?.("objectServiceUrl"),
-        );
-        // ObjectService prefers the local MN so newly saved maps are readable
-        // before CN synchronization, and falls back to /resolve/ on a CN.
-        const objectService = new ObjectService();
+        const { objectService } = options;
         const downloadOptions = {};
         if (options.signal) downloadOptions.signal = options.signal;
         const blob = await objectService.download(pid, downloadOptions);
         this.rawData = await blob.text();
         this.objectModel = ResourceMap.fromXml(pid, this.rawData, {
-          resolveServiceUrl,
-          objectServiceUrl,
+          resolveServiceUrl: objectService.readBaseUrl,
+          objectServiceUrl: objectService.readBaseUrl,
         });
         return this.objectModel;
       }

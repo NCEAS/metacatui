@@ -499,10 +499,15 @@ define([
      * @param {string} [options.metadataPid] Metadata member documenting files
      * @param {string} [options.atLocation] Folder path to store in the
      * ResourceMap `prov:atLocation` value
+     * @param {boolean} [options.inheritAccessPolicy] Whether new members inherit
+     * the documenting metadata member's access policy
      * @returns {Promise<DataPackageMember[]>} Locally added package members
      * @throws {Error} When the requested links cannot be applied atomically
      */
-    async linkStagedFiles(addedMembers, { metadataPid, atLocation } = {}) {
+    async linkStagedFiles(
+      addedMembers,
+      { metadataPid, atLocation, inheritAccessPolicy = true } = {},
+    ) {
       this.assertCanEdit();
 
       const resourceMap = this.requireResourceMapModel();
@@ -523,9 +528,6 @@ define([
           metadataPid || this.getPrimaryMetadataMember()?.pid;
         if (documentingPid) {
           const metadata = this.requireMember(documentingPid);
-          const inheritAccessPolicy =
-            globalThis.MetacatUI?.appModel?.get?.("inheritAccessPolicy") !==
-            false;
           const inheritedAccessPolicy = inheritAccessPolicy
             ? (metadata.sysMeta || metadata.remoteSysMeta)?.accessPolicy
             : null;
@@ -1047,10 +1049,7 @@ define([
       { propagate = false, maxConcurrent, onProgress, rightsHolder } = {},
     ) {
       this.assertCanEdit();
-      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
-        "fetch",
-        maxConcurrent,
-      );
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(maxConcurrent);
       const policy = AccessPolicy.fromValue(accessPolicy);
       const targets = this._getAccessPolicyTargets({ propagate });
       targets.forEach((member) => this.assertCanEdit(member.pid));
@@ -1818,10 +1817,7 @@ define([
      * @returns {Promise<Array<{pid: string, error: Error}>>} Fetch failures
      */
     async fetchSysMeta(memberPids, { maxConcurrent, ...fetchOptions } = {}) {
-      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
-        "fetch",
-        maxConcurrent,
-      );
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(maxConcurrent);
       let members = this.members.toArray();
       let missingFailures = [];
       if (Values.isNonEmptyArray(memberPids)) {
@@ -1985,9 +1981,9 @@ define([
             if (Values.normalizeText(candidate.obsoletes) === sourcePid) {
               let resourceMapPending = true;
               try {
-                const resolution = await new ResourceMapResolver().resolve(
-                  candidatePid,
-                );
+                const resolution = await new ResourceMapResolver(
+                  this.resolverOptions,
+                ).resolve(candidatePid);
                 resourceMapPending = !resolution.rm;
               } catch (_resolverError) {
                 // The DOI is committed; unresolved package details remain pending.

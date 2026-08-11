@@ -159,7 +159,6 @@ define([
       const recoveryOptions = {
         ...internalOptions,
         maxConcurrent: Utilities.getMaxConcurrent(
-          "fetch",
           internalOptions.maxConcurrent,
         ),
       };
