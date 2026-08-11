@@ -380,6 +380,48 @@ define([
         });
       });
 
+      it("handles messages posted during iframe load before the listener is fully registered", () => {
+        const stateSpy = sinon.spy();
+        state.view.on("mcui:state", stateSpy);
+
+        const iframe = state.view.el.querySelector(
+          ".visualization-panel__iframe",
+        );
+        const source = {};
+        Object.defineProperty(iframe, "contentWindow", {
+          configurable: true,
+          value: source,
+        });
+        Object.defineProperty(iframe, "src", {
+          configurable: true,
+          get() {
+            return this._src || "";
+          },
+          set(value) {
+            this._src = value;
+            state.view.handleMessage({
+              data: {
+                type: "mcui:state",
+                version: 1,
+                url: "https://trusted.example.com/?lat=64.1",
+              },
+              origin: "https://trusted.example.com",
+              source,
+            });
+          },
+        });
+
+        state.view.open({
+          action: {
+            id: "wt",
+            url: "https://trusted.example.com/{?lat}",
+          },
+          url: TRUSTED_URL,
+        });
+
+        expect(stateSpy.callCount).to.equal(1);
+      });
+
       it("ignores messages from non-matching origins", () => {
         const stateSpy = sinon.spy();
         state.view.on("mcui:state", stateSpy);
@@ -401,6 +443,54 @@ define([
             type: "mcui:state",
             version: 1,
             url: "https://trusted.example.com/?lat=64.1",
+          },
+        });
+
+        expect(stateSpy.callCount).to.equal(0);
+      });
+
+      it("accepts messages from a nested sender window when origin and payload URL match the active iframe origin", () => {
+        const stateSpy = sinon.spy();
+        state.view.on("mcui:state", stateSpy);
+        state.view.open({
+          action: {
+            id: "wt",
+            url: "https://trusted.example.com/{?lat}",
+          },
+          url: TRUSTED_URL,
+        });
+
+        state.view.handleMessage({
+          source: { nested: true },
+          origin: "https://trusted.example.com",
+          data: {
+            type: "mcui:state",
+            version: 1,
+            url: "https://trusted.example.com/?lat=64.1",
+          },
+        });
+
+        expect(stateSpy.callCount).to.equal(1);
+      });
+
+      it("ignores messages whose payload URL origin does not match the active iframe origin", () => {
+        const stateSpy = sinon.spy();
+        state.view.on("mcui:state", stateSpy);
+        state.view.open({
+          action: {
+            id: "wt",
+            url: "https://trusted.example.com/{?lat}",
+          },
+          url: TRUSTED_URL,
+        });
+
+        state.view.handleMessage({
+          source: { nested: true },
+          origin: "https://trusted.example.com",
+          data: {
+            type: "mcui:state",
+            version: 1,
+            url: "https://other.example.com/?lat=64.1",
           },
         });
 

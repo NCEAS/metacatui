@@ -91,7 +91,6 @@ define([
         this.handleMessage = (event) => {
           const iframe = this.el.querySelector(`.${CLASS_NAMES.iframe}`);
           if (!iframe || !iframe.contentWindow) return;
-          if (event?.source !== iframe.contentWindow) return;
 
           if (
             typeof this.activeVisualizationOrigin === "string" &&
@@ -108,6 +107,14 @@ define([
           const version = data.version == null ? 1 : Number(data.version);
           if (!Number.isFinite(version) || version !== 1) return;
           if (typeof data.url !== "string" || !data.url.length) return;
+
+          try {
+            if (new URL(data.url).origin !== this.activeVisualizationOrigin) {
+              return;
+            }
+          } catch (_e) {
+            return;
+          }
 
           this.trigger("mcui:state", {
             action: this.activeVisualizationAction || null,
@@ -165,6 +172,9 @@ define([
           `.${CLASS_NAMES.untrustedLink}`,
         );
 
+        document.addEventListener("keydown", this.handleEscapeKey);
+        window.addEventListener("message", this.handleMessage);
+
         if (trustedContent.isTrustedUrl(resolvedUrl)) {
           iframe.setAttribute(
             "sandbox",
@@ -196,8 +206,6 @@ define([
         }
 
         this.el.classList.add(CLASS_NAMES.open);
-        document.addEventListener("keydown", this.handleEscapeKey);
-        window.addEventListener("message", this.handleMessage);
       },
 
       /**

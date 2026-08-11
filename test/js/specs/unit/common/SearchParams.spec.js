@@ -326,6 +326,50 @@ define(["common/SearchParams"], (SearchParams) => {
         expect(url.searchParams.get("wt-lon")).to.be.null;
         expect(url.searchParams.get("wt-theme")).to.be.null;
       });
+
+      it("writes values when the visualization URL omits the trailing slash after the host", () => {
+        window.history.replaceState(null, "", "?foo=bar");
+
+        const synced = SearchParams.syncActionStateFromVisualizationUrl({
+          actionId: "wt",
+          actionUrlTemplate:
+            "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom,theme}{#section_id}",
+          visualizationUrl:
+            "https://lostlakes.arcticdata.io?selected_lake=b7fce5fz7s55&lat=66.37929&lon=-164.74705&zoom=12#time-series-header",
+        });
+
+        expect(synced).to.equal(true);
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.get("wt-selected_lake")).to.equal(
+          "b7fce5fz7s55",
+        );
+        expect(url.searchParams.get("wt-lat")).to.equal("66.37929");
+        expect(url.searchParams.get("wt-lon")).to.equal("-164.74705");
+        expect(url.searchParams.get("wt-zoom")).to.equal("12");
+      });
+
+      it("writes allow-listed values when the visualization URL contains extra query or hash state", () => {
+        window.history.replaceState(null, "", "?foo=bar");
+
+        const synced = SearchParams.syncActionStateFromVisualizationUrl({
+          actionId: "wt",
+          actionUrlTemplate:
+            "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom}",
+          visualizationUrl:
+            "https://lostlakes.arcticdata.io/?selected_lake=b7g6k2stc04z&lat=66.49299&lon=-163.98669&zoom=12&hide_stable=1#time-series-header",
+        });
+
+        expect(synced).to.equal(true);
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.get("wt-selected_lake")).to.equal(
+          "b7g6k2stc04z",
+        );
+        expect(url.searchParams.get("wt-lat")).to.equal("66.49299");
+        expect(url.searchParams.get("wt-lon")).to.equal("-163.98669");
+        expect(url.searchParams.get("wt-zoom")).to.equal("12");
+      });
     });
 
     describe("clearActionStateInUrl", () => {
