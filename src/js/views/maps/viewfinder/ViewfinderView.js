@@ -120,8 +120,13 @@ define([
         const actionId = typeof action?.id === "string" ? action.id.trim() : "";
         const actionUrlTemplate =
           typeof action?.url === "string" ? action.url : null;
+        const activeActionId =
+          typeof this.mapModel.get("activeVisualizationActionId") === "string"
+            ? this.mapModel.get("activeVisualizationActionId").trim()
+            : "";
 
         if (!actionId.length || !actionUrlTemplate || !payload?.url) return;
+        if (!activeActionId.length || activeActionId !== actionId) return;
 
         SearchParams.syncActionStateFromVisualizationUrl({
           actionId,
