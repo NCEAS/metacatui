@@ -115,7 +115,8 @@ define([
       syncVisualizationStateToUrl(payload = {}) {
         if (!this.mapModel?.get("showShareUrl")) return;
 
-        const action = payload.action || this.mapModel.get("activeVisualizationAction");
+        const action =
+          payload.action || this.mapModel.get("activeVisualizationAction");
         const actionId = typeof action?.id === "string" ? action.id.trim() : "";
         const actionUrlTemplate =
           typeof action?.url === "string" ? action.url : null;

@@ -33,7 +33,8 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @returns {string} Namespaced URL key (e.g., `wt-lat`).
    * @since 0.0.0
    */
-  const namespacedActionKey = (actionId, key) => `${actionPrefix(actionId)}${key}`;
+  const namespacedActionKey = (actionId, key) =>
+    `${actionPrefix(actionId)}${key}`;
 
   /** Destination IDs plus all known restore-state keys. */
   const restoreStateIds = [
@@ -347,7 +348,11 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @returns {boolean} True when URL state was written.
    * @since 0.0.0
    */
-  const writeActionStateToUrl = (actionId, variableNames = [], nextValues = {}) => {
+  const writeActionStateToUrl = (
+    actionId,
+    variableNames = [],
+    nextValues = {},
+  ) => {
     const normalizedActionId = normalizeId(actionId);
     if (!normalizedActionId) return false;
 
@@ -366,7 +371,10 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       if (value == null) return;
       const normalized = String(value);
       if (!normalized.length) return;
-      url.searchParams.set(namespacedActionKey(normalizedActionId, name), normalized);
+      url.searchParams.set(
+        namespacedActionKey(normalizedActionId, name),
+        normalized,
+      );
     });
 
     replaceUrl(url);
@@ -419,17 +427,16 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       restoreValues,
     );
 
-    const resolvedUrl = expandedUrl || UriTemplateUtilities.getTemplateBaseUrl(action.url);
+    const resolvedUrl =
+      expandedUrl || UriTemplateUtilities.getTemplateBaseUrl(action.url);
     const initialQueryParams =
-      action?.initialQueryParams && typeof action.initialQueryParams === "object"
+      action?.initialQueryParams &&
+      typeof action.initialQueryParams === "object"
         ? action.initialQueryParams
         : null;
 
     return initialQueryParams
-      ? UriTemplateUtilities.appendQueryParams(
-          resolvedUrl,
-          initialQueryParams,
-        )
+      ? UriTemplateUtilities.appendQueryParams(resolvedUrl, initialQueryParams)
       : resolvedUrl;
   };
 
@@ -457,9 +464,8 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       return false;
     }
 
-    const variableNames = UriTemplateUtilities.getTemplateVarNames(
-      actionUrlTemplate,
-    );
+    const variableNames =
+      UriTemplateUtilities.getTemplateVarNames(actionUrlTemplate);
     if (!variableNames.length) return false;
 
     const extracted = UriTemplateUtilities.extractValuesFromUrl(

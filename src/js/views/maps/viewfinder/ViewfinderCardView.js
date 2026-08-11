@@ -79,8 +79,8 @@ define([
    * title. Action buttons have two styles determined by their ordinality
    * and are driven by `buttons` on the model with configurable text and icons.
    * 'map' type actions (secondary ordinality) render as a plain-text
-   * secondary link by default, while 'iframe'/'tab' type actions (primary 
-   * ordinality) render as bordered buttons by default. The card body itself 
+   * secondary link by default, while 'iframe'/'tab' type actions (primary
+   * ordinality) render as bordered buttons by default. The card body itself
    * is no longer interactive — all interactions are explicit buttons.
    * @classcategory Views/Maps/Viewfinder
    * @name ViewfinderCardView
@@ -294,7 +294,9 @@ define([
             : noop;
         this.onActivate = typeof onActivate === "function" ? onActivate : noop;
         this.onActionUiActivated =
-          typeof onActionUiActivated === "function" ? onActionUiActivated : noop;
+          typeof onActionUiActivated === "function"
+            ? onActionUiActivated
+            : noop;
       },
 
       /**

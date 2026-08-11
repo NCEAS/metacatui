@@ -137,7 +137,8 @@ define([
 
       state.view.mapModel.set({
         activeVisualizationActionId: "wt",
-        activeVisualizationUrl: "https://lostlakes.arcticdata.io/?selected_lake=abc",
+        activeVisualizationUrl:
+          "https://lostlakes.arcticdata.io/?selected_lake=abc",
       });
       state.view.mapModel.set({
         activeVisualizationActionId: null,

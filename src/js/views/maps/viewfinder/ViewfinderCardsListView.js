@@ -60,9 +60,7 @@ define(["underscore", "backbone", "views/maps/viewfinder/ViewfinderCardView"], (
         this.onMapAction =
           typeof onMapAction === "function" ? onMapAction : () => {};
         this.onIframeAction =
-          typeof onIframeAction === "function"
-            ? onIframeAction
-            : () => {};
+          typeof onIframeAction === "function" ? onIframeAction : () => {};
         this.onRequestCloseVisualization =
           typeof onRequestCloseVisualization === "function"
             ? onRequestCloseVisualization

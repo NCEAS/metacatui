@@ -4,11 +4,7 @@ define([
   "backbone",
   "common/TrustedContentUtilities",
   "common/UriTemplateUtilities",
-], (
-  Backbone,
-  trustedContent,
-  UriTemplateUtilities,
-) => {
+], (Backbone, trustedContent, UriTemplateUtilities) => {
   const BASE_CLASS = "visualization-panel";
   const CLASS_NAMES = {
     body: `${BASE_CLASS}__body`,
@@ -157,7 +153,9 @@ define([
         const resolvedUrl =
           typeof payload === "string" ? payload : payload?.url || "";
         this.activeVisualizationAction =
-          payload && typeof payload === "object" ? payload.action || null : null;
+          payload && typeof payload === "object"
+            ? payload.action || null
+            : null;
         this.activeVisualizationOrigin = this.getExpectedMessageOrigin(
           this.activeVisualizationAction,
           resolvedUrl,
