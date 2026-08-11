@@ -122,14 +122,12 @@ define([
           typeof action?.url === "string" ? action.url : null;
 
         if (!actionId.length || !actionUrlTemplate || !payload?.url) return;
-        if (this.mapModel.get("activeVisualizationActionId") !== actionId) return;
 
         SearchParams.syncActionStateFromVisualizationUrl({
           actionId,
           actionUrlTemplate,
           visualizationUrl: payload.url,
         });
-      }
       },
 
       /**
