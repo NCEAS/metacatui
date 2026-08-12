@@ -473,6 +473,8 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       visualizationUrl,
     );
 
+    if (!extracted) return false;
+
     return writeActionStateToUrl(normalizedActionId, variableNames, extracted);
   };
 

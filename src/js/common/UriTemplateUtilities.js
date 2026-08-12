@@ -119,16 +119,17 @@ define(["uriTemplatesEs"], ({ UriTemplate }) => {
    * and only allow-listed values are returned.
    * @param {string} template URI template used as the allow-list contract.
    * @param {string} urlString URL emitted by an embedded app.
-   * @returns {object} Parsed values keyed by allowed template variable names.
+   * @returns {object|null} Parsed values keyed by allowed template variable
+   * names, or null when the URL does not satisfy the template.
    * @since 0.0.0
    */
   const extractValuesFromUrl = (template, urlString) => {
     const instance = createTemplate(template);
     const url = toUrl(urlString);
-    if (!url) return {};
+    if (!url) return null;
 
     const parsed = instance.fromUri(url.toString());
-    if (!parsed || typeof parsed !== "object") return {};
+    if (!parsed || typeof parsed !== "object") return null;
 
     const allowList = getTemplateVarNames(template);
     const values = {};

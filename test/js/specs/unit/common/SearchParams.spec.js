@@ -391,6 +391,31 @@ define(["common/SearchParams"], (SearchParams) => {
         expect(url.searchParams.get("wt-lon")).to.equal("-163.98669");
         expect(url.searchParams.get("wt-zoom")).to.equal("12");
       });
+
+      it("keeps previous namespaced params when the visualization URL does not match the template", () => {
+        window.history.replaceState(
+          null,
+          "",
+          "?foo=bar&wt-selected_lake=old-lake&wt-lat=65&wt-lon=-149&wt-zoom=7",
+        );
+
+        const synced = SearchParams.syncActionStateFromVisualizationUrl({
+          actionId: "wt",
+          actionUrlTemplate:
+            "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom}",
+          visualizationUrl:
+            "https://example.org/?selected_lake=b7g6k2stc04z&lat=66.49299&zoom=12",
+        });
+
+        expect(synced).to.equal(false);
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.get("foo")).to.equal("bar");
+        expect(url.searchParams.get("wt-selected_lake")).to.equal("old-lake");
+        expect(url.searchParams.get("wt-lat")).to.equal("65");
+        expect(url.searchParams.get("wt-lon")).to.equal("-149");
+        expect(url.searchParams.get("wt-zoom")).to.equal("7");
+      });
     });
 
     describe("clearActionStateInUrl", () => {
