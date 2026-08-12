@@ -42,11 +42,11 @@ define([
     /**
      * Opens the URL in the full-screen visualization overlay.
      * @param {ViewfinderCardAction} action Action object with a `url` property.
-     * @param {ViewfinderCardView} view The card view that was clicked, which has a `ctaCallback` to open the overlay.
+     * @param {ViewfinderCardView} view The card view that was clicked, which has a `onIframeAction` to open the overlay.
      * @since 2.37.0
      */
     iframe(action, view) {
-      view.ctaCallback(action.url);
+      view.onIframeAction(action);
     },
     /**
      * Opens the URL in a new browser tab.
@@ -60,13 +60,13 @@ define([
     },
     /**
      * Zooms the map and enables layers. Delegates to the view's
-     * selectCallback so the model handles the navigation logic.
+     * onMapAction so the model handles the navigation logic.
      * @param {ViewfinderCardAction} action Action object with `latitude`, `longitude`, and `layerIds` properties.
-     * @param {ViewfinderCardView} view The card view that was clicked, which has a `selectCallback` to zoom and toggle layers.
+     * @param {ViewfinderCardView} view The card view that was clicked, which has a `onMapAction` to zoom and toggle layers.
      * @since 2.37.0
      */
     map(action, view) {
-      view.selectCallback(action);
+      view.onMapAction(action);
     },
   };
 
@@ -79,8 +79,8 @@ define([
    * title. Action buttons have two styles determined by their ordinality
    * and are driven by `buttons` on the model with configurable text and icons.
    * 'map' type actions (secondary ordinality) render as a plain-text
-   * secondary link by default, while 'iframe'/'tab' type actions (primary 
-   * ordinality) render as bordered buttons by default. The card body itself 
+   * secondary link by default, while 'iframe'/'tab' type actions (primary
+   * ordinality) render as bordered buttons by default. The card body itself
    * is no longer interactive — all interactions are explicit buttons.
    * @classcategory Views/Maps/Viewfinder
    * @name ViewfinderCardView
@@ -115,7 +115,7 @@ define([
        * Zoom to the card's location and toggle the relevant layers. Closes
        * any open visualization overlay first. When the clicked button carries
        * a `data-button-index` attribute it is a 'map'-type button; the
-       * corresponding action object is forwarded to `selectCallback` so the
+       * corresponding action object is forwarded to `onMapAction` so the
        * model can use its specific coordinates and layerIds.
        * @param {MouseEvent} [e] The click event, if triggered from the DOM.
        */
@@ -129,12 +129,12 @@ define([
             ? this.preset.get("buttons")[Number(buttonIndex)]
             : undefined;
         this.onActivate(this);
-        this.closeVisualizationCallback();
+        this.onRequestCloseVisualization();
         this.setActive(btn, action);
         if (action?.type && BUTTON_ACTION_HANDLERS[action.type]) {
           BUTTON_ACTION_HANDLERS[action.type](action, this);
         } else {
-          this.selectCallback(action);
+          this.onMapAction(action);
         }
       },
 
@@ -149,7 +149,7 @@ define([
         const action = this.preset.get("buttons")[index];
         if (!action) return;
         this.onActivate(this);
-        this.closeVisualizationCallback();
+        this.onRequestCloseVisualization();
         this.setActive(btn, action);
         BUTTON_ACTION_HANDLERS[action.type]?.(action, this);
       },
@@ -185,7 +185,7 @@ define([
           });
 
         if (notifyActionActivated) {
-          this.onActionActivated(action, buttonEl);
+          this.onActionUiActivated(action, buttonEl);
         }
       },
 
@@ -207,7 +207,7 @@ define([
         this.setActive(btn, action, { notifyActionActivated: false });
 
         if (action.type === "iframe" && action.url) {
-          this.ctaCallback(action.url);
+          this.onIframeAction(action);
         }
 
         return true;
@@ -266,41 +266,37 @@ define([
       },
 
       /**
-       * Initialize the view with the given options.
-       * @param {object} options - The view options.
-       * @param {ViewfinderCardModel} options.preset - The metadata associated
-       * with this viewfinder card.
-       * @param {Function} [options.selectCallback] Called when "View Layers" is
-       * clicked. Should zoom to the card location and toggle layers.
-       * @param {Function} [options.ctaCallback] Called with (url) when
-       * "Explore in App" is clicked. Should open the visualization overlay.
-       * @param {Function} [options.closeVisualizationCallback] Called before
-       * any button action to dismiss any currently open overlay.
-       * @param {Function} [options.onActivate] Called when this card is
-       * activated, so sibling cards can reset their active state.
-       * @param {Function} [options.onActionActivated] Called after an
-       * action button is activated, with the action object and button element.
+       * Initialize with card metadata and action callbacks.
+       * @param {object} root0 - Initialize options.
+       * @param {ViewfinderCardModel} root0.preset - Card metadata.
+       * @param {Function} [root0.onMapAction] - Handles map actions.
+       * @param {Function} [root0.onIframeAction] - Handles iframe actions.
+       * @param {Function} [root0.onRequestCloseVisualization] - Closes overlays before actions.
+       * @param {Function} [root0.onActivate] - Marks this card as active.
+       * @param {Function} [root0.onActionUiActivated] - Notifies UI action activation.
        */
       initialize({
         preset,
-        selectCallback,
-        ctaCallback,
-        closeVisualizationCallback,
+        onMapAction,
+        onIframeAction,
+        onRequestCloseVisualization,
         onActivate,
-        onActionActivated,
+        onActionUiActivated,
       }) {
         this.preset = preset;
-        this.selectCallback =
-          typeof selectCallback === "function" ? selectCallback : noop;
-        this.ctaCallback =
-          typeof ctaCallback === "function" ? ctaCallback : noop;
-        this.closeVisualizationCallback =
-          typeof closeVisualizationCallback === "function"
-            ? closeVisualizationCallback
+        this.onMapAction =
+          typeof onMapAction === "function" ? onMapAction : noop;
+        this.onIframeAction =
+          typeof onIframeAction === "function" ? onIframeAction : noop;
+        this.onRequestCloseVisualization =
+          typeof onRequestCloseVisualization === "function"
+            ? onRequestCloseVisualization
             : noop;
         this.onActivate = typeof onActivate === "function" ? onActivate : noop;
-        this.onActionActivated =
-          typeof onActionActivated === "function" ? onActionActivated : noop;
+        this.onActionUiActivated =
+          typeof onActionUiActivated === "function"
+            ? onActionUiActivated
+            : noop;
       },
 
       /**

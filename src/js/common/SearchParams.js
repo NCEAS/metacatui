@@ -1,6 +1,6 @@
 "use strict";
 
-define([], () => {
+define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   /**
    * A map from search parameter key to the actual keys used by the application.
    */
@@ -19,6 +19,22 @@ define([], () => {
 
   /** The search parameter ID for enabled layers in the save to URL feature. */
   const ENABLED_LAYERS_ID = "el";
+
+  /**
+   * @param {string} actionId Stable action identifier.
+   * @returns {string} Prefix for namespaced action state keys.
+   * @since 0.0.0
+   */
+  const actionPrefix = (actionId) => `${actionId}-`;
+
+  /**
+   * @param {string} actionId Stable action identifier.
+   * @param {string} key Variable name from the iframe URL template.
+   * @returns {string} Namespaced URL key (e.g., `wt-lat`).
+   * @since 0.0.0
+   */
+  const namespacedActionKey = (actionId, key) =>
+    `${actionPrefix(actionId)}${key}`;
 
   /** Destination IDs plus all known restore-state keys. */
   const restoreStateIds = [
@@ -82,6 +98,28 @@ define([], () => {
     if (typeof value !== "string") return null;
     const trimmed = value.trim();
     return trimmed.length ? trimmed : null;
+  };
+
+  /**
+   * Normalize action URL template variable names.
+   * @param {unknown} variableNames Candidate variable names list.
+   * @returns {string[]} Unique non-empty variable names.
+   * @since 0.0.0
+   */
+  const normalizeVariableNames = (variableNames) => {
+    if (!Array.isArray(variableNames)) return [];
+    const seen = new Set();
+    const normalized = [];
+
+    variableNames.forEach((name) => {
+      if (typeof name !== "string") return;
+      const trimmed = name.trim();
+      if (!trimmed.length || seen.has(trimmed)) return;
+      seen.add(trimmed);
+      normalized.push(trimmed);
+    });
+
+    return normalized;
   };
 
   /**
@@ -276,6 +314,174 @@ define([], () => {
   };
 
   /**
+   * Read iframe action state from namespaced portal query params.
+   * @param {string} actionId Stable action identifier.
+   * @param {string[]} variableNames Allowed keys from the action URL template.
+   * @returns {object} State object keyed by template variable name.
+   * @since 0.0.0
+   */
+  const getActionStateFromUrl = (actionId, variableNames = []) => {
+    const normalizedActionId = normalizeId(actionId);
+    if (!normalizedActionId) return {};
+
+    const allowedVariables = normalizeVariableNames(variableNames);
+    if (!allowedVariables.length) return {};
+
+    const url = getCurrentUrl();
+    const state = {};
+    allowedVariables.forEach((name) => {
+      const key = namespacedActionKey(normalizedActionId, name);
+      if (url.searchParams.has(key)) {
+        state[name] = url.searchParams.get(key);
+      }
+    });
+
+    return state;
+  };
+
+  /**
+   * Set namespaced action state values in the portal query string and clear
+   * omitted allow-listed keys.
+   * @param {string} actionId Stable action identifier.
+   * @param {string[]} variableNames Allowed keys from the action URL template.
+   * @param {object} nextValues Parsed values keyed by template variable name.
+   * @returns {boolean} True when URL state was written.
+   * @since 0.0.0
+   */
+  const writeActionStateToUrl = (
+    actionId,
+    variableNames = [],
+    nextValues = {},
+  ) => {
+    const normalizedActionId = normalizeId(actionId);
+    if (!normalizedActionId) return false;
+
+    const allowedVariables = normalizeVariableNames(variableNames);
+    if (!allowedVariables.length) return false;
+
+    const url = getCurrentUrl();
+
+    // Clear all namespaced keys in the allow-list first so omitted values are removed.
+    allowedVariables.forEach((name) => {
+      url.searchParams.delete(namespacedActionKey(normalizedActionId, name));
+    });
+
+    allowedVariables.forEach((name) => {
+      const value = nextValues[name];
+      if (value == null) return;
+      const normalized = String(value);
+      if (!normalized.length) return;
+      url.searchParams.set(
+        namespacedActionKey(normalizedActionId, name),
+        normalized,
+      );
+    });
+
+    replaceUrl(url);
+    return true;
+  };
+
+  /**
+   * Remove all namespaced action keys for a given action id.
+   * @param {string} actionId Stable action identifier.
+   * @since 0.0.0
+   */
+  const clearActionStateInUrl = (actionId) => {
+    const normalizedActionId = normalizeId(actionId);
+    if (!normalizedActionId) return;
+
+    const url = getCurrentUrl();
+    const prefix = actionPrefix(normalizedActionId);
+    const keysToDelete = [];
+    url.searchParams.forEach((_value, key) => {
+      if (key.startsWith(prefix)) keysToDelete.push(key);
+    });
+
+    keysToDelete.forEach((key) => {
+      url.searchParams.delete(key);
+    });
+
+    replaceUrl(url);
+  };
+
+  /**
+   * Build the iframe URL for an action by expanding a URI template with any
+   * namespaced portal URL state for that action.
+   * @param {object} action Viewfinder action object.
+   * @param {string} action.id Stable action identifier.
+   * @param {string} action.url RFC6570 URL template.
+   * @param {boolean} [showShareUrl=true] Whether to read namespaced browser
+   *   state when resolving the template.
+   * @returns {string|null} The resolved iframe URL or null when no URL exists.
+   * @since 0.0.0
+   */
+  const resolveActionUrl = (action = {}, showShareUrl = true) => {
+    if (typeof action?.url !== "string" || !action.url.length) return null;
+
+    const actionId = normalizeId(action.id);
+    const variableNames = UriTemplateUtilities.getTemplateVarNames(action.url);
+    const restoreValues =
+      actionId && showShareUrl
+        ? getActionStateFromUrl(actionId, variableNames)
+        : {};
+
+    const expandedUrl = UriTemplateUtilities.expandTemplate(
+      action.url,
+      restoreValues,
+    );
+
+    const resolvedUrl =
+      expandedUrl || UriTemplateUtilities.getTemplateBaseUrl(action.url);
+    const initialQueryParams =
+      action?.initialQueryParams &&
+      typeof action.initialQueryParams === "object"
+        ? action.initialQueryParams
+        : null;
+
+    return initialQueryParams
+      ? UriTemplateUtilities.appendQueryParams(resolvedUrl, initialQueryParams)
+      : resolvedUrl;
+  };
+
+  /**
+   * Parse URL state from a visualization postMessage and write it back to the
+   * parent portal URL using `actionId-<key>` namespaced query params.
+   * @param {object} options Options describing the incoming iframe state update.
+   * @param {string} options.actionId Stable action identifier.
+   * @param {string} options.actionUrlTemplate RFC6570 template from action config.
+   * @param {string} options.visualizationUrl URL sent from the iframe app.
+   * @returns {boolean} True when namespaced state was applied.
+   * @since 0.0.0
+   */
+  const syncActionStateFromVisualizationUrl = ({
+    actionId,
+    actionUrlTemplate,
+    visualizationUrl,
+  } = {}) => {
+    const normalizedActionId = normalizeId(actionId);
+    if (!normalizedActionId) return false;
+    if (typeof actionUrlTemplate !== "string" || !actionUrlTemplate.length) {
+      return false;
+    }
+    if (typeof visualizationUrl !== "string" || !visualizationUrl.length) {
+      return false;
+    }
+
+    const variableNames =
+      UriTemplateUtilities.getTemplateVarNames(actionUrlTemplate);
+    if (!variableNames.length) return false;
+
+    const extracted = UriTemplateUtilities.extractValuesFromUrl(
+      actionUrlTemplate,
+      visualizationUrl,
+    );
+
+    if (!extracted) return false;
+
+    return writeActionStateToUrl(normalizedActionId, variableNames, extracted);
+  };
+
+  /**
    * Get schema version from URL.
    * @returns {number} the schema version from the URL, or 0 if not present or invalid.
    * @since 0.0.0
@@ -308,13 +514,18 @@ define([], () => {
    * @since 2.30.0
    */
   return {
+    clearActionStateInUrl,
     clearStateInUrl,
+    getActionStateFromUrl,
     getSchemaVersion,
     normalizeState,
     parseStateFromUrl,
+    resolveActionUrl,
+    syncActionStateFromVisualizationUrl,
     updateActiveActionId,
     updateOpenPanel,
     updateStateInUrl,
+    writeActionStateToUrl,
     writeStateToUrl,
   };
 });

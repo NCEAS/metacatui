@@ -4,9 +4,10 @@ define([
   "underscore",
   "backbone",
   "cesium",
+  "common/SearchParams",
   "models/geocoder/GeocoderSearch",
   "models/maps/GeoPoint",
-], (_, Backbone, Cesium, GeocoderSearch, GeoPoint) => {
+], (_, Backbone, Cesium, SearchParams, GeocoderSearch, GeoPoint) => {
   const EMAIL = MetacatUI.appModel.get("emailContact");
   const NO_RESULTS_MESSAGE =
     "No search results found, try using another place name.";
@@ -165,11 +166,38 @@ define([
       /**
        * Open a visualization app in the full-screen iframe overlay by setting
        * the activeVisualizationUrl attribute on the map model.
-       * @param {string} url The URL to load in the iframe overlay.
+       * @param {object|string} actionOrUrl A configured iframe action object,
+       * or a raw URL string for backward compatibility.
        * @since 0.0.0
        */
-      openVisualization(url) {
-        this.mapModel.set({ activeVisualizationUrl: url });
+      openVisualization(actionOrUrl) {
+        if (typeof actionOrUrl === "string") {
+          this.mapModel.set({
+            activeVisualizationAction: null,
+            activeVisualizationActionId: null,
+            activeVisualizationUrl: actionOrUrl,
+          });
+          return;
+        }
+
+        if (!actionOrUrl || typeof actionOrUrl !== "object") {
+          return;
+        }
+
+        const resolvedUrl = SearchParams.resolveActionUrl(
+          actionOrUrl,
+          this.mapModel.get("showShareUrl"),
+        );
+        if (!resolvedUrl) return;
+
+        this.mapModel.set({
+          activeVisualizationAction: actionOrUrl,
+          activeVisualizationActionId:
+            typeof actionOrUrl.id === "string" && actionOrUrl.id.trim().length
+              ? actionOrUrl.id.trim()
+              : null,
+          activeVisualizationUrl: resolvedUrl,
+        });
       },
 
       /**
@@ -178,25 +206,21 @@ define([
        * @since 2.37.0
        */
       closeVisualization() {
-        this.mapModel.set({ activeVisualizationUrl: null });
+        this.mapModel.set({
+          activeVisualizationAction: null,
+          activeVisualizationActionId: null,
+          activeVisualizationUrl: null,
+        });
       },
 
       /**
-       * Extended from ZoomPresetModel's selectZoomPreset() when zoom presets
-       * were deprecated in favor of generalized viewfinder cards. Select a
-       * ViewfinderCardModel from the list of cards and navigate there.
-       * When `action` is a 'map' type ViewfinderCardAction, its `layerIds` and
-       * coordinates are used directly. For 'iframe' or 'tab' actions, the card
-       * view handles opening the target URL and this method is not responsible
-       * for that behavior. Otherwise it falls back to the preset's
-       * `enabledLayerIds` and `geoPoint` for backward compatibility.
-       * @param {ViewfinderCardModel} preset A user selected card.
-       * @param {ViewfinderCardAction} [action] The specific button action that was
-       * activated. Map actions use the action's layer IDs and coordinates;
-       * other action types are handled by the view layer or fall back to the
-       * preset's own fields.
+       * Apply a map action from a viewfinder card by toggling layers and
+       * optionally navigating to coordinates.
+       * @param {ViewfinderCardModel} card The source card model.
+       * @param {ViewfinderCardAction} [action] The map action from the card.
+       * @since 0.0.0
        */
-      selectViewfinderCard(preset, action) {
+      applyMapAction(card, action) {
         let enabledLayerIds;
         let geoPoint;
 
@@ -211,8 +235,8 @@ define([
           }
         } else {
           // Backward compat: read directly from the legacy zoom preset model attributes.
-          enabledLayerIds = preset.get("enabledLayerIds") || [];
-          geoPoint = preset.get("geoPoint");
+          enabledLayerIds = card.get("enabledLayerIds") || [];
+          geoPoint = card.get("geoPoint");
         }
 
         const layers =
@@ -230,10 +254,10 @@ define([
           this.mapModel.zoomTo(geoPoint);
         }
 
-        // If this preset corresponds to a specific feature, select it on the
+        // If this card corresponds to a specific feature, select it on the
         // map.
-        const layer = preset.get("featureLayer");
-        const featId = preset.get("featureId");
+        const layer = card.get("featureLayer");
+        const featId = card.get("featureId");
         if (layer && featId) {
           const feature = layer.getFeatureById(featId);
           if (feature) {
@@ -247,13 +271,25 @@ define([
       },
 
       /**
-       * Backward-compatibility alias for selectViewfinderCard.
-       * @deprecated Use selectViewfinderCard instead.
+       * Backward-compatibility alias for applyMapAction.
+       * @deprecated Use applyMapAction instead.
+       * @param {ViewfinderCardModel} card The card to apply.
+       * @param {ViewfinderCardAction} [action] The card action.
+       * @returns {void}
+       * @since 0.0.0
+       */
+      selectViewfinderCard(card, action) {
+        return this.applyMapAction(card, action);
+      },
+
+      /**
+       * Backward-compatibility alias for applyMapAction.
+       * @deprecated Use applyMapAction instead.
        * @param {ViewfinderCardModel} preset The card to select.
        * @returns {void}
        */
       selectZoomPreset(preset) {
-        return this.selectViewfinderCard(preset);
+        return this.applyMapAction(preset);
       },
 
       /**

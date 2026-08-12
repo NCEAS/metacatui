@@ -36,10 +36,10 @@ define([
         description,
         enabledLayerLabels,
       });
-      const selectCallbackSpy = sandbox.spy();
+      const onMapActionSpy = sandbox.spy();
       const view = new ViewfinderCardView({
         preset: card,
-        selectCallback: selectCallbackSpy,
+        onMapAction: onMapActionSpy,
       });
       view.render();
       const harness = new ViewfinderCardViewHarness(view);
@@ -53,7 +53,7 @@ define([
       return {
         harness,
         sandbox,
-        selectCallbackSpy,
+        onMapActionSpy,
         testContainer,
         view,
       };
@@ -79,19 +79,19 @@ define([
     });
 
     it("does not call a select callback before selected", () => {
-      expect(state.selectCallbackSpy.callCount).to.equal(0);
+      expect(state.onMapActionSpy.callCount).to.equal(0);
     });
 
     it("calls a select callback when selected", () => {
       state.harness.click();
 
-      expect(state.selectCallbackSpy.callCount).to.equal(1);
+      expect(state.onMapActionSpy.callCount).to.equal(1);
     });
 
     it("opens iframe actions even when rendered as secondary", () => {
       const sandbox = sinon.createSandbox();
-      const ctaCallbackSpy = sandbox.spy();
-      const selectCallbackSpy = sandbox.spy();
+      const onIframeActionSpy = sandbox.spy();
+      const onMapActionSpy = sandbox.spy();
       const card = new ViewfinderCardModel({
         title: "Iframe preset",
         description: "For testing iframe actions",
@@ -106,8 +106,8 @@ define([
       });
       const view = new ViewfinderCardView({
         preset: card,
-        ctaCallback: ctaCallbackSpy,
-        selectCallback: selectCallbackSpy,
+        onIframeAction: onIframeActionSpy,
+        onMapAction: onMapActionSpy,
       });
       view.render();
       const harness = new ViewfinderCardViewHarness(view);
@@ -119,11 +119,12 @@ define([
       try {
         harness.click();
 
-        expect(ctaCallbackSpy.callCount).to.equal(1);
-        expect(ctaCallbackSpy.firstCall.args[0]).to.equal(
-          "https://water-timeseries.streamlit.app/",
-        );
-        expect(selectCallbackSpy.callCount).to.equal(0);
+        expect(onIframeActionSpy.callCount).to.equal(1);
+        expect(onIframeActionSpy.firstCall.args[0]).to.deep.include({
+          type: "iframe",
+          url: "https://water-timeseries.streamlit.app/",
+        });
+        expect(onMapActionSpy.callCount).to.equal(0);
       } finally {
         sandbox.restore();
         testContainer.remove();
@@ -162,8 +163,8 @@ define([
 
     it("restores iframe actions without replaying click side effects", () => {
       const sandbox = sinon.createSandbox();
-      const ctaCallbackSpy = sandbox.spy();
-      const onActionActivatedSpy = sandbox.spy();
+      const onIframeActionSpy = sandbox.spy();
+      const onActionUiActivatedSpy = sandbox.spy();
       const onActivateSpy = sandbox.spy();
       const card = new ViewfinderCardModel({
         title: "Restored iframe preset",
@@ -179,8 +180,8 @@ define([
       });
       const view = new ViewfinderCardView({
         preset: card,
-        ctaCallback: ctaCallbackSpy,
-        onActionActivated: onActionActivatedSpy,
+        onIframeAction: onIframeActionSpy,
+        onActionUiActivated: onActionUiActivatedSpy,
         onActivate: onActivateSpy,
       });
       view.render();
@@ -196,11 +197,12 @@ define([
         expect(restored).to.be.true;
         expect(harness.isActive()).to.be.true;
         expect(onActivateSpy.callCount).to.equal(1);
-        expect(onActionActivatedSpy.callCount).to.equal(0);
-        expect(ctaCallbackSpy.callCount).to.equal(1);
-        expect(ctaCallbackSpy.firstCall.args[0]).to.equal(
-          "https://example.org/app",
-        );
+        expect(onActionUiActivatedSpy.callCount).to.equal(0);
+        expect(onIframeActionSpy.callCount).to.equal(1);
+        expect(onIframeActionSpy.firstCall.args[0]).to.deep.include({
+          type: "iframe",
+          url: "https://example.org/app",
+        });
       } finally {
         sandbox.restore();
         testContainer.remove();
@@ -246,7 +248,7 @@ define([
 
     it("preserves an explicit action id", () => {
       const sandbox = sinon.createSandbox();
-      const onActionActivatedSpy = sandbox.spy();
+      const onActionUiActivatedSpy = sandbox.spy();
       const card = new ViewfinderCardModel({
         title: "Explicit ID card",
         description: "For testing ids",
@@ -261,8 +263,8 @@ define([
       });
       const view = new ViewfinderCardView({
         preset: card,
-        ctaCallback: sandbox.spy(),
-        onActionActivated: onActionActivatedSpy,
+        onIframeAction: sandbox.spy(),
+        onActionUiActivated: onActionUiActivatedSpy,
       });
       view.render();
       const harness = new ViewfinderCardViewHarness(view);
@@ -274,8 +276,8 @@ define([
       try {
         harness.clickButton(0);
 
-        expect(onActionActivatedSpy.callCount).to.equal(1);
-        const action = onActionActivatedSpy.firstCall.args[0];
+        expect(onActionUiActivatedSpy.callCount).to.equal(1);
+        const action = onActionUiActivatedSpy.firstCall.args[0];
         expect(action.id).to.equal("explicit-action-id");
       } finally {
         sandbox.restore();
@@ -285,7 +287,7 @@ define([
 
     it("does not assign an action id when missing", () => {
       const sandbox = sinon.createSandbox();
-      const onActionActivatedSpy = sandbox.spy();
+      const onActionUiActivatedSpy = sandbox.spy();
       const card = new ViewfinderCardModel({
         title: "Unconfigured ID card",
         description: "For testing missing ids",
@@ -299,8 +301,8 @@ define([
       });
       const view = new ViewfinderCardView({
         preset: card,
-        ctaCallback: sandbox.spy(),
-        onActionActivated: onActionActivatedSpy,
+        onIframeAction: sandbox.spy(),
+        onActionUiActivated: onActionUiActivatedSpy,
       });
       view.render();
       const harness = new ViewfinderCardViewHarness(view);
@@ -312,8 +314,8 @@ define([
       try {
         harness.clickButton(0);
 
-        expect(onActionActivatedSpy.callCount).to.equal(1);
-        const action = onActionActivatedSpy.firstCall.args[0];
+        expect(onActionUiActivatedSpy.callCount).to.equal(1);
+        const action = onActionUiActivatedSpy.firstCall.args[0];
         expect(action.id).to.be.undefined;
       } finally {
         sandbox.restore();

@@ -437,6 +437,8 @@ define([
           debug: false,
           show3DTilesInspector: false,
           viewfinderCards: null,
+          activeVisualizationAction: null,
+          activeVisualizationActionId: null,
           activeVisualizationUrl: null,
         };
       },

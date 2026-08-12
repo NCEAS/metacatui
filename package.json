@@ -9,7 +9,8 @@
     "dataone-notifications": "git+https://github.com/DataONEorg/notification-service-js.git#fbe72ce2bc49362af83e763b18a6364d4aa28c4b",
     "express": "^4.22.1",
     "fomantic-ui": "^2.9.4",
-    "puppeteer": "^22.15.0"
+    "puppeteer": "^22.15.0",
+    "uri-templates-es": "^2.0.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.0.2",

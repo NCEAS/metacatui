@@ -173,6 +173,12 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
        * @property {string} label The button label.
        * @property {string} [icon] FontAwesome icon name for the button.
        * @property {string} [url] The URL to open (required for 'iframe'/'tab').
+       * For iframes that require syncing state to the parent portal's url, this
+       * parameter should be an RFC6570 uri template that describes the expected
+       * structure.
+       * @property {object} [initialQueryParams] Optional and only used for
+       * 'iframe' actions. An object of query parameters to expand into the
+       * URL when the iframe is first loaded.
        * @property {number} [latitude] Latitude to zoom to (for 'map').
        * @property {number} [longitude] Longitude to zoom to (for 'map').
        * @property {number} [height] Camera altitude in meters (for 'map').

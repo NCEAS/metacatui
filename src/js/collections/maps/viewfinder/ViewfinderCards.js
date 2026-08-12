@@ -80,6 +80,15 @@ define([
    * @property {number} [longitude] Camera longitude for the "View Layers" button.
    * @property {number} [height] Camera altitude (metres) for the "View Layers" button.
    * @property {string[]} [layerIds] Layer IDs toggled by the "View Layers" button.
+   * Example configs:
+   * Legacy preset:
+   *   { title: "Lost Lakes", description: "Show a location", latitude: 64.1, longitude: -149.586, height: 3749999.999999828, layerIds: ["iwp"] }
+   * Equivalent map action:
+   *   { type: "map", label: "View Layers", latitude: 64.1, longitude: -149.586, height: 3749999.999999828, layerIds: ["iwp"] }
+   * New tab action:
+   *   { type: "tab", label: "Open in tab", url: "https://lostlakes.arcticdata.io/" }
+   * New iframe action with url encoding and initial query params:
+   *   { type: "iframe", label: "Open dashboard", url: "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom}{#section_id}", initialQueryParams: { theme: "light", show_share: "false" } }
    * @since 2.37.0
    */
 
