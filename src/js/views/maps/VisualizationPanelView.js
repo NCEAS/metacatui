@@ -96,7 +96,9 @@ define([
             return;
           }
 
-          if (!this.isSourceFromActiveIframe(iframe.contentWindow, event.source)) {
+          if (
+            !this.isSourceFromActiveIframe(iframe.contentWindow, event.source)
+          ) {
             return;
           }
 

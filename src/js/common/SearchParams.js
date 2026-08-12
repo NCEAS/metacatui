@@ -420,9 +420,10 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
 
     const actionId = normalizeId(action.id);
     const variableNames = UriTemplateUtilities.getTemplateVarNames(action.url);
-    const restoreValues = actionId && showShareUrl
-      ? getActionStateFromUrl(actionId, variableNames)
-      : {};
+    const restoreValues =
+      actionId && showShareUrl
+        ? getActionStateFromUrl(actionId, variableNames)
+        : {};
 
     const expandedUrl = UriTemplateUtilities.expandTemplate(
       action.url,
