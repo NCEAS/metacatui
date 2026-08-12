@@ -410,15 +410,17 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @param {object} action Viewfinder action object.
    * @param {string} action.id Stable action identifier.
    * @param {string} action.url RFC6570 URL template.
+   * @param {boolean} [showShareUrl=true] Whether to read namespaced browser
+   *   state when resolving the template.
    * @returns {string|null} The resolved iframe URL or null when no URL exists.
    * @since 0.0.0
    */
-  const resolveActionUrl = (action = {}) => {
+  const resolveActionUrl = (action = {}, showShareUrl = true) => {
     if (typeof action?.url !== "string" || !action.url.length) return null;
 
     const actionId = normalizeId(action.id);
     const variableNames = UriTemplateUtilities.getTemplateVarNames(action.url);
-    const restoreValues = actionId
+    const restoreValues = actionId && showShareUrl
       ? getActionStateFromUrl(actionId, variableNames)
       : {};
 

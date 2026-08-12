@@ -184,7 +184,10 @@ define([
           return;
         }
 
-        const resolvedUrl = SearchParams.resolveActionUrl(actionOrUrl);
+        const resolvedUrl = SearchParams.resolveActionUrl(
+          actionOrUrl,
+          this.mapModel.get("showShareUrl"),
+        );
         if (!resolvedUrl) return;
 
         this.mapModel.set({

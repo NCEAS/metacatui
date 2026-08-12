@@ -297,6 +297,29 @@ define(["common/SearchParams"], (SearchParams) => {
         );
       });
 
+      it("ignores namespaced params when share-url syncing is disabled", () => {
+        window.history.replaceState(
+          null,
+          "",
+          "?a=wt&wt-selected_lake=b7g1zd63mmt8&wt-zoom=8",
+        );
+
+        const resolved = SearchParams.resolveActionUrl(
+          {
+            id: "wt",
+            url: "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom}",
+            initialQueryParams: {
+              theme: "light",
+            },
+          },
+          false,
+        );
+
+        expect(resolved).to.equal(
+          "https://lostlakes.arcticdata.io/?theme=light",
+        );
+      });
+
       it("appends initial query params after template expansion", () => {
         window.history.replaceState(
           null,
