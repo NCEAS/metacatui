@@ -671,6 +671,39 @@ define([
             );
           }
         });
+
+        const selectedFeatures = interactions.get("selectedFeatures");
+        if (selectedFeatures) {
+          this.listenTo(
+            selectedFeatures,
+            "update",
+            this.syncSelectedFeaturesToUrl,
+          );
+        }
+      },
+
+      /**
+       * Get selected feature ids from the current map interaction state for URL
+       * state sync.
+       * @returns {string[]} Feature ids of all currently selected features.
+       * @since 0.0.0
+       */
+      getSelectedFeatureIdsForUrlState() {
+        const selectedFeatures = this.getSelectedFeatures();
+        return (selectedFeatures?.models || [])
+          .map((f) => f.get("featureID"))
+          .filter((id) => typeof id === "string" && id.length > 0);
+      },
+
+      /**
+       * Write the currently selected feature ids to the URL. Called when
+       * selectedFeatures changes. Managed independently from updateSearchParams
+       * so that camera/layer syncs cannot inadvertently clear the f param.
+       * @since 0.0.0
+       */
+      syncSelectedFeaturesToUrl() {
+        if (!this.shouldSyncUrlState()) return;
+        SearchParams.updateActiveFeatureIds(this.getSelectedFeatureIdsForUrlState());
       },
 
       /**
@@ -707,6 +740,78 @@ define([
         }
 
         SearchParams.updateStateInUrl(partialState);
+      },
+
+      /**
+       * Open the feature info panel for any feature ids stored in restoreState.
+       * Called after other state is restored so the feature panel appears last.
+       * Searches all map layers for a matching feature and selects it directly
+       * without simulating a user click. If entities are not yet loaded,
+       * waits for each layer's status to become 'ready' before retrying.
+       * @since 0.0.0
+       */
+      applyFeatureRestoreState() {
+        if (!this.shouldSyncUrlState()) return;
+        const restoreState = this.get("restoreState") || {};
+        const activeFeatureIds = restoreState.activeFeatureIds || [];
+        if (!activeFeatureIds.length) return;
+
+        const selectedFeatures = this.getSelectedFeatures();
+        const alreadySelected = selectedFeatures?.models.some((f) =>
+          activeFeatureIds.includes(f.get("featureID")),
+        );
+        if (alreadySelected) return;
+
+        const featureAttrs = this.findFeatureAttributesByIds(activeFeatureIds);
+        if (featureAttrs.length) {
+          this.selectFeatures(featureAttrs);
+          return;
+        }
+
+        // Entities not loaded yet — wait for each relevant layer to become ready
+        const pendingLayers = this.getAllLayers().filter(
+          (layer) =>
+            typeof layer.getFeatureById === "function" &&
+            layer.get("status") !== "ready",
+        );
+        if (!pendingLayers.length) return;
+
+        pendingLayers.forEach((layer) => {
+          this.listenTo(layer, "change:status", () => {
+            if (layer.get("status") !== "ready") return;
+            const attrs = this.findFeatureAttributesByIds(activeFeatureIds);
+            if (!attrs.length) return;
+            pendingLayers.forEach((l) => this.stopListening(l, "change:status"));
+            this.selectFeatures(attrs);
+          });
+        });
+      },
+
+      /**
+       * Search all layers for features matching the given ids and return
+       * feature attribute objects ready to be passed to selectFeatures().
+       * @param {string[]} ids Feature ids to search for.
+       * @returns {object[]} Matching feature attribute objects.
+       * @since 0.0.0
+       */
+      findFeatureAttributesByIds(ids) {
+        const allLayers = this.getAllLayers();
+
+        return ids.reduce((result, id) => {
+          const featureAttrs = allLayers.reduce((foundAttrs, layer) => {
+            if (foundAttrs || typeof layer.getFeatureById !== "function") {
+              return foundAttrs;
+            }
+
+            const feature = layer.getFeatureById(id);
+            if (!feature) return foundAttrs;
+
+            return layer.getFeatureAttributes(feature) || foundAttrs;
+          }, null);
+
+          if (featureAttrs) result.push(featureAttrs);
+          return result;
+        }, []);
       },
 
       /**
