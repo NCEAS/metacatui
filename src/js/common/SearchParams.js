@@ -16,6 +16,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   const SCHEMA_VERSION_ID = "sv";
   const ACTIVE_ACTION_ID = "a";
   const OPEN_PANEL_ID = "op";
+  const ACTIVE_FEATURES_ID = "f";
 
   /** The search parameter ID for enabled layers in the save to URL feature. */
   const ENABLED_LAYERS_ID = "el";
@@ -42,6 +43,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
     SCHEMA_VERSION_ID,
     ACTIVE_ACTION_ID,
     OPEN_PANEL_ID,
+    ACTIVE_FEATURES_ID,
     ENABLED_LAYERS_ID,
   ];
 
@@ -57,6 +59,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
     enabledLayerStateProvided: false,
     activeActionId: null,
     openPanel: null,
+    activeFeatureIds: [],
   });
 
   /**
@@ -161,6 +164,11 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       enabledLayerStateProvided: Boolean(state.enabledLayerStateProvided),
       activeActionId: normalizeId(state.activeActionId),
       openPanel: normalizeId(state.openPanel),
+      activeFeatureIds: parseCommaSeparated(
+        Array.isArray(state.activeFeatureIds)
+          ? state.activeFeatureIds.join(",")
+          : state.activeFeatureIds,
+      ),
     };
 
     const requestedSchema = Number(state.schemaVersion);
@@ -170,7 +178,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
         : 0;
 
     // Phase 1 fields imply schema 1 writing.
-    if (normalized.activeActionId || normalized.openPanel) {
+    if (normalized.activeActionId || normalized.openPanel || normalized.activeFeatureIds.length) {
       normalized.schemaVersion = Math.max(1, normalized.schemaVersion);
     }
 
@@ -211,11 +219,15 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       enabledLayerStateProvided: url.searchParams.has(ENABLED_LAYERS_ID),
       activeActionId: null,
       openPanel: null,
+      activeFeatureIds: [],
     };
 
     if (schemaVersion >= 1) {
       base.activeActionId = normalizeId(url.searchParams.get(ACTIVE_ACTION_ID));
       base.openPanel = normalizeId(url.searchParams.get(OPEN_PANEL_ID));
+      base.activeFeatureIds = parseCommaSeparated(
+        url.searchParams.get(ACTIVE_FEATURES_ID),
+      );
     }
 
     return normalizeState(base);
@@ -265,6 +277,12 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       }
       if (normalized.openPanel) {
         url.searchParams.set(OPEN_PANEL_ID, normalized.openPanel);
+      }
+      if (normalized.activeFeatureIds.length) {
+        url.searchParams.set(
+          ACTIVE_FEATURES_ID,
+          normalized.activeFeatureIds.join(","),
+        );
       }
     }
 
@@ -507,6 +525,15 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   };
 
   /**
+   * Set active feature ids in URL state.
+   * @param {string[]} activeFeatureIds The feature ids to write.
+   * @since 0.0.0
+   */
+  const updateActiveFeatureIds = (activeFeatureIds) => {
+    updateStateInUrl({ activeFeatureIds });
+  };
+
+  /**
    * @namespace SearchParams
    * @description Helpful functions for dealing with various search parameter
    * changes.
@@ -523,6 +550,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
     resolveActionUrl,
     syncActionStateFromVisualizationUrl,
     updateActiveActionId,
+    updateActiveFeatureIds,
     updateOpenPanel,
     updateStateInUrl,
     writeActionStateToUrl,
