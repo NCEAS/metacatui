@@ -615,10 +615,12 @@ define([
           !this.shouldSyncUrlState() ||
           !isCompletePosition(restoreState.destination)
         ) {
+          this.applyFeatureRestoreState();
           return;
         }
 
         this.zoomTo(restoreState.destination);
+        this.applyFeatureRestoreState();
       },
 
       /**
