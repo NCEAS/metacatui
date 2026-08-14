@@ -401,6 +401,22 @@ define([
       getIDFromFeature: function (feature) {
         feature = this.getEntityFromMapObject(feature);
         if (!feature) return null;
+        // Prefer a stable property-based ID over Cesium's auto-generated entity
+        // UUID (which changes on every page load). This ensures that feature IDs
+        // encoded in the URL remain valid across sessions.
+        const props = this.getPropertiesFromFeature(feature);
+        // Only use properties that are intended as unique identifiers
+        const idKeys = ["id", "identifier"];
+        const propsLower = {};
+        Object.keys(props || {}).forEach((k) => {
+          propsLower[k.toLowerCase()] = props[k];
+        });
+        for (let i = 0; i < idKeys.length; i++) {
+          const val = propsLower[idKeys[i]];
+          if (val != null && String(val).trim().length > 0) {
+            return String(val);
+          }
+        }
         return feature.id;
       },
 
