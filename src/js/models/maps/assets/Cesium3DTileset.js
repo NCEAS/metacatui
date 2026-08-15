@@ -5,7 +5,8 @@ define([
   "models/maps/assets/MapAsset",
   "models/maps/AssetColorPalette",
   "collections/maps/VectorFilters",
-], function (Cesium, MapAsset, AssetColorPalette, VectorFilters) {
+  "models/maps/featureIdHelpers",
+], function (Cesium, MapAsset, AssetColorPalette, VectorFilters, { getIdFromProperties, propertyMatchesId }) {
   // Don't allow full 1 opacity for Cesium 3D tiles. Otherwise, overlapping
   // polygons will not render correctly, and will cause z-fighting. 0.996 shows
   // as 100% in the slider, but 0.999 still results in z-fighting.
@@ -357,7 +358,69 @@ define([
        */
       getIDFromFeature: function (feature) {
         if (!this.usesFeatureType(feature)) return null;
-        return feature.pickId ? feature.pickId.key : null;
+        // Use property-based ID; pickId.key is a session-scoped number that gets
+        // filtered out of URL state by the typeof === 'string' guard.
+        return getIdFromProperties(this.getPropertiesFromFeature(feature));
+      },
+
+      /**
+       * Search all currently-loaded tile content for a feature whose property
+       * value (checked against the same key priority as getIDFromFeature) matches
+       * the given id string.
+       * @param {string} id The stable property-based feature ID.
+       * @returns {Cesium.Cesium3DTileFeature|null} The matching feature, or null.
+       * @since 0.0.0
+       */
+      getFeatureById: function (id) {
+        const cesiumModel = this.get("cesiumModel");
+        if (!cesiumModel?.root) return null;
+        let found = null;
+        const searchTile = (tile) => {
+          if (found || !tile) return;
+          if (tile.contentReady && tile.content?.featuresLength > 0) {
+            for (let i = 0; i < tile.content.featuresLength; i++) {
+              const feature = tile.content.getFeature(i);
+              if (propertyMatchesId(this.getPropertiesFromFeature(feature), id)) {
+                found = feature;
+                return;
+              }
+            }
+          }
+          tile.children?.forEach(searchTile);
+        };
+        searchTile(cesiumModel.root);
+        return found;
+      },
+
+      /**
+       * Subscribe to the tileset's tileVisible event and call onFound the first
+       * time a tile is rendered that contains a feature matching the given id.
+       * Searches only the newly-visible tile on each event for efficiency.
+       * @param {string} id The stable property-based feature ID.
+       * @param {Function} onFound Callback invoked with the Cesium3DTileFeature.
+       * @returns {Function} Cancel function that removes the tileVisible listener.
+       * @since 0.0.0
+       */
+      waitForFeatureById: function (id, onFound) {
+        const model = this;
+        const cesiumModel = model.get("cesiumModel");
+        if (!cesiumModel) return () => {};
+        let removeListener = null;
+        const tryTile = (tile) => {
+          if (!tile?.contentReady || !tile.content?.featuresLength) return;
+          for (let i = 0; i < tile.content.featuresLength; i++) {
+            const feature = tile.content.getFeature(i);
+            if (propertyMatchesId(model.getPropertiesFromFeature(feature), id)) {
+              if (removeListener) removeListener();
+              onFound(feature);
+              return;
+            }
+          }
+        };
+        removeListener = cesiumModel.tileVisible.addEventListener(tryTile);
+        return () => {
+          if (removeListener) removeListener();
+        };
       },
 
       /**

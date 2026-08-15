@@ -770,22 +770,44 @@ define([
           return;
         }
 
-        // Entities not loaded yet — wait for each relevant layer to become ready
-        const pendingLayers = this.getAllLayers().filter(
-          (layer) =>
-            typeof layer.getFeatureById === "function" &&
-            layer.get("status") !== "ready",
-        );
-        if (!pendingLayers.length) return;
+        const mapModel = this;
+        const selectIfFound = () => {
+          if (
+            mapModel
+              .getSelectedFeatures()
+              ?.models.some((f) => activeFeatureIds.includes(f.get("featureID")))
+          )
+            return;
+          const attrs = mapModel.findFeatureAttributesByIds(activeFeatureIds);
+          if (attrs.length) mapModel.selectFeatures(attrs);
+        };
 
-        pendingLayers.forEach((layer) => {
-          this.listenTo(layer, "change:status", () => {
-            if (layer.get("status") !== "ready") return;
-            const attrs = this.findFeatureAttributesByIds(activeFeatureIds);
-            if (!attrs.length) return;
-            pendingLayers.forEach((l) => this.stopListening(l, "change:status"));
-            this.selectFeatures(attrs);
-          });
+        const allSearchableLayers = this.getAllLayers().filter(
+          (layer) => typeof layer.getFeatureById === "function",
+        );
+        if (!allSearchableLayers.length) return;
+
+        allSearchableLayers.forEach((layer) => {
+          if (layer.get("status") !== "ready") {
+            // Wait for entities/tileset root to load, then try synchronous search.
+            // For tilesets, also register tile-level waiting after root is ready.
+            this.listenTo(layer, "change:status", () => {
+              if (layer.get("status") !== "ready") return;
+              this.stopListening(layer, "change:status");
+              selectIfFound();
+              if (typeof layer.waitForFeatureById === "function") {
+                activeFeatureIds.forEach((id) =>
+                  layer.waitForFeatureById(id, () => selectIfFound()),
+                );
+              }
+            });
+          } else if (typeof layer.waitForFeatureById === "function") {
+            // Tileset root is already ready; specific building tile may not be
+            // rendered yet — subscribe to tileVisible for deferred lookup.
+            activeFeatureIds.forEach((id) =>
+              layer.waitForFeatureById(id, () => selectIfFound()),
+            );
+          }
         });
       },
 

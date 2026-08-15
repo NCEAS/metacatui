@@ -381,7 +381,7 @@ define([
           if (!name) {
             title = "Feature";
 
-            let searchKeys = ["name", "title", "id", "identifier"];
+            let searchKeys = ["name", "title", "label", "uuid", "id", "identifier"];
             searchKeys = searchKeys.map((key) => key.toLowerCase());
             const propKeys = Object.keys(properties);
             const propKeysLower = propKeys.map((key) => key.toLowerCase());
