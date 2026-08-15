@@ -347,5 +347,117 @@ define([
         expect(state.model.getLayerGroups()).to.have.lengthOf(2);
       });
     });
+
+    describe("applyFeatureRestoreState", () => {
+      const makeLayer = (overrides = {}) =>
+        Object.assign(
+          {
+            status: "ready",
+            get(key) {
+              return this[key];
+            },
+            set(key, val) {
+              this[key] = val;
+            },
+            getFeatureById: () => null,
+          },
+          overrides,
+        );
+
+      it("does nothing when activeFeatureIds is empty", () => {
+        const map = new Map({ showShareUrl: true });
+        map.set("restoreState", { activeFeatureIds: [] });
+        map.applyFeatureRestoreState();
+        expect(map.getSelectedFeatures()?.models).to.have.lengthOf(0);
+      });
+
+      it("does nothing when showShareUrl is false", () => {
+        const map = new Map({ showShareUrl: false });
+        map.set("restoreState", { activeFeatureIds: ["feat-1"] });
+        map.applyFeatureRestoreState();
+        expect(map.getSelectedFeatures()?.models).to.have.lengthOf(0);
+      });
+
+      it("selects a feature when a ready layer finds it immediately", () => {
+        const map = new Map({ showShareUrl: true });
+        const fakeFeature = {};
+        const fakeAttrs = {
+          featureID: "feat-1",
+          properties: {},
+          mapAsset: null,
+          featureObject: fakeFeature,
+          label: null,
+        };
+
+        const layer = makeLayer({
+          getFeatureById: (id) => (id === "feat-1" ? fakeFeature : null),
+          getFeatureAttributes: () => fakeAttrs,
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", { activeFeatureIds: ["feat-1"] });
+        map.applyFeatureRestoreState();
+
+        const selected = map.getSelectedFeatures()?.models || [];
+        expect(selected.some((f) => f.get("featureID") === "feat-1")).to.equal(
+          true,
+        );
+      });
+
+      it("uses waitForFeatureById when a ready tileset layer doesn't find the feature immediately", (done) => {
+        const map = new Map({ showShareUrl: true });
+        const fakeFeature = {};
+        const fakeAttrs = {
+          featureID: "building-42",
+          properties: {},
+          mapAsset: null,
+          featureObject: fakeFeature,
+          label: null,
+        };
+
+        let tileAvailable = false;
+        let tileCallback = null;
+        const layer = makeLayer({
+          // Returns the feature only once the tile is "loaded"
+          getFeatureById: () => (tileAvailable ? fakeFeature : null),
+          getFeatureAttributes: () => fakeAttrs,
+          waitForFeatureById: (_id, cb) => {
+            tileCallback = cb;
+            return () => {};
+          },
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", { activeFeatureIds: ["building-42"] });
+        map.applyFeatureRestoreState();
+
+        expect(
+          (map.getSelectedFeatures()?.models || []).some(
+            (f) => f.get("featureID") === "building-42",
+          ),
+        ).to.equal(false);
+
+        // Simulate tile becoming visible: mark feature available then fire callback
+        tileAvailable = true;
+        tileCallback();
+
+        setTimeout(() => {
+          const selected = map.getSelectedFeatures()?.models || [];
+          expect(
+            selected.some((f) => f.get("featureID") === "building-42"),
+          ).to.equal(true);
+          done();
+        }, 0);
+      });
+
+      it("skips layers without getFeatureById", () => {
+        const map = new Map({ showShareUrl: true });
+        const layer = { get: () => "ready" };
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", { activeFeatureIds: ["feat-x"] });
+        map.applyFeatureRestoreState();
+        expect(map.getSelectedFeatures()?.models).to.have.lengthOf(0);
+      });
+    });
   });
 });
