@@ -203,6 +203,16 @@ define([
     });
 
     describe("cleanup", () => {
+      it("destroys the Cesium widget on close", () => {
+        state.view.render();
+        const widget = state.view.widget;
+
+        state.view.onClose();
+
+        expect(widget.isDestroyed()).to.equal(true);
+        expect(state.view.widget).to.equal(null);
+      });
+
       it("destroys the 3D Tiles inspector on close", () => {
         const destroy = sinon.spy();
         const container = document.createElement("div");
