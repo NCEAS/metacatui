@@ -19,6 +19,8 @@ define([
   "models/metadata/eml211/EMLMethods",
   "collections/metadata/eml/EMLAnnotations",
   "models/metadata/eml211/EMLAnnotation",
+  "common/EMLUtilities",
+  "common/XMLUtilities",
 ], (
   $,
   _,
@@ -40,7 +42,18 @@ define([
   EMLMethods,
   EMLAnnotations,
   EMLAnnotation,
+  EMLUtilities,
+  XMLUtilities,
 ) => {
+  const getDescriptorId = (value) => {
+    if (!value) return null;
+    if (typeof value === "string") return value;
+    if (typeof value.get === "function") {
+      return value.get("id");
+    }
+    return value.id || value.pid || value.identifier || null;
+  };
+
   /**
    * @class EML211
    * @classdesc An EML211 object represents an Ecological Metadata Language
@@ -139,9 +152,9 @@ define([
       units: new Units(),
 
       /** @inheritdoc */
-      initialize(attributes) {
+      initialize(attributes, options = {}) {
         // Call initialize for the super class
-        ScienceMetadata.prototype.initialize.call(this, attributes);
+        ScienceMetadata.prototype.initialize.call(this, attributes, options);
 
         // EML211-specific init goes here this.set("objectXML",
         // this.createXML());
@@ -159,14 +172,34 @@ define([
         );
 
         this.listenTo(this, "change:entities", () => {
-          this.trickleUpChange();
-          this.listenTo(this.get("entities"), "update", () => {
+          if (this.get("synced")) {
             this.trickleUpChange();
-          });
+          }
+          this.listenToEntities();
         });
+        this.listenToEntities();
 
         // Create a Unit collection
         if (!this.units.length) this.createUnits();
+      },
+
+      /**
+       * Listen for structural changes in the active entities collection.
+       * @since 0.0.0
+       */
+      listenToEntities() {
+        const previousEntities = this.previous("entities");
+        if (previousEntities) this.stopListening(previousEntities, "update");
+
+        const entities = this.get("entities");
+        if (!entities) return;
+
+        this.stopListening(entities, "update");
+        this.listenTo(entities, "update", () => {
+          if (this.get("synced")) {
+            this.trickleUpChange();
+          }
+        });
       },
 
       /** @inheritdoc */
@@ -748,17 +781,22 @@ define([
       /**
        * Retrieves the model attributes and serializes into EML XML, to produce
        * the new or modified EML document. Returns the EML XML as a string.
-       * @returns {string} The EML XML as a string.
+       * @param {object} [options] Serialization options
+       * @param {string} [options.packageId] Package PID to write into the EML
+       * @returns {string} The EML XML as a string
        */
-      serialize() {
+      serialize(options = {}) {
+        const { packageId } = options;
         // Get the EML document
         const xmlString = this.get("objectXML");
         const html = $.parseHTML(xmlString);
         let eml = $(html).filter("eml\\:eml");
         const datasetNode = $(eml).find("dataset");
 
-        // Update the packageId on the eml node with the EML id
-        $(eml).attr("packageId", this.get("id"));
+        // Update the packageId on the eml node. A caller (such as upload
+        // preparation) may pass the desired upload PID to embed it without
+        // mutating this model's live `id`.
+        $(eml).attr("packageId", packageId || this.get("id"));
 
         // Set id attribute on dataset node if needed
         if (this.get("xmlID")) {
@@ -1920,53 +1958,111 @@ define([
       },
 
       /**
-       * Find the entity model for a given DataONEObject model
-       * @param {DataONEObject} dataONEObj - The DataONEObject model to find an
-       * entity for
+       * Find the entity model for a data object or package member descriptor.
+       * @param {DataONEObject|object} dataObject Data object or member descriptor
        * @returns {EMLOtherEntity|false} The entity model for the given
-       * DataONEObject model or false if not found
+       * object or false if not found
        */
-      getEntity(dataONEObj) {
+      getEntity(dataObject) {
         return this.get("entities").getByDataONEObject(
-          dataONEObj,
+          dataObject,
           this.get("collections")?.[0],
         );
       },
 
       /**
-       * Create an entity model for a given DataONEObject model and add it to the
-       * entities collection
-       * @param {DataONEObject} dataONEObject - The DataONEObject model to create
-       * an entity for
+       * Replace references to a package member PID before EML serialization.
+       * @param {object|string} oldMember Existing member descriptor or PID
+       * @param {object|string} newMember Replacement member descriptor or PID
+       * @returns {number} Number of matching entities updated
+       * @since 0.0.0
+       */
+      replaceMemberPid(oldMember, newMember) {
+        const oldPid = getDescriptorId(oldMember);
+        const newPid = getDescriptorId(newMember);
+        if (!oldPid || !newPid || oldPid === newPid) return 0;
+        const oldXmlId = XMLUtilities.getXMLSafeID(oldPid);
+        const newXmlId = XMLUtilities.getXMLSafeID(newPid);
+        let updated = 0;
+
+        this.get("entities").each((entity) => {
+          const dataPid = entity.getDataPid();
+          const matches =
+            dataPid === oldPid ||
+            (!dataPid && entity.get("xmlID") === oldXmlId);
+          if (!matches) return;
+
+          const currentXmlID = entity.get("xmlID");
+          let replacementXmlID = currentXmlID;
+          if (
+            (!currentXmlID || currentXmlID === oldXmlId) &&
+            newXmlId !== currentXmlID
+          ) {
+            const uniqueXmlID = this.getUniqueEntityId(newPid, entity);
+            replacementXmlID =
+              currentXmlID && uniqueXmlID !== newXmlId
+                ? currentXmlID
+                : uniqueXmlID;
+          }
+          entity.setMemberDescriptor({
+            id: newPid,
+            previousId: oldPid,
+            xmlID: replacementXmlID,
+          });
+          updated += 1;
+        });
+
+        return updated;
+      },
+
+      /**
+       * Create an entity model for the given data object descriptor and add it
+       * to the entities collection.
+       * @param {object} dataObject Descriptor or object for the data entity
        * @returns {EMLOtherEntity} The entity model created
        */
-      createEntity(dataONEObject) {
-        return this.get("entities").addFromDataONEObject(dataONEObject, {
+      createEntity(dataObject) {
+        return this.get("entities").addFromDataONEObject(dataObject, {
           parentModel: this,
+          xmlID: this.getUniqueEntityId(dataObject),
         });
       },
 
       /**
        * Creates an XML-safe identifier that is unique to this EML document,
-       * based on the given DataONEObject model. It is intended for EML entity
-       * nodes in particular.
-       * @param {DataONEObject} dataONEObject - a DataONEObject model that this
-       * EML documents
-       * @returns {string} - an identifier string unique to this EML document
+       * based on the given data object descriptor. It is intended for EML
+       * entity nodes in particular.
+       * @param {object|string} dataObject Data descriptor or identifier
+       * @param {EMLEntity} [ignoredEntity] Entity whose current XML is being
+       * replaced
+       * @returns {string} An identifier string unique to this EML document
        */
-      getUniqueEntityId(dataONEObject) {
-        let uniqueId = "";
-
-        uniqueId = dataONEObject.getXMLSafeID();
+      getUniqueEntityId(dataObject, ignoredEntity) {
+        const uniqueId =
+          XMLUtilities.getXMLSafeID(getDescriptorId(dataObject)) || "";
+        if (!uniqueId) return `urn-uuid-${uuid.v4()}`;
 
         // Get the EML string, if there is one, to check if this id already
         // exists
         const emlString = this.get("objectXML");
+        const idMarker = ` id="${uniqueId}"`;
+        const serializedIdCount = emlString
+          ? emlString.split(idMarker).length - 1
+          : 0;
+        const originalEntityId = ignoredEntity
+          ?.get("objectDOM")
+          ?.getAttribute("id");
+        const serializedCollision =
+          serializedIdCount > (originalEntityId === uniqueId ? 1 : 0);
 
-        // If this id already exists in the EML...
-        if (emlString && emlString.indexOf(` id="${uniqueId}"`)) {
-          // Create a random uuid to use instead
-          uniqueId = `urn-uuid-${uuid.v4()}`;
+        if (
+          this.get("entities").some(
+            (entity) =>
+              entity !== ignoredEntity && entity.get("xmlID") === uniqueId,
+          ) ||
+          serializedCollision
+        ) {
+          return `urn-uuid-${uuid.v4()}`;
         }
 
         return uniqueId;
@@ -2370,14 +2466,7 @@ define([
        * Triggers a change event on the model and all its parents.
        */
       trickleUpChange() {
-        if (
-          !MetacatUI.rootDataPackage ||
-          !MetacatUI.rootDataPackage.packageModel
-        )
-          return;
-
-        // Mark the package as changed
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+        EMLUtilities.markRootDataPackageChanged();
       },
 
       /**

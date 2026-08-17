@@ -4,6 +4,7 @@ define([
   "jquery",
   "/test/js/specs/shared/clean-state.js",
   "collections/metadata/eml/EMLEntities",
+  "models/dataPackage/DataPackageMember",
   "models/DataONEObject",
   "models/metadata/eml211/EML211",
   "models/metadata/eml211/EMLEntity",
@@ -13,6 +14,7 @@ define([
   $,
   cleanState,
   EMLEntities,
+  DataPackageMember,
   DataONEObject,
   EML211,
   EMLEntity,
@@ -284,6 +286,7 @@ define([
       it("should add a new entity from a DataONEObject", () => {
         const { entities, dummyParentModel } = state;
         const dataONEObj = new DataONEObject({
+          id: "data.1",
           fileName: "MyData.csv",
           formatId: "text/csv",
           mediaType: "text/csv",
@@ -294,8 +297,59 @@ define([
         entity.should.be.an.instanceof(EMLEntity);
         entity.get("entityName").should.equal("MyData.csv");
         entity.get("entityType").should.equal("text/csv");
-        entity.get("dataONEObject").should.equal(dataONEObj);
+        entity.getDataPid().should.equal("data.1");
         entity.get("parentModel").should.equal(dummyParentModel);
+      });
+
+      it("should add a new entity from a DataPackageMember", () => {
+        const { entities, dummyParentModel } = state;
+        const member = new DataPackageMember({
+          pid: "data.1",
+          sysMeta: {
+            identifier: "data.1",
+            fileName: "MyData.csv",
+            formatId: "text/csv",
+          },
+        });
+
+        const entity = entities.addFromDataONEObject(member, {
+          parentModel: dummyParentModel,
+        });
+
+        entity.should.be.an.instanceof(EMLEntity);
+        entity.get("entityName").should.equal("MyData.csv");
+        entity.get("entityType").should.equal("text/csv");
+        entity.getDataPid().should.equal("data.1");
+        entity.get("parentModel").should.equal(dummyParentModel);
+      });
+
+      it("should keep stable member descriptors without retaining the member", () => {
+        const { entities } = state;
+        const member = new DataPackageMember({
+          pid: "data.1",
+          fileName: "old.csv",
+          formatId: "text/csv",
+        });
+        const entity = entities.addFromDataONEObject(member);
+
+        member.fileName = "new.csv";
+        member.formatId = "application/json";
+        entities.getByDataONEObject(member);
+
+        entity.get("entityName").should.equal("new.csv");
+        entity.get("entityType").should.equal("application/json");
+        Object.values(entity.attributes).should.not.include(member);
+
+        entity.set({
+          entityName: "Custom table name",
+          entityType: "Custom data format",
+        });
+        member.fileName = "renamed-again.csv";
+        member.formatId = "text/plain";
+        entities.getByDataONEObject(member);
+
+        entity.get("entityName").should.equal("Custom table name");
+        entity.get("entityType").should.equal("Custom data format");
       });
 
       it("should remove the entity if the DataONEObject fails to save", () => {
@@ -362,6 +416,24 @@ define([
           checksumAlgorithm: "MD5",
         });
         entities.getByDataONEObject(dataONEObj).should.equal(newEntity);
+      });
+
+      it("should match a DataPackageMember by System Metadata checksum", () => {
+        const { entities } = state;
+        const newEntity = entities.add({
+          xmlID: "123",
+          physicalMD5Checksum: "abc123",
+        });
+        const member = new DataPackageMember({
+          pid: "data.1",
+          sysMeta: {
+            identifier: "data.1",
+            checksum: "abc123",
+            checksumAlgorithm: "MD5",
+          },
+        });
+
+        entities.getByDataONEObject(member).should.equal(newEntity);
       });
 
       it("should match entities by identifier", () => {
@@ -471,6 +543,47 @@ define([
         const entity = entities.addFromDataONEObject(dataONEObj);
         entities.getByDataONEObject(dataONEObj).should.equal(entity);
         dataONEObj.get("metadataEntity").should.equal(entity);
+      });
+
+      it("should replace an octet-stream placeholder with a resolved format", () => {
+        const { entities } = state;
+        const entity = entities.add({
+          xmlID: "123",
+          downloadID: "abc123",
+          entityType: "application/octet-stream",
+        });
+        const dataONEObj = new DataONEObject({
+          id: "abc123",
+          formatId: "text/csv",
+        });
+
+        entities.getByDataONEObject(dataONEObj).should.equal(entity);
+
+        entity.get("entityType").should.equal("text/csv");
+      });
+
+      it("should refresh a parsed entity after the first package rename", () => {
+        const { entities } = state;
+        const entity = entities.add({
+          xmlID: "data.1",
+          downloadID: "data.1",
+          entityName: "old.csv",
+          entityType: "text/csv",
+        });
+        const memberDescriptor = {
+          pid: "data.1",
+          fileName: "new.csv",
+          formatId: "application/json",
+          remoteSysMeta: {
+            fileName: "old.csv",
+            formatId: "text/csv",
+          },
+        };
+
+        entities.getByDataONEObject(memberDescriptor).should.equal(entity);
+
+        entity.get("entityName").should.equal("new.csv");
+        entity.get("entityType").should.equal("application/json");
       });
     });
 

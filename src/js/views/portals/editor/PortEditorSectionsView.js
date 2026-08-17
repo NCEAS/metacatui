@@ -762,6 +762,7 @@ define([
        */
       handleSwitchSection: function (e) {
         e.preventDefault();
+        e.stopPropagation();
 
         // Make sure any markdown editor toolbar modals are closed
         // (otherwise they persist in new tab)

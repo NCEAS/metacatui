@@ -431,10 +431,11 @@ define([
         };
 
         this.renderActions();
-        this.stopListening(this.parentModel?.collection, "update");
+        this.entityPanelSignature = this.getEntityPanelSignature();
+        this.stopListening(this.parentModel.collection, "update change");
         this.listenTo(
           this.parentModel.collection,
-          "update",
+          "update change",
           this.handleEntityUpdate,
         );
 
@@ -447,20 +448,52 @@ define([
        * available actions to re-render the panels that are not active.
        */
       handleEntityUpdate() {
+        const nextSignature = this.getEntityPanelSignature();
+        if (nextSignature === this.entityPanelSignature) return;
+        this.entityPanelSignature = nextSignature;
+
         // Get the active panel and re-render the other two
         const activePanel = this.els.actionPanelsContainer.querySelector(
           `.${BOOTSTRAP_CLASS_NAMES.active}`,
         );
+        if (!activePanel) return;
+
         const activeId = activePanel.id;
         // Iterate over the actions and re-render the non-active ones
         Object.keys(this.actions).forEach((action) => {
-          if (action !== activeId) {
-            const actionObj = this.actions[action];
+          const actionObj = this.actions[action];
+          if (actionObj.id !== activeId) {
             const renderMethod = this[actionObj.renderMethod];
             if (typeof renderMethod === "function") {
               renderMethod.call(this, actionObj);
             }
           }
+        });
+      },
+
+      /**
+       * Builds a cheap signature for the sibling entities rendered in the
+       * copy from and copy to panels.
+       * @returns {string} The current entity list signature
+       * @since 0.0.0
+       */
+      getEntityPanelSignature() {
+        const currentAttributes = this.model.get("emlAttributes");
+        return JSON.stringify({
+          current: {
+            hasNonEmptyAttributes: this.model.hasNonEmptyAttributes(),
+            isValid: currentAttributes.isValid(),
+          },
+          otherEntities: this.getOtherEntities().map((entity) => {
+            const attrList = entity.get("attributeList");
+            return {
+              cid: entity.cid,
+              hasNonEmptyAttributes: attrList.hasNonEmptyAttributes(),
+              id: entity.getId(),
+              isValid: attrList.isValid(),
+              name: entity.getFileName(),
+            };
+          }),
         });
       },
 
@@ -960,15 +993,46 @@ define([
       },
 
       /**
+       * Resolve the data object described by the current EML entity.
+       * @returns {DataONEObject|DataPackageMember|null} Data object or member
+       * @since 0.0.0
+       */
+      getDataObject() {
+        const pid = this.parentModel.getDataPid();
+        if (pid) {
+          const member = MetacatUI.rootDataPackage?.getMember?.(pid);
+          if (member) return member;
+        }
+        return this.parentModel.get("dataONEObject") || null;
+      },
+
+      /**
+       * Read a field from a data object, which may be either a Backbone
+       * DataONEObject or a DataPackageMember.
+       * @param {DataONEObject|DataPackageMember} obj The data object
+       * @param {string} key The DataONEObject attribute name to read
+       * @returns {*} The field value, or undefined when unavailable
+       * @since 0.0.0
+       */
+      readDataObjectField(obj, key) {
+        if (!obj) return undefined;
+        if (typeof obj.get === "function") return obj.get(key);
+        if (key === "id") return obj.pid;
+        if (key === "formatId") {
+          return obj.getFormatId?.() || obj.formatId || obj.sysMeta?.formatId;
+        }
+        return obj[key];
+      },
+
+      /**
        * Checks whether the current file format is supported for the "Fill from
        * file" action.
        * @returns {boolean} True if the format is supported, false otherwise.
        */
       isFillable() {
-        const { parentModel } = this;
         this.formatGuess =
-          parentModel.get("dataONEObject")?.get("formatId") ||
-          parentModel.get("entityType");
+          this.readDataObjectField(this.getDataObject(), "formatId") ||
+          this.parentModel.get("entityType");
         return this.fillableFormats.includes(this.formatGuess);
       },
 
@@ -1024,15 +1088,15 @@ define([
        * File object or fetch the file contents.
        */
       handleFill() {
-        const d1Object = this.parentModel.get("dataONEObject");
+        const d1Object = this.getDataObject();
 
         if (!d1Object) return;
 
-        const file = d1Object.get("uploadFile");
+        const file = this.readDataObjectField(d1Object, "uploadFile");
 
         try {
           if (!file) {
-            this.handleFillViaFetch();
+            this.handleFillViaFetch(this.readDataObjectField(d1Object, "id"));
           } else {
             this.handleFillViaFile(file);
           }
@@ -1061,11 +1125,11 @@ define([
 
       /**
        * Handles the "Fill from file" action by fetching the file contents.
+       * @param {string} fileId DataONE PID to fetch
        */
-      handleFillViaFetch() {
+      handleFillViaFetch(fileId) {
         const view = this;
         const objServiceUrl = MetacatUI.appModel.get("objectServiceUrl");
-        const fileId = this.parentModel.get("dataONEObject").get("id");
         const url = `${objServiceUrl}${encodeURIComponent(fileId)}`;
 
         this.updateButton(

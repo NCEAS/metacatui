@@ -3,7 +3,7 @@ define([
   "jquery",
   "backbone",
   "models/DataONEObject",
-  "collections/ObjectFormats",
+  "common/Utilities",
   "Dropzone",
   "text!templates/imageUploader.html",
   "corejs",
@@ -12,7 +12,7 @@ define([
   $,
   Backbone,
   DataONEObject,
-  ObjectFormats,
+  Utilities,
   Dropzone,
   Template,
   corejs,
@@ -174,10 +174,7 @@ define([
           }
 
           // Ensure the object formats are cached for uploader's use
-          if (typeof MetacatUI.objectFormats === "undefined") {
-            MetacatUI.objectFormats = new ObjectFormats();
-            MetacatUI.objectFormats.fetch();
-          }
+          Utilities.awaitObjectFormats();
 
           // Bug fix: Overwrite a dropzone function that causes a bug in Edge 16 &
           // 17 browser. If we update our dropzone with a fallback, this function

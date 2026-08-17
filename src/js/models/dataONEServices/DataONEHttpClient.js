@@ -1,12 +1,25 @@
 define([
   "md5",
-  "models/dataONEServices/UrlBuilder",
+  "common/UrlUtilities",
   "models/dataONEServices/HttpRetryPolicy",
   "models/dataONEServices/DataONEHttpError",
-  "common/Utilities",
-], (md5, UrlBuilder, HttpRetryPolicy, DataONEHttpError, Utilities) => {
-  const { buildUrl } = UrlBuilder;
-  const { getCaseInsensitive } = Utilities;
+  "common/ErrorUtilities",
+  "common/ValueUtilities",
+], (
+  md5,
+  UrlUtilities,
+  HttpRetryPolicy,
+  DataONEHttpError,
+  ErrorUtilities,
+  ValueUtilities,
+) => {
+  const { getCaseInsensitive } = ValueUtilities;
+  const {
+    abortableDelay,
+    createAbortError,
+    createTimeoutError,
+    isTimeoutError,
+  } = ErrorUtilities;
 
   /**
    * Header names that affect request deduplication. Defaults.
@@ -60,74 +73,6 @@ define([
   };
 
   /**
-   * Create an AbortError with the provided reason.
-   * @param {string} [reason] Abort reason, defaults to "Aborted"
-   * @returns {Error} Error with name set to AbortError
-   */
-  const abortError = (reason = "Aborted") => {
-    const err = new Error(reason);
-    err.name = "AbortError";
-    return err;
-  };
-
-  /**
-   * Create a TimeoutError with the provided reason.
-   * @param {string} [reason] Timeout reason, defaults to "Request timed out"
-   * @returns {Error} Error with name set to TimeoutError
-   */
-  const timeoutError = (reason = "Request timed out") => {
-    const err = new Error(reason);
-    err.name = "TimeoutError";
-    err.code = "ETIMEDOUT";
-    err.isTimeout = true;
-    return err;
-  };
-
-  /**
-   * Delay for a specified duration with optional abort support.
-   * @param {number} ms Delay duration in milliseconds
-   * @param {AbortSignal} [signal] Abort signal to cancel the delay
-   * @returns {Promise<void>} Resolves after the delay or rejects on abort
-   */
-  const sleep = (ms, signal) =>
-    new Promise((resolve, reject) => {
-      if (!Number.isFinite(ms) || ms <= 0) {
-        if (signal?.aborted) {
-          reject(abortError(signal.reason));
-        } else {
-          resolve();
-        }
-        return;
-      }
-
-      let timeoutId;
-
-      let onAbort; // To avoid defined before use eslint error
-
-      const cleanup = () => {
-        clearTimeout(timeoutId);
-        signal?.removeEventListener("abort", onAbort);
-      };
-
-      onAbort = () => {
-        cleanup();
-        reject(abortError(signal.reason));
-      };
-
-      if (signal?.aborted) {
-        reject(abortError(signal.reason));
-        return;
-      }
-
-      signal?.addEventListener("abort", onAbort, { once: true });
-
-      timeoutId = setTimeout(() => {
-        cleanup();
-        resolve();
-      }, ms);
-    });
-
-  /**
    * Configuration options for {@link DataONEHttpClient}.
    * @typedef {object} DataONEHttpClientOptions
    * @property {string} [baseUrl] Base URL for relative requests, e.g.
@@ -135,25 +80,21 @@ define([
    * @property {object} [defaultHeaders] Headers applied to every request
    * @property {number|null} [timeoutMs] Default timeout per request (ms). Set
    * to null for no timeout.
-   * @property {object} [retry] Retry configuration, see
-   * {@link HttpRetryPolicy}
-   * @property {boolean} [dedupe] Enable in-flight deduplication. If
-   * true, when an identical request has already been sent and not yet
-   * returned, the promise for that request will be returned instead of
-   * creating a new one.
-   * @property {string[]} [allowedHttpMethods] List of allowed HTTP
-   * methods
-   * @property {string[]} [headerNamesForDedup] List of headers to
-   * include when generating deduplication keys.
-   * @property {string[]} [responseTypes] List of supported response
-   * types.
+   * @property {object} [retry] Retry configuration, see {@link HttpRetryPolicy}
+   * @property {boolean} [dedupe] Enable in-flight deduplication. If true, when
+   * an identical request has already been sent and not yet returned, the
+   * promise for that request will be returned instead of creating a new one.
+   * @property {string[]} [allowedHttpMethods] List of allowed HTTP methods
+   * @property {string[]} [headerNamesForDedup] List of headers to include when
+   * generating deduplication keys.
+   * @property {string[]} [responseTypes] List of supported response types.
    */
 
   /**
    * Options accepted by {@link DataONEHttpClient#request}.
    * @typedef {object} DataONEHttpRequestOptions
    * @property {string} path Path relative to `baseUrl` (e.g. "/v2/meta/{pid}")
-   * @property {"text"|"json"|"arrayBuffer"|"blob"} [responseType="text"]
+   * @property {"text"|"json"|"arrayBuffer"|"blob"|"document"} [responseType="text"]
    * Expected response type, used for parsing.
    * @property {boolean} [encodePath=true] Whether to URL-encode path segments.
    * @property {string} [method="GET"] HTTP method.
@@ -165,6 +106,12 @@ define([
    * @property {AbortSignal} [signal] AbortSignal to cancel the request.
    * @property {number|null} [timeoutMs] Override timeout in milliseconds.
    * @property {object} [retry] Override retry configuration for this request.
+   * @property {"fetch"|"xhr"} [transport="fetch"] Transport to use for this
+   * request.
+   * @property {boolean} [dedupe] Override request deduplication behavior for
+   * this request. Defaults to client-level `dedupe`.
+   * @property {Function} [onUploadProgress] Upload progress callback. Used only
+   * with the `"xhr"` transport.
    */
 
   /**
@@ -173,7 +120,7 @@ define([
    * @typedef {object} NormalizedDataONEHttpRequestOptions
    * @property {string} url Full request URL.
    * @property {string} method Normalized HTTP method.
-   * @property {"text"|"json"|"arrayBuffer"|"blob"} responseType Normalized
+   * @property {"text"|"json"|"arrayBuffer"|"blob"|"document"} responseType Normalized
    * response type.
    * @property {object} headers Effective headers passed to `fetch()` (merged +
    * auth).
@@ -182,6 +129,10 @@ define([
    * @property {AbortSignal} [signal] AbortSignal to cancel the request.
    * @property {number|null} timeoutMs Effective timeout in milliseconds.
    * @property {object} retry Retry overrides for this request.
+   * @property {"fetch"|"xhr"} transport Effective transport for this request.
+   * @property {boolean} dedupe Effective deduplication behavior for this
+   * request.
+   * @property {Function|null} onUploadProgress Upload progress callback.
    * @property {HttpRetryPolicy} retryPolicy Effective retry policy for this
    * request.
    */
@@ -203,7 +154,7 @@ define([
    * retries with backoff, optional in-flight deduplication, abort support,
    * normalized responses/errors, and timeouts. It does not know about app
    * models or TTLs; it only handles transport concerns.
-   * @since 2.37.0
+   * @since 0.0.0
    */
   class DataONEHttpClient {
     /**
@@ -270,7 +221,7 @@ define([
         ...DEFAULT_OPTIONS,
         ...source,
         baseUrl: source.baseUrl
-          ? Utilities.normalizeUrl(source.baseUrl)
+          ? UrlUtilities.normalizeUrl(source.baseUrl)
           : DEFAULT_OPTIONS.baseUrl,
         timeoutMs,
         dedupe,
@@ -301,7 +252,8 @@ define([
      * Normalize a timeout value to either a valid number or null.
      * @param {number|null|undefined} timeoutMs Timeout in milliseconds
      * @returns {number|null} Normalized timeout
-     * @throws {Error} If timeout is not null/undefined and not a non-negative number
+     * @throws {Error} If timeout is not null/undefined and not a non-negative
+     * number
      * @private
      */
     static normalizeTimeoutMs(timeoutMs) {
@@ -330,14 +282,14 @@ define([
         "responseTypes",
       ];
       const normalizers = {
-        baseUrl: Utilities.normalizeUrl,
-        defaultHeaders: Utilities.stableStringify,
-        retry: Utilities.stableStringify,
-        allowedHttpMethods: Utilities.stableStringify,
-        headerNamesForDedup: Utilities.stableStringify,
-        responseTypes: Utilities.stableStringify,
+        baseUrl: UrlUtilities.normalizeUrl,
+        defaultHeaders: ValueUtilities.stableStringify,
+        retry: ValueUtilities.stableStringify,
+        allowedHttpMethods: ValueUtilities.stableStringify,
+        headerNamesForDedup: ValueUtilities.stableStringify,
+        responseTypes: ValueUtilities.stableStringify,
       };
-      return Utilities.buildInstanceKey(
+      return ValueUtilities.buildInstanceKey(
         normalizedOptions,
         keyFields,
         normalizers,
@@ -350,7 +302,7 @@ define([
      * @returns {DataONEHttpClient} Client instance
      */
     static get(options = {}) {
-      return Utilities.getSingleton(
+      return ValueUtilities.getSingleton(
         this,
         options,
         this.buildInstanceKey.bind(this),
@@ -376,6 +328,9 @@ define([
         signal,
         timeoutMs: requestTimeoutMs,
         retry: retryOverrides = {},
+        transport = "fetch",
+        dedupe: requestDedupe,
+        onUploadProgress = null,
       } = options;
 
       if (typeof path !== "string") {
@@ -383,8 +338,13 @@ define([
       }
 
       const normalizedMethod = this.normalizeMethod(method);
-      const normalizedResponseType = this.normalizeResponseType(responseType);
-      const url = buildUrl(this.baseUrl, path, encodePath);
+      const normalizedTransport =
+        this.constructor.normalizeTransport(transport);
+      const normalizedResponseType = this.normalizeResponseType(
+        responseType,
+        normalizedTransport,
+      );
+      const url = UrlUtilities.buildUrl(this.baseUrl, path, { encodePath });
 
       const mergedHeaders = this.constructor.mergeHeaders(
         this.defaultHeaders,
@@ -407,6 +367,24 @@ define([
           ? retryOverrides
           : {};
       const retryPolicy = this.retryPolicy.withOverrides(retry);
+      const dedupe =
+        requestDedupe === undefined ? this.dedupe : requestDedupe === true;
+      if (requestDedupe !== undefined && typeof requestDedupe !== "boolean") {
+        throw new Error("dedupe must be a boolean");
+      }
+
+      let normalizedOnUploadProgress = null;
+      if (onUploadProgress !== null && onUploadProgress !== undefined) {
+        if (typeof onUploadProgress !== "function") {
+          throw new Error("onUploadProgress must be a function");
+        }
+        if (normalizedTransport !== "xhr") {
+          throw new Error(
+            'onUploadProgress is only supported when transport is "xhr"',
+          );
+        }
+        normalizedOnUploadProgress = onUploadProgress;
+      }
 
       return {
         url,
@@ -418,6 +396,9 @@ define([
         signal,
         timeoutMs: normalizedTimeoutMs,
         retry,
+        transport: normalizedTransport,
+        dedupe,
+        onUploadProgress: normalizedOnUploadProgress,
         retryPolicy,
       };
     }
@@ -425,20 +406,33 @@ define([
     /**
      * Normalize a responseType option to a supported value.
      * @param {string} responseType Raw response type
-     * @returns {"json"|"arrayBuffer"|"blob"|"text"} Normalized response type
+     * @param {"fetch"|"xhr"} [transport] Transport value
+     * @returns {"json"|"arrayBuffer"|"blob"|"text"|"document"} Normalized response type
      * @private
      */
-    normalizeResponseType(responseType) {
+    normalizeResponseType(responseType, transport = "fetch") {
       if (typeof responseType !== "string") {
         throw new Error("responseType must be a string");
       }
       const normalizedResponseType = responseType.toLowerCase();
-      if (this.responseTypes.includes(normalizedResponseType))
+      const normalizedTransport =
+        this.constructor.normalizeTransport(transport);
+      const transportSupportedResponseTypes =
+        normalizedTransport === "xhr"
+          ? ["json", "arraybuffer", "blob", "text", "document"]
+          : ["json", "arraybuffer", "blob", "text"];
+      const allowedResponseTypes = transportSupportedResponseTypes.filter(
+        (type) =>
+          this.responseTypes.includes(type) ||
+          (normalizedTransport === "xhr" && type === "document"),
+      );
+
+      if (allowedResponseTypes.includes(normalizedResponseType))
         return normalizedResponseType;
       // Otherwise throw an error
       throw new Error(
         `Invalid responseType: ${responseType}. ` +
-          `Allowed types: ${this.responseTypes.join(", ")}`,
+          `Allowed types: ${allowedResponseTypes.join(", ")}`,
       );
     }
 
@@ -495,6 +489,25 @@ define([
     }
 
     /**
+     * Normalize a transport option to a supported value.
+     * @param {string} transport Transport value.
+     * @returns {"fetch"|"xhr"} Normalized transport.
+     * @private
+     */
+    static normalizeTransport(transport) {
+      if (typeof transport !== "string") {
+        throw new Error("transport must be a string");
+      }
+      const normalizedTransport = transport.toLowerCase();
+      if (normalizedTransport === "fetch" || normalizedTransport === "xhr") {
+        return normalizedTransport;
+      }
+      throw new Error(
+        `Invalid transport: ${transport}. Allowed transports: fetch, xhr`,
+      );
+    }
+
+    /**
      * Perform an HTTP request.
      * @param {DataONEHttpRequestOptions} options Request options
      * @returns {Promise<DataONEHttpResponse>} A promise that resolves to a
@@ -502,16 +515,17 @@ define([
      */
     async request(options = {}) {
       const requestOptions = this.normalizeRequestOptions(options);
+      const useDedupe = requestOptions.dedupe === true;
 
       let dedupKey = null;
-      if (this.dedupe) {
+      if (useDedupe) {
         dedupKey = this.generateRequestKey(requestOptions);
         const inFlight = this.checkForInFlightRequest(dedupKey);
         if (inFlight) return inFlight;
       }
 
       const job = this.executeRequest(requestOptions);
-      if (this.dedupe) {
+      if (useDedupe) {
         this.addToInFlight(dedupKey, job);
       }
 
@@ -529,7 +543,7 @@ define([
      * @private
      */
     checkForInFlightRequest(dedupKey) {
-      if (this.dedupe === false || this.inFlight.size === 0) return null;
+      if (!dedupKey || this.inFlight.size === 0) return null;
       return this.inFlight.get(dedupKey) || null;
     }
 
@@ -540,7 +554,7 @@ define([
      * @private
      */
     addToInFlight(dedupKey, promise) {
-      if (!dedupKey || !promise || this.dedupe === false) return;
+      if (!dedupKey || !promise) return;
       this.inFlight.set(dedupKey, promise);
     }
 
@@ -575,7 +589,7 @@ define([
         attempt += 1;
 
         try {
-          const response = await this.performFetch(options);
+          const response = await this.performRequest(options);
           if (response.ok) return response;
 
           // Convert non-OK HTTP into a normalized error path
@@ -583,14 +597,13 @@ define([
             response,
             attempt,
             url,
-            message: `Request failed with status ${response.status}`,
             status: response.status,
           });
         } catch (err) {
           // Stop all processing and throw immediately if the request was
           // aborted by the caller
-          if (signal?.aborted && err?.name !== "TimeoutError") {
-            throw abortError(signal.reason);
+          if (signal?.aborted && !isTimeoutError(err)) {
+            throw createAbortError(signal.reason);
           }
 
           const normalized =
@@ -600,7 +613,7 @@ define([
                   error: err,
                   url,
                   attempt,
-                  networkError: err?.name === "TimeoutError" || undefined,
+                  networkError: isTimeoutError(err) || undefined,
                 });
 
           lastError = normalized;
@@ -616,12 +629,26 @@ define([
 
           const retryAfterMs = retryPolicy.parseRetryAfter(normalized.headers);
           const delay = retryPolicy.computeDelay({ attempt, retryAfterMs });
-          await sleep(delay, signal);
+          await abortableDelay(delay, signal);
         }
       }
       /* eslint-enable no-await-in-loop */
 
       throw lastError;
+    }
+
+    /**
+     * Performs a request using the configured transport.
+     * @param {NormalizedDataONEHttpRequestOptions} options Request options
+     * @returns {Promise<DataONEHttpResponse>} A promise that resolves to a
+     * normalized response object.
+     * @private
+     */
+    async performRequest(options = {}) {
+      if (options.transport === "xhr") {
+        return this.performXhr(options);
+      }
+      return this.performFetch(options);
     }
 
     /**
@@ -663,7 +690,7 @@ define([
         timeoutMs !== undefined ? timeoutMs : this.timeoutMs;
 
       if (effectiveTimeout && effectiveTimeout > 0) {
-        timeoutErr = timeoutError();
+        timeoutErr = createTimeoutError();
         timeoutId = setTimeout(() => {
           timedOut = true;
           controller.abort();
@@ -695,7 +722,7 @@ define([
 
         // If the caller aborted, preserve abort semantics.
         if (abortedByCaller) {
-          throw abortError(signal?.reason);
+          throw createAbortError(signal?.reason);
         }
 
         throw error;
@@ -703,6 +730,136 @@ define([
         if (timeoutId) clearTimeout(timeoutId);
         signal?.removeEventListener("abort", onAbort);
       }
+    }
+
+    /**
+     * Performs the actual XMLHttpRequest call. Handles timeouts and aborts. Do
+     * not call directly; use {@link DataONEHttpClient#request} instead.
+     * @param {NormalizedDataONEHttpRequestOptions} options Request options
+     * @returns {Promise<DataONEHttpResponse>} A promise that resolves to a
+     * normalized response object.
+     * @private
+     */
+    async performXhr(options = {}) {
+      const {
+        url,
+        method,
+        headers,
+        body,
+        responseType,
+        signal,
+        timeoutMs,
+        onUploadProgress,
+      } = options;
+
+      const effectiveTimeout =
+        timeoutMs !== undefined ? timeoutMs : this.timeoutMs;
+
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        let completed = false;
+        let abortedByCaller = false;
+
+        const onAbort = () => {
+          abortedByCaller = true;
+          xhr.abort();
+        };
+
+        const onProgress =
+          typeof onUploadProgress === "function"
+            ? (event) => {
+                try {
+                  onUploadProgress(event);
+                } catch (_error) {
+                  // Ignore upload progress callback errors.
+                }
+              }
+            : null;
+
+        const finalize = (callback, value) => {
+          if (completed) return;
+          completed = true;
+          signal?.removeEventListener("abort", onAbort);
+          if (onUploadProgress && xhr.upload && onProgress) {
+            xhr.upload.removeEventListener("progress", onProgress);
+          }
+          callback(value);
+        };
+
+        if (signal?.aborted) {
+          finalize(reject, createAbortError(signal.reason));
+          return;
+        }
+
+        signal?.addEventListener("abort", onAbort, { once: true });
+
+        if (onProgress && xhr.upload) {
+          xhr.upload.addEventListener("progress", onProgress);
+        }
+
+        xhr.open(method, url, true);
+        if (effectiveTimeout && effectiveTimeout > 0) {
+          xhr.timeout = effectiveTimeout;
+        }
+        if (
+          responseType !== "text" &&
+          responseType !== "json" &&
+          responseType !== ""
+        ) {
+          xhr.responseType = responseType;
+        }
+
+        Object.entries(headers || {}).forEach(([key, value]) => {
+          if (value === undefined || value === null) return;
+          if (Array.isArray(value)) {
+            value.forEach((item) => {
+              if (item === undefined || item === null) return;
+              xhr.setRequestHeader(key, String(item));
+            });
+            return;
+          }
+          xhr.setRequestHeader(key, String(value));
+        });
+
+        xhr.onload = () => {
+          try {
+            const status = Number(xhr.status) || 0;
+            finalize(resolve, {
+              ok: status >= 200 && status < 300,
+              status,
+              headers: this.constructor.parseRawHeaders(
+                xhr.getAllResponseHeaders(),
+              ),
+              url: xhr.responseURL || url,
+              data: this.constructor.readXhrBody(xhr, responseType),
+            });
+          } catch (error) {
+            finalize(reject, error);
+          }
+        };
+
+        xhr.onerror = () => {
+          finalize(reject, new TypeError("Network request failed"));
+        };
+
+        xhr.ontimeout = () => {
+          finalize(reject, createTimeoutError());
+        };
+
+        xhr.onabort = () => {
+          if (abortedByCaller || signal?.aborted) {
+            finalize(reject, createAbortError(signal?.reason));
+            return;
+          }
+          finalize(reject, createAbortError());
+        };
+
+        try {
+          xhr.send(body === undefined ? null : body);
+        } catch (error) {
+          finalize(reject, error);
+        }
+      });
     }
 
     /**
@@ -725,6 +882,7 @@ define([
       timeoutMs,
       retry,
       signal,
+      transport,
     }) {
       // Generate scope based on token or Authorization header
       let scope = token ? `auth:${md5(String(token))}` : null;
@@ -743,13 +901,14 @@ define([
         timeoutMs === null || timeoutMs === undefined
           ? "none"
           : String(timeoutMs);
-      const retryKey = Utilities.stableStringify(retry);
+      const retryKey = ValueUtilities.stableStringify(retry);
       const signalKey = signal ? this.getBodyId(signal) : "none";
 
       const keyParts = [
         scope,
         String(method).toUpperCase(),
         url,
+        transport,
         responseType,
         headerRepresentation,
         `timeout:${timeoutKey}`,
@@ -770,26 +929,112 @@ define([
      * @private
      */
     static async readBody(response, responseType) {
-      const responseCopy = response.clone();
+      switch (responseType.toLocaleLowerCase()) {
+        case "json": {
+          const text = await response.text();
+          try {
+            return JSON.parse(text);
+          } catch (_error) {
+            return text;
+          }
+        }
+        case "arraybuffer":
+          return response.arrayBuffer();
+        case "blob":
+          return response.blob();
+        case "text":
+        default:
+          return response.text();
+      }
+    }
+
+    /**
+     * Read an XMLHttpRequest response body according to responseType.
+     * @param {XMLHttpRequest} xhr XMLHttpRequest instance
+     * @param {"text"|"json"|"arrayBuffer"|"blob"|"document"} responseType Expected body
+     * type
+     * @returns {*} Parsed response data
+     * @private
+     */
+    static readXhrBody(xhr, responseType) {
+      const type = String(responseType || "text").toLowerCase();
+      const { response } = xhr;
+      const readResponseText = () => {
+        try {
+          return typeof xhr.responseText === "string" ? xhr.responseText : "";
+        } catch (_error) {
+          return "";
+        }
+      };
+
       try {
-        switch (responseType.toLocaleLowerCase()) {
-          case "json":
-            return await response.json();
+        switch (type) {
           case "arraybuffer":
-            return await response.arrayBuffer();
+            if (response instanceof ArrayBuffer) return response;
+            if (ArrayBuffer?.isView?.(response)) return response.buffer;
+            return readResponseText();
           case "blob":
-            return await response.blob();
+            if (response instanceof Blob) return response;
+            if (typeof Blob !== "undefined") {
+              return new Blob([readResponseText()], { type: "text/plain" });
+            }
+            return readResponseText();
+          case "document":
+            if (response !== null && response !== undefined) return response;
+            return readResponseText();
+          case "json":
+            // Keep JSON parsing tolerant for environments where responseType is
+            // not set and only responseText is populated.
+            if (
+              response !== null &&
+              response !== undefined &&
+              typeof response !== "string"
+            ) {
+              return response;
+            }
+            {
+              const jsonText =
+                typeof response === "string" ? response : readResponseText();
+              return jsonText ? JSON.parse(jsonText) : null;
+            }
           case "text":
           default:
-            return await response.text();
+            if (typeof response === "string") return response;
+            return readResponseText();
         }
       } catch (e) {
-        // If parsing fails, fall back to text where possible
-        if (responseType !== "text") {
-          return responseCopy.text();
+        if (type !== "text") {
+          return readResponseText();
         }
         throw e;
       }
+    }
+
+    /**
+     * Parse raw response headers from XMLHttpRequest into a Headers instance.
+     * @param {string} rawHeaders Raw header string
+     * @returns {Headers} Parsed headers
+     * @private
+     */
+    static parseRawHeaders(rawHeaders = "") {
+      const headers = new Headers();
+      if (typeof rawHeaders !== "string" || !rawHeaders.trim()) {
+        return headers;
+      }
+
+      rawHeaders
+        .trim()
+        .split(/[\r\n]+/)
+        .forEach((line) => {
+          const separatorIndex = line.indexOf(":");
+          if (separatorIndex <= 0) return;
+          const key = line.slice(0, separatorIndex).trim();
+          const value = line.slice(separatorIndex + 1).trim();
+          if (!key) return;
+          headers.append(key, value);
+        });
+
+      return headers;
     }
 
     /**
@@ -836,7 +1081,7 @@ define([
 
       // Try to JSON serialize other body types with stable key ordering.
       try {
-        const json = Utilities.stableStringify(body, {
+        const json = ValueUtilities.stableStringify(body, {
           ignoreCase: false,
           orderMatters: true,
         });
@@ -875,7 +1120,7 @@ define([
         if (Array.isArray(value)) value = value.join(",");
         else if (typeof value === "object") {
           try {
-            value = Utilities.stableStringify(value);
+            value = ValueUtilities.stableStringify(value);
           } catch (e) {
             value = this.getBodyId(value);
           }

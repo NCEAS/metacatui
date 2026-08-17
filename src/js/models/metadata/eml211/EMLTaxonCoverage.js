@@ -4,7 +4,7 @@ define([
   "backbone",
   "models/DataONEObject",
   "common/EMLUtilities",
-], function ($, _, Backbone, DataONEObject, EMLUtilities) {
+], ($, _, Backbone, DataONEObject, EMLUtilities) => {
   /**
    * @typedef {Object} TaxonomicClassification
    * @property {string} taxonRankName - The name of the taxonomic rank, for
@@ -32,7 +32,7 @@ define([
    * @extends Backbone.Model
    * @constructor
    */
-  var EMLTaxonCoverage = Backbone.Model.extend(
+  const EMLTaxonCoverage = Backbone.Model.extend(
     /** @lends EMLTaxonCoverage.prototype */ {
       /**
        * Returns the default properties for this model. Defined here.
@@ -443,8 +443,8 @@ define([
         return EMLUtilities.getParentEML(this);
       },
 
-      trickleUpChange: function () {
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+      trickleUpChange() {
+        EMLUtilities.markRootDataPackageChanged();
       },
 
       formatXML: function (xmlString) {

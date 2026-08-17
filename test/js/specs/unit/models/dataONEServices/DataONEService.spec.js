@@ -44,6 +44,14 @@ define([
         expect(() => DataONEService.normalizeOptions()).to.throw(/baseUrl/);
       });
 
+      it("rejects whitespace-only base URLs", () => {
+        expect(() =>
+          DataONEService.normalizeOptions({
+            baseUrl: "   ",
+          }),
+        ).to.throw(/baseUrl/);
+      });
+
       it("normalizes baseUrl and applies defaults", () => {
         const normalized = DataONEService.normalizeOptions({
           baseUrl: "https://example.org/",
@@ -78,6 +86,240 @@ define([
         });
 
         normalized.storageConfig.instanceKeys.should.deep.equal(["k1", "k2"]);
+      });
+    });
+
+    describe("header helpers", () => {
+      it("mergeHeadersWithDefaults applies missing defaults case-insensitively", () => {
+        const merged = DataONEService.mergeHeadersWithDefaults(
+          {
+            Authorization: "Bearer abc",
+          },
+          {
+            Accept: "text/xml",
+            "Content-Type": "application/xml",
+          },
+        );
+
+        merged.Authorization.should.equal("Bearer abc");
+        merged.Accept.should.equal("text/xml");
+        merged["Content-Type"].should.equal("application/xml");
+      });
+
+      it("mergeHeadersWithDefaults preserves caller-provided headers", () => {
+        const merged = DataONEService.mergeHeadersWithDefaults(
+          {
+            accept: "application/json",
+          },
+          {
+            Accept: "text/xml",
+          },
+        );
+
+        merged.accept.should.equal("application/json");
+        should.not.exist(merged.Accept);
+      });
+
+      it("withDefaultAccept injects Accept only when absent", () => {
+        const opts = DataONEService.withDefaultAccept({ path: "/x" });
+        opts.headers.Accept.should.equal("text/xml");
+
+        const explicit = DataONEService.withDefaultAccept({
+          path: "/x",
+          headers: {
+            accept: "application/xml",
+          },
+        });
+        explicit.headers.accept.should.equal("application/xml");
+        should.not.exist(explicit.headers.Accept);
+      });
+    });
+
+    describe("shared client helpers", () => {
+      it("buildClientConfig normalizes baseUrl and unions default/override client arrays", () => {
+        const config = DataONEService.buildClientConfig({
+          defaults: {
+            allowedHttpMethods: ["get"],
+            responseTypes: ["blob"],
+            headerNamesForDedup: ["Authorization"],
+          },
+          overrides: {
+            allowedHttpMethods: ["put", " "],
+            responseTypes: ["text"],
+            headerNamesForDedup: ["Accept"],
+          },
+          baseUrl: "https://example.org/",
+        });
+
+        config.baseUrl.should.equal("https://example.org");
+        config.allowedHttpMethods.should.deep.equal(["GET", "PUT"]);
+        config.responseTypes.should.deep.equal(["blob", "text"]);
+        config.headerNamesForDedup.should.deep.equal([
+          "Authorization",
+          "Accept",
+        ]);
+      });
+
+      it("buildClientConfig omits empty arrays so the client keeps its defaults", () => {
+        const config = DataONEService.buildClientConfig({
+          baseUrl: "https://example.org",
+        });
+
+        config.should.not.have.property("allowedHttpMethods");
+        config.should.not.have.property("responseTypes");
+        config.should.not.have.property("headerNamesForDedup");
+      });
+
+      it("buildPidPath encodes the PID and appends a query string", () => {
+        DataONEService.buildPidPath(" doi:10.5063/abc ").should.equal(
+          "doi:10.5063%2Fabc",
+        );
+        DataONEService.buildPidPath("doi:10.5063/abc", {
+          query: "action=write",
+        }).should.equal("doi:10.5063%2Fabc?action=write");
+      });
+
+      it("pickRequestOptions only forwards defined request keys", () => {
+        const options = DataONEService.pickRequestOptions({
+          auth: false,
+          signal: "sig",
+          headers: { Accept: "text/plain" },
+          ignored: true,
+        });
+
+        options.should.deep.equal({
+          auth: false,
+          signal: "sig",
+          headers: { Accept: "text/plain" },
+        });
+      });
+
+      it("normalizes PIDs and encodes them as single path segments", () => {
+        DataONEService.normalizePid(" doi:10.5063/abc ").should.equal(
+          "doi:10.5063/abc",
+        );
+        DataONEService.encodePidPath(" doi:10.5063/abc ").should.equal(
+          "doi:10.5063%2Fabc",
+        );
+      });
+
+      it("uses the subclass name in default PID validation errors", () => {
+        class ExampleService extends DataONEService {}
+
+        expect(() => ExampleService.normalizePid("")).to.throw(
+          /ExampleService: pid is required/,
+        );
+      });
+
+      it("classifies ambiguous write errors", () => {
+        [
+          { name: "TimeoutError" },
+          { networkError: true },
+          {},
+          { status: 0 },
+          { status: 408 },
+          { status: 500 },
+          { status: 503 },
+        ].forEach((error) => {
+          DataONEService.isAmbiguousWriteError(error).should.equal(true);
+        });
+      });
+
+      it("does not classify client authorization errors as ambiguous writes", () => {
+        [400, 401, 403].forEach((status) => {
+          DataONEService.isAmbiguousWriteError({ status }).should.equal(false);
+        });
+      });
+    });
+
+    describe("descriptor helpers", () => {
+      class DescribedService extends DataONEService {}
+      DescribedService.config = {
+        endpoint: "described",
+        appModelKeys: ["primaryUrl", "fallbackUrl"],
+        client: {
+          timeoutMs: 1234,
+          methods: ["GET", "POST"],
+          responseTypes: ["text"],
+          dedupeHeaders: ["Authorization"],
+        },
+        storage: { ttlMs: 500 },
+        persistPrivate: false,
+        defaultAuth: false,
+      };
+
+      it("resolveBaseUrl prefers an explicit URL", () => {
+        DescribedService.resolveBaseUrl(
+          "https://explicit.example.org/",
+        ).should.equal("https://explicit.example.org");
+      });
+
+      it("resolveBaseUrl walks appModelKeys in order", () => {
+        state.sandbox.stub(globalThis, "MetacatUI").value({
+          appModel: {
+            get(key) {
+              return key === "fallbackUrl"
+                ? "https://fallback.example.org"
+                : null;
+            },
+          },
+        });
+
+        DescribedService.resolveBaseUrl().should.equal(
+          "https://fallback.example.org",
+        );
+      });
+
+      it("clientDefaults maps the descriptor client block to client option names", () => {
+        DescribedService.clientDefaults().should.deep.equal({
+          timeoutMs: 1234,
+          allowedHttpMethods: ["GET", "POST"],
+          responseTypes: ["text"],
+          headerNamesForDedup: ["Authorization"],
+        });
+      });
+
+      it("buildStorageConfig namespaces instance keys by service name and base URL", () => {
+        const storageConfig = DescribedService.buildStorageConfig(
+          { instanceKeys: ["caller"] },
+          "https://example.org",
+        );
+
+        storageConfig.ttlMs.should.equal(500);
+        storageConfig.instanceKeys.should.deep.equal([
+          "caller",
+          "DescribedService",
+          "https://example.org",
+        ]);
+      });
+
+      it("optionsFromDescriptor builds normalized super() options", () => {
+        const options = DescribedService.optionsFromDescriptor({
+          baseUrl: "https://example.org/",
+        });
+
+        options.baseUrl.should.equal("https://example.org");
+        options.clientConfig.baseUrl.should.equal("https://example.org");
+        options.clientConfig.allowedHttpMethods.should.deep.equal([
+          "GET",
+          "POST",
+        ]);
+        options.persistPrivate.should.equal(false);
+        options.defaultAuth.should.equal(false);
+        options.storageConfig.instanceKeys.should.deep.equal([
+          "DescribedService",
+          "https://example.org",
+        ]);
+      });
+
+      it("optionsFromDescriptor throws a named error when no base URL resolves", () => {
+        state.sandbox
+          .stub(globalThis, "MetacatUI")
+          .value({ appModel: { get: () => null } });
+
+        expect(() => DescribedService.optionsFromDescriptor()).to.throw(
+          /DescribedService: baseUrl is required/,
+        );
       });
     });
 
@@ -294,6 +536,33 @@ define([
     });
 
     describe("request", () => {
+      it("requestWithClient passes resolved tokens to the provided client request", async () => {
+        const client = makeClient(state.sandbox);
+        state.sandbox.stub(state.service, "getToken").resolves("tok");
+
+        await state.service.requestWithClient(client, {
+          path: "/x",
+          method: "POST",
+        });
+
+        client.request.firstCall.args[0].token.should.equal("tok");
+        client.request.firstCall.args[0].path.should.equal("/x");
+        client.request.firstCall.args[0].method.should.equal("POST");
+      });
+
+      it("requestWithClient requires a client instance", async () => {
+        let caught = null;
+
+        try {
+          await state.service.requestWithClient(null, { path: "/x" });
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/client is required/i);
+      });
+
       it("passes resolved tokens to the client request", async () => {
         state.sandbox.stub(state.service, "getToken").resolves("tok");
 

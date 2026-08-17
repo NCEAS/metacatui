@@ -3,7 +3,7 @@ define([
   "underscore",
   "backbone",
   "gmaps",
-  "common/Utilities",
+  "common/ValueUtilities",
   "common/QueryService",
   "models/SolrResult",
   "views/DownloadButtonView",
@@ -16,7 +16,7 @@ define([
   _,
   Backbone,
   gmaps,
-  Utilities,
+  ValueUtilities,
   QueryService,
   SolrResult,
   DownloadButtonView,
@@ -433,7 +433,7 @@ define([
 
         solrResult.set(
           "formattedSize",
-          Utilities.bytesToSize(solrResult.get("size")),
+          ValueUtilities.bytesToSize(solrResult.get("size")),
         );
 
         // Add a section for the data details, just like the other attribute sections

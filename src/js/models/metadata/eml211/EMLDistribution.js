@@ -4,7 +4,7 @@ define([
   "backbone",
   "models/DataONEObject",
   "common/EMLUtilities",
-], function ($, _, Backbone, DataONEObject, EMLUtilities) {
+], ($, _, Backbone, DataONEObject, EMLUtilities) => {
   /**
    * @class EMLDistribution
    * @classdesc Information on how the resource is distributed online and
@@ -15,7 +15,7 @@ define([
    * @extends Backbone.Model
    * @constructor
    */
-  var EMLDistribution = Backbone.Model.extend(
+  const EMLDistribution = Backbone.Model.extend(
     /** @lends EMLDistribution.prototype */ {
       /**
        * Default values for an EML 211 Distribution model. This is essentially a
@@ -312,8 +312,8 @@ define([
         return EMLUtilities.getParentEML(this);
       },
 
-      trickleUpChange: function () {
-        MetacatUI.rootDataPackage?.packageModel?.set("changed", true);
+      trickleUpChange() {
+        EMLUtilities.markRootDataPackageChanged();
       },
 
       formatXML: function (xmlString) {

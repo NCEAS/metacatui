@@ -31,6 +31,8 @@ const airbnbRulesOverrides = {
   "import/no-commonjs": "off",
   // We are using RequireJS
   "import/no-unresolved": "off",
+  // Allow dangling underscores
+  "no-underscore-dangle": "off",
   // Allow unused variables if they start with an underscore
   "no-unused-vars": [
     "error",

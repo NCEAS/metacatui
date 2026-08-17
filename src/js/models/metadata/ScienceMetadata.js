@@ -1,8 +1,8 @@
-﻿define(["underscore", "models/DataONEObject", "common/QueryService"], function (
+define(["underscore", "models/DataONEObject", "common/QueryService"], (
   _,
   DataONEObject,
   QueryService,
-) {
+) => {
   /**
         @class ScienceMetadata
          @classdesc ScienceMetadata represents a generic science metadata document.
@@ -12,7 +12,7 @@
          * @classcategory Models/Metadata
          * @extends DataONEObject
         */
-  var ScienceMetadata = DataONEObject.extend(
+  const ScienceMetadata = DataONEObject.extend(
     /** @lends ScienceMetadata.prototype */ {
       // Only add fields present in the Solr service to the defaults
       defaults: function () {
@@ -105,19 +105,22 @@
       },
 
       /* Initialize a ScienceMetadata object */
-      initialize: function (attributes) {
+      initialize(attributes, options = {}) {
         // Call initialize for the super class
-        DataONEObject.prototype.initialize.call(this, attributes);
+        DataONEObject.prototype.initialize.call(this, attributes, options);
 
-        // ScienceMetadata-specific init goes here
-        this.listenTo(
-          MetacatUI.rootDataPackage.packageModel,
-          "change:changed",
-          function () {
-            if (MetacatUI.rootDataPackage.packageModel.get("changed"))
-              this.set("uploadStatus", "q");
-          },
-        );
+        // The DataPackage may not be set on the global MetacatUI variable when
+        // this model is created, so DataPackageMember supplies its event
+        // emitter directly.
+        const { packageEvents } = options;
+        if (
+          typeof packageEvents?.on === "function" &&
+          typeof packageEvents?.off === "function"
+        ) {
+          this.listenTo(packageEvents, "metadata:changed", () => {
+            this.set("uploadStatus", "q");
+          });
+        }
       },
 
       /**

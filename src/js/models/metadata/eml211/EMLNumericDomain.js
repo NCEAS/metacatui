@@ -4,7 +4,7 @@ define([
   "backbone",
   "models/DataONEObject",
   "common/EMLUtilities",
-], function ($, _, Backbone, DataONEObject, EMLUtilities) {
+], ($, _, Backbone, DataONEObject, EMLUtilities) => {
   /**
    * @class EMLNumericDomain
    * @classdesc EMLNumericDomain represents the measurement scale of an interval
@@ -14,7 +14,7 @@ define([
    * @see https://eml.ecoinformatics.org/schema/eml-attribute_xsd.html#AttributeType_measurementScale
    * @extends Backbone.Model
    */
-  var EMLNumericDomain = Backbone.Model.extend(
+  const EMLNumericDomain = Backbone.Model.extend(
     /** @lends EMLNumericDomain.prototype */ {
       type: "EMLNumericDomain",
 
@@ -413,8 +413,8 @@ define([
       },
 
       /* Let the top level package know of attribute changes from this object */
-      trickleUpChange: function () {
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+      trickleUpChange() {
+        EMLUtilities.markRootDataPackageChanged();
       },
     },
   );

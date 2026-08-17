@@ -2,10 +2,11 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "uuid",
+  "common/ValueUtilities",
   "collections/Filters",
   "collections/SolrResults",
   "models/DataONEObject",
+  "models/dataONEServices/IdentifierService",
   "models/filters/Filter",
   "models/filters/FilterGroup",
   "models/Search",
@@ -13,10 +14,11 @@ define([
   $,
   _,
   Backbone,
-  uuid,
+  ValueUtilities,
   Filters,
   SolrResults,
   DataONEObject,
+  IdentifierService,
   Filter,
   FilterGroup,
   Search,
@@ -347,55 +349,53 @@ define([
 
       /**
        * Generate a UUID, reserve it using the DataOne API, and set it on the model
+       * @returns {Promise<void>} Resolves when reservation finishes
        */
-      reserveSeriesId: function () {
+
+            reserveSeriesId: async function () {
         // Create a new series ID
-        var seriesId = "urn:uuid:" + uuid.v4();
+        let seriesId = ValueUtilities.makeUUID();
 
         // Set the seriesId on the portal model right away, since reserving takes
         // time. This will be updated in the rare case that the first seriesId was
         // already taken.
         this.set("seriesId", seriesId);
 
-        // Reserve a series ID for the new portal
-        var model = this;
-        var options = {
-          url: MetacatUI.appModel.get("reserveServiceUrl"),
-          type: "POST",
-          data: { pid: seriesId },
-          tryCount: 0,
-          // If a generated seriesId is already reserved, how many times to retry
-          retryLimit: 5,
-          success: function (xhr) {
-            // If the first seriesId was taken, then update the model with the
+        const identifierService = new IdentifierService();
+        const retryLimit = 5;
+        let tryCount = 0;
+        let response;
+
+        while (tryCount <= retryLimit) {
+          try {
+            // Each retry depends on the preceding collision response.
+            // eslint-disable-next-line no-await-in-loop
+            response = await identifierService.reserveIdentifier(seriesId);
+
+            // If the first seriesId was taken, update the model with the
             // successfully reserved seriesId.
-            if (this.tryCount > 0) {
-              model.set("seriesId", $(xhr).find("identifier").text());
+            if (tryCount > 0) {
+              this.set("seriesId", response.data.identifier);
             }
-          },
-          error: function (xhr) {
-            // If the seriesId was already reserved, try again
-            if (xhr.status == 409) {
-              this.tryCount++;
-              if (this.tryCount <= this.retryLimit) {
-                // Generate another seriesId
-                this.data = { pid: "urn:uuid:" + uuid.v4() };
-                // Send the reserve request again
-                $.ajax(this);
-                return;
+            return;
+          } catch (error) {
+            const status = Number(error.status);
+
+            if (status !== 409) {
+              // If the user isn't logged in, or doesn't have write access.
+              if (status === 401) {
+                this.set("isAuthorized", false);
+              } else {
+                this.set("errorMessage", error.message);
               }
               return;
-              // If the user isn't logged in, or doesn't have write access
-            } else if ((xhr.status = 401)) {
-              model.set("isAuthorized", false);
-            } else {
-              parsedResponse = $(xhr.responseText).not("style, title").text();
-              model.set("errorMessage", parsedResponse);
             }
-          },
-        };
-        _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
-        $.ajax(options);
+
+            if (tryCount === retryLimit) return;
+            seriesId = ValueUtilities.makeUUID();
+            tryCount += 1;
+          }
+        }
       },
 
       /**
