@@ -16,6 +16,7 @@ define([
   "models/metadata/eml211/EMLText",
   "models/metadata/eml211/EMLTemporalCoverage",
   "models/metadata/eml211/EMLMethods",
+  "common/EMLUtilities",
   "text!templates/metadata/eml.html",
   "text!templates/metadata/eml-people.html",
   "text!templates/metadata/EMLPartyCopyMenu.html",
@@ -41,6 +42,7 @@ define([
   EMLText,
   EMLTemporalCoverage,
   EMLMethods,
+  EMLUtilities,
   Template,
   PeopleTemplate,
   EMLPartyCopyMenuTemplate,
@@ -177,22 +179,55 @@ define([
         _.each(
           this.model.get("collections"),
           function (dataPackage) {
-            if (dataPackage.type != "DataPackage") return;
+            if (dataPackage.type !== "DataPackage") return;
+
+            const packageEvents = dataPackage.events;
+            const listenerTarget = packageEvents || dataPackage.packageModel;
+            if (!listenerTarget) return;
+
+            if (packageEvents) {
+              this.stopListening(
+                listenerTarget,
+                "change",
+                this.handleDataPackageChange,
+              );
+              this.listenTo(
+                listenerTarget,
+                "change",
+                this.handleDataPackageChange,
+              );
+            }
 
             // When the data package has been saved, render the EML again.
             // This is needed because the EML model validate & serialize functions may
             // automatically make changes, such as adding a contact and creator
             // if none is supplied by the user.
-            this.listenTo(
-              dataPackage.packageModel,
-              "successSaving",
+            const saveEvent = packageEvents
+              ? "upload:success"
+              : "successSaving";
+            this.stopListening(
+              listenerTarget,
+              saveEvent,
               this.renderAllSections,
             );
+            this.listenTo(listenerTarget, saveEvent, this.renderAllSections);
           },
           this,
         );
 
         return this;
+      },
+
+      /**
+       * Refresh an EML entity from the stable descriptor on a changed package
+       * member. The EML model keeps the snapshot; the view does not retain the
+       * member.
+       * @param {object} [change] Package change details
+       * @returns {void}
+       * @since 0.0.0
+       */
+      handleDataPackageChange(change = {}) {
+        if (change.member) this.model.getEntity(change.member);
       },
 
       renderAllSections: function () {
@@ -1995,7 +2030,7 @@ define([
         }
 
         // Trigger a change on the entire package
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+        EMLUtilities.markRootDataPackageChanged();
       },
 
       /* One-off handler for updating pubDate on the model when the form
@@ -2008,7 +2043,7 @@ define([
         this.model.trigger("change");
 
         // Trigger a change on the entire package
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+        EMLUtilities.markRootDataPackageChanged();
       },
 
       /*
@@ -2406,7 +2441,7 @@ define([
         }
 
         // Trigger a change on the entire package
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+        EMLUtilities.markRootDataPackageChanged();
 
         // Remove the DOM
         $(parentEl).remove();

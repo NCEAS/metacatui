@@ -28,6 +28,8 @@ define([
    * @classcategory Views
    * @class
    * @screenshot views/DataItemView.png
+   * @deprecated Legacy package table row view. Use the MetadataView/FileTableView
+   * rendering path instead. This view will be removed in a future release
    */
   const DataItemView = Backbone.View.extend(
     /** @lends DataItemView.prototype */ {
@@ -1516,18 +1518,16 @@ define([
        * of the model
        */
       toggleSaving() {
+        const uploadStatus = this.model.get("uploadStatus");
         if (
-          this.model.get("uploadStatus") === "p" ||
-          this.model.get("uploadStatus") === "l" ||
-          (this.model.get("uploadStatus") === "e" &&
-            this.model.get("type") !== "Metadata") ||
+          uploadStatus === "p" ||
+          uploadStatus === "l" ||
           MetacatUI.rootDataPackage.packageModel.get("uploadStatus") === "p"
         )
           this.showSaving();
         else this.hideSaving();
 
-        if (this.model.get("uploadStatus") === "e")
-          this.$el.addClass("error-saving");
+        if (uploadStatus === "e") this.$el.addClass("error-saving");
       },
 
       /** Shows the current progress of the file upload */

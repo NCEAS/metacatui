@@ -1,12 +1,43 @@
-define(["models/SolrResult"], function (SolrResult) {
+define(["jquery", "collections/ObjectFormats", "models/SolrResult"], function (
+  $,
+  ObjectFormats,
+  SolrResult,
+) {
   // Configure the Chai assertion library
   var should = chai.should();
   var expect = chai.expect;
-  let solrResult, fetchStub;
+  let solrResult, fetchStub, originalMetacatUI;
 
   describe("SolrResult Test Suite", function () {
     /* Set up */
     beforeEach(function () {
+      originalMetacatUI = window.MetacatUI;
+      window.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        appModel: {
+          get(property) {
+            if (property === "metaServiceUrl")
+              return "https://example.org/meta/";
+            if (property === "objectServiceUrl") {
+              return "https://example.org/object/";
+            }
+            return originalMetacatUI?.appModel?.get?.(property);
+          },
+          isDOI(value) {
+            return originalMetacatUI?.appModel?.isDOI?.(value) || false;
+          },
+        },
+        appUserModel: {
+          get(property) {
+            if (property === "token") return "";
+            return originalMetacatUI?.appUserModel?.get?.(property);
+          },
+          createAjaxSettings() {
+            return {};
+          },
+        },
+        objectFormats: new ObjectFormats(),
+      };
       solrResult = new SolrResult();
       // Create a stub for the fetch API
       fetchStub = sinon.stub(window, "fetch");
@@ -16,6 +47,7 @@ define(["models/SolrResult"], function (SolrResult) {
     afterEach(function () {
       solrResult = undefined;
       fetchStub.restore();
+      window.MetacatUI = originalMetacatUI;
     });
 
     describe("The SolrResult model", function () {
@@ -114,6 +146,50 @@ define(["models/SolrResult"], function (SolrResult) {
 
         // Ensure the fallback filename is correct
         filename.should.equal("defaultFileName.txt");
+      });
+    });
+
+    describe("getSysMeta", function () {
+      function stubSysMeta(formatId) {
+        return sinon.stub($, "ajax").callsFake((settings) => {
+          const xml = [
+            "<systemmetadata>",
+            "<archived>false</archived>",
+            "<size>123</size>",
+            "<filename>metadata.xml</filename>",
+            `<formatid>${formatId}</formatid>`,
+            "</systemmetadata>",
+          ].join("");
+          settings.success($.parseXML(xml));
+        });
+      }
+
+      it("classifies metadata via ObjectFormats", function () {
+        const ajaxStub = stubSysMeta("http://www.loc.gov/METS/");
+
+        try {
+          solrResult.set("id", "meta.1");
+          solrResult.getSysMeta();
+
+          solrResult.get("formatType").should.equal("METADATA");
+          ajaxStub.calledOnce.should.equal(true);
+        } finally {
+          ajaxStub.restore();
+        }
+      });
+
+      it("does not classify data formats as metadata by substring", function () {
+        const ajaxStub = stubSysMeta("http://www.cuahsi.org/waterML/1.1/");
+
+        try {
+          solrResult.set("id", "data.1");
+          solrResult.getSysMeta();
+
+          expect(solrResult.get("formatType")).to.equal(null);
+          ajaxStub.calledOnce.should.equal(true);
+        } finally {
+          ajaxStub.restore();
+        }
       });
     });
   });

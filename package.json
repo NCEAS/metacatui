@@ -36,6 +36,8 @@
     "jsdoc-dry-run": "jsdoc -c docs/jsdoc-templates/metacatui/conf.js -d /tmp",
     "doc": "cd docs; bundle exec jekyll serve",
     "test": "node test/server.js",
+    "test:spec": "node test/server.js unit --spec",
+    "test:integration:spec": "node test/server.js integration --spec",
     "integration-test": "node test/server.js integration",
     "view-tests": "node test/server.js keep-running",
     "format": "prettier --write .",

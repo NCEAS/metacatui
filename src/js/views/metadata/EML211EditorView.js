@@ -1,38 +1,247 @@
 define([
   "jquery",
-  "backbone",
   "localforage",
-  "collections/DataPackage",
+  "collections/ObjectFormats",
+  "models/dataPackage/DataPackage",
+  "models/fileTable/DataPackageFileTableAdapter",
   "models/metadata/eml211/EML211",
   "models/metadata/eml211/EMLOtherEntity",
   "models/metadata/ScienceMetadata",
-  "models/resourceMap/ResourceMapResolver",
-  "models/sysmeta/SysMeta",
+  "models/resourceMap/ResourceMap",
+  "models/dataPackage/DataPackageRecovery",
+  "models/dataONEServices/SysMetaService",
   "views/EditorView",
   "views/CitationView",
-  "views/DataPackageView",
+  "views/fileTable/FileTableView",
   "views/metadata/EML211View",
   "views/metadata/EMLEntityView",
-  "collections/ObjectFormats",
+  "common/DateUtilities",
+  "common/ErrorUtilities",
   "common/Utilities",
+  "common/UrlUtilities",
+  "common/ValueUtilities",
 ], (
   $,
-  Backbone,
   LocalForage,
+  ObjectFormats,
   DataPackage,
+  DataPackageFileTableAdapter,
   EML,
   EMLOtherEntity,
   ScienceMetadata,
-  ResourceMapResolver,
-  SysMeta,
+  ResourceMap,
+  DataPackageRecovery,
+  SysMetaService,
   EditorView,
   CitationView,
-  DataPackageView,
+  FileTableView,
   EMLView,
   EMLEntityView,
-  ObjectFormats,
+  DateUtilities,
+  ErrorUtilities,
   Utilities,
+  UrlUtilities,
+  ValueUtilities,
 ) => {
+  const { isAbortError } = ErrorUtilities;
+  const DEFAULT_EDITOR_PACKAGE_MEMBER_LIMIT = 700;
+  const INDEX_MANIFEST_ROW_LIMIT = 1000;
+  const EDITOR_FILE_TABLE_ROOT_ROW_ID = "dataset:editor-root";
+  // A draft re-serializes the entire EML, which blocks the main thread
+  // roughly linearly in document size. Coalesce bursts of change events into
+  // one trailing save, and skip documents so large that producing the draft
+  // itself would freeze the tab (~1MB is already over a second blocked).
+  const DRAFT_SAVE_DEBOUNCE_MS = 10000;
+  const DRAFT_SAVE_MAX_EML_BYTES = 1000000;
+
+  const CLASS_NAMES = {
+    accessPolicyViewContainer: "access-policy-view-container",
+    accessPolicyViewModal: "access-policy-view-modal",
+    alertError: "alert-error",
+    alertSuccess: "alert-success",
+    alertWarning: "alert-warning",
+    center: "center",
+    citationContainer: "citation-container",
+    clear: "clear",
+    container: "container",
+    collapse: "collapse",
+    controls: "controls",
+    dataSource: "data-source",
+    editorControls: "editor-controls hidden",
+    editorSaveControls: "editor-save-controls",
+    error: "error",
+    fileTable:
+      "table table-striped table-hover download-contents table-condensed",
+    icon: "icon",
+    iconCaretDown: "icon icon-caret-down",
+    loading: "loading",
+    notification: "notification",
+    pointer: "pointer",
+    primarySaveButton: "btn btn-primary save",
+    resizeHandle: "ui-resizable-handle ui-resizable-s",
+    rendering: "rendering",
+    sideNavItem: "side-nav-item",
+    statusAmbiguous: "status-ambiguous",
+    statusComplete: "status-complete",
+    statusFailed: "status-failed",
+    statusInvalidAttributes: "status-invalid-attributes",
+    statusMissingAttributes: "status-missing-attributes",
+    statusPending: "status-pending",
+    statusUploading: "status-uploading",
+    statusWarningIcon: "icon icon-circle-blank warning icon-large",
+    statusDangerIcon: "icon icon-exclamation-sign danger icon-large",
+    statusSuccessIcon: "icon icon-ok-circle success icon-large",
+    view: "editor-view",
+    viewDatasetButton: "btn btn-large btn-primary center",
+  };
+  const MESSAGES = {
+    addFilesFailed(details) {
+      return `Failed to add files to the dataset. Please try again.${details}`;
+    },
+    addFilesMetadataUpdateFailed(details) {
+      return `The files were added, but their metadata could not be updated.${details}`;
+    },
+    addingFiles: "Adding files...",
+    ambiguousUpload:
+      "Needs verification. We could not confirm whether this file finished uploading.",
+    complete: "Complete",
+    dataset: "Dataset",
+    dragToResize: "Drag to resize",
+    editableBaselineUnavailable:
+      "System metadata required to edit this dataset could not be loaded. Reload the page or try again later.",
+    failedFilesNetwork:
+      "The following files could not be uploaded due to a network issue. Make sure you are connected to a reliable internet connection. ",
+    fileChangesStaged: "File changes are still being staged.",
+    fixErrorsBeforeSubmitting(errorList) {
+      return `Fix the errors flagged below before submitting: ${errorList}`;
+    },
+    fileTableEmpty: "No files to display yet.",
+    fileTableFileColumn: "Files",
+    fileTableShareColumn: "Share",
+    fileTableStart: "Add files to start your dataset",
+    fileTableTitle: "Files in this dataset",
+    finishingFileUploads: "Finishing file uploads...",
+    findingDataPackage: "Finding the data package...",
+    latestVersionForward:
+      "You've been forwarded to the newest version of your dataset for editing.",
+    loadingEditableDataPackage: "Loading editable data package...",
+    lookingForMetadata: "Looking for metadata document...",
+    memberLimitBody(memberCount, limit, metadataPid, resourceMapPid) {
+      let body =
+        `I'm trying to edit a dataset with ${memberCount} package members, ` +
+        `but the editor currently supports up to ${limit}. `;
+      if (metadataPid) body += `The metadata PID is ${metadataPid}. `;
+      if (resourceMapPid) body += `The resource map PID is ${resourceMapPid}. `;
+      return `${body}Please help me edit this dataset.`;
+    },
+    memberLimitMessage(memberCount, limit) {
+      return (
+        `This dataset contains ${memberCount} package members, which is more than ` +
+        `the ${limit} members currently supported by this editor. Editing has been disabled for this dataset.`
+      );
+    },
+    memberLimitSubject(metadataPid) {
+      return `Dataset editor member limit exceeded${
+        metadataPid ? ` (PID: ${metadataPid})` : ""
+      }`;
+    },
+    missingAttributes: "This file needs to be described. Click Describe.",
+    missingAttributeInfo:
+      "There is missing information about this file. Click Describe.",
+    notAllSubmitted: "Not all of your changes could be submitted.",
+    notAuthorized: "You are not authorized to edit this data set.",
+    packageSaveInProgress: "A package save is in progress.",
+    removeFileFailed(details) {
+      return `Failed to remove the file from the dataset. Please try again.${details}`;
+    },
+    renameFileFailed(details) {
+      return `Failed to rename the file in the dataset. Please try again.${details}`;
+    },
+    replaceFileFailed(details) {
+      return `Failed to replace the file in the dataset. Please try again.${details}`;
+    },
+    resourceMapUnavailable:
+      "Resource Map not found for existing metadata document",
+    resourceMapNotEditable:
+      "This dataset cannot be edited because its Resource Map contains identities or relationships that MetacatUI cannot safely interpret. No changes have been made. Please send the support details below to the support team so the Resource Map can be corrected.",
+    saveStateStale:
+      "This package has been updated elsewhere. Reload the latest version before saving.",
+    saveStateUncertain:
+      "The upload state is uncertain. Reload the package before saving again.",
+    seeTechnicalDetails: "See technical details",
+    sharingSettingsLoadError:
+      "Sharing settings could not be loaded. Please try again.",
+    startingEditor: "Starting the editor...",
+    submittingChanges: "Submitting changes...",
+    submittedChanges: "Your changes have been submitted.",
+    uploadDidNotComplete: "The upload did not complete.",
+    uploadFailed:
+      "Upload failed. Save the dataset to continue without this file.",
+    uploadingNow: "Uploading now. This file is being saved to the repository.",
+    unsupportedEditableFormat(formatId) {
+      return `The editor only supports configured editable EML documents at this time. The formatId of this document is ${formatId}.`;
+    },
+    viewDataset: "View your dataset",
+    waitingToUpload:
+      "Waiting to upload. This file will be saved before the dataset is submitted.",
+    waitingForUploads(count) {
+      return `Waiting for ${count} ${count === 1 ? "file" : "files"} to upload...`;
+    },
+    checkingAuthorization: "Checking authorization...",
+    checkingLatestMetadata: "Checking for the latest metadata version...",
+    checkingPermissions: "Checking permissions to edit metadata...",
+    notIndexed:
+      "This metadata document is being indexed. Please try again in a few minutes.",
+    submittingFiles(count, total = null) {
+      const hasTotal = Number.isFinite(total) && total > 0;
+      const countText = hasTotal ? `${count}/${total}` : count;
+      const fileCount = hasTotal ? total : count;
+      return `Submitting ${countText} ${fileCount === 1 ? "file" : "files"}...`;
+    },
+    untitledDataset: "Untitled dataset",
+  };
+
+  /**
+   * Return the reload message required by current package save state.
+   * @param {object[]} [members] Package members
+   * @param {object} [state] Upload result or error
+   * @returns {string|null} Required reload message, or null
+   * @private
+   * @since 0.0.0
+   */
+  function getPackageSaveReloadMessage(members = [], state = null) {
+    const failedMembers = members.filter(
+      (member) => member?.remoteState === "failed",
+    );
+    const hasStaleMember = failedMembers.some(
+      (member) => member.lastUploadError?.code === "stale_remote",
+    );
+    if (
+      state?.outcome === "stale_remote" ||
+      state?.code === "stale_remote" ||
+      hasStaleMember
+    ) {
+      return MESSAGES.saveStateStale;
+    }
+
+    const hasUncertainMember =
+      members.some((member) => member?.remoteState === "ambiguous") ||
+      failedMembers.some(
+        (member) => member.lastUploadError?.reloadRequired === true,
+      );
+    if (
+      state?.reloadRequired === true ||
+      state?.code === "reload_required" ||
+      state?.outcome === "cancelled" ||
+      isAbortError(state) ||
+      hasUncertainMember
+    ) {
+      return MESSAGES.saveStateUncertain;
+    }
+
+    return null;
+  }
+
   /**
    * @class EML211EditorView
    * @classdesc A view of a form for creating and editing EML 2.1.1 documents
@@ -58,22 +267,22 @@ define([
        * @returns {string} The HTML template for the editor view
        */
       template(attrs) {
-        return `<article class="editor-view">
+        return `<article class="${CLASS_NAMES.view}">
           <header id="editor-header">
             <div id="breadcrumb-container"></div>
-            <div id="citation-container" class="citation-container"></div>
-            <div id="data-source-container" class="data-source"></div>
-            <div id="controls-container" class="controls"></div>
-            <div class="access-policy-view-container"></div>
-            <div class="clear"></div>
+            <div id="citation-container" class="${CLASS_NAMES.citationContainer}"></div>
+            <div id="data-source-container" class="${CLASS_NAMES.dataSource}"></div>
+            <div id="controls-container" class="${CLASS_NAMES.controls}"></div>
+            <div class="${CLASS_NAMES.accessPolicyViewContainer}"></div>
+            <div class="${CLASS_NAMES.clear}"></div>
           </header>
           <section id="editor-body">
             <div id="data-package-container"></div>
             <div id="metadata-container">${attrs.loading}</div>
           </section>
-          <section id="editor-footer" class="editor-controls hidden">
-            <div class="editor-save-controls">
-              <a class="btn btn-primary save" id="save-editor">${attrs.submitButtonText}</a>
+          <section id="editor-footer" class="${CLASS_NAMES.editorControls}">
+            <div class="${CLASS_NAMES.editorSaveControls}">
+              <a class="${CLASS_NAMES.primarySaveButton}" id="save-editor">${attrs.submitButtonText}</a>
             </div>
           </section>
         </article>`;
@@ -89,10 +298,10 @@ define([
        * @returns {string} The HTML template for the submit message
        */
       editorSubmitMessageTemplate(attrs) {
-        return `<div class="container">
+        return `<div class="${CLASS_NAMES.container}">
           <p>${attrs.messageText}</p>
           <p>
-            <a class="btn btn-large btn-primary center" href="${attrs.viewURL}">
+            <a class="${CLASS_NAMES.viewDatasetButton}" href="${attrs.viewURL}">
               ${attrs.buttonText}
             </a>
           </p>
@@ -112,7 +321,7 @@ define([
        */
       events: Object.assign(EditorView.prototype.events, {
         change: "saveDraft",
-        "click .data-package-item .edit": "showEntity",
+        "click .message-row .addFiles": "handleFileTableStartAddFiles",
       }),
 
       /**
@@ -128,19 +337,108 @@ define([
       subviews: [],
 
       /**
-       * The data package view
-       * @type {DataPackageView}
+       * The file table view for package members.
+       * @type {FileTableView}
        */
-      dataPackageView: null,
+      fileTableView: null,
+
+      /**
+       * Whether a file table edit is still staging package metadata changes.
+       * @type {boolean}
+       */
+      fileTableEditInProgress: false,
+
+      /**
+       * Last known eager upload progress by package member PID.
+       * @type {Object<string, number>}
+       */
+      fileUploadProgressByPid: null,
+
+      /**
+       * Member PIDs whose content is being replaced. Used to show the row as
+       * uploading immediately, before replaceFile() resolves and the eager
+       * upload begins emitting progress under the new PID.
+       * @type {Set<string>|null}
+       */
+      replacingPids: null,
+
+      /**
+       * Number of package members being submitted by the current save.
+       * Includes system metadata only uploads.
+       * @type {number|null}
+       */
+      packageSaveUploadCount: null,
+
+      /**
+       * Total package members submitted by the current save.
+       * @type {number|null}
+       */
+      packageSaveUploadTotal: null,
+
+      /**
+       * Current package save preparation message shown on the Save button.
+       * @type {string|null}
+       */
+      packageSavePrepMessage: null,
+
+      /**
+       * Package member PIDs that have not finished submitting in this save.
+       * @type {Set<string>|null}
+       */
+      packageSavePendingPids: null,
+
+      /**
+       * Reload message retained after an upload leaves package state unsafe to
+       * reuse.
+       * @type {string|null}
+       * @default null
+       * @since 0.0.0
+       * @example
+       * view.packageSaveReloadMessage = "Reload before saving again.";
+       */
+      packageSaveReloadMessage: null,
+
+      /**
+       * EML entity matches for the current editor file table render.
+       * @type {Map<string, EMLEntity>}
+       */
+      entityByMemberPid: null,
+
+      /**
+       * Whether EML entities need to be reconciled with package data members.
+       * @type {boolean}
+       */
+      metadataEntitySyncNeeded: true,
+
+      /**
+       * Opaque identifier for the render that currently owns async callbacks.
+       * @type {string|null}
+       */
+      renderId: null,
+
+      /**
+       * AbortController for fetch capable work owned by the active render.
+       * @type {AbortController|null}
+       */
+      renderAbortController: null,
 
       /** @inheritdoc */
       initialize(options = {}) {
         // Ensure the object formats are cached for the editor's use
-        if (typeof MetacatUI.objectFormats === "undefined") {
-          MetacatUI.objectFormats = new ObjectFormats();
-          MetacatUI.objectFormats.fetch();
-        }
+        Utilities.awaitObjectFormats();
         this.pid = options?.pid || null;
+        this.fileTableEditInProgress = false;
+        this.fileUploadProgressByPid = {};
+        this.replacingPids = new Set();
+        this.packageSaveUploadCount = null;
+        this.packageSaveUploadTotal = null;
+        this.packageSavePrepMessage = null;
+        this.packageSavePendingPids = null;
+        this.packageSaveReloadMessage = null;
+        this.entityByMemberPid = null;
+        this.metadataEntitySyncNeeded = true;
+        this.renderId = null;
+        this.renderAbortController = null;
         return this;
       },
 
@@ -161,6 +459,17 @@ define([
         const view = this;
         this.listenTo(this.model, "replace", (newModel) => {
           if (view.model.get("id") === newModel.get("id")) {
+            const previousModel = view.model;
+            view.stopListening(previousModel);
+            if (typeof previousModel.handleChange === "function") {
+              previousModel.off(
+                "change",
+                previousModel.handleChange,
+                previousModel,
+              );
+            }
+            view.entityByMemberPid = null;
+            view.metadataEntitySyncNeeded = true;
             view.model = newModel;
             view.setListeners();
           }
@@ -172,6 +481,7 @@ define([
       /** @inheritdoc */
       render() {
         const view = this;
+        const { renderId, signal } = this.startRender();
 
         // Execute the superclass render() function, which will add some basic
         // Editor functionality
@@ -186,7 +496,7 @@ define([
         this.$el.html(
           this.template({
             loading: MetacatUI.appView.loadingTemplate({
-              msg: "Starting the editor...",
+              msg: MESSAGES.startingEditor,
             }),
             submitButtonText: this.submitButtonText,
           }),
@@ -205,62 +515,42 @@ define([
         // As soon as we have all of the metadata information (STEP 2
         // complete)...
         this.stopListening(this.model, "sync");
-        this.listenToOnce(this.model, "sync", () => {
+        this.listenToOnce(this.model, "sync", async () => {
+          if (!this.isCurrentRender(renderId)) return;
           // Skip the remaining steps the metadata doesn't exist.
           if (this.model.get("notFound") === true) {
-            this.handleMetadataNotFound();
+            this.handleMetadataNotFound({ renderId, signal });
             return;
           }
 
-          // STEP 3 Listen for a trigger from the getDataPackage function that
-          // indicates The data package (resource map) has been retrieved.
-          this.stopListening(this, "dataPackageFound");
-          this.listenToOnce(this, "dataPackageFound", () => {
-            const resourceMap = MetacatUI.rootDataPackage.packageModel;
-
-            // STEP 5 Once we have the resource map, then check that the user is
-            // authorized to edit this package.
-            this.listenToOnce(
-              resourceMap,
-              "change:isAuthorized_write",
-              this.renderEditorComponents,
-            );
-            // No need to check authorization for a new resource map
-            if (resourceMap.isNew()) {
-              resourceMap.set("isAuthorized_write", true);
-            } else {
-              resourceMap.checkAuthority("write");
-              this.updateLoadingText(
-                "Checking permissions to edit metadata...",
-              );
+          this.renderCitationHeader(this.model);
+          this.updateLoadingText(MESSAGES.findingDataPackage);
+          try {
+            const dataPackage = await this.getDataPackage(this.model, {
+              renderId,
+              signal,
+            });
+            if (!this.isCurrentRender(renderId)) return;
+            if (dataPackage) {
+              this.renderEditorComponents();
             }
-          });
-
-          this.getDataPackage();
-
-          // STEP 4 Check the authority of this user to edit the metadata
-          this.listenToOnce(
-            this.model,
-            "change:isAuthorized_write",
-            this.renderEditorComponents,
-          );
-          // If the model is new, no need to check for authorization.
-          if (this.model.isNew()) {
-            this.model.set("isAuthorized_write", true);
-          } else {
-            this.model.checkAuthority("write");
-            this.updateLoadingText("Checking authorization...");
+          } catch (error) {
+            if (isAbortError(error) || !this.isCurrentRender(renderId)) {
+              return;
+            }
+            this.handleDataPackageLoadError(error);
           }
         });
 
         // STEP 1 Check that the user is signed in
         const afterAccountChecked = () => {
+          if (!this.isCurrentRender(renderId)) return;
           if (MetacatUI.appUserModel.get("loggedIn") === false) {
             // If they are not signed in, then show the sign-in view
             view.showSignIn();
           } else {
             // STEP 2 If signed in, then fetch model
-            view.fetchModel();
+            view.fetchModel({ renderId, signal });
           }
         };
         // If we've already checked the user account
@@ -304,23 +594,29 @@ define([
        * system metadata. If sysMeta exists, then the metadata document is being
        * indexed, so notify user. Otherwise, the document doesn't exist, so show
        * a 404.
+       * @param {object} [options] Lookup options owned by the active render
+       * @param {string} [options.renderId] Render identifier for stale guards
+       * @param {AbortSignal} [options.signal] Signal for fetch capable calls
        * @since 2.34.0
        */
-      async handleMetadataNotFound() {
-        this.updateLoadingText("Looking for metadata document...");
-        const token = await MetacatUI.appUserModel.getTokenPromise();
-        const sysMeta = new SysMeta({ identifier: this.pid });
-        sysMeta
-          .fetch(token)
-          .then(() => {
-            this.showNotIndexed();
-            // TODO: we can get the formatType from the sysMeta and download
-            // metadata if it's EML so indexing status doesn't matter. However,
-            // the editor needs to be refactored to handle this.
-          })
-          .catch(() => {
-            this.showNotFound();
-          });
+      async handleMetadataNotFound(options = {}) {
+        const { renderId, signal } = this.getRenderOptions(options);
+        this.updateLoadingText(MESSAGES.lookingForMetadata);
+        const sysMetaService = new SysMetaService();
+
+        try {
+          await sysMetaService.download(this.pid, { signal });
+          if (!this.isCurrentRender(renderId)) return;
+          this.showNotIndexed();
+          // TODO: we can get the formatType from the sysMeta and download
+          // metadata if it's EML so indexing status doesn't matter. However,
+          // the editor needs to be refactored to handle this.
+        } catch (error) {
+          if (isAbortError(error) || !this.isCurrentRender(renderId)) {
+            return;
+          }
+          this.showNotFound();
+        }
       },
 
       /**
@@ -333,10 +629,7 @@ define([
       showNotIndexed() {
         const authorization = this.model.get("isAuthorized_write");
         if (authorization === true) {
-          this.showFullPageAlert(
-            "This metadata document is being indexed. Please try again in a few minutes.",
-            "warning",
-          );
+          this.showFullPageAlert(MESSAGES.notIndexed, "warning");
         } else if (authorization === false) {
           this.notAuthorized();
         } else {
@@ -345,7 +638,7 @@ define([
             "change:isAuthorized_write",
             this.showNotIndexed,
           );
-          this.updateLoadingText("Checking authorization...");
+          this.updateLoadingText(MESSAGES.checkingAuthorization);
           this.model.checkAuthority("write");
         }
       },
@@ -355,28 +648,91 @@ define([
        * if not authorized, render the not authorized message.
        */
       renderEditorComponents() {
-        const resMapPermission =
-          MetacatUI.rootDataPackage?.packageModel?.get("isAuthorized_write");
-        const metadataPermission = this.model.get("isAuthorized_write");
+        const dp = MetacatUI.rootDataPackage;
+        if (!dp || typeof dp.getRootResourceMapMember !== "function") return;
+        const resourceMapMember = dp.getRootResourceMapMember();
+        const metadataMember = dp.getPrimaryMetadataMember();
+        const resMapPermission = resourceMapMember?.isAuthorized_write;
+        const metadataPermission = metadataMember?.isAuthorized_write;
         if (resMapPermission === true && metadataPermission === true) {
-          const view = this;
           // Render the Data Package table. This function will also render
           // metadata.
-          view.renderDataPackage();
+          this.renderDataPackage();
         } else if (resMapPermission === false || metadataPermission === false) {
           this.notAuthorized();
         }
       },
 
-      /** Fetch the metadata model */
-      fetchModel() {
+      /**
+       * Fetch the metadata model.
+       * @param {object} [options] Fetch options owned by the active render
+       * @param {string} [options.renderId] Render identifier for stale guards
+       * @param {AbortSignal} [options.signal] Signal for fetch capable calls
+       */
+      fetchModel(options = {}) {
         // If no ID provided to the view then it's a new document, so skip the fetch
         if (!this.pid) {
+          if (options.renderId && !this.isCurrentRender(options.renderId)) {
+            return;
+          }
           this.model.trigger("sync");
         } else {
           // Fetch the model
-          this.model.fetch();
+          this.model.fetch({ signal: options.signal });
         }
+      },
+
+      /**
+       * Start a render and cancel work owned by the previous render.
+       * @returns {{renderId: string, signal: AbortSignal}} Render identity and
+       * cancellation signal
+       * @since 0.0.0
+       */
+      startRender() {
+        this.abortRender();
+        this.renderId = ValueUtilities.makeUUID({ prefix: "render-" });
+        this.renderAbortController = new AbortController();
+        return {
+          renderId: this.renderId,
+          signal: this.renderAbortController.signal,
+        };
+      },
+
+      /**
+       * Cancel fetch capable work owned by the active render.
+       * @returns {void}
+       * @since 0.0.0
+       */
+      abortRender() {
+        if (!this.renderAbortController) return;
+        this.renderAbortController.abort();
+        this.renderAbortController = null;
+      },
+
+      /**
+       * Check whether an asynchronous callback belongs to the active render.
+       * @param {string} renderId Render identifier to check
+       * @returns {boolean} True when the render still owns the view
+       * @since 0.0.0
+       */
+      isCurrentRender(renderId) {
+        return Boolean(renderId && renderId === this.renderId && this.model);
+      },
+
+      /**
+       * Fill omitted render options from the active render.
+       * @param {object} [options] Render options
+       * @param {string} [options.renderId] Render identifier
+       * @param {AbortSignal} [options.signal] Cancellation signal
+       * @returns {{renderId: string|null, signal: AbortSignal|undefined}}
+       * Resolved render options
+       * @since 0.0.0
+       */
+      getRenderOptions(options = {}) {
+        return {
+          renderId: options.renderId || this.renderId,
+          signal: options.signal,
+        };
       },
 
       /** @inheritdoc */
@@ -407,77 +763,287 @@ define([
        */
       updateLoadingText(message) {
         if (!message || typeof message !== "string") return;
-        const loadingPara = this.$el.find(".loading > p");
+        const loadingPara = this.$el.find(`.${CLASS_NAMES.loading} > p`);
         if (loadingPara) {
           loadingPara.text(message);
         }
       },
 
       /**
+       * Update the loading message for a typed DataPackage load phase.
+       * @param {object} [progress] DataPackage load progress payload
+       * @returns {void}
+       * @since 0.0.0
+       */
+      updateDataPackageLoadProgress(progress = {}) {
+        const message = DataPackage.LoadProgressMessages[progress.phase];
+        if (message) this.updateLoadingText(message);
+      },
+
+      /**
        * Get the data package (resource map) associated with the EML. Save it to
-       * MetacatUI.rootDataPackage. The metadata model must already be synced,
-       * and the user must be authorized to edit the EML before this function
-       * can run.
+       * MetacatUI.rootDataPackage after required baselines load. The metadata
+       * model must already be synced. This method checks write permission on
+       * the loaded ResourceMap and primary metadata members.
        * @param {Model} model - The science metadata model for which to find the
        * associated data package
+       * @param {object} [options] Loading options owned by the active render
+       * @param {string} [options.renderId] Render identifier for stale guards
+       * @param {AbortSignal} [options.signal] Signal for fetch capable calls
+       * @returns {Promise<DataPackage|null>} Loaded package, or null after a
+       * latest version redirect
        */
-      async getDataPackage(model) {
+      async getDataPackage(model, options = {}) {
+        const { renderId, signal } = this.getRenderOptions(options);
         const metaModel = model || this.model;
         const metaServiceUrl = await Utilities.awaitMetacatUI({
-          property: "sysMetaModel",
+          property: "metaServiceUrl",
         });
-        const resolver = new ResourceMapResolver({
-          metaServiceUrl,
-        });
-        const { versionTracker } = resolver;
+        if (!this.isCurrentRender(renderId)) return null;
+
         const metaPid =
           metaModel.get("id") ||
           metaModel.get("identifier") ||
           metaModel.get("seriesId") ||
           this.pid;
 
-        MetacatUI.rootDataPackage.packageModel?.set("sysMetaXML", null);
-
         if (metaModel.isNew()) {
+          if (!this.isCurrentRender(renderId)) return null;
           this.createDataPackage();
+          if (!this.isCurrentRender(renderId)) return null;
+          const resourceMapMember =
+            MetacatUI.rootDataPackage.getRootResourceMapMember();
+          const metadataMember =
+            MetacatUI.rootDataPackage.getPrimaryMetadataMember();
+          if (!resourceMapMember || !metadataMember) {
+            throw new Error("New editor package is missing required members");
+          }
+          resourceMapMember.isAuthorized_write = true;
+          metadataMember.isAuthorized_write = true;
+          metaModel.set("isAuthorized_write", true);
           this.trigger("dataPackageFound");
           this.setListeners();
-          return;
+          return MetacatUI.rootDataPackage;
         }
+
+        if (!this.isCurrentRender(renderId)) return null;
+        MetacatUI.rootDataPackage = null;
+        const dataPackage = new DataPackage({
+          versionTrackerOptions: { metaServiceUrl },
+        });
+        this.listenTo(dataPackage.events, "load:progress", (progress) => {
+          if (!this.isCurrentRender(renderId)) return;
+          this.updateDataPackageLoadProgress(progress);
+        });
 
         // TODO - get latest version should happen in DataONE object.
-        const latestPid = await versionTracker.getLatestVersion(metaPid);
+        this.updateLoadingText(MESSAGES.checkingLatestMetadata);
+        const latestPid = await dataPackage
+          .getVersionTracker()
+          .getLatestVersion(metaPid, { signal });
+        if (!this.isCurrentRender(renderId)) return null;
         if (latestPid !== metaPid) {
-          // MetacatUI.rootDataPackage.packageModel.set("sysMetaXML", null);
           metaModel.set("latestVersion", latestPid);
           this.showLatestVersion();
-          return;
+          return null;
         }
 
-        const result = await resolver.resolve(metaPid);
+        try {
+          this.updateLoadingText(MESSAGES.loadingEditableDataPackage);
+          const maxMembers = this.getEditorPackageMemberLimit();
+          const loadOptions = {
+            resolverOptions: { metaServiceUrl },
+            maxMembers,
+            signal,
+          };
+          await dataPackage.loadEditablePackage(metaPid, loadOptions);
+          if (!this.isCurrentRender(renderId)) return null;
+        } catch (error) {
+          if (isAbortError(error) || !this.isCurrentRender(renderId)) {
+            return null;
+          }
+          if (error.code === "package_member_limit_exceeded") {
+            this.showPackageMemberLimitExceeded(error);
+            return null;
+          }
+          if (error.code === "resource_map_unavailable") {
+            error.multipleRMs = dataPackage.resolutionResult?.multipleRMs;
+          }
+          throw error;
+        }
 
-        // Because we're checking metadata doc write permission asynchronously,
-        // we need to make sure that we don't show the "no resource map" message
-        // or continue with the editor if the user doesn't have write permission
-        if (this.model.get("isAuthorized_write") === false) return;
+        const resourceMapMember = dataPackage.getRootResourceMapMember();
+        const metadataMember = dataPackage.getPrimaryMetadataMember();
+        this.updateLoadingText(MESSAGES.checkingPermissions);
+        const permissionOptions = { refresh: true, signal };
+        const authorizationService = dataPackage.getAuthorizationService();
+        const [resourceMapPermission, metadataPermission] = await Promise.all([
+          resourceMapMember.checkWritePermission(
+            permissionOptions,
+            authorizationService,
+          ),
+          metadataMember.checkWritePermission(
+            permissionOptions,
+            authorizationService,
+          ),
+        ]);
+        if (!this.isCurrentRender(renderId)) return null;
 
-        if (!result.success) {
-          this.showResourceMapNotFound(result.multipleRMs);
-          resolver.trackMissingResourceMap(metaPid);
+        if (resourceMapPermission && metadataPermission) {
+          const record = await dataPackage
+            .getUploadRecoveryStore()
+            .get(metadataMember.pid)
+            .catch(() => null);
+          if (!this.isCurrentRender(renderId)) return null;
+          if (record?.obsoletesRmPid === resourceMapMember.pid) {
+            this.showInterruptedSave(metadataMember.pid);
+            return null;
+          }
+        }
+
+        resourceMapMember.isAuthorized_write = resourceMapPermission;
+        metadataMember.isAuthorized_write = metadataPermission;
+        metaModel.set("isAuthorized_write", metadataPermission);
+        MetacatUI.rootDataPackage = dataPackage;
+        this.attachMetadataModelToPackage(metaModel);
+        this.trigger("dataPackageFound");
+        if (resourceMapPermission && metadataPermission) this.setListeners();
+        return dataPackage;
+      },
+
+      /**
+       * Return the configured editor member limit within the manifest ceiling.
+       * @returns {number} Maximum package members the editor will load
+       * @since 0.0.0
+       */
+      getEditorPackageMemberLimit() {
+        const configuredLimit = MetacatUI.appModel?.get?.(
+          "maxEditorPackageMembers",
+        );
+        const limit = ValueUtilities.normalizePositiveInteger(
+          configuredLimit,
+          DEFAULT_EDITOR_PACKAGE_MEMBER_LIMIT,
+        );
+        return Math.min(limit, INDEX_MANIFEST_ROW_LIMIT);
+      },
+
+      /**
+       * Block editing and show support details for an oversized package.
+       * @param {object} [details] Member limit error or package details
+       * @returns {void}
+       * @since 0.0.0
+       */
+      showPackageMemberLimitExceeded(details) {
+        const limit =
+          details?.maxMembers ||
+          this.getEditorPackageMemberLimit() ||
+          DEFAULT_EDITOR_PACKAGE_MEMBER_LIMIT;
+        const memberCount = details?.memberCount ?? 0;
+        const metadataPid =
+          this.model?.get?.("id") ||
+          this.model?.get?.("identifier") ||
+          this.model?.get?.("seriesId") ||
+          this.pid;
+        const resourceMapPid =
+          details?.rootResourceMapPid ||
+          details?.getRootResourceMapMember?.()?.pid ||
+          null;
+        const message = MESSAGES.memberLimitMessage(memberCount, limit);
+        const subject = MESSAGES.memberLimitSubject(metadataPid);
+        const body = MESSAGES.memberLimitBody(
+          memberCount,
+          limit,
+          metadataPid,
+          resourceMapPid,
+        );
+
+        this.showFullPageAlert(message, "error", body, subject);
+      },
+
+      /**
+       * Route editable package loading failures to a blocking editor message.
+       * @param {Error} error Loading failure
+       * @returns {void}
+       * @since 0.0.0
+       */
+      handleDataPackageLoadError(error) {
+        if (error?.code === "resource_map_not_editable") {
+          this.showResourceMapNotEditable(error);
           return;
         }
-        // Create a new data package with this id
-        this.createRootDataPackage([this.model], { id: result.rm });
+        if (error?.code === "resource_map_unavailable") {
+          // Reconstruction is safe only after a definitive missing-map result.
+          if (error.multipleRMs === true || error.reason === "missing") {
+            this.showResourceMapNotFound(error);
+          } else if (error.reason === "unauthorized") {
+            this.notAuthorized();
+          } else {
+            this.loadError(error.cause?.message || error.message);
+          }
+          return;
+        }
+        if (error?.code === "editable_baseline_unavailable") {
+          this.showFullPageAlert(MESSAGES.editableBaselineUnavailable, "error");
+          return;
+        }
+        this.loadError(error?.message || String(error));
+      },
 
-        // Handle the add of the metadata model
-        MetacatUI.rootDataPackage.saveReference(this.model);
+      /**
+       * Show a blocking message for a ResourceMap that was found but cannot be
+       * safely edited. Diagnostics are rendered as text so imported RDF values
+       * cannot inject markup into the editor.
+       * @param {Error} error Structured ResourceMap loading error
+       * @returns {void}
+       * @since 0.0.0
+       */
+      showResourceMapNotEditable(error) {
+        const resourceMapPid = error?.rootResourceMapPid || null;
+        const inputId = error?.inputId || this.model?.get?.("id") || null;
+        const issues = Array.isArray(error?.issues) ? error.issues : [];
+        let supportDetails;
+        try {
+          supportDetails = JSON.stringify(
+            {
+              inputId,
+              resourceMapPid,
+              issues,
+            },
+            null,
+            2,
+          );
+        } catch (_serializationError) {
+          supportDetails = [
+            inputId ? `Input PID: ${inputId}` : null,
+            resourceMapPid ? `Resource Map PID: ${resourceMapPid}` : null,
+            ...issues.map(
+              (issue) =>
+                `${issue?.code || "resourceMapIssue"}: ${
+                  issue?.message || "No message provided"
+                }`,
+            ),
+          ]
+            .filter(Boolean)
+            .join("\n");
+        }
 
-        this.stopListening(MetacatUI.rootDataPackage, "sync");
-        this.listenToOnce(MetacatUI.rootDataPackage, "sync", () => {
-          this.trigger("dataPackageFound");
-        });
-        // Fetch the data package
-        MetacatUI.rootDataPackage.fetch();
+        const message = $(document.createElement("div")).append(
+          $(document.createElement("p")).text(MESSAGES.resourceMapNotEditable),
+          $(document.createElement("p"))
+            .append($(document.createElement("strong")).text("Support details"))
+            .append(":"),
+          $(document.createElement("pre"))
+            .attr("tabindex", "0")
+            .text(supportDetails),
+        );
+        const subject = `Resource Map cannot be edited${
+          resourceMapPid ? ` (PID: ${resourceMapPid})` : ""
+        }`;
+        const body = `I'm trying to edit a dataset, but MetacatUI found unsafe or ambiguous Resource Map RDF. Please help correct the Resource Map.
+
+${supportDetails}`;
+
+        this.showFullPageAlert(message, "error", body, subject);
       },
 
       /**
@@ -485,17 +1051,14 @@ define([
        * on the MetacatUI global object (as `rootDataPackage`)
        */
       createDataPackage() {
-        // Create a new Data packages
-        this.createRootDataPackage([this.model], {
-          packageModelAttrs: { synced: true },
-        });
+        this.createRootDataPackage([this.model]);
 
         // Inherit the access policy of the metadata document, if the metadata
         // document is not `new`
         if (!this.model.isNew()) {
           const metadataAccPolicy = this.model.get("accessPolicy");
-          const accPolicy =
-            MetacatUI.rootDataPackage.packageModel.get("accessPolicy");
+          const metadataMember =
+            MetacatUI.rootDataPackage.getPrimaryMetadataMember();
 
           // If there is no access policy, it hasn't been fetched yet, so wait
           if (!metadataAccPolicy.length) {
@@ -505,39 +1068,36 @@ define([
             if (this.model.type === "ScienceMetadata") {
               this.listenTo(this.model, "replace", () => {
                 this.listenToOnce(this.model, "sysMetaUpdated", () => {
-                  accPolicy.copyAccessPolicy(this.model.get("accessPolicy"));
-                  MetacatUI.rootDataPackage.packageModel.set(
-                    "rightsHolder",
-                    this.model.get("rightsHolder"),
+                  metadataMember?.setSystemMetadata(
+                    {
+                      ...(metadataMember.sysMeta?.toJSON?.() || {}),
+                      accessPolicy: this.model.get("accessPolicy"),
+                      rightsHolder: this.model.get("rightsHolder"),
+                    },
+                    { markDirty: false },
                   );
                 });
               });
             }
           } else {
-            accPolicy.copyAccessPolicy(this.model.get("accessPolicy"));
+            metadataMember?.setSystemMetadata(
+              {
+                ...(metadataMember.sysMeta?.toJSON?.() || {}),
+                accessPolicy: this.model.get("accessPolicy"),
+              },
+              { markDirty: false },
+            );
           }
         }
 
-        // Handle the add of the metadata model
-        MetacatUI.rootDataPackage.handleAdd(this.model);
-
         // Associate the science metadata with the resource map
+        const rootResourceMapPid =
+          MetacatUI.rootDataPackage.getRootResourceMapMember()?.pid;
         if (this.model.get && Array.isArray(this.model.get("resourceMap"))) {
-          this.model
-            .get("resourceMap")
-            .push(MetacatUI.rootDataPackage.packageModel.id);
+          this.model.get("resourceMap").push(rootResourceMapPid);
         } else {
-          this.model.set(
-            "resourceMap",
-            MetacatUI.rootDataPackage.packageModel.id,
-          );
+          this.model.set("resourceMap", rootResourceMapPid);
         }
-
-        // Set the sysMetaXML for the packageModel
-        MetacatUI.rootDataPackage.packageModel.set(
-          "sysMetaXML",
-          MetacatUI.rootDataPackage.packageModel.serializeSysMeta(),
-        );
       },
 
       /**
@@ -545,74 +1105,279 @@ define([
        * saves it as the Root Data Package of the app. This centralizes the
        * DataPackage creation so listeners and other functionality is always
        * performed
-       * @param {(DataONEObject[]|ScienceMetadata[]|EML211[])} models - An array
-       * of models to add to the collection
+       * @param {(ScienceMetadata[]|EML211[])} models An array of metadata
+       * models to add to the package
        * @param {object} [attributes] A literal object of attributes to pass to
        * the DataPackage.initialize() function
        * @since 2.17.1
        */
-      createRootDataPackage(models, attributes) {
-        MetacatUI.rootDataPackage = new DataPackage(models, attributes);
+      createRootDataPackage(models, attributes = {}) {
+        const metadataModel = models?.[0] || this.model;
+        const metadataPid =
+          metadataModel.get("id") ||
+          metadataModel.get("identifier") ||
+          metadataModel.get("seriesId");
+        const resourceMapPid =
+          attributes.resourceMapPid ||
+          attributes.id ||
+          (metadataPid
+            ? `${ResourceMap.RESOURCE_MAP_PID_PREFIX}${metadataPid}`
+            : ValueUtilities.makeUUID({
+                prefix: ResourceMap.RESOURCE_MAP_PID_PREFIX,
+              }));
+        const title = metadataModel.get("title");
+        const hasTitle = Array.isArray(title)
+          ? Boolean(title[0])
+          : Boolean(title);
+        if (
+          hasTitle &&
+          !metadataModel.get("fileName") &&
+          typeof metadataModel.setFileName === "function"
+        ) {
+          metadataModel.setFileName();
+        }
+        const creatorName = [
+          MetacatUI.appUserModel?.get?.("firstName"),
+          MetacatUI.appUserModel?.get?.("lastName"),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .trim();
+        const resourceMap = ResourceMap.create({
+          resourceMapPid,
+          resolveServiceUrl: MetacatUI.appModel.get("resolveServiceUrl"),
+          memberPids: [metadataPid],
+          creatorName,
+        });
 
-        this.listenTo(
-          MetacatUI.rootDataPackage.packageModel,
-          "change:numLoadingFiles",
-          this.toggleEnableControls,
+        MetacatUI.rootDataPackage = new DataPackage({
+          members: [
+            {
+              pid: resourceMapPid,
+              formatType: "RESOURCE",
+              formatId: "http://www.openarchives.org/ore/terms",
+              objectModel: resourceMap,
+            },
+            {
+              pid: metadataPid,
+              formatType: "METADATA",
+              formatId: metadataModel.get("formatId"),
+              type: "EML",
+              fileName: metadataModel.get("fileName"),
+              objectModel: metadataModel,
+              documents: metadataModel.get("documents") || [],
+            },
+          ],
+          sources: ["editor"],
+        });
+        MetacatUI.rootDataPackage.rootResourceMapPid = resourceMapPid;
+        this.attachMetadataModelToPackage(metadataModel);
+      },
+
+      /**
+       * Attach the current metadata model to its package member.
+       * @param {ScienceMetadata|EML211} [metadataModel] Metadata model to attach
+       * @returns {DataPackageMember|null} Updated primary metadata member
+       * @since 0.0.0
+       */
+      attachMetadataModelToPackage(metadataModel = this.model) {
+        const metadataPid =
+          metadataModel.get("id") ||
+          metadataModel.get("identifier") ||
+          metadataModel.get("seriesId");
+        const member =
+          MetacatUI.rootDataPackage.getMember(metadataPid) ||
+          MetacatUI.rootDataPackage.getPrimaryMetadataMember();
+        if (!member) return null;
+        member.objectModel = metadataModel;
+        member.type = "EML";
+        member.formatType = "METADATA";
+        const collections = metadataModel.get("collections") || [];
+        if (!collections.includes(MetacatUI.rootDataPackage)) {
+          metadataModel.set("collections", [
+            ...collections,
+            MetacatUI.rootDataPackage,
+          ]);
+        }
+        const fileName = metadataModel.get("fileName");
+        if (fileName) {
+          member.fileName = fileName;
+          if (member.sysMeta) member.sysMeta.fileName = fileName;
+        }
+        return member;
+      },
+
+      /**
+       * Render the citation header from the loaded metadata model.
+       * @param {Backbone.Model} model Metadata model
+       * @returns {void}
+       * @since 0.0.0
+       */
+      renderCitationHeader(model) {
+        if (!model) return;
+
+        // Tear down a previously rendered citation header before creating a new
+        // one. CitationView listens to its model's "change" event, so without
+        // this every render (and the two calls per render) would leak a stale
+        // CitationView and accumulate them in this.subviews.
+        if (this.citationView) {
+          this.citationView.remove();
+          this.subviews = this.subviews.filter(
+            (subview) => subview !== this.citationView,
+          );
+        }
+
+        const citationView = new CitationView({
+          model,
+          defaultTitle: MESSAGES.untitledDataset,
+          createLink: false,
+          createTitleLink: !model.isNew(),
+        });
+
+        this.citationView = citationView;
+        this.subviews.push(citationView);
+        this.$("#citation-container").html(citationView.render().$el);
+      },
+
+      /**
+       * Add missing EML entities for data members documented by the metadata.
+       * @param {DataPackageMember} metadataMember Primary metadata member
+       * @returns {void}
+       * @since 0.0.0
+       */
+      syncMetadataEntities(metadataMember) {
+        const metadataModel = metadataMember?.objectModel;
+        if (!metadataModel?.addEntity) return;
+
+        const documentPids = metadataMember.documents || [];
+        const dataMembers = documentPids
+          .map((pid) => MetacatUI.rootDataPackage.getMember(pid))
+          .filter(
+            (dataMember) =>
+              dataMember && !dataMember.removed && dataMember.isData?.(),
+          );
+        const entityByMemberPid = this.buildEntityByMemberPid(
+          dataMembers,
+          metadataModel,
         );
-        this.stopListening(
-          MetacatUI.rootDataPackage.packageModel,
-          "change:numLoadingFileMetadata",
-        );
-        this.listenTo(
-          MetacatUI.rootDataPackage.packageModel,
-          "change:numLoadingFileMetadata",
-          this.toggleEnableControls,
-        );
+        const rowPositionByPid = new Map();
+        const rows = this.fileTableView?.viewModel?.getRows?.();
+        let defaultRowPosition = 0;
+        if (rows?.each) {
+          rows.each((row) => {
+            if (row.get("kind") !== "data") return;
+            rowPositionByPid.set(row.get("id"), defaultRowPosition);
+            defaultRowPosition += 1;
+          });
+        }
+        this.entityByMemberPid = this.entityByMemberPid || new Map();
+
+        dataMembers.forEach((dataMember) => {
+          const formatId =
+            dataMember.formatId ||
+            dataMember.mediaType ||
+            dataMember.uploadFile?.type ||
+            "application/octet-stream";
+          const descriptor = {
+            id: dataMember.pid,
+            fileName: dataMember.fileName,
+            formatId,
+          };
+          const existingEntity = entityByMemberPid.get(dataMember.pid);
+
+          if (existingEntity) {
+            const nextValues = {};
+            if (dataMember.pid && !existingEntity.get?.("downloadID")) {
+              nextValues.downloadID = dataMember.pid;
+            }
+            if (!existingEntity.get?.("entityName") && dataMember.fileName) {
+              nextValues.entityName = dataMember.fileName;
+            }
+            if (
+              formatId &&
+              (!existingEntity.get?.("entityType") ||
+                existingEntity.get?.("entityType") ===
+                  "application/octet-stream")
+            ) {
+              nextValues.entityType = formatId;
+            }
+            if (!existingEntity.get?.("xmlID")) {
+              nextValues.xmlID =
+                metadataModel.getUniqueEntityId?.(descriptor) ||
+                dataMember.getXMLSafeID?.() ||
+                null;
+            }
+            if (Object.keys(nextValues).length) {
+              existingEntity.set?.(nextValues);
+            }
+            dataMember.set?.("metadataEntity", existingEntity);
+            this.entityByMemberPid.set(dataMember.pid, existingEntity);
+            return;
+          }
+
+          const entity = new EMLOtherEntity({
+            entityName: dataMember.fileName,
+            entityType: formatId,
+            downloadID: dataMember.pid,
+            parentModel: metadataModel,
+            xmlID:
+              metadataModel.getUniqueEntityId?.(descriptor) ||
+              dataMember.getXMLSafeID?.(),
+            type: "otherEntity",
+          });
+          metadataModel.addEntity(
+            entity,
+            rowPositionByPid.has(dataMember.pid)
+              ? rowPositionByPid.get(dataMember.pid)
+              : defaultRowPosition,
+          );
+          entityByMemberPid.set(dataMember.pid, entity);
+          this.entityByMemberPid.set(dataMember.pid, entity);
+        });
+        this.metadataEntitySyncNeeded = false;
       },
 
       /** Render the Data Package View and insert it into this view */
       renderDataPackage() {
         const view = this;
 
-        if (this.dataPackageView) {
-          // If the data package view already exists, remove it
-          this.dataPackageView.onClose();
-          this.dataPackageView.remove();
-          this.dataPackageView = null;
+        if (this.fileTableView) {
+          this.fileTableView.onClose();
+          this.fileTableView.remove();
+          this.fileTableView = null;
         }
 
-        if (MetacatUI.rootDataPackage.packageModel.isNew()) {
-          view.renderMember(this.model);
-        }
+        view.renderMetadata(this.model);
 
-        // As the root collection is updated with models, render the UI
-        this.stopListening(MetacatUI.rootDataPackage, "add");
-        this.listenTo(MetacatUI.rootDataPackage, "add", (model) => {
-          if (!model.get("synced") && model.get("id"))
-            this.listenTo(model, "sync", view.renderMember);
-          else if (model.get("synced")) view.renderMember(model);
+        const showShare = this.isAccessPolicyEditEnabled();
+        const rows = this.getEditorFileTableRows();
 
-          // Listen for changes on this member
-          model.on("change:fileName", model.addToUploadQueue);
-        });
-
-        // Render the Data Package view
-        this.dataPackageView = new DataPackageView({
-          edit: true,
-          dataPackage: MetacatUI.rootDataPackage,
-          parentEditorView: this,
+        this.fileTableView = new FileTableView({
+          id: MetacatUI.rootDataPackage?.rootResourceMapPid || "",
+          title: MESSAGES.fileTableTitle,
+          className: CLASS_NAMES.fileTable,
+          rows,
+          emptyMessage: MESSAGES.fileTableEmpty,
+          fileColumnLabel: MESSAGES.fileTableFileColumn,
+          shareColumnLabel: MESSAGES.fileTableShareColumn,
+          actionsColumnLabel: "",
+          showIconColumn: true,
+          showTitle: false,
+          showMetrics: false,
+          showShare,
+          showStatus: true,
+          showActions: true,
         }).render();
 
-        // Render the view
         const $packageTableContainer = this.$("#data-package-container");
-        $packageTableContainer.html(this.dataPackageView.el);
+        $packageTableContainer.html(this.fileTableView.el);
 
         // Make the view resizable on the bottom
         const handle = $(document.createElement("div"))
-          .addClass("ui-resizable-handle ui-resizable-s")
-          .attr("title", "Drag to resize")
+          .addClass(CLASS_NAMES.resizeHandle)
+          .attr("title", MESSAGES.dragToResize)
           .append(
-            $(document.createElement("i")).addClass("icon icon-caret-down"),
+            $(document.createElement("i")).addClass(CLASS_NAMES.iconCaretDown),
           );
         $packageTableContainer.after(handle);
         $packageTableContainer.resizable({
@@ -627,9 +1392,24 @@ define([
         const tableHeight = ($(window).height() - $("#Navbar").height()) * 0.4;
         $packageTableContainer.css("height", `${tableHeight}px`);
 
-        const table = this.dataPackageView.$el;
-        this.stopListening(this.dataPackageView, "addOne");
-        this.listenTo(this.dataPackageView, "addOne", () => {
+        const table = this.fileTableView.$el;
+        this.listenTo(
+          this.fileTableView,
+          "action:click",
+          this.handleFileTableAction,
+        );
+        this.listenTo(
+          this.fileTableView,
+          "rename:commit",
+          this.handleFileTableRename,
+        );
+        this.listenTo(
+          this.fileTableView,
+          "files:drop",
+          this.handleFileTableFilesDrop,
+        );
+        const refreshFileTableAndLayout = () => {
+          this.refreshFileTable();
           if (
             table.outerHeight() > $packageTableContainer.outerHeight() &&
             table.outerHeight() < 220
@@ -640,60 +1420,1223 @@ define([
             );
             if (this.emlView) this.emlView.resizeTOC();
           }
-        });
+        };
+        this.listenTo(
+          MetacatUI.rootDataPackage.events,
+          "change",
+          (change = {}) => {
+            if (
+              change.event === "members:add" ||
+              change.event === "members:remove" ||
+              change.event === "member:replace" ||
+              change.event === "member:rename" ||
+              change.event === "member:location" ||
+              change.event === "documentation:link" ||
+              change.event === "documentation:unlink" ||
+              change.event === "documentation:set"
+            ) {
+              this.metadataEntitySyncNeeded = true;
+            }
+
+            if (change.event === "metadata:changed") {
+              return;
+            }
+
+            clearTimeout(this.fileTableRefreshTimeout);
+            this.fileTableRefreshTimeout = setTimeout(() => {
+              this.fileTableRefreshTimeout = null;
+              refreshFileTableAndLayout();
+            }, 0);
+          },
+        );
 
         if (this.emlView) this.emlView.resizeTOC();
+        this.renderFileTableStartMessage();
 
         // Save the view as a subview
-        this.subviews.push(this.dataPackageView);
+        this.subviews.push(this.fileTableView);
+        this.toggleControls();
+        this.toggleEnableControls();
+        this.enrichEditorFileTableMembers({
+          renderId: this.renderId,
+          signal: this.renderAbortController?.signal,
+        });
       },
 
       /**
-       * Calls the appropriate render method depending on the model type
-       * @param {Backbone.Model} model The model to render
+       * Fill incomplete editor rows from system metadata after the first paint.
+       * @param {object} [options] Fetch options owned by the active render
+       * @since 0.0.0
        */
-      renderMember(model) {
-        // Render metadata or package information, based on the type
-        if (typeof model.attributes === "undefined") return;
+      async enrichEditorFileTableMembers(options = {}) {
+        const { renderId, signal } = this.getRenderOptions(options);
+        const { rootDataPackage: dataPackage } = MetacatUI;
+        const { fileTableView } = this;
+        if (!dataPackage || !fileTableView) return;
+        const isCurrentTable = () =>
+          !signal?.aborted &&
+          this.isCurrentRender(renderId) &&
+          MetacatUI.rootDataPackage === dataPackage &&
+          this.fileTableView === fileTableView;
 
-        switch (model.get("type")) {
-          case "DataPackage":
-            // Do recursive rendering here for sub packages
-            break;
+        try {
+          const result = await DataPackageFileTableAdapter.enrichMembers(
+            dataPackage,
+            { signal },
+          );
+          if (!isCurrentTable()) return;
+          if (result.changed) this.refreshFileTable();
+        } catch (error) {
+          if (isAbortError(error) || !isCurrentTable()) return;
+          // eslint-disable-next-line no-console
+          console.warn("Editor file details could not be loaded:", error);
+        }
+      },
 
-          case "Metadata":
-            this.renderMetadata(model);
-            break;
+      /**
+       * Build editor rows from the active package members.
+       * @returns {object[]} File table row definitions
+       * @since 0.0.0
+       */
+      getEditorFileTableRows() {
+        const resolveBaseUrl =
+          MetacatUI.appModel.get("resolveServiceUrl") ||
+          MetacatUI.appModel.get("objectServiceUrl") ||
+          "";
+        const members =
+          MetacatUI.rootDataPackage?.members
+            ?.getActiveMembers?.()
+            ?.filter((member) => !member.isMetadata()) || [];
+        const showShare = this.isAccessPolicyEditEnabled();
+        this.entityByMemberPid = this.buildEntityByMemberPid(members);
+        const title = this.model?.get?.("title");
+        const datasetTitle = Array.isArray(title) ? title[0] : title;
 
-          case "Data":
-            // TODO: this.renderDataPackageItem?
-            break;
+        const packageId = MetacatUI.rootDataPackage?.rootResourceMapPid || "";
+        return DataPackageFileTableAdapter.buildRows(
+          MetacatUI.rootDataPackage,
+          {
+            mode: "editor",
+            members,
+            resolveBaseUrl,
+            getMemberStatus: (member, type) =>
+              this.getEditorFileTableStatus(member, type),
+            showShare,
+            packageId,
+            preferredDatasetRootId: EDITOR_FILE_TABLE_ROOT_ROW_ID,
+            packageTitle:
+              datasetTitle ||
+              (this.model?.isNew?.() ? MESSAGES.untitledDataset : "") ||
+              this.model?.get?.("id") ||
+              MESSAGES.dataset,
+          },
+        );
+      },
 
-          default:
-            break;
+      /**
+       * Match data members to existing EML entities without mutating them.
+       * @param {DataPackageMember[]} [members] Members to match
+       * @param {EML211} [metadataModel] Metadata model containing entities
+       * @returns {Map<string, EMLEntity>} Entities keyed by member PID
+       * @since 0.0.0
+       */
+      buildEntityByMemberPid(members = [], metadataModel = this.model) {
+        const entities = metadataModel?.get?.("entities");
+        const matches = new Map();
+        if (!entities?.each) return matches;
+
+        const byDownloadId = new Map();
+        const byXmlId = new Map();
+        const byFileName = new Map();
+        const byFormatName = new Map();
+        const rememberUnique = (map, key, entity) => {
+          if (!key) return;
+          const normalized = String(key).toLowerCase();
+          const existingEntity = map.get(normalized);
+          if (!map.has(normalized)) {
+            map.set(normalized, entity);
+          } else if (existingEntity !== entity) {
+            map.set(normalized, null);
+          }
+        };
+
+        entities.each((entity) => {
+          const dataPid = entity.getDataPid?.();
+          const xmlId = entity.get?.("xmlID");
+          const fileName =
+            entity.get?.("physicalObjectName") || entity.get?.("entityName");
+          const formatName = entity.get?.("entityType");
+          if (dataPid) byDownloadId.set(dataPid, entity);
+          if (xmlId) byXmlId.set(xmlId, entity);
+          rememberUnique(byFileName, fileName, entity);
+          rememberUnique(byFileName, fileName?.replace?.(/ /g, "_"), entity);
+          rememberUnique(byFormatName, formatName, entity);
+        });
+
+        const dataMembers = members.filter((member) => member.isData?.());
+        dataMembers.forEach((member) => {
+          const { pid } = member;
+          const xmlId =
+            member.getXMLSafeID?.() ||
+            (pid ? String(pid).replace(/</g, "-").replace(/:/g, "-") : "");
+          const formatId =
+            member.formatId ||
+            member.mediaType ||
+            member.uploadFile?.type ||
+            "application/octet-stream";
+          let entity =
+            byDownloadId.get(pid) ||
+            byXmlId.get(xmlId) ||
+            byFileName.get(member.fileName?.toLowerCase()) ||
+            byFormatName.get(formatId?.toLowerCase());
+
+          if (!entity && dataMembers.length === 1 && entities.length === 1) {
+            entity = entities.at(0);
+          }
+          if (!entity) return;
+          if (entity.getDataPid?.() && entity.getDataPid() !== pid) return;
+
+          matches.set(pid, entity);
+        });
+
+        return matches;
+      },
+
+      /**
+       * Build the editor status shown for a package member row.
+       * @param {DataPackageMember} member Package member
+       * @param {string} type Member format type
+       * @returns {object|null} Row status or null when no status is shown
+       * @since 0.0.0
+       */
+      getEditorFileTableStatus(member, type) {
+        const remoteState = member?.remoteState;
+        const memberPid = member?.pid;
+        // While a replace is being prepared the member is still UPLOADED under
+        // its old PID, so show an uploading state optimistically until the eager
+        // upload starts reporting progress under the new PID.
+        if (memberPid && this.replacingPids?.has(memberPid)) {
+          return {
+            title: MESSAGES.uploadingNow,
+            iconClass: CLASS_NAMES.statusWarningIcon,
+            className: CLASS_NAMES.statusUploading,
+            progress: 0,
+          };
+        }
+        const hasStoredProgress =
+          memberPid &&
+          Object.prototype.hasOwnProperty.call(
+            this.fileUploadProgressByPid || {},
+            memberPid,
+          );
+        const isSaveProgress =
+          hasStoredProgress &&
+          this.packageSavePendingPids?.has?.(memberPid) === true;
+        const hasProgress =
+          hasStoredProgress && (remoteState !== "uploaded" || isSaveProgress);
+        const progress = hasProgress
+          ? this.fileUploadProgressByPid[memberPid]
+          : null;
+        if (
+          remoteState === "pending" ||
+          remoteState === "uploading" ||
+          hasProgress
+        ) {
+          const isUploading = remoteState === "uploading" || hasProgress;
+          return {
+            title: isUploading
+              ? MESSAGES.uploadingNow
+              : MESSAGES.waitingToUpload,
+            iconClass: CLASS_NAMES.statusWarningIcon,
+            className: isUploading
+              ? CLASS_NAMES.statusUploading
+              : CLASS_NAMES.statusPending,
+            progress: Number.isFinite(progress) ? progress : 0,
+          };
+        }
+        if (remoteState === "failed") {
+          const uploadError = member?.lastUploadError;
+          const uploadErrorMessage = uploadError?.message;
+          const title = uploadErrorMessage
+            ? `Upload failed: ${uploadErrorMessage}. ` +
+              "Save the dataset to continue without this file."
+            : MESSAGES.uploadFailed;
+          return {
+            title,
+            iconClass: CLASS_NAMES.statusDangerIcon,
+            className: CLASS_NAMES.statusFailed,
+          };
+        }
+        if (remoteState === "ambiguous") {
+          return {
+            title: MESSAGES.ambiguousUpload,
+            iconClass: CLASS_NAMES.statusWarningIcon,
+            className: CLASS_NAMES.statusAmbiguous,
+          };
+        }
+        if (type !== "DATA") return null;
+
+        const entity = this.entityByMemberPid
+          ? this.entityByMemberPid.get(member.pid)
+          : this.model?.getEntity?.(member);
+        const attributeList = entity?.get?.("attributeList");
+        const linkedAttributeList = attributeList
+          ?.get?.("references")
+          ?.getLinkedModel?.();
+        const hasAttributes =
+          attributeList?.hasNonEmptyAttributes?.() === true ||
+          linkedAttributeList?.hasNonEmptyAttributes?.() === true;
+        if (!entity || !hasAttributes) {
+          return {
+            title: MESSAGES.missingAttributes,
+            iconClass: CLASS_NAMES.statusWarningIcon,
+            className: CLASS_NAMES.statusMissingAttributes,
+          };
+        }
+        if (
+          entity.isValid?.() === false ||
+          attributeList?.isValid?.() === false
+        ) {
+          return {
+            title: MESSAGES.missingAttributeInfo,
+            iconClass: CLASS_NAMES.statusDangerIcon,
+            className: CLASS_NAMES.statusInvalidAttributes,
+          };
+        }
+        return {
+          title: MESSAGES.complete,
+          iconClass: CLASS_NAMES.statusSuccessIcon,
+          className: CLASS_NAMES.statusComplete,
+        };
+      },
+
+      /**
+       * Merge current package rows into the rendered file table.
+       * @returns {void}
+       * @since 0.0.0
+       */
+      refreshFileTable() {
+        clearTimeout(this.fileTableRefreshTimeout);
+        this.fileTableRefreshTimeout = null;
+        if (!this.fileTableView) return;
+        const rows = this.getEditorFileTableRows();
+        // Merge (rather than replace) so open folders stay open: mergeRows keeps
+        // each surviving row's expand/collapse state, updates only changed rows,
+        // and re-imposes the incoming order. setRows would discard the row
+        // models and reset every folder to its default collapsed state.
+        this.fileTableView.viewModel.mergeRows(rows);
+        this.renderFileTableStartMessage();
+      },
+
+      /**
+       * Show the add files prompt for a new package with no data members.
+       * @returns {void}
+       * @since 0.0.0
+       */
+      renderFileTableStartMessage() {
+        const tableView = this.fileTableView;
+        const rows = tableView?.viewModel?.getRows?.();
+        if (!tableView || !rows) return;
+
+        tableView.$(".message-row").remove();
+
+        if (!this.model?.isNew?.()) return;
+        if (
+          rows.length !== 1 ||
+          rows.at(0)?.get("className") !== "root-dataset"
+        ) {
+          return;
+        }
+
+        const columnCount = tableView.viewModel.getColumnCount();
+        const messageRow = `
+          <tr class="data-package-item message-row">
+            <td colspan="${columnCount}" class="center">
+              <h2 class="subtle center">${MESSAGES.fileTableStart}</h2>
+              <button
+                type="button"
+                class="addFiles btn btn-primary center"
+                title="Add Files"
+              >
+                <i class="icon icon-large icon-plus icon-on-left"></i>
+                <span>Add Files</span>
+              </button>
+            </td>
+          </tr>
+        `;
+        tableView.$("tbody").append(messageRow);
+      },
+
+      /**
+       * Enable or disable file table interactions.
+       * @param {boolean} disabled Whether file table controls are disabled
+       * @returns {void}
+       * @since 0.0.0
+       */
+      setFileTableDisabled(disabled) {
+        this.fileTableView?.setDisabled?.(disabled);
+      },
+
+      /**
+       * Update one data member row without rebuilding the table.
+       * @param {DataPackageMember|string} memberOrPid Member or PID to update
+       * @returns {Backbone.Model|null} Updated row model, or null when absent
+       * @since 0.0.0
+       */
+      updateFileTableMemberStatus(memberOrPid) {
+        const member =
+          typeof memberOrPid === "string"
+            ? MetacatUI.rootDataPackage?.getMember?.(memberOrPid)
+            : memberOrPid;
+        // Only data members have rows (and entities to match against).
+        if (!member?.pid || !member.isData?.()) return null;
+
+        const { remoteState } = member;
+        if (
+          this.entityByMemberPid &&
+          this.model?.getEntity &&
+          remoteState !== "pending" &&
+          remoteState !== "uploading"
+        ) {
+          const entity = this.model.getEntity(member);
+          if (entity) this.entityByMemberPid.set(member.pid, entity);
+          else this.entityByMemberPid.delete(member.pid);
+        }
+
+        return (
+          this.fileTableView?.viewModel?.updateRow?.(member.pid, {
+            status: this.getEditorFileTableStatus(
+              member,
+              member.getFormatType?.() || member.formatType,
+            ),
+          }) || null
+        );
+      },
+
+      /**
+       * Open a file picker for package files.
+       * @param {object} [options] Picker options
+       * @param {boolean} [options.multiple] Whether multiple files are allowed
+       * @returns {Promise<File[]>} Selected files
+       * @since 0.0.0
+       */
+      choosePackageFiles({ multiple = false } = {}) {
+        return new Promise((resolve) => {
+          const input = $(document.createElement("input"))
+            .attr("type", "file")
+            .css("display", "none");
+          if (multiple) input.attr("multiple", "multiple");
+          input.on("change", () => {
+            const files = Array.from(input[0].files || []);
+            input.remove();
+            resolve(files);
+          });
+          this.$el.append(input);
+          input.trigger("click");
+        });
+      },
+
+      /**
+       * Show a temporary alert for a failed file replacement.
+       * @param {Error} error Replacement failure
+       * @returns {void}
+       * @since 0.0.0
+       */
+      showReplaceFileFailedAlert(error) {
+        const details = error?.message || (error ? String(error) : "");
+        const detailMessage = details
+          ? ` ${Utilities.encodeHTML(details)}`
+          : "";
+        MetacatUI.appView.showAlert(
+          MESSAGES.replaceFileFailed(detailMessage),
+          CLASS_NAMES.alertError,
+          this.$el,
+          10000,
+          { remove: true },
+        );
+      },
+
+      /**
+       * Show an uploading state while a replacement is prepared.
+       * @param {string} rowId File table row identifier
+       * @param {DataPackageMember} [member] Member being replaced
+       * @returns {void}
+       * @since 0.0.0
+       */
+      startFileReplacementPreview(rowId, member) {
+        if (!rowId) return;
+        const alreadyReplacing = this.replacingPids?.has(rowId);
+        this.replacingPids?.add(rowId);
+        if (alreadyReplacing) return;
+        const currentMember =
+          member || MetacatUI.rootDataPackage.getMember?.(rowId);
+        const updatedRow = currentMember
+          ? this.fileTableView?.viewModel?.updateRow?.(rowId, {
+              status: this.getEditorFileTableStatus(
+                currentMember,
+                currentMember.getFormatType?.() || currentMember.formatType,
+              ),
+            })
+          : null;
+        if (!updatedRow) this.refreshFileTable();
+      },
+
+      /**
+       * Clear the optimistic replacement state and refresh the table.
+       * @param {string} rowId File table row identifier
+       * @returns {void}
+       * @since 0.0.0
+       */
+      finishFileReplacementPreview(rowId) {
+        if (!this.replacingPids?.delete(rowId)) return;
+        this.refreshFileTable();
+      },
+
+      /**
+       * Build display details for one side of the replacement comparison.
+       * @param {object} options Detail sources
+       * @param {string} options.pid Object PID
+       * @param {DataPackageMember} [options.member] Package member
+       * @param {Backbone.Model} [options.rowModel] File table row
+       * @param {SystemMetadata|object} [options.sysMeta] System metadata
+       * @param {string} [options.label] Preferred title
+       * @returns {object} Replacement comparison details
+       * @since 0.0.0
+       */
+      getReplaceFileDetails({ pid, member, rowModel, sysMeta, label }) {
+        const values = sysMeta?.toJSON?.() || sysMeta || {};
+        const size = Number(values.size ?? member?.size);
+        const sizeLabel =
+          rowModel?.get?.("sizeLabel") ||
+          (Number.isFinite(size) ? ValueUtilities.bytesToSize(size) : "");
+        const modified =
+          values.dateSysMetadataModified ||
+          member?.dateSysMetadataModified ||
+          member?.dateModified ||
+          member?.modified ||
+          values.dateUploaded ||
+          member?.dateUploaded ||
+          "";
+
+        return {
+          title:
+            label ||
+            rowModel?.get?.("label") ||
+            member?.title ||
+            member?.getFileName?.() ||
+            member?.fileName ||
+            values.fileName ||
+            "Unavailable",
+          size: sizeLabel || "Unavailable",
+          modified:
+            DateUtilities.toLocalTimestampWithZone(modified) || "Unavailable",
+          downloadUrl:
+            rowModel?.get?.("downloadUrl") ||
+            UrlUtilities.getObjectDownloadUrl(pid),
+        };
+      },
+
+      /**
+       * Render one file details card for the replacement modal.
+       * @param {string} heading Card heading
+       * @param {object} details Replacement comparison details
+       * @param {string} [className] Additional card class
+       * @returns {jQuery} Rendered details card
+       * @since 0.0.0
+       */
+      renderReplaceFileDetails(heading, details, className = "") {
+        const section = $(document.createElement("section")).addClass(
+          "replace-newest-version-details",
+        );
+        if (className) section.addClass(className);
+        section.append(
+          $(document.createElement("h5"))
+            .addClass("replace-newest-version-details-heading")
+            .text(heading),
+        );
+        const list = $(document.createElement("dl")).addClass(
+          "replace-newest-version-detail-list",
+        );
+        [
+          ["Title", details.title],
+          ["Size", details.size],
+          ["Date modified", details.modified],
+        ].forEach(([term, value]) => {
+          list.append(
+            $(document.createElement("dt")).text(term),
+            $(document.createElement("dd")).text(value || "Unavailable"),
+          );
+        });
+        list.append($(document.createElement("dt")).text("Download"));
+        const downloadValue = $(document.createElement("dd"));
+        if (details.downloadUrl) {
+          downloadValue.append(
+            $(document.createElement("a"))
+              .addClass("replace-newest-version-download")
+              .attr({
+                href: details.downloadUrl,
+                target: "_blank",
+                rel: "noopener noreferrer",
+              })
+              .text("Download file"),
+          );
+        } else {
+          downloadValue.text("Unavailable");
+        }
+        list.append(downloadValue);
+        section.append(list);
+        return section;
+      },
+
+      /**
+       * Stage a file replacement and report its outcome without throwing.
+       * @param {string} rowId Existing member PID
+       * @param {File} file Replacement file
+       * @param {object} [options] Replacement options
+       * @param {DataPackageMember} [options.member] Member being replaced
+       * @param {string} [options.replacementSourcePid] Newest remote PID
+       * @param {boolean} [options.showFailureAlert] Whether to show an alert
+       * @returns {Promise<{ok: boolean, error: Error|undefined}>} Replacement
+       * outcome
+       * @since 0.0.0
+       */
+      async replaceFileFromFileTable(
+        rowId,
+        file,
+        {
+          member = null,
+          replacementSourcePid = null,
+          showFailureAlert = true,
+        } = {},
+      ) {
+        MetacatUI.rootDataPackage.cancelEagerUpload?.(rowId);
+        delete this.fileUploadProgressByPid[rowId];
+        // Reflect the pending upload on the row immediately, before the async
+        // replace prep (sysmeta fetch, checksum) and eager upload run.
+        this.startFileReplacementPreview(rowId, member);
+        try {
+          if (replacementSourcePid) {
+            await MetacatUI.rootDataPackage.replaceFile(rowId, file, {
+              replacementSourcePid,
+            });
+          } else {
+            await MetacatUI.rootDataPackage.replaceFile(rowId, file);
+          }
+          return { ok: true };
+        } catch (error) {
+          if (showFailureAlert) this.showReplaceFileFailedAlert(error);
+          return { ok: false, error };
+        } finally {
+          // The member now carries a new PID (on success) or is unchanged (on
+          // failure); clear the optimistic flag keyed on the old PID so the
+          // eager upload's progress, or the restored state, takes over.
+          this.finishFileReplacementPreview(rowId);
+        }
+      },
+
+      /**
+       * Ask whether a replacement should target a newer remote version.
+       * @param {object} options Modal options
+       * @param {string} options.rowId Selected row identifier
+       * @param {DataPackageMember} options.member Selected member
+       * @param {object} options.sourceDetails Selected version details
+       * @param {string} options.latestPid Newest remote PID
+       * @param {object} options.latestDetails Newest version details
+       * @param {File} options.file Replacement file
+       * @returns {Promise<boolean>} True when the newest version was replaced
+       * @since 0.0.0
+       */
+      showReplaceNewestVersionModal({
+        rowId,
+        member,
+        sourceDetails,
+        latestPid,
+        latestDetails,
+        file,
+      }) {
+        return new Promise((resolve) => {
+          let settled = false;
+          const finish = (result) => {
+            if (settled) return;
+            settled = true;
+            resolve(result);
+          };
+          const modal = $(document.createElement("div"))
+            .addClass("modal replace-newest-version-modal")
+            .attr("role", "dialog");
+          const header = $(document.createElement("div"))
+            .addClass("modal-header")
+            .append(
+              $(document.createElement("button"))
+                .attr({
+                  type: "button",
+                  "data-dismiss": "modal",
+                  "aria-hidden": "true",
+                })
+                .addClass("close")
+                .html("&times;"),
+              $(document.createElement("h4")).text(
+                "Replace newest file version?",
+              ),
+            );
+          const errorContainer = $(document.createElement("div"))
+            .addClass("alert alert-error")
+            .hide();
+          const detailsComparison = $(document.createElement("div"))
+            .addClass("replace-newest-version-comparison")
+            .append(
+              this.renderReplaceFileDetails(
+                "Version currently in dataset",
+                sourceDetails,
+                "replace-newest-version-details-current",
+              ),
+              this.renderReplaceFileDetails(
+                "Newest version",
+                latestDetails,
+                "replace-newest-version-details-newest",
+              ),
+            );
+          const body = $(document.createElement("div"))
+            .addClass("modal-body")
+            .append(
+              $(document.createElement("p"))
+                .addClass("replace-newest-version-message")
+                .text(
+                  "The selected file has already been replaced by a newer version. Replace the newest version instead?",
+                ),
+              detailsComparison,
+              errorContainer,
+            );
+          const cancelButton = $(document.createElement("a"))
+            .addClass("btn")
+            .attr({ href: "#", "data-dismiss": "modal" })
+            .text("Cancel replacement");
+          const confirmButton = $(document.createElement("a"))
+            .addClass("btn btn-primary replace-newest-version-confirm")
+            .attr("href", "#")
+            .text("Replace newest version");
+          const footer = $(document.createElement("div"))
+            .addClass("modal-footer")
+            .append(cancelButton, confirmButton);
+
+          modal.append(header, body, footer);
+          const closeModal = () => {
+            if (typeof modal.modal === "function") {
+              modal.modal("hide");
+            } else {
+              modal.remove();
+            }
+          };
+          cancelButton.on("click", (clickEvent) => {
+            clickEvent.preventDefault();
+            finish(false);
+            closeModal();
+          });
+          confirmButton.on("click", async (clickEvent) => {
+            clickEvent.preventDefault();
+            if (confirmButton.hasClass("disabled")) return;
+            const buttons = modal.find(".btn, button");
+            buttons.attr("disabled", "disabled").addClass("disabled");
+            errorContainer.hide().text("");
+            const result = await this.replaceFileFromFileTable(rowId, file, {
+              member,
+              replacementSourcePid: latestPid,
+              showFailureAlert: false,
+            });
+            if (result.ok) {
+              finish(true);
+              closeModal();
+              return;
+            }
+            const details =
+              result.error?.message ||
+              (result.error ? String(result.error) : "");
+            errorContainer
+              .text(
+                `Failed to replace the file in the dataset. Please try again.${
+                  details ? ` ${details}` : ""
+                }`,
+              )
+              .show();
+            buttons.removeAttr("disabled").removeClass("disabled");
+          });
+          modal.on("hidden", () => {
+            finish(false);
+            modal.remove();
+          });
+          const container = this.$el?.length ? this.$el : $("body");
+          container.append(modal);
+          if (typeof modal.modal === "function") {
+            modal.modal().modal("show");
+          }
+        });
+      },
+
+      /**
+       * Handle a replacement selected from a file table row.
+       * @param {Backbone.Model} rowModel File table row
+       * @returns {Promise<boolean>} False only when no file was selected
+       * @since 0.0.0
+       * @example
+       * const handled = await view.handleFileTableReplaceAction(rowModel);
+       */
+      async handleFileTableReplaceAction(rowModel) {
+        const rowId = rowModel.get("id");
+        const [file] = await this.choosePackageFiles();
+        if (!file) return false;
+
+        const member = MetacatUI.rootDataPackage.getMember?.(rowId);
+        const sourcePid = member?.remotePid || rowId;
+        this.fileTableEditInProgress = true;
+        this.toggleEnableControls();
+        this.startFileReplacementPreview(rowId, member);
+
+        try {
+          const versionTracker = MetacatUI.rootDataPackage.getVersionTracker();
+          const latestPid = await versionTracker.getLatestVersion(sourcePid, {
+            useCache: false,
+          });
+
+          if (latestPid && latestPid !== sourcePid) {
+            let latestSysMeta = null;
+            try {
+              latestSysMeta = await versionTracker.getSysMeta?.(latestPid, {
+                useCache: false,
+              });
+            } catch {
+              // The modal can still ask for confirmation with partial details.
+            }
+
+            await this.showReplaceNewestVersionModal({
+              rowId,
+              member,
+              sourceDetails: this.getReplaceFileDetails({
+                pid: sourcePid,
+                member,
+                rowModel,
+                label:
+                  rowModel.get?.("label") ||
+                  member?.getFileName?.() ||
+                  member?.fileName ||
+                  "",
+              }),
+              latestPid,
+              latestDetails: this.getReplaceFileDetails({
+                pid: latestPid,
+                sysMeta: latestSysMeta,
+                label: latestSysMeta?.fileName || "",
+              }),
+              file,
+            });
+          } else {
+            await this.replaceFileFromFileTable(rowId, file, { member });
+          }
+        } catch (error) {
+          this.showReplaceFileFailedAlert(error);
+        } finally {
+          this.fileTableEditInProgress = false;
+          this.finishFileReplacementPreview(rowId);
+          this.toggleEnableControls();
+        }
+
+        return true;
+      },
+
+      /**
+       * Run the action selected for a file table row.
+       * @param {Backbone.Model} rowModel File table row
+       * @param {Backbone.Model} actionModel Selected row action
+       * @param {Event} [event] Click event
+       * @returns {Promise<boolean>} True when the action was handled
+       * @since 0.0.0
+       */
+      async handleFileTableAction(rowModel, actionModel, event) {
+        const actionId = actionModel?.get?.("id");
+        const rowId = rowModel?.get?.("id");
+        if (!actionId || !rowId) return false;
+
+        event?.preventDefault?.();
+
+        if (actionId === "describe") {
+          return this.showEntityForMember(
+            MetacatUI.rootDataPackage.getMember(rowId),
+            rowModel,
+          );
+        }
+
+        if (actionId === "add-files") {
+          const files = await this.choosePackageFiles({ multiple: true });
+          if (!files.length) return false;
+          await this.addFilesFromFileTable(rowModel, files);
+          return true;
+        }
+
+        if (actionId === "share") {
+          return this.showFileTableAccessPolicy(rowModel, event);
+        }
+
+        if (actionId === "replace") {
+          return this.handleFileTableReplaceAction(rowModel);
+        }
+
+        if (actionId === "remove") {
+          this.fileTableView?.viewModel?.removeRow?.(rowId);
+          try {
+            await MetacatUI.rootDataPackage.removeMembers(rowId);
+          } catch (e) {
+            // Check if the item is still in the dataPackage
+            const stillExists = MetacatUI.rootDataPackage.getMember(rowId);
+            if (stillExists) {
+              const details = e?.message || (e ? String(e) : "");
+              const detailMessage = details
+                ? ` ${Utilities.encodeHTML(details)}`
+                : "";
+              this.showFullPageAlert(MESSAGES.removeFileFailed(detailMessage));
+            }
+          } finally {
+            this.refreshFileTable();
+          }
+          return true;
+        }
+
+        if (actionId === "download") {
+          const downloadUrl = rowModel.get("downloadUrl");
+          if (downloadUrl) window.open(downloadUrl, "_blank");
+          return Boolean(downloadUrl);
+        }
+
+        return false;
+      },
+
+      /**
+       * Add files through the empty package prompt.
+       * @param {Event} [event] Click event
+       * @returns {Promise<boolean>} True when files were selected and handled
+       * @since 0.0.0
+       */
+      async handleFileTableStartAddFiles(event) {
+        event?.preventDefault?.();
+        const rootRow = this.fileTableView?.viewModel
+          ?.getRows?.()
+          ?.findWhere({ className: "root-dataset" });
+        if (!rootRow) return false;
+
+        const files = await this.choosePackageFiles({ multiple: true });
+        if (!files.length) return false;
+        await this.addFilesFromFileTable(rootRow, files);
+        return true;
+      },
+
+      /**
+       * Load and show sharing controls for a file table row.
+       * @param {Backbone.Model} rowModel File table row
+       * @param {Event} [event] Click event
+       * @returns {Promise<boolean>} True when the request was handled
+       * @since 0.0.0
+       */
+      async showFileTableAccessPolicy(rowModel, event) {
+        if (!this.isAccessPolicyEditEnabled()) return false;
+
+        const member = this.getFileTablePackageMember(rowModel);
+        if (!member) return false;
+
+        const loadingShown =
+          EditorView.prototype.showAccessPolicyLoadingModal.call(this, event);
+        if (!loadingShown) return false;
+        const modalWasClosed = () => {
+          const modal = this.$(
+            `${this.accessPolicyViewContainer} .${CLASS_NAMES.accessPolicyViewModal}`,
+          );
+          return modal.length && !modal.hasClass("in") && !modal.is(":visible");
+        };
+
+        // Refresh sysmeta first so the modal shows the current remote rules.
+        try {
+          if (member.remotePid || member.aggregatedPid) {
+            await member.fetchSysMeta({ useCache: false });
+            member.isAuthorized_changePermission = await member.checkPermission(
+              "changePermission",
+              {
+                refresh: true,
+              },
+              MetacatUI.rootDataPackage.getAuthorizationService(),
+            );
+          } else {
+            member.isAuthorized_changePermission = true;
+          }
+        } catch (error) {
+          if (!modalWasClosed()) {
+            EditorView.prototype.showAccessPolicyLoadError.call(
+              this,
+              MESSAGES.sharingSettingsLoadError,
+            );
+          }
+          // eslint-disable-next-line no-console
+          console.error("Error loading sharing settings: ", error);
+          return true;
+        }
+
+        if (modalWasClosed()) return true;
+
+        // The dataset/root row and the primary metadata represent the dataset
+        // as a whole, so their policy must broadcast to the package
+        // (setPackageAccessPolicy) rather than only the clicked member.
+        const packageLevel =
+          rowModel?.get?.("kind") === "dataset" ||
+          member.isMetadata() ||
+          member.isResourceMap();
+        const accessPolicyOptions = this.buildAccessPolicyModalOptions(member, {
+          packageLevel,
+        });
+        EditorView.prototype.showAccessPolicyModal.call(
+          this,
+          event,
+          null,
+          accessPolicyOptions,
+        );
+        return true;
+      },
+
+      /**
+       * Build explicit policy editor options for a package member. The shared
+       * AccessPolicyView consumes the policy rules, display context, and apply
+       * callback directly rather than via a facade resembling a DataONEObject.
+       * @param {DataPackageMember} member Package member
+       * @param {object} [options] Modal options
+       * @param {boolean} [options.packageLevel] Whether apply should target the
+       * whole package
+       * @returns {object} AccessPolicy modal options
+       * @since 0.0.0
+       */
+      buildAccessPolicyModalOptions(member, { packageLevel = false } = {}) {
+        const sysMeta = member.sysMeta || member.remoteSysMeta;
+
+        let type = "DataONEObject";
+        if (member.isResourceMap()) type = "DataPackage";
+        else if (member.isMetadata()) type = "EML";
+
+        return {
+          packageLevel,
+          policy: sysMeta?.accessPolicy || [],
+          policyContext: {
+            fileName: member.getFileName(),
+            rightsHolder: sysMeta?.rightsHolder || null,
+            canChangePermission:
+              member.isNew?.() === true ||
+              member.isAuthorized_changePermission === true,
+            targetPid: member.pid,
+            type,
+          },
+          onApply: (policy, { propagate, rightsHolder, onProgress } = {}) => {
+            if (packageLevel) {
+              const options = { propagate };
+              if (rightsHolder) options.rightsHolder = rightsHolder;
+              if (typeof onProgress === "function") {
+                options.onProgress = onProgress;
+              }
+              return MetacatUI.rootDataPackage.setPackageAccessPolicy(
+                policy,
+                options,
+              );
+            }
+            if (rightsHolder) {
+              return MetacatUI.rootDataPackage.setMemberAccessPolicy(
+                member.pid,
+                policy,
+                { rightsHolder },
+              );
+            }
+            return MetacatUI.rootDataPackage.setMemberAccessPolicy(
+              member.pid,
+              policy,
+            );
+          },
+        };
+      },
+
+      /**
+       * Resolve the package member represented by a file table row.
+       * @param {Backbone.Model} rowModel File table row
+       * @returns {DataPackageMember|null} Matching package member
+       * @since 0.0.0
+       */
+      getFileTablePackageMember(rowModel) {
+        const rowKind = rowModel?.get?.("kind");
+        if (rowKind === "dataset") {
+          return MetacatUI.rootDataPackage.getRootResourceMapMember();
+        }
+        return MetacatUI.rootDataPackage.getMember(rowModel?.get?.("id"));
+      },
+
+      /**
+       * Add files dropped on a file table row.
+       * @param {Backbone.Model} rowModel Drop target row
+       * @param {FileList|File[]} files Dropped files
+       * @param {Event} [event] Drop event
+       * @returns {Promise<void>} Resolves after the files are handled
+       * @since 0.0.0
+       */
+      async handleFileTableFilesDrop(rowModel, files, event) {
+        event?.preventDefault?.();
+        await this.addFilesFromFileTable(rowModel, Array.from(files || []));
+      },
+
+      /**
+       * Yield until the browser can paint provisional file rows.
+       * @returns {Promise<void>} Resolves on the next animation frame
+       * @since 0.0.0
+       */
+      waitForNextPaint() {
+        if (
+          typeof window !== "undefined" &&
+          typeof window.requestAnimationFrame === "function"
+        ) {
+          return new Promise((resolve) => {
+            window.requestAnimationFrame(resolve);
+          });
+        }
+        return Promise.resolve();
+      },
+
+      /**
+       * Stage files, link them into the package, and update EML entities.
+       * @param {Backbone.Model} rowModel Add target row
+       * @param {File[]} files Files to add
+       * @returns {Promise<DataPackageMember[]>} Members retained in the package
+       * @since 0.0.0
+       */
+      async addFilesFromFileTable(rowModel, files) {
+        if (!files.length) return [];
+        this.fileTableEditInProgress = true;
+        this.toggleEnableControls();
+        let added = [];
+        let filesLinked = false;
+        try {
+          const rowKind = rowModel?.get?.("kind");
+          const metadataPid =
+            rowKind === "metadata"
+              ? rowModel.get("id")
+              : MetacatUI.rootDataPackage.getPrimaryMetadataMember()?.pid;
+          const atLocation =
+            rowKind === "folder" ? rowModel.get("atLocation") : "";
+          added = await MetacatUI.rootDataPackage.stageLocalFiles(files);
+          // Staging makes provisional rows visible. Paint them before linking
+          // adds them to the ResourceMap and starts eager uploads.
+          this.refreshFileTable();
+          this.toggleControls();
+          this.toggleEnableControls();
+          await this.waitForNextPaint();
+          await MetacatUI.rootDataPackage.linkStagedFiles(added, {
+            metadataPid,
+            atLocation,
+          });
+          // ResourceMap membership has changed and eager uploads may have begun,
+          // so later metadata errors cannot be represented as a failed add.
+          filesLinked = true;
+          const metadataMember = metadataPid
+            ? MetacatUI.rootDataPackage.getMember(metadataPid)
+            : null;
+          if (metadataMember) {
+            this.syncMetadataEntities(metadataMember);
+            await MetacatUI.rootDataPackage.markMemberContentDirty(
+              metadataMember.pid,
+            );
+          }
+          return added;
+        } catch (error) {
+          const details = error?.message || (error ? String(error) : "");
+          const detailMessage = details
+            ? ` ${Utilities.encodeHTML(details)}`
+            : "";
+          if (filesLinked) {
+            this.refreshFileTable();
+            MetacatUI.appView.showAlert(
+              MESSAGES.addFilesMetadataUpdateFailed(detailMessage),
+              CLASS_NAMES.alertWarning,
+              this.$el,
+              10000,
+              { remove: true },
+            );
+            return added;
+          }
+          MetacatUI.appView.showAlert(
+            MESSAGES.addFilesFailed(detailMessage),
+            CLASS_NAMES.alertError,
+            this.$el,
+            10000,
+            { remove: true },
+          );
+          if (added.length) this.refreshFileTable();
+          return [];
+        } finally {
+          this.fileTableEditInProgress = false;
+          this.toggleEnableControls();
+        }
+      },
+
+      /**
+       * Apply a dataset title or member filename edit from the table.
+       * @param {Backbone.Model} rowModel Renamed row
+       * @param {string} proposedLabel Proposed title or filename
+       * @returns {Promise<void>} Resolves after the rename attempt
+       * @since 0.0.0
+       */
+      async handleFileTableRename(rowModel, proposedLabel) {
+        const rowId = rowModel?.get?.("id");
+        if (!rowId) return;
+        if (rowModel.get("className") === "root-dataset") {
+          const title = String(proposedLabel || "").trim();
+          if (!title || title === MESSAGES.untitledDataset) {
+            this.refreshFileTable();
+            return;
+          }
+          this.model.set("title", [title]);
+          this.renderCitationHeader(this.model);
+          this.refreshFileTable();
+          return;
+        }
+        if (rowModel.get("isContainer")) return;
+        try {
+          await MetacatUI.rootDataPackage.renameMemberFile(
+            rowId,
+            proposedLabel,
+          );
+        } catch (error) {
+          const details = error?.message || (error ? String(error) : "");
+          const detailMessage = details
+            ? ` ${Utilities.encodeHTML(details)}`
+            : "";
+          MetacatUI.appView.showAlert(
+            MESSAGES.renameFileFailed(detailMessage),
+            CLASS_NAMES.alertError,
+            this.$el,
+            10000,
+            { remove: true },
+          );
+        } finally {
+          this.refreshFileTable();
         }
       },
 
       /**
        * Renders the metadata section of the EML211EditorView
-       * @param {Backbone.Model} modelToRender - The model to render
+       * @param {Backbone.Model} modelToRender The model to render
        */
       renderMetadata(modelToRender) {
+        const { renderId } = this;
         const model = modelToRender || this.model;
         if (!model) return;
 
         // render metadata as the collection is updated, but only EML passed
         // from the event
+        if (typeof model.get !== "function") return;
         const formatId = model.get("formatId");
-        if (
-          typeof model.get === "undefined" ||
-          !(
-            formatId === "eml://ecoinformatics.org/eml-2.1.1" ||
-            formatId === "https://eml.ecoinformatics.org/eml-2.2.0"
-          )
-        ) {
-          // TODO: Render generic ScienceMetadata
-          const msg = `The editor only supports EML 2.1.1 and EML 2.2.0 documents at this time. The formatId of this document is ${formatId}.`;
+        const objectFormats = MetacatUI.objectFormats || new ObjectFormats();
+        const editableFormats = MetacatUI.appModel.get("editableFormats") || [];
+        const isEditableFormat =
+          !editableFormats.length || editableFormats.includes(formatId);
+        if (!objectFormats.isEML({ formatId }) || !isEditableFormat) {
+          const msg = MESSAGES.unsupportedEditableFormat(formatId);
           this.showFullPageAlert(msg, "error");
           return;
         }
@@ -701,19 +2644,27 @@ define([
         // Create an EML model
         if (model.type !== "EML") {
           // Create a new EML model from the ScienceMetadata model
-          const EMLmodel = new EML(model.toJSON());
-          // Replace the old ScienceMetadata model in the collection
-          MetacatUI.rootDataPackage.remove(model);
-          MetacatUI.rootDataPackage.add(EMLmodel, { silent: true });
-          MetacatUI.rootDataPackage.handleAdd(EMLmodel);
+          // The generic metadata model is already synced, but this typed EML
+          // model is not ready until its own object fetch completes. Keeping
+          // it unsynced prevents fetch population from being recorded as a
+          // user content edit.
+          const EMLmodel = new EML({ ...model.toJSON(), synced: false });
+          this.attachMetadataModelToPackage(EMLmodel);
           model.trigger("replace", EMLmodel);
 
           // Fetch the EML and render it
-          this.listenToOnce(EMLmodel, "sync", this.renderMetadata);
-          EMLmodel.fetch();
+          this.listenToOnce(EMLmodel, "sync", () => {
+            if (!this.isCurrentRender(renderId)) return;
+            this.renderMetadata(EMLmodel);
+          });
+          EMLmodel.fetch({ signal: this.renderAbortController?.signal });
 
           return;
         }
+
+        const metadataMember = this.attachMetadataModelToPackage(model);
+        this.syncMetadataEntities(metadataMember);
+        this.refreshFileTable();
 
         // Create an EML211 View and render it
         const emlView = new EMLView({
@@ -730,46 +2681,15 @@ define([
           this.trigger("editorInputsAdded");
         });
 
-        // Create a citation view and render it
-        const citationView = new CitationView({
-          model,
-          defaultTitle: "Untitled dataset",
-          createLink: false,
-          createTitleLink: !model.isNew(),
-        });
-
-        this.subviews.push(citationView);
-        $("#citation-container").html(citationView.render().$el);
+        this.renderCitationHeader(model);
 
         // Remove the rendering class from the body element
-        $("body").removeClass("rendering");
+        $("body").removeClass(CLASS_NAMES.rendering);
 
         // Focus the folder name field once loaded but only if this is a new
         // document
         if (!this.pid) {
-          $("#data-package-table-body td.name").focus();
-        }
-      },
-
-      /**
-       * Renders the data package section of the EML211EditorView
-       * @param {Backbone.Model} model - The model to render
-       */
-      renderDataPackageItem(model) {
-        const hasPackageSubView = this.subviews.find(
-          (subview) => subview.id === "data-package-table",
-          model,
-        );
-
-        // Only create the package table if it hasn't been created
-        if (!hasPackageSubView) {
-          this.dataPackageView = new DataPackageView({
-            dataPackage: MetacatUI.rootDataPackage,
-            edit: true,
-            parentEditorView: this,
-          });
-          this.subviews.push(this.dataPackageView);
-          this.dataPackageView.render();
+          $(".fileTitle").first().focus();
         }
       },
 
@@ -780,82 +2700,74 @@ define([
        */
       setListeners() {
         const view = this;
-        this.listenTo(this.model, "change:uploadStatus", this.showControls);
+        const { renderId } = this;
+        this.stopListening(
+          this.model,
+          "change:uploadStatus",
+          this.showControls,
+        );
+        this.stopListening(
+          this.model,
+          "change:uploadStatus",
+          this.toggleControls,
+        );
+        this.listenTo(this.model, "change:uploadStatus", this.toggleControls);
 
         // Register a listener for any attribute change
-        this.model.on("change", this.model.handleChange, this.model);
-
-        // Register a listener to save drafts on change
-        this.model.on("change", this.model.saveDraft, this.model);
+        if (typeof this.model.handleChange === "function") {
+          this.model.off("change", this.model.handleChange, this.model);
+          this.model.on("change", this.model.handleChange, this.model);
+        }
 
         this.stopListening(this.model, "change:errorMessage");
         this.listenTo(this.model, "change:errorMessage", () => {
           view.loadError(this.model.get("errorMessage"));
         });
 
-        // If any attributes have changed (including nested objects), show the
-        // controls
-        if (typeof MetacatUI.rootDataPackage.packageModel !== "undefined") {
-          this.stopListening(
-            MetacatUI.rootDataPackage.packageModel,
-            "change:changed",
-          );
-          this.listenTo(
-            MetacatUI.rootDataPackage.packageModel,
-            "change:changed",
-            this.toggleControls,
-          );
-          this.listenTo(
-            MetacatUI.rootDataPackage.packageModel,
-            "change:changed",
-            () => {
-              if (MetacatUI.rootDataPackage.packageModel.get("changed")) {
-                // Put this metadata model in the queue when the package has
-                // been changed Don't put it in the queue if it's in the process
-                // of saving already
-                if (this.model.get("uploadStatus") !== "p")
-                  this.model.set("uploadStatus", "q");
-              }
-            },
-          );
-        }
+        Utilities.awaitMetacatUI({ appName: "rootDataPackage" }).then(() => {
+          const { rootDataPackage } = MetacatUI;
+          const rootDataPackageEvents = rootDataPackage?.events;
+          if (
+            !this.isCurrentRender(renderId) ||
+            typeof rootDataPackageEvents?.on !== "function" ||
+            typeof rootDataPackageEvents?.off !== "function"
+          ) {
+            return;
+          }
+          const rootDataPackageListeners = [
+            ["change", this.toggleControls],
+            ["change", this.queueMetadataUploadAfterPackageChange],
+            ["upload:cancelled", this.handleSaveCancel],
+            [
+              "upload:prepare:progress",
+              this.handlePackageUploadPrepareProgress,
+            ],
+            ["upload:progress", this.handlePackageUploadProgress],
+            ["upload:success", this.handlePackageUploadSuccess],
+            [
+              "eagerUpload:complete eagerUpload:error",
+              this.handleEagerUploadSettled,
+            ],
+          ];
 
-        if (
-          MetacatUI.rootDataPackage &&
-          MetacatUI.rootDataPackage instanceof DataPackage
-        ) {
-          // If the Data Package failed saving, display an error message
-          this.listenTo(
-            MetacatUI.rootDataPackage,
-            "errorSaving",
-            this.saveError,
-          );
-
-          // Listen for when the package has been successfully saved
-          this.listenTo(
-            MetacatUI.rootDataPackage,
-            "successSaving",
-            this.saveSuccess,
-          );
-
-          // When the Data Package cancels saving, hide the saving styling
-          this.listenTo(
-            MetacatUI.rootDataPackage,
-            "cancelSave",
-            this.hideSaving,
-          );
-          this.listenTo(
-            MetacatUI.rootDataPackage,
-            "cancelSave",
-            this.handleSaveCancel,
-          );
-        }
+          rootDataPackageListeners.forEach(([event, handler]) => {
+            this.stopListening(rootDataPackageEvents, event, handler);
+            this.listenTo(rootDataPackageEvents, event, handler);
+          });
+        });
 
         // When the model is invalid, show the required fields
+        this.stopListening(this.model, "invalid", this.showValidation);
+        this.stopListening(this.model, "valid", this.showValidation);
         this.listenTo(this.model, "invalid", this.showValidation);
         this.listenTo(this.model, "valid", this.showValidation);
 
         // When a data package member fails to load, remove it and warn the user
+        this.stopListening(
+          MetacatUI.eventDispatcher,
+          "fileLoadError",
+          this.handleFileLoadError,
+        );
         this.listenTo(
           MetacatUI.eventDispatcher,
           "fileLoadError",
@@ -864,6 +2776,11 @@ define([
 
         // When a data package member fails to be read, remove it and warn the
         // user
+        this.stopListening(
+          MetacatUI.eventDispatcher,
+          "fileReadError",
+          this.handleFileReadError,
+        );
         this.listenTo(
           MetacatUI.eventDispatcher,
           "fileReadError",
@@ -874,7 +2791,9 @@ define([
         if (!this.beforeunloadCallback) {
           // When the Window is about to be closed, show a confirmation message
           this.beforeunloadCallback = (e) => {
-            if (!view.canClose()) {
+            if (view.canClose()) {
+              view.flushDraftSave();
+            } else {
               // Browsers don't support custom confirmation messages anymore, so
               // preventDefault() needs to be called or the return value has to
               // be set
@@ -887,75 +2806,457 @@ define([
       },
 
       /**
+       * Queue metadata upload after a package relationship edit.
+       * @returns {void}
+       * @since 0.0.0
+       */
+      queueMetadataUploadAfterPackageChange() {
+        // Mark the metadata for re-upload on package changes, but skip the set
+        // when a save is in progress ("p") or it is already queued ("q").
+        const status = this.model.get("uploadStatus");
+        if (status !== "p" && status !== "q") {
+          this.model.set("uploadStatus", "q");
+        }
+      },
+
+      /**
+       * Clear row progress after an eager upload settles.
+       * @param {object} [event] Eager upload event payload
+       * @returns {void}
+       * @since 0.0.0
+       */
+      handleEagerUploadSettled(event = {}) {
+        const settledPids = [
+          ...(event.memberPids || []),
+          ...(event.members || []).map((member) => member?.pid),
+        ].filter(Boolean);
+        settledPids.forEach((pid) => {
+          delete this.fileUploadProgressByPid[pid];
+        });
+        this.refreshFileTable();
+        this.toggleEnableControls();
+      },
+
+      /**
+       * Clear completed row progress after package upload actions succeed.
+       * @param {object} [event] Package upload event payload
+       * @returns {void}
+       * @since 0.0.0
+       */
+      handlePackageUploadSuccess(event = {}) {
+        const actionPids = (event.actions || [])
+          .map((action) => action.memberPid || action.targetPid)
+          .filter(Boolean);
+        if (actionPids.length) {
+          actionPids.forEach((pid) => {
+            delete this.fileUploadProgressByPid[pid];
+            this.packageSavePendingPids?.delete(pid);
+          });
+          if (this.packageSavePendingPids) {
+            this.packageSaveUploadCount = this.packageSavePendingPids.size;
+          }
+        } else {
+          this.fileUploadProgressByPid = {};
+        }
+        this.toggleEnableControls();
+      },
+
+      /**
+       * Return whether a failed file upload is known not to require a reload.
+       * @param {DataPackageMember} member Package member
+       * @returns {boolean} Whether the failed upload can be discarded
+       * @since 0.0.0
+       * @example
+       * view.isDiscardableFileUploadFailure(member); // true
+       */
+      isDiscardableFileUploadFailure(member) {
+        return (
+          member?.remoteState === "failed" &&
+          member.lastUploadError?.reloadRequired !== true
+        );
+      },
+
+      /**
+       * Return failed data members that replaced an existing remote PID.
+       * @returns {DataPackageMember[]} Failed replacement members
+       * @since 0.0.0
+       */
+      getFailedFileReplacements() {
+        return (MetacatUI.rootDataPackage?.toArray?.() || []).filter(
+          (member) =>
+            member?.isData?.() &&
+            member.remotePid &&
+            member.pid !== member.remotePid &&
+            this.isDiscardableFileUploadFailure(member),
+        );
+      },
+
+      /**
+       * Build the user facing label for a failed file upload.
+       * @param {DataPackageMember} member Failed member
+       * @returns {string} File label with an optional failure reason
+       * @since 0.0.0
+       */
+      getFailedFileMessage(member) {
+        const label = member?.fileName || member?.remotePid || member?.pid;
+        const reason = member?.lastUploadError?.message;
+        return reason ? `${label} - ${reason}` : label;
+      },
+
+      /**
+       * Restore remote members after their replacement uploads fail.
+       * @returns {Promise<string[]>} Labels for discarded replacements
+       * @since 0.0.0
+       */
+      async discardFailedFileReplacements() {
+        const discardReplacement =
+          MetacatUI.rootDataPackage?.discardFileReplacement;
+        if (typeof discardReplacement !== "function") return [];
+
+        const failedReplacements = this.getFailedFileReplacements();
+        const skipped = failedReplacements.map((member) =>
+          this.getFailedFileMessage(member),
+        );
+        await failedReplacements.reduce(
+          (chain, member) =>
+            chain.then(() =>
+              discardReplacement.call(MetacatUI.rootDataPackage, member.pid),
+            ),
+          Promise.resolve(),
+        );
+        return skipped;
+      },
+
+      /**
+       * Remove failed new files and restore failed replacements before saving.
+       * @param {DataPackageMember[]} packageMembers Current package members
+       * @returns {Promise<object>} Labels for files omitted from the save
+       * @private
+       * @since 0.0.0
+       */
+      async discardFailedFilesBeforeSave(packageMembers) {
+        const failedNewDataMembers = packageMembers.filter(
+          (member) =>
+            member?.isData?.() &&
+            !member.remotePid &&
+            this.isDiscardableFileUploadFailure(member),
+        );
+        const skippedNewDataFiles = failedNewDataMembers.map((member) =>
+          this.getFailedFileMessage(member),
+        );
+        const failedNewDataPids = failedNewDataMembers.map(
+          (member) => member.pid,
+        );
+        if (failedNewDataPids.length) {
+          await MetacatUI.rootDataPackage.removeMembers(failedNewDataPids);
+        }
+        const skippedFileReplacements =
+          await this.discardFailedFileReplacements();
+        return { skippedNewDataFiles, skippedFileReplacements };
+      },
+
+      /**
+       * Synchronize edited EML with its package member before upload.
+       * @returns {Promise<void>}
+       * @private
+       * @since 0.0.0
+       */
+      async syncMetadataForPackageSave() {
+        let metadataMember =
+          MetacatUI.rootDataPackage.getPrimaryMetadataMember();
+        const metadataChanged =
+          MetacatUI.rootDataPackage.hasMetadataContentEdits?.() === true ||
+          metadataMember?.contentDirty === true;
+        if (!metadataChanged) return;
+
+        if (typeof this.model.setFileName === "function") {
+          this.model.setFileName();
+        }
+        metadataMember = this.attachMetadataModelToPackage(this.model);
+        if (this.metadataEntitySyncNeeded) {
+          this.syncMetadataEntities(metadataMember);
+        }
+        if (metadataMember && !metadataMember.contentDirty) {
+          await MetacatUI.rootDataPackage.markMemberContentDirty(
+            metadataMember.pid,
+          );
+        }
+      },
+
+      /**
+       * Upload the package, retrying once without failed file replacements.
+       * @returns {Promise<object>} Final result, reload message, and skipped files
+       * @private
+       * @since 0.0.0
+       */
+      async uploadWithReplacementFallback() {
+        let result = await MetacatUI.rootDataPackage.upload();
+        let reloadMessage = getPackageSaveReloadMessage(
+          MetacatUI.rootDataPackage.toArray?.() || [],
+          result,
+        );
+        const skippedFileReplacements = [];
+
+        if (
+          !reloadMessage &&
+          result.outcome === "partial_failure" &&
+          !result.reloadRequired
+        ) {
+          const members = MetacatUI.rootDataPackage.toArray?.() || [];
+          const failedMembers = members.filter(
+            (member) => member.remoteState === "failed",
+          );
+          const failedReplacements = this.getFailedFileReplacements();
+          if (
+            failedReplacements.length &&
+            failedMembers.every((member) => failedReplacements.includes(member))
+          ) {
+            skippedFileReplacements.push(
+              ...(await this.discardFailedFileReplacements()),
+            );
+            result = await MetacatUI.rootDataPackage.upload();
+            reloadMessage = getPackageSaveReloadMessage(
+              MetacatUI.rootDataPackage.toArray?.() || [],
+              result,
+            );
+          }
+        }
+
+        return { result, reloadMessage, skippedFileReplacements };
+      },
+
+      /**
        * Saves all edits in the collection
        * @param {Event} e - The DOM Event that triggerd this function
        */
-      save(e) {
+      async save(e) {
         const btn = e && e.target ? $(e.target) : this.$("#save-editor");
 
         // If the save button is disabled, then we don't want to save right now
         if (btn.is(".btn-disabled")) return;
+        if (this.fileTableEditInProgress) {
+          this.toggleEnableControls();
+          return;
+        }
+
+        if (!this.model.isValid()) {
+          this.model.trigger("invalid");
+          return;
+        }
+        this.model.trigger("valid");
+
+        const packageMembers = MetacatUI.rootDataPackage.toArray?.() || [];
+        const preSaveReloadMessage =
+          this.packageSaveReloadMessage ||
+          getPackageSaveReloadMessage(packageMembers);
+        if (preSaveReloadMessage) {
+          this.packageSaveReloadMessage = preSaveReloadMessage;
+          this.saveError(preSaveReloadMessage);
+          return;
+        }
+
+        let skippedNewDataFiles = [];
+        let skippedFileReplacements = [];
+        try {
+          ({ skippedNewDataFiles, skippedFileReplacements } =
+            await this.discardFailedFilesBeforeSave(packageMembers));
+        } catch (error) {
+          this.saveError(error.message || String(error));
+          return;
+        }
 
         this.showSaving();
+        this.setFileTableDisabled(true);
 
-        // Save the package!
-        MetacatUI.rootDataPackage.save();
+        try {
+          await this.syncMetadataForPackageSave();
+          const changedMembers =
+            MetacatUI.rootDataPackage.getChangedMembers?.() || [];
+          this.packageSavePrepMessage = null;
+          this.packageSavePendingPids = new Set();
+          changedMembers.forEach((member) => {
+            if (!member?.pid) return;
+            this.packageSavePendingPids.add(member.pid);
+            this.fileUploadProgressByPid[member.pid] = 0;
+          });
+          this.packageSaveUploadTotal = this.packageSavePendingPids.size;
+          this.packageSaveUploadCount = this.packageSaveUploadTotal;
+          if (
+            changedMembers.some((member) => member?.isData?.()) &&
+            this.packageSaveUploadCount > 0
+          ) {
+            this.refreshFileTable();
+          }
+          this.toggleEnableControls();
+          const upload = await this.uploadWithReplacementFallback();
+          const { result, reloadMessage } = upload;
+          skippedFileReplacements.push(...upload.skippedFileReplacements);
+          if (!reloadMessage && result.outcome === "success") {
+            this.saveSuccess(result, {
+              skippedFileReplacements,
+              skippedNewDataFiles,
+            });
+          } else {
+            if (reloadMessage) {
+              this.packageSaveReloadMessage = reloadMessage;
+            }
+            this.saveError(reloadMessage || this.getUploadErrorMessage(result));
+          }
+        } catch (error) {
+          if (error?.code === "validation_failure") {
+            const issueWithModelErrors = error.issues?.find(
+              (issue) => issue?.errors,
+            );
+            if (issueWithModelErrors) {
+              this.model.validationError = issueWithModelErrors.errors;
+              this.model.trigger("invalid");
+              this.packageSaveUploadCount = null;
+              this.packageSaveUploadTotal = null;
+              this.packageSavePrepMessage = null;
+              this.packageSavePendingPids = null;
+              this.fileUploadProgressByPid = {};
+              this.setFileTableDisabled(false);
+              this.hideSaving();
+              this.refreshFileTable();
+              this.toggleEnableControls();
+              return;
+            }
+
+            const issueMessages = (error.issues || [])
+              .map((issue) => issue?.message)
+              .filter(Boolean);
+            this.saveError(
+              issueMessages.length
+                ? issueMessages.join("\n")
+                : error.message || String(error),
+            );
+            return;
+          }
+
+          const reloadMessage = getPackageSaveReloadMessage(
+            MetacatUI.rootDataPackage.toArray?.() || [],
+            error,
+          );
+          if (reloadMessage) {
+            this.packageSaveReloadMessage = reloadMessage;
+          }
+          this.saveError(error.message || String(error));
+        }
+      },
+
+      /**
+       * Build the editor message for a failed package upload.
+       * @param {UploadResult} result Package upload result
+       * @returns {string} User facing upload error message
+       * @since 0.0.0
+       */
+      getUploadErrorMessage(result) {
+        if (!result) return MESSAGES.uploadDidNotComplete;
+        const reloadMessage = getPackageSaveReloadMessage([], result);
+        if (reloadMessage) return reloadMessage;
+        const details = result.getErrorMessages?.() || [];
+        if (details.length) {
+          return `${MESSAGES.notAllSubmitted}:\n\n${details.join("\n")}`;
+        }
+        return MESSAGES.notAllSubmitted;
       },
 
       /**
        * When the data package collection saves successfully, tell the user
-       * @param {DataPackage|DataONEObject} savedObject - The model or
-       * collection that was just saved
+       * @param {UploadResult} _result Upload result
+       * @param {object} [options] Success options
+       * @param {string[]} [options.skippedFileReplacements] File replacements
+       * skipped so the rest of the package could save
+       * @param {string[]} [options.skippedNewDataFiles] New files omitted so the
+       * rest of the package could save
        */
-      saveSuccess(savedObject) {
-        // We only want to perform these actions after the package saves
-        if (savedObject.type !== "DataPackage") return;
+      saveSuccess(
+        _result,
+        { skippedFileReplacements = [], skippedNewDataFiles = [] } = {},
+      ) {
+        this.packageSaveUploadCount = null;
+        this.packageSaveUploadTotal = null;
+        this.packageSavePrepMessage = null;
+        this.packageSavePendingPids = null;
+        this.setFileTableDisabled(false);
+        this.hideSaving();
+        const metadataPid =
+          MetacatUI.rootDataPackage.getPrimaryMetadataMember()?.pid ||
+          this.model.get("id");
+        if (metadataPid && metadataPid !== this.model.get("id")) {
+          this.model.set("id", metadataPid);
+        }
 
         // Change the URL to the new id
         MetacatUI.uiRouter.navigate(
-          `submit/${encodeURIComponent(this.model.get("id"))}`,
+          `submit/${encodeURIComponent(metadataPid)}`,
           { trigger: false, replace: true },
         );
 
+        this.fileUploadProgressByPid = {};
+        this.refreshFileTable();
         this.toggleControls();
+        this.toggleEnableControls();
 
         // Construct the save message
         const message = this.editorSubmitMessageTemplate({
-          messageText: "Your changes have been submitted.",
-          viewURL: `${MetacatUI.root}/view/${encodeURIComponent(
-            this.model.get("id"),
-          )}`,
-          buttonText: "View your dataset",
+          messageText: MESSAGES.submittedChanges,
+          viewURL: `${MetacatUI.root}/view/${encodeURIComponent(metadataPid)}`,
+          buttonText: MESSAGES.viewDataset,
         });
 
-        MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {
-          remove: true,
-        });
+        MetacatUI.appView.showAlert(
+          message,
+          CLASS_NAMES.alertSuccess,
+          this.$el,
+          null,
+          { remove: true },
+        );
+
+        this.showSkippedFilesWarning(
+          "The dataset was saved, but these file replacements were skipped because their uploads failed:",
+          skippedFileReplacements,
+        );
+        this.showSkippedFilesWarning(
+          "The dataset was saved, but these new files were not added because their uploads failed:",
+          skippedNewDataFiles,
+        );
 
         // Rerender the CitationView
-        const citationView = this.subviews.filter(
-          (subview) => subview.type === "Citation",
-        );
-        if (citationView.length) {
-          citationView[0].createTitleLink = true;
-          citationView[0].render();
+        if (this.citationView) {
+          this.citationView.createTitleLink = true;
+          this.citationView.render();
         }
 
-        // Reset the state to clean
-        MetacatUI.rootDataPackage.packageModel.set("changed", false);
+        // Reset the state to clean. The package's saved state is reconciled by
+        // the upload finalization (savedRevision sync).
         this.model.set("hasContentChanges", false);
+      },
 
-        // Save the resMap:metadataPid relationship so that user can return to
-        // editing before the res map & metadata doc is indexed (resource map
-        // resolver can later find the resMap by metadataPid from local storage)
-        const newPid = this.model.get("id");
-        const resourceMapId = MetacatUI.rootDataPackage.packageModel.get("id");
-        if (resourceMapId && newPid) {
-          const resMapResolver = new ResourceMapResolver();
-          resMapResolver.addToStorage(newPid, resourceMapId);
-        }
-
-        this.setListeners();
+      /**
+       * Show files omitted from an otherwise successful package save.
+       * @param {string} introText Warning introduction
+       * @param {string[]} [messages] Skipped file messages
+       * @returns {void}
+       * @since 0.0.0
+       */
+      showSkippedFilesWarning(introText, messages = []) {
+        if (!messages.length) return;
+        const warning = $(document.createElement("div")).append(
+          $(document.createElement("p")).text(introText),
+        );
+        const skippedList = $(document.createElement("ul"));
+        messages.forEach((message) => {
+          skippedList.append($(document.createElement("li")).text(message));
+        });
+        warning.append(skippedList);
+        MetacatUI.appView.showAlert(
+          warning,
+          CLASS_NAMES.alertWarning,
+          this.$el,
+          null,
+          { remove: true },
+        );
       },
 
       /**
@@ -969,83 +3270,88 @@ define([
           document.createElement("p"),
         );
         const messageParagraph = messageContainer.find("p");
-        let messageClasses = "alert-error";
+        let messageClasses = CLASS_NAMES.alertError;
 
-        // Get all the models that have an error
-        const failedModels = MetacatUI.rootDataPackage.where({
-          uploadStatus: "e",
-        });
+        const packageMembers = MetacatUI.rootDataPackage.toArray();
+        const failedMembers = packageMembers.filter(
+          (member) => member.remoteState === "failed",
+        );
+        const hasAmbiguousMembers = packageMembers.some(
+          (member) => member.remoteState === "ambiguous",
+        );
 
-        // If every failed model is a DataONEObject data file that failed
-        // because of a slow network, construct a specific error message that is
-        // more informative than the usual message
-        if (
-          failedModels.length &&
-          failedModels.every(
-            (m) =>
-              m.get("type") === "Data" &&
-              m.get("errorMessage").indexOf("network issue") > -1,
+        const hasOnlyDiscardableFileFailures =
+          !hasAmbiguousMembers &&
+          failedMembers.length &&
+          failedMembers.every(
+            (member) =>
+              member.isData() && this.isDiscardableFileUploadFailure(member),
+          );
+
+        const reloadMessage =
+          this.packageSaveReloadMessage ||
+          getPackageSaveReloadMessage(packageMembers) ||
+          ([MESSAGES.saveStateStale, MESSAGES.saveStateUncertain].includes(
+            errorMsg,
           )
-        ) {
+            ? errorMsg
+            : null);
+        if (reloadMessage) {
+          this.packageSaveReloadMessage = reloadMessage;
+          messageParagraph.text(reloadMessage);
+        } else if (hasOnlyDiscardableFileFailures) {
           // Create a list of file names for the files that failed to upload
           const failedFileList = $(document.createElement("ul"));
-          failedModels?.forEach((failedModel) => {
+          failedMembers.forEach((failedMember) => {
             failedFileList.append(
-              $(document.createElement("li")).text(failedModel.get("fileName")),
+              $(document.createElement("li")).text(
+                this.getFailedFileMessage(failedMember),
+              ),
             );
           }, this);
 
           // Make the error message
+          const allNetworkErrors = failedMembers.every((member) => {
+            const error = member.lastUploadError;
+            return (
+              error?.networkError === true ||
+              Number(error?.status) === 0 ||
+              error?.name === "TypeError"
+            );
+          });
           messageParagraph.text(
-            "The following files could not be uploaded due to a network issue. Make sure you are connected to a reliable internet connection. ",
+            allNetworkErrors
+              ? MESSAGES.failedFilesNetwork
+              : `${MESSAGES.notAllSubmitted} Save the dataset again to continue without these files.`,
           );
           messageParagraph.after(failedFileList);
-        }
-        // If one of the failed models is this package's metadata model or the
-        // resource map model and it failed to upload due to a network issue,
-        // show a more specific error message
-        else if (
-          failedModels.find((m) => {
-            const msg = m.get("errorMessage") || "";
-            return m === this.model && msg.indexOf("network issue") > -1;
-          }, this) ||
-          (MetacatUI.rootDataPackage.packageModel.get("uploadStatus") === "e" &&
-            MetacatUI.rootDataPackage.packageModel
-              .get("errorMessage")
-              .indexOf("network issue") > -1)
+        } else if (
+          this.model.get("draftSaved") &&
+          MetacatUI.appModel.get("editorSaveErrorMsgWithDraft")
         ) {
           messageParagraph.text(
-            "Your changes could not be submitted due to a network issue. Make sure you are connected to a reliable internet connection. ",
+            MetacatUI.appModel.get("editorSaveErrorMsgWithDraft"),
           );
+          messageClasses = CLASS_NAMES.alertWarning;
+        } else if (MetacatUI.appModel.get("editorSaveErrorMsg")) {
+          messageParagraph.text(MetacatUI.appModel.get("editorSaveErrorMsg"));
+          messageClasses = CLASS_NAMES.alertError;
         } else {
-          if (
-            this.model.get("draftSaved") &&
-            MetacatUI.appModel.get("editorSaveErrorMsgWithDraft")
-          ) {
-            messageParagraph.text(
-              MetacatUI.appModel.get("editorSaveErrorMsgWithDraft"),
-            );
-            messageClasses = "alert-warning";
-          } else if (MetacatUI.appModel.get("editorSaveErrorMsg")) {
-            messageParagraph.text(MetacatUI.appModel.get("editorSaveErrorMsg"));
-            messageClasses = "alert-error";
-          } else {
-            messageParagraph.text(
-              "Not all of your changes could be submitted.",
-            );
-            messageClasses = "alert-error";
-          }
+          messageParagraph.text(MESSAGES.notAllSubmitted);
+          messageClasses = CLASS_NAMES.alertError;
+        }
 
+        if (!hasOnlyDiscardableFileFailures || reloadMessage) {
           messageParagraph.after(
             $(document.createElement("p")).append(
               $(document.createElement("a"))
-                .text("See technical details")
+                .text(MESSAGES.seeTechnicalDetails)
                 .attr("data-toggle", "collapse")
                 .attr("data-target", `#${errorId}`)
-                .addClass("pointer"),
+                .addClass(CLASS_NAMES.pointer),
             ),
             $(document.createElement("div"))
-              .addClass("collapse")
+              .addClass(CLASS_NAMES.collapse)
               .attr("id", errorId)
               .append($(document.createElement("pre")).text(errorMsg)),
           );
@@ -1063,7 +3369,15 @@ define([
         );
 
         // Reset the Saving styling
+        this.packageSaveUploadCount = null;
+        this.packageSaveUploadTotal = null;
+        this.packageSavePrepMessage = null;
+        this.packageSavePendingPids = null;
+        this.fileUploadProgressByPid = {};
+        this.setFileTableDisabled(false);
         this.hideSaving();
+        this.refreshFileTable();
+        this.toggleEnableControls();
       },
 
       /**
@@ -1077,12 +3391,12 @@ define([
         const metadataContainer = this.$("#metadata-container");
         MetacatUI.appView.showAlert(
           errorMsg,
-          "alert-error",
+          CLASS_NAMES.alertError,
           metadataContainer,
           null,
         );
         // Hide the loading spinner & message
-        this.$(".loading").hide();
+        this.$(`.${CLASS_NAMES.loading}`).hide();
       },
 
       /**
@@ -1104,8 +3418,8 @@ define([
 
         // Show a warning that the user was trying to edit old content
         MetacatUI.appView.showAlert(
-          "You've been forwarded to the newest version of your dataset for editing.",
-          "alert-warning",
+          MESSAGES.latestVersionForward,
+          CLASS_NAMES.alertWarning,
           this.$el,
           12000,
           { remove: true },
@@ -1113,71 +3427,171 @@ define([
       },
 
       /**
+       * Update the Save button during package upload preparation.
+       * @param {object} [progress] Upload preparation progress
+       * @returns {void}
+       * @since 0.0.0
+       */
+      handlePackageUploadPrepareProgress(progress = {}) {
+        this.packageSavePrepMessage = progress.message || null;
+        if (
+          MetacatUI.rootDataPackage?.isEditLocked?.() ||
+          this.packageSaveUploadCount !== null
+        ) {
+          this.disableControls(
+            this.getPackageSaveMessage(),
+            MESSAGES.packageSaveInProgress,
+          );
+          return;
+        }
+        this.toggleEnableControls();
+      },
+
+      /**
+       * Update row and Save button progress for one upload action.
+       * @param {object} [progress] Upload action progress
+       * @returns {void}
+       * @since 0.0.0
+       */
+      handlePackageUploadProgress(progress = {}) {
+        this.packageSavePrepMessage = null;
+        const memberPid =
+          progress.action?.memberPid || progress.action?.targetPid;
+        if (!memberPid) return;
+        if (!this.fileUploadProgressByPid) this.fileUploadProgressByPid = {};
+        const uploadSettled = [
+          "succeeded",
+          "failed",
+          "ambiguous",
+          "cancelled",
+          "skipped",
+        ].includes(progress.status);
+        if (uploadSettled) {
+          delete this.fileUploadProgressByPid[memberPid];
+        } else if (progress.lengthComputable && progress.total) {
+          this.fileUploadProgressByPid[memberPid] = Math.min(
+            (progress.loaded / progress.total) * 100,
+            99,
+          );
+        } else if (
+          !Object.prototype.hasOwnProperty.call(
+            this.fileUploadProgressByPid,
+            memberPid,
+          )
+        ) {
+          this.fileUploadProgressByPid[memberPid] = 0;
+        }
+
+        if (uploadSettled && this.packageSavePendingPids?.has(memberPid)) {
+          this.packageSavePendingPids.delete(memberPid);
+          this.packageSaveUploadCount = this.packageSavePendingPids.size;
+        }
+        // Only data members have file-table rows (the metadata and resource
+        // map do not). Rebuild the table only when a data member has no row
+        // yet; a missing row for the metadata/resource map is expected and
+        // must not trigger a full refresh on every progress event.
+        const row = this.updateFileTableMemberStatus(memberPid);
+        const member = MetacatUI.rootDataPackage?.getMember?.(memberPid);
+        if (!row && member?.isData?.()) this.refreshFileTable();
+        this.toggleEnableControls();
+      },
+
+      /**
        * Show the entity editor
        * @param {Event} e - The DOM Event that triggerd this function
+       * @returns {boolean} True when the entity editor is shown
        */
       showEntity(e) {
-        if (!e || !e.target) return;
-        if (this.model.type !== "EML") return;
+        if (!e || !e.target) return false;
+        if (this.model.type !== "EML") return false;
 
-        // Get the Entity View
         const row = $(e.target).parents(".data-package-item");
-        let entityView = row.data("entityView");
-        const dataONEObject = row.data("model");
+        const dataPackageMember = MetacatUI.rootDataPackage.getMember(
+          row.attr("data-id"),
+        );
+
+        return this.showEntityForMember(dataPackageMember);
+      },
+
+      /**
+       * Show or create the EML entity editor for a data member.
+       * @param {DataPackageMember} dataPackageMember Member to describe
+       * @param {Backbone.Model} [rowModel] File table row
+       * @returns {boolean} True when the entity editor is shown
+       * @since 0.0.0
+       */
+      showEntityForMember(dataPackageMember, rowModel = null) {
+        if (!dataPackageMember || this.model.type !== "EML") return false;
 
         if (
-          dataONEObject.get("uploadStatus") === "p" ||
-          dataONEObject.get("uploadStatus") === "l" ||
-          dataONEObject.get("uploadStatus") === "e"
+          dataPackageMember.remoteState === "uploading" ||
+          dataPackageMember.remoteState === "pending" ||
+          dataPackageMember.remoteState === "failed"
         )
-          return;
+          return false;
+
+        this.entityViews = this.entityViews || {};
+        let entityView = this.entityViews[dataPackageMember.pid];
 
         // If there isn't a view yet, create one
         if (!entityView) {
           // Get the entity model for this data package item
-          let entityModel = this.model.getEntity(row.data("model"));
+          let entityModel =
+            this.entityByMemberPid?.get(dataPackageMember.pid) ||
+            this.model.getEntity(dataPackageMember);
+          if (entityModel) {
+            this.entityByMemberPid?.set(dataPackageMember.pid, entityModel);
+          }
 
           // Create a new EMLOtherEntity if it doesn't exist
           if (!entityModel) {
             entityModel = new EMLOtherEntity({
-              entityName: dataONEObject.get("fileName"),
+              entityName: dataPackageMember.fileName,
               entityType:
-                dataONEObject.get("formatId") || dataONEObject.get("mediaType"),
+                dataPackageMember.formatId || dataPackageMember.mediaType,
               parentModel: this.model,
-              xmlID: dataONEObject.getXMLSafeID(),
+              downloadID: dataPackageMember.pid,
+              xmlID:
+                this.model.getUniqueEntityId?.({
+                  id: dataPackageMember.pid,
+                  fileName: dataPackageMember.fileName,
+                  formatId:
+                    dataPackageMember.formatId || dataPackageMember.mediaType,
+                }) || dataPackageMember.getXMLSafeID(),
             });
 
-            if (!dataONEObject.get("fileName")) {
+            if (!dataPackageMember.fileName) {
               // Listen to changes to required fields on the otherEntity
               // models
               this.listenTo(entityModel, "change:entityName", () => {
                 if (!entityModel.isValid()) return;
 
-                // Get the position this entity will be in
-                const position = $(".data-package-item.data").index(row);
-
-                this.model.addEntity(entityModel, position);
-
-                this.showEntity(e);
+                this.model.addEntity(
+                  entityModel,
+                  this.getDataFileTablePosition(dataPackageMember.pid),
+                );
+                this.entityByMemberPid?.set(dataPackageMember.pid, entityModel);
+                this.showEntityForMember(dataPackageMember, rowModel);
               });
-              return;
+              return false;
             }
-            // Get the position this entity will be in
-            const position = $(".data-package-item.data").index(row);
-            this.model.addEntity(entityModel, position);
-            this.showEntity(e);
-            return;
+            this.model.addEntity(
+              entityModel,
+              this.getDataFileTablePosition(dataPackageMember.pid),
+            );
+            this.entityByMemberPid?.set(dataPackageMember.pid, entityModel);
+            this.showEntityForMember(dataPackageMember, rowModel);
+            return true;
           }
 
           entityView = new EMLEntityView({
             model: entityModel,
-            DataONEObject: dataONEObject,
+            dataPackageMember,
             edit: true,
             parentView: this,
           });
 
-          // Attach the view to the edit button so we can access it again
-          row.data("entityView", entityView);
+          this.entityViews[dataPackageMember.pid] = entityView;
 
           // Render the view
           entityView.render();
@@ -1185,6 +3599,30 @@ define([
 
         // Show the modal window editor for this entity
         if (entityView) entityView.show();
+        return Boolean(entityView);
+      },
+
+      /**
+       * Return a data row's position among the table's data members.
+       * @param {string} pid Data member PID
+       * @returns {number} Zero based data row position
+       * @since 0.0.0
+       */
+      getDataFileTablePosition(pid) {
+        const rows = this.fileTableView?.viewModel?.getRows?.();
+        if (!rows) return 0;
+
+        let position = 0;
+        let found = false;
+        rows.each((row) => {
+          if (row.get("kind") !== "data") return;
+          if (row.get("id") === pid) {
+            found = true;
+            return;
+          }
+          if (!found) position += 1;
+        });
+        return position;
       },
 
       /**
@@ -1195,78 +3633,73 @@ define([
        * @since 2.34.0
        */
       showEntityFromModel(model, switchToAttrTab = false) {
-        const pid = model.get("dataONEObject").get("id");
-        const rows = this.$(".data-package-item");
-        const row = rows.filter((i, el) => {
-          const rowModel = $(el).data("model");
-          const rowId = $(el).data("id");
-          return rowId === pid || rowModel === model;
-        });
-        if (row.length) {
-          // Get button to mock a click event which calls showEntity(e)
-          const button = row.find("button.edit");
-          if (button?.length) {
-            button.click();
-            if (switchToAttrTab) {
-              setTimeout(() => {
-                row.data("entityView")?.showAttributesTab();
-              }, 100);
-            }
-          }
+        const pid = model.getDataPid?.();
+        const member = MetacatUI.rootDataPackage.getMember(pid);
+        if (!member) return;
+
+        this.showEntityForMember(member);
+        if (switchToAttrTab) {
+          setTimeout(() => {
+            this.entityViews?.[member.pid]?.showAttributesTab();
+          }, 100);
         }
       },
 
       /** Shows a message if the user is not authorized to edit this package */
       notAuthorized() {
-        // Don't show the not authorized message if the user is authorized to
-        // edit the EML and the resource map
-        if (
-          MetacatUI.rootDataPackage &&
-          MetacatUI.rootDataPackage.packageModel
-        ) {
-          if (
-            MetacatUI.rootDataPackage.packageModel.get(
-              "isAuthorized_changePermission",
-            ) &&
-            this.model.get("isAuthorized")
-          ) {
-            return;
-          }
-        } else if (this.model.get("isAuthorized")) {
-          return;
-        }
+        this.showFullPageAlert(MESSAGES.notAuthorized, "error");
+      },
 
-        this.showFullPageAlert(
-          "You are not authorized to edit this data set.",
-          "error",
+      /**
+       * Stop editing an older package until its interrupted save is recovered.
+       * @param {string} metadataPid Metadata PID with a recovery record
+       * @since 0.0.0
+       */
+      showInterruptedSave(metadataPid) {
+        const message = `
+          <p>
+            This dataset has an interrupted save. Finish it before continuing
+            so the editor can load the latest files.
+          </p>
+          <div class="repair-dataset-controls" style="margin-top:1em;">
+            <button type="button" class="btn btn-primary repair-dataset">Finish interrupted save</button>
+            <span class="repair-dataset-status" role="status" aria-live="polite"></span>
+          </div>`;
+
+        this.showFullPageAlert(message, "warning");
+        this.$(".repair-dataset").one("click", () =>
+          this.repairDataset(metadataPid),
         );
       },
 
       /**
        * Show a message when no resource map was found an existing metadata
        * document.
-       * @param {boolean} [multipleRMs] - If true, the message will always
-       * indicate to contact support.
+       * @param {Error} [error] Structured Resource Map loading error
        */
-      showResourceMapNotFound(multipleRMs = false) {
+      showResourceMapNotFound(error = {}) {
+        const multipleRMs = error.multipleRMs === true;
         // Gather useful info from the model
-        const model = this.model || MetacatUI.rootDataPackage.packageModel;
+        const { model } = this;
         const pid =
           model.get("id") || model.get("identifier") || model.get("seriesId");
         const title = model.get("title");
         const updated = model.get("dateModified") || model.get("updateDate");
+        // Unavailable or ambiguous maps may still be authoritative, so only a
+        // loader-confirmed absence is safe to reconstruct.
+        const canRepair =
+          Boolean(pid) && error.reason === "missing" && !multipleRMs;
 
         // Derived information & strings for the message
         const durMs = updated ? Math.abs(new Date() - new Date(updated)) : null;
 
         const durMin = durMs ? durMs / (1000 * 60) : null;
-        const durMinFixed = durMin ? durMin.toFixed(1) : null;
-        const minutesNoun =
-          durMinFixed === 1 && durMinFixed ? "minutes" : "minute";
+        const durMinRounded = durMin ? Math.round(durMin) : null;
+        const minutesNoun = durMinRounded === 1 ? "minute" : "minutes";
 
         const durHrs = durMs ? durMs / (1000 * 60 * 60) : null;
         const durHrsFixed = durHrs ? durHrs.toFixed(1) : null;
-        const hoursNoun = durHrsFixed === 1 && durHrsFixed ? "hours" : "hour";
+        const hoursNoun = Number(durHrsFixed) === 1 ? "hour" : "hours";
 
         const titleStr = title ? `"<strong>${title}</strong>"` : null;
         const thisDoc = titleStr
@@ -1283,7 +3716,7 @@ define([
           if (durHrs < durLimitHrs && !multipleRMs) {
             let timeSinceEdit = `This document was last updated ${durHrsFixed} ${hoursNoun} ago.`;
             if (durHrsFixed < 1) {
-              timeSinceEdit = `This document was last updated ${durMinFixed} ${minutesNoun} ago.`;
+              timeSinceEdit = `This document was last updated ${durMinRounded} ${minutesNoun} ago.`;
             }
             msg += `This sometimes happens if the dataset was recently created or edited,
               and our system hasn't fully processed it yet. 
@@ -1310,18 +3743,88 @@ define([
           body += `It was last updated ${durHrsFixed} ${hoursNoun} ago. `;
         body += `This is preventing me from editing the metadata document. Please help me resolve this issue.`;
 
+        // Offer explicit reconstruction opt-in only when the loader confirms
+        // the resource map is missing; recovery still attempts exact replay.
+        if (canRepair) {
+          msg += `<div class="repair-dataset-controls" style="margin-top:1em;">
+              <p>
+                You can try to repair the dataset so you can continue editing.
+                Files added during the interrupted save and changes to the
+                dataset's file relationships may not be recovered. Check the
+                file list and metadata before saving again.
+              </p>
+              <button type="button" class="btn btn-primary repair-dataset">Repair this dataset</button>
+              <span class="repair-dataset-status" role="status" aria-live="polite"></span>
+            </div>`;
+        }
+
         this.showFullPageAlert(msg, "error", body, subject);
+
+        // Wire the repair button with a plain DOM handler: showFullPageAlert has
+        // already torn down the view's Backbone listeners, and showAlert
+        // serializes the message to HTML, so handlers must attach afterward.
+        if (canRepair) {
+          this.$(".repair-dataset").one("click", () =>
+            this.repairDataset(pid, { allowReconstruct: true }),
+          );
+        }
+      },
+
+      /**
+       * Finish an interrupted save by replaying the durable local recovery
+       * record for a metadata document, then reload the editor. The confirmed
+       * missing map action explicitly opts into server reconstruction (R2).
+       * @param {string} metadataPid Orphaned metadata PID to repair
+       * @param {object} [recoveryOptions] Recovery strategy options
+       * @returns {Promise<void>} Resolves once repair has been attempted
+       * @since 0.0.0
+       */
+      async repairDataset(metadataPid, recoveryOptions = {}) {
+        const button = this.$(".repair-dataset");
+        const controls = this.$(".repair-dataset-controls");
+        const status = this.$(".repair-dataset-status");
+        button.prop("disabled", true);
+        controls.attr("aria-busy", "true");
+        status.html(
+          `<i class="icon icon-spinner icon-spin" aria-hidden="true"></i> Repairing your dataset. This may take a couple of minutes...`,
+        );
+        try {
+          const result = await new DataPackageRecovery({
+            resolveServiceUrl: MetacatUI.appModel.get("resolveServiceUrl"),
+            objectServiceUrl: MetacatUI.appModel.get("objectServiceUrl"),
+          }).recover(metadataPid, recoveryOptions);
+          if (result?.recovered) {
+            controls.removeAttr("aria-busy");
+            status.text(" Repair complete. Reloading...");
+            // Point the URL at the recovered PID, then reload: a fresh load
+            // re-resolves the package and now finds the recovered resource map
+            // (written and cached during recovery).
+            MetacatUI.uiRouter.navigate(
+              `submit/${encodeURIComponent(metadataPid)}`,
+              { trigger: false, replace: true },
+            );
+            window.location.reload();
+            return;
+          }
+          controls.removeAttr("aria-busy");
+          status.text(
+            " We couldn't automatically repair this dataset. Please contact the support team.",
+          );
+          button.prop("disabled", false);
+        } catch (error) {
+          controls.removeAttr("aria-busy");
+          status.text(
+            ` Repair failed: ${error?.message || "unknown error"}. Please contact the support team.`,
+          );
+          button.prop("disabled", false);
+        }
       },
 
       /**
        * Toggle the editor footer controls (Save bar)
        */
       toggleControls() {
-        if (
-          MetacatUI.rootDataPackage &&
-          MetacatUI.rootDataPackage.packageModel &&
-          MetacatUI.rootDataPackage.packageModel.get("changed")
-        ) {
+        if (MetacatUI.rootDataPackage?.hasUnsavedChanges?.()) {
           this.showControls();
         } else {
           this.hideControls();
@@ -1334,23 +3837,63 @@ define([
        * @since 2.17.1
        */
       toggleEnableControls() {
-        const { packageModel } = MetacatUI.rootDataPackage;
-        const numLoadingMetadata = packageModel.get("numLoadingFileMetadata");
-        const numLoadingFiles = packageModel.get("numLoadingFiles");
-        const isLoadingMetadata = numLoadingMetadata > 0;
-        const isLoadingFiles = packageModel.get("isLoadingFiles");
+        if (this.fileTableEditInProgress) {
+          this.setFileTableDisabled(false);
+          this.disableControls(
+            MESSAGES.addingFiles,
+            MESSAGES.fileChangesStaged,
+          );
+          return;
+        }
+        if (
+          MetacatUI.rootDataPackage?.isEditLocked?.() ||
+          this.packageSaveUploadCount !== null
+        ) {
+          this.setFileTableDisabled(true);
+          this.disableControls(
+            this.getPackageSaveMessage(),
+            MESSAGES.packageSaveInProgress,
+          );
+          return;
+        }
+        this.setFileTableDisabled(false);
+        const pendingUploads =
+          MetacatUI.rootDataPackage?.getPendingEagerUploads?.() || [];
 
-        if (isLoadingFiles) {
-          const noun = numLoadingFiles > 1 ? "files" : "file";
-          const message = `Waiting for ${numLoadingFiles} ${noun} to upload...`;
+        if (pendingUploads.length) {
+          const pendingFileCount = pendingUploads.reduce(
+            (count, upload) =>
+              count +
+              (upload.members || []).filter(
+                (member) =>
+                  member.remoteState === "pending" ||
+                  member.remoteState === "uploading",
+              ).length,
+            0,
+          );
+          const message = pendingFileCount
+            ? MESSAGES.waitingForUploads(pendingFileCount)
+            : MESSAGES.finishingFileUploads;
           this.disableControls(message);
-        } else if (isLoadingMetadata) {
-          const noun = numLoadingMetadata > 1 ? "files" : "file";
-          const message = `Waiting for metadata from ${numLoadingMetadata} ${noun} to load...`;
-          this.disableControls(message, "File metadata is loading.");
         } else {
           this.enableControls();
         }
+      },
+
+      /**
+       * Return the current package save progress message.
+       * @returns {string} Save preparation or upload progress message
+       * @since 0.0.0
+       */
+      getPackageSaveMessage() {
+        const count = this.packageSaveUploadCount;
+        const total = this.packageSaveUploadTotal;
+        if (this.packageSavePrepMessage) return this.packageSavePrepMessage;
+        if (count !== null && total > 0) {
+          return MESSAGES.submittingFiles(count, total);
+        }
+        if (count > 0) return MESSAGES.submittingFiles(count);
+        return MESSAGES.submittingChanges;
       },
 
       /**
@@ -1359,9 +3902,18 @@ define([
        */
       showValidation() {
         // First clear all the error messaging
-        this.$(".notification.error").empty();
-        this.$(".side-nav-item .icon").hide();
-        this.$("#metadata-container .error").removeClass("error");
+        this.$(`.notification.${CLASS_NAMES.error}`).empty();
+        this.$(`.${CLASS_NAMES.sideNavItem}.${CLASS_NAMES.error}`).removeClass(
+          CLASS_NAMES.error,
+        );
+        this.$(
+          `.${CLASS_NAMES.sideNavItem} .${CLASS_NAMES.icon}.${CLASS_NAMES.error}`,
+        )
+          .removeClass(CLASS_NAMES.error)
+          .hide();
+        this.$(`#metadata-container .${CLASS_NAMES.error}`).removeClass(
+          CLASS_NAMES.error,
+        );
         $(".alert-container:not(:has(.temporary-message))").remove();
 
         const errors = this.model.validationError;
@@ -1382,8 +3934,8 @@ define([
             const errorList = `<ul>${this.getErrorListItem(errors)}</ul>`;
 
             MetacatUI.appView.showAlert(
-              `Fix the errors flagged below before submitting: ${errorList}`,
-              "alert-error",
+              MESSAGES.fixErrorsBeforeSubmitting(errorList),
+              CLASS_NAMES.alertError,
               this.$el,
               null,
               {
@@ -1402,49 +3954,49 @@ define([
        */
       showError(category, errorMsg) {
         const categoryEls = this.$(`[data-category='${category}']`);
-        const dataItemRow = categoryEls.parents(".data-package-item");
-
-        // If this field is in a DataItemView, then delegate to that view
-        if (dataItemRow.length && dataItemRow.data("view")) {
-          dataItemRow.data("view").showValidation(category, errorMsg);
-          return;
-        }
         const elsWithViews = categoryEls.filter(
-          (el) =>
-            $(el).data("view") &&
-            $(el).data("view").showValidation &&
-            !$(el).data("view").isNew,
+          function filterElementsWithViews() {
+            const view = $(this).data("view");
+            return view && view.showValidation && !view.isNew;
+          },
         );
 
         if (elsWithViews.length) {
-          elsWithViews.forEach((el) => {
-            $(el).data("view").showValidation();
+          elsWithViews.each(function showElementValidation() {
+            $(this).data("view").showValidation();
           });
         } else if (categoryEls.length) {
           // Show the error message
-          categoryEls.filter(".notification").addClass("error").text(errorMsg);
+          categoryEls
+            .filter(`.${CLASS_NAMES.notification}`)
+            .addClass(CLASS_NAMES.error)
+            .text(errorMsg);
 
           // Add the error message to inputs
-          categoryEls.filter("textarea, input").addClass("error");
+          categoryEls.filter("textarea, input").addClass(CLASS_NAMES.error);
         }
 
         // Get the link in the table of contents navigation
         let navigationLink = this.$(
-          `.side-nav-item[data-category='${category}']`,
+          `.${CLASS_NAMES.sideNavItem}[data-category='${category}']`,
         );
 
         if (!navigationLink.length) {
           const section = categoryEls.parents("[data-section]");
           navigationLink = this.$(
-            `.side-nav-item.${$(section).attr("data-section")}`,
+            `.${CLASS_NAMES.sideNavItem}.${$(section).attr("data-section")}`,
           );
         }
 
         // Show the error icon in the table of contents
-        navigationLink.addClass("error").find(".icon").addClass("error").show();
+        navigationLink
+          .addClass(CLASS_NAMES.error)
+          .find(`.${CLASS_NAMES.icon}`)
+          .addClass(CLASS_NAMES.error)
+          .show();
 
-        this.model.off(`change:${category}`, this.model.checkValidity);
-        this.model.once(`change:${category}`, this.model.checkValidity);
+        this.model.off(`change:${category}`, this.checkValidity, this);
+        this.model.once(`change:${category}`, this.checkValidity, this);
       },
 
       /**
@@ -1465,14 +4017,18 @@ define([
 
       /** @inheritdoc */
       hasUnsavedChanges() {
-        // If the form hasn't been edited, we can close this view without
-        // confirmation
-        if (
-          typeof MetacatUI.rootDataPackage.getQueue !== "function" ||
-          MetacatUI.rootDataPackage.getQueue().length
-        )
-          return true;
-        return false;
+        return MetacatUI.rootDataPackage?.hasUnsavedChanges?.() || false;
+      },
+
+      /**
+       * Refuse to close while an upload is actively writing to the
+       * repository. Closing mid save can commit the metadata document without
+       * its resource map, leaving an orphaned EML that is hard to recover.
+       * @returns {boolean} True when the editor can close
+       */
+      canClose() {
+        if (MetacatUI.rootDataPackage?.isEditLocked?.()) return false;
+        return EditorView.prototype.canClose.call(this);
       },
 
       /** @inheritdoc */
@@ -1480,24 +4036,22 @@ define([
         // Execute the parent class onClose() function
         // EditorView.prototype.onClose.call(this);
 
+        this.renderId = null;
+        this.abortRender();
+        clearTimeout(this.fileTableRefreshTimeout);
+        this.fileTableRefreshTimeout = null;
+        this.flushDraftSave();
+
         // Remove the listener on the Window
         if (this.beforeunloadCallback) {
           window.removeEventListener("beforeunload", this.beforeunloadCallback);
           delete this.beforeunloadCallback;
         }
 
-        // Stop listening to the "add" event so that new package members aren't
-        // rendered. Check first if the DataPackage has been intialized. An easy
-        // check is to see is the 'models' attribute is undefined. If the
-        // DataPackage collection has been intialized, then it would be an empty
-        // array.
-        if (typeof MetacatUI.rootDataPackage.models !== "undefined") {
-          this.stopListening(MetacatUI.rootDataPackage, "add");
-        }
-
         // Remove all the other events
+        this.stopListening();
         this.off(); // remove callbacks, prevent zombies
-        this.model.off();
+        this.model?.off?.();
 
         $(".Editor").removeClass("Editor");
         this.$el.empty();
@@ -1517,22 +4071,15 @@ define([
       /**
        * Handle "fileLoadError" events by alerting the user and removing the row
        * from the data package table.
-       * @param  {DataONEObject} item The model item passed by the fileLoadError
+       * @param  {DataPackageMember} item The member passed by fileLoadError
        * event
        */
       handleFileLoadError(item) {
         let message;
         let fileName;
-        /* Remove the data package table row */
-        this.dataPackageView.removeOne(item);
-        /* Then inform the user */
-        if (
-          item &&
-          item.get &&
-          (item.get("fileName") !== "undefined" ||
-            item.get("fileName") !== null)
-        ) {
-          fileName = item.get("fileName");
+        this.refreshFileTable();
+        if (item?.fileName) {
+          fileName = item.fileName;
           message = `The file ${fileName} is already included in this dataset. The duplicate file has not been added.`;
         } else {
           message =
@@ -1547,22 +4094,15 @@ define([
       /**
        * Handle "fileReadError" events by alerting the user and removing the row
        * from the data package table.
-       * @param  {DataONEObject} item The model item passed by the fileReadError
+       * @param  {DataPackageMember} item The member passed by fileReadError
        * event
        */
       handleFileReadError(item) {
         let message;
         let fileName;
-        /* Remove the data package table row */
-        this.dataPackageView.removeOne(item);
-        /* Then inform the user */
-        if (
-          item &&
-          item.get &&
-          (item.get("fileName") !== "undefined" ||
-            item.get("fileName") !== null)
-        ) {
-          fileName = item.get("fileName");
+        this.refreshFileTable();
+        if (item?.fileName) {
+          fileName = item.fileName;
           message =
             `The file ${fileName} could not be read. You may not have permission to read the file,` +
             ` or the file was too large for your browser to upload. ` +
@@ -1579,8 +4119,43 @@ define([
         });
       },
 
-      /** Save a draft of the parent EML model */
+      /**
+       * Queue a draft save of the EML model. Editing a field fires one DOM
+       * change event per blur, and each draft serializes the whole document,
+       * so drafts are debounced. Documents above the size cap are not drafted
+       * at all: for those, serializing freezes (or crashes) the tab, which
+       * costs the user more than a missing draft.
+       */
       saveDraft() {
+        clearTimeout(this.draftSaveTimeout);
+        const emlSize = this.model?.get?.("objectXML")?.length || 0;
+        if (emlSize > DRAFT_SAVE_MAX_EML_BYTES) return;
+        this.draftSaveTimeout = setTimeout(() => {
+          this.draftSaveTimeout = null;
+          if (this.model) this.saveDraftNow();
+        }, DRAFT_SAVE_DEBOUNCE_MS);
+      },
+
+      /**
+       * Run a pending draft save immediately. Used only when the editor is
+       * closing, so normal field edits stay debounced.
+       * @since 0.0.0
+       */
+      flushDraftSave() {
+        if (!this.draftSaveTimeout) return;
+        clearTimeout(this.draftSaveTimeout);
+        this.draftSaveTimeout = null;
+        const emlSize = this.model?.get?.("objectXML")?.length || 0;
+        if (emlSize <= DRAFT_SAVE_MAX_EML_BYTES && this.model) {
+          this.saveDraftNow();
+        }
+      },
+
+      /**
+       * Serialize and store a draft of the parent EML model immediately.
+       * @since 0.0.0
+       */
+      saveDraftNow() {
         const view = this;
 
         const title = this.model.get("title") || "No title";
@@ -1656,12 +4231,23 @@ define([
        * @param {EventHandler} e The click event that triggered this method
        */
       showAccessPolicyModal(e) {
+        if (!this.isAccessPolicyEditEnabled()) return;
+
         const id = $(e.target)?.parents("tr")?.data("id");
         if (!id) return;
 
-        const model = MetacatUI.rootDataPackage.find((m) => m.get("id") === id);
+        const model = MetacatUI.rootDataPackage.getMember(id);
+        if (!model) return;
 
-        EditorView.prototype.showAccessPolicyModal.call(this, e, model);
+        const accessPolicyOptions = this.buildAccessPolicyModalOptions(model, {
+          packageLevel: model.isMetadata() || model.isResourceMap(),
+        });
+        EditorView.prototype.showAccessPolicyModal.call(
+          this,
+          e,
+          null,
+          accessPolicyOptions,
+        );
       },
 
       /**

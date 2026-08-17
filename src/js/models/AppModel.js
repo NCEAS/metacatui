@@ -106,14 +106,18 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           dataCatalogMap: "google",
 
           /**
-           * Set this option to true to display the filtering button for data package table
+           * Set this option to true to display the filtering button for the
+           * data package table. This currently only renders the control;
+           * package table filtering is not yet functional.
            * @type {boolean}
            * @since 2.28.0
            */
           dataPackageFiltering: false,
 
           /**
-           * Set this option to true to display the sorting button for data package table
+           * Set this option to true to display sorting indicators for the data
+           * package table. This currently only renders the indicators;
+           * package table sorting is not yet functional.
            * @type {boolean}
            * @since 2.28.0
            */
@@ -483,6 +487,17 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           editorSaveErrorMsgWithDraft:
             "Not all of your changes could be submitted, but a draft " +
             "has been saved which can be accessed by our support team. Please contact us.",
+
+          /**
+           * The maximum number of package members that can be edited in the
+           * dataset editor. Packages with more members will show a blocking
+           * error with support contact information.
+           * @type {number}
+           * @default 700
+           * @since 0.0.0
+           */
+          maxEditorPackageMembers: 700,
+
           /**
            * The text of the Save button in the dataset editor.
            * @type {string}
@@ -718,6 +733,13 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * @type {string}
            */
           reserveServiceUrl: null,
+          /**
+           * The URL for the DataONE generateIdentifier() API. This URL is contructed dynamically when the
+           * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+           * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#CNCore.generateIdentifier)
+           * @type {string}
+           */
+          generateServiceUrl: null,
           /**
            * The URL for the DataONE system metadata API. This URL is contructed dynamically when the
            * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
@@ -2520,16 +2542,12 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           packageFormat: "application%2Fbagit-1.0",
 
           /**
-           * Whether to batch fetch requests to the DataONE API. This is an experimental feature
-           * and should be used with caution.  If set to a number greater than 0, MetacatUI will
-           * batch requests to the DataONE API and send them in groups of this size. This can
-           * improve performance when making many requests to the DataONE API, but can also
-           * cause issues if the requests are too large or if the DataONE API is not able to
-           * handle the batched requests.
-           *
-           * Currently, this feature is only used in the DataPackageModel when fetching the
-           * list of DataONE member models.
-           *
+           * Maximum concurrent DataONE fetch requests for package member and
+           * system metadata enrichment. When set to a positive number, these
+           * paths keep at most this many requests in flight. The new
+           * DataPackage system metadata paths use their package default when
+           * this value is 0 or invalid; legacy member model fetching treats 0
+           * as unbounded.
            * @type {number}
            * @default 0
            * @example 20
@@ -2538,16 +2556,9 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           batchSizeFetch: 0,
 
           /**
-           * Whether to batch uploads to the DataONE API. This is an experimental feature
-           * and should be used with caution.  If set to a number greater than 0, MetacatUI will
-           * batch uploads to the DataONE API and send them in groups of this size. This can
-           * improve performance when uploading many files to the DataONE API, but can also
-           * cause issues if the requests are too large or if the DataONE API is not able to
-           * handle the batched requests.
-           *
-           * Currently, this feature is only used in the DataPackageModel when uploading files
-           * to the DataONE API.
-           *
+           * Maximum concurrent DataONE upload requests and related upload
+           * preflight requests. When set to a positive number, upload paths keep
+           * at most this many requests in flight.
            * @type {number}
            * @default 0
            * @example 20
@@ -2577,7 +2588,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
 
       defaultView: "data",
 
-      initialize: function () {
+      initialize() {
         //If no base URL is specified, then user the DataONE CN base URL
         if (!this.get("baseUrl")) {
           this.set("baseUrl", this.get("d1CNBaseUrl"));
@@ -2648,6 +2659,10 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           this.set(
             "reserveServiceUrl",
             d1CNBaseUrl + this.get("d1CNService") + "/reserve",
+          );
+          this.set(
+            "generateServiceUrl",
+            `${d1CNBaseUrl}${this.get("d1CNService")}/generate`,
           );
 
           //Token URLs
@@ -2741,7 +2756,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * @param {string} [baseUrl] - The baseUrl to use in the URLs. If not specified, it uses the AppModel attributes.
        * @returns {object}
        */
-      getDataONEMNAPIs: function (baseUrl) {
+      getDataONEMNAPIs(baseUrl) {
         var urls = {};
 
         //Get the baseUrl from this model if one isn't given
@@ -2793,6 +2808,12 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         if (d1Service.indexOf("mn") > 0) {
           urls.objectServiceUrl = baseUrl + "/object/";
         }
+        /* eslint-disable block-scoped-var */
+        if (/\/cn\/v\d+$/i.test(baseUrl)) {
+          urls.generateServiceUrl = `${baseUrl}/generate`;
+          urls.reserveServiceUrl = `${baseUrl}/reserve`;
+        }
+        /* eslint-enable block-scoped-var */
 
         if (this.get("enableMonitorStatus")) {
           urls.monitorStatusUrl = baseUrl + "/monitor/status";

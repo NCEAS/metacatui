@@ -3,8 +3,9 @@ define([
   "jquery",
   "backbone",
   "models/metadata/eml211/EMLGeoCoverage",
+  "common/EMLUtilities",
   "text!templates/metadata/EMLGeoCoverage.html",
-], function (_, $, Backbone, EMLGeoCoverage, EMLGeoCoverageTemplate) {
+], (_, $, Backbone, EMLGeoCoverage, EMLUtilities, EMLGeoCoverageTemplate) => {
   /**
    * @class EMlGeoCoverageView
    * @classdesc The EMLGeoCoverage renders the content of an EMLGeoCoverage
@@ -231,18 +232,18 @@ define([
 
         // Validate the coordinate boxes this.validateCoordinates(e);
 
-        //If this model is part of the EML inside the root data package, mark
-        //the package as changed
-        if (this.model.get("parentModel")) {
-          if (
-            this.model.get("parentModel").type == "EML" &&
-            _.contains(
-              MetacatUI.rootDataPackage.models,
-              this.model.get("parentModel"),
-            )
-          ) {
-            MetacatUI.rootDataPackage.packageModel.set("changed", true);
-          }
+        // If this model belongs to the package EML, mark the package as edited.
+        const parentModel = this.model.get("parentModel");
+        const dataPackage = MetacatUI.rootDataPackage;
+        const packageMember = dataPackage?.getMember?.(
+          parentModel?.get?.("id"),
+        );
+        if (
+          parentModel?.type === "EML" &&
+          (_.contains(dataPackage?.models, parentModel) ||
+            packageMember?.objectModel === parentModel)
+        ) {
+          EMLUtilities.markRootDataPackageChanged();
         }
 
         this.validate();

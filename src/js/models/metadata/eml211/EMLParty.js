@@ -793,9 +793,9 @@ define([
         }
       },
 
-      trickleUpChange: function () {
+      trickleUpChange() {
         if (this.get("parentModel")) {
-          MetacatUI.rootDataPackage.packageModel.set("changed", true);
+          EMLUtilities.markRootDataPackageChanged();
         }
       },
 

@@ -214,7 +214,6 @@ require(["bootstrap", "views/AppView", "models/AppModel"], function (
     "models/NodeModel",
     "models/UserModel",
     "models/DataONEObject",
-    "collections/DataPackage",
   ], function (
     _,
     Backbone,
@@ -227,7 +226,6 @@ require(["bootstrap", "views/AppView", "models/AppModel"], function (
     NodeModel,
     UserModel,
     DataONEObject,
-    DataPackage,
   ) {
     "use strict";
 

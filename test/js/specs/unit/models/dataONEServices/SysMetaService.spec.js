@@ -1,12 +1,31 @@
 define([
   "/test/js/specs/shared/clean-state.js",
   "models/dataONEServices/SysMetaService",
-  "models/sysmeta/SysMeta",
-], (cleanState, SysMetaService, SysMeta) => {
+  "models/sysmeta/SystemMetadata",
+], (cleanState, SysMetaService, SystemMetadata) => {
   const should = chai.should();
+  const expect = chai.expect;
+  const XML_NS_V2 = "http://ns.dataone.org/service/types/v2.0";
 
-  const SAMPLE_XML =
-    "<systemMetadata><identifier>sample.1</identifier></systemMetadata>";
+  const SAMPLE_XML = `
+    <d1:systemMetadata xmlns:d1="${XML_NS_V2}">
+      <identifier>sample.1</identifier>
+      <formatId>text/plain</formatId>
+      <size>1</size>
+      <checksum algorithm="SHA-256">abc</checksum>
+      <rightsHolder>userA</rightsHolder>
+    </d1:systemMetadata>
+  `;
+  const SAMPLE_XML_WITH_SERIES_ID = `
+    <d1:systemMetadata xmlns:d1="${XML_NS_V2}">
+      <identifier>sample.1</identifier>
+      <formatId>text/plain</formatId>
+      <size>1</size>
+      <checksum algorithm="SHA-256">abc</checksum>
+      <rightsHolder>userA</rightsHolder>
+      <seriesId>series.1</seriesId>
+    </d1:systemMetadata>
+  `;
 
   const makeResponse = (
     body,
@@ -67,7 +86,23 @@ define([
     });
 
     describe("download", () => {
-      it("fetches XML and returns a SysMeta instance", async () => {
+      it("validates required PIDs before fetching", async () => {
+        const service = new SysMetaService({
+          baseUrl: "https://example.org/sysmeta",
+        });
+
+        let caught = null;
+        try {
+          await service.download("");
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/download requires a pid/i);
+      });
+
+      it("fetches XML and returns a SystemMetadata instance", async () => {
         state.sandbox
           .stub(globalThis, "fetch")
           .resolves(makeResponse(SAMPLE_XML));
@@ -80,14 +115,14 @@ define([
           useCache: false,
         });
 
-        result.should.be.instanceof(SysMeta);
-        result.data.identifier.should.equal("sample.1");
+        result.should.be.instanceof(SystemMetadata);
+        result.identifier.should.equal("sample.1");
       });
 
-      it("sets seriesId when returned identifier differs from requested PID", async () => {
+      it("returns the schema seriesId when a SID request resolves to a PID", async () => {
         state.sandbox
           .stub(globalThis, "fetch")
-          .resolves(makeResponse(SAMPLE_XML));
+          .resolves(makeResponse(SAMPLE_XML_WITH_SERIES_ID));
 
         const service = new SysMetaService({
           baseUrl: "https://example.org/sysmeta",
@@ -97,8 +132,8 @@ define([
           useCache: false,
         });
 
-        result.data.identifier.should.equal("sample.1");
-        result.seriesId.should.equal("series.1");
+        result.identifier.should.equal("sample.1");
+        expect(result.seriesId).to.equal("series.1");
       });
 
       it("returns cached XML when available", async () => {
@@ -118,7 +153,7 @@ define([
           useCache: true,
         });
 
-        result.data.identifier.should.equal("sample.1");
+        result.identifier.should.equal("sample.1");
         reqStub.called.should.be.false;
       });
 
@@ -147,14 +182,14 @@ define([
         const fetchStub = state.sandbox
           .stub(globalThis, "fetch")
           .callsFake((url) => {
-            url.should.equal("https://example.org/sysmeta/doi%3A10.5063%2Fabc");
+            url.should.equal("https://example.org/sysmeta/doi:10.5063%2Fabc");
             return Promise.resolve(makeResponse(SAMPLE_XML));
           });
 
         const service = new SysMetaService({
           baseUrl: "https://example.org/sysmeta",
         });
-        await service.download("doi:10.5063/abc", {
+        await service.download(" doi:10.5063/abc ", {
           auth: false,
           useCache: false,
         });
@@ -172,7 +207,9 @@ define([
         const removeCachedStub = state.sandbox
           .stub(service, "removeCached")
           .resolves();
-        state.sandbox.stub(SysMeta, "fromXml").throws(new Error("Bad XML"));
+        state.sandbox
+          .stub(SystemMetadata, "fromXml")
+          .throws(new Error("Bad XML"));
 
         try {
           await service.download("pid.bad", { auth: false, cacheKey: "k.bad" });
@@ -181,7 +218,7 @@ define([
           );
         } catch (err) {
           err.message.should.match(
-            /Failed to parse SysMeta XML for PID pid\.bad: Bad XML/,
+            /Failed to parse SystemMetadata XML for PID pid\.bad: Bad XML/,
           );
         }
 
@@ -216,6 +253,22 @@ define([
     });
 
     describe("upload", () => {
+      it("validates sysmeta XML before posting", async () => {
+        const service = new SysMetaService({
+          baseUrl: "https://example.org/sysmeta",
+        });
+
+        let caught = null;
+        try {
+          await service.upload("");
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(/upload requires sysmetaxml/i);
+      });
+
       it("posts XML with the correct headers", async () => {
         const service = new SysMetaService({
           baseUrl: "https://example.org/sysmeta",
@@ -232,6 +285,106 @@ define([
         opts.path.should.equal("");
         opts.headers["Content-Type"].should.equal("application/xml");
         opts.body.should.equal(xml);
+      });
+    });
+
+    describe("update", () => {
+      it("validates required update inputs", async () => {
+        const service = new SysMetaService({
+          baseUrl: "https://example.org/sysmeta",
+        });
+
+        let missingPid = null;
+        try {
+          await service.update("", "<systemMetadata></systemMetadata>");
+        } catch (error) {
+          missingPid = error;
+        }
+        expect(missingPid).to.be.instanceof(Error);
+        expect(missingPid.message).to.match(/update requires a pid/i);
+
+        let missingXml = null;
+        try {
+          await service.update("pid.1", "");
+        } catch (error) {
+          missingXml = error;
+        }
+        expect(missingXml).to.be.instanceof(Error);
+        expect(missingXml.message).to.match(/update requires sysmetaxml/i);
+      });
+
+      it("puts multipart sysmeta updates with XHR transport", async () => {
+        const service = new SysMetaService({
+          baseUrl: "https://example.org/sysmeta",
+        });
+        const reqStub = state.sandbox
+          .stub(service, "request")
+          .resolves({ data: "ok" });
+        const setCachedStub = state.sandbox
+          .stub(service, "setCached")
+          .resolves();
+        const xml = "<systemMetadata></systemMetadata>";
+        const onUploadProgress = state.sandbox.spy();
+        const controller = new AbortController();
+
+        await service.update(" pid.1 ", ` ${xml} `, {
+          auth: false,
+          signal: controller.signal,
+          onUploadProgress,
+        });
+
+        const opts = reqStub.firstCall.args[0];
+        opts.method.should.equal("PUT");
+        opts.path.should.equal("pid.1");
+        opts.transport.should.equal("xhr");
+        opts.dedupe.should.equal(false);
+        opts.responseType.should.equal("text");
+        opts.useCache.should.equal(false);
+        opts.signal.should.equal(controller.signal);
+        opts.onUploadProgress.should.equal(onUploadProgress);
+        opts.encodePath.should.equal(false);
+        opts.body.should.be.instanceof(FormData);
+        opts.body.get("pid").should.equal("pid.1");
+        opts.body.get("sysmeta").should.be.instanceof(Blob);
+        (await opts.body.get("sysmeta").text()).should.equal(xml);
+        setCachedStub.called.should.be.false;
+      });
+
+      it("encodes slashes in PIDs when updating", async () => {
+        const requests = [];
+        class FakeXMLHttpRequest {
+          open(method, url) {
+            this.method = method;
+            this.url = url;
+          }
+
+          setRequestHeader() {}
+
+          getAllResponseHeaders() {
+            return "";
+          }
+
+          send() {
+            requests.push(this.url);
+            this.status = 200;
+            this.responseText = "ok";
+            this.responseURL = this.url;
+            this.onload();
+          }
+        }
+        state.sandbox.stub(globalThis, "XMLHttpRequest").callsFake(() => {
+          return new FakeXMLHttpRequest();
+        });
+
+        const service = new SysMetaService({
+          baseUrl: "https://example.org/sysmeta",
+        });
+        const xml = "<systemMetadata></systemMetadata>";
+
+        await service.update("doi:10.5063/abc", xml, { auth: false });
+        requests[0].should.equal(
+          "https://example.org/sysmeta/doi:10.5063%2Fabc",
+        );
       });
     });
   });

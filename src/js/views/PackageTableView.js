@@ -2,13 +2,17 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "common/Utilities",
+  "common/ValueUtilities",
   "models/PackageModel",
   "views/DownloadButtonView",
   "text!templates/downloadContents.html",
-], function ($, _, Backbone, Utilities, Package, DownloadButtonView, Template) {
+], ($, _, Backbone, ValueUtilities, Package, DownloadButtonView, Template) => {
   "use strict";
 
+  /**
+   * @deprecated Legacy package table view. Use the MetadataView/FileTableView
+   * rendering path instead. This view will be removed in a future release
+   */
   var PackageTable = Backbone.View.extend({
     template: _.template(Template),
 
@@ -402,7 +406,7 @@ define([
 
       //File size cell
       var sizeCell = $(document.createElement("td")).addClass("size");
-      var size = Utilities.bytesToSize(memberModel.get("size"));
+      var size = ValueUtilities.bytesToSize(memberModel.get("size"));
       memberModel.set("sizeStr", size);
       $(sizeCell).text(size);
       $(tr).append(sizeCell);

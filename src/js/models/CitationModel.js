@@ -119,6 +119,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
           volume: this.getVolumeFromSourceModel,
           issue: this.getIssueFromSourceModel,
           view_url: this.getViewUrlFromSourceModel,
+          publisher: this.getPublisherFromSourceModel,
         };
       },
 
@@ -338,7 +339,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
             const creatorEvents =
               "change:individualName change:organizationName change:positionName";
             const sourceModelEvents =
-              "change:origin change:creator change:pubDate change:dateUploaded change:title change:seriesId change:id change:datasource";
+              "change:origin change:creator change:pubDate change:dateUploaded change:title change:seriesId change:id change:datasource change:publisher";
             const creators = newSourceModel.get("creator") || [];
             this.listenTo(newSourceModel, sourceModelEvents, () => {
               this.setSourceModel(newSourceModel);
@@ -648,6 +649,33 @@ define(["underscore", "backbone"], (_, Backbone) => {
           );
           return this.defaults().viewUrl;
         }
+      },
+
+      /**
+       * Get the publisher from the sourceModel. First look for publisher, then
+       * datasource. If there is a datasource, then get the name of the member
+       * node that has that datasource ID. If we can't find a member node that
+       * matches the datasource, then check if the datasource is the current
+       * node. If it is, then use the repository name.
+       * @param {Backbone.Model} sourceModel - The model to get publisher from
+       * @returns {string|null} The publisher
+       * @since 0.0.0
+       */
+      getPublisherFromSourceModel(sourceModel) {
+        const publisher = sourceModel.get("publisher");
+        if (publisher) return publisher;
+
+        const datasource = sourceModel.get("datasource");
+        if (!datasource) return this.defaults().publisher;
+        const app = globalThis.MetacatUI;
+        const mn = app?.nodeModel?.getMember?.(datasource);
+        if (mn) {
+          return mn.name;
+        }
+        if (datasource === app?.appModel?.get?.("nodeId")) {
+          return app.appModel.get("repositoryName");
+        }
+        return datasource;
       },
 
       /**

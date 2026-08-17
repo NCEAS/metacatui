@@ -5,8 +5,8 @@ define([
   "models/DataONEObject",
   "models/metadata/eml211/EMLParty",
   "common/EMLUtilities",
-], function ($, _, Backbone, DataONEObject, EMLParty, EMLUtilities) {
-  var EMLProject = Backbone.Model.extend({
+], ($, _, Backbone, DataONEObject, EMLParty, EMLUtilities) => {
+  const EMLProject = Backbone.Model.extend({
     defaults: {
       objectDOM: null,
       title: null,
@@ -240,8 +240,8 @@ define([
       return EMLUtilities.getParentEML(this);
     },
 
-    trickleUpChange: function () {
-      MetacatUI.rootDataPackage.packageModel.set("changed", true);
+    trickleUpChange() {
+      EMLUtilities.markRootDataPackageChanged();
     },
 
     formatXML: function (xmlString) {

@@ -6,8 +6,7 @@ require([
   "models/SolrResult",
 ], function (Citation, Citations, EML211, EMLParty, SolrResult) {
   // Configure the Chai assertion library
-  var should = chai.should();
-  var expect = chai.expect;
+  chai.should();
 
   describe("Citation Model Test Suite", function () {
     let citation;
@@ -18,10 +17,6 @@ require([
 
     afterEach(function () {
       citation = undefined;
-    });
-
-    it("should create a Citation model", function () {
-      citation.should.be.instanceof(Citation);
     });
 
     /**
@@ -169,29 +164,14 @@ require([
         eml = undefined;
       });
 
-      it("should set the title", function () {
+      it("should populate citation fields from an EML model", function () {
         citation.get("title").should.equal("Test Title");
-      });
-
-      it("should set the originArray", function () {
         const csl = citation.get("originArray")[0];
         csl.family.should.equal("LastName");
         csl.given.should.equal("FirstName");
-      });
-
-      it("should set the pid", function () {
         citation.get("pid").should.equal("10.18739/A2KK94B8Q");
-      });
-
-      it("should set the seriesId", function () {
         citation.get("seriesId").should.equal("10.18739/A2KK94B8Q");
-      });
-
-      it("should set the year of publishing", function () {
         citation.get("year_of_publishing").should.equal(2018);
-      });
-
-      it("should set the source model", function () {
         citation.get("sourceModel").should.be.instanceof(EML211);
       });
 
@@ -227,29 +207,33 @@ require([
         solr = undefined;
       });
 
-      it("should set the title", function () {
+      it("should populate citation fields from a SOLR model", function () {
         citation.get("title").should.equal("Test Title");
-      });
-
-      it("should set the originArray", function () {
         const csl = citation.get("originArray")[0];
         csl.literal.should.equal("FirstName LastName");
-      });
-
-      it("should set the pid", function () {
         citation.get("pid").should.equal("10.18739/A2KK94B8Q");
-      });
-
-      it("should set the seriesId", function () {
         citation.get("seriesId").should.equal("10.18739/A2KK94B8Q");
-      });
-
-      it("should set the year of publishing", function () {
         citation.get("year_of_publishing").should.equal(2018);
+        citation.get("sourceModel").should.be.instanceof(SolrResult);
       });
 
-      it("should set the source model", function () {
-        citation.get("sourceModel").should.be.instanceof(SolrResult);
+      it("should use and update an explicit publisher", function () {
+        solr.set("publisher", "First Publisher");
+        citation.get("publisher").should.equal("First Publisher");
+
+        solr.set("publisher", "Second Publisher");
+        citation.get("publisher").should.equal("Second Publisher");
+      });
+
+      it("should use an unknown datasource as the publisher fallback", function () {
+        solr.set({
+          publisher: null,
+          datasource: "urn:node:UNKNOWN-FOR-CITATION-TEST",
+        });
+
+        citation
+          .get("publisher")
+          .should.equal("urn:node:UNKNOWN-FOR-CITATION-TEST");
       });
     });
   });

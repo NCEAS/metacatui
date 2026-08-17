@@ -4,8 +4,8 @@ define([
   "backbone",
   "models/DataONEObject",
   "common/EMLUtilities",
-], function ($, _, Backbone, DataONEObject, EMLUtilities) {
-  var EMLKeywordSet = Backbone.Model.extend({
+], ($, _, Backbone, DataONEObject, EMLUtilities) => {
+  const EMLKeywordSet = Backbone.Model.extend({
     type: "EMLKeywordSet",
 
     defaults: {
@@ -110,8 +110,8 @@ define([
       return EMLUtilities.getParentEML(this);
     },
 
-    trickleUpChange: function () {
-      MetacatUI.rootDataPackage.packageModel.set("changed", true);
+    trickleUpChange() {
+      EMLUtilities.markRootDataPackageChanged();
     },
 
     formatXML: function (xmlString) {

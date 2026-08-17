@@ -1,6 +1,12 @@
 "use strict";
 
-define(["md5"], (md5) => {
+define([
+  "backbone",
+  "collections/ObjectFormats",
+  "common/ValueUtilities",
+  "md5",
+], (Backbone, ObjectFormats, ValueUtilities, md5) => {
+  const DEFAULT_MAX_CONCURRENT = 4;
   const KIBIBYTE = 1024;
   const MEBIBYTE = KIBIBYTE * 1024;
   const GIBIBYTE = MEBIBYTE * 1024;
@@ -8,8 +14,8 @@ define(["md5"], (md5) => {
 
   /**
    * @namespace Utilities
-   * @description A generic utility object that contains functions used throughout MetacatUI to perform useful functions,
-   * but not used to store or manipulate any state about the application.
+   * @description Miscellaneous app/browser helpers that do not yet fit better
+   * specialized common modules.
    * @type {object}
    * @since 2.14.0
    */
@@ -30,8 +36,100 @@ define(["md5"], (md5) => {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/'/g, "&apos;")
-        .replace(/\//g, "/")
         .replace(/"/g, "&quot;");
+    },
+
+    DEFAULT_MAX_CONCURRENT,
+
+    /**
+     * Run work with one concurrency limit and no batch abstraction.
+     * @param {Array<*>} items Items to process.
+     * @param {Function} worker Async item worker.
+     * @param {object} [options] Processing options.
+     * @param {number} [options.maxConcurrent] Worker limit.
+     * @param {AbortSignal} [options.signal] Abort signal.
+     * @param {boolean} [options.stopOnError] Stop scheduling after an error.
+     * @param {Function} [options.onItemComplete] Called after each item
+     *   settles.
+     * @returns {Promise<object>} Collected errors.
+     * @since 0.0.0
+     */
+    async processConcurrently(
+      items,
+      worker,
+      {
+        maxConcurrent = DEFAULT_MAX_CONCURRENT,
+        signal,
+        stopOnError = true,
+        onItemComplete,
+      } = {},
+    ) {
+      let nextIndex = 0;
+      let stopScheduling = false;
+      const errors = [];
+
+      const runWorker = async () => {
+        while (
+          !signal?.aborted &&
+          !stopScheduling &&
+          nextIndex < items.length
+        ) {
+          const index = nextIndex;
+          nextIndex += 1;
+          try {
+            // Workers in each slot run serially to enforce maxConcurrent.
+            // eslint-disable-next-line no-await-in-loop
+            await worker(items[index], index);
+          } catch (error) {
+            errors.push({ item: items[index], error, index });
+            if (stopOnError) stopScheduling = true;
+          } finally {
+            if (typeof onItemComplete === "function") {
+              onItemComplete(items[index], index);
+            }
+          }
+        }
+      };
+
+      await Promise.all(
+        Array.from({ length: Math.min(maxConcurrent, items.length) }, () =>
+          runWorker(),
+        ),
+      );
+      errors.sort((a, b) => a.index - b.index);
+      return { errors };
+    },
+
+    /**
+     * Resolve and validate a positive concurrency limit from a caller value, an
+     * app setting, or the project default.
+     * @param {"upload"|"fetch"} uploadOrFetch Whether limit is for uploads or
+     * fetches
+     * @param {number} [maxConcurrent] Preferred default limit. If 0 or unset,
+     * falls back to the app setting, then
+     * {@link Utilities.DEFAULT_MAX_CONCURRENT}
+     * @returns {number} Positive integer limit.
+     * @since 0.0.0
+     */
+    getMaxConcurrent(uploadOrFetch, maxConcurrent) {
+      const key = ValueUtilities.requireStringChoice(uploadOrFetch, [
+        "upload",
+        "fetch",
+      ]);
+      const mappedKeys = {
+        upload: "batchSizeUpload",
+        fetch: "batchSizeFetch",
+      };
+      const normalizedMax =
+        maxConcurrent ||
+        ValueUtilities.normalizePositiveInteger(
+          Utilities.getMetacatUIProperty(mappedKeys[key]),
+          DEFAULT_MAX_CONCURRENT,
+        );
+      return ValueUtilities.requirePositiveInteger(
+        normalizedMax,
+        "maxConcurrent must be a positive integer",
+      );
     },
 
     /**
@@ -41,7 +139,6 @@ define(["md5"], (md5) => {
      * @since 2.15.0
      */
     isValidDOI(identifier) {
-      // generate doi regex
       const doiRGEX =
         /^\s*(http:\/\/|https:\/\/)?(doi.org\/|dx.doi.org\/)?(doi: ?|DOI: ?)?(10\.\d{4,}(\.\d)*)\/(\w+).*$/gi;
 
@@ -69,18 +166,17 @@ define(["md5"], (md5) => {
       reader.onloadend = callback.bind(context);
       reader.readAsBinaryString(blob);
     },
+
     /**
      * Attempt to parse the header/column names from a chunk of a CSV file
      *
      * Doesn't handle:
-     * - UTF BOM (garbles first col name)
      * - Commas inside quoted headers
      * @param {string} text - A chunk of a file
      * @returns {Array} A list of names
      * @since 2.15.0
      */
     tryParseCSVHeader(text) {
-      // The order is important here
       const strategies = ["\r\\n", "\r", "\n"];
 
       let index = -1;
@@ -90,7 +186,6 @@ define(["md5"], (md5) => {
 
         if (result >= 0) {
           index = result;
-
           break;
         }
       }
@@ -102,18 +197,15 @@ define(["md5"], (md5) => {
       const headerLine = text.slice(0, index);
       let names = headerLine.split(",");
 
-      // Remove surrounding parens and double-quotes
       names = names.map((name) => name.replaceAll(/^["']|["']$/gm, ""));
-
-      // Filter out zero-length values (headers like a,b,c,,,,,)
       names = names.filter((name) => name.length > 0);
 
       return names;
     },
 
     /**
-     * Format the number into a string with better readability, based on the manitude of a
-     * range this number falls in.
+     * Format the number into a string with better readability, based on the
+     * magnitude of a range this number falls in.
      * @param {number} value The number value to be formatted.
      * @param {number} range The range of numerics this value can fall in.
      * @returns {string} A formatted number based on the magnitude of `range`.
@@ -154,24 +246,24 @@ define(["md5"], (md5) => {
      */
     getNumDecimalPlaces(range) {
       if (range < 0.0001 || range > 100000) {
-        return null; // Will use scientific notation
+        return null;
       }
       if (range < 0.001) {
-        return 5; // Allow 5 decimal places
+        return 5;
       }
       if (range < 0.01) {
-        return 4; // Allow 4 decimal places
+        return 4;
       }
       if (range < 0.1) {
-        return 3; // Allow 3 decimal places
+        return 3;
       }
       if (range < 1) {
-        return 2; // Allow 2 decimal places
+        return 2;
       }
       if (range <= 100) {
-        return 1; // Allow 1 decimal places
+        return 1;
       }
-      return 0; // No decimal places
+      return 0;
     },
 
     /**
@@ -185,7 +277,6 @@ define(["md5"], (md5) => {
       if (a === b) return true;
 
       if (Array.isArray(a) && Array.isArray(b)) {
-        // Quick check for empty arrays
         if (a.length === 0 && b.length === 0) return true;
         if (a.length !== b.length) return false;
         return a.every((value, index) => this.deepEqual(value, b[index]));
@@ -212,20 +303,15 @@ define(["md5"], (md5) => {
 
     /**
      * Stringify any value deterministically, where order doesn't impact the
-     * result. All object keys and array items are sorted in a consistent way.
-     * Normalizes undefined to null. Useful for creating unique keys based on
-     * the content of an object, e.g. for keying a cache or singleton instance.
+     * result.
      * @param {*} val The value to stringify.
      * @param {object} [options] Options object.
      * @param {boolean} [options.ignoreCase] Whether to convert all string
-     * values to lower case before stringifying, for case-insensitive
-     * comparisons. Default is true. Note when ignoreCase is true, normalized
-     * object keys can collide (e.g., "A" and "a").
+     * values to lower case before stringifying.
      * @param {WeakSet} [options.processed] WeakSet tracking visited objects.
      * @param {boolean} [options.orderMatters] Whether to preserve array order
-     * during stringification. Default is false (arrays are sorted).
-     * @returns {string} A string that is consistent regardless of the order of
-     * keys in objects or items in arrays, etc.
+     * during stringification.
+     * @returns {string} A stable string representation.
      * @throws {Error} If a circular reference is detected.
      * @since 2.37.0
      */
@@ -240,8 +326,6 @@ define(["md5"], (md5) => {
       const { ignoreCase = true, orderMatters = false, processed } = options;
       const seen = processed instanceof WeakSet ? processed : new WeakSet();
       const nextOpts = { ignoreCase, orderMatters, processed: seen };
-      // Object.prototype.toString (-> e.g., "[object Date]") is more reliable
-      // than typeof or val.constructor.name, e.g. when minified
       const rawTag = Object.prototype.toString.call(val);
       const type = rawTag.slice(8, -1).toLowerCase();
       let newString;
@@ -280,7 +364,6 @@ define(["md5"], (md5) => {
           break;
         case "error":
           newString = val.toString();
-          // Errors get prefixed with "Error:" in toString
           newString = newString.toLowerCase().startsWith("error:")
             ? newString.slice(6).trim()
             : newString;
@@ -299,9 +382,6 @@ define(["md5"], (md5) => {
         });
       }
 
-      // For objects, we need to recursively normalize properties/items. We also
-      // need to track seen objects to detect circular references and avoid
-      // infinite recursion.
       if (seen.has(val)) {
         throw new Error("Utilities.stableStringify: circular reference");
       }
@@ -340,7 +420,6 @@ define(["md5"], (md5) => {
         }
         normalized = normalizedItems;
       } else {
-        // Plain object
         const keys = Object.keys(val).sort();
         const result = {};
         keys.forEach((key) => {
@@ -374,36 +453,18 @@ define(["md5"], (md5) => {
         typeof resolved === "string" ? resolved : String(resolved);
       urlString = urlString.trim();
       if (!urlString) return "";
-      // Remove trailing slashes (including before query/hash)
       return urlString.replace(/\/+(?=($|[?#]))/, "");
     },
 
     /**
-     * Build a unique string to represent an instance of a class, or generally,
-     * to uniquely identify a set of options or properties. The key is built
-     * from an object (e.g. config options for a class instance) by
-     * concatenating the values of specified fields. Only includes fields that
-     * have non-null/undefined values.
-     * @param {object} options The object containing the keys and values to
-     * build the key from.
-     * @param {string[]} keys The names of fields required to build the instance
-     * key. If a value for the key is available, it will be included. Otherwise
-     * it will be skipped.
-     * @param {object} [normalizers] Optional object mapping field names to
-     * normalizer functions that take the raw value and return a normalized
-     * value to use for the key, for example, to normalize URLs or make strings
-     * case-insensitive.
-     * @param {string} [separator] Separator to use between key parts. Default
-     * is "|".
-     * @param {boolean} [encode] If true, the resulting key will be run through
-     * md5 to shorten it and ensure it's a valid string for use as a key.
-     * Default is true.
-     * @returns {string} The generated instance key, which is a concatenation of
-     * the specified fields and their values, with non-string values converted
-     * to strings. If encode is true, this will be an md5 hash of the
-     * concatenated string.
-     * @throws {Error} If keys is not a non-empty array, or if buildInstanceKey
-     * is not a function.
+     * Build a unique string to represent a class instance or options set.
+     * @param {object} options The object containing key values.
+     * @param {string[]} keys Field names required to build the key.
+     * @param {object} [normalizers] Optional field normalizers.
+     * @param {string} [separator] Separator to use between key parts.
+     * @param {boolean} [encode] Whether to md5-encode the key.
+     * @returns {string} The generated instance key.
+     * @throws {Error} If keys is not a non-empty array.
      * @since 2.37.0
      */
     buildInstanceKey(
@@ -440,12 +501,8 @@ define(["md5"], (md5) => {
     /**
      * Get or create a singleton instance for a class.
      * @param {Function} ClassRef Class reference.
-     * @param {object} [options] Options passed to the class constructor for
-     * this instance.
-     * @param {Function} buildInstanceKey Function that builds a unique key for
-     * the instance based on the options. This is used to allow multiple
-     * singletons for the same class with different options. The function will
-     * be passed the options object and should return a string key.
+     * @param {object} [options] Options passed to the class constructor.
+     * @param {Function} buildInstanceKey Function that builds a unique key.
      * @returns {object} The singleton instance.
      * @since 2.37.0
      */
@@ -473,50 +530,73 @@ define(["md5"], (md5) => {
     },
 
     /**
+     * Read a MetacatUI property directly, via Backbone's `get`, or from a
+     * nested appModel.
+     * @param {string} property Property name to retrieve.
+     * @param {object} [app] MetacatUI object.
+     * @returns {*} Property value, or `undefined` when not present.
+     */
+    getMetacatUIProperty(property, app) {
+      const normalizedApp = app || globalThis.MetacatUI?.appModel;
+      if (!normalizedApp || !property) return undefined;
+
+      if (normalizedApp[property] !== undefined) {
+        return normalizedApp[property];
+      }
+
+      if (typeof normalizedApp.get === "function") {
+        const value = normalizedApp.get(property);
+        if (value !== undefined) return value;
+      }
+
+      return normalizedApp.appModel
+        ? Utilities.getMetacatUIProperty(property, normalizedApp.appModel)
+        : undefined;
+    },
+
+    /**
      * Wait for the global MetacatUI object to be available, and optionally for
-     * a specific property on it to be defined. Useful when needing to access
-     * the app user model or other properties that may not be available
-     * immediately when a module is loaded.
+     * a specific property on it to be defined.
      * @param {object} [options] Options object.
      * @param {number} [options.maxAttempts] Maximum number of attempts.
      * @param {number} [options.delay] Delay between attempts in ms.
-     * @param {string} [options.property] Optional property name to wait for on
-     * the MetacatUI object. If provided, the Promise won't resolve until that
-     * property is available and not undefined. Otherwise, just waits for the
-     * global MetacatUI object itself.
-     * @returns {Promise<object>} Promise resolving to the app user model.
-     * @throws {Error} If the user model is not available in time.
-     * @since 2.37.0
+     * @param {string} [options.property] Optional property name to wait for.
+     * @param {string} [options.appName] Optional MetacatUI property containing
+     * the object to wait for.
+     * @returns {Promise<*>} Promise resolving to the requested global object or
+     * property value.
+     * @throws {Error} If the requested value is not available in time.
+     * @since 0.0.0
      */
     async awaitMetacatUI({
       maxAttempts = 20,
       delay = 200,
       property = "",
+      appName = "",
     } = {}) {
       let attempts = 0;
       while (attempts < maxAttempts) {
         attempts += 1;
-        if (typeof MetacatUI !== "undefined" && MetacatUI !== null) {
-          // If we're just waiting for the global object, return it now
+        const app = appName
+          ? globalThis.MetacatUI?.[appName]
+          : globalThis.MetacatUI;
+
+        if (app != null) {
           if (!property) {
-            return MetacatUI;
+            return app;
           }
-          const value =
-            MetacatUI[property] || (MetacatUI.get && MetacatUI.get(property));
-          // If we're waiting for a specific property, check if it's defined
-          // yet and if not, continue waiting
-          if (value !== "undefined") {
+
+          const value = Utilities.getMetacatUIProperty(property, app);
+          if (value !== undefined) {
             return value;
           }
         }
-        // Otherwise, wait the attempt delay and try again.
         // eslint-disable-next-line no-await-in-loop
         await new Promise((resolve) => {
           setTimeout(resolve, delay);
         });
       }
 
-      // If we reach here, we failed to get the appUserModel
       let message = "Unable to retrieve MetacatUI";
       if (property) {
         message += `.${property}`;
@@ -527,8 +607,8 @@ define(["md5"], (md5) => {
     /**
      * Removes default values from a model's JSON representation
      * @param {Backbone.Model} model - The model to remove defaults from
-     * @param {string[]} [removeProps] - An array of additional properties to remove from the model
-     * @returns {object} The JSON representation of the model with defaults removed
+     * @param {string[]} [removeProps] - Additional properties to remove
+     * @returns {object} The JSON representation with defaults removed
      * @since 2.31.0
      */
     toJSONWithoutDefaults(model, removeProps = []) {
@@ -574,23 +654,20 @@ define(["md5"], (md5) => {
     },
 
     /**
-     * Convert a wildcard pattern (e.g. "eml*", "*iso*") to a safe RegExp.
-     * Escapes all regex special chars except '*' which becomes '.*'
+     * Convert a wildcard pattern to a safe RegExp.
      * @param {string} pattern - A simple wildcard pattern
      * @returns {RegExp} Regex for case-insensitive matching
      */
     wildcardToRegex(pattern) {
-      // Escape regex special characters, except "*"
       const escaped = pattern.replace(/[-/\\^$+?.()|[\]{}]/g, "\\$&");
-      // Replace "*" with ".*" for multi-character wildcard
       const regexString = `^${escaped.replace(/\*/g, ".*")}$`;
-      return new RegExp(regexString, "i"); // "i" = case-insensitive, if desired
+      return new RegExp(regexString, "i");
     },
 
     /**
      * Get a value from a plain object using a case-insensitive key.
      * @param {object} obj Source object
-     * @param {string} keyName Key name to look up (case-insensitive)
+     * @param {string} keyName Key name to look up
      * @param {Function} [normalizeValue] Optional value normalizer
      * @returns {*} The matched value, or undefined if not found
      * @since 2.37.0
@@ -607,6 +684,57 @@ define(["md5"], (md5) => {
 
       const value = obj[key];
       return normalizeValue ? normalizeValue(value) : value;
+    },
+
+    /**
+     * Get the list of object formats from the Coordinating Node.
+     * @returns {Promise<ObjectFormats>} Promise resolving to the object
+     * formats collection.
+     * @since 0.0.0
+     */
+    async awaitObjectFormats() {
+      const app = await Utilities.awaitMetacatUI();
+      if (!app.objectFormats) app.objectFormats = new ObjectFormats();
+      const formats = app.objectFormats;
+      if (formats.hasRemoteFormats || formats.isFetching) return formats;
+
+      const listener = new Backbone.Model();
+      const finish = () => {
+        listener.stopListening();
+        formats.isFetching = false;
+      };
+
+      listener.listenToOnce(formats, "sync", () => {
+        Object.assign(formats, {
+          hasRemoteFormats: true,
+          usingFallback: false,
+          lastFetchError: null,
+        });
+        finish();
+      });
+      listener.listenToOnce(formats, "error", (_collection, response) => {
+        const errText =
+          response?.responseText || response?.status || "Unknown error";
+        formats.lastFetchError = new Error(
+          `Failed to fetch object formats: ${errText}`,
+        );
+        finish();
+      });
+
+      if (typeof formats.fetch !== "function") {
+        finish();
+        return formats;
+      }
+
+      formats.isFetching = true;
+      try {
+        formats.fetch();
+      } catch (error) {
+        formats.lastFetchError = error;
+        finish();
+      }
+
+      return formats;
     },
   };
 

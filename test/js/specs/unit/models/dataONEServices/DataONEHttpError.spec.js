@@ -40,6 +40,27 @@ define([
       err.networkError.should.be.false;
     });
 
+    it("uses DataONE error descriptions from XML response bodies", () => {
+      const body =
+        '<error name="IdentifierNotUnique" errorCode="400" detailCode="1060">' +
+        "<description>The previous identifier has already been made obsolete by: urn:uuid:new</description>" +
+        "</error>";
+
+      const err = new DataONEHttpError({
+        response: {
+          status: 400,
+          data: body,
+        },
+      });
+
+      err.message.should.equal(
+        "The previous identifier has already been made obsolete by: urn:uuid:new",
+      );
+      err.dataONEErrorName.should.equal("IdentifierNotUnique");
+      err.errorCode.should.equal("400");
+      err.detailCode.should.equal("1060");
+    });
+
     it("infers network errors from TypeError when no status", () => {
       const original = new TypeError("Network down");
       const err = new DataONEHttpError({ error: original, attempt: 3 });

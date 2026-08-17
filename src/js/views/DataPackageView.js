@@ -5,7 +5,7 @@ define([
   "underscore",
   "backbone",
   "collections/DataPackage",
-  "common/Utilities",
+  "common/ValueUtilities",
   "models/PackageModel",
   "views/DataItemView",
   "views/DownloadButtonView",
@@ -17,7 +17,7 @@ define([
   _,
   Backbone,
   DataPackage,
-  Utilities,
+  ValueUtilities,
   PackageModel,
   DataItemView,
   DownloadButtonView,
@@ -32,6 +32,8 @@ define([
    * @classcategory Views
    * @screenshot views/DataPackageView.png
    * @augments Backbone.View
+   * @deprecated Legacy package table view. Use the MetadataView/FileTableView
+   * rendering path instead. This view will be removed in a future release
    */
   const DataPackageView = Backbone.View.extend(
     /** @lends DataPackageView.prototype */ {
@@ -1006,7 +1008,6 @@ define([
         this.downloadButtonView = new DownloadButtonView({
           model: dataPackage,
           view: "actionsView",
-          nested: true,
         });
 
         // Render
@@ -1023,7 +1024,7 @@ define([
         // Add each member to the package table view
         _.each(members, (m) => {
           // Update the size to bytes format
-          m.set({ size: Utilities.bytesToSize(m.get("size")) });
+          m.set({ size: ValueUtilities.bytesToSize(m.get("size")) });
 
           // Add each item of this nested package to the package table view
           view.addOne(m, dataPackage);

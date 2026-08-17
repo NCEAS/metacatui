@@ -3,10 +3,18 @@
 define([
   "backbone",
   "underscore",
-  "common/Utilities",
+  "common/ErrorUtilities",
+  "common/ValueUtilities",
   "models/ontologies/BioontologyClass",
   "models/ontologies/BioontologyOntology",
-], (Backbone, _, Utilities, BioontologyClass, BioontologyOntology) => {
+], (
+  Backbone,
+  _,
+  ErrorUtilities,
+  ValueUtilities,
+  BioontologyClass,
+  BioontologyOntology,
+) => {
   // The type that defines an ontology in the BioPortal API
   const ONTOLOGY_TYPE = "http://data.bioontology.org/metadata/Ontology";
   // The number of items to remove from the cache if it is full
@@ -166,7 +174,7 @@ define([
         // Keep cache storage small by removing unnecessary properties
         const removeProps = ["@context", "links"];
         const newItems = newModels.map((model) =>
-          Utilities.toJSONWithoutDefaults(model, removeProps),
+          ValueUtilities.toJSONWithoutDefaults(model, removeProps),
         );
         const cache = currentCache.concat(newItems);
         this.cacheWithRetry(cache);
@@ -180,7 +188,7 @@ define([
         try {
           localStorage.setItem("bioontologyResults", JSON.stringify(cache));
         } catch (error) {
-          if (error.name === "QuotaExceededError") {
+          if (ErrorUtilities.isQuotaError(error)) {
             const newCache = cache.slice(CACHE_REMOVAL_SIZE);
             this.cacheWithRetry(newCache);
           } else {

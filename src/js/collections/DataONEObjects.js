@@ -1,15 +1,15 @@
 "use strict";
 
-define(["backbone", "models/DataONEObject", "common/DateUtility"], (
+define(["backbone", "models/DataONEObject", "common/DateUtilities"], (
   Backbone,
   DataONEObject,
-  DateUtility,
+  DateUtilities,
 ) => {
   /**
    * @class DataONEObjects
    * @classdesc A collection of DataONEObject models.
    * @classcategory Collections/SearchSelect
-   * @since 2.37.0
+   * @since 0.0.0
    */
   const DataONEObjects = Backbone.Collection.extend({
     /** @lends DataONEObjects.prototype */
@@ -127,7 +127,7 @@ define(["backbone", "models/DataONEObject", "common/DateUtility"], (
       // Pluck the date & id for all models
       this.each((model) => {
         const dateValue = model.get(dateProp);
-        const date = DateUtility.toDate(dateValue);
+        const date = DateUtilities.toDate(dateValue);
         if (date) {
           if (!minDate || date < minDate) {
             minDate = date;
@@ -161,7 +161,7 @@ define(["backbone", "models/DataONEObject", "common/DateUtility"], (
      * @param {("local"|"UTC")} [options.groupingTimeZone] Timezone used
      * to determine day boundaries.
      * @returns {Array.<{date: (Date|null), models: Array.<Backbone.Model>}>}
-     * Grouped models.
+     * Grouped models
      */
     groupByDate({
       dateProp = "dateUploaded",
@@ -179,11 +179,11 @@ define(["backbone", "models/DataONEObject", "common/DateUtility"], (
 
         if (rawDate) {
           try {
-            const parsedDate = DateUtility.toDate(rawDate);
+            const parsedDate = DateUtilities.toDate(rawDate);
             if (!parsedDate) {
               throw new Error("Invalid Date");
             }
-            groupDate = DateUtility.toMidnightDate(
+            groupDate = DateUtilities.toMidnightDate(
               parsedDate,
               normalizedTimeZone,
             );

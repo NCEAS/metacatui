@@ -1,244 +1,250 @@
-define(["common/Utilities"], function (EntityUtils) {
+define(["backbone", "collections/ObjectFormats", "common/Utilities"], function (
+  Backbone,
+  ObjectFormats,
+  Utilities,
+) {
   var expect = chai.expect;
 
-  describe("EntityUtils", function () {
-    describe("tryParseCSVHeader", function () {
-      var parse = EntityUtils.tryParseCSVHeader;
+  describe("Utilities", function () {
+    let originalMetacatUI;
 
-      it("should handle various newlines", function () {
-        expect(parse("a,b\n1,2\n")).to.deep.equal(["a", "b"]);
-        expect(parse("a,b\n1,2")).to.deep.equal(["a", "b"]);
+    beforeEach(function () {
+      originalMetacatUI = window.MetacatUI;
+    });
+
+    afterEach(function () {
+      if (typeof originalMetacatUI === "undefined") {
+        delete window.MetacatUI;
+      } else {
+        window.MetacatUI = originalMetacatUI;
+      }
+    });
+
+    describe("processConcurrently", function () {
+      it("limits concurrent work and collects errors by input order", async function () {
+        let active = 0;
+        let maxActive = 0;
+        const completed = [];
+
+        const result = await Utilities.processConcurrently(
+          [1, 2, 3],
+          async (item) => {
+            active += 1;
+            maxActive = Math.max(maxActive, active);
+            await new Promise((resolve) => {
+              setTimeout(resolve, 0);
+            });
+            active -= 1;
+            completed.push(item);
+            if (item === 2) throw new Error("bad item");
+          },
+          { maxConcurrent: 2, stopOnError: false },
+        );
+
+        expect(maxActive).to.be.at.most(2);
+        expect(completed).to.have.members([1, 2, 3]);
+        expect(result.errors).to.have.length(1);
+        expect(result.errors[0].item).to.equal(2);
+        expect(result.errors[0].index).to.equal(1);
+      });
+    });
+
+    describe("tryParseCSVHeader", function () {
+      var parse = Utilities.tryParseCSVHeader;
+
+      it("handles various newlines", function () {
         expect(parse("a,b\n1,2\n")).to.deep.equal(["a", "b"]);
         expect(parse("a,b\n1,2")).to.deep.equal(["a", "b"]);
         expect(parse("a,b\n\n1,2\n\n")).to.deep.equal(["a", "b"]);
         expect(parse("a,b\n\n1,2")).to.deep.equal(["a", "b"]);
       });
 
-      it("should handle single quotes", function () {
+      it("handles single quotes", function () {
         expect(parse("'a','b'\n1,2\n")).to.deep.equal(["a", "b"]);
       });
 
-      it("should handle double quotes", function () {
+      it("handles double quotes", function () {
         expect(parse('"a","b"\n1,2\n')).to.deep.equal(["a", "b"]);
       });
 
-      it("should handle a mix of unquoted and quoted", function () {
+      it("handles a mix of unquoted and quoted headers", function () {
         expect(parse('a,"b"\n1,2\n')).to.deep.equal(["a", "b"]);
       });
     });
 
-    describe("formatNumber", () => {
-      it("rounds number if the range is between 0.0001 and 100000", () => {
-        expect(EntityUtils.formatNumber(0.000099999, 0.0001)).to.equal(
-          "0.00010",
-        );
-        expect(EntityUtils.formatNumber(1.9, 100000)).to.equal("2");
+    describe("formatNumber", function () {
+      it("rounds number if the range is between 0.0001 and 100000", function () {
+        expect(Utilities.formatNumber(0.000099999, 0.0001)).to.equal("0.00010");
+        expect(Utilities.formatNumber(1.9, 100000)).to.equal("2");
       });
 
-      it("uses scientific notation if the range is outside of 0.0001 and 100000", () => {
-        expect(EntityUtils.formatNumber(0.000099999, 0.000099999)).to.equal(
+      it("uses scientific notation if the range is outside 0.0001 and 100000", function () {
+        expect(Utilities.formatNumber(0.000099999, 0.000099999)).to.equal(
           "1.00e-4",
         );
-        expect(EntityUtils.formatNumber(1.9, 100001)).to.equal("1.90e+0");
+        expect(Utilities.formatNumber(1.9, 100001)).to.equal("1.90e+0");
       });
 
-      it("returns empty string if input value isn't a number", () => {
-        expect(EntityUtils.formatNumber("1.0", 0.000099999)).to.equal("");
+      it("returns empty string if input value is not a number", function () {
+        expect(Utilities.formatNumber("1.0", 0.000099999)).to.equal("");
       });
 
-      it("returns value as is if range isn't a number", () => {
-        expect(EntityUtils.formatNumber(1.9, "invalid range")).to.equal("1.9");
-      });
-    });
-
-    describe("formatFixedNumber", () => {
-      it("formats finite numbers using fixed decimal places", () => {
-        expect(EntityUtils.formatFixedNumber(1.2345, 2)).to.equal("1.23");
-        expect(EntityUtils.formatFixedNumber(1.2345, 0)).to.equal("1");
-      });
-
-      it("returns the fallback for non-finite values", () => {
-        expect(EntityUtils.formatFixedNumber(Number.NaN, 2, "n/a")).to.equal(
-          "n/a",
-        );
-        expect(EntityUtils.formatFixedNumber(Infinity, 2, "n/a")).to.equal(
-          "n/a",
-        );
+      it("returns value as is if range is not a number", function () {
+        expect(Utilities.formatNumber(1.9, "invalid range")).to.equal("1.9");
       });
     });
 
-    describe("deepEqual", () => {
-      it("should return true if two objects are deeply equal", () => {
+    describe("formatFixedNumber", function () {
+      it("formats finite numbers using fixed decimal places", function () {
+        expect(Utilities.formatFixedNumber(1.2345, 2)).to.equal("1.23");
+        expect(Utilities.formatFixedNumber(1.2345, 0)).to.equal("1");
+      });
+
+      it("returns the fallback for non-finite values", function () {
+        expect(Utilities.formatFixedNumber(Number.NaN, 2, "n/a")).to.equal(
+          "n/a",
+        );
+        expect(Utilities.formatFixedNumber(Infinity, 2, "n/a")).to.equal("n/a");
+      });
+    });
+
+    describe("deepEqual", function () {
+      it("returns true if two objects are deeply equal", function () {
         const a = { a: 1, b: { c: 2 } };
         const b = { a: 1, b: { c: 2 } };
-        expect(EntityUtils.deepEqual(a, b)).to.equal(true);
+        expect(Utilities.deepEqual(a, b)).to.equal(true);
       });
 
-      it("should return false if two objects are not deeply equal", () => {
+      it("returns false if two objects are not deeply equal", function () {
         const a = { a: 1, b: { c: 2 } };
         const b = { a: 1, b: { c: 3 } };
-        expect(EntityUtils.deepEqual(a, b)).to.equal(false);
+        expect(Utilities.deepEqual(a, b)).to.equal(false);
       });
 
-      it("should return true if two arrays are deeply equal", () => {
-        const a = [1, 2, [3, 4]];
-        const b = [1, 2, [3, 4]];
-        expect(EntityUtils.deepEqual(a, b)).to.equal(true);
-      });
-
-      it("should return false if two arrays are not deeply equal", () => {
-        const a = [1, 2, [3, 4]];
-        const b = [1, 2, [3, 5]];
-        expect(EntityUtils.deepEqual(a, b)).to.equal(false);
+      it("handles nested arrays", function () {
+        expect(Utilities.deepEqual([1, 2, [3, 4]], [1, 2, [3, 4]])).to.equal(
+          true,
+        );
+        expect(Utilities.deepEqual([1, 2, [3, 4]], [1, 2, [3, 5]])).to.equal(
+          false,
+        );
       });
     });
 
-    describe("stableStringify", () => {
-      it("returns identical strings for objects with different key order", () => {
+    describe("stableStringify", function () {
+      it("returns identical strings for objects with different key order", function () {
         const a = { b: 2, a: 1, nested: { z: 3, a: 0 } };
         const b = { a: 1, nested: { a: 0, z: 3 }, b: 2 };
 
-        const s1 = EntityUtils.stableStringify(a);
-        const s2 = EntityUtils.stableStringify(b);
-
-        expect(s1).to.equal(s2);
+        expect(Utilities.stableStringify(a)).to.equal(
+          Utilities.stableStringify(b),
+        );
       });
 
-      it("sorts arrays to make ordering irrelevant", () => {
-        const a = { list: [2, 1] };
-        const b = { list: [1, 2] };
-
-        const s1 = EntityUtils.stableStringify(a);
-        const s2 = EntityUtils.stableStringify(b);
-
-        expect(s1).to.equal(s2);
+      it("sorts arrays to make ordering irrelevant", function () {
+        expect(Utilities.stableStringify({ list: [2, 1] })).to.equal(
+          Utilities.stableStringify({ list: [1, 2] }),
+        );
       });
 
-      it("preserves array order when orderMatters is true", () => {
-        const a = [2, 1];
-        const b = [1, 2];
-
-        const s1 = EntityUtils.stableStringify(a, { orderMatters: true });
-        const s2 = EntityUtils.stableStringify(b, { orderMatters: true });
+      it("preserves array order when orderMatters is true", function () {
+        const s1 = Utilities.stableStringify([2, 1], { orderMatters: true });
+        const s2 = Utilities.stableStringify([1, 2], { orderMatters: true });
 
         expect(s1).to.equal('["number:2","number:1"]');
         expect(s2).to.equal('["number:1","number:2"]');
         expect(s1).to.not.equal(s2);
       });
 
-      it("throws on circular references", () => {
+      it("throws on circular references", function () {
         const a = { name: "circular" };
         a.self = a;
 
-        expect(() => EntityUtils.stableStringify(a)).to.throw(/circular/);
+        expect(() => Utilities.stableStringify(a)).to.throw(/circular/);
       });
 
-      it("allows shared references that are not circular", () => {
+      it("allows shared references that are not circular", function () {
         const shared = { value: 1 };
         const obj = { a: shared, b: shared };
 
-        expect(() => EntityUtils.stableStringify(obj)).to.not.throw();
+        expect(() => Utilities.stableStringify(obj)).to.not.throw();
       });
 
-      it("normalizes string case when ignoreCase is true", () => {
-        const a = { name: "Alpha" };
-        const b = { name: "alpha" };
-
-        const s1 = EntityUtils.stableStringify(a, { ignoreCase: true });
-        const s2 = EntityUtils.stableStringify(b, { ignoreCase: true });
-
-        expect(s1).to.equal(s2);
+      it("normalizes string case when ignoreCase is true", function () {
+        expect(Utilities.stableStringify({ name: "Alpha" })).to.equal(
+          Utilities.stableStringify({ name: "alpha" }),
+        );
       });
 
-      it("respects ignoreCase when false", () => {
+      it("respects ignoreCase when false", function () {
         const a = "  AbC  ";
-        const s1 = EntityUtils.stableStringify(a, { ignoreCase: false });
-        const s2 = EntityUtils.stableStringify(a, { ignoreCase: true });
+        const s1 = Utilities.stableStringify(a, { ignoreCase: false });
+        const s2 = Utilities.stableStringify(a, { ignoreCase: true });
 
         expect(s1).to.equal("AbC");
         expect(s2).to.equal("abc");
       });
 
-      it("does not modify original objects", () => {
-        const a = { name: "Alpha" };
-        const b = { name: "alpha" };
-
-        EntityUtils.stableStringify(a, { ignoreCase: true });
-        EntityUtils.stableStringify(b, { ignoreCase: true });
-
-        expect(a.name).to.equal("Alpha");
-        expect(b.name).to.equal("alpha");
+      it("handles null and undefined values", function () {
+        expect(Utilities.stableStringify({ value: null })).to.equal(
+          Utilities.stableStringify({ value: undefined }),
+        );
+        expect(Utilities.stableStringify(null)).to.equal("null");
+        expect(Utilities.stableStringify(undefined)).to.equal("null");
       });
 
-      it("handles null and undefined values", () => {
-        const a = { value: null };
-        const b = { value: undefined };
-
-        const s1 = EntityUtils.stableStringify(a);
-        const s2 = EntityUtils.stableStringify(b);
-
-        expect(s1).to.equal(s2);
+      it("adds type prefixes for non-string primitives", function () {
+        expect(Utilities.stableStringify(42)).to.equal("number:42");
+        expect(Utilities.stableStringify(true)).to.equal("boolean:true");
+        expect(Utilities.stableStringify(42n)).to.equal("bigint:42");
+        expect(Utilities.stableStringify("42")).to.equal("42");
       });
 
-      it("stringifies null and undefined at the top level", () => {
-        expect(EntityUtils.stableStringify(null)).to.equal("null");
-        expect(EntityUtils.stableStringify(undefined)).to.equal("null");
-      });
-
-      it("adds type prefixes for non-string primitives", () => {
-        expect(EntityUtils.stableStringify(42)).to.equal("number:42");
-        expect(EntityUtils.stableStringify(true)).to.equal("boolean:true");
-        expect(EntityUtils.stableStringify(42n)).to.equal("bigint:42");
-        expect(EntityUtils.stableStringify("42")).to.equal("42");
-      });
-
-      it("handles non-object primitive values", () => {
+      it("handles object primitive values", function () {
         const url = new URL("https://Example.com/Path");
         const err = new Error("Boom");
-        const a = {
-          num: 42,
-          date: new Date("2024-01-01T00:00:00Z"),
-          regex: /test/i,
-          url,
-          err,
-          func: function () {
-            return "test";
-          },
-        };
-
-        const s1 = EntityUtils.stableStringify(a);
-        console.log(s1);
-        const parsed = JSON.parse(s1);
+        const parsed = JSON.parse(
+          Utilities.stableStringify({
+            num: 42,
+            date: new Date("2024-01-01T00:00:00Z"),
+            regex: /test/i,
+            url,
+            err,
+            func: function () {
+              return "test";
+            },
+          }),
+        );
 
         expect(parsed.num).to.equal("number:42");
         expect(parsed.date).to.equal("date:2024-01-01t00:00:00.000z");
         expect(parsed.regex).to.equal("regexp:/test/i");
         expect(parsed.url).to.equal(`url:${url.toString()}`.toLowerCase());
-        expect(parsed.err).to.equal(`error:boom`.toLowerCase());
+        expect(parsed.err).to.equal("error:boom");
         expect(parsed.func).to.match(/^function:[a-f0-9]{32}$/);
       });
 
-      it("handles symbols with global and local keys", () => {
+      it("handles symbols with global and local keys", function () {
         const globalSym = Symbol.for("Token");
         const localSym = Symbol("Token");
 
-        expect(EntityUtils.stableStringify(globalSym)).to.equal(
+        expect(Utilities.stableStringify(globalSym)).to.equal(
           "symbol:global:token",
         );
-        expect(EntityUtils.stableStringify(localSym)).to.equal(
+        expect(Utilities.stableStringify(localSym)).to.equal(
           "symbol:local:token",
         );
         expect(
-          EntityUtils.stableStringify(globalSym, { ignoreCase: false }),
+          Utilities.stableStringify(globalSym, { ignoreCase: false }),
         ).to.equal("symbol:global:Token");
       });
 
-      it("serializes Map entries without collapsing keys", () => {
+      it("serializes Map entries without collapsing keys", function () {
         const map = new Map();
         map.set({ a: 1 }, "first");
         map.set({ b: 2 }, "second");
 
-        const parsed = JSON.parse(EntityUtils.stableStringify(map));
+        const parsed = JSON.parse(Utilities.stableStringify(map));
         expect(parsed.type).to.equal("Map");
         expect(parsed.entries).to.have.length(2);
         const keys = parsed.entries.map((entry) => entry[0]);
@@ -246,95 +252,59 @@ define(["common/Utilities"], function (EntityUtils) {
         expect(keys).to.include('{"b":"number:2"}');
       });
 
-      it("throws on circular references in Map and Set", () => {
+      it("throws on circular references in Map and Set", function () {
         const map = new Map();
         map.set("self", map);
-        expect(() => EntityUtils.stableStringify(map)).to.throw(/circular/);
+        expect(() => Utilities.stableStringify(map)).to.throw(/circular/);
 
         const set = new Set();
         set.add(set);
-        expect(() => EntityUtils.stableStringify(set)).to.throw(/circular/);
-      });
-
-      it("throws on circular references in objects with shared references", () => {
-        const shared = { value: 1 };
-        const a = { name: "A", shared };
-        const b = { name: "B", shared };
-        a.self = a;
-        b.self = b;
-
-        expect(() => EntityUtils.stableStringify(a)).to.throw(/circular/);
-        expect(() => EntityUtils.stableStringify(b)).to.throw(/circular/);
+        expect(() => Utilities.stableStringify(set)).to.throw(/circular/);
       });
     });
 
-    describe("normalizeUrl", () => {
-      it("trims whitespace and removes trailing slashes", () => {
-        const url = "  https://example.org/path///  ";
-        expect(EntityUtils.normalizeUrl(url)).to.equal(
-          "https://example.org/path",
-        );
+    describe("normalizeUrl", function () {
+      it("trims whitespace and removes trailing slashes", function () {
+        expect(
+          Utilities.normalizeUrl("  https://example.org/path///  "),
+        ).to.equal("https://example.org/path");
       });
 
-      it("returns empty string for empty input", () => {
-        expect(EntityUtils.normalizeUrl("")).to.equal("");
-        expect(EntityUtils.normalizeUrl(null)).to.equal("");
+      it("returns empty string for empty input", function () {
+        expect(Utilities.normalizeUrl("")).to.equal("");
+        expect(Utilities.normalizeUrl(null)).to.equal("");
       });
 
-      it("uses fallback when url is empty", () => {
-        const fallback = "https://example.org/base/";
-        expect(EntityUtils.normalizeUrl("", fallback)).to.equal(
-          "https://example.org/base",
-        );
+      it("uses fallback when url is empty", function () {
+        expect(
+          Utilities.normalizeUrl("", "https://example.org/base/"),
+        ).to.equal("https://example.org/base");
       });
 
-      it("coerces non-string input to string", () => {
-        expect(EntityUtils.normalizeUrl(12345)).to.equal("12345");
-      });
-
-      it("handles URLs with query parameters and hashes", () => {
-        const url = "  https://example.org/path/?query=1#section  ";
-        const normal = EntityUtils.normalizeUrl(url);
-        console.log(normal, url);
-        // Trailing slash should be removed but query and hash should be preserved
-        expect(normal).to.equal("https://example.org/path?query=1#section");
-      });
-
-      it("handles URLs that are just slashes", () => {
-        expect(EntityUtils.normalizeUrl("///")).to.equal("");
-      });
-
-      it("handles URLs that are just whitespace", () => {
-        expect(EntityUtils.normalizeUrl("   ")).to.equal("");
-      });
-
-      it("handles URLs that are just whitespace with fallback", () => {
-        const fallback = "https://example.org/base/";
-        expect(EntityUtils.normalizeUrl("   ", fallback)).to.equal(
-          "https://example.org/base",
-        );
+      it("handles URLs with query parameters and hashes", function () {
+        expect(
+          Utilities.normalizeUrl(
+            "  https://example.org/path/?query=1#section  ",
+          ),
+        ).to.equal("https://example.org/path?query=1#section");
       });
     });
 
-    describe("buildInstanceKey", () => {
-      it("builds a raw key when encode is false", () => {
-        const options = { baseUrl: " https://example.org/ ", ttlMs: 1000 };
-        const key = EntityUtils.buildInstanceKey(
-          options,
+    describe("buildInstanceKey", function () {
+      it("builds a raw key when encode is false", function () {
+        const key = Utilities.buildInstanceKey(
+          { baseUrl: " https://example.org/ ", ttlMs: 1000 },
           ["baseUrl", "ttlMs"],
-          {
-            baseUrl: EntityUtils.normalizeUrl,
-          },
+          { baseUrl: Utilities.normalizeUrl },
           "|",
           false,
         );
         expect(key).to.equal("baseUrl:https://example.org|ttlMs:1000");
       });
 
-      it("skips null and undefined fields", () => {
-        const options = { a: "x", b: null, c: undefined };
-        const key = EntityUtils.buildInstanceKey(
-          options,
+      it("skips null and undefined fields", function () {
+        const key = Utilities.buildInstanceKey(
+          { a: "x", b: null, c: undefined },
           ["a", "b", "c"],
           {},
           "|",
@@ -343,51 +313,34 @@ define(["common/Utilities"], function (EntityUtils) {
         expect(key).to.equal("a:x");
       });
 
-      it("applies field normalizers", () => {
-        const options = { name: "  Mixed  " };
-        const key = EntityUtils.buildInstanceKey(
-          options,
+      it("applies field normalizers", function () {
+        const key = Utilities.buildInstanceKey(
+          { name: "  Mixed  " },
           ["name"],
-          {
-            name: (value) => value.trim().toLowerCase(),
-          },
+          { name: (value) => value.trim().toLowerCase() },
           "|",
           false,
         );
         expect(key).to.equal("name:mixed");
       });
 
-      it("returns a hash when encode is true", () => {
-        const options = { a: "x" };
-        const key = EntityUtils.buildInstanceKey(options, ["a"]);
-        expect(key).to.match(/^[a-f0-9]{32}$/);
+      it("returns a hash when encode is true", function () {
+        expect(Utilities.buildInstanceKey({ a: "x" }, ["a"])).to.match(
+          /^[a-f0-9]{32}$/,
+        );
       });
 
-      it("throws when keys array is empty", () => {
-        expect(() => EntityUtils.buildInstanceKey({}, [])).to.throw(/keys/);
+      it("throws when keys array is empty", function () {
+        expect(() => Utilities.buildInstanceKey({}, [])).to.throw(/keys/);
       });
     });
 
-    describe("awaitMetacatUI", () => {
-      let originalMetacatUI;
-
-      beforeEach(() => {
-        originalMetacatUI = window.MetacatUI;
-      });
-
-      afterEach(() => {
-        if (typeof originalMetacatUI === "undefined") {
-          delete window.MetacatUI;
-        } else {
-          window.MetacatUI = originalMetacatUI;
-        }
-      });
-
-      it("resolves the requested MetacatUI property when available", async () => {
+    describe("awaitMetacatUI", function () {
+      it("resolves the requested MetacatUI property when available", async function () {
         const appUserModel = { id: "user" };
         window.MetacatUI = { appUserModel };
 
-        const result = await EntityUtils.awaitMetacatUI({
+        const result = await Utilities.awaitMetacatUI({
           property: "appUserModel",
           maxAttempts: 1,
           delay: 0,
@@ -395,10 +348,74 @@ define(["common/Utilities"], function (EntityUtils) {
 
         expect(result).to.equal(appUserModel);
       });
+
+      it("waits for a requested property instead of returning undefined", async function () {
+        window.MetacatUI = {};
+
+        try {
+          await Utilities.awaitMetacatUI({
+            property: "appUserModel",
+            maxAttempts: 1,
+            delay: 0,
+          });
+          throw new Error("Expected awaitMetacatUI to reject");
+        } catch (error) {
+          expect(error.message).to.equal(
+            "Unable to retrieve MetacatUI.appUserModel",
+          );
+        }
+      });
+
+      it("returns falsy property values when they are explicitly defined", async function () {
+        window.MetacatUI = { showBetaBanner: false };
+
+        const result = await Utilities.awaitMetacatUI({
+          property: "showBetaBanner",
+          maxAttempts: 1,
+          delay: 0,
+        });
+
+        expect(result).to.equal(false);
+      });
+
+      it("resolves properties from a nested appModel", async function () {
+        window.MetacatUI = {
+          appModel: {
+            get(property) {
+              return property === "metaServiceUrl"
+                ? "https://example.org/meta"
+                : undefined;
+            },
+          },
+        };
+
+        const result = await Utilities.awaitMetacatUI({
+          property: "metaServiceUrl",
+          maxAttempts: 1,
+          delay: 0,
+        });
+
+        expect(result).to.equal("https://example.org/meta");
+      });
+
+      it("resolves properties from a named MetacatUI app", async function () {
+        window.MetacatUI = {
+          customApp: { serviceUrl: "https://example.org/service" },
+        };
+
+        const result = await Utilities.awaitMetacatUI({
+          appName: "customApp",
+          property: "serviceUrl",
+          maxAttempts: 1,
+          delay: 0,
+        });
+
+        expect(result).to.equal("https://example.org/service");
+      });
     });
 
-    describe("toJSONWithoutDefaults", () => {
-      it("should remove default values from a model's JSON representation", () => {
+    describe("toJSONWithoutDefaults", function () {
+      it("removes default values from a model's JSON representation", function () {
         const model = new Backbone.Model({
           a: 1,
           b: 200,
@@ -410,12 +427,13 @@ define(["common/Utilities"], function (EntityUtils) {
           b: 2,
         });
 
-        const json = EntityUtils.toJSONWithoutDefaults(model);
-
-        expect(json).to.deep.equal({ b: 200, c: 3 });
+        expect(Utilities.toJSONWithoutDefaults(model)).to.deep.equal({
+          b: 200,
+          c: 3,
+        });
       });
 
-      it("should remove additional properties from a model's JSON representation", () => {
+      it("removes additional properties from a model's JSON representation", function () {
         const model = new Backbone.Model({
           a: 100,
           b: 200,
@@ -430,49 +448,60 @@ define(["common/Utilities"], function (EntityUtils) {
           d: 4,
         });
 
-        const json = EntityUtils.toJSONWithoutDefaults(model, ["b"]);
-        expect(json).to.deep.equal({ a: 100 });
+        expect(Utilities.toJSONWithoutDefaults(model, ["b"])).to.deep.equal({
+          a: 100,
+        });
       });
     });
-  });
 
-  describe("Converting bytes to human-readable size", function () {
-    it("should handle undefined bytes", function () {
-      const result = EntityUtils.bytesToSize(undefined, 2);
-      expect(result).to.equal("0 B");
+    describe("bytesToSize", function () {
+      it("handles undefined bytes", function () {
+        expect(Utilities.bytesToSize(undefined, 2)).to.equal("0 B");
+      });
+
+      it("handles bytes less than 1 KiB", function () {
+        expect(Utilities.bytesToSize(512, 2)).to.equal("512 B");
+      });
+
+      it("converts bytes to larger units with precision", function () {
+        expect(Utilities.bytesToSize(2048, 2)).to.equal("2.00 KiB");
+        expect(Utilities.bytesToSize(2 * 1024 * 1024, 3)).to.equal("2.000 MiB");
+        expect(Utilities.bytesToSize(2 * 1024 * 1024 * 1024, 4)).to.equal(
+          "2.0000 GiB",
+        );
+        expect(
+          Utilities.bytesToSize(2 * 1024 * 1024 * 1024 * 1024, 5),
+        ).to.equal("2.00000 TiB");
+      });
+
+      it("handles very large bytes", function () {
+        expect(
+          Utilities.bytesToSize(2 * 1024 * 1024 * 1024 * 1024 * 1024, 2),
+        ).to.equal("2048.00 TiB");
+      });
     });
 
-    it("should handle bytes less than 1 KiB", function () {
-      const result = EntityUtils.bytesToSize(512, 2);
-      expect(result).to.equal("512 B");
-    });
+    describe("awaitObjectFormats", function () {
+      it("returns formats and allows retry after a fetch failure", async function () {
+        const formats = new ObjectFormats();
+        formats.fetch = sinon.stub().callsFake(function () {
+          this.trigger("error", this);
+        });
+        window.MetacatUI = { objectFormats: formats };
 
-    it("should convert bytes to KiB with precision", function () {
-      const result = EntityUtils.bytesToSize(2048, 2);
-      expect(result).to.equal("2.00 KiB");
-    });
+        const result = await Utilities.awaitObjectFormats();
 
-    it("should convert bytes to MiB with precision", function () {
-      const result = EntityUtils.bytesToSize(2 * 1024 * 1024, 3);
-      expect(result).to.equal("2.000 MiB");
-    });
+        expect(result).to.equal(formats);
+        expect(formats.isFetching).to.equal(false);
+        expect(formats.hasRemoteFormats).to.equal(false);
+        expect(formats.lastFetchError.message).to.equal(
+          "Failed to fetch object formats: Unknown error",
+        );
 
-    it("should convert bytes to GiB with precision", function () {
-      const result = EntityUtils.bytesToSize(2 * 1024 * 1024 * 1024, 4);
-      expect(result).to.equal("2.0000 GiB");
-    });
+        await Utilities.awaitObjectFormats();
 
-    it("should convert bytes to TiB with precision", function () {
-      const result = EntityUtils.bytesToSize(2 * 1024 * 1024 * 1024 * 1024, 5);
-      expect(result).to.equal("2.00000 TiB");
-    });
-
-    it("should handle very large bytes", function () {
-      const result = EntityUtils.bytesToSize(
-        2 * 1024 * 1024 * 1024 * 1024 * 1024,
-        2,
-      );
-      expect(result).to.equal("2048.00 TiB");
+        expect(formats.fetch.calledTwice).to.equal(true);
+      });
     });
   });
 });

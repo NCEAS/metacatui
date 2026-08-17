@@ -2,9 +2,9 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "uuid",
+  "common/ValueUtilities",
   "models/QualityCheckModel",
-], ($, _, Backbone, uuid, QualityCheck) => {
+], ($, _, Backbone, ValueUtilities, QualityCheck) => {
   /**
    *  @class QualityReport
    *  @classdesc A DataPackage represents a hierarchical collection of
@@ -25,7 +25,7 @@ define([
       /** @inheritdoc */
       initialize(_models, options = {}) {
         // Set the id or create a new one
-        this.id = options.pid || `urn:uuid:${uuid.v4()}`;
+        this.id = options.pid || ValueUtilities.makeUUID();
 
         // this.on("add", this.handleAdd);
         // this.on("successSaving", this.updateRelationships);

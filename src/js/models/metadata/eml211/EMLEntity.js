@@ -6,6 +6,8 @@ define([
   "models/metadata/eml211/EMLAttribute",
   "models/metadata/eml211/EMLAttributeList",
   "common/EMLUtilities",
+  "common/UrlUtilities",
+  "common/XMLUtilities",
 ], (
   $,
   _,
@@ -14,6 +16,8 @@ define([
   EMLAttribute,
   EMLAttributeList,
   EMLUtilities,
+  UrlUtilities,
+  XMLUtilities,
 ) => {
   /**
    * @class EMLEntity
@@ -56,12 +60,12 @@ define([
        * implement the eml-physical module
        * @property {string} formatName - A temporary attribute until we
        * implement the eml-physical module
+       * @property {string} fileName - The last matched package member filename
+       * @property {string} formatId - The last matched package member format
        * @property {Array} nodeOrder - The order of the top level XML element
        * nodes
        * @property {EML211} parentModel - The parent model this entity belongs
        * to
-       * @property {DataONEObject} dataONEObject - Reference to the
-       * DataONEObject this EMLEntity describes
        * @property {string} objectXML - The serialized XML of this EML entity
        * @property {object} objectDOM - The DOM of this EML entity
        * @property {string} type - The type of entity
@@ -89,6 +93,8 @@ define([
           formatName: null,
 
           // Attributes not from EML
+          fileName: null,
+          formatId: null,
           nodeOrder: [
             // The order of the top level XML element nodes
             "alternateIdentifier",
@@ -103,7 +109,6 @@ define([
             "constraint",
           ],
           parentModel: null,
-          dataONEObject: null,
           objectXML: null,
           objectDOM: null,
           type: "otherentity",
@@ -141,29 +146,6 @@ define([
           EMLEntity.trickleUpChange,
         );
 
-        // Listen to changes on the DataONEObject file name
-        if (this.get("dataONEObject")) {
-          this.listenTo(
-            this.get("dataONEObject"),
-            "change:fileName",
-            this.updateFileName,
-          );
-        }
-
-        // Listen to changes on the DataONEObject to reset the listener
-        const model = this;
-        this.on("change:dataONEObject", (_entity, dataONEObj) => {
-          // Stop listening to the old DataONEObject
-          if (model.previous("dataONEObject")) {
-            model.stopListening(
-              model.previous("dataONEObject"),
-              "change:fileName",
-            );
-          }
-          // Listen to changes on the file name
-          model.listenTo(dataONEObj, "change:fileName", model.updateFileName);
-        });
-
         if (!attributes?.attributeList && !this.get("attributeList")) {
           this.set(
             "attributeList",
@@ -190,12 +172,16 @@ define([
 
         this.stopListening(attrList, "change:emlAttributes");
 
-        this.listenTo(attrList, "change:emlAttributes", () => {
-          this.trickleUpChange();
-          this.trigger("change", this, attrList);
-          this.trigger("change:attributeList", this, attrList);
-          this.collection.trigger("update", this, attrList);
-        });
+        this.listenTo(
+          attrList,
+          "change:emlAttributes",
+          (_model, _attrs, options = {}) => {
+            this.trigger("change", this, attrList);
+            if (options.structural !== false) {
+              this.trigger("change:attributeList", this, attrList);
+            }
+          },
+        );
       },
 
       /**
@@ -257,7 +243,12 @@ define([
         [attributes.objectDOM] = Array.from($objectDOM);
 
         // Find the id from the download distribution URL
-        const urlNode = $objectDOM.find("url");
+        const downloadUrlNode = $objectDOM
+          .find('url[function="download"]')
+          .first();
+        const urlNode = downloadUrlNode.length
+          ? downloadUrlNode
+          : $objectDOM.find("url").first();
         if (urlNode.length) {
           const downloadURL = urlNode.text();
           let downloadID = "";
@@ -279,7 +270,10 @@ define([
             );
           }
 
-          if (downloadID.length) attributes.downloadID = downloadID;
+          if (downloadID.length) {
+            attributes.downloadID =
+              UrlUtilities.decodeDataONEPidFromPath(downloadID);
+          }
         }
 
         // Find the format name
@@ -382,22 +376,14 @@ define([
           objectDOM = document.createElement(type);
         }
 
-        // Update the id attribute on this XML node update the id attribute.
+        // Update the id attribute on this XML node.
         // TODO: This could impact EML <references> that refer to the original
         // id.
-        if (this.get("dataONEObject")) {
-          // Ideally, the EMLEntity will use the object's id in it's id
-          // attribute, so we wil switch them
-          const xmlID = this.get("dataONEObject").getXMLSafeID();
-
-          // Set the xml-safe id on the model and use it as the id attribute
+        const xmlID =
+          this.get("xmlID") || XMLUtilities.getXMLSafeID(this.getDataPid());
+        if (xmlID) {
           $(objectDOM).attr("id", xmlID);
           this.set("xmlID", xmlID);
-        }
-        // If there isn't a matching DataONEObject but there is an id set on
-        // this model, use that id
-        else if (this.get("xmlID")) {
-          $(objectDOM).attr("id", this.get("xmlID"));
         }
 
         // Update the alternateIdentifiers
@@ -474,7 +460,10 @@ define([
           $(objectDOM).find("entityDescription").remove();
         }
 
-        // TODO: Update the physical section
+        // Keep an existing DataONE download link aligned with its descriptor.
+        this.updateDownloadUrl(objectDOM);
+
+        // TODO: Update the rest of the physical section
 
         // TODO: Update the coverage section
 
@@ -527,26 +516,43 @@ define([
       },
 
       /**
-       * Update the file name in the EML
+       * Update the recognized DataONE download URL in an entity DOM.
+       * @param {Element} objectDOM EML entity DOM
+       * @returns {Element} The supplied entity DOM
+       * @since 0.0.0
        */
-      updateFileName() {
-        const dataONEObj = this.get("dataONEObject");
+      updateDownloadUrl(objectDOM) {
+        const dataPid = this.getDataPid();
+        if (!objectDOM || !dataPid) return objectDOM;
 
-        // Get the DataONEObject model associated with this EML Entity
-        if (dataONEObj) {
-          // If the last file name matched the EML entity name, then update it
-          if (dataONEObj.previous("fileName") === this.get("entityName")) {
-            this.set("entityName", dataONEObj.get("fileName"));
-          }
-          // If the DataONEObject doesn't have an old file name or entity name,
-          // then update it
-          else if (
-            !dataONEObj.previous("fileName") ||
-            !this.get("entityName")
-          ) {
-            this.set("entityName", dataONEObj.get("fileName"));
-          }
+        const downloadUrl =
+          objectDOM.querySelector('url[function="download"]') ||
+          objectDOM.querySelector("url");
+        if (!downloadUrl) return objectDOM;
+
+        const value = downloadUrl.textContent;
+        const encodedPid = encodeURIComponent(dataPid);
+        const pathMarker = ["/resolve/", "/object/"].find((marker) =>
+          value.includes(marker),
+        );
+        let pidStart = -1;
+        if (pathMarker) {
+          pidStart = value.indexOf(pathMarker) + pathMarker.length;
+        } else {
+          const ecoGridStart = value.indexOf("ecogrid://");
+          const repositoryEnd =
+            ecoGridStart < 0
+              ? -1
+              : value.indexOf("/", ecoGridStart + "ecogrid://".length);
+          if (repositoryEnd >= 0) pidStart = repositoryEnd + 1;
         }
+
+        if (pidStart >= 0) {
+          const suffix = value.slice(pidStart).match(/[?#].*$/)?.[0] || "";
+          downloadUrl.textContent =
+            value.slice(0, pidStart) + encodedPid + suffix;
+        }
+        return objectDOM;
       },
 
       /**
@@ -557,16 +563,93 @@ define([
         return (
           this.get("entityName") ||
           this.get("physicalObjectName") ||
-          this.get("dataONEObject").get("fileName")
+          this.get("fileName")
         );
       },
 
       /**
+       * Refresh the stable package member fields used by this entity without
+       * retaining the member itself. EML names and formats follow the package
+       * only while they still contain the previous descriptor value.
+       * @param {object} descriptor Package member descriptor
+       * @param {string} [descriptor.id] Package member PID
+       * @param {string} [descriptor.fileName] Package member filename
+       * @param {string} [descriptor.formatId] Package member format identifier
+       * @param {string} [descriptor.xmlID] XML-safe form of the member PID
+       * @param {string} [descriptor.previousId] Previous member PID
+       * @param {string} [descriptor.previousFileName] Previous filename
+       * @param {string} [descriptor.previousFormatId] Previous format
+       * @returns {EMLEntity} This entity
+       * @since 0.0.0
+       */
+      setMemberDescriptor(descriptor = {}) {
+        const values = {};
+        const currentPid = this.get("downloadID");
+        const currentXmlID = this.get("xmlID");
+        const followsPreviousPid =
+          descriptor.id &&
+          (!currentPid || currentPid === descriptor.previousId);
+
+        if (followsPreviousPid) {
+          values.downloadID = descriptor.id;
+          if (
+            !currentXmlID ||
+            (descriptor.previousId &&
+              currentXmlID === XMLUtilities.getXMLSafeID(descriptor.previousId))
+          ) {
+            values.xmlID =
+              descriptor.xmlID || XMLUtilities.getXMLSafeID(descriptor.id);
+          }
+        } else if (!currentXmlID && descriptor.xmlID) {
+          values.xmlID = descriptor.xmlID;
+        }
+
+        const previousFileName =
+          this.get("fileName") || descriptor.previousFileName;
+        const entityName = this.get("entityName");
+        if (descriptor.fileName) {
+          if (
+            !entityName ||
+            (previousFileName && entityName === previousFileName)
+          ) {
+            values.entityName = descriptor.fileName;
+          }
+          values.fileName = descriptor.fileName;
+        }
+
+        const previousFormatId =
+          this.get("formatId") || descriptor.previousFormatId;
+        if (descriptor.formatId) {
+          const entityType = this.get("entityType");
+          if (
+            !entityType ||
+            entityType === "application/octet-stream" ||
+            (previousFormatId && entityType === previousFormatId)
+          ) {
+            values.entityType = descriptor.formatId;
+          }
+          values.formatId = descriptor.formatId;
+        }
+
+        this.set(values);
+        return this;
+      },
+
+      /**
+       * Get the data PID described by this entity's own EML.
+       * @returns {string|null} The described data PID, if available
+       * @since 0.0.0
+       */
+      getDataPid() {
+        return this.get("downloadID") || null;
+      },
+
+      /**
        * Get the id for the entity
-       * @returns {string} - The id for the entity
+       * @returns {string} The id for the entity
        */
       getId() {
-        return this.get("xmlID") || this.get("dataONEObject")?.get("id");
+        return this.get("xmlID") || this.getDataPid();
       },
 
       /**
@@ -618,7 +701,7 @@ define([
 
       /** Pass any change events up to the parent EML model */
       trickleUpChange() {
-        MetacatUI.rootDataPackage?.packageModel?.set("changed", true);
+        EMLUtilities.markRootDataPackageChanged();
       },
     },
   );
