@@ -2983,10 +2983,10 @@ define([
           const responseText = await response.text();
 
           if (!response.ok) {
-            const description = XMLUtilities.extractText(responseText, [
-              "description",
-              "d1\\:description",
-            ]);
+            const description = XMLUtilities.extractTextBySelectors(
+              responseText,
+              ["description", "d1\\:description"],
+            );
             throw new Error(
               description ||
                 response.statusText ||
@@ -2994,7 +2994,7 @@ define([
             );
           }
 
-          const identifier = XMLUtilities.extractText(responseText, [
+          const identifier = XMLUtilities.extractTextBySelectors(responseText, [
             "identifier",
             "d1\\:identifier",
           ]);

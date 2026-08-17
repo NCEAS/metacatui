@@ -251,6 +251,25 @@ require([
       it("should set the source model", function () {
         citation.get("sourceModel").should.be.instanceof(SolrResult);
       });
+
+      it("should use and update an explicit publisher", function () {
+        solr.set("publisher", "First Publisher");
+        citation.get("publisher").should.equal("First Publisher");
+
+        solr.set("publisher", "Second Publisher");
+        citation.get("publisher").should.equal("Second Publisher");
+      });
+
+      it("should use an unknown datasource as the publisher fallback", function () {
+        solr.set({
+          publisher: null,
+          datasource: "urn:node:UNKNOWN-FOR-CITATION-TEST",
+        });
+
+        citation
+          .get("publisher")
+          .should.equal("urn:node:UNKNOWN-FOR-CITATION-TEST");
+      });
     });
   });
 });

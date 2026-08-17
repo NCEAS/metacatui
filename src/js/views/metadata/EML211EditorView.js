@@ -7,13 +7,12 @@ define([
   "models/metadata/eml211/EMLOtherEntity",
   "models/metadata/ScienceMetadata",
   "models/resourceMap/ResourceMapResolver",
-  "models/sysmeta/SysMeta",
+  "models/dataONEServices/SysMetaService",
   "views/EditorView",
   "views/CitationView",
   "views/DataPackageView",
   "views/metadata/EML211View",
   "views/metadata/EMLEntityView",
-  "collections/ObjectFormats",
   "common/Utilities",
 ], (
   $,
@@ -24,13 +23,12 @@ define([
   EMLOtherEntity,
   ScienceMetadata,
   ResourceMapResolver,
-  SysMeta,
+  SysMetaService,
   EditorView,
   CitationView,
   DataPackageView,
   EMLView,
   EMLEntityView,
-  ObjectFormats,
   Utilities,
 ) => {
   /**
@@ -136,10 +134,7 @@ define([
       /** @inheritdoc */
       initialize(options = {}) {
         // Ensure the object formats are cached for the editor's use
-        if (typeof MetacatUI.objectFormats === "undefined") {
-          MetacatUI.objectFormats = new ObjectFormats();
-          MetacatUI.objectFormats.fetch();
-        }
+        Utilities.awaitObjectFormats();
         this.pid = options?.pid || null;
         return this;
       },
@@ -308,19 +303,17 @@ define([
        */
       async handleMetadataNotFound() {
         this.updateLoadingText("Looking for metadata document...");
-        const token = await MetacatUI.appUserModel.getTokenPromise();
-        const sysMeta = new SysMeta({ identifier: this.pid });
-        sysMeta
-          .fetch(token)
-          .then(() => {
-            this.showNotIndexed();
-            // TODO: we can get the formatType from the sysMeta and download
-            // metadata if it's EML so indexing status doesn't matter. However,
-            // the editor needs to be refactored to handle this.
-          })
-          .catch(() => {
-            this.showNotFound();
-          });
+        const sysMetaService = new SysMetaService();
+
+        try {
+          await sysMetaService.download(this.pid);
+          this.showNotIndexed();
+          // TODO: we can get the formatType from the sysMeta and download
+          // metadata if it's EML so indexing status doesn't matter. However,
+          // the editor needs to be refactored to handle this.
+        } catch (_error) {
+          this.showNotFound();
+        }
       },
 
       /**
@@ -424,7 +417,7 @@ define([
       async getDataPackage(model) {
         const metaModel = model || this.model;
         const metaServiceUrl = await Utilities.awaitMetacatUI({
-          property: "sysMetaModel",
+          property: "metaServiceUrl",
         });
         const resolver = new ResourceMapResolver({
           metaServiceUrl,

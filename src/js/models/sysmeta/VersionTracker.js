@@ -1,9 +1,20 @@
 define([
   "backbone",
   "models/dataONEServices/SysMetaService",
+  "common/UrlUtilities",
+  "common/DateUtilities",
+  "common/ErrorUtilities",
   "common/Utilities",
-  "common/DateUtility",
-], (Backbone, SysMetaService, Utilities, DateUtility) => {
+  "common/ValueUtilities",
+], (
+  Backbone,
+  SysMetaService,
+  UrlUtilities,
+  DateUtilities,
+  ErrorUtilities,
+  Utilities,
+  ValueUtilities,
+) => {
   /**
    * @constant {number} DEFAULT_TTL_MS Default Time-To-Live for cached data
    * object to resource map PID mappings, in milliseconds.
@@ -47,12 +58,14 @@ define([
 
   /**
    * @typedef {object} DateConflict
-   * @property {SysMeta} prevSysMeta The SysMeta of the version that appears
-   * earlier in the obsolsence chain, i.e. the obsoleted version
+   * @property {SystemMetadata} prevSysMeta The System Metadata record of the
+   * version that appears earlier in the obsolsence chain, i.e. the obsoleted
+   * version
    * @property {Date} prevDate The dateUploaded of the previous version
    * @property {string} prevPid The PID of the previous version
-   * @property {SysMeta} nextSysMeta The SysMeta of the version that appears
-   * later in the obsolescence chain, i.e. the obsoleting version
+   * @property {SystemMetadata} nextSysMeta The System Metadata record of the
+   * version that appears later in the obsolescence chain, i.e. the obsoleting
+   * version
    * @property {Date} nextDate The dateUploaded of the next version
    * @property {string} nextPid The PID of the next version
    * @property {number} timeDiffMs The time difference between the two
@@ -96,7 +109,7 @@ define([
     } = {}) {
       const url =
         metaServiceUrl || globalThis.MetacatUI?.appModel?.get("metaServiceUrl");
-      const normalizedUrl = Utilities.normalizeUrl(url);
+      const normalizedUrl = UrlUtilities.normalizeUrl(url);
       if (!normalizedUrl) {
         throw new Error("VersionTracker: metaServiceUrl is required");
       }
@@ -132,20 +145,22 @@ define([
     }
 
     /**
-     * Get the SysMeta for a given PID. SysMetaService handles caching, token
-     * management, and duplicate fetch prevention.
-     * @param {string} pid the PID to get SysMeta for
+     * Get the System Metadata for a given PID. SysMetaService handles caching,
+     * token management, and duplicate fetch prevention.
+     * @param {string} pid the PID to get System Metadata for
      * @param {object} [options] options to pass to SysMetaService.download
-     * @returns {Promise<SysMeta>} resolves to the SysMeta object for the PID
+     * @returns {Promise<SystemMetadata>} resolves to the System Metadata object
+     * for the PID
      */
     async getSysMeta(pid, options = {}) {
       return this.sysMetaService.download(pid, options);
     }
 
     /**
-     * Check if the SysMeta for a given PID is cached.
+     * Check if the System Metadata for a given PID is cached.
      * @param {string} pid the PID to check
-     * @returns {Promise<boolean>} resolves to true if the SysMeta is cached
+     * @returns {Promise<boolean>} resolves to true if the System Metadata is
+     * cached
      */
     async sysMetaIsCached(pid) {
       return this.sysMetaService.isCached(pid);
@@ -190,7 +205,7 @@ define([
       }
       const getAdjacentPid = async () => {
         const sysMeta = await this.getSysMeta(pid, options);
-        return sysMeta?.data?.[NEXT_OR_PREV(forward)] || null;
+        return sysMeta?.[NEXT_OR_PREV(forward)] || null;
       };
       const adjacentPid = await getAdjacentPid();
       // Force re-check in case end of chain has changed
@@ -300,7 +315,7 @@ define([
             }
             currentStepSysMeta = adjSysMeta;
           } catch (error) {
-            if (error?.name === "AbortError") {
+            if (ErrorUtilities.isAbortError(error)) {
               throw error;
             }
             if (error?.status !== 401 && error?.status !== 404) {
@@ -355,23 +370,23 @@ define([
      * version chain. A conflict occurs when the dateUploaded of an obsoleting
      * version is earlier than that of the obsoleted version, which breaks the
      * expected chronological order.
-     * @param {SysMeta} sysMeta The SysMeta of the version to check for
-     * conflicts.
-     * @param {SysMeta} adjSysMeta The SysMeta of the adjacent version to
-     * compare against.
+     * @param {SystemMetadata} sysMeta The System Metadata of the version to
+     * check for conflicts.
+     * @param {SystemMetadata} adjSysMeta The System Metadata of the adjacent
+     * version to compare against.
      * @param {boolean} forward True if adjSysMeta is the obsoleting (newer)
      * version, false if adjSysMeta is the obsoleted (older) version.
      * @returns {DateConflict|false} A DateConflict object if a conflict is
-     * detected, or false if no conflict is found or if either SysMeta is
-     * missing necessary date information.
+     * detected, or false if no conflict is found or if either System Metadata
+     * record is missing necessary date information.
      */
     static detectDateConflict(sysMeta, adjSysMeta, forward) {
       if (!sysMeta || !adjSysMeta) return false;
 
       const prevSysMeta = forward ? sysMeta : adjSysMeta;
       const nextSysMeta = forward ? adjSysMeta : sysMeta;
-      const prevDate = DateUtility.toDate(prevSysMeta.data?.dateUploaded);
-      const nextDate = DateUtility.toDate(nextSysMeta.data?.dateUploaded);
+      const prevDate = DateUtilities.toDate(prevSysMeta?.dateUploaded);
+      const nextDate = DateUtilities.toDate(nextSysMeta?.dateUploaded);
 
       if (!prevDate || !nextDate) {
         return false;
@@ -382,10 +397,10 @@ define([
         return {
           prevSysMeta,
           prevDate,
-          prevPid: prevSysMeta.data?.identifier,
+          prevPid: prevSysMeta?.identifier,
           nextSysMeta,
           nextDate,
-          nextPid: nextSysMeta.data?.identifier,
+          nextPid: nextSysMeta?.identifier,
           timeDiffMs: Math.abs(prevDate - nextDate),
         };
       }
@@ -412,15 +427,16 @@ define([
      * Positive values indicate newer versions, negative values indicate older
      * versions. For example, a step of 1 gets the next version, -1 gets the
      * previous version. A step of 0 returns the original PID.
+     * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<string|null>} resolves to the PID at the given number
      * of steps, or null if no such version exists.
      */
-    async getNth(pid, steps) {
+    async getNth(pid, steps, options = {}) {
       if (typeof pid !== "string" || !pid) {
         throw new Error("Invalid PID provided");
       }
       if (steps === 0) return pid;
-      const record = await this.getVersions(pid, steps);
+      const record = await this.getVersions(pid, steps, options);
       const { versions, completedSteps } = record;
       if (Math.abs(completedSteps) < Math.abs(steps)) {
         return null;
@@ -444,6 +460,54 @@ define([
     }
 
     /**
+     * Check whether a set of PIDs belongs to one known version chain.
+     * @param {string[]} pids PIDs to compare
+     * @param {object} [options] options to pass to SysMetaService.download
+     * @returns {Promise<object>} Chain membership details
+     */
+    async checkPidsInSameVersionChain(pids = [], options = {}) {
+      const uniquePids = ValueUtilities.normalizeStringList(pids);
+      const result = {
+        pids: uniquePids,
+        sameChain: false,
+        chain: [],
+        newestPid: null,
+        newestInChain: null,
+        chainComplete: true,
+        endIsPrivate: false,
+        endNotFound: false,
+      };
+
+      if (!uniquePids.length) return result;
+      const anchorPid = uniquePids[0];
+
+      // Only need one chain, since matching PIDs should all appear in it.
+      const record = await this.getAllVersions(anchorPid, options);
+      const { next, prev } = record;
+      const prevVersions = prev?.versions || [];
+      const nextVersions = next?.versions || [];
+      const chain = [...prevVersions]
+        .reverse()
+        .concat([anchorPid], nextVersions);
+      const chainSet = new Set(chain);
+
+      result.chain = chain;
+      result.sameChain = uniquePids.every((value) => chainSet.has(value));
+      result.newestInChain = chain[chain.length - 1] || null;
+      result.newestPid = uniquePids.reduce((latest, value) => {
+        const latestIndex = chain.indexOf(latest);
+        const valueIndex = chain.indexOf(value);
+        return valueIndex > latestIndex ? value : latest;
+      }, uniquePids[0]);
+      result.chainComplete =
+        (prev?.chainComplete ?? true) && (next?.chainComplete ?? true);
+      result.endIsPrivate = Boolean(prev?.endIsPrivate || next?.endIsPrivate);
+      result.endNotFound = Boolean(prev?.endNotFound || next?.endNotFound);
+
+      return result;
+    }
+
+    /**
      * Check if the given PID is at the end of its version chain in the given
      * direction.
      * @param {string} pid PID to check
@@ -456,7 +520,7 @@ define([
      */
     async isEndOfChain(pid, forward = true, options = {}) {
       const sysMeta = await this.getSysMeta(pid, options);
-      return !sysMeta?.data?.[NEXT_OR_PREV(forward)];
+      return !sysMeta?.[NEXT_OR_PREV(forward)];
     }
 
     /**
@@ -471,8 +535,51 @@ define([
     async getLatestVersion(pid, options = {}) {
       const record = await this.getAllVersionsOneDirection(pid, true, options);
       const { versions, completedSteps } = record;
-      if (completedSteps === 0) return pid;
+      if (completedSteps === 0) {
+        // In case the input PID is a series ID, make sure we return the PID of
+        // the version, not the series ID.
+        if (record.endIsPrivate || record.endNotFound) return pid;
+        const sysMeta = await this.getSysMeta(pid, options);
+        return sysMeta?.identifier || pid;
+      }
       return versions[versions.length - 1];
+    }
+
+    /**
+     * Get the conclusive latest version of each PID with bounded concurrency.
+     * @param {string[]} pids PIDs to map
+     * @param {object} [options] Version lookup options
+     * @param {number} [options.maxConcurrent] Maximum concurrent lookups
+     * @returns {Promise<string[]>} Latest-version PIDs
+     */
+    async getLatestVersions(pids, options = {}) {
+      const { maxConcurrent, ...lookupOptions } = options;
+      const latestVersions = new Array(pids.length);
+      const { errors } = await Utilities.processConcurrently(
+        pids,
+        async (pid, index) => {
+          const record = await this.getAllVersionsOneDirection(
+            pid,
+            true,
+            lookupOptions,
+          );
+          // Retaining the input PID for a partial chain looks identical to a
+          // confirmed result, so callers must not publish that fallback.
+          if (!record.chainComplete) {
+            throw new Error(`Cannot determine the latest version of "${pid}"`);
+          }
+          latestVersions[index] = record.versions.length
+            ? record.versions[record.versions.length - 1]
+            : (await this.getSysMeta(pid, lookupOptions))?.identifier || pid;
+        },
+        {
+          maxConcurrent,
+          signal: lookupOptions.signal,
+        },
+      );
+      ErrorUtilities.throwIfAborted(lookupOptions.signal);
+      if (errors.length) throw errors[0].error;
+      return latestVersions;
     }
 
     /**
@@ -505,8 +612,10 @@ define([
         } catch (e) {
           if (e.status === 404 || e.status === 401) {
             errors.push(e.status);
-            sysMeta = new SysMetaService.SysMeta({ identifier: foundPid });
-          } else if (e.name === "AbortError") {
+            sysMeta = new SysMetaService.SystemMetadata({
+              identifier: foundPid,
+            });
+          } else if (ErrorUtilities.isAbortError(e)) {
             // Stop processing if the request was aborted by the caller
             return;
           } else {
@@ -515,7 +624,7 @@ define([
         }
       }
       if (!sysMeta) {
-        sysMeta = new SysMetaService.SysMeta();
+        sysMeta = new SysMetaService.SystemMetadata();
       }
       sysMeta.versionHistory = {};
       sysMeta.versionHistory[pid] = steps;
@@ -559,7 +668,7 @@ define([
   }
 
   VersionTracker.SysMetaService = SysMetaService;
-  VersionTracker.SysMeta = SysMetaService.SysMeta;
+  VersionTracker.SystemMetadata = SysMetaService.SystemMetadata;
 
   return VersionTracker;
 });

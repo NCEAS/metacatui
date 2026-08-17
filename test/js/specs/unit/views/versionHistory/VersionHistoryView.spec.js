@@ -151,5 +151,61 @@ define([
         state.view.timelineGroupsView.updateVisualState.calledOnce,
       ).to.equal(true);
     });
+
+    it("switches from a requested SID to the returned PID when schema seriesId matches the current pid", () => {
+      state.view.collection = new Backbone.Collection([
+        {
+          id: "ref.1",
+          identifier: "ref.1",
+        },
+      ]);
+      state.sandbox.stub(state.view, "render");
+
+      state.view.onVersionFound({
+        identifier: "pid.2",
+        seriesId: "ref.1",
+        toJSON() {
+          return {
+            identifier: "pid.2",
+            seriesId: "ref.1",
+            versionHistory: { "ref.1": 0 },
+            errors: [],
+          };
+        },
+      });
+
+      expect(state.view.collection.get("ref.1")).to.equal(undefined);
+      expect(state.view.pid).to.equal("pid.2");
+      expect(state.view.render.calledOnce).to.equal(true);
+    });
+
+    it("does not switch views when the current pid is not the returned schema seriesId", () => {
+      state.view.collection = new Backbone.Collection([
+        {
+          id: "ref.1",
+          identifier: "ref.1",
+        },
+      ]);
+      state.sandbox.stub(state.view, "render");
+
+      state.view.onVersionFound({
+        identifier: "pid.2",
+        seriesId: "ref.2",
+        versionHistory: { "ref.1": 1 },
+        toJSON() {
+          return {
+            identifier: "pid.2",
+            seriesId: "ref.2",
+            versionHistory: { "ref.1": 1 },
+            errors: [],
+          };
+        },
+      });
+
+      expect(state.view.collection.get("ref.1")).to.not.equal(undefined);
+      expect(state.view.collection.get("pid.2")).to.not.equal(undefined);
+      expect(state.view.pid).to.equal("ref.1");
+      expect(state.view.render.called).to.equal(false);
+    });
   });
 });

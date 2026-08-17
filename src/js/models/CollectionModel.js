@@ -2,7 +2,7 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "uuid",
+  "common/ValueUtilities",
   "collections/Filters",
   "collections/SolrResults",
   "models/DataONEObject",
@@ -13,7 +13,7 @@ define([
   $,
   _,
   Backbone,
-  uuid,
+  ValueUtilities,
   Filters,
   SolrResults,
   DataONEObject,
@@ -350,7 +350,7 @@ define([
        */
       reserveSeriesId: function () {
         // Create a new series ID
-        var seriesId = "urn:uuid:" + uuid.v4();
+        var seriesId = ValueUtilities.makeUUID();
 
         // Set the seriesId on the portal model right away, since reserving takes
         // time. This will be updated in the rare case that the first seriesId was
@@ -379,7 +379,7 @@ define([
               this.tryCount++;
               if (this.tryCount <= this.retryLimit) {
                 // Generate another seriesId
-                this.data = { pid: "urn:uuid:" + uuid.v4() };
+                this.data = { pid: ValueUtilities.makeUUID() };
                 // Send the reserve request again
                 $.ajax(this);
                 return;

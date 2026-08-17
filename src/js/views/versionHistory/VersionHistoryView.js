@@ -14,7 +14,7 @@ define([
   "views/CitationView",
   "views/uiElements/ToggleView",
   "common/Utilities",
-  "common/DateUtility",
+  "common/DateUtilities",
   "semantic",
   // CSS
   `text!${MetacatUI.root}/css/version-history/version-history.css`,
@@ -29,7 +29,7 @@ define([
   CitationView,
   ToggleView,
   Utilities,
-  DateUtility,
+  DateUtilities,
   Semantic,
   VersionHistoryCSS,
 ) => {
@@ -103,7 +103,7 @@ define([
    * @classcategory Views/VersionHistory
    * @augments Backbone.View
    * @screenshot views/versionHistory/VersionHistoryView.png
-   * @since 2.37.0
+   * @since 0.0.0
    */
   const VersionHistoryView = Backbone.View.extend(
     /** @lends VersionHistoryView.prototype */ {
@@ -399,10 +399,9 @@ define([
           const signal = controller?.signal;
 
           // Mock a record update for the current PID to show initial progress
-          const thisSysMeta = new VersionTracker.SysMeta({
-            identifier: pid,
-            versionHistory: { [pid]: 0 },
-          });
+          const thisSysMeta = new VersionTracker.SystemMetadata();
+          thisSysMeta.identifier = pid;
+          thisSysMeta.versionHistory = { [pid]: 0 };
           this.onVersionFound(thisSysMeta);
 
           const record = await versionTracker.getAllVersions(pid, { signal });
@@ -556,7 +555,7 @@ define([
         const dateRange = this.collection.getDateRange();
         let dateStr = "";
         if (dateRange) {
-          dateStr = DateUtility.getRelativeDateString(
+          dateStr = DateUtilities.getRelativeDateString(
             dateRange.minDate,
             dateRange.maxDate,
             { newerWord: "", olderWord: "", currentWord: "" },
@@ -606,11 +605,7 @@ define([
        */
       applyDateNotes(conflicts = []) {
         this.clearDateNotes();
-        if (
-          !this.collection ||
-          !Array.isArray(conflicts) ||
-          !conflicts.length
-        ) {
+        if (!this.collection || !Array.isArray(conflicts) || !conflicts.length) {
           return;
         }
         conflicts.forEach((conflict) => {
@@ -630,18 +625,22 @@ define([
        * version.
        */
       onVersionFound(sysMeta) {
-        if (!sysMeta || !sysMeta?.data?.identifier) {
+        if (!sysMeta || !sysMeta?.identifier) {
           return;
         }
 
-        // When requesting sysMeta for a series ID, Metacat will return the latest
-        // version in that series.
-        if (sysMeta.seriesId === this.pid) {
+        // When requesting sysMeta for a series ID, Metacat returns the latest
+        // version in that series. The returned sysmeta still carries the
+        // requested SID in the schema's seriesId field.
+        if (
+          sysMeta.seriesId === this.pid &&
+          sysMeta.identifier !== this.pid
+        ) {
           // Delete the record with the series ID because we don't want it to
           // appear as a separate version in the timeline
           this.collection.remove(this.pid);
-          if (this.pid !== sysMeta.data.identifier) {
-            this.pid = sysMeta.data.identifier;
+          if (this.pid !== sysMeta.identifier) {
+            this.pid = sysMeta.identifier;
             this.render();
           }
           return;
@@ -653,7 +652,7 @@ define([
         } else if (index < 0) {
           this.numPrev = Math.abs(index);
         }
-        const sysMetaData = sysMeta.toJSON(true, ["versionHistory", "errors"]);
+        const sysMetaData = sysMeta.toJSON();
         // For merging purposes, ensure id is set to identifier
         sysMetaData.id = sysMetaData.identifier;
         this.collection.add(sysMetaData, { merge: true });

@@ -95,7 +95,9 @@ define([
       const noteEl = state.view.el.querySelector(".object-version__date-note");
       expect(noteEl).to.exist;
       expect(noteEl.textContent).to.contain("Note on dates");
-      expect(noteEl.textContent).to.contain("a newer version in the history");
+      expect(noteEl.textContent).to.contain(
+        "a newer version in the history",
+      );
       expect(noteEl.textContent).to.contain("1 day");
       expect(noteEl.textContent).to.not.contain("Date Conflict");
     });

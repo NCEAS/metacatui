@@ -1,4 +1,8 @@
-define(["localforage", "common/Utilities"], (localforage, Utilities) => {
+define(["localforage", "common/ErrorUtilities", "common/ValueUtilities"], (
+  localforage,
+  ErrorUtilities,
+  ValueUtilities,
+) => {
   // Default TTL: 1 hour
   const DEFAULT_TTL_MS = 60 * 60 * 1000;
   // Change this when making breaking schema changes
@@ -33,7 +37,7 @@ define(["localforage", "common/Utilities"], (localforage, Utilities) => {
    * helper to ensure a single instance per namespace and schema version is
    * used.
    * @class PersistentStorage
-   * @since 2.37.0
+   * @since 0.0.0
    */
   class PersistentStorage {
     /**
@@ -149,9 +153,9 @@ define(["localforage", "common/Utilities"], (localforage, Utilities) => {
         "localforageConfig",
       ];
       const normalizers = {
-        localforageConfig: Utilities.stableStringify,
+        localforageConfig: ValueUtilities.stableStringify,
       };
-      return Utilities.buildInstanceKey(
+      return ValueUtilities.buildInstanceKey(
         normalizedOptions,
         keyFields,
         normalizers,
@@ -165,7 +169,7 @@ define(["localforage", "common/Utilities"], (localforage, Utilities) => {
      * @returns {PersistentStorage} The PersistentStorage instance
      */
     static get(options = {}) {
-      return Utilities.getSingleton(this, options, this.buildInstanceKey);
+      return ValueUtilities.getSingleton(this, options, this.buildInstanceKey);
     }
 
     /**
@@ -175,16 +179,7 @@ define(["localforage", "common/Utilities"], (localforage, Utilities) => {
      * condition
      */
     static isQuotaError(e) {
-      const quotaMessages = [
-        "QuotaExceededError",
-        "QUOTA_EXCEEDED_ERR",
-        "QUOTA_BYTES_EXCEEDED",
-        "quota",
-        "exceeded",
-      ];
-      let msg = typeof e === "string" ? e : e?.message || "";
-      msg = msg.toLowerCase();
-      return quotaMessages.some((qm) => msg.includes(qm.toLowerCase()));
+      return ErrorUtilities.isQuotaError(e);
     }
 
     /**

@@ -2,22 +2,20 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "uuid",
   "he",
   "collections/AccessPolicy",
-  "collections/ObjectFormats",
   "common/Utilities",
+  "common/ValueUtilities",
   "md5",
   "common/QueryService",
 ], (
   $,
   _,
   Backbone,
-  uuid,
   he,
   AccessPolicy,
-  ObjectFormats,
   Utilities,
+  ValueUtilities,
   md5,
   QueryService,
 ) => {
@@ -62,7 +60,7 @@ define([
           originMemberNode: null,
           authoritativeMemberNode: null,
           replica: [],
-          seriesId: null, // uuid.v4(), (decide if we want to auto-set this)
+          seriesId: null, // ValueUtilities.makeUUID(), (decide if we want to auto-set this)
           mediaType: null,
           fileName: null,
           // Non-system metadata attributes:
@@ -75,7 +73,7 @@ define([
           readPermission: null,
           isPublic: null,
           dateModified: null,
-          id: `urn:uuid:${uuid.v4()}`,
+          id: ValueUtilities.makeUUID(),
           sizeStr: null,
           type: "", // Data, Metadata, or DataPackage
           formatType: "",
@@ -139,11 +137,11 @@ define([
 
         const model = this;
         this.on("change:size", () => {
-          const size = Utilities.bytesToSize(model.get("size"));
+          const size = ValueUtilities.bytesToSize(model.get("size"));
           model.set("sizeStr", size);
         });
         if (attrs.size) {
-          const size = Utilities.bytesToSize(model.get("size"));
+          const size = ValueUtilities.bytesToSize(model.get("size"));
           model.set("sizeStr", size);
         }
 
@@ -174,6 +172,9 @@ define([
         // Find Member Node object that might be the authoritative MN
         // This is helpful when MetacatUI may be displaying content from multiple MNs
         this.setPossibleAuthMNs();
+
+        // Ensure the object formats are cached for this model's use
+        Utilities.awaitObjectFormats();
       },
 
       /**
@@ -635,7 +636,7 @@ define([
         } else {
           // Create an ID if there isn't one
           if (!this.get("id")) {
-            this.set("id", `urn:uuid:${uuid.v4()}`);
+            this.set("id", ValueUtilities.makeUUID());
           }
 
           // Add the identifier to the XHR data
@@ -1303,62 +1304,7 @@ define([
        * @since 2.28.0
        */
       getFormat() {
-        const formatMap = {
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-            "Microsoft Excel OpenXML",
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-            "Microsoft Word OpenXML",
-          "application/vnd.ms-excel.sheet.binary.macroEnabled.12":
-            "Microsoft Office Excel 2007 binary workbooks",
-          "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-            "Microsoft Office OpenXML Presentation",
-          "application/vnd.ms-excel": "Microsoft Excel",
-          "application/msword": "Microsoft Word",
-          "application/vnd.ms-powerpoint": "Microsoft Powerpoint",
-          "text/html": "HTML",
-          "text/plain": "plain text (.txt)",
-          "video/avi": "Microsoft AVI file",
-          "video/x-ms-wmv": "Windows Media Video (.wmv)",
-          "audio/x-ms-wma": "Windows Media Audio (.wma)",
-          "application/vnd.google-earth.kml xml":
-            "Google Earth Keyhole Markup Language (KML)",
-          "http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html":
-            "annotation",
-          "application/mathematica": "Mathematica Notebook",
-          "application/postscript": "Postscript",
-          "application/rtf": "Rich Text Format (RTF)",
-          "application/xml": "XML Application",
-          "text/xml": "XML",
-          "application/x-fasta": "FASTA sequence file",
-          "nexus/1997": "NEXUS File Format for Systematic Information",
-          "anvl/erc-v02":
-            "Kernel Metadata and Electronic Resource Citations (ERCs), 2010.05.13",
-          "http://purl.org/dryad/terms/":
-            "Dryad Metadata Application Profile Version 3.0",
-          "http://datadryad.org/profile/v3.1":
-            "Dryad Metadata Application Profile Version 3.1",
-          "application/pdf": "PDF",
-          "application/zip": "ZIP file",
-          "http://www.w3.org/TR/rdf-syntax-grammar": "RDF/XML",
-          "http://www.w3.org/TR/rdfa-syntax": "RDFa",
-          "application/rdf xml": "RDF",
-          "text/turtle": "TURTLE",
-          "text/n3": "N3",
-          "application/x-gzip": "GZIP Format",
-          "application/x-python": "Python script",
-          "http://www.w3.org/2005/Atom": "ATOM-1.0",
-          "application/octet-stream": "octet stream (application file)",
-          "http://digir.net/schema/conceptual/darwin/2003/1.0/darwin2.xsd":
-            "Darwin Core, v2.0",
-          "http://rs.tdwg.org/dwc/xsd/simpledarwincore/": "Simple Darwin Core",
-          "eml://ecoinformatics.org/eml-2.1.0": "EML v2.1.0",
-          "eml://ecoinformatics.org/eml-2.1.1": "EML v2.1.1",
-          "eml://ecoinformatics.org/eml-2.0.1": "EML v2.0.1",
-          "eml://ecoinformatics.org/eml-2.0.0": "EML v2.0.0",
-          "https://eml.ecoinformatics.org/eml-2.2.0": "EML v2.2.0",
-        };
-
-        return formatMap[this.get("formatId")] || this.get("formatId");
+        return Utilities.getFriendlyFormat(this.get("formatId"));
       },
 
       /**
@@ -1485,7 +1431,7 @@ define([
 
         // Create a new seriesId, if there isn't one, and if this model specifies that one is required
         if (!this.get("seriesId") && this.get("createSeriesId")) {
-          this.set("seriesId", `urn:uuid:${uuid.v4()}`);
+          this.set("seriesId", ValueUtilities.makeUUID());
         }
 
         // Check to see if the old pid documents or is documented by itself
@@ -1496,9 +1442,9 @@ define([
         if (id) {
           this.set("id", id);
         } else if (this.get("type") == "DataPackage") {
-          this.set("id", `resource_map_urn:uuid:${uuid.v4()}`);
+          this.set("id", ValueUtilities.makeUUID({ prefix: "resource_map_" }));
         } else {
-          this.set("id", `urn:uuid:${uuid.v4()}`);
+          this.set("id", ValueUtilities.makeUUID());
         }
 
         // Remove the old pid from the documents list if present

@@ -7,6 +7,7 @@ define([
   "views/citations/CitationModalView",
   "views/notifications/NotificationModalView",
   "common/Utilities",
+  "common/ValueUtilities",
 ], (
   $,
   Backbone,
@@ -16,6 +17,7 @@ define([
   CitationModalView,
   NotificationModalView,
   Utilities,
+  ValueUtilities,
 ) => {
   "use strict";
 
@@ -810,7 +812,7 @@ define([
         const mdqFormatIds = MetacatUI.appModel.get("mdqFormatIds") || [];
 
         return mdqFormatIds.some((pattern) =>
-          Utilities.wildcardToRegex(pattern).test(formatId),
+          ValueUtilities.wildcardToRegex(pattern).test(formatId),
         );
       },
 

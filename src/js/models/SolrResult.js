@@ -1,9 +1,11 @@
-define(["jquery", "underscore", "backbone", "common/QueryService"], (
-  $,
-  _,
-  Backbone,
-  QueryService,
-) => {
+define([
+  "jquery",
+  "underscore",
+  "backbone",
+  "common/QueryService",
+  "common/Utilities",
+  "collections/ObjectFormats",
+], ($, _, Backbone, QueryService, Utilities, ObjectFormats) => {
   const DEFAULT_INFO_FIELDS = [
     "abstract",
     "id",
@@ -211,62 +213,7 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
        * @returns {string} The specific format of this object
        */
       getFormat() {
-        const formatMap = {
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-            "Microsoft Excel OpenXML",
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-            "Microsoft Word OpenXML",
-          "application/vnd.ms-excel.sheet.binary.macroEnabled.12":
-            "Microsoft Office Excel 2007 binary workbooks",
-          "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-            "Microsoft Office OpenXML Presentation",
-          "application/vnd.ms-excel": "Microsoft Excel",
-          "application/msword": "Microsoft Word",
-          "application/vnd.ms-powerpoint": "Microsoft Powerpoint",
-          "text/html": "HTML",
-          "text/plain": "plain text (.txt)",
-          "video/avi": "Microsoft AVI file",
-          "video/x-ms-wmv": "Windows Media Video (.wmv)",
-          "audio/x-ms-wma": "Windows Media Audio (.wma)",
-          "application/vnd.google-earth.kml xml":
-            "Google Earth Keyhole Markup Language (KML)",
-          "http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html":
-            "annotation",
-          "application/mathematica": "Mathematica Notebook",
-          "application/postscript": "Postscript",
-          "application/rtf": "Rich Text Format (RTF)",
-          "application/xml": "XML Application",
-          "text/xml": "XML",
-          "application/x-fasta": "FASTA sequence file",
-          "nexus/1997": "NEXUS File Format for Systematic Information",
-          "anvl/erc-v02":
-            "Kernel Metadata and Electronic Resource Citations (ERCs), 2010.05.13",
-          "http://purl.org/dryad/terms/":
-            "Dryad Metadata Application Profile Version 3.0",
-          "http://datadryad.org/profile/v3.1":
-            "Dryad Metadata Application Profile Version 3.1",
-          "application/pdf": "PDF",
-          "application/zip": "ZIP file",
-          "http://www.w3.org/TR/rdf-syntax-grammar": "RDF/XML",
-          "http://www.w3.org/TR/rdfa-syntax": "RDFa",
-          "application/rdf xml": "RDF",
-          "text/turtle": "TURTLE",
-          "text/n3": "N3",
-          "application/x-gzip": "GZIP Format",
-          "application/x-python": "Python script",
-          "http://www.w3.org/2005/Atom": "ATOM-1.0",
-          "application/octet-stream": "octet stream (application file)",
-          "http://digir.net/schema/conceptual/darwin/2003/1.0/darwin2.xsd":
-            "Darwin Core, v2.0",
-          "http://rs.tdwg.org/dwc/xsd/simpledarwincore/": "Simple Darwin Core",
-          "eml://ecoinformatics.org/eml-2.1.0": "EML v2.1.0",
-          "eml://ecoinformatics.org/eml-2.1.1": "EML v2.1.1",
-          "eml://ecoinformatics.org/eml-2.0.1": "EML v2.0.1",
-          "eml://ecoinformatics.org/eml-2.0.0": "EML v2.0.0",
-          "https://eml.ecoinformatics.org/eml-2.2.0": "EML v2.2.0",
-        };
-
-        return formatMap[this.get("formatId")] || this.get("formatId");
+        return Utilities.getFriendlyFormat(this.get("formatId"));
       },
 
       /**
@@ -492,6 +439,7 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
       },
 
       handleGetInfoError(error) {
+        // eslint-disable-next-line no-console
         console.error(`Error getting info for ${this.get("id")}`, error);
         const status = error.status || error.cause?.status;
         const message = error.message || error.cause?.statusText || error;
@@ -642,25 +590,13 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
             // Check if this is a metadata doc
             const formatId = $(data).find("formatid").text() || "";
             model.set("formatId", formatId);
-            if (
-              formatId.indexOf("ecoinformatics.org") > -1 ||
-              formatId.indexOf("FGDC") > -1 ||
-              formatId.indexOf("INCITS") > -1 ||
-              formatId.indexOf("namespaces/netcdf") > -1 ||
-              formatId.indexOf("waterML") > -1 ||
-              formatId.indexOf("darwin") > -1 ||
-              formatId.indexOf("dryad") > -1 ||
-              formatId.indexOf("http://www.loc.gov/METS") > -1 ||
-              formatId.indexOf("ddi:codebook:2_5") > -1 ||
-              formatId.indexOf("http://www.icpsr.umich.edu/DDI") > -1 ||
-              formatId.indexOf(
-                "http://purl.org/ornl/schema/mercury/terms/v1.0",
-              ) > -1 ||
-              formatId.indexOf("datacite") > -1 ||
-              formatId.indexOf("isotc211") > -1 ||
-              formatId.indexOf("metadata") > -1
-            )
+            const objectFormats =
+              typeof MetacatUI.objectFormats?.isMetadata === "function"
+                ? MetacatUI.objectFormats
+                : new ObjectFormats();
+            if (objectFormats.isMetadata({ formatId })) {
               model.set("formatType", "METADATA");
+            }
 
             // Trigger the sync event so the app knows we found the model info
             model.trigger("sync");

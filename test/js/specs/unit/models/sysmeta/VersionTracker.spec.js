@@ -1,16 +1,21 @@
 define([
   "/test/js/specs/shared/clean-state.js",
+  "/test/js/specs/shared/concurrency-tracker.js",
   "models/sysmeta/VersionTracker",
   "models/dataONEServices/SysMetaService",
-], (cleanState, VersionTracker, SysMetaService) => {
+], (cleanState, trackConcurrency, VersionTracker, SysMetaService) => {
   const should = chai.should();
   const expect = chai.expect;
 
   const makeSysMeta = (nextPid = null, prevPid = null) => ({
-    data: {
-      obsoletedBy: nextPid,
-      obsoletes: prevPid,
-    },
+    obsoletedBy: nextPid,
+    obsoletes: prevPid,
+  });
+
+  const makeIdentifiedSysMeta = (identifier, nextPid = null, prevPid = null) => ({
+    identifier,
+    obsoletedBy: nextPid,
+    obsoletes: prevPid,
   });
 
   const makeDatedSysMeta = ({
@@ -19,12 +24,10 @@ define([
     nextPid = null,
     prevPid = null,
   }) => ({
-    data: {
-      identifier,
-      dateUploaded,
-      obsoletedBy: nextPid,
-      obsoletes: prevPid,
-    },
+    identifier,
+    dateUploaded,
+    obsoletedBy: nextPid,
+    obsoletes: prevPid,
   });
 
   describe("VersionTracker", () => {
@@ -130,8 +133,7 @@ define([
             getActiveAltRepo: state.sandbox.stub().returns(null),
             isDOI: state.sandbox.stub().returns(false),
           },
-          appUserModel: (originalMetacatUI &&
-            originalMetacatUI.appUserModel) || {
+          appUserModel: (originalMetacatUI && originalMetacatUI.appUserModel) || {
             get: state.sandbox.stub().returns(false),
           },
           nodeModel: (originalMetacatUI && originalMetacatUI.nodeModel) || {
@@ -156,8 +158,7 @@ define([
             getActiveAltRepo: state.sandbox.stub().returns(null),
             isDOI: state.sandbox.stub().returns(false),
           },
-          appUserModel: (originalMetacatUI &&
-            originalMetacatUI.appUserModel) || {
+          appUserModel: (originalMetacatUI && originalMetacatUI.appUserModel) || {
             get: state.sandbox.stub().returns(false),
           },
           nodeModel: (originalMetacatUI && originalMetacatUI.nodeModel) || {
@@ -211,11 +212,7 @@ define([
         next.should.equal("pid.2");
         prev.should.equal("pid.0");
         adjacentStub.firstCall.args.should.deep.equal(["pid.1", true, options]);
-        adjacentStub.secondCall.args.should.deep.equal([
-          "pid.1",
-          false,
-          options,
-        ]);
+        adjacentStub.secondCall.args.should.deep.equal(["pid.1", false, options]);
       });
     });
 
@@ -692,6 +689,70 @@ define([
         stub.secondCall.args.should.deep.equal(["pid.1", true, options]);
       });
 
+      it("checkPidsInSameVersionChain returns chain membership details", async () => {
+        state.sandbox.stub(state.vt, "getAllVersions").resolves({
+          prev: { versions: ["pid.0"] },
+          next: { versions: ["pid.2"], chainComplete: true },
+        });
+
+        const result = await state.vt.checkPidsInSameVersionChain([
+          "pid.1",
+          "pid.2",
+        ]);
+
+        result.should.deep.equal({
+          pids: ["pid.1", "pid.2"],
+          sameChain: true,
+          chain: ["pid.0", "pid.1", "pid.2"],
+          newestPid: "pid.2",
+          newestInChain: "pid.2",
+          chainComplete: true,
+          endIsPrivate: false,
+          endNotFound: false,
+        });
+      });
+
+      it("checkPidsInSameVersionChain reports incomplete private ends", async () => {
+        state.sandbox.stub(state.vt, "getAllVersions").resolves({
+          prev: { versions: [] },
+          next: {
+            versions: ["pid.2"],
+            chainComplete: false,
+            endIsPrivate: true,
+          },
+        });
+
+        const result = await state.vt.checkPidsInSameVersionChain([
+          "pid.1",
+          "pid.other",
+        ]);
+
+        result.sameChain.should.equal(false);
+        result.newestPid.should.equal("pid.1");
+        result.chainComplete.should.equal(false);
+        result.endIsPrivate.should.equal(true);
+      });
+
+      it("checkPidsInSameVersionChain reports incomplete older ends", async () => {
+        state.sandbox.stub(state.vt, "getAllVersions").resolves({
+          prev: {
+            versions: ["pid.0"],
+            chainComplete: false,
+            endNotFound: true,
+          },
+          next: { versions: ["pid.2"], chainComplete: true },
+        });
+
+        const result = await state.vt.checkPidsInSameVersionChain([
+          "pid.1",
+          "pid.2",
+        ]);
+
+        result.sameChain.should.equal(true);
+        result.chainComplete.should.equal(false);
+        result.endNotFound.should.equal(true);
+      });
+
       it("isEndOfChain inspects sysmeta links", async () => {
         state.service.download.resolves(makeSysMeta("pid.2", null));
 
@@ -723,6 +784,95 @@ define([
 
         const latest = await state.vt.getLatestVersion("pid.1");
         latest.should.equal("pid.1");
+      });
+
+      it("returns the resolved sysmeta identifier when a series ID has no newer versions", async () => {
+        state.service.download.resolves(
+          makeIdentifiedSysMeta("pid.1", null, null),
+        );
+
+        const latest = await state.vt.getLatestVersion("seriesId.1");
+
+        latest.should.equal("pid.1");
+      });
+
+      it("returns the input PID when the starting sysmeta is not accessible", async () => {
+        state.sandbox.stub(state.vt, "getAllVersionsOneDirection").resolves({
+          versions: [],
+          completedSteps: 0,
+          endIsPrivate: true,
+        });
+
+        const latest = await state.vt.getLatestVersion("pid.1");
+
+        latest.should.equal("pid.1");
+        state.service.download.called.should.equal(false);
+      });
+
+      it("gets conclusive latest versions with bounded concurrency", async () => {
+        const concurrency = trackConcurrency();
+        const getAllVersions = state.sandbox.stub(
+          state.vt,
+          "getAllVersionsOneDirection",
+        );
+        getAllVersions.callsFake(
+          concurrency.track((pid) => ({
+            versions: [`${pid}.latest`],
+            chainComplete: true,
+          })),
+        );
+
+        const latest = await state.vt.getLatestVersions(
+          ["pid.1", "pid.2", "pid.3", "pid.4"],
+          { useCache: false, maxConcurrent: 2 },
+        );
+
+        latest.should.deep.equal([
+          "pid.1.latest",
+          "pid.2.latest",
+          "pid.3.latest",
+          "pid.4.latest",
+        ]);
+        concurrency.max.should.equal(2);
+        getAllVersions
+          .alwaysCalledWith(sinon.match.string, true, { useCache: false })
+          .should.equal(true);
+      });
+
+      it("rejects an incomplete latest-version chain", async () => {
+        state.sandbox.stub(state.vt, "getAllVersionsOneDirection").resolves({
+          versions: ["pid.2"],
+          chainComplete: false,
+        });
+
+        let caught;
+        try {
+          await state.vt.getLatestVersions(["pid.1"]);
+        } catch (error) {
+          caught = error;
+        }
+
+        caught.message.should.equal(
+          'Cannot determine the latest version of "pid.1"',
+        );
+      });
+
+      it("propagates aborts while getting latest versions", async () => {
+        const abortError = Object.assign(new Error("Aborted"), {
+          name: "AbortError",
+        });
+        state.sandbox
+          .stub(state.vt, "getAllVersionsOneDirection")
+          .rejects(abortError);
+
+        let caught;
+        try {
+          await state.vt.getLatestVersions(["pid.1"]);
+        } catch (error) {
+          caught = error;
+        }
+
+        caught.should.equal(abortError);
       });
 
       it("clears cache via SysMetaService", async () => {
@@ -770,7 +920,7 @@ define([
 
         await state.vt.notify("pid.1", "pid.2", 1);
         const sysMeta = updateSpy.firstCall.args[0];
-        sysMeta.data.identifier.should.equal("pid.2");
+        sysMeta.identifier.should.equal("pid.2");
         sysMeta.errors.should.deep.equal([401]);
         sysMeta.versionHistory["pid.1"].should.equal(1);
       });
@@ -785,7 +935,7 @@ define([
         await state.vt.notify("pid.1", "pid.2", -1);
 
         const sysMeta = updateSpy.firstCall.args[0];
-        sysMeta.data.identifier.should.equal("pid.2");
+        sysMeta.identifier.should.equal("pid.2");
         sysMeta.errors.should.deep.equal([404]);
         sysMeta.versionHistory["pid.1"].should.equal(-1);
       });

@@ -1,26 +1,30 @@
 define([
   "/test/js/specs/shared/clean-state.js",
   "models/resourceMap/ResourceMapResolver",
-  "models/sysmeta/SysMeta",
-  "collections/SolrResults",
+  "models/dataONEServices/ObjectService",
+  "models/resourceMap/ResourceMap",
+  "models/sysmeta/SystemMetadata",
   "common/QueryService",
-], (cleanState, ResourceMapResolver, SysMeta, SolrResults, QueryService) => {
+], (
+  cleanState,
+  ResourceMapResolver,
+  ObjectService,
+  ResourceMap,
+  SysMeta,
+  QueryService,
+) => {
   const should = chai.should();
   const expect = chai.expect;
 
   describe("ResourceMapResolver Test Suite", () => {
-    const state = cleanState(
-      () => {
-        const sandbox = sinon.createSandbox();
-        const rmr = new ResourceMapResolver({
-          consoleLevel: "info",
-          metaServiceUrl: "https://example.org/sysmeta",
-        });
-        return { sandbox, rmr };
-      },
-      beforeEach,
-      afterEach,
-    );
+    const state = cleanState(() => {
+      const sandbox = sinon.createSandbox();
+      const rmr = new ResourceMapResolver({
+        consoleLevel: "info",
+        metaServiceUrl: "https://example.org/sysmeta",
+      });
+      return { sandbox, rmr };
+    }, beforeEach);
 
     afterEach(() => {
       state.sandbox.restore();
@@ -38,48 +42,213 @@ define([
       });
     });
 
-    describe("containsPid static helper", () => {
-      it("returns true when the PID is present in memberIds", () => {
-        const rmModel = new Backbone.Model({ memberIds: ["a", "b", "c"] });
-        ResourceMapResolver.containsPid(rmModel, "b").should.be.true;
-      });
-
-      it("returns false when the PID is missing or model is null", () => {
-        const rmModel = new Backbone.Model({ memberIds: ["x", "y"] });
-        ResourceMapResolver.containsPid(rmModel, "z").should.be.false;
-        ResourceMapResolver.containsPid(null, "x").should.be.false;
-      });
-    });
-
-    describe("static log helpers", () => {
-      it("checkLogForMultipleRMs returns false for empty or single rm arrays", () => {
-        ResourceMapResolver.checkLogForMultipleRMs({
-          events: [{ meta: { rms: [] } }, { meta: { rms: ["rm.1"] } }],
-        }).should.equal(false);
-      });
-
-      it("checkLogForMultipleRMs returns true only for 2+ rms", () => {
-        ResourceMapResolver.checkLogForMultipleRMs({
-          events: [{ meta: { rms: ["rm.1", "rm.2"] } }],
-        }).should.equal(true);
-      });
-    });
-
     describe("searchIndex()", () => {
       it("escapes PID values when building the Solr query", async () => {
         const pid = 'pid:"v1"+(x/y)';
-        const setQuery = state.sandbox.stub(SolrResults.prototype, "setQuery");
-        state.sandbox.stub(SolrResults.prototype, "setfields");
-        state.sandbox.stub(SolrResults.prototype, "queryPromise").resolves();
-        state.sandbox.stub(SolrResults.prototype, "toJSON").returns([]);
-        state.sandbox.stub(SolrResults.prototype, "getNumFound").returns(0);
+        const queryWithFetch = state.sandbox
+          .stub(QueryService, "queryWithFetch")
+          .resolves({ response: { numFound: 0, docs: [] } });
 
         await ResourceMapResolver.searchIndex(pid);
 
-        const escapedPid = QueryService.escapeLucene(pid);
-        setQuery.calledOnceWithExactly(
-          `id:"${escapedPid}" OR seriesId:"${escapedPid}"`,
-        ).should.be.true;
+        queryWithFetch.calledOnce.should.be.true;
+        queryWithFetch.firstCall.args[0].q.should.equal(
+          QueryService.buildIdQuery(pid),
+        );
+        queryWithFetch.firstCall.args[0].fields.should.include("dateUploaded");
+      });
+
+      it("returns a direct RM for a data PID when one RM is indexed", async () => {
+        state.sandbox.stub(QueryService, "queryWithFetch").resolves({
+          response: {
+            numFound: 1,
+            docs: [
+              {
+                id: "data.1",
+                formatType: "DATA",
+                resourceMap: ["rm.1"],
+              },
+            ],
+          },
+        });
+
+        const result = await ResourceMapResolver.searchIndex("data.1");
+
+        result.rm.should.equal("rm.1");
+        result.meta.isData.should.equal(true);
+      });
+
+      const ORE_FORMAT_ID = "http://www.openarchives.org/ore/terms";
+      [
+        {
+          from: "format type and format ID",
+          fields: { formatType: "RESOURCE", formatId: ORE_FORMAT_ID },
+        },
+        { from: "format ID", fields: { formatId: ORE_FORMAT_ID } },
+      ].forEach(({ from, fields }) => {
+        it(`identifies a resource map PID from ${from}`, async () => {
+          state.sandbox.stub(QueryService, "queryWithFetch").resolves({
+            response: {
+              numFound: 1,
+              docs: [{ id: "resource_map_1", ...fields }],
+            },
+          });
+
+          const result =
+            await ResourceMapResolver.searchIndex("resource_map_1");
+
+          result.rm.should.equal("resource_map_1");
+          result.meta.isResourceMap.should.equal(true);
+        });
+      });
+
+      it("does not classify a generic resource as a resource map", async () => {
+        state.sandbox.stub(QueryService, "queryWithFetch").resolves({
+          response: {
+            numFound: 1,
+            docs: [{ id: "generic-resource.1", formatType: "RESOURCE" }],
+          },
+        });
+
+        const result =
+          await ResourceMapResolver.searchIndex("generic-resource.1");
+
+        should.equal(result.rm, null);
+        should.equal(result.meta.isResourceMap, undefined);
+      });
+
+      it("does not overwrite a direct resource map match with indexed resourceMap values", async () => {
+        state.sandbox.stub(QueryService, "queryWithFetch").resolves({
+          response: {
+            numFound: 1,
+            docs: [
+              {
+                id: "resource_map_1",
+                formatType: "RESOURCE",
+                formatId: "http://www.openarchives.org/ore/terms",
+                resourceMap: ["resource_map_other"],
+              },
+            ],
+          },
+        });
+
+        const result = await ResourceMapResolver.searchIndex("resource_map_1");
+
+        result.rm.should.equal("resource_map_1");
+        result.meta.rms.should.deep.equal(["resource_map_other"]);
+      });
+
+      it("rejects index responses with duplicate documents for one PID", async () => {
+        state.sandbox.stub(QueryService, "queryWithFetch").resolves({
+          response: {
+            numFound: 2,
+            docs: [
+              { id: "data.dup.1", formatType: "DATA" },
+              { id: "data.dup.1", formatType: "DATA" },
+            ],
+          },
+        });
+
+        let caught = null;
+        try {
+          await ResourceMapResolver.searchIndex("data.dup.1");
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceOf(Error);
+        caught.message.should.match(/Multiple documents were found in index/);
+      });
+    });
+
+    describe("fetchResourceMap()", () => {
+      it("passes configured services when parsing a downloaded Resource Map", async () => {
+        const originalMetacatUI = globalThis.MetacatUI;
+        globalThis.MetacatUI = {
+          ...(originalMetacatUI || {}),
+          appModel: {
+            get(key) {
+              if (key === "resolveServiceUrl") {
+                return "https://cn.example.org/cn/v2/resolve";
+              }
+              if (key === "objectServiceUrl") {
+                return "https://mn.example.org/mn/v2/object";
+              }
+              return null;
+            },
+          },
+        };
+        const download = state.sandbox
+          .stub(ObjectService.prototype, "download")
+          .callsFake(function fakeDownload() {
+            this.readBaseUrl.should.equal(
+              "https://mn.example.org/mn/v2/object",
+            );
+            return "<rdf:RDF></rdf:RDF>";
+          });
+        const fromXml = state.sandbox.stub(ResourceMap, "fromXml").returns({
+          getMemberPids: () => [],
+        });
+
+        try {
+          await state.rmr.fetchResourceMap("resource_map_1", { timeoutMs: 0 });
+        } finally {
+          globalThis.MetacatUI = originalMetacatUI;
+        }
+
+        download.firstCall.args[1].timeoutMs.should.equal(0);
+        sinon.assert.calledOnceWithExactly(
+          fromXml,
+          "resource_map_1",
+          "<rdf:RDF></rdf:RDF>",
+          {
+            resolveServiceUrl: "https://cn.example.org/cn/v2/resolve",
+            objectServiceUrl: "https://mn.example.org/mn/v2/object",
+          },
+        );
+      });
+
+      it("preserves structured ownership conflicts from verification fetches", async () => {
+        const issues = [
+          {
+            code: "ambiguousResourceMapRoot",
+            severity: "error",
+            reason: "ambiguous",
+          },
+        ];
+        const conflict = Object.assign(new Error("ambiguous owner"), {
+          issues,
+        });
+        state.sandbox
+          .stub(ObjectService.prototype, "download")
+          .resolves("<rdf:RDF></rdf:RDF>");
+        state.sandbox.stub(ResourceMap, "fromXml").throws(conflict);
+
+        let caught = null;
+        try {
+          await state.rmr.fetchResourceMap("resource_map_1");
+        } catch (error) {
+          caught = error;
+        }
+
+        caught.should.equal(conflict);
+        caught.issues.should.equal(issues);
+      });
+    });
+
+    describe("trackMissingResourceMap()", () => {
+      it("sends one PID-only analytics event", () => {
+        const { sandbox, rmr } = state;
+        const trackCustomEvent = sandbox.stub();
+        rmr.eventLog.analyticsModel = { trackCustomEvent };
+
+        rmr.trackMissingResourceMap("meta.1");
+
+        sinon.assert.calledOnceWithExactly(
+          trackCustomEvent,
+          "resource_map_missing",
+          { pid: "meta.1" },
+        );
       });
     });
 
@@ -88,14 +257,14 @@ define([
         const { sandbox, rmr } = state;
         sandbox.stub(rmr.storage, "getItem").resolves("rm_pid_123");
         const result = await rmr.checkStorage("obj_pid_123");
-        result.rm.should.equal("rm_pid_123");
+        result.should.equal("rm_pid_123");
       });
 
       it("resolves with null when storage has no mapping", async () => {
         const { sandbox, rmr } = state;
         sandbox.stub(rmr.storage, "getItem").resolves(null);
         const result = await rmr.checkStorage("obj_pid_456");
-        should.equal(result.rm, null);
+        should.equal(result, null);
       });
     });
 
@@ -106,8 +275,8 @@ define([
 
         const guessed = await rmr.guessPid("myObjPid");
         guessed.should.equal("resource_map_myObjPid");
-        rmr.verify.calledOnceWithExactly("resource_map_myObjPid", "myObjPid")
-          .should.be.true;
+        rmr.verify.calledOnceWith("resource_map_myObjPid", "myObjPid").should.be
+          .true;
       });
 
       it("returns null when verify resolves false", async () => {
@@ -123,37 +292,68 @@ define([
       it("stores the obj-resMap pair when resMap is provided", () => {
         const { sandbox, rmr } = state;
         sandbox.stub(rmr, "addToStorage").resolves();
-        sandbox.stub(rmr, "log").returns({});
-        sandbox.stub(rmr, "trigger");
+        sandbox.stub(rmr, "log").returns({ events: [] });
+        sandbox.stub(rmr.events, "trigger");
 
         const result = rmr.status("obj123", "foundAndValid", "rm123");
         result.success.should.be.true;
         rmr.addToStorage.calledOnceWithExactly("obj123", "rm123").should.be
           .true;
-        rmr.trigger.calledTwice.should.be.true;
+        rmr.events.trigger.calledTwice.should.be.true;
+        rmr.events.trigger.firstCall.args[0].should.equal("update");
+        rmr.events.trigger.secondCall.args[0].should.equal("update:obj123");
       });
 
       it("does not store when resMap is null", () => {
         const { sandbox, rmr } = state;
         sandbox.stub(rmr, "addToStorage").resolves();
-        sandbox.stub(rmr, "log").returns({});
-        sandbox.stub(rmr, "trigger");
+        sandbox.stub(rmr, "log").returns({ events: [] });
+        sandbox.stub(rmr.events, "trigger");
 
         const result = rmr.status("obj999", "allMiss", null);
         result.success.should.be.false;
         rmr.addToStorage.called.should.be.false;
       });
 
-      it("does not flag multipleRMs when rms metadata is empty or single-item", () => {
-        const { sandbox, rmr } = state;
-        const log = {
-          events: [{ meta: { rms: [] } }, { meta: { rms: ["rm.single"] } }],
-        };
-        sandbox.stub(rmr, "log").returns(log);
-        sandbox.stub(rmr, "trigger");
+      it("derives failure flags from the current status metadata", () => {
+        const { rmr } = state;
+        rmr.eventLog.setConsoleLogLevel(false);
+        rmr.status("obj999", "priorMiss", null, {
+          unauthorized: true,
+          rms: ["rm.old.1", "rm.old.2"],
+        });
 
-        const result = rmr.status("obj999", "allMiss", null);
-        should.equal(result.multipleRMs, undefined);
+        const ordinaryMiss = rmr.status("obj999", "allMiss", null, {
+          rms: [],
+        });
+        should.equal(ordinaryMiss.unauthorized, undefined);
+        should.equal(ordinaryMiss.multipleRMs, undefined);
+
+        const qualifiedMiss = rmr.status("obj123", "allMiss", null, {
+          unauthorized: true,
+          rms: ["rm.1", "rm.2"],
+        });
+        qualifiedMiss.unauthorized.should.equal(true);
+        qualifiedMiss.multipleRMs.should.equal(true);
+      });
+
+      it("does not carry an earlier authorization failure into a success", () => {
+        const { sandbox, rmr } = state;
+        rmr.eventLog.setConsoleLogLevel(false);
+        sandbox.stub(rmr, "addToStorage").resolves();
+        rmr.status("obj123", "unauthorized", null, {
+          unauthorized: true,
+        });
+
+        const result = rmr.status(
+          "obj123",
+          "foundAndValid",
+          "resource_map_obj123",
+          { source: "index" },
+        );
+
+        result.success.should.equal(true);
+        should.equal(result.unauthorized, undefined);
       });
 
       it("logs addToStorage failures without throwing", async () => {
@@ -161,7 +361,7 @@ define([
         const persistError = new Error("persist failed");
         sandbox.stub(rmr, "addToStorage").rejects(persistError);
         sandbox.stub(rmr, "log").returns({ events: [] });
-        sandbox.stub(rmr, "trigger");
+        sandbox.stub(rmr.events, "trigger");
         const logStub = sandbox.stub(rmr.eventLog, "consoleLog");
 
         rmr.status("obj123", "foundAndValid", "rm123");
@@ -200,7 +400,7 @@ define([
         const { sandbox, rmr } = state;
         const indexError = new Error("index unavailable");
         sandbox.stub(ResourceMapResolver, "searchIndex").rejects(indexError);
-        sandbox.stub(rmr, "checkStorage").resolves({ rm: "rmFromStorage" });
+        sandbox.stub(rmr, "checkStorage").resolves("rmFromStorage");
         sandbox.stub(rmr, "verify").resolves(true);
         const statusStub = sandbox
           .stub(rmr, "status")
@@ -241,7 +441,7 @@ define([
           rm: "rmSid123",
         });
 
-        rmr.resolveFromSeriesId.calledOnceWithExactly("sid123").should.be.true;
+        rmr.resolveFromSeriesId.calledOnceWith("sid123").should.be.true;
       });
 
       it("checks storage when index search returns no resMap", async () => {
@@ -250,7 +450,7 @@ define([
         sandbox
           .stub(ResourceMapResolver, "searchIndex")
           .resolves({ rm: null, meta: { isSid: false } });
-        sandbox.stub(rmr, "checkStorage").resolves({ rm: "rmFromStorage" });
+        sandbox.stub(rmr, "checkStorage").resolves("rmFromStorage");
         sandbox
           .stub(rmr, "status")
           .returns({ success: true, rm: "rmFromStorage" });
@@ -271,7 +471,7 @@ define([
         sandbox
           .stub(ResourceMapResolver, "searchIndex")
           .resolves({ rm: null, meta: { isSid: false } });
-        sandbox.stub(rmr, "checkStorage").resolves({ rm: null });
+        sandbox.stub(rmr, "checkStorage").resolves(null);
         sandbox
           .stub(rmr, "walkSysmeta")
           .resolves({ rm: "rmFromSysmeta", meta: {} });
@@ -286,7 +486,33 @@ define([
           rm: "rmFromSysmeta",
         });
 
-        rmr.walkSysmeta.calledOnceWithExactly("objPid").should.be.true;
+        rmr.walkSysmeta.calledOnceWith("objPid").should.be.true;
+      });
+
+      it("walks sysmeta when the storage check fails", async () => {
+        const { sandbox, rmr } = state;
+
+        sandbox
+          .stub(ResourceMapResolver, "searchIndex")
+          .resolves({ rm: null, meta: { isSid: false } });
+        sandbox.stub(rmr, "checkStorage").rejects(new Error("storage failed"));
+        sandbox
+          .stub(rmr, "walkSysmeta")
+          .resolves({ rm: "rmFromSysmeta", meta: {} });
+        sandbox
+          .stub(rmr, "status")
+          .returns({ success: true, rm: "rmFromSysmeta" });
+        sandbox.stub(rmr, "verify").resolves(true);
+        const logStub = sandbox.stub(rmr.eventLog, "consoleLog");
+
+        const result = await rmr.resolve("objPid");
+
+        result.should.deep.equal({
+          success: true,
+          rm: "rmFromSysmeta",
+        });
+        rmr.walkSysmeta.calledOnceWith("objPid").should.be.true;
+        logStub.calledOnce.should.be.true;
       });
 
       it("guesses PID when sysmeta walk returns no resMap", async () => {
@@ -295,11 +521,10 @@ define([
         sandbox
           .stub(ResourceMapResolver, "searchIndex")
           .resolves({ rm: null, meta: { isSid: false } });
-        sandbox.stub(rmr, "checkStorage").resolves({ rm: null });
+        sandbox.stub(rmr, "checkStorage").resolves(null);
         sandbox.stub(rmr, "walkSysmeta").resolves({ rm: null, meta: {} });
         sandbox.stub(rmr, "guessPid").resolves("guessedRM");
         sandbox.stub(rmr, "status").returns({ success: true, rm: "guessedRM" });
-        sandbox.stub(rmr, "verify").resolves(true);
 
         const result = await rmr.resolve("objPid");
         result.should.deep.equal({
@@ -307,7 +532,7 @@ define([
           rm: "guessedRM",
         });
 
-        rmr.guessPid.calledOnceWithExactly("objPid").should.be.true;
+        rmr.guessPid.calledOnceWith("objPid").should.be.true;
       });
 
       it("returns allMiss when no resMap is found", async () => {
@@ -316,11 +541,10 @@ define([
         sandbox
           .stub(ResourceMapResolver, "searchIndex")
           .resolves({ rm: null, meta: { isSid: false } });
-        sandbox.stub(rmr, "checkStorage").resolves({ rm: null });
+        sandbox.stub(rmr, "checkStorage").resolves(null);
         sandbox.stub(rmr, "walkSysmeta").resolves({ rm: null, meta: {} });
         sandbox.stub(rmr, "guessPid").resolves(null);
         sandbox.stub(rmr, "status").returns({ success: false, rm: null });
-        sandbox.stub(rmr, "verify").resolves(true);
 
         const result = await rmr.resolve("objPid");
         result.should.deep.equal({
@@ -328,11 +552,10 @@ define([
           rm: null,
         });
 
-        ResourceMapResolver.searchIndex.calledOnceWithExactly("objPid").should
-          .be.true;
+        ResourceMapResolver.searchIndex.calledOnceWith("objPid").should.be.true;
         rmr.checkStorage.calledOnceWithExactly("objPid").should.be.true;
-        rmr.walkSysmeta.calledOnceWithExactly("objPid").should.be.true;
-        rmr.guessPid.calledOnceWithExactly("objPid").should.be.true;
+        rmr.walkSysmeta.calledOnceWith("objPid").should.be.true;
+        rmr.guessPid.calledOnceWith("objPid").should.be.true;
       });
 
       it("returns unauthorized when sysmeta walk reports 401", async () => {
@@ -341,7 +564,7 @@ define([
         sandbox
           .stub(ResourceMapResolver, "searchIndex")
           .resolves({ rm: null, meta: { isSid: false } });
-        sandbox.stub(rmr, "checkStorage").resolves({ rm: null });
+        sandbox.stub(rmr, "checkStorage").resolves(null);
         sandbox
           .stub(rmr, "walkSysmeta")
           .resolves({ rm: null, meta: { unauthorized: true } });
@@ -350,7 +573,7 @@ define([
         const result = await rmr.resolve("objPid");
         result.success.should.equal(false);
 
-        rmr.walkSysmeta.calledOnceWithExactly("objPid").should.be.true;
+        rmr.walkSysmeta.calledOnceWith("objPid").should.be.true;
       });
 
       it("handles multiple resource maps from index", async () => {
@@ -361,7 +584,6 @@ define([
           meta: { isSid: false, rms: ["rm1", "rm2"] },
         });
         sandbox.stub(rmr, "multiRMCheck").resolves({
-          pid: "objPid",
           rm: "rm2",
           meta: {},
         });
@@ -370,6 +592,173 @@ define([
         const result = await rmr.resolve("objPid");
         result.rm.should.equal("rm2");
         rmr.multiRMCheck.calledOnce.should.be.true;
+      });
+
+      it("resolves a data PID via metadata links from isDocumentedBy", async () => {
+        const { sandbox, rmr } = state;
+
+        sandbox
+          .stub(ResourceMapResolver, "searchIndex")
+          .onCall(0)
+          .resolves({
+            rm: null,
+            meta: {
+              isSid: false,
+              isData: true,
+              isDocumentedBy: ["meta.1"],
+              rms: [],
+            },
+          })
+          .onCall(1)
+          .resolves({
+            rm: "rm.fromMeta",
+            meta: {
+              isSid: false,
+              rms: ["rm.fromMeta"],
+            },
+          });
+
+        sandbox.stub(rmr, "status").callsFake((pid, _status, rm) => ({
+          success: !!rm,
+          pid,
+          rm: rm || null,
+        }));
+        sandbox.stub(rmr, "verify").resolves(true);
+
+        const result = await rmr.resolve("data.1");
+        result.should.deep.equal({
+          success: true,
+          pid: "data.1",
+          rm: "rm.fromMeta",
+        });
+
+        ResourceMapResolver.searchIndex.firstCall.args[0].should.equal(
+          "data.1",
+        );
+        ResourceMapResolver.searchIndex.secondCall.args[0].should.equal(
+          "meta.1",
+        );
+      });
+
+      it("preserves direct RM candidates when metadata lookup finds none", async () => {
+        const { sandbox, rmr } = state;
+        sandbox.stub(ResourceMapResolver, "searchIndex").resolves({
+          rm: null,
+          meta: {
+            isData: true,
+            isDocumentedBy: ["meta.1"],
+            rms: ["rm.1", "rm.2"],
+          },
+        });
+        sandbox.stub(rmr, "resolveFromMetadataPids").resolves({
+          rm: null,
+          meta: { rms: [] },
+        });
+        sandbox.stub(rmr, "multiRMCheck").resolves({
+          rm: "rm.2",
+          meta: {},
+        });
+        sandbox.stub(rmr, "status").returns({ success: true, rm: "rm.2" });
+
+        const result = await rmr.resolve("data.1");
+
+        result.rm.should.equal("rm.2");
+        rmr.multiRMCheck.calledOnceWithExactly(["rm.1", "rm.2"], {}).should.be
+          .true;
+      });
+
+      it("stops self-documentation cycles", async () => {
+        const { sandbox, rmr } = state;
+        const searchIndex = sandbox
+          .stub(ResourceMapResolver, "searchIndex")
+          .resolves({
+            rm: null,
+            meta: {
+              isData: true,
+              isDocumentedBy: ["data.1"],
+              rms: ["rm.1", "rm.2"],
+            },
+          });
+        sandbox.stub(rmr, "reducePidsToLatest").resolves(["data.1"]);
+        sandbox.stub(rmr, "multiRMCheck").resolves({
+          rm: "rm.2",
+          meta: {},
+        });
+        sandbox.stub(rmr, "addToStorage").resolves();
+
+        const result = await rmr.resolve("data.1");
+
+        result.rm.should.equal("rm.2");
+        searchIndex.callCount.should.equal(1);
+        result.log.events
+          .some(({ meta }) => meta?.resolutionCycle)
+          .should.equal(true);
+      });
+
+      it("stops cycles across two metadata PIDs", async () => {
+        const { sandbox, rmr } = state;
+        const searchIndex = sandbox
+          .stub(ResourceMapResolver, "searchIndex")
+          .callsFake(async (pid) => ({
+            rm: null,
+            meta: {
+              isData: true,
+              isDocumentedBy: [pid === "meta.1" ? "meta.2" : "meta.1"],
+              rms: [],
+            },
+          }));
+        sandbox.stub(rmr, "reducePidsToLatest").callsFake(async (pids) => pids);
+        sandbox.stub(rmr, "checkStorage").resolves(null);
+        sandbox.stub(rmr, "walkSysmeta").resolves({ rm: null, meta: {} });
+        sandbox.stub(rmr, "guessPid").resolves(null);
+
+        const result = await rmr.resolve("meta.1");
+
+        result.success.should.equal(false);
+        searchIndex.callCount.should.equal(2);
+        result.log.events
+          .some(
+            ({ meta }) => meta?.resolutionCycle && meta.cyclePid === "meta.1",
+          )
+          .should.equal(true);
+      });
+    });
+
+    describe("metadata PID resolution", () => {
+      it("retains nested ambiguous RM candidates", async () => {
+        const { sandbox, rmr } = state;
+        sandbox.stub(rmr, "reducePidsToLatest").resolves(["meta.1"]);
+        sandbox.stub(rmr, "resolve").resolves({
+          rm: "rm.1",
+          meta: { rms: ["rm.1", "rm.2"] },
+        });
+
+        const result = await rmr.resolveFromMetadataPids(["meta.1"]);
+
+        should.equal(result.rm, null);
+        result.meta.rms.should.deep.equal(["rm.1", "rm.2"]);
+      });
+
+      it("keeps selected PIDs when a later version-chain lookup fails", async () => {
+        const { sandbox, rmr } = state;
+        sandbox
+          .stub(rmr.versionTracker, "checkPidsInSameVersionChain")
+          .onFirstCall()
+          .resolves({
+            sameChain: false,
+            chain: ["meta.1"],
+            newestPid: "meta.1.latest",
+          })
+          .onSecondCall()
+          .rejects(new Error("version lookup failed"));
+
+        const result = await rmr.reducePidsToLatest([
+          "meta.1",
+          "meta.2",
+          "meta.3",
+        ]);
+
+        result.should.deep.equal(["meta.1.latest", "meta.2", "meta.3"]);
       });
     });
 
@@ -393,12 +782,36 @@ define([
         result.meta.pastPids.should.deep.equal(["pid.0"]);
         logStub.calledOnce.should.be.true;
       });
+
+      it("returns gracefully when the forward walk errors transiently", async () => {
+        const { sandbox, rmr } = state;
+        // Backward walk finds an old RM one step back...
+        sandbox.stub(rmr.versionTracker, "getPrev").resolves("pid.0");
+        sandbox
+          .stub(ResourceMapResolver, "searchIndex")
+          .resolves({ rm: "rm.old" });
+        // ...but walking forward to the current RM hits a transient 500.
+        const transientError = new Error("sysmeta 500");
+        transientError.status = 500;
+        sandbox.stub(rmr.versionTracker, "getNth").rejects(transientError);
+        const logStub = sandbox.stub(rmr.eventLog, "consoleLog");
+
+        const result = await rmr.walkSysmeta("pid.1");
+
+        // No hard rejection: returns null so resolve() can fall through to
+        // the guess strategy, and the error is recorded, not thrown.
+        should.equal(result.rm, null);
+        result.meta.stepsBack.should.equal(1);
+        result.meta.errors.should.deep.equal([500]);
+        should.equal(result.meta.unauthorized, undefined);
+        logStub.calledOnce.should.be.true;
+      });
     });
 
     describe("verify()", () => {
       it("returns true when the resource map model contains the PID", async () => {
         const { sandbox, rmr } = state;
-        const model = new Backbone.Model({ memberIds: ["pidTrue"] });
+        const model = { getMemberPids: () => ["pidTrue"] };
 
         sandbox.stub(rmr, "fetchResourceMap").resolves({ model, status: 200 });
         sandbox.stub(rmr, "status"); // we just assert it was called
@@ -406,13 +819,13 @@ define([
         const result = await rmr.verify("rm123", "pidTrue");
         result.should.be.true;
 
-        rmr.fetchResourceMap.calledOnceWithExactly("rm123").should.be.true;
+        rmr.fetchResourceMap.calledOnceWith("rm123").should.be.true;
         rmr.status.calledOnce.should.be.true;
       });
 
       it("returns false when the model does not list the PID as a member", async () => {
         const { sandbox, rmr } = state;
-        const model = new Backbone.Model({ memberIds: [] });
+        const model = { getMemberPids: () => [] };
 
         sandbox.stub(rmr, "fetchResourceMap").resolves({ model, status: 200 });
         sandbox.stub(rmr, "status");
@@ -422,58 +835,47 @@ define([
 
         rmr.status.calledOnce.should.be.true;
       });
-    });
 
-    describe("status() Backbone events", () => {
-      it("emits both generic and PID-specific status events", () => {
+      it("requires the input PID when validating RM membership", async () => {
         const { sandbox, rmr } = state;
-        const genericSpy = sandbox.spy();
-        const specificSpy = sandbox.spy();
+        const model = { getMemberPids: () => ["meta.2"] };
 
-        rmr.once("update", genericSpy);
-        rmr.once("update:objEvt", specificSpy);
+        sandbox.stub(rmr, "fetchResourceMap").resolves({ model, status: 200 });
+        sandbox.stub(rmr, "status");
 
-        const res = rmr.status("objEvt", "customStatus", "rmEvt");
-        res.success.should.be.true;
+        const result = await rmr.verify("rm123", "data.1");
+        result.should.be.false;
 
-        genericSpy.calledOnce.should.be.true;
-        specificSpy.calledOnce.should.be.true;
+        rmr.status.calledOnce.should.be.true;
+        should.not.exist(rmr.status.firstCall.args[3].matchedPid);
       });
     });
 
     describe("multiRMCheck()", () => {
       it("resolves to the latest RM when the given RMs are all versions of each other", async () => {
         const { sandbox, rmr } = state;
-        sandbox.stub(rmr.versionTracker, "getAllVersions").resolves({
-          prev: { versions: ["rm0"], chainComplete: true },
-          next: {
-            versions: ["rm2"],
+        sandbox
+          .stub(rmr.versionTracker, "checkPidsInSameVersionChain")
+          .resolves({
+            sameChain: true,
+            newestPid: "rm2",
+            newestInChain: "rm2",
             chainComplete: true,
-            endIsPrivate: false,
-            endNotFound: false,
-          },
-        });
+          });
 
-        const result = await rmr.multiRMCheck("objPid", ["rm1", "rm2"]);
+        const result = await rmr.multiRMCheck(["rm1", "rm2"]);
 
-        result.should.deep.equal({ pid: "objPid", rm: "rm2", meta: {} });
+        result.should.deep.equal({ rm: "rm2", meta: {} });
       });
 
       it("flags RMs that are not versions of each other", async () => {
         const { sandbox, rmr } = state;
-        sandbox.stub(rmr.versionTracker, "getAllVersions").resolves({
-          prev: { versions: [], chainComplete: true },
-          next: {
-            versions: ["rmB"],
-            chainComplete: true,
-            endIsPrivate: false,
-            endNotFound: false,
-          },
-        });
+        sandbox
+          .stub(rmr.versionTracker, "checkPidsInSameVersionChain")
+          .resolves({ sameChain: false, chainComplete: true });
 
-        const result = await rmr.multiRMCheck("objPid", ["rmA", "rmC"]);
+        const result = await rmr.multiRMCheck(["rmA", "rmC"]);
         result.should.deep.equal({
-          pid: "objPid",
           rm: null,
           meta: { multipleRMsNotVersions: true },
         });
@@ -481,20 +883,18 @@ define([
 
       it("flags when all RMs are versions of each other but all are obsoleted", async () => {
         const { sandbox, rmr } = state;
-        sandbox.stub(rmr.versionTracker, "getAllVersions").resolves({
-          prev: { versions: ["r0"], chainComplete: true },
-          next: {
-            versions: ["r2", "r3"],
+        sandbox
+          .stub(rmr.versionTracker, "checkPidsInSameVersionChain")
+          .resolves({
+            sameChain: true,
+            newestPid: "r2",
+            newestInChain: "r3",
             chainComplete: true,
-            endIsPrivate: false,
-            endNotFound: false,
-          },
-        });
+          });
 
-        const result = await rmr.multiRMCheck("objPid", ["r1", "r2"]);
+        const result = await rmr.multiRMCheck(["r1", "r2"]);
 
         result.should.deep.equal({
-          pid: "objPid",
           rm: null,
           meta: { multipleRMsAllObsoleted: true },
         });
@@ -502,20 +902,13 @@ define([
 
       it("returns chainIncomplete details when latest RM cannot be confirmed", async () => {
         const { sandbox, rmr } = state;
-        sandbox.stub(rmr.versionTracker, "getAllVersions").resolves({
-          prev: { versions: [], chainComplete: true },
-          next: {
-            versions: ["rm2"],
-            chainComplete: false,
-            endIsPrivate: true,
-            endNotFound: false,
-          },
-        });
+        sandbox
+          .stub(rmr.versionTracker, "checkPidsInSameVersionChain")
+          .resolves({ chainComplete: false, endIsPrivate: true });
 
-        const result = await rmr.multiRMCheck("objPid", ["rm1", "rm2"]);
+        const result = await rmr.multiRMCheck(["rm1", "rm2"]);
 
         result.should.deep.equal({
-          pid: "objPid",
           rm: null,
           meta: { chainIncomplete: true, unauthorized: true },
         });
@@ -535,7 +928,6 @@ define([
           pid: "pidFromSid",
           rm: "rmFromSid",
         });
-        sandbox.stub(rmr, "verify").resolves(true);
 
         const result = await rmr.resolveFromSeriesId("sidPID");
         result.should.deep.equal({
@@ -544,17 +936,17 @@ define([
           rm: "rmFromSid",
         });
 
-        rmr.resolve.calledOnceWithExactly("pidFromSid").should.be.true;
+        rmr.resolve.calledOnceWith("pidFromSid").should.be.true;
       });
 
       it("does not remove external update listeners for the resolved PID", async () => {
         const { sandbox, rmr } = state;
         const externalSpy = sandbox.spy();
-        rmr.on("update:pidFromSid", externalSpy);
+        rmr.events.on("update:pidFromSid", externalSpy);
 
         sandbox.stub(rmr, "getPidForSid").resolves("pidFromSid");
         sandbox.stub(rmr, "resolve").callsFake(async (pid) => {
-          rmr.trigger(`update:${pid}`, {
+          rmr.events.trigger(`update:${pid}`, {
             pid,
             status: "step",
             rm: null,
@@ -566,7 +958,7 @@ define([
         await rmr.resolveFromSeriesId("sidPID");
         externalSpy.calledOnce.should.be.true;
 
-        rmr.trigger("update:pidFromSid", {
+        rmr.events.trigger("update:pidFromSid", {
           pid: "pidFromSid",
           status: "after",
           rm: null,
@@ -603,12 +995,12 @@ define([
         sandbox.stub(rmr.storage, "setItem");
         rmr.storage.setItem.onCall(0).rejects(quotaErr);
         rmr.storage.setItem.onCall(1).resolves("rm123");
-        sandbox.stub(rmr, "clearStorage").resolves();
+        sandbox.stub(rmr.storage, "clear").resolves();
 
         const result = await rmr.addToStorage("pid", "rm123");
 
         result.should.equal("rm123");
-        rmr.clearStorage.calledOnce.should.be.true;
+        rmr.storage.clear.calledOnce.should.be.true;
         rmr.storage.setItem.callCount.should.equal(2);
       });
     });
