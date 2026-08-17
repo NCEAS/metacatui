@@ -2,6 +2,7 @@
 
 define([
   "underscore",
+  "common/SearchParams",
   "views/maps/viewfinder/ViewfinderView",
   "models/maps/Map",
   "collections/maps/viewfinder/ViewfinderCards",
@@ -10,6 +11,7 @@ define([
   "/test/js/specs/shared/clean-state.js",
 ], (
   _,
+  SearchParams,
   ViewfinderView,
   Map,
   ViewfinderCards,
@@ -65,6 +67,119 @@ define([
 
     it("does not show viewfinder cards UI when disabled in config", () => {
       expect(state.harness.hasViewfinderCards()).to.be.false;
+    });
+
+    it("restores the matching action object through the rendered card view", () => {
+      const action = {
+        id: "action-123",
+        type: "iframe",
+        url: "https://example.org/app",
+      };
+      const restoreActionSpy = state.sandbox.stub().returns(true);
+      const openSpy = state.sandbox.spy();
+      const buttons = [action];
+      const cardView = {
+        preset: {
+          get(name) {
+            return name === "buttons" ? buttons : null;
+          },
+        },
+        restoreAction: restoreActionSpy,
+      };
+
+      state.view.viewfinderCardsListViews = [
+        {
+          categoryCid: "category-1",
+          children: [cardView],
+        },
+      ];
+      state.view.expansionPanelsByCategoryCid = {
+        "category-1": {
+          open: openSpy,
+        },
+      };
+
+      const restored = state.view.restoreActiveAction("action-123");
+
+      expect(restored).to.be.true;
+      expect(openSpy.callCount).to.equal(1);
+      expect(restoreActionSpy.callCount).to.equal(1);
+      expect(restoreActionSpy.firstCall.args[0]).to.equal(action);
+    });
+
+    it("syncs visualization state updates into namespaced URL params", () => {
+      state.view.mapModel.set("showShareUrl", true);
+      state.view.mapModel.set("activeVisualizationActionId", "wt");
+      window.history.replaceState(null, "", "?foo=bar");
+
+      state.view.syncVisualizationStateToUrl({
+        action: {
+          id: "wt",
+          url: "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom}",
+        },
+        url: "https://lostlakes.arcticdata.io/?selected_lake=abc&lat=64.1&zoom=8",
+      });
+
+      const url = new URL(window.location.href);
+      expect(url.searchParams.get("foo")).to.equal("bar");
+      expect(url.searchParams.get("wt-selected_lake")).to.equal("abc");
+      expect(url.searchParams.get("wt-lat")).to.equal("64.1");
+      expect(url.searchParams.get("wt-zoom")).to.equal("8");
+      expect(url.searchParams.get("wt-lon")).to.be.null;
+    });
+
+    it("ignores stale visualization state when the action is no longer active", () => {
+      state.view.mapModel.set("showShareUrl", true);
+      window.history.replaceState(null, "", "?sv=1");
+
+      state.view.mapModel.set({
+        activeVisualizationActionId: "wt",
+        activeVisualizationUrl:
+          "https://lostlakes.arcticdata.io/?selected_lake=abc",
+      });
+
+      state.view.mapModel.set({
+        activeVisualizationActionId: null,
+        activeVisualizationUrl: null,
+      });
+
+      state.view.syncVisualizationStateToUrl({
+        action: {
+          id: "wt",
+          url: "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom}",
+        },
+        url: "https://lostlakes.arcticdata.io/?selected_lake=abc&lat=64.1&zoom=8",
+      });
+
+      const url = new URL(window.location.href);
+      expect(url.searchParams.get("wt-selected_lake")).to.be.null;
+      expect(url.searchParams.get("wt-lat")).to.be.null;
+      expect(url.searchParams.get("wt-zoom")).to.be.null;
+    });
+
+    it("clears active action id and namespaced params when visualization closes", () => {
+      state.view.mapModel.set("showShareUrl", true);
+      window.history.replaceState(
+        null,
+        "",
+        "?sv=1&a=wt&wt-selected_lake=abc&wt-lat=65",
+      );
+
+      state.view.mapModel.set({
+        activeVisualizationActionId: "wt",
+        activeVisualizationUrl:
+          "https://lostlakes.arcticdata.io/?selected_lake=abc",
+      });
+      state.view.mapModel.set({
+        activeVisualizationActionId: null,
+        activeVisualizationUrl: null,
+      });
+
+      const stateFromUrl = SearchParams.parseStateFromUrl();
+      const url = new URL(window.location.href);
+      expect(stateFromUrl.activeActionId).to.be.null;
+      expect(url.searchParams.get("wt-selected_lake")).to.be.null;
+      expect(url.searchParams.get("wt-lat")).to.be.null;
     });
   });
 });

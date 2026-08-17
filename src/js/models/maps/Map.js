@@ -8,6 +8,7 @@ define([
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
   "collections/maps/viewfinder/ViewfinderCardCategories",
+  "common/SearchParams",
 ], (
   $,
   _,
@@ -16,6 +17,7 @@ define([
   Interactions,
   AssetCategories,
   ViewfinderCardCategories,
+  SearchParams,
 ) => {
   /**
    * Determine if array is empty.
@@ -24,6 +26,146 @@ define([
    */
   function isNonEmptyArray(a) {
     return a && a.length && Array.isArray(a);
+  }
+
+  /**
+   * Parse layer visibility state from URL once for initialization.
+   * @returns {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}}
+   * URL-derived layer visibility state.
+   * @since 0.0.0
+   */
+  function parseLayerVisibilityStateFromUrl() {
+    const { enabledLayerIds, enabledLayerStateProvided } =
+      SearchParams.parseStateFromUrl();
+    return { enabledLayerIds, enabledLayerStateProvided };
+  }
+
+  /**
+   * Ensure layer config entries are plain objects, not preconstructed models.
+   * @param {Array<object>} layers Candidate layer config entries.
+   * @param {string} configKey Name of the config property being validated.
+   * @throws {Error} When a Backbone model instance is provided.
+   * @since 0.0.0
+   */
+  function assertPlainLayerConfigs(layers, configKey) {
+    if (layers.some((layer) => layer instanceof Backbone.Model)) {
+      throw new Error(
+        `Map configuration ${configKey} must contain plain MapAssetConfig objects, not Backbone model instances.`,
+      );
+    }
+  }
+
+  /**
+   * Apply URL visibility override for a layer when the `el` state is present.
+   * @param {Backbone.Model|object} layer A layer model/object.
+   * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
+   * Parsed URL visibility state.
+   * @returns {boolean|undefined} The overridden visible value, if applicable.
+   * @since 0.0.0
+   */
+  function getUrlVisibilityOverride(layer, visibilityState) {
+    if (!visibilityState?.enabledLayerStateProvided) return undefined;
+    const layerId =
+      layer instanceof Backbone.Model ? layer.get("layerId") : layer.layerId;
+    if (!layerId) return undefined;
+    return visibilityState.enabledLayerIds.includes(layerId);
+  }
+
+  /**
+   * Normalize configured and runtime visibility for a layer model/object.
+   * configuredVisibility tracks the portal-configured value, while visible
+   * tracks the current runtime value (which may be overridden from URL state).
+   *
+   * If both values are missing in config, default to hidden.
+   * @param {object} layer A layer config object.
+   * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} [visibilityState]
+   * Parsed URL visibility state used to override runtime visible state.
+   * @returns {object} The normalized layer config.
+   * @since 0.0.0
+   */
+  function normalizeLayerVisibility(layer, visibilityState) {
+    const { visible } = layer;
+    const configuredVisibility =
+      layer.configuredVisibility == null
+        ? visible === true
+        : layer.configuredVisibility === true;
+    const urlVisible = getUrlVisibilityOverride(layer, visibilityState);
+    let runtimeVisibility;
+    if (urlVisible != null) {
+      runtimeVisibility = urlVisible;
+    } else if (visible == null) {
+      runtimeVisibility = configuredVisibility;
+    } else {
+      runtimeVisibility = visible === true;
+    }
+
+    return {
+      ...layer,
+      configuredVisibility,
+      visible: runtimeVisibility,
+    };
+  }
+
+  /**
+   * Normalize layer visibility for a list of layer configs/models.
+   * @param {Array<object>} layers Layer config objects.
+   * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
+   * Parsed URL visibility state.
+   * @returns {Array<object>} Normalized layer configs.
+   * @since 0.0.0
+   */
+  function normalizeLayerListVisibility(layers, visibilityState) {
+    return layers.map((layer) =>
+      normalizeLayerVisibility(layer, visibilityState),
+    );
+  }
+
+  /**
+   * Normalize visibility for each layer in each configured category.
+   * @param {Array<Backbone.Model|object>} layerCategories Category configs/models.
+   * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
+   * Parsed URL visibility state.
+   * @returns {Array<Backbone.Model|object>} Category configs with normalized layers.
+   * @since 0.0.0
+   */
+  function normalizeLayerCategoryVisibility(layerCategories, visibilityState) {
+    return layerCategories.map((category) => {
+      const categoryLayers =
+        category instanceof Backbone.Model
+          ? category.get("layers")
+          : category?.layers;
+      if (!isNonEmptyArray(categoryLayers)) return category;
+
+      const normalizedLayers = normalizeLayerListVisibility(
+        categoryLayers,
+        visibilityState,
+      );
+
+      if (category instanceof Backbone.Model) {
+        category.set("layers", normalizedLayers);
+        return category;
+      }
+
+      return {
+        ...category,
+        layers: normalizedLayers,
+      };
+    });
+  }
+
+  /**
+   * Check whether a camera/destination object has complete coordinates.
+   * @param {object} position The position to validate.
+   * @returns {boolean} Whether longitude, latitude, and height are present.
+   * @since 0.0.0
+   */
+  function isCompletePosition(position) {
+    return (
+      position &&
+      typeof position.longitude === "number" &&
+      typeof position.latitude === "number" &&
+      typeof position.height === "number"
+    );
   }
 
   /**
@@ -211,10 +353,6 @@ define([
        * @property {MapAssets} [layers = new MapAssets()] - The imagery and
        * vector data to render in the map. When layerCategories exist, this
        * property will be ignored.
-       * @property {MapAssets} [allLayers = new MapAssets()] - The assets that
-       * correspond to the layers field or the layerCategories field depending
-       * upon which is used. If layerCategories, this contains a flattened list
-       * of the assets.
        * @property {AssetCategories} [layerCategories = new AssetCategories()] -
        * A collection of layer categories to display in the tool bar. Categories
        * will be displayed in the order they appear. The array of the
@@ -299,6 +437,8 @@ define([
           debug: false,
           show3DTilesInspector: false,
           viewfinderCards: null,
+          activeVisualizationAction: null,
+          activeVisualizationActionId: null,
           activeVisualizationUrl: null,
         };
       },
@@ -312,22 +452,38 @@ define([
       initialize(options = {}) {
         const config = options;
         if (config && config instanceof Object) {
+          const visibilityState = parseLayerVisibilityStateFromUrl();
           if (isNonEmptyArray(config.layerCategories)) {
-            const assetCategories = new AssetCategories(config.layerCategories);
+            config.layerCategories.forEach((category) => {
+              if (isNonEmptyArray(category?.layers)) {
+                assertPlainLayerConfigs(
+                  category.layers,
+                  "layerCategories[].layers",
+                );
+              }
+            });
+            const normalizedCategories = normalizeLayerCategoryVisibility(
+              config.layerCategories,
+              visibilityState,
+            );
+            const assetCategories = new AssetCategories(normalizedCategories);
             assetCategories.setMapModel(this);
             this.set("layerCategories", assetCategories);
             this.unset("layers");
-            this.set("allLayers", assetCategories.getMapAssetsFlat());
           } else if (isNonEmptyArray(config.layers)) {
-            const layers = new MapAssets(config.layers);
+            assertPlainLayerConfigs(config.layers, "layers");
+            const normalizedLayers = normalizeLayerListVisibility(
+              config.layers,
+              visibilityState,
+            );
+            const layers = new MapAssets(normalizedLayers);
             this.set("layers", layers);
             this.get("layers").setMapModel(this);
             this.unset("layerCategories");
-            this.set("allLayers", layers);
           }
-          // TODO: listen to changes in layerCategories and layers to update
-          // allLayers. This will be necessary when we allow users to add &
-          // remove layers.
+
+          // Backward compatibility: keep legacy allLayers attribute populated.
+          this.refreshAllLayers();
 
           if (isNonEmptyArray(config.terrains)) {
             this.set("terrains", new MapAssets(config.terrains));
@@ -369,6 +525,30 @@ define([
           this.unset("zoomPresetCategories");
         }
         this.setUpInteractions();
+        this.listenTo(
+          this,
+          "change:showShareUrl",
+          this.handleShowShareUrlChange,
+        );
+        this.set("restoreState", SearchParams.parseStateFromUrl(), {
+          silent: true,
+        });
+        this.debouncedUpdateSearchParams = _.debounce(() => {
+          this.updateSearchParams();
+        }, 150 /* milliseconds */);
+        this.setUpUrlStateListeners();
+        this.applyRestoreState();
+      },
+
+      /**
+       * Keep legacy allLayers attribute in sync for backward compatibility.
+       * @returns {MapAssets} Flattened layer collection.
+       * @since 0.0.0
+       */
+      refreshAllLayers() {
+        const allLayers = new MapAssets(this.getAllLayers());
+        this.set("allLayers", allLayers);
+        return allLayers;
       },
 
       /**
@@ -404,6 +584,132 @@ define([
       },
 
       /**
+       * Returns true when the map should sync URL state.
+       * @returns {boolean} Whether URL sync is enabled.
+       * @since 0.0.0
+       */
+      shouldSyncUrlState() {
+        return this.get("showShareUrl") === true;
+      },
+
+      /**
+       * Re-apply restore state when share URL syncing is toggled on.
+       * @param {MapModel} _model The model that changed.
+       * @param {boolean} showShareUrl Whether URL syncing is enabled.
+       * @since 0.0.0
+       */
+      handleShowShareUrlChange(_model, showShareUrl) {
+        if (showShareUrl) {
+          this.applyRestoreState();
+          this.setUpUrlStateListeners();
+        }
+      },
+
+      /**
+       * Apply the restored URL destination as a navigation target.
+       * @since 0.0.0
+       */
+      applyRestoreState() {
+        const restoreState = this.get("restoreState") || {};
+        if (
+          !this.shouldSyncUrlState() ||
+          !isCompletePosition(restoreState.destination)
+        ) {
+          return;
+        }
+
+        this.zoomTo(restoreState.destination);
+      },
+
+      /**
+       * Set up listeners that keep URL state in sync with the map model.
+       * @since 0.0.0
+       */
+      setUpUrlStateListeners() {
+        const interactions = this.get("interactions");
+
+        this.stopListening(
+          this,
+          "change:layers change:layerCategories",
+          this.setUpUrlStateListeners,
+        );
+
+        if (this.urlStateLayerGroups?.length) {
+          this.urlStateLayerGroups.forEach((layers) => {
+            this.stopListening(
+              layers,
+              "change:visible",
+              this.debouncedUpdateSearchParams,
+            );
+          });
+        }
+        this.urlStateLayerGroups = [];
+
+        if (!this.shouldSyncUrlState() || !interactions) {
+          return;
+        }
+
+        this.listenTo(
+          this,
+          "change:layers change:layerCategories",
+          this.setUpUrlStateListeners,
+        );
+        this.listenTo(
+          interactions,
+          "change:cameraPosition",
+          this.debouncedUpdateSearchParams,
+        );
+
+        const layerGroups = this.getLayerGroups();
+        this.urlStateLayerGroups = layerGroups;
+        layerGroups.forEach((layers) => {
+          if (layers) {
+            this.listenTo(
+              layers,
+              "change:visible",
+              this.debouncedUpdateSearchParams,
+            );
+          }
+        });
+      },
+
+      /**
+       * Get enabled layer ids from live layer groups for URL state sync.
+       * @returns {string[]} A normalized list of visible layer ids.
+       * @since 0.0.0
+       */
+      getEnabledLayerIdsForUrlState() {
+        const layers = this.getAllLayers();
+
+        return layers
+          .map((layer) => (layer.get("visible") ? layer.get("layerId") : null))
+          .filter((layerId) => typeof layerId === "string" && layerId.length);
+      },
+
+      /**
+       * Update the search parameters related to the current map position and
+       * visible layers.
+       * @since 0.0.0
+       */
+      updateSearchParams() {
+        if (!this.shouldSyncUrlState()) return;
+
+        const interactions = this.get("interactions");
+        const cameraPosition = interactions?.get("cameraPosition");
+        const restoreState = this.get("restoreState") || {};
+        const partialState = {
+          enabledLayerIds: this.getEnabledLayerIdsForUrlState(),
+          openPanel: restoreState.openPanel ?? null,
+        };
+
+        if (isCompletePosition(cameraPosition)) {
+          partialState.destination = cameraPosition;
+        }
+
+        SearchParams.updateStateInUrl(partialState);
+      },
+
+      /**
        * Indicate that the map widget view should navigate to a given target.
        * This is accomplished by setting the zoom target on the MapInteraction
        * model. The map widget listens to this change and updates the camera
@@ -428,7 +734,7 @@ define([
        * configuration.
        */
       resetLayerVisibility() {
-        this.get("allLayers").forEach((layer) => {
+        this.getAllLayers().forEach((layer) => {
           layer.set("visible", layer.get("configuredVisibility"));
         });
       },
@@ -442,6 +748,7 @@ define([
       resetLayers() {
         const newLayers = this.defaults()?.layers || new MapAssets();
         this.set("layers", newLayers);
+        this.refreshAllLayers();
         return newLayers;
       },
 
@@ -462,6 +769,14 @@ define([
       },
 
       /**
+       * @returns {MapAsset[]} A flat list of all layer models across all layer
+       * groups.
+       */
+      getAllLayers() {
+        return this.getLayerGroups().flatMap((group) => group?.models || []);
+      },
+
+      /**
        * Add a layer or other asset to the map. This is the best way to add a
        * layer to the map because it will ensure that this map model is set on
        * the layer model. If the map is using layer categories, the layer
@@ -478,7 +793,9 @@ define([
         if (!layers) {
           layers = this.get("layers") || this.resetLayers();
         }
-        return layers.addAsset(asset, this);
+        const added = layers.addAsset(asset, this);
+        this.refreshAllLayers();
+        return added;
       },
 
       /**
@@ -488,11 +805,13 @@ define([
        */
       removeAsset(asset) {
         if (!asset) return;
-        const layers = this.get("layers");
-        if (!layers) return;
+        const layerGroups = this.getLayerGroups();
         // Remove by ID because the model is passed directly. Not sure if this
         // is a bug in the MapAssets collection or Backbone?
-        if (layers) layers.remove(asset.cid);
+        layerGroups.forEach((layers) => {
+          if (layers) layers.remove(asset.cid);
+        });
+        this.refreshAllLayers();
       },
     },
   );

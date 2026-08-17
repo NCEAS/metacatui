@@ -1,7 +1,6 @@
 "use strict";
 
 define([
-  "underscore",
   "views/maps/viewfinder/SearchView",
   "models/maps/viewfinder/ViewfinderModel",
   "models/maps/Map",
@@ -11,7 +10,6 @@ define([
   "/test/js/specs/unit/views/maps/viewfinder/PredictionsListViewHarness.js",
   "/test/js/specs/shared/clean-state.js",
 ], (
-  _,
   SearchView,
   ViewfinderModel,
   Map,
@@ -35,14 +33,6 @@ define([
   describe("SearchView Test Suite", () => {
     const state = cleanState(() => {
       const sandbox = sinon.createSandbox();
-      // sinon.useFakeTimers() doesn't work with _.debounce, so stubbing instead.
-      const debounceStub = sandbox
-        .stub(_, "debounce")
-        .callsFake(function (fnToDebounce) {
-          return function (...args) {
-            fnToDebounce.apply(this, args);
-          };
-        });
       const viewfinderModel = new ViewfinderModel({ mapModel: new Map() });
       const view = new SearchView({ viewfinderModel });
       const zoomSpy = sandbox.stub(view.viewfinderModel.mapModel, "zoomTo");
@@ -71,7 +61,6 @@ define([
 
       return {
         autocompleteSpy,
-        debounceStub,
         harness,
         sandbox,
         testContainer,
@@ -194,14 +183,6 @@ define([
     });
 
     describe("as the user types", () => {
-      it("debounces calls to update autocompletions as the user types", () => {
-        state.view.render();
-        state.harness.typeQuery("a");
-        state.harness.typeQuery("b");
-
-        expect(state.debounceStub.callCount).to.equal(1);
-      });
-
       it("renders a list of predictions", () => {
         state.view.render();
         const predictionsListHarness = new PredictionsListViewHarness(

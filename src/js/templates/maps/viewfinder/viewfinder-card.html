@@ -1,6 +1,6 @@
 <% if (preset.image) { %>
   <div class="<%= classNames.hero %>">
-    <img class="<%= classNames.image %>" src="<%= preset.image %>" alt="<%= preset.title %> preview image" />
+    <img class="<%= classNames.image %>" src="<%= preset.image %>" alt="<%= preset.title %> preview image"<% if (preset.imageFallback) { %> data-fallback-src="<%= preset.imageFallback %>"<% } %> />
     <div class="<%= classNames.title %>"><%= preset.title %></div>
   </div>
 <% } %>

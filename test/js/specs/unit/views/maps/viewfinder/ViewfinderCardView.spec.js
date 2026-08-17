@@ -36,10 +36,10 @@ define([
         description,
         enabledLayerLabels,
       });
-      const selectCallbackSpy = sandbox.spy();
+      const onMapActionSpy = sandbox.spy();
       const view = new ViewfinderCardView({
         preset: card,
-        selectCallback: selectCallbackSpy,
+        onMapAction: onMapActionSpy,
       });
       view.render();
       const harness = new ViewfinderCardViewHarness(view);
@@ -53,7 +53,7 @@ define([
       return {
         harness,
         sandbox,
-        selectCallbackSpy,
+        onMapActionSpy,
         testContainer,
         view,
       };
@@ -79,19 +79,19 @@ define([
     });
 
     it("does not call a select callback before selected", () => {
-      expect(state.selectCallbackSpy.callCount).to.equal(0);
+      expect(state.onMapActionSpy.callCount).to.equal(0);
     });
 
     it("calls a select callback when selected", () => {
       state.harness.click();
 
-      expect(state.selectCallbackSpy.callCount).to.equal(1);
+      expect(state.onMapActionSpy.callCount).to.equal(1);
     });
 
     it("opens iframe actions even when rendered as secondary", () => {
       const sandbox = sinon.createSandbox();
-      const ctaCallbackSpy = sandbox.spy();
-      const selectCallbackSpy = sandbox.spy();
+      const onIframeActionSpy = sandbox.spy();
+      const onMapActionSpy = sandbox.spy();
       const card = new ViewfinderCardModel({
         title: "Iframe preset",
         description: "For testing iframe actions",
@@ -106,8 +106,8 @@ define([
       });
       const view = new ViewfinderCardView({
         preset: card,
-        ctaCallback: ctaCallbackSpy,
-        selectCallback: selectCallbackSpy,
+        onIframeAction: onIframeActionSpy,
+        onMapAction: onMapActionSpy,
       });
       view.render();
       const harness = new ViewfinderCardViewHarness(view);
@@ -119,15 +119,256 @@ define([
       try {
         harness.click();
 
-        expect(ctaCallbackSpy.callCount).to.equal(1);
-        expect(ctaCallbackSpy.firstCall.args[0]).to.equal(
-          "https://water-timeseries.streamlit.app/",
-        );
-        expect(selectCallbackSpy.callCount).to.equal(0);
+        expect(onIframeActionSpy.callCount).to.equal(1);
+        expect(onIframeActionSpy.firstCall.args[0]).to.deep.include({
+          type: "iframe",
+          url: "https://water-timeseries.streamlit.app/",
+        });
+        expect(onMapActionSpy.callCount).to.equal(0);
       } finally {
         sandbox.restore();
         testContainer.remove();
       }
+    });
+
+    it("falls back to the thumbnail image when hero image loading fails", () => {
+      const card = new ViewfinderCardModel({
+        title: "Image fallback card",
+        description: "For testing hero image fallback",
+        image: "https://leonetwork.org/en/attachments/resized/IMAGE-ID",
+        imageFallback:
+          "https://leonetwork.org/en/attachments/thumbnail/IMAGE-ID",
+      });
+      const view = new ViewfinderCardView({
+        preset: card,
+      });
+      view.render();
+
+      const img = view.el.querySelector(".viewfinder-card__image");
+      expect(img).to.not.equal(null);
+      expect(img.getAttribute("src")).to.equal(
+        "https://leonetwork.org/en/attachments/resized/IMAGE-ID",
+      );
+      expect(img.getAttribute("data-fallback-src")).to.equal(
+        "https://leonetwork.org/en/attachments/thumbnail/IMAGE-ID",
+      );
+
+      img.dispatchEvent(new Event("error"));
+
+      expect(img.getAttribute("src")).to.equal(
+        "https://leonetwork.org/en/attachments/thumbnail/IMAGE-ID",
+      );
+      expect(img.hasAttribute("data-fallback-src")).to.equal(false);
+    });
+
+    it("restores iframe actions without replaying click side effects", () => {
+      const sandbox = sinon.createSandbox();
+      const onIframeActionSpy = sandbox.spy();
+      const onActionUiActivatedSpy = sandbox.spy();
+      const onActivateSpy = sandbox.spy();
+      const card = new ViewfinderCardModel({
+        title: "Restored iframe preset",
+        description: "For testing restore behavior",
+        buttons: [
+          {
+            type: "iframe",
+            ordinality: "primary",
+            label: "Open dashboard",
+            url: "https://example.org/app",
+          },
+        ],
+      });
+      const view = new ViewfinderCardView({
+        preset: card,
+        onIframeAction: onIframeActionSpy,
+        onActionUiActivated: onActionUiActivatedSpy,
+        onActivate: onActivateSpy,
+      });
+      view.render();
+      const harness = new ViewfinderCardViewHarness(view);
+      const testContainer = document.createElement("div");
+      testContainer.id = "restore-iframe-test-container";
+      testContainer.append(view.el);
+      document.body.append(testContainer);
+
+      try {
+        const restored = view.restoreAction(card.get("buttons")[0]);
+
+        expect(restored).to.be.true;
+        expect(harness.isActive()).to.be.true;
+        expect(onActivateSpy.callCount).to.equal(1);
+        expect(onActionUiActivatedSpy.callCount).to.equal(0);
+        expect(onIframeActionSpy.callCount).to.equal(1);
+        expect(onIframeActionSpy.firstCall.args[0]).to.deep.include({
+          type: "iframe",
+          url: "https://example.org/app",
+        });
+      } finally {
+        sandbox.restore();
+        testContainer.remove();
+      }
+    });
+
+    it("restores tab actions without opening a new tab", () => {
+      const sandbox = sinon.createSandbox();
+      const openSpy = sandbox.stub(window, "open");
+      const card = new ViewfinderCardModel({
+        title: "Restored tab preset",
+        description: "For testing restore behavior",
+        buttons: [
+          {
+            type: "tab",
+            ordinality: "primary",
+            label: "Open external app",
+            url: "https://example.org/external",
+          },
+        ],
+      });
+      const view = new ViewfinderCardView({
+        preset: card,
+      });
+      view.render();
+      const harness = new ViewfinderCardViewHarness(view);
+      const testContainer = document.createElement("div");
+      testContainer.id = "restore-tab-test-container";
+      testContainer.append(view.el);
+      document.body.append(testContainer);
+
+      try {
+        const restored = view.restoreAction(card.get("buttons")[0]);
+
+        expect(restored).to.be.true;
+        expect(harness.isActive()).to.be.true;
+        expect(openSpy.callCount).to.equal(0);
+      } finally {
+        sandbox.restore();
+        testContainer.remove();
+      }
+    });
+
+    it("preserves an explicit action id", () => {
+      const sandbox = sinon.createSandbox();
+      const onActionUiActivatedSpy = sandbox.spy();
+      const card = new ViewfinderCardModel({
+        title: "Explicit ID card",
+        description: "For testing ids",
+        buttons: [
+          {
+            id: "explicit-action-id",
+            type: "iframe",
+            label: "Open app",
+            url: "https://example.org/app",
+          },
+        ],
+      });
+      const view = new ViewfinderCardView({
+        preset: card,
+        onIframeAction: sandbox.spy(),
+        onActionUiActivated: onActionUiActivatedSpy,
+      });
+      view.render();
+      const harness = new ViewfinderCardViewHarness(view);
+      const testContainer = document.createElement("div");
+      testContainer.id = "explicit-action-id-container";
+      testContainer.append(view.el);
+      document.body.append(testContainer);
+
+      try {
+        harness.clickButton(0);
+
+        expect(onActionUiActivatedSpy.callCount).to.equal(1);
+        const action = onActionUiActivatedSpy.firstCall.args[0];
+        expect(action.id).to.equal("explicit-action-id");
+      } finally {
+        sandbox.restore();
+        testContainer.remove();
+      }
+    });
+
+    it("does not assign an action id when missing", () => {
+      const sandbox = sinon.createSandbox();
+      const onActionUiActivatedSpy = sandbox.spy();
+      const card = new ViewfinderCardModel({
+        title: "Unconfigured ID card",
+        description: "For testing missing ids",
+        buttons: [
+          {
+            type: "iframe",
+            label: "Open app",
+            url: "https://example.org/generated",
+          },
+        ],
+      });
+      const view = new ViewfinderCardView({
+        preset: card,
+        onIframeAction: sandbox.spy(),
+        onActionUiActivated: onActionUiActivatedSpy,
+      });
+      view.render();
+      const harness = new ViewfinderCardViewHarness(view);
+      const testContainer = document.createElement("div");
+      testContainer.id = "missing-action-id-container";
+      testContainer.append(view.el);
+      document.body.append(testContainer);
+
+      try {
+        harness.clickButton(0);
+
+        expect(onActionUiActivatedSpy.callCount).to.equal(1);
+        const action = onActionUiActivatedSpy.firstCall.args[0];
+        expect(action.id).to.be.undefined;
+      } finally {
+        sandbox.restore();
+        testContainer.remove();
+      }
+    });
+
+    it("leaves parsed legacy map actions without ids by default", () => {
+      const card = new ViewfinderCardModel(
+        {
+          title: "Parsed legacy card",
+          description: "For testing parse-time normalization without ids",
+          position: {
+            latitude: 41,
+            longitude: -120,
+            height: 2000,
+          },
+          layerIds: ["layer-1"],
+        },
+        { parse: true },
+      );
+
+      expect(card.get("geoPoint")).to.be.instanceof(GeoPoint);
+      expect(card.get("buttons")).to.have.length(1);
+      expect(card.get("buttons")[0].id).to.be.undefined;
+    });
+
+    it("does not synthesize a duplicate legacy map action when one is explicit", () => {
+      const card = new ViewfinderCardModel(
+        {
+          title: "Explicit map card",
+          description: "For testing explicit map normalization",
+          position: {
+            latitude: 41,
+            longitude: -120,
+            height: 2000,
+          },
+          layerIds: ["layer-1"],
+          buttons: [
+            {
+              type: "map",
+              label: "Custom map action",
+              latitude: 10,
+              longitude: 20,
+            },
+          ],
+        },
+        { parse: true },
+      );
+
+      expect(card.get("buttons")).to.have.length(1);
+      expect(card.get("buttons")[0].ordinality).to.equal("secondary");
+      expect(card.get("buttons")[0].icon).to.equal("eye-open");
     });
 
     it("can reset selected state", () => {

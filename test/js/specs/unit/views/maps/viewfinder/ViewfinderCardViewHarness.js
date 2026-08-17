@@ -12,7 +12,7 @@ define([], function () {
     }
 
     /**
-     * Click the CTA button at the given index (0-based).
+     * Click the button action at the given index (0-based).
      * @param {number} [index=0]
      */
     clickButton(index = 0) {

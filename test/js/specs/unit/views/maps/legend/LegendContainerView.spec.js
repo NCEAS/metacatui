@@ -47,7 +47,7 @@ define([
             colorPalette: { colors: COLORS_CONFIG },
           },
         ]);
-        state.view.model.set("allLayers", layers);
+        state.view.model.set("layers", layers);
         state.view.render();
 
         expect(state.harness.getContent().children()).to.have.lengthOf(1);
@@ -68,7 +68,7 @@ define([
             colorPalette: { colors: COLORS_CONFIG },
           },
         ]);
-        state.view.model.set("allLayers", layers);
+        state.view.model.set("layers", layers);
         state.view.render();
         layers.at(0).set("visible", true);
 
@@ -77,7 +77,7 @@ define([
 
       it("ignores layers without a colorPalette", () => {
         const layers = new MapAssets([{ label: "layer 1", visible: false }]);
-        state.view.model.set("allLayers", layers);
+        state.view.model.set("layers", layers);
         state.view.render();
 
         expect(state.harness.getContent().children()).to.have.lengthOf(0);
@@ -87,7 +87,7 @@ define([
         const layers = new MapAssets([
           { label: "layer 1", visible: false, palette: {} },
         ]);
-        state.view.model.set("allLayers", layers);
+        state.view.model.set("layers", layers);
         state.view.render();
 
         expect(state.harness.getContent().children()).to.have.lengthOf(0);

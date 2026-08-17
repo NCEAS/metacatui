@@ -158,18 +158,38 @@ define([
           "change:activeVisualizationUrl",
           (model, url) => {
             if (url) {
-              view.visualizationPanel.open(url);
+              view.visualizationPanel.open({
+                action: model.get("activeVisualizationAction"),
+                url,
+              });
             } else {
               view.visualizationPanel.close();
             }
           },
         );
 
+        const activeVisualizationUrl = view.model.get("activeVisualizationUrl");
+        if (activeVisualizationUrl) {
+          view.visualizationPanel.open({
+            action: view.model.get("activeVisualizationAction"),
+            url: activeVisualizationUrl,
+          });
+        }
+
+        view.stopListening(view.visualizationPanel, "mcui:state");
+        view.listenTo(view.visualizationPanel, "mcui:state", (payload) => {
+          view.model.trigger("visualization:state", payload);
+        });
+
         // Keep map model in sync when the panel is closed via its own button
         // or the Escape key (which triggers the "close" event on the panel).
         view.stopListening(view.visualizationPanel, "close");
         view.listenTo(view.visualizationPanel, "close", () => {
-          view.model.set({ activeVisualizationUrl: null });
+          view.model.set({
+            activeVisualizationAction: null,
+            activeVisualizationActionId: null,
+            activeVisualizationUrl: null,
+          });
         });
 
         return view.visualizationPanel;
@@ -194,9 +214,23 @@ define([
        * @returns {ToolbarView} Returns the rendered view
        */
       renderToolbar() {
+        const initialOpenPanelId =
+          this.model.get("restoreState")?.openPanel || null;
         this.toolbar = new ToolbarView({
           el: this.subElements.toolbarContainer,
           model: this.model,
+          initialOpenPanelId,
+        });
+        this.stopListening(this.toolbar, "toolbar:activePanelChanged");
+        this.listenTo(this.toolbar, "toolbar:activePanelChanged", (panelId) => {
+          const restoreState = this.model.get("restoreState") || {};
+          if (restoreState.openPanel === panelId) return;
+
+          this.model.set("restoreState", {
+            ...restoreState,
+            openPanel: panelId,
+          });
+          this.model.updateSearchParams();
         });
         this.toolbar.render();
         return this.toolbar;
