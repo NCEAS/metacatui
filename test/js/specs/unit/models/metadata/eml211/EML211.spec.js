@@ -148,5 +148,28 @@ define([
           .should.equal(sourceXML);
       });
     });
+
+    describe("Serialization", function () {
+      it("preserves onlineDescription camel case", function () {
+        const xml =
+          '<eml:eml xmlns:eml="https://eml.ecoinformatics.org/eml-2.2.0" packageId="test">' +
+          "<dataset>" +
+          "<title>Test dataset</title>" +
+          "<distribution><online>" +
+          "<onlineDescription>Data download</onlineDescription>" +
+          "<url>https://example.com/data.csv</url>" +
+          "</online></distribution>" +
+          "</dataset>" +
+          "</eml:eml>";
+        const eml = new EML(xml, { parse: true });
+
+        const serialized = eml.serialize();
+
+        expect(serialized).not.to.include("<onlinedescription>");
+        expect(serialized).to.include(
+          "<onlineDescription>Data download</onlineDescription>",
+        );
+      });
+    });
   });
 });

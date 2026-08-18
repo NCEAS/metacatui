@@ -123,6 +123,7 @@ define([
           mediumname: "mediumName",
           mediumnote: "mediumNote",
           mediumvolume: "mediumVolume",
+          onlinedescription: "onlineDescription",
           url: "url",
         };
       },
