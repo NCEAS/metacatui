@@ -23,6 +23,7 @@
     "./js/specs/unit/models/notifications/ObjectNotification.spec.js",
     "./js/specs/unit/models/CrossRefModel.spec.js",
     "./js/specs/unit/collections/ProjectList.spec.js",
+    "./js/specs/unit/collections/UserGroup.spec.js",
     "./js/specs/unit/collections/DataPackage.spec.js",
     "./js/specs/unit/collections/DataONEObjects.spec.js",
     "./js/specs/unit/models/project/Project.spec.js",
