@@ -71,6 +71,11 @@ body {
   font-family: "Helvetica Nueue", "Helvetica", "Arial", "Lato", "sans serif";
   font-weight: normal;
   line-height: 1.5em;
+  display: flex;
+  flex-direction: column;
+}
+body.Editor {
+  display: block;
 }
 body p {
   font-size: 14px;
@@ -362,9 +367,11 @@ footer {
   z-index: 2;
   height: auto;
   min-height: var(--footer-height); /* Keeps the footer down */
+  position: static;
 }
-#Content {
-  padding-bottom: 390px; /* Keeps footer down */
+body:not(.PortalView):not(.catalog-search-body) > #Content {
+  flex: 1;
+  z-index: auto;
 }
 .mapMode footer {
   position: fixed;
@@ -557,10 +564,10 @@ button.btn-primary a {
 }
 .PortalView {
   display: grid;
-  grid-template-rows: 40px 0px 100fr var(--footer-height);
+  grid-template-rows: 40px 0px 100fr auto;
 }
 .PortalView.has-temporary-message {
-  grid-template-rows: auto 0px 100fr var(--footer-height);
+  grid-template-rows: auto 0px 100fr auto;
 }
 .portal-view .portal-title {
   font-weight: 100;

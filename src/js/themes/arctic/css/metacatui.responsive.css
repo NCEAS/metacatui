@@ -167,9 +167,6 @@
   :root {
     --footer-height: 500px;
   }
-  #Content {
-    padding-bottom: 520px; /* Keeps footer down */
-  }
 
   /** Temporary Message */
   .has-temporary-message #Content {
@@ -185,7 +182,6 @@
   }
 
   #Content {
-    padding-bottom: 700px; /* Keeps footer down */
     margin-top: 0px;
   }
 
@@ -208,9 +204,6 @@
   /************** Footer ****************/
   :root {
     --footer-height: 450px;
-  }
-  #Content {
-    padding-bottom: 470px; /* Keeps footer down */
   }
 }
 
