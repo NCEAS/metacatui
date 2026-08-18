@@ -118,6 +118,7 @@
     "./js/specs/unit/models/accordion/Accordion.spec.js",
     "./js/specs/unit/models/accordion/AccordionItem.spec.js",
     "./js/specs/unit/views/DataItemView.spec.js",
+    "./js/specs/unit/views/UserGroupView.spec.js",
     "./js/specs/unit/views/uiElements/ToggleView.spec.js",
     "./js/specs/unit/views/notifications/NotificationModalView.spec.js",
     "./js/specs/unit/views/metadata/EML211EditorView.spec.js",

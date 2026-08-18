@@ -6,6 +6,7 @@ define([
   "views/GroupListView",
   "text!templates/userGroup.html",
   "text!templates/alert.html",
+  "text!templates/loading.html",
 ], function (
   $,
   _,
@@ -14,6 +15,7 @@ define([
   GroupListView,
   Template,
   AlertTemplate,
+  LoadingTemplate,
 ) {
   "use strict";
 
@@ -38,6 +40,7 @@ define([
 
       template: _.template(Template),
       alertTemplate: _.template(AlertTemplate),
+      loadingTemplate: _.template(LoadingTemplate),
 
       initialize: function (options) {
         if (typeof options == "undefined") var options = {};
@@ -94,16 +97,30 @@ define([
        */
       getGroups: function () {
         var view = this,
-          groups = [],
           model = this.model;
         //Create a group Collection for each group this user is a member of
         _.each(_.sortBy(model.get("isMemberOf"), "name"), function (group) {
-          var userGroup = new UserGroup([model], group);
-          groups.push(userGroup);
+          const userGroup = new UserGroup([model], group);
+          const loading = $(
+            view.loadingTemplate({ msg: "Loading group information..." }),
+          );
+          view.$("#group-list-container").append(loading);
 
-          view.listenTo(userGroup, "sync", function () {
-            var list = this.createGroupList(userGroup);
-            this.$("#group-list-container").append(list);
+          view.listenToOnce(userGroup, "sync", () => {
+            loading.remove();
+            view
+              .$("#group-list-container")
+              .prepend(view.createGroupList(userGroup));
+          });
+          view.listenToOnce(userGroup, "error", () => {
+            loading
+              .removeClass("loading")
+              .addClass("error")
+              .html(
+                $(document.createElement("p")).text(
+                  "Group information could not be loaded. Refresh the page to try again.",
+                ),
+              );
           });
           userGroup.getGroup();
         });
