@@ -1,0 +1,247 @@
+{
+  "@context": "https://w3id.org/codemeta/3.1",
+  "@type": "SoftwareSourceCode",
+  "@id": "https://doi.org/10.18739/A2D50G069",
+  "name": "MetacatUI: A client-side web interface for DataONE data repositories",
+  "description": "MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API. Currently, it is used as the basis for the KNB Data Repository, the NSF Arctic Data Center, the DataONE federation, and other repositories. MetacatUI is an open source, community project. We welcome contributions in many forms, including code, graphics, documentation, bug reports, testing, etc. Use the discussion list to discuss these contributions with us.",
+  "identifier": [
+    "https://doi.org/10.18739/A2D50G069",
+    "swh:1:snp:fd978d364e27f634279768522d307ccaf216bbf4"
+  ],
+  "version": "2.37.0",
+  "dateCreated": "2012-10-15",
+  "datePublished": "2026-07-08",
+  "dateModified": "2026-07-08",
+  "codeRepository": "https://github.com/NCEAS/metacatui",
+  "downloadUrl": "https://github.com/NCEAS/metacatui/archive/refs/tags/2.37.0.zip",
+  "url": "https://nceas.github.io/metacatui/",
+  "issueTracker": "https://github.com/NCEAS/metacatui/issues",
+  "readme": "https://github.com/NCEAS/metacatui/blob/2.37.0/README.md",
+  "releaseNotes": "https://github.com/NCEAS/metacatui/releases/tag/2.37.0",
+  "license": "https://spdx.org/licenses/Apache-2.0",
+  "programmingLanguage": "JavaScript",
+  "runtimePlatform": "Web browser",
+  "continuousIntegration": "https://github.com/NCEAS/metacatui/actions",
+  "copyrightYear": 2013,
+  "copyrightHolder": {
+    "@type": "Organization",
+    "name": "Regents of the University of California"
+  },
+  "author": [
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0003-0077-4738",
+      "givenName": "Matthew B.",
+      "familyName": "Jones",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/0146z4r19",
+        "name": "National Center for Ecological Analysis and Synthesis"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0002-8121-2341",
+      "givenName": "Chris",
+      "familyName": "Jones",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/055hrh286",
+        "name": "Arctic Data Center"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0003-2192-431X",
+      "givenName": "Lauren",
+      "familyName": "Walker",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/055hrh286",
+        "name": "Arctic Data Center"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0002-1615-3963",
+      "givenName": "Robyn",
+      "familyName": "Thiessen-Bock",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/055hrh286",
+        "name": "Arctic Data Center"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0003-1758-9950",
+      "givenName": "Ben",
+      "familyName": "Leinfelder",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/055hrh286",
+        "name": "Arctic Data Center"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0002-2192-403X",
+      "givenName": "Peter",
+      "familyName": "Slaughter",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/055hrh286",
+        "name": "Arctic Data Center"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0002-0381-3766",
+      "givenName": "Bryce",
+      "familyName": "Mecum",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/055hrh286",
+        "name": "Arctic Data Center"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0003-4678-5213",
+      "givenName": "Rushiraj",
+      "familyName": "Nenuji",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/055hrh286",
+        "name": "Arctic Data Center"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0002-7535-8045",
+      "givenName": "Hesham",
+      "familyName": "Elbashandy",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/01t14bp54",
+        "name": "Environmental System Science Data Infrastructure for a Virtual Ecosystem"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0001-9061-8952",
+      "givenName": "Val",
+      "familyName": "Hendrix",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/01t14bp54",
+        "name": "Environmental System Science Data Infrastructure for a Virtual Ecosystem"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0000-0001-5828-6070",
+      "givenName": "Ian",
+      "familyName": "Nesbitt",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/0146z4r19",
+        "name": "National Center for Ecological Analysis and Synthesis"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0009-0009-6234-9922",
+      "givenName": "Yvonne",
+      "familyName": "Shi",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/00njsd438",
+        "name": "Google"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0009-0000-6240-7277",
+      "givenName": "Ian",
+      "familyName": "Guerin",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/00njsd438",
+        "name": "Google"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0009-0007-4943-8694",
+      "givenName": "Doug",
+      "familyName": "Hungarter",
+      "affiliation": {
+        "@type": "Organization",
+        "@id": "https://ror.org/00njsd438",
+        "name": "Google"
+      }
+    }
+  ],
+  "publisher": {
+    "@type": "Organization",
+    "@id": "https://ror.org/055hrh286",
+    "name": "Arctic Data Center"
+  },
+  "funder": [
+    {
+      "@type": "Organization",
+      "@id": "https://doi.org/10.13039/100000001",
+      "name": "National Science Foundation"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://doi.org/10.13039/100025886",
+      "name": "Google.org Charitable Giving Fund"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://doi.org/10.13039/100000015",
+      "name": "U.S. Department of Energy"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://doi.org/10.13039/100000936",
+      "name": "Gordon and Betty Moore Foundation"
+    }
+  ],
+  "funding": [
+    "National Science Foundation award 2042102: Advancing Arctic research and education through data preservation and reuse at the Arctic Data Center",
+    "Google.org Charitable Giving Fund award WOODWELL-BCX410-04: Tracking Arctic permafrost thaw with geoAI to inform climate action",
+    "U.S. Department of Energy: The Environmental System Science Data Infrastructure for a Virtual Ecosystem (ESS-DIVE 2020)",
+    "National Science Foundation award 1927720: NNA Track 1: Collaborative Research: The Permafrost Discovery Gateway - Navigating the New Arctic tundra through Big Imagery, artificial intelligence, & cyberinfrastructure",
+    "U.S. Department of Energy: The Environmental System Science Data Infrastructure for a Virtual Ecosystem (ESS-DIVE 2017)",
+    "Gordon and Betty Moore Foundation: Data Task Forces for Better Synthesis Studies",
+    "National Science Foundation award 1546024: Scientia Arctica: A Knowledge Archive for Discovery and Reproducible Science in the Arctic",
+    "National Science Foundation award 1443062: Beyond Data Discovery: Shared Services for Community Metadata Improvement",
+    "National Science Foundation award 1430508: DataONE (Data Observation Network for Earth)",
+    "National Science Foundation award 0830944: DataNet Full Proposal: DataNetONE (Observation Network for Earth)",
+    "National Science Foundation award 1262458: Collaborative Research: ABI Development: A toolbox for analysis of long-term ecological dynamics using the Kepler Workflow System"
+  ],
+  "keywords": [
+    "data management",
+    "DataONE",
+    "Metacat",
+    "metadata",
+    "research data",
+    "data repository",
+    "Arctic Data Center",
+    "data provenance",
+    "DOI",
+    "ecoinformatics",
+    "ecology",
+    "EML",
+    "KNB",
+    "metadata editor",
+    "open data",
+    "science metadata",
+    "semantic annotations"
+  ],
+  "relatedLink": "https://doi.org/10.18739/A2W669B2R",
+  "sameAs": "https://archive.softwareheritage.org/swh:1:snp:fd978d364e27f634279768522d307ccaf216bbf4/"
+}
