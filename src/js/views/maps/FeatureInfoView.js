@@ -213,6 +213,11 @@ define([
           zoomButton: view.el.querySelector(`.${classes.zoomButton}`),
         };
 
+        // Start collapsed so the panel does not flash at the browser's default
+        // iframe height before content is rendered.
+        iFrame.style.height = 0;
+        iFrame.style.opacity = 0;
+
         view.update();
 
         // Ensure the view's main element has the given class name
@@ -226,8 +231,11 @@ define([
 
       /**
        * Updates the view with information from the current Feature model
+       * @param {object} [options] - Options that control content update behavior
+       * @param {boolean} [options.collapseBeforeLoad] - Whether to collapse the
+       * content iframe before loading new content
        */
-      updateContent() {
+      updateContent({ collapseBeforeLoad = false } = {}) {
         const view = this;
 
         // Elements to update
@@ -250,11 +258,18 @@ define([
         // Insert the title into the title element
         this.elements.title.innerHTML = title;
 
+        // Collapse only when opening from a closed state. When switching between
+        // selected features, keep the current height and transition directly to the
+        // new content height.
+        if (collapseBeforeLoad) {
+          iFrame.style.height = 0;
+          iFrame.style.opacity = 0;
+        }
+
         // Update the iFrame content
         this.getContent().then((html) => {
           iFrameDiv.innerHTML = html;
-          iFrame.style.height = 0;
-          iFrame.style.opacity = 0;
+          iFrame.style.opacity = 1;
           // Not the ideal solution, but check the height of the iFrame
           // again after some time to allow external content to load. This
           // is necessary for content that loads asynchronously, like
@@ -478,8 +493,9 @@ define([
             this.close();
           }
         } else {
+          const wasOpen = this.isOpen;
           this.open();
-          this.updateContent();
+          this.updateContent({ collapseBeforeLoad: !wasOpen });
         }
       },
 
