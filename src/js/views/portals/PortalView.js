@@ -1064,7 +1064,7 @@ define([
        */
       showError(model, response) {
         try {
-          const errorMsg = "",
+          let errorMsg = "",
             errorClass = "alert-error",
             icon = "frown",
             portalTerm =
