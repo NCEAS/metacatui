@@ -16,6 +16,30 @@ define(["/test/js/specs/shared/clean-state.js", "models/UserModel"], (
       state.sandbox.restore();
     });
 
+    describe("getToken()", () => {
+      it("does not leave authentication checks incomplete after a custom callback succeeds", () => {
+        const { sandbox, user } = state;
+
+        sandbox.stub($, "ajax").callsFake(({ success }) => {
+          success("refreshed-token");
+        });
+
+        user.set({
+          checked: true,
+          tokenChecked: true,
+        });
+
+        user.getToken((token) => {
+          user.set("token", token);
+          user.trigger("change:token");
+        });
+
+        user.get("token").should.equal("refreshed-token");
+        user.get("checked").should.be.true;
+        user.get("tokenChecked").should.be.true;
+      });
+    });
+
     describe("getTokenPromise()", () => {
       it("applies exponential timeout backoff and increments the timeout counter", async () => {
         const { sandbox, user } = state;

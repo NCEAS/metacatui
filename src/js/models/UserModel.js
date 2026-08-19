@@ -554,8 +554,10 @@ define([
       },
 
       getToken(customCallback) {
-        this.set("checked", false);
-        this.set("tokenChecked", false);
+        if (!customCallback) {
+          this.set("checked", false);
+          this.set("tokenChecked", false);
+        }
         this.set("error", null);
 
         const tokenUrl = MetacatUI.appModel.get("tokenUrl");
