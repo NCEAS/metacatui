@@ -91,8 +91,3 @@ keywords:
 license: "Apache-2.0"
 repository-code: "https://github.com/NCEAS/metacatui"
 url: "https://nceas.github.io/metacatui/"
-commit: "db1119eba83a49ff9f7b2562d5e41ca61e5744b7"
-identifiers:
-  - type: swh
-    value: "swh:1:snp:fd978d364e27f634279768522d307ccaf216bbf4"
-    description: "Software Heritage snapshot identifier for MetacatUI 2.37.0."

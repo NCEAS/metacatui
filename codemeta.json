@@ -4,10 +4,7 @@
   "@id": "https://doi.org/10.18739/A2D50G069",
   "name": "MetacatUI: A client-side web interface for DataONE data repositories",
   "description": "MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API. Currently, it is used as the basis for the KNB Data Repository, the NSF Arctic Data Center, the DataONE federation, and other repositories. MetacatUI is an open source, community project. We welcome contributions in many forms, including code, graphics, documentation, bug reports, testing, etc. Use the discussion list to discuss these contributions with us.",
-  "identifier": [
-    "https://doi.org/10.18739/A2D50G069",
-    "swh:1:snp:fd978d364e27f634279768522d307ccaf216bbf4"
-  ],
+  "identifier": ["https://doi.org/10.18739/A2D50G069"],
   "version": "2.37.0",
   "dateCreated": "2012-10-15",
   "datePublished": "2026-07-08",
@@ -242,6 +239,5 @@
     "science metadata",
     "semantic annotations"
   ],
-  "relatedLink": "https://doi.org/10.18739/A2W669B2R",
-  "sameAs": "https://archive.softwareheritage.org/swh:1:snp:fd978d364e27f634279768522d307ccaf216bbf4/"
+  "relatedLink": "https://doi.org/10.18739/A2W669B2R"
 }
