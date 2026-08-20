@@ -1,20 +1,22 @@
 {
   "@context": "https://w3id.org/codemeta/3.1",
   "@type": "SoftwareSourceCode",
-  "@id": "https://doi.org/10.18739/A2D50G069",
+  "@id": "https://doi.org/10.18739/A2VX0654W",
   "name": "MetacatUI: A client-side web interface for DataONE data repositories",
   "description": "MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API. Currently, it is used as the basis for the KNB Data Repository, the NSF Arctic Data Center, the DataONE federation, and other repositories. MetacatUI is an open source, community project. We welcome contributions in many forms, including code, graphics, documentation, bug reports, testing, etc. Use the discussion list to discuss these contributions with us.",
-  "identifier": ["https://doi.org/10.18739/A2D50G069"],
-  "version": "2.37.0",
+  "identifier": [
+    "doi:10.18739/A2VX0654W"
+  ],
+  "version": "2.38.0",
   "dateCreated": "2012-10-15",
-  "datePublished": "2026-07-08",
-  "dateModified": "2026-07-08",
+  "datePublished": "2026-08-20",
+  "dateModified": "2026-08-20",
   "codeRepository": "https://github.com/NCEAS/metacatui",
-  "downloadUrl": "https://github.com/NCEAS/metacatui/archive/refs/tags/2.37.0.zip",
+  "downloadUrl": "https://github.com/NCEAS/metacatui/archive/refs/tags/2.38.0.zip",
   "url": "https://nceas.github.io/metacatui/",
   "issueTracker": "https://github.com/NCEAS/metacatui/issues",
-  "readme": "https://github.com/NCEAS/metacatui/blob/2.37.0/README.md",
-  "releaseNotes": "https://github.com/NCEAS/metacatui/releases/tag/2.37.0",
+  "readme": "https://github.com/NCEAS/metacatui/blob/2.38.0/README.md",
+  "releaseNotes": "https://github.com/NCEAS/metacatui/releases/tag/2.38.0",
   "license": "https://spdx.org/licenses/Apache-2.0",
   "programmingLanguage": "JavaScript",
   "runtimePlatform": "Web browser",
@@ -239,5 +241,5 @@
     "science metadata",
     "semantic annotations"
   ],
-  "relatedLink": "https://doi.org/10.18739/A2W669B2R"
+  "relatedLink": "https://doi.org/10.18739/A2D50G069"
 }

@@ -16,7 +16,7 @@ MetacatUI is an open source, community project. We [welcome contributions](https
 
 Cite this software as:
 
-> Matthew B. Jones, Chris Jones, Lauren Walker, Robyn Thiessen-Bock, Ben Leinfelder, Peter Slaughter, Bryce Mecum, Rushiraj Nenuji, Hesham Elbashandy, Val Hendrix, Ian Nesbitt, Yvonne Shi, Ian Guerin, Doug Hungarter. 2026. MetacatUI: A client-side web interface for DataONE data repositories (version 2.37.0). Arctic Data Center. [doi:10.18739/A2D50G069](https://doi.org/doi:10.18739/A2D50G069)
+> Matthew B. Jones, Chris Jones, Lauren Walker, Robyn Thiessen-Bock, Ben Leinfelder, Peter Slaughter, Bryce Mecum, Rushiraj Nenuji, Hesham Elbashandy, Val Hendrix, Ian Nesbitt, Yvonne Shi, Ian Guerin, Doug Hungarter. 2026. MetacatUI: A client-side web interface for DataONE data repositories (version 2.38.0). Arctic Data Center. [doi:doi:10.18739/A2VX0654W](https://doi.org/doi:doi:10.18739/A2VX0654W)
 
 ## Related Projects
 

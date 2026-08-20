@@ -530,7 +530,7 @@ define([
       /**
        * Get the currently active panel id in the toolbar.
        * @returns {string|null} The active panel id, or null when no panel is active.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       getActivePanelId() {
         if (!this.isOpen) return null;
@@ -541,7 +541,7 @@ define([
       /**
        * Trigger an event when the active panel changed.
        * @param {string|null} previousPanelId The previously active panel id.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       triggerActivePanelChangeIfNeeded(previousPanelId) {
         const panelId = this.getActivePanelId();
@@ -552,7 +552,7 @@ define([
       /**
        * Open a toolbar section corresponding to a panel id.
        * @param {string|null} panelId A panel id.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       openPanelById(panelId) {
         if (!panelId) return;
@@ -569,7 +569,7 @@ define([
 
       /**
        * Apply initial open panel state when toolbar renders.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       applyInitialOpenPanel() {
         this.openPanelById(this.initialOpenPanelId);

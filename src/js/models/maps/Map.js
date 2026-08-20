@@ -32,7 +32,7 @@ define([
    * Parse layer visibility state from URL once for initialization.
    * @returns {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}}
    * URL-derived layer visibility state.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function parseLayerVisibilityStateFromUrl() {
     const { enabledLayerIds, enabledLayerStateProvided } =
@@ -45,7 +45,7 @@ define([
    * @param {Array<object>} layers Candidate layer config entries.
    * @param {string} configKey Name of the config property being validated.
    * @throws {Error} When a Backbone model instance is provided.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function assertPlainLayerConfigs(layers, configKey) {
     if (layers.some((layer) => layer instanceof Backbone.Model)) {
@@ -61,7 +61,7 @@ define([
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
    * Parsed URL visibility state.
    * @returns {boolean|undefined} The overridden visible value, if applicable.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function getUrlVisibilityOverride(layer, visibilityState) {
     if (!visibilityState?.enabledLayerStateProvided) return undefined;
@@ -81,7 +81,7 @@ define([
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} [visibilityState]
    * Parsed URL visibility state used to override runtime visible state.
    * @returns {object} The normalized layer config.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function normalizeLayerVisibility(layer, visibilityState) {
     const { visible } = layer;
@@ -112,7 +112,7 @@ define([
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
    * Parsed URL visibility state.
    * @returns {Array<object>} Normalized layer configs.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function normalizeLayerListVisibility(layers, visibilityState) {
     return layers.map((layer) =>
@@ -126,7 +126,7 @@ define([
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
    * Parsed URL visibility state.
    * @returns {Array<Backbone.Model|object>} Category configs with normalized layers.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function normalizeLayerCategoryVisibility(layerCategories, visibilityState) {
     return layerCategories.map((category) => {
@@ -157,7 +157,7 @@ define([
    * Check whether a camera/destination object has complete coordinates.
    * @param {object} position The position to validate.
    * @returns {boolean} Whether longitude, latitude, and height are present.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function isCompletePosition(position) {
     return (
@@ -543,7 +543,7 @@ define([
       /**
        * Keep legacy allLayers attribute in sync for backward compatibility.
        * @returns {MapAssets} Flattened layer collection.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       refreshAllLayers() {
         const allLayers = new MapAssets(this.getAllLayers());
@@ -586,7 +586,7 @@ define([
       /**
        * Returns true when the map should sync URL state.
        * @returns {boolean} Whether URL sync is enabled.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       shouldSyncUrlState() {
         return this.get("showShareUrl") === true;
@@ -596,7 +596,7 @@ define([
        * Re-apply restore state when share URL syncing is toggled on.
        * @param {MapModel} _model The model that changed.
        * @param {boolean} showShareUrl Whether URL syncing is enabled.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       handleShowShareUrlChange(_model, showShareUrl) {
         if (showShareUrl) {
@@ -607,7 +607,7 @@ define([
 
       /**
        * Apply the restored URL destination as a navigation target.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       applyRestoreState() {
         const restoreState = this.get("restoreState") || {};
@@ -623,7 +623,7 @@ define([
 
       /**
        * Set up listeners that keep URL state in sync with the map model.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       setUpUrlStateListeners() {
         const interactions = this.get("interactions");
@@ -676,7 +676,7 @@ define([
       /**
        * Get enabled layer ids from live layer groups for URL state sync.
        * @returns {string[]} A normalized list of visible layer ids.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       getEnabledLayerIdsForUrlState() {
         const layers = this.getAllLayers();
@@ -689,7 +689,7 @@ define([
       /**
        * Update the search parameters related to the current map position and
        * visible layers.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       updateSearchParams() {
         if (!this.shouldSyncUrlState()) return;

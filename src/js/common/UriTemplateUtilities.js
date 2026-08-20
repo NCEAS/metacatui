@@ -5,7 +5,7 @@ define(["uriTemplatesEs"], ({ UriTemplate }) => {
    * Build a UriTemplate instance from a template string.
    * @param {string} template A URI template string.
    * @returns {UriTemplate} The parsed uri-templates-es instance.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const createTemplate = (template) =>
     new UriTemplate(typeof template === "string" ? template : "");
@@ -14,7 +14,7 @@ define(["uriTemplatesEs"], ({ UriTemplate }) => {
    * Parse a URI template into reusable metadata.
    * @param {string} template A URI template string.
    * @returns {{ template: string, expressions: object[], varNames: string[] }} Parsed metadata.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const parseTemplate = (template) => {
     const instance = createTemplate(template);
@@ -41,7 +41,7 @@ define(["uriTemplatesEs"], ({ UriTemplate }) => {
    * Get all variable names in a template.
    * @param {string} template A URI template string.
    * @returns {string[]} Unique variable names in appearance order.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const getTemplateVarNames = (template) => parseTemplate(template).varNames;
 
@@ -50,7 +50,7 @@ define(["uriTemplatesEs"], ({ UriTemplate }) => {
    * @param {string} template The URI template to expand.
    * @param {object} [values] Values keyed by template variable names.
    * @returns {string} Expanded URI string.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const expandTemplate = (template, values = {}) => {
     const instance = createTemplate(template);
@@ -61,7 +61,7 @@ define(["uriTemplatesEs"], ({ UriTemplate }) => {
    * Expand a template with no values to produce its base URL.
    * @param {string} template The URI template.
    * @returns {string} Base URL with template expressions stripped.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const getTemplateBaseUrl = (template) => {
     const expanded = expandTemplate(template, {});
@@ -72,7 +72,7 @@ define(["uriTemplatesEs"], ({ UriTemplate }) => {
    * Safely parse a URL string.
    * @param {string} urlString The candidate URL.
    * @returns {URL|null} Parsed URL or null when invalid.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const toUrl = (urlString) => {
     try {
@@ -87,7 +87,7 @@ define(["uriTemplatesEs"], ({ UriTemplate }) => {
    * @param {string} urlString The base URL.
    * @param {object} [queryParams] Query parameters to merge into the URL.
    * @returns {string} URL with the merged query parameters.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const appendQueryParams = (urlString, queryParams = {}) => {
     const url = toUrl(urlString);
@@ -121,7 +121,7 @@ define(["uriTemplatesEs"], ({ UriTemplate }) => {
    * @param {string} urlString URL emitted by an embedded app.
    * @returns {object|null} Parsed values keyed by allowed template variable
    * names, or null when the URL does not satisfy the template.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const extractValuesFromUrl = (template, urlString) => {
     const instance = createTemplate(template);

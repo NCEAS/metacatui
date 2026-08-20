@@ -753,7 +753,7 @@ define([
 
       /**
        * Push the current Cesium camera position into shared interaction state.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       updateCameraPosition() {
         if (!this.interactions) return;

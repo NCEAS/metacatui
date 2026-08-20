@@ -160,7 +160,7 @@ define([
        * @param {ViewfinderCardAction} action The action object associated with the button.
        * @param {object} [options] Additional activation options.
        * @param {boolean} [options.notifyActionActivated] Whether to notify listeners.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       setActive(buttonEl, action, { notifyActionActivated = true } = {}) {
         this.el.classList.add(CLASS_NAMES.active);
@@ -193,7 +193,7 @@ define([
        * Restore an action from URL state without replaying click side effects.
        * @param {ViewfinderCardAction} action The action object to restore.
        * @returns {boolean} True when restoration succeeded.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       restoreAction(action) {
         const buttons = this.preset.get("buttons") || [];
@@ -233,7 +233,7 @@ define([
       /**
        * Replace a broken hero image with its configured fallback source.
        * @param {HTMLImageElement} img The image element that failed loading.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       applyImageFallback(img) {
         const fallbackSrc = img?.dataset?.fallbackSrc;
@@ -247,7 +247,7 @@ define([
 
       /**
        * Wire one-time error handlers for hero images with fallback sources.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       wireImageFallbacks() {
         this.el

@@ -133,7 +133,7 @@ define([
        * @param {Window} iframeWindow The active iframe content window.
        * @param {WindowProxy|null} sourceWindow The postMessage source window.
        * @returns {boolean} `true` when sourceWindow is the iframe or a descendant.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       isSourceFromActiveIframe(iframeWindow, sourceWindow) {
         if (!iframeWindow || !sourceWindow) {
@@ -174,7 +174,7 @@ define([
        * @param {object|null} action The active iframe action object.
        * @param {string} resolvedUrl The URL currently loaded in the iframe.
        * @returns {string|null} Strict origin expected for postMessage events.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       getExpectedMessageOrigin(action, resolvedUrl) {
         const templateUrl =

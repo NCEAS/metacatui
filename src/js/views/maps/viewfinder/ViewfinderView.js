@@ -110,7 +110,7 @@ define([
        * @param {object} payload State message forwarded from VisualizationPanelView.
        * @param {object} payload.action Active iframe action definition.
        * @param {string} payload.url URL sent by the embedded visualization.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       syncVisualizationStateToUrl(payload = {}) {
         if (!this.mapModel?.get("showShareUrl")) return;
@@ -139,7 +139,7 @@ define([
        * Sync the active action id to the URL restore state.
        * @param {ViewfinderCardModel} _card The card model that owns the action.
        * @param {object} action The activated action object.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       syncActiveActionToUrl(_card, action) {
         if (!this.mapModel?.get("showShareUrl")) return;
@@ -151,7 +151,7 @@ define([
        * Find a rendered card view that contains the given action id.
        * @param {string} actionId The action id to resolve.
        * @returns {object|null} The matching rendered view and action, if found.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       findRenderedAction(actionId) {
         if (typeof actionId !== "string" || !actionId.length) return null;
@@ -187,7 +187,7 @@ define([
       /**
        * Expand the given category section if it has a panel view.
        * @param {string} categoryCid The category CID.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       openCategoryPanel(categoryCid) {
         const panel = this.expansionPanelsByCategoryCid[categoryCid];
@@ -198,7 +198,7 @@ define([
        * Restore a previously active viewfinder action by id.
        * @param {string} actionId The action id from URL restore state.
        * @returns {boolean} True if action was restored.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       restoreActiveAction(actionId) {
         const match = this.findRenderedAction(actionId);
@@ -210,7 +210,7 @@ define([
 
       /**
        * Apply active action restore state from URL for schema 1.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       applyActiveActionFromUrl() {
         if (!this.mapModel?.get("showShareUrl")) return;

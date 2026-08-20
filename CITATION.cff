@@ -1,93 +1,91 @@
-cff-version: "1.2.0"
-message: "If you use this software, please cite it using these metadata."
+cff-version: 1.2.0
+message: If you use this software, please cite it using these metadata.
 type: software
-title: "MetacatUI: A client-side web interface for DataONE data repositories"
-version: "2.37.0"
-date-released: "2026-07-08"
-doi: "10.18739/A2D50G069"
+title: 'MetacatUI: A client-side web interface for DataONE data repositories'
+version: 2.38.0
+date-released: '2026-08-20'
+doi: 10.18739/A2VX0654W
 authors:
-  - given-names: "Matthew B."
-    family-names: "Jones"
-    orcid: "https://orcid.org/0000-0003-0077-4738"
-    affiliation: "National Center for Ecological Analysis and Synthesis"
-  - given-names: "Chris"
-    family-names: "Jones"
-    orcid: "https://orcid.org/0000-0002-8121-2341"
-    affiliation: "Arctic Data Center"
-  - given-names: "Lauren"
-    family-names: "Walker"
-    orcid: "https://orcid.org/0000-0003-2192-431X"
-    affiliation: "Arctic Data Center"
-  - given-names: "Robyn"
-    family-names: "Thiessen-Bock"
-    orcid: "https://orcid.org/0000-0002-1615-3963"
-    affiliation: "Arctic Data Center"
-  - given-names: "Ben"
-    family-names: "Leinfelder"
-    orcid: "https://orcid.org/0000-0003-1758-9950"
-    affiliation: "Arctic Data Center"
-  - given-names: "Peter"
-    family-names: "Slaughter"
-    orcid: "https://orcid.org/0000-0002-2192-403X"
-    affiliation: "Arctic Data Center"
-  - given-names: "Bryce"
-    family-names: "Mecum"
-    orcid: "https://orcid.org/0000-0002-0381-3766"
-    affiliation: "Arctic Data Center"
-  - given-names: "Rushiraj"
-    family-names: "Nenuji"
-    orcid: "https://orcid.org/0000-0003-4678-5213"
-    affiliation: "Arctic Data Center"
-  - given-names: "Hesham"
-    family-names: "Elbashandy"
-    orcid: "https://orcid.org/0000-0002-7535-8045"
-    affiliation: "Environmental System Science Data Infrastructure for a Virtual Ecosystem"
-  - given-names: "Val"
-    family-names: "Hendrix"
-    orcid: "https://orcid.org/0000-0001-9061-8952"
-    affiliation: "Environmental System Science Data Infrastructure for a Virtual Ecosystem"
-  - given-names: "Ian"
-    family-names: "Nesbitt"
-    orcid: "https://orcid.org/0000-0001-5828-6070"
-    affiliation: "National Center for Ecological Analysis and Synthesis"
-  - given-names: "Yvonne"
-    family-names: "Shi"
-    orcid: "https://orcid.org/0009-0009-6234-9922"
-    affiliation: "Google"
-  - given-names: "Ian"
-    family-names: "Guerin"
-    orcid: "https://orcid.org/0009-0000-6240-7277"
-    affiliation: "Google"
-  - given-names: "Doug"
-    family-names: "Hungarter"
-    orcid: "https://orcid.org/0009-0007-4943-8694"
-    affiliation: "Google"
-abstract: >-
-  MetacatUI is a client-side web interface for querying Metacat servers and
-  other servers that implement the DataONE REST API. Currently, it is used as
-  the basis for the KNB Data Repository, the NSF Arctic Data Center, the
-  DataONE federation, and other repositories. MetacatUI is an open source,
-  community project. We welcome contributions in many forms, including code,
-  graphics, documentation, bug reports, testing, etc. Use the discussion list
-  to discuss these contributions with us.
+- given-names: Matthew B.
+  family-names: Jones
+  orcid: https://orcid.org/0000-0003-0077-4738
+  affiliation: National Center for Ecological Analysis and Synthesis
+- given-names: Chris
+  family-names: Jones
+  orcid: https://orcid.org/0000-0002-8121-2341
+  affiliation: Arctic Data Center
+- given-names: Lauren
+  family-names: Walker
+  orcid: https://orcid.org/0000-0003-2192-431X
+  affiliation: Arctic Data Center
+- given-names: Robyn
+  family-names: Thiessen-Bock
+  orcid: https://orcid.org/0000-0002-1615-3963
+  affiliation: Arctic Data Center
+- given-names: Ben
+  family-names: Leinfelder
+  orcid: https://orcid.org/0000-0003-1758-9950
+  affiliation: Arctic Data Center
+- given-names: Peter
+  family-names: Slaughter
+  orcid: https://orcid.org/0000-0002-2192-403X
+  affiliation: Arctic Data Center
+- given-names: Bryce
+  family-names: Mecum
+  orcid: https://orcid.org/0000-0002-0381-3766
+  affiliation: Arctic Data Center
+- given-names: Rushiraj
+  family-names: Nenuji
+  orcid: https://orcid.org/0000-0003-4678-5213
+  affiliation: Arctic Data Center
+- given-names: Hesham
+  family-names: Elbashandy
+  orcid: https://orcid.org/0000-0002-7535-8045
+  affiliation: Environmental System Science Data Infrastructure for a Virtual Ecosystem
+- given-names: Val
+  family-names: Hendrix
+  orcid: https://orcid.org/0000-0001-9061-8952
+  affiliation: Environmental System Science Data Infrastructure for a Virtual Ecosystem
+- given-names: Ian
+  family-names: Nesbitt
+  orcid: https://orcid.org/0000-0001-5828-6070
+  affiliation: National Center for Ecological Analysis and Synthesis
+- given-names: Yvonne
+  family-names: Shi
+  orcid: https://orcid.org/0009-0009-6234-9922
+  affiliation: Google
+- given-names: Ian
+  family-names: Guerin
+  orcid: https://orcid.org/0009-0000-6240-7277
+  affiliation: Google
+- given-names: Doug
+  family-names: Hungarter
+  orcid: https://orcid.org/0009-0007-4943-8694
+  affiliation: Google
+abstract: MetacatUI is a client-side web interface for querying Metacat servers and
+  other servers that implement the DataONE REST API. Currently, it is used as the
+  basis for the KNB Data Repository, the NSF Arctic Data Center, the DataONE federation,
+  and other repositories. MetacatUI is an open source, community project. We welcome
+  contributions in many forms, including code, graphics, documentation, bug reports,
+  testing, etc. Use the discussion list to discuss these contributions with us.
 keywords:
-  - "data management"
-  - "DataONE"
-  - "Metacat"
-  - "metadata"
-  - "research data"
-  - "data repository"
-  - "Arctic Data Center"
-  - "data provenance"
-  - "DOI"
-  - "ecoinformatics"
-  - "ecology"
-  - "EML"
-  - "KNB"
-  - "metadata editor"
-  - "open data"
-  - "science metadata"
-  - "semantic annotations"
-license: "Apache-2.0"
-repository-code: "https://github.com/NCEAS/metacatui"
-url: "https://nceas.github.io/metacatui/"
+- data management
+- DataONE
+- Metacat
+- metadata
+- research data
+- data repository
+- Arctic Data Center
+- data provenance
+- DOI
+- ecoinformatics
+- ecology
+- EML
+- KNB
+- metadata editor
+- open data
+- science metadata
+- semantic annotations
+license: Apache-2.0
+repository-code: https://github.com/NCEAS/metacatui
+url: https://nceas.github.io/metacatui/
