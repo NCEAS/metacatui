@@ -27428,7 +27428,7 @@ element.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_maps_ToolbarView.js.html">src/js/views/maps/ToolbarView.js</a>, <a href="src_js_views_maps_ToolbarView.js.html#line452">line 452</a>
+        <a href="src_js_views_maps_ToolbarView.js.html">src/js/views/maps/ToolbarView.js</a>, <a href="src_js_views_maps_ToolbarView.js.html#line461">line 461</a>
     </li></ul></dd>
     
 
@@ -27632,7 +27632,7 @@ otherwise.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_maps_ToolbarView.js.html">src/js/views/maps/ToolbarView.js</a>, <a href="src_js_views_maps_ToolbarView.js.html#line356">line 356</a>
+        <a href="src_js_views_maps_ToolbarView.js.html">src/js/views/maps/ToolbarView.js</a>, <a href="src_js_views_maps_ToolbarView.js.html#line363">line 363</a>
     </li></ul></dd>
     
 
@@ -30041,6 +30041,37 @@ of generalized viewfinder cards in 2.37.0.
 
         <tr>
             
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Unique action identifier used for URL restore
+(`a=` query param). Provide a stable explicit id in config for
+long-term link compatibility.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>type</code></td>
             
 
@@ -30200,7 +30231,43 @@ icon and no border (the default for 'map' actions).</td>
 
             
 
-            <td class="description last">The URL to open (required for 'iframe'/'tab').</td>
+            <td class="description last">The URL to open (required for 'iframe'/'tab').
+For iframes that require syncing state to the parent portal's url, this
+parameter should be an RFC6570 uri template that describes the expected
+structure.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>initialQueryParams</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Optional and only used for
+'iframe' actions. An object of query parameters to expand into the
+URL when the iframe is first loaded.</td>
         </tr>
 
     
@@ -30363,7 +30430,7 @@ icon and no border (the default for 'map' actions).</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderCardModel.js.html">src/js/models/maps/viewfinder/ViewfinderCardModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderCardModel.js.html#line25">line 25</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderCardModel.js.html">src/js/models/maps/viewfinder/ViewfinderCardModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderCardModel.js.html#line157">line 157</a>
     </li></ul></dd>
     
 
@@ -30820,7 +30887,7 @@ when no 'map' button is present.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderCardModel.js.html">src/js/models/maps/viewfinder/ViewfinderCardModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderCardModel.js.html#line47">line 47</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderCardModel.js.html">src/js/models/maps/viewfinder/ViewfinderCardModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderCardModel.js.html#line188">line 188</a>
     </li></ul></dd>
     
 
@@ -30915,15 +30982,14 @@ when no 'map' button is present.</td>
 
             
 
-            <td class="description last">The collection of
-viewfinder cards</td>
+            <td class="description last">The collection of viewfinder cards.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>selectViewfinderCard</code></td>
+                <td class="name"><code>onMapAction</code></td>
             
 
             <td class="type">
@@ -30945,47 +31011,14 @@ viewfinder cards</td>
 
             
 
-            <td class="description last">The callback function for
-selecting a viewfinder card (zoom + toggle layers).</td>
+            <td class="description last">Callback for map actions from a viewfinder card (zoom + toggle layers).</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>openVisualization</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Called with (url) to open
-the visualization overlay.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>closeVisualization</code></td>
+                <td class="name"><code>onIframeAction</code></td>
             
 
             <td class="type">
@@ -31009,8 +31042,69 @@ the visualization overlay.</td>
 
             
 
-            <td class="description last">Called to close the
-visualization overlay.</td>
+            <td class="description last">Called when an iframe action is activated and should open the visualization overlay.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onRequestCloseVisualization</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Called to close the visualization overlay.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onActionUiActivated</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Called after a card action button is activated in the UI.</td>
         </tr>
 
     
@@ -31041,8 +31135,7 @@ visualization overlay.</td>
 
             
 
-            <td class="description last">Called when a viewfinder card is
-activated.</td>
+            <td class="description last">Called when a viewfinder card is activated.</td>
         </tr>
 
     

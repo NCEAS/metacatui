@@ -52,17 +52,8 @@ define([
   "models/portals/PortalImage",
   "models/maps/AssetColorPalette",
   "common/IconUtilities",
-  "common/SearchParams",
   `${MetacatUI.root}/components/dayjs.min.js`,
-], (
-  _,
-  Backbone,
-  PortalImage,
-  AssetColorPalette,
-  IconUtilities,
-  SearchParams,
-  dayjs,
-) => {
+], (_, Backbone, PortalImage, AssetColorPalette, IconUtilities, dayjs) => {
   /**
    * @classdesc A MapAsset Model comprises information required to fetch source data for
    * some asset or resource that is displayed in a map, such as imagery (raster) tiles,
@@ -504,33 +495,6 @@ define([
         });
 
         if (this.get("status") === "error") return;
-
-        // Create a model for only listening to visibility changes, since we
-        // alter the main model's visibility listener in other cases.
-        let existingListener = this.get("visibilityListener");
-        if (existingListener) {
-          existingListener.stopListening(model);
-          this.set("visibilityListener", null);
-          existingListener = null;
-        }
-        const visibilityListener = new Backbone.Model();
-        this.set("visibilityListener", visibilityListener);
-        // When the visibility of the layer changes, update the search params
-        // (for URL sharing)
-        visibilityListener.listenTo(model, "change:visible", () => {
-          if (!model.get("mapModel")?.get("showShareUrl")) return;
-          model
-            .get("mapModel")
-            .get("allLayers")
-            .forEach((layer) => {
-              const layerId = layer.get("layerId");
-              if (layerId &amp;&amp; layer.get("visible")) {
-                SearchParams.addEnabledLayer(layerId);
-              } else {
-                SearchParams.removeEnabledLayer(layerId);
-              }
-            });
-        });
 
         // Listen for changes to the cesiumOptions object
         this.stopListening(this, "change:cesiumOptions");

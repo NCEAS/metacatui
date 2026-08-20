@@ -105,7 +105,12 @@ define([
         );
 
         this.updateLegend();
-        this.model.get("allLayers")?.forEach((layer) => {
+        const allLayers =
+          typeof this.model.getAllLayers === "function"
+            ? this.model.getAllLayers()
+            : this.model.get("allLayers")?.models || [];
+
+        allLayers.forEach((layer) => {
           this.stopListening(layer, "change:visible");
           this.listenTo(layer, "change:visible", this.updateLegend);
 
@@ -163,7 +168,12 @@ define([
        */
       updateLegend() {
         const content = this.$(`.${CLASS_NAMES.content}`).empty();
-        this.model.get("allLayers")?.forEach((layer) => {
+        const allLayers =
+          typeof this.model.getAllLayers === "function"
+            ? this.model.getAllLayers()
+            : this.model.get("allLayers")?.models || [];
+
+        allLayers.forEach((layer) => {
           if (
             !layer.get("visible") ||
             !layer.get("colorPalette") ||

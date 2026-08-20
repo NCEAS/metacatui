@@ -189,6 +189,7 @@ define([
       sectionOptions: [
         {
           label: "Viewfinder",
+          panelId: "viewfinder",
           icon: "globe",
           view: ViewfinderView,
           action(view, _model) {
@@ -202,6 +203,7 @@ define([
         },
         {
           label: "Layers",
+          panelId: "layers",
           icon: '&lt;svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">&lt;path d="m3.2 7.3 8.6 4.6a.5.5 0 0 0 .4 0l8.6-4.6a.4.4 0 0 0 0-.8L12.1 3a.5.5 0 0 0-.4 0L3.3 6.5a.4.4 0 0 0 0 .8Z"/>&lt;path d="M20.7 10.7 19 9.9l-6.7 3.6a.5.5 0 0 1-.4 0L5 9.9l-1.8.8a.5.5 0 0 0 0 .8l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.8Z"/>&lt;path d="m20.7 15.1-1.5-.7-7 3.8a.5.5 0 0 1-.4 0l-7-3.8-1.5.7a.5.5 0 0 0 0 .9l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.9Z"/>&lt;/svg>',
           view: LayersPanelView,
           isVisible(model) {
@@ -316,6 +318,8 @@ define([
           this.isOpen = true;
         }
 
+        this.initialOpenPanelId = this.initialOpenPanelId || null;
+
         // Check whether each section should be shown, defaulting to true.
         this.sections = this.sectionOptions.filter((section) =>
           typeof section.isVisible === "function"
@@ -376,6 +380,7 @@ define([
             isActive,
             action,
             sectionView,
+            panelId: sectionOption.panelId || null,
           };
           view.sectionElements.push(sectionEl);
           // Attach the link and content to the view
@@ -395,6 +400,8 @@ define([
           this.el.classList.add(this.classes.open);
           view.handleLinkClick(this.sectionElements[0]);
         }
+
+        view.applyInitialOpenPanel();
 
         return this;
       },
@@ -420,6 +427,7 @@ define([
        * @param {SectionElement} sectionEl The section that was clicked
        */
       handleLinkClick(sectionEl) {
+        const previousPanelId = this.getActivePanelId();
         const toolbarOpen = this.isOpen;
         const sectionActive = sectionEl.isActive;
         if (toolbarOpen &amp;&amp; sectionActive) {
@@ -435,6 +443,7 @@ define([
           }
           this.activateSection(sectionEl);
         }
+        this.triggerActivePanelChangeIfNeeded(previousPanelId);
       },
 
       /**
@@ -556,10 +565,60 @@ define([
        * Closes the toolbar. Also inactivates all sections.
        */
       close() {
+        const previousPanelId = this.getActivePanelId();
         this.isOpen = false;
         this.el.classList.remove(this.classes.open);
         // Ensure that no section is active when the toolbar is closed
         this.inactivateAllSections();
+        this.triggerActivePanelChangeIfNeeded(previousPanelId);
+      },
+
+      /**
+       * Get the currently active panel id in the toolbar.
+       * @returns {string|null} The active panel id, or null when no panel is active.
+       * @since 2.38.0
+       */
+      getActivePanelId() {
+        if (!this.isOpen) return null;
+        const active = this.sectionElements.find((section) => section.isActive);
+        return active?.panelId || null;
+      },
+
+      /**
+       * Trigger an event when the active panel changed.
+       * @param {string|null} previousPanelId The previously active panel id.
+       * @since 2.38.0
+       */
+      triggerActivePanelChangeIfNeeded(previousPanelId) {
+        const panelId = this.getActivePanelId();
+        if (panelId === previousPanelId) return;
+        this.trigger("toolbar:activePanelChanged", panelId);
+      },
+
+      /**
+       * Open a toolbar section corresponding to a panel id.
+       * @param {string|null} panelId A panel id.
+       * @since 2.38.0
+       */
+      openPanelById(panelId) {
+        if (!panelId) return;
+        const section = this.sectionElements.find(
+          (sectionEl) => sectionEl.panelId === panelId,
+        );
+        // If restore points to the currently active section, do nothing so we
+        // don't toggle the toolbar closed via handleLinkClick.
+        if (section?.isActive &amp;&amp; this.isOpen) return;
+        if (section) {
+          this.handleLinkClick(section);
+        }
+      },
+
+      /**
+       * Apply initial open panel state when toolbar renders.
+       * @since 2.38.0
+       */
+      applyInitialOpenPanel() {
+        this.openPanelById(this.initialOpenPanelId);
       },
 
       /**

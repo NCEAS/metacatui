@@ -51,8 +51,7 @@ define([
   "models/maps/Map",
   "collections/maps/MapAssets",
   "common/IconUtilities",
-  "common/SearchParams",
-], (Backbone, MapModel, MapAssets, IconUtilities, SearchParams) => {
+], (Backbone, MapModel, MapAssets, IconUtilities) => {
   /**
    * @classdesc A AssetCategory Model contains metadata about the category, like a label and an icon.
    * @classcategory Models/Maps
@@ -60,7 +59,7 @@ define([
    * @name AssetCategory
    * @augments Backbone.Model
    * @since 2.28.0
-   * @constructor
+   * @class
    */
   const AssetCategory = Backbone.Model.extend(
     /** @lends AssetCategory.prototype */ {
@@ -119,21 +118,7 @@ define([
           throw new Error(`Category ${categoryConfig.label} has empty layers.`);
         }
 
-        const searchParamLayerIds = SearchParams.getEnabledLayers();
-        const layers = categoryConfig.layers.map((layer) => {
-          // Consider portal configuration and URL search params.
-          const visible = searchParamLayerIds.length
-            ? Boolean(layer.layerId) &amp;&amp;
-              searchParamLayerIds.includes(layer.layerId)
-            : layer.visible;
-
-          return {
-            ...layer,
-            configuredVisibility: layer.visible,
-            visible,
-          };
-        });
-        this.set("mapAssets", new MapAssets(layers));
+        this.set("mapAssets", new MapAssets(categoryConfig.layers));
 
         this.set("label", categoryConfig.label);
 
