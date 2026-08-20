@@ -11,8 +11,13 @@ See README.md for more details.
 
 const express = require("express");
 const path = require("path");
+const cookieParser = require("cookie-parser");
+const csrf = require("csurf");
 const port = process.env.PORT || 3000;
 const app = express();
+
+app.use(cookieParser());
+app.use(csrf({ cookie: true }));
 
 // Subdirectory where index.html and the rest are
 const src_dir = "src";
