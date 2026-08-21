@@ -536,6 +536,7 @@ define([
         this.debouncedUpdateSearchParams = _.debounce(() => {
           this.updateSearchParams();
         }, 150 /* milliseconds */);
+        this.featureRestoreSession = null;
         this.setUpUrlStateListeners();
         this.applyRestoreState();
       },
@@ -601,8 +602,10 @@ define([
       handleShowShareUrlChange(_model, showShareUrl) {
         if (showShareUrl) {
           this.applyRestoreState();
-          this.setUpUrlStateListeners();
+        } else {
+          this.clearFeatureRestoreSession();
         }
+        this.setUpUrlStateListeners();
       },
 
       /**
@@ -629,6 +632,7 @@ define([
        */
       setUpUrlStateListeners() {
         const interactions = this.get("interactions");
+        const selectedFeatures = interactions?.get("selectedFeatures");
 
         this.stopListening(
           this,
@@ -646,6 +650,22 @@ define([
           });
         }
         this.urlStateLayerGroups = [];
+
+        if (interactions) {
+          this.stopListening(
+            interactions,
+            "change:cameraPosition",
+            this.debouncedUpdateSearchParams,
+          );
+        }
+
+        if (selectedFeatures) {
+          this.stopListening(
+            selectedFeatures,
+            "update",
+            this.syncSelectedFeaturesToUrl,
+          );
+        }
 
         if (!this.shouldSyncUrlState() || !interactions) {
           return;
@@ -674,7 +694,6 @@ define([
           }
         });
 
-        const selectedFeatures = interactions.get("selectedFeatures");
         if (selectedFeatures) {
           this.listenTo(
             selectedFeatures,
@@ -706,6 +725,66 @@ define([
       syncSelectedFeaturesToUrl() {
         if (!this.shouldSyncUrlState()) return;
         SearchParams.updateActiveFeatureIds(this.getSelectedFeatureIdsForUrlState());
+      },
+
+      /**
+       * Cancel and clear any in-flight asynchronous feature restore waiters.
+       * @since 0.0.0
+       */
+      clearFeatureRestoreSession() {
+        const session = this.featureRestoreSession;
+        if (!session) return;
+
+        this.featureRestoreSession = null;
+        session.cancelers.forEach((cancel) => {
+          if (typeof cancel === "function") cancel();
+        });
+      },
+
+      /**
+       * Start a new feature restore session, canceling any previous one.
+       * @param {string[]} activeFeatureIds The ids being restored.
+       * @returns {object} The active restore session.
+       * @since 0.0.0
+       */
+      beginFeatureRestoreSession(activeFeatureIds) {
+        const sessionKey = activeFeatureIds.join(",");
+        if (this.featureRestoreSession?.key === sessionKey) {
+          return this.featureRestoreSession;
+        }
+
+        this.clearFeatureRestoreSession();
+        this.featureRestoreSession = {
+          cancelers: [],
+          key: sessionKey,
+        };
+        return this.featureRestoreSession;
+      },
+
+      /**
+       * Track a cancel function for in-flight feature restore waiting.
+       * @param {Function} cancel Cancel function returned by a waiter.
+       * @param {object} session The restore session that owns the waiter.
+       * @since 0.0.0
+       */
+      addFeatureRestoreWaiter(cancel, session = this.featureRestoreSession) {
+        if (typeof cancel !== "function" || !session) return;
+        if (this.featureRestoreSession !== session) {
+          cancel();
+          return;
+        }
+
+        session.cancelers.push(cancel);
+      },
+
+      /**
+       * Check whether a restore session is still active.
+       * @param {object} session The restore session to check.
+       * @returns {boolean} True if the session is still current.
+       * @since 0.0.0
+       */
+      isActiveFeatureRestoreSession(session) {
+        return this.featureRestoreSession === session;
       },
 
       /**
@@ -753,33 +832,64 @@ define([
        * @since 0.0.0
        */
       applyFeatureRestoreState() {
-        if (!this.shouldSyncUrlState()) return;
+        if (!this.shouldSyncUrlState()) {
+          this.clearFeatureRestoreSession();
+          return;
+        }
         const restoreState = this.get("restoreState") || {};
         const activeFeatureIds = restoreState.activeFeatureIds || [];
-        if (!activeFeatureIds.length) return;
+        if (!activeFeatureIds.length) {
+          this.clearFeatureRestoreSession();
+          return;
+        }
 
         const selectedFeatures = this.getSelectedFeatures();
         const alreadySelected = selectedFeatures?.models.some((f) =>
           activeFeatureIds.includes(f.get("featureID")),
         );
-        if (alreadySelected) return;
+        if (alreadySelected) {
+          this.clearFeatureRestoreSession();
+          return;
+        }
 
         const featureAttrs = this.findFeatureAttributesByIds(activeFeatureIds);
         if (featureAttrs.length) {
           this.selectFeatures(featureAttrs);
+          this.clearFeatureRestoreSession();
           return;
         }
 
+        const restoreKey = activeFeatureIds.join(",");
+        if (this.featureRestoreSession?.key === restoreKey) {
+          return;
+        }
+
+        const restoreSession = this.beginFeatureRestoreSession(activeFeatureIds);
         const mapModel = this;
+        const registerTileWaiters = (layer) => {
+          if (!mapModel.isActiveFeatureRestoreSession(restoreSession)) return;
+          if (typeof layer.waitForFeatureById !== "function") return;
+          activeFeatureIds.forEach((id) => {
+            const cancel = layer.waitForFeatureById(id, () => selectIfFound());
+            mapModel.addFeatureRestoreWaiter(cancel, restoreSession);
+          });
+        };
+
         const selectIfFound = () => {
+          if (!mapModel.isActiveFeatureRestoreSession(restoreSession)) return;
           if (
             mapModel
               .getSelectedFeatures()
               ?.models.some((f) => activeFeatureIds.includes(f.get("featureID")))
-          )
+          ) {
+            mapModel.clearFeatureRestoreSession();
             return;
+          }
           const attrs = mapModel.findFeatureAttributesByIds(activeFeatureIds);
-          if (attrs.length) mapModel.selectFeatures(attrs);
+          if (attrs.length) {
+            mapModel.selectFeatures(attrs);
+            mapModel.clearFeatureRestoreSession();
+          }
         };
 
         const allSearchableLayers = this.getAllLayers().filter(
@@ -791,22 +901,24 @@ define([
           if (layer.get("status") !== "ready") {
             // Wait for entities/tileset root to load, then try synchronous search.
             // For tilesets, also register tile-level waiting after root is ready.
-            this.listenTo(layer, "change:status", () => {
-              if (layer.get("status") !== "ready") return;
-              this.stopListening(layer, "change:status");
-              selectIfFound();
-              if (typeof layer.waitForFeatureById === "function") {
-                activeFeatureIds.forEach((id) =>
-                  layer.waitForFeatureById(id, () => selectIfFound()),
-                );
+            const statusListener = () => {
+              if (!mapModel.isActiveFeatureRestoreSession(restoreSession)) {
+                this.stopListening(layer, "change:status", statusListener);
+                return;
               }
-            });
+              if (layer.get("status") !== "ready") return;
+              this.stopListening(layer, "change:status", statusListener);
+              selectIfFound();
+              registerTileWaiters(layer);
+            };
+            this.listenTo(layer, "change:status", statusListener);
+            this.addFeatureRestoreWaiter(() => {
+              this.stopListening(layer, "change:status", statusListener);
+            }, restoreSession);
           } else if (typeof layer.waitForFeatureById === "function") {
             // Tileset root is already ready; specific building tile may not be
             // rendered yet — subscribe to tileVisible for deferred lookup.
-            activeFeatureIds.forEach((id) =>
-              layer.waitForFeatureById(id, () => selectIfFound()),
-            );
+            registerTileWaiters(layer);
           }
         });
       },

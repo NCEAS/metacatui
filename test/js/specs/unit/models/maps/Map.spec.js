@@ -348,6 +348,38 @@ define([
       });
     });
 
+    describe("setUpUrlStateListeners", () => {
+      it("does not duplicate selectedFeatures URL sync listeners on repeated setup", () => {
+        const map = new Map({ showShareUrl: true });
+        const originalUpdateActiveFeatureIds = SearchParams.updateActiveFeatureIds;
+        let updateActiveFeatureIdsCallCount = 0;
+
+        SearchParams.updateActiveFeatureIds = () => {
+          updateActiveFeatureIdsCallCount += 1;
+        };
+
+        try {
+          map.setUpUrlStateListeners();
+          map.setUpUrlStateListeners();
+          map.setUpUrlStateListeners();
+
+          map.selectFeatures([
+            {
+              featureID: "feat-1",
+              properties: {},
+              mapAsset: null,
+              featureObject: {},
+              label: null,
+            },
+          ]);
+
+          expect(updateActiveFeatureIdsCallCount).to.equal(1);
+        } finally {
+          SearchParams.updateActiveFeatureIds = originalUpdateActiveFeatureIds;
+        }
+      });
+    });
+
     describe("applyFeatureRestoreState", () => {
       const makeLayer = (overrides = {}) =>
         Object.assign(
@@ -450,6 +482,30 @@ define([
         }, 0);
       });
 
+      it("cancels pending feature restore waiters when showShareUrl turns off", () => {
+        const map = new Map({ showShareUrl: true });
+        let cancelCount = 0;
+
+        const layer = makeLayer({
+          getFeatureById: () => null,
+          waitForFeatureById: () => {
+            return () => {
+              cancelCount += 1;
+            };
+          },
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", { activeFeatureIds: ["feature-slow"] });
+        map.applyFeatureRestoreState();
+
+        expect(cancelCount).to.equal(0);
+
+        map.handleShowShareUrlChange(map, false);
+
+        expect(cancelCount).to.equal(1);
+      });
+
       it("skips layers without getFeatureById", () => {
         const map = new Map({ showShareUrl: true });
         const layer = { get: () => "ready" };
@@ -457,6 +513,53 @@ define([
         map.set("restoreState", { activeFeatureIds: ["feat-x"] });
         map.applyFeatureRestoreState();
         expect(map.getSelectedFeatures()?.models).to.have.lengthOf(0);
+      });
+
+      it("cancels stale async waiters before starting a new restore", () => {
+        const map = new Map({ showShareUrl: true });
+
+        let waitCallCount = 0;
+        let cancelCallCount = 0;
+        const layer = makeLayer({
+          getFeatureById: () => null,
+          waitForFeatureById: () => {
+            waitCallCount += 1;
+            return () => {
+              cancelCallCount += 1;
+            };
+          },
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", { activeFeatureIds: ["feature-a"] });
+        map.applyFeatureRestoreState();
+
+        map.set("restoreState", { activeFeatureIds: ["feature-b"] });
+        map.applyFeatureRestoreState();
+
+        expect(waitCallCount).to.equal(2);
+        expect(cancelCallCount).to.equal(1);
+      });
+
+      it("does not create duplicate async waiters for repeated restores of same ids", () => {
+        const map = new Map({ showShareUrl: true });
+
+        let waitCallCount = 0;
+        const layer = makeLayer({
+          getFeatureById: () => null,
+          waitForFeatureById: () => {
+            waitCallCount += 1;
+            return () => {};
+          },
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", { activeFeatureIds: ["feature-a"] });
+        map.applyFeatureRestoreState();
+        map.applyFeatureRestoreState();
+        map.applyFeatureRestoreState();
+
+        expect(waitCallCount).to.equal(1);
       });
     });
   });

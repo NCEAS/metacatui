@@ -405,21 +405,34 @@ define([
         const model = this;
         const cesiumModel = model.get("cesiumModel");
         if (!cesiumModel) return () => {};
+
         let removeListener = null;
+        let isDone = false;
+
+        const cleanup = () => {
+          if (isDone) return;
+          isDone = true;
+          if (removeListener) removeListener();
+        };
+
         const tryTile = (tile) => {
+          if (isDone) return;
           if (!tile?.contentReady || !tile.content?.featuresLength) return;
+
           for (let i = 0; i < tile.content.featuresLength; i++) {
             const feature = tile.content.getFeature(i);
             if (propertyMatchesId(model.getPropertiesFromFeature(feature), id)) {
-              if (removeListener) removeListener();
+              cleanup();
               onFound(feature);
               return;
             }
           }
         };
+
         removeListener = cesiumModel.tileVisible.addEventListener(tryTile);
+
         return () => {
-          if (removeListener) removeListener();
+          cleanup();
         };
       },
 
