@@ -43,7 +43,7 @@ define([], () => {
       const val = lower[k];
       return val != null && String(val).trim().length > 0;
     });
-    return key != null ? String(lower[key]) : null;
+    return key != null ? String(lower[key]).trim() : null;
   }
 
   /**
@@ -53,10 +53,15 @@ define([], () => {
    * @returns {boolean} True if a match is found, false otherwise.
    */
   function propertyMatchesId(props, id) {
+    const normalizedId = id != null ? String(id).trim() : "";
+    if (!normalizedId) {
+      return false;
+    }
+
     const lower = toLowerCaseProps(props);
     return FEATURE_ID_KEYS.some((key) => {
       const val = lower[key];
-      return val != null && String(val) === id;
+      return val != null && String(val).trim() === normalizedId;
     });
   }
 
