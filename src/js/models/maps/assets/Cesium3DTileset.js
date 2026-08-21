@@ -6,7 +6,13 @@ define([
   "models/maps/AssetColorPalette",
   "collections/maps/VectorFilters",
   "models/maps/featureIdHelpers",
-], function (Cesium, MapAsset, AssetColorPalette, VectorFilters, { getIdFromProperties, propertyMatchesId }) {
+], function (
+  Cesium,
+  MapAsset,
+  AssetColorPalette,
+  VectorFilters,
+  { getIdFromProperties, propertyMatchesId },
+) {
   // Don't allow full 1 opacity for Cesium 3D tiles. Otherwise, overlapping
   // polygons will not render correctly, and will cause z-fighting. 0.996 shows
   // as 100% in the slider, but 0.999 still results in z-fighting.
@@ -380,7 +386,9 @@ define([
           if (tile.contentReady && tile.content?.featuresLength > 0) {
             for (let i = 0; i < tile.content.featuresLength; i++) {
               const feature = tile.content.getFeature(i);
-              if (propertyMatchesId(this.getPropertiesFromFeature(feature), id)) {
+              if (
+                propertyMatchesId(this.getPropertiesFromFeature(feature), id)
+              ) {
                 found = feature;
                 return;
               }
@@ -421,7 +429,9 @@ define([
 
           for (let i = 0; i < tile.content.featuresLength; i++) {
             const feature = tile.content.getFeature(i);
-            if (propertyMatchesId(model.getPropertiesFromFeature(feature), id)) {
+            if (
+              propertyMatchesId(model.getPropertiesFromFeature(feature), id)
+            ) {
               cleanup();
               onFound(feature);
               return;

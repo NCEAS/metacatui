@@ -466,11 +466,7 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("parses f param as activeFeatureIds when sv=1", () => {
-        window.history.replaceState(
-          null,
-          "",
-          "?sv=1&f=feature-abc-123",
-        );
+        window.history.replaceState(null, "", "?sv=1&f=feature-abc-123");
 
         const state = SearchParams.parseStateFromUrl();
         expect(state.activeFeatureIds).to.deep.equal(["feature-abc-123"]);
@@ -484,14 +480,14 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("parses multiple feature ids from comma-separated f param", () => {
-        window.history.replaceState(
-          null,
-          "",
-          "?sv=1&f=id-one,id-two,id-three",
-        );
+        window.history.replaceState(null, "", "?sv=1&f=id-one,id-two,id-three");
 
         const state = SearchParams.parseStateFromUrl();
-        expect(state.activeFeatureIds).to.deep.equal(["id-one", "id-two", "id-three"]);
+        expect(state.activeFeatureIds).to.deep.equal([
+          "id-one",
+          "id-two",
+          "id-three",
+        ]);
       });
 
       it("writes activeFeatureIds as f param and bumps schema to 1", () => {
@@ -546,7 +542,9 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("round-trips activeFeatureIds through updateStateInUrl and parseStateFromUrl", () => {
-        SearchParams.updateStateInUrl({ activeFeatureIds: ["uuid-1", "uuid-2"] });
+        SearchParams.updateStateInUrl({
+          activeFeatureIds: ["uuid-1", "uuid-2"],
+        });
 
         const state = SearchParams.parseStateFromUrl();
         expect(state.activeFeatureIds).to.deep.equal(["uuid-1", "uuid-2"]);

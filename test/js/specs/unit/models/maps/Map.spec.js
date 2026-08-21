@@ -351,7 +351,8 @@ define([
     describe("setUpUrlStateListeners", () => {
       it("does not duplicate selectedFeatures URL sync listeners on repeated setup", () => {
         const map = new Map({ showShareUrl: true });
-        const originalUpdateActiveFeatureIds = SearchParams.updateActiveFeatureIds;
+        const originalUpdateActiveFeatureIds =
+          SearchParams.updateActiveFeatureIds;
         let updateActiveFeatureIdsCallCount = 0;
 
         SearchParams.updateActiveFeatureIds = () => {

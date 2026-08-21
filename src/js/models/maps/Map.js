@@ -724,7 +724,9 @@ define([
        */
       syncSelectedFeaturesToUrl() {
         if (!this.shouldSyncUrlState()) return;
-        SearchParams.updateActiveFeatureIds(this.getSelectedFeatureIdsForUrlState());
+        SearchParams.updateActiveFeatureIds(
+          this.getSelectedFeatureIdsForUrlState(),
+        );
       },
 
       /**
@@ -864,7 +866,8 @@ define([
           return;
         }
 
-        const restoreSession = this.beginFeatureRestoreSession(activeFeatureIds);
+        const restoreSession =
+          this.beginFeatureRestoreSession(activeFeatureIds);
         const mapModel = this;
         const registerTileWaiters = (layer) => {
           if (!mapModel.isActiveFeatureRestoreSession(restoreSession)) return;
@@ -880,7 +883,9 @@ define([
           if (
             mapModel
               .getSelectedFeatures()
-              ?.models.some((f) => activeFeatureIds.includes(f.get("featureID")))
+              ?.models.some((f) =>
+                activeFeatureIds.includes(f.get("featureID")),
+              )
           ) {
             mapModel.clearFeatureRestoreSession();
             return;

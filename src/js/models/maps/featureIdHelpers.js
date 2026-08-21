@@ -19,10 +19,10 @@ define([], () => {
     "label",
   ];
 
-  /** 
+  /**
    * Convert all keys in an object to lowercase.
    * @param {object} props The object to convert.
-   * @returns {object} copy with all keys lowercased 
+   * @returns {object} copy with all keys lowercased
    */
   function toLowerCaseProps(props) {
     const lower = {};

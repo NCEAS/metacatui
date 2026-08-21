@@ -178,7 +178,11 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
         : 0;
 
     // Phase 1 fields imply schema 1 writing.
-    if (normalized.activeActionId || normalized.openPanel || normalized.activeFeatureIds.length) {
+    if (
+      normalized.activeActionId ||
+      normalized.openPanel ||
+      normalized.activeFeatureIds.length
+    ) {
       normalized.schemaVersion = Math.max(1, normalized.schemaVersion);
     }
 
