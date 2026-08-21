@@ -869,14 +869,6 @@ define([
         const restoreSession =
           this.beginFeatureRestoreSession(activeFeatureIds);
         const mapModel = this;
-        const registerTileWaiters = (layer) => {
-          if (!mapModel.isActiveFeatureRestoreSession(restoreSession)) return;
-          if (typeof layer.waitForFeatureById !== "function") return;
-          activeFeatureIds.forEach((id) => {
-            const cancel = layer.waitForFeatureById(id, () => selectIfFound());
-            mapModel.addFeatureRestoreWaiter(cancel, restoreSession);
-          });
-        };
 
         const selectIfFound = () => {
           if (!mapModel.isActiveFeatureRestoreSession(restoreSession)) return;
@@ -895,6 +887,15 @@ define([
             mapModel.selectFeatures(attrs);
             mapModel.clearFeatureRestoreSession();
           }
+        };
+
+        const registerTileWaiters = (layer) => {
+          if (!mapModel.isActiveFeatureRestoreSession(restoreSession)) return;
+          if (typeof layer.waitForFeatureById !== "function") return;
+          activeFeatureIds.forEach((id) => {
+            const cancel = layer.waitForFeatureById(id, () => selectIfFound());
+            mapModel.addFeatureRestoreWaiter(cancel, restoreSession);
+          });
         };
 
         const allSearchableLayers = this.getAllLayers().filter(

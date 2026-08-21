@@ -432,7 +432,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @param {object} action Viewfinder action object.
    * @param {string} action.id Stable action identifier.
    * @param {string} action.url RFC6570 URL template.
-   * @param {boolean} [showShareUrl=true] Whether to read namespaced browser
+   * @param {boolean} [showShareUrl] Whether to read namespaced browser
    *   state when resolving the template.
    * @returns {string|null} The resolved iframe URL or null when no URL exists.
    * @since 0.0.0
