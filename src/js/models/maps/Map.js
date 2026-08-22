@@ -5,6 +5,7 @@ define([
   "underscore",
   "backbone",
   "collections/maps/MapAssets",
+  "models/maps/ActiveFeatureRestoreController",
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
   "collections/maps/viewfinder/ViewfinderCardCategories",
@@ -14,6 +15,7 @@ define([
   _,
   Backbone,
   MapAssets,
+  ActiveFeatureRestoreController,
   Interactions,
   AssetCategories,
   ViewfinderCardCategories,
@@ -166,43 +168,6 @@ define([
       typeof position.latitude === "number" &&
       typeof position.height === "number"
     );
-  }
-
-  /**
-   * Extract a feature id from either a Feature model or plain attrs object.
-   * @param {Backbone.Model|object} feature Feature model or attrs object.
-   * @returns {string|undefined} Stable feature id when present.
-   * @since 0.0.0
-   */
-  function getFeatureId(feature) {
-    if (feature instanceof Backbone.Model) {
-      return feature.get("featureID");
-    }
-    return feature?.featureID;
-  }
-
-  /**
-   * Merge current and newly found features without duplicating feature ids.
-   * @param {Array<Backbone.Model|object>} currentFeatures Currently selected features.
-   * @param {Array<Backbone.Model|object>} newFeatures Newly resolved features.
-   * @returns {Array<Backbone.Model|object>} Merged feature list.
-   * @since 0.0.0
-   */
-  function mergeFeatureSelections(currentFeatures = [], newFeatures = []) {
-    const merged = [];
-    const seenIds = new Set();
-
-    currentFeatures.concat(newFeatures).forEach((feature) => {
-      if (!feature) return;
-      const featureId = getFeatureId(feature);
-      if (typeof featureId === "string" && featureId.length) {
-        if (seenIds.has(featureId)) return;
-        seenIds.add(featureId);
-      }
-      merged.push(feature);
-    });
-
-    return merged;
   }
 
   /**
@@ -573,6 +538,9 @@ define([
         this.debouncedUpdateSearchParams = _.debounce(() => {
           this.updateSearchParams();
         }, 150 /* milliseconds */);
+        this.featureRestoreController = new ActiveFeatureRestoreController({
+          mapModel: this,
+        });
         this.featureRestoreSession = null;
         this.setUpUrlStateListeners();
         this.applyRestoreState();
@@ -762,18 +730,9 @@ define([
       syncSelectedFeaturesToUrl() {
         if (!this.shouldSyncUrlState()) return;
         const selectedIds = this.getSelectedFeatureIdsForUrlState();
-        const restoringIds = this.featureRestoreSession?.requestedIds;
-
-        if (restoringIds?.length) {
-          const mergedIds = restoringIds.slice();
-          selectedIds.forEach((id) => {
-            if (!mergedIds.includes(id)) mergedIds.push(id);
-          });
-          SearchParams.updateActiveFeatureIds(mergedIds);
-          return;
-        }
-
-        SearchParams.updateActiveFeatureIds(selectedIds);
+        SearchParams.updateActiveFeatureIds(
+          this.featureRestoreController.getRequestedIdsForUrlSync(selectedIds),
+        );
       },
 
       /**
@@ -781,60 +740,7 @@ define([
        * @since 0.0.0
        */
       clearFeatureRestoreSession() {
-        const session = this.featureRestoreSession;
-        if (!session) return;
-
-        this.featureRestoreSession = null;
-        session.cancelers.forEach((cancel) => {
-          if (typeof cancel === "function") cancel();
-        });
-      },
-
-      /**
-       * Start a new feature restore session, canceling any previous one.
-       * @param {string[]} activeFeatureIds The ids being restored.
-       * @returns {object} The active restore session.
-       * @since 0.0.0
-       */
-      beginFeatureRestoreSession(activeFeatureIds) {
-        const sessionKey = activeFeatureIds.join(",");
-        if (this.featureRestoreSession?.key === sessionKey) {
-          return this.featureRestoreSession;
-        }
-
-        this.clearFeatureRestoreSession();
-        this.featureRestoreSession = {
-          cancelers: [],
-          key: sessionKey,
-          requestedIds: activeFeatureIds.slice(),
-        };
-        return this.featureRestoreSession;
-      },
-
-      /**
-       * Track a cancel function for in-flight feature restore waiting.
-       * @param {Function} cancel Cancel function returned by a waiter.
-       * @param {object} session The restore session that owns the waiter.
-       * @since 0.0.0
-       */
-      addFeatureRestoreWaiter(cancel, session = this.featureRestoreSession) {
-        if (typeof cancel !== "function" || !session) return;
-        if (this.featureRestoreSession !== session) {
-          cancel();
-          return;
-        }
-
-        session.cancelers.push(cancel);
-      },
-
-      /**
-       * Check whether a restore session is still active.
-       * @param {object} session The restore session to check.
-       * @returns {boolean} True if the session is still current.
-       * @since 0.0.0
-       */
-      isActiveFeatureRestoreSession(session) {
-        return this.featureRestoreSession === session;
+        this.featureRestoreController.clearSession();
       },
 
       /**
@@ -882,171 +788,7 @@ define([
        * @since 0.0.0
        */
       applyFeatureRestoreState() {
-        if (!this.shouldSyncUrlState()) {
-          this.clearFeatureRestoreSession();
-          return;
-        }
-        const restoreState = this.get("restoreState") || {};
-        const activeFeatureIds = restoreState.activeFeatureIds || [];
-        if (!activeFeatureIds.length) {
-          this.clearFeatureRestoreSession();
-          return;
-        }
-
-        const selectedFeatures = this.getSelectedFeatures();
-        const selectedRequestedIds = (selectedFeatures?.models || [])
-          .map((feature) => getFeatureId(feature))
-          .filter((id) => activeFeatureIds.includes(id));
-        const allSearchableLayers = this.getAllLayers().filter(
-          (layer) => typeof layer.getFeatureById === "function",
-        );
-        const featureAttrs = this.findFeatureAttributesByIds(activeFeatureIds);
-        const resolvedIds = new Set(selectedRequestedIds);
-        featureAttrs.forEach((feature) => {
-          const featureId = getFeatureId(feature);
-          if (typeof featureId === "string" && featureId.length) {
-            resolvedIds.add(featureId);
-          }
-        });
-        const unresolvedIds = activeFeatureIds.filter(
-          (id) => !resolvedIds.has(id),
-        );
-        const restoreKey = activeFeatureIds.join(",");
-        const canResolveAsynchronously = allSearchableLayers.some(
-          (layer) =>
-            layer.get("status") !== "ready" ||
-            typeof layer.waitForFeatureById === "function",
-        );
-        const existingSession = this.featureRestoreSession;
-        let restoreSession = existingSession;
-
-        if (
-          unresolvedIds.length &&
-          canResolveAsynchronously &&
-          existingSession?.key !== restoreKey
-        ) {
-          restoreSession = this.beginFeatureRestoreSession(activeFeatureIds);
-        }
-
-        if (featureAttrs.length) {
-          this.selectFeatures(
-            mergeFeatureSelections(selectedFeatures?.models || [], featureAttrs),
-          );
-        }
-
-        if (!unresolvedIds.length) {
-          this.clearFeatureRestoreSession();
-          return;
-        }
-
-        if (!canResolveAsynchronously) {
-          this.clearFeatureRestoreSession();
-          this.syncSelectedFeaturesToUrl();
-          return;
-        }
-
-        if (this.featureRestoreSession?.key === restoreKey) {
-          if (existingSession?.key === restoreKey) return;
-        }
-        const mapModel = this;
-
-        const selectIfFound = () => {
-          if (!mapModel.isActiveFeatureRestoreSession(restoreSession)) return;
-          const selectedIds = (mapModel.getSelectedFeatures()?.models || [])
-            .map((feature) => getFeatureId(feature))
-            .filter((id) => activeFeatureIds.includes(id));
-          const selectedIdSet = new Set(selectedIds);
-          if (activeFeatureIds.every((id) => selectedIdSet.has(id))) {
-            mapModel.clearFeatureRestoreSession();
-            return;
-          }
-          const attrs = mapModel.findFeatureAttributesByIds(activeFeatureIds);
-          if (attrs.length) {
-            mapModel.selectFeatures(
-              mergeFeatureSelections(
-                mapModel.getSelectedFeatures()?.models || [],
-                attrs,
-              ),
-            );
-          }
-
-          const resolvedAfterRetry = new Set(
-            (mapModel.getSelectedFeatures()?.models || [])
-              .map((feature) => getFeatureId(feature))
-              .filter((id) => activeFeatureIds.includes(id)),
-          );
-          if (activeFeatureIds.every((id) => resolvedAfterRetry.has(id))) {
-            mapModel.clearFeatureRestoreSession();
-          }
-        };
-
-        const registerTileWaiters = (layer) => {
-          if (!mapModel.isActiveFeatureRestoreSession(restoreSession)) return;
-          if (typeof layer.waitForFeatureById !== "function") return;
-          const missingIds = activeFeatureIds.filter((id) => {
-            const selectedId = (mapModel.getSelectedFeatures()?.models || [])
-              .map((feature) => getFeatureId(feature));
-            return !selectedId.includes(id);
-          });
-          missingIds.forEach((id) => {
-            const cancel = layer.waitForFeatureById(id, () => selectIfFound());
-            mapModel.addFeatureRestoreWaiter(cancel, restoreSession);
-          });
-        };
-
-        if (!allSearchableLayers.length) return;
-
-        allSearchableLayers.forEach((layer) => {
-          if (layer.get("status") !== "ready") {
-            // Wait for entities/tileset root to load, then try synchronous search.
-            // For tilesets, also register tile-level waiting after root is ready.
-            const statusListener = () => {
-              if (!mapModel.isActiveFeatureRestoreSession(restoreSession)) {
-                this.stopListening(layer, "change:status", statusListener);
-                return;
-              }
-              if (layer.get("status") !== "ready") return;
-              this.stopListening(layer, "change:status", statusListener);
-              selectIfFound();
-              registerTileWaiters(layer);
-            };
-            this.listenTo(layer, "change:status", statusListener);
-            this.addFeatureRestoreWaiter(() => {
-              this.stopListening(layer, "change:status", statusListener);
-            }, restoreSession);
-          } else if (typeof layer.waitForFeatureById === "function") {
-            // Tileset root is already ready; specific building tile may not be
-            // rendered yet — subscribe to tileVisible for deferred lookup.
-            registerTileWaiters(layer);
-          }
-        });
-      },
-
-      /**
-       * Search all layers for features matching the given ids and return
-       * feature attribute objects ready to be passed to selectFeatures().
-       * @param {string[]} ids Feature ids to search for.
-       * @returns {object[]} Matching feature attribute objects.
-       * @since 0.0.0
-       */
-      findFeatureAttributesByIds(ids) {
-        const allLayers = this.getAllLayers();
-
-        return ids.reduce((result, id) => {
-          const featureAttrs = allLayers.reduce((foundAttrs, layer) => {
-            if (foundAttrs || typeof layer.getFeatureById !== "function") {
-              return foundAttrs;
-            }
-
-            const feature = layer.getFeatureById(id);
-            if (!feature) return foundAttrs;
-
-            return layer.getFeatureAttributes(feature) || foundAttrs;
-          }, null);
-
-          if (featureAttrs) result.push(featureAttrs);
-          return result;
-        }, []);
+        this.featureRestoreController.applyRestoreState();
       },
 
       /**
