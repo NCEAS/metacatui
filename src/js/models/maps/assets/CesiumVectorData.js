@@ -316,10 +316,10 @@ define([
        */
       getFeatureById: function (id) {
         return (
-          this.getEntityCollection()?.getById(id) ??
           (this.getEntities() || []).find((entity) =>
             propertyMatchesId(this.getPropertiesFromFeature(entity), id),
-          ) ??
+        ) ??
+        this.getEntityCollection()?.getById(id) ??
           null
         );
       },
