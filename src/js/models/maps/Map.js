@@ -169,6 +169,43 @@ define([
   }
 
   /**
+   * Extract a feature id from either a Feature model or plain attrs object.
+   * @param {Backbone.Model|object} feature Feature model or attrs object.
+   * @returns {string|undefined} Stable feature id when present.
+   * @since 0.0.0
+   */
+  function getFeatureId(feature) {
+    if (feature instanceof Backbone.Model) {
+      return feature.get("featureID");
+    }
+    return feature?.featureID;
+  }
+
+  /**
+   * Merge current and newly found features without duplicating feature ids.
+   * @param {Array<Backbone.Model|object>} currentFeatures Currently selected features.
+   * @param {Array<Backbone.Model|object>} newFeatures Newly resolved features.
+   * @returns {Array<Backbone.Model|object>} Merged feature list.
+   * @since 0.0.0
+   */
+  function mergeFeatureSelections(currentFeatures = [], newFeatures = []) {
+    const merged = [];
+    const seenIds = new Set();
+
+    currentFeatures.concat(newFeatures).forEach((feature) => {
+      if (!feature) return;
+      const featureId = getFeatureId(feature);
+      if (typeof featureId === "string" && featureId.length) {
+        if (seenIds.has(featureId)) return;
+        seenIds.add(featureId);
+      }
+      merged.push(feature);
+    });
+
+    return merged;
+  }
+
+  /**
    * @class MapModel
    * @classdesc The Map Model contains all of the settings and options for a
    * required to render a map view.
@@ -724,9 +761,19 @@ define([
        */
       syncSelectedFeaturesToUrl() {
         if (!this.shouldSyncUrlState()) return;
-        SearchParams.updateActiveFeatureIds(
-          this.getSelectedFeatureIdsForUrlState(),
-        );
+        const selectedIds = this.getSelectedFeatureIdsForUrlState();
+        const restoringIds = this.featureRestoreSession?.requestedIds;
+
+        if (restoringIds?.length) {
+          const mergedIds = restoringIds.slice();
+          selectedIds.forEach((id) => {
+            if (!mergedIds.includes(id)) mergedIds.push(id);
+          });
+          SearchParams.updateActiveFeatureIds(mergedIds);
+          return;
+        }
+
+        SearchParams.updateActiveFeatureIds(selectedIds);
       },
 
       /**
@@ -759,6 +806,7 @@ define([
         this.featureRestoreSession = {
           cancelers: [],
           key: sessionKey,
+          requestedIds: activeFeatureIds.slice(),
         };
         return this.featureRestoreSession;
       },
@@ -846,45 +894,88 @@ define([
         }
 
         const selectedFeatures = this.getSelectedFeatures();
-        const alreadySelected = selectedFeatures?.models.some((f) =>
-          activeFeatureIds.includes(f.get("featureID")),
+        const selectedRequestedIds = (selectedFeatures?.models || [])
+          .map((feature) => getFeatureId(feature))
+          .filter((id) => activeFeatureIds.includes(id));
+        const allSearchableLayers = this.getAllLayers().filter(
+          (layer) => typeof layer.getFeatureById === "function",
         );
-        if (alreadySelected) {
-          this.clearFeatureRestoreSession();
-          return;
-        }
-
         const featureAttrs = this.findFeatureAttributesByIds(activeFeatureIds);
+        const resolvedIds = new Set(selectedRequestedIds);
+        featureAttrs.forEach((feature) => {
+          const featureId = getFeatureId(feature);
+          if (typeof featureId === "string" && featureId.length) {
+            resolvedIds.add(featureId);
+          }
+        });
+        const unresolvedIds = activeFeatureIds.filter(
+          (id) => !resolvedIds.has(id),
+        );
+        const restoreKey = activeFeatureIds.join(",");
+        const canResolveAsynchronously = allSearchableLayers.some(
+          (layer) =>
+            layer.get("status") !== "ready" ||
+            typeof layer.waitForFeatureById === "function",
+        );
+        const existingSession = this.featureRestoreSession;
+        let restoreSession = existingSession;
+
+        if (
+          unresolvedIds.length &&
+          canResolveAsynchronously &&
+          existingSession?.key !== restoreKey
+        ) {
+          restoreSession = this.beginFeatureRestoreSession(activeFeatureIds);
+        }
+
         if (featureAttrs.length) {
-          this.selectFeatures(featureAttrs);
+          this.selectFeatures(
+            mergeFeatureSelections(selectedFeatures?.models || [], featureAttrs),
+          );
+        }
+
+        if (!unresolvedIds.length) {
           this.clearFeatureRestoreSession();
           return;
         }
 
-        const restoreKey = activeFeatureIds.join(",");
-        if (this.featureRestoreSession?.key === restoreKey) {
+        if (!canResolveAsynchronously) {
+          this.clearFeatureRestoreSession();
+          this.syncSelectedFeaturesToUrl();
           return;
         }
 
-        const restoreSession =
-          this.beginFeatureRestoreSession(activeFeatureIds);
+        if (this.featureRestoreSession?.key === restoreKey) {
+          if (existingSession?.key === restoreKey) return;
+        }
         const mapModel = this;
 
         const selectIfFound = () => {
           if (!mapModel.isActiveFeatureRestoreSession(restoreSession)) return;
-          if (
-            mapModel
-              .getSelectedFeatures()
-              ?.models.some((f) =>
-                activeFeatureIds.includes(f.get("featureID")),
-              )
-          ) {
+          const selectedIds = (mapModel.getSelectedFeatures()?.models || [])
+            .map((feature) => getFeatureId(feature))
+            .filter((id) => activeFeatureIds.includes(id));
+          const selectedIdSet = new Set(selectedIds);
+          if (activeFeatureIds.every((id) => selectedIdSet.has(id))) {
             mapModel.clearFeatureRestoreSession();
             return;
           }
           const attrs = mapModel.findFeatureAttributesByIds(activeFeatureIds);
           if (attrs.length) {
-            mapModel.selectFeatures(attrs);
+            mapModel.selectFeatures(
+              mergeFeatureSelections(
+                mapModel.getSelectedFeatures()?.models || [],
+                attrs,
+              ),
+            );
+          }
+
+          const resolvedAfterRetry = new Set(
+            (mapModel.getSelectedFeatures()?.models || [])
+              .map((feature) => getFeatureId(feature))
+              .filter((id) => activeFeatureIds.includes(id)),
+          );
+          if (activeFeatureIds.every((id) => resolvedAfterRetry.has(id))) {
             mapModel.clearFeatureRestoreSession();
           }
         };
@@ -892,15 +983,17 @@ define([
         const registerTileWaiters = (layer) => {
           if (!mapModel.isActiveFeatureRestoreSession(restoreSession)) return;
           if (typeof layer.waitForFeatureById !== "function") return;
-          activeFeatureIds.forEach((id) => {
+          const missingIds = activeFeatureIds.filter((id) => {
+            const selectedId = (mapModel.getSelectedFeatures()?.models || [])
+              .map((feature) => getFeatureId(feature));
+            return !selectedId.includes(id);
+          });
+          missingIds.forEach((id) => {
             const cancel = layer.waitForFeatureById(id, () => selectIfFound());
             mapModel.addFeatureRestoreWaiter(cancel, restoreSession);
           });
         };
 
-        const allSearchableLayers = this.getAllLayers().filter(
-          (layer) => typeof layer.getFeatureById === "function",
-        );
         if (!allSearchableLayers.length) return;
 
         allSearchableLayers.forEach((layer) => {

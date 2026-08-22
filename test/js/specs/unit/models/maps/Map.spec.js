@@ -483,6 +483,108 @@ define([
         }, 0);
       });
 
+      it("keeps the restore session active across partial feature resolution", (done) => {
+        const map = new Map({ showShareUrl: true });
+        const originalUpdateActiveFeatureIds =
+          SearchParams.updateActiveFeatureIds;
+        const urlUpdates = [];
+        const fakeFeatureA = {};
+        const fakeFeatureB = {};
+        const fakeAttrsA = {
+          featureID: "feature-a",
+          properties: {},
+          mapAsset: null,
+          featureObject: fakeFeatureA,
+          label: null,
+        };
+        const fakeAttrsB = {
+          featureID: "feature-b",
+          properties: {},
+          mapAsset: null,
+          featureObject: fakeFeatureB,
+          label: null,
+        };
+
+        let tileAvailable = false;
+        let tileCallback = null;
+
+        SearchParams.updateActiveFeatureIds = (ids) => {
+          urlUpdates.push(ids.slice());
+        };
+
+        const layer = makeLayer({
+          getFeatureById: (id) => {
+            if (id === "feature-a") return fakeFeatureA;
+            if (id === "feature-b" && tileAvailable) return fakeFeatureB;
+            return null;
+          },
+          getFeatureAttributes: (feature) => {
+            if (feature === fakeFeatureA) return fakeAttrsA;
+            if (feature === fakeFeatureB) return fakeAttrsB;
+            return null;
+          },
+          waitForFeatureById: (id, cb) => {
+            if (id === "feature-b") tileCallback = cb;
+            return () => {};
+          },
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", {
+          activeFeatureIds: ["feature-a", "feature-b"],
+        });
+
+        try {
+          map.applyFeatureRestoreState();
+
+          expect(
+            (map.getSelectedFeatures()?.models || []).some(
+              (f) => f.get("featureID") === "feature-a",
+            ),
+          ).to.equal(true);
+          expect(
+            (map.getSelectedFeatures()?.models || []).some(
+              (f) => f.get("featureID") === "feature-b",
+            ),
+          ).to.equal(false);
+          expect(map.featureRestoreSession?.requestedIds).to.deep.equal([
+            "feature-a",
+            "feature-b",
+          ]);
+          expect(urlUpdates.at(-1)).to.deep.equal(["feature-a", "feature-b"]);
+
+          tileAvailable = true;
+          tileCallback();
+
+          setTimeout(() => {
+            try {
+              const selected = map.getSelectedFeatures()?.models || [];
+              expect(
+                selected.some((f) => f.get("featureID") === "feature-a"),
+              ).to.equal(true);
+              expect(
+                selected.some((f) => f.get("featureID") === "feature-b"),
+              ).to.equal(true);
+              expect(map.featureRestoreSession).to.equal(null);
+              expect(urlUpdates.at(-1)).to.deep.equal([
+                "feature-a",
+                "feature-b",
+              ]);
+              SearchParams.updateActiveFeatureIds =
+                originalUpdateActiveFeatureIds;
+              done();
+            } catch (error) {
+              SearchParams.updateActiveFeatureIds =
+                originalUpdateActiveFeatureIds;
+              done(error);
+            }
+          }, 0);
+        } catch (error) {
+          SearchParams.updateActiveFeatureIds = originalUpdateActiveFeatureIds;
+          done(error);
+        }
+      });
+
       it("cancels pending feature restore waiters when showShareUrl turns off", () => {
         const map = new Map({ showShareUrl: true });
         let cancelCount = 0;
