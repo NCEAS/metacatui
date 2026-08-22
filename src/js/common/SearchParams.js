@@ -97,10 +97,23 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @returns {string|null} A normalized ID string, or null if invalid.
    * @since 0.0.0
    */
-  const normalizeId = (value) => {
+  function normalizeId(value) {
     if (typeof value !== "string") return null;
     const trimmed = value.trim();
     return trimmed.length ? trimmed : null;
+  }
+
+  /**
+   * Normalize a list of IDs from array input.
+   * @param {unknown} value Candidate IDs from URL or model state.
+   * @returns {string[]} Normalized non-empty IDs.
+   * @since 0.0.0
+   */
+  const normalizeIdList = (value) => {
+    if (!Array.isArray(value)) return [];
+    return value
+      .map((item) => normalizeId(item))
+      .filter((item) => item != null);
   };
 
   /**
@@ -164,11 +177,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       enabledLayerStateProvided: Boolean(state.enabledLayerStateProvided),
       activeActionId: normalizeId(state.activeActionId),
       openPanel: normalizeId(state.openPanel),
-      activeFeatureIds: parseCommaSeparated(
-        Array.isArray(state.activeFeatureIds)
-          ? state.activeFeatureIds.join(",")
-          : state.activeFeatureIds,
-      ),
+      activeFeatureIds: normalizeIdList(state.activeFeatureIds),
     };
 
     const requestedSchema = Number(state.schemaVersion);
@@ -229,8 +238,8 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
     if (schemaVersion >= 1) {
       base.activeActionId = normalizeId(url.searchParams.get(ACTIVE_ACTION_ID));
       base.openPanel = normalizeId(url.searchParams.get(OPEN_PANEL_ID));
-      base.activeFeatureIds = parseCommaSeparated(
-        url.searchParams.get(ACTIVE_FEATURES_ID),
+      base.activeFeatureIds = normalizeIdList(
+        url.searchParams.getAll(ACTIVE_FEATURES_ID),
       );
     }
 
@@ -283,10 +292,9 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
         url.searchParams.set(OPEN_PANEL_ID, normalized.openPanel);
       }
       if (normalized.activeFeatureIds.length) {
-        url.searchParams.set(
-          ACTIVE_FEATURES_ID,
-          normalized.activeFeatureIds.join(","),
-        );
+        normalized.activeFeatureIds.forEach((featureId) => {
+          url.searchParams.append(ACTIVE_FEATURES_ID, featureId);
+        });
       }
     }
 

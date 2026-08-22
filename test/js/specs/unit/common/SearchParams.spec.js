@@ -479,8 +479,8 @@ define(["common/SearchParams"], (SearchParams) => {
         expect(state.activeFeatureIds).to.deep.equal([]);
       });
 
-      it("parses multiple feature ids from comma-separated f param", () => {
-        window.history.replaceState(null, "", "?sv=1&f=id-one,id-two,id-three");
+      it("parses repeated f params as activeFeatureIds when sv=1", () => {
+        window.history.replaceState(null, "", "?sv=1&f=id-one&f=id-two&f=id-three");
 
         const state = SearchParams.parseStateFromUrl();
         expect(state.activeFeatureIds).to.deep.equal([
@@ -490,21 +490,30 @@ define(["common/SearchParams"], (SearchParams) => {
         ]);
       });
 
-      it("writes activeFeatureIds as f param and bumps schema to 1", () => {
+      it("writes activeFeatureIds as repeated f params and bumps schema to 1", () => {
         SearchParams.updateStateInUrl({ activeFeatureIds: ["feat-xyz"] });
 
         const url = new URL(window.location.href);
-        expect(url.searchParams.get("f")).to.equal("feat-xyz");
+        expect(url.searchParams.getAll("f")).to.deep.equal(["feat-xyz"]);
         expect(url.searchParams.get("sv")).to.equal("1");
       });
 
-      it("writes multiple feature ids as comma-separated f param", () => {
+      it("writes multiple feature ids as repeated f params", () => {
         SearchParams.updateStateInUrl({
           activeFeatureIds: ["id-a", "id-b"],
         });
 
         const url = new URL(window.location.href);
-        expect(url.searchParams.get("f")).to.equal("id-a,id-b");
+        expect(url.searchParams.getAll("f")).to.deep.equal(["id-a", "id-b"]);
+      });
+
+      it("round-trips feature ids containing commas", () => {
+        SearchParams.updateStateInUrl({
+          activeFeatureIds: ["Washington, DC", "id-b"],
+        });
+
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatureIds).to.deep.equal(["Washington, DC", "id-b"]);
       });
 
       it("omits f param when activeFeatureIds is empty", () => {
@@ -538,7 +547,7 @@ define(["common/SearchParams"], (SearchParams) => {
 
         const url = new URL(window.location.href);
         expect(url.searchParams.get("unrelated")).to.equal("keep");
-        expect(url.searchParams.get("f")).to.equal("feat-1");
+        expect(url.searchParams.getAll("f")).to.deep.equal(["feat-1"]);
       });
 
       it("round-trips activeFeatureIds through updateStateInUrl and parseStateFromUrl", () => {
