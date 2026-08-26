@@ -675,11 +675,13 @@ define([
        * @since 0.0.0
        */
       isTrackedLayerLoading(layer) {
+        if (!this.shouldTrackLayerLoading(layer)) return false;
+        if (layer?.get("visible") !== true) return false;
+        if (layer.get("status") === "error") return false;
+
         return (
-          this.shouldTrackLayerLoading(layer) &&
-          layer?.get("visible") === true &&
-          (layer.get("status") === "loading" ||
-            layer.get("displayReady") === false)
+          layer.get("status") === "loading" ||
+          layer.get("displayReady") === false
         );
       },
 

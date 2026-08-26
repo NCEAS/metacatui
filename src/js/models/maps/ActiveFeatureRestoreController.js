@@ -162,7 +162,11 @@ define(["backbone"], (Backbone) => {
 
       return ids.reduce((result, id) => {
         const featureAttrs = allLayers.reduce((foundAttrs, layer) => {
-          if (foundAttrs || typeof layer.getFeatureById !== "function") {
+          if (
+            foundAttrs ||
+            typeof layer.getFeatureById !== "function" ||
+            layer.get("status") === "error"
+          ) {
             return foundAttrs;
           }
 
@@ -203,9 +207,13 @@ define(["backbone"], (Backbone) => {
       const selectedRequestedIds = (selectedFeatures?.models || [])
         .map((feature) => getFeatureId(feature))
         .filter((id) => activeFeatureIds.includes(id));
-      const allSearchableLayers = mapModel.getAllLayers().filter(
-        (layer) => typeof layer.getFeatureById === "function",
-      );
+      const allSearchableLayers = mapModel
+        .getAllLayers()
+        .filter(
+          (layer) =>
+            typeof layer.getFeatureById === "function" &&
+            layer.get("status") !== "error",
+        );
       const featureAttrs = this.findFeatureAttributesByIds(activeFeatureIds);
       const resolvedIds = new Set(selectedRequestedIds);
 
@@ -291,6 +299,7 @@ define(["backbone"], (Backbone) => {
 
       const registerTileWaiters = (layer) => {
         if (!this.isActiveSession(restoreSession)) return;
+        if (layer.get("status") === "error") return;
         if (typeof layer.waitForFeatureById !== "function") return;
 
         const selectedIds = (mapModel.getSelectedFeatures()?.models || []).map(

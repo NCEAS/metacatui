@@ -702,6 +702,22 @@ define([
         );
       });
 
+      it("does not treat failed visible layers as still loading", () => {
+        const map = new Map({ showShareUrl: false });
+        const layer = makeLayer({
+          label: "Lakes",
+          status: "error",
+          visible: true,
+          displayReady: false,
+        });
+
+        map.getAllLayers = () => [layer];
+        map.updateLayerLoadingState();
+
+        expect(map.get("isLoadingLayers")).to.equal(false);
+        expect(map.get("loadingLayersMessage")).to.equal(null);
+      });
+
       it("treats visible layers that are not yet display-ready as loading", () => {
         const map = new Map({ showShareUrl: false });
         const layer = makeLayer({
