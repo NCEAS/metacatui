@@ -52,7 +52,8 @@ define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
     });
 
     describe("Layer loading indicator", () => {
-      it("shows and updates the loading message from the map model", () => {
+      it("shows only after the map has been loading for half a second", () => {
+        const clock = sinon.useFakeTimers();
         const view = new MapView({
           model: new MapAsset({
             showToolbar: false,
@@ -76,11 +77,14 @@ define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
           });
 
           expect(mapWidgetContainer.contains(indicator)).to.equal(true);
-          expect(indicator.hidden).to.equal(false);
+          expect(indicator.hidden).to.equal(true);
           expect(message.textContent).to.equal("Loading Habitat roads");
-          expect(
-            view.el.querySelector(".map-view__loading-ellipsis"),
-          ).to.equal(null);
+
+          clock.tick(499);
+          expect(indicator.hidden).to.equal(true);
+
+          clock.tick(1);
+          expect(indicator.hidden).to.equal(false);
 
           view.model.set({
             isLoadingLayers: false,
@@ -90,6 +94,7 @@ define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
           expect(indicator.hidden).to.equal(true);
         } finally {
           view.remove();
+          clock.restore();
         }
       });
     });

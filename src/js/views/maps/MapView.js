@@ -29,6 +29,8 @@ define([
   // CSS
   MapCSS,
 ) => {
+  const LOADING_INDICATOR_DELAY_MS = 500;
+
   const CLASS_NAMES = {
     loadingIndicator: "map-view__loading-indicator",
     loadingBar: "map-view__loading-bar",
@@ -154,6 +156,17 @@ define([
       },
 
       /**
+       * Clear any pending delayed loading-indicator reveal.
+       * @since 0.0.0
+       */
+      clearLayerLoadingIndicatorTimer() {
+        if (this.loadingIndicatorTimer) {
+          clearTimeout(this.loadingIndicatorTimer);
+          this.loadingIndicatorTimer = null;
+        }
+      },
+
+      /**
        * Render the map-level loading indicator within the map widget container.
        * @returns {HTMLElement|null} The loading indicator element.
        * @since 0.0.0
@@ -201,8 +214,24 @@ define([
         const isLoading = this.model.get("isLoadingLayers") === true;
         const message = this.model.get("loadingLayersMessage") || "Loading layers";
 
-        indicator.hidden = !isLoading;
         messageTextEl.textContent = message;
+
+        if (!isLoading) {
+          this.clearLayerLoadingIndicatorTimer();
+          indicator.hidden = true;
+          return;
+        }
+
+        if (!this.loadingIndicatorTimer && indicator.hidden) {
+          this.loadingIndicatorTimer = setTimeout(() => {
+            this.loadingIndicatorTimer = null;
+            if (this.model.get("isLoadingLayers") === true) {
+              messageTextEl.textContent =
+                this.model.get("loadingLayersMessage") || "Loading layers";
+              indicator.hidden = false;
+            }
+          }, LOADING_INDICATOR_DELAY_MS);
+        }
       },
 
       /**
@@ -385,6 +414,7 @@ define([
        * @since 2.27.0
        */
       onClose() {
+        this.clearLayerLoadingIndicatorTimer();
         const subViews = this.getSubViews();
         subViews.forEach((subView) => {
           if (subView && typeof subView.onClose === "function") {
