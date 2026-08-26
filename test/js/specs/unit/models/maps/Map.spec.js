@@ -451,6 +451,7 @@ define([
         let tileAvailable = false;
         let tileCallback = null;
         const layer = makeLayer({
+          label: "Habitat roads",
           // Returns the feature only once the tile is "loaded"
           getFeatureById: () => (tileAvailable ? fakeFeature : null),
           getFeatureAttributes: () => fakeAttrs,
@@ -463,6 +464,11 @@ define([
         map.getAllLayers = () => [layer];
         map.set("restoreState", { activeFeatureIds: ["building-42"] });
         map.applyFeatureRestoreState();
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Habitat roads",
+        );
 
         expect(
           (map.getSelectedFeatures()?.models || []).some(
@@ -479,6 +485,7 @@ define([
           expect(
             selected.some((f) => f.get("featureID") === "building-42"),
           ).to.equal(true);
+          expect(map.get("isLoadingLayers")).to.equal(false);
           done();
         }, 0);
       });
@@ -663,6 +670,96 @@ define([
         map.applyFeatureRestoreState();
 
         expect(waitCallCount).to.equal(1);
+      });
+
+      it("clears the loading state when no layer can continue the restore asynchronously", () => {
+        const map = new Map({ showShareUrl: true });
+        const layer = makeLayer({
+          getFeatureById: () => null,
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", { activeFeatureIds: ["missing-feature"] });
+        map.applyFeatureRestoreState();
+
+        expect(map.get("isLoadingLayers")).to.equal(false);
+      });
+
+      it("treats visible loading layers as map loading state", () => {
+        const map = new Map({ showShareUrl: false });
+        const layer = makeLayer({
+          label: "Habitat roads",
+          status: "loading",
+          visible: true,
+        });
+
+        map.getAllLayers = () => [layer];
+        map.updateLayerLoadingState();
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Habitat roads",
+        );
+      });
+
+      it("treats visible layers that are not yet display-ready as loading", () => {
+        const map = new Map({ showShareUrl: false });
+        const layer = makeLayer({
+          label: "Buildings (HABITAT-OSM)",
+          status: "ready",
+          visible: true,
+          displayReady: false,
+        });
+
+        map.getAllLayers = () => [layer];
+        map.updateLayerLoadingState();
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Buildings (HABITAT-OSM)",
+        );
+      });
+
+      it("ignores helper layers that opt out of loading state tracking", () => {
+        const map = new Map({ showShareUrl: false });
+        const layers = [
+          makeLayer({
+            label: "Your Polygon",
+            status: "loading",
+            visible: true,
+            excludeFromLoadingState: true,
+          }),
+          makeLayer({
+            label: "Habitat roads",
+            status: "ready",
+            visible: true,
+            displayReady: false,
+          }),
+        ];
+
+        map.getAllLayers = () => layers;
+        map.updateLayerLoadingState();
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Habitat roads",
+        );
+      });
+
+      it("summarizes multiple visible loading layers in the loading message", () => {
+        const map = new Map({ showShareUrl: false });
+        const layers = [
+          makeLayer({ label: "Habitat roads", status: "loading", visible: true }),
+          makeLayer({ label: "Wetlands", status: "ready", visible: true, displayReady: false }),
+          makeLayer({ label: "Elevation", status: "ready", visible: true, displayReady: false }),
+        ];
+
+        map.getAllLayers = () => layers;
+        map.updateLayerLoadingState();
+
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Habitat roads and 2 more layers",
+        );
       });
     });
   });

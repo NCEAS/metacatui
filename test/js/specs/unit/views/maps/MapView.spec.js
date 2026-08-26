@@ -50,5 +50,48 @@ define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
         }
       });
     });
+
+    describe("Layer loading indicator", () => {
+      it("shows and updates the loading message from the map model", () => {
+        const view = new MapView({
+          model: new MapAsset({
+            showToolbar: false,
+          }),
+        });
+        view.$el.hide();
+        document.body.appendChild(view.el);
+
+        try {
+          view.render();
+
+          const mapWidgetContainer = view.el.querySelector(
+            ".map-view__map-widget-container",
+          );
+          const indicator = view.el.querySelector(".map-view__loading-indicator");
+          const message = view.el.querySelector(".map-view__loading-text");
+
+          view.model.set({
+            isLoadingLayers: true,
+            loadingLayersMessage: "Loading Habitat roads",
+          });
+
+          expect(mapWidgetContainer.contains(indicator)).to.equal(true);
+          expect(indicator.hidden).to.equal(false);
+          expect(message.textContent).to.equal("Loading Habitat roads");
+          expect(
+            view.el.querySelector(".map-view__loading-ellipsis"),
+          ).to.equal(null);
+
+          view.model.set({
+            isLoadingLayers: false,
+            loadingLayersMessage: null,
+          });
+
+          expect(indicator.hidden).to.equal(true);
+        } finally {
+          view.remove();
+        }
+      });
+    });
   });
 });
