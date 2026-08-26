@@ -442,6 +442,8 @@ define([
           activeVisualizationAction: null,
           activeVisualizationActionId: null,
           activeVisualizationUrl: null,
+          isLoadingLayers: false,
+          loadingLayersMessage: null,
         };
       },
 
@@ -542,6 +544,8 @@ define([
           mapModel: this,
         });
         this.featureRestoreSession = null;
+        this.loadingStateLayerGroups = [];
+        this.setUpLayerLoadingStateListeners();
         this.setUpUrlStateListeners();
         this.applyRestoreState();
       },
@@ -611,6 +615,184 @@ define([
           this.clearFeatureRestoreSession();
         }
         this.setUpUrlStateListeners();
+      },
+
+      /**
+       * Set up listeners that aggregate visible-layer and restore-session loading state.
+       * @since 0.0.0
+       */
+      setUpLayerLoadingStateListeners() {
+        this.stopListening(
+          this,
+          "change:layers change:layerCategories",
+          this.setUpLayerLoadingStateListeners,
+        );
+
+        if (this.loadingStateLayers?.length) {
+          this.loadingStateLayers.forEach((layer) => {
+            this.stopListening(
+              layer,
+              "change:visible change:status change:displayReady change:label",
+              this.updateLayerLoadingState,
+            );
+          });
+        }
+
+        this.loadingStateLayers = this.getAllLayers();
+        this.listenTo(
+          this,
+          "change:layers change:layerCategories",
+          this.setUpLayerLoadingStateListeners,
+        );
+
+        this.loadingStateLayers.forEach((layer) => {
+          if (!layer) return;
+          this.listenTo(
+            layer,
+            "change:visible change:status change:displayReady change:label",
+            this.updateLayerLoadingState,
+          );
+        });
+
+        this.updateLayerLoadingState();
+      },
+
+      /**
+       * Return true when a layer should participate in map loading state.
+       * Internal helper overlays can opt out explicitly.
+       * @param {Backbone.Model|object} layer The layer model to check.
+       * @returns {boolean} Whether the layer should be tracked.
+       * @since 0.0.0
+       */
+      shouldTrackLayerLoading(layer) {
+        return layer?.get("excludeFromLoadingState") !== true;
+      },
+
+      /**
+       * Return true when a tracked layer is enabled but not yet displayed.
+       * @param {Backbone.Model|object} layer The layer model to check.
+       * @returns {boolean} Whether the layer is still loading.
+       * @since 0.0.0
+       */
+      isTrackedLayerLoading(layer) {
+        return (
+          this.shouldTrackLayerLoading(layer) &&
+          layer?.get("visible") === true &&
+          (layer.get("status") === "loading" ||
+            layer.get("displayReady") === false)
+        );
+      },
+
+      /**
+       * Get visible tracked layers that are actively loading.
+       * @returns {Array} The layers still loading into the map.
+       * @since 0.0.0
+       */
+      getTrackedLoadingLayers() {
+        return this.getAllLayers().filter((layer) =>
+          this.isTrackedLayerLoading(layer),
+        );
+      },
+
+      /**
+       * Return true when any visible layer is actively loading.
+       * @returns {boolean} Whether a visible layer is still loading.
+       * @since 0.0.0
+       */
+      hasVisibleLoadingLayers() {
+        return this.getTrackedLoadingLayers().length > 0;
+      },
+
+      /**
+       * Get a user-facing label for a loading layer.
+       * @param {Backbone.Model|object} layer The layer model.
+       * @returns {string|null} The label to surface in the loading message.
+       * @since 0.0.0
+       */
+      getLoadingLayerLabel(layer) {
+        const label = layer?.get("label");
+        return typeof label === "string" && label.trim().length ? label.trim() : null;
+      },
+
+      /**
+       * Get the distinct labels for layers contributing to the current loading state.
+       * @returns {string[]} A deduplicated list of loading layer labels.
+       * @since 0.0.0
+       */
+      getLoadingLayerLabels() {
+        const visibleLoadingLabels = this.getTrackedLoadingLayers()
+          .map((layer) => this.getLoadingLayerLabel(layer))
+          .filter(Boolean);
+        const restoreLabels = this.featureRestoreSession?.layerLabels || [];
+
+        return [...new Set([...visibleLoadingLabels, ...restoreLabels])];
+      },
+
+      /**
+       * Format the map-level loading message from the loading layer labels.
+       * @returns {string|null} The user-facing loading message.
+       * @since 0.0.0
+       */
+      getLoadingLayersMessage() {
+        const labels = this.getLoadingLayerLabels();
+        if (!labels.length) {
+          return this.get("isLoadingLayers") ? "Loading layers" : null;
+        }
+
+        if (labels.length === 1) {
+          return `Loading ${labels[0]}`;
+        }
+
+        if (labels.length === 2) {
+          return `Loading ${labels[0]} and ${labels[1]}`;
+        }
+
+        return `Loading ${labels[0]} and ${labels.length - 1} more layers`;
+      },
+
+      /**
+       * Track a layer label on the active feature restore session.
+       * @param {object} session The active restore session.
+       * @param {Backbone.Model|object} layer The layer contributing to the wait.
+       * @since 0.0.0
+       */
+      trackFeatureRestoreLayer(session, layer) {
+        if (!session || this.featureRestoreSession !== session) return;
+        const label = this.getLoadingLayerLabel(layer);
+        if (!label) return;
+        if (!session.layerLabels.includes(label)) {
+          session.layerLabels.push(label);
+          this.updateLayerLoadingState();
+        }
+      },
+
+      /**
+       * Sync the aggregate map loading indicator state.
+       * @since 0.0.0
+       */
+      updateLayerLoadingState() {
+        const hadLoadingState = this.get("isLoadingLayers") === true;
+        const isLoadingLayers =
+          this.hasVisibleLoadingLayers() || Boolean(this.featureRestoreSession);
+        const loadingLayersMessage = isLoadingLayers
+          ? this.getLoadingLayersMessage() || "Loading layers"
+          : null;
+
+        if (
+          this.get("isLoadingLayers") === isLoadingLayers &&
+          this.get("loadingLayersMessage") === loadingLayersMessage
+        ) {
+          return;
+        }
+
+        this.set({
+          isLoadingLayers,
+          loadingLayersMessage,
+        });
+
+        if (!hadLoadingState && isLoadingLayers && !loadingLayersMessage) {
+          this.trigger("loading:started");
+        }
       },
 
       /**

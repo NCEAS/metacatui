@@ -250,10 +250,12 @@ define([
               // Imagery must be converted from a Cesium Imagery Provider to a Cesium
               // Imagery Layer. See
               // https://cesium.com/learn/cesiumjs-learn/cesiumjs-imagery/#imagery-providers-vs-layers
-              model.set(
-                "cesiumModel",
-                new Cesium.ImageryLayer(provider, initialAppearance),
+              const imageryLayer = new Cesium.ImageryLayer(
+                provider,
+                initialAppearance,
               );
+              imageryLayer.mapAssetModel = model;
+              model.set("cesiumModel", imageryLayer);
               model.set("status", "ready");
               model.setListeners();
             })

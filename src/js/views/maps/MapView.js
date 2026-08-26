@@ -30,6 +30,10 @@ define([
   MapCSS,
 ) => {
   const CLASS_NAMES = {
+    loadingIndicator: "map-view__loading-indicator",
+    loadingBar: "map-view__loading-bar",
+    loadingMessage: "map-view__loading-message",
+    loadingText: "map-view__loading-text",
     mapWidgetContainer: "map-view__map-widget-container",
     featureInfoContainer: "map-view__feature-info-container",
     toolbarContainer: "map-view__toolbar-container",
@@ -125,6 +129,17 @@ define([
 
         // Render the (Cesium) map
         this.renderMapWidget();
+        this.renderLayerLoadingIndicator();
+        this.updateLayerLoadingIndicator();
+        this.stopListening(
+          this.model,
+          "change:isLoadingLayers change:loadingLayersMessage",
+        );
+        this.listenTo(
+          this.model,
+          "change:isLoadingLayers change:loadingLayersMessage",
+          this.updateLayerLoadingIndicator,
+        );
 
         // Optionally add the toolbar, layer details, and feature info box.
         if (this.model.get("showToolbar")) {
@@ -136,6 +151,58 @@ define([
         }
         this.renderVisualizationPanel();
         return this;
+      },
+
+      /**
+       * Render the map-level loading indicator within the map widget container.
+       * @returns {HTMLElement|null} The loading indicator element.
+       * @since 0.0.0
+       */
+      renderLayerLoadingIndicator() {
+        const container = this.subElements?.mapWidgetContainer;
+        if (!container) return null;
+
+        const indicator = document.createElement("div");
+        indicator.className = CLASS_NAMES.loadingIndicator;
+        indicator.hidden = true;
+        indicator.setAttribute("aria-live", "polite");
+        indicator.setAttribute("aria-atomic", "true");
+        indicator.innerHTML = `
+          <div class="${CLASS_NAMES.loadingBar}"></div>
+          <div class="${CLASS_NAMES.loadingMessage}">
+            <span class="${CLASS_NAMES.loadingText}"></span>
+          </div>
+        `;
+        container.appendChild(indicator);
+
+        this.subElements.loadingIndicator = indicator;
+        this.subElements.loadingBar = indicator.querySelector(
+          `.${CLASS_NAMES.loadingBar}`,
+        );
+        this.subElements.loadingMessage = indicator.querySelector(
+          `.${CLASS_NAMES.loadingMessage}`,
+        );
+        this.subElements.loadingText = indicator.querySelector(
+          `.${CLASS_NAMES.loadingText}`,
+        );
+
+        return indicator;
+      },
+
+      /**
+       * Update the map-level loading indicator based on aggregate layer state.
+       * @since 0.0.0
+       */
+      updateLayerLoadingIndicator() {
+        const indicator = this.subElements?.loadingIndicator;
+        const messageTextEl = this.subElements?.loadingText;
+        if (!indicator || !messageTextEl) return;
+
+        const isLoading = this.model.get("isLoadingLayers") === true;
+        const message = this.model.get("loadingLayersMessage") || "Loading layers";
+
+        indicator.hidden = !isLoading;
+        messageTextEl.textContent = message;
       },
 
       /**

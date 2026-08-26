@@ -136,6 +136,7 @@ define([
             this.getCesiumURL(cesiumOptions) || cesiumOptions.url;
 
           cesiumModel = new Cesium.Cesium3DTileset(cesiumOptions);
+          cesiumModel.mapAssetModel = model;
           model.set("cesiumModel", cesiumModel);
           cesiumModel.readyPromise
             .then(function () {

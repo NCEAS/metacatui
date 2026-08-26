@@ -1714,6 +1714,28 @@ define([
        */
       add3DTileset(cesiumModel) {
         this.scene.primitives.add(cesiumModel);
+        const mapAsset = cesiumModel?.mapAssetModel;
+        if (!mapAsset) return;
+
+        if (typeof cesiumModel._mcuiRemoveDisplayReadyListener === "function") {
+          cesiumModel._mcuiRemoveDisplayReadyListener();
+        }
+
+        const markDisplayed = () => {
+          if (mapAsset.get("displayReady") !== true) {
+            mapAsset.set("displayReady", true);
+          }
+          if (typeof cesiumModel._mcuiRemoveDisplayReadyListener === "function") {
+            cesiumModel._mcuiRemoveDisplayReadyListener();
+            cesiumModel._mcuiRemoveDisplayReadyListener = null;
+          }
+        };
+
+        cesiumModel._mcuiRemoveDisplayReadyListener =
+          cesiumModel.tileVisible.addEventListener(() => {
+            markDisplayed();
+          });
+        this.requestRender();
       },
 
       /**
@@ -1723,6 +1745,10 @@ define([
        * @since 2.27.0
        */
       remove3DTileset(cesiumModel) {
+        if (typeof cesiumModel?._mcuiRemoveDisplayReadyListener === "function") {
+          cesiumModel._mcuiRemoveDisplayReadyListener();
+          cesiumModel._mcuiRemoveDisplayReadyListener = null;
+        }
         this.scene.primitives.remove(cesiumModel);
       },
 
@@ -1753,6 +1779,16 @@ define([
       addImagery(cesiumModel) {
         this.scene.imageryLayers.add(cesiumModel);
         this.sortImagery();
+        const mapAsset = cesiumModel?.mapAssetModel;
+        if (mapAsset) {
+          const removeListener = this.scene.postRender.addEventListener(() => {
+            removeListener();
+            if (mapAsset.get("displayReady") !== true) {
+              mapAsset.set("displayReady", true);
+            }
+          });
+        }
+        this.requestRender();
       },
 
       /**

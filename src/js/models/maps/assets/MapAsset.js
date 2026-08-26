@@ -87,9 +87,10 @@ define([
        * @property {MapConfig#Notification} [notification] A custom badge and message to
        * display about the layer in the Layer list. For example, this could highlight
        * the layer if it is new, give a warning if they layer is under development, etc.
-       * @property {'ready'|'error'|null} [status = null] Set to 'ready' when the
-       * resource is loaded and ready to be rendered in a map view. Set to 'error' when
-       * the asset is not supported, or there was a problem requesting the resource.
+       * @property {'loading'|'ready'|'error'|null} [status = null] Set to
+       * 'loading' while the resource is being requested, 'ready' when it can
+       * be rendered in a map view, and 'error' when the asset is not
+       * supported or there was a problem requesting the resource.
        * @property {string} [statusDetails = null] Any further details about the status,
        * especially when there was an error.
        * @property {boolean} [hideInLayerList = false] Set to true to hide this asset
@@ -121,6 +122,7 @@ define([
           notification: {},
           status: null,
           statusDetails: null,
+          displayReady: null,
           hideInLayerList: false,
           showOpacitySlider: true,
           clickFeatureAction: null,
@@ -437,8 +439,6 @@ define([
        * @since 2.27.0
        */
       setListeners() {
-        const model = this;
-
         // Listen for changes to the status
         this.stopListening(this, "change:status");
         this.listenTo(this, "change:status", () => {
@@ -751,9 +751,9 @@ define([
        * @since 2.21.0
        */
       resetStatus() {
-        const defaults = this.defaults();
-        this.set("status", defaults.status);
-        this.set("statusDetails", defaults.statusDetails);
+        this.set("status", "loading");
+        this.set("statusDetails", null);
+        this.set("displayReady", false);
       },
 
       /**
