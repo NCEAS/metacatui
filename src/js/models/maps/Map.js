@@ -419,6 +419,7 @@ define([
             {
               type: "OpenStreetMapImageryProvider",
               label: "Base layer",
+              excludeFromLoadingState: true,
             },
           ]),
           terrains: new MapAssets(),
@@ -750,22 +751,6 @@ define([
         }
 
         return `Loading ${labels[0]} and ${labels.length - 1} more layers`;
-      },
-
-      /**
-       * Track a layer label on the active feature restore session.
-       * @param {object} session The active restore session.
-       * @param {Backbone.Model|object} layer The layer contributing to the wait.
-       * @since 0.0.0
-       */
-      trackFeatureRestoreLayer(session, layer) {
-        if (!session || this.featureRestoreSession !== session) return;
-        const label = this.getLoadingLayerLabel(layer);
-        if (!label) return;
-        if (!session.layerLabels.includes(label)) {
-          session.layerLabels.push(label);
-          this.updateLayerLoadingState();
-        }
       },
 
       /**

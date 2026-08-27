@@ -39,6 +39,13 @@ define([
         expect(state.model.get("debug")).to.equal(false);
       });
 
+      it("excludes the default base layer from loading-state tracking", () => {
+        const layers = state.model.get("layers");
+        expect(layers).to.have.lengthOf(1);
+        expect(layers.at(0).get("label")).to.equal("Base layer");
+        expect(layers.at(0).get("excludeFromLoadingState")).to.equal(true);
+      });
+
       it("ignores layers if layerCategories exist", () => {
         const map = new Map({
           layerCategories: [{ layers: [{}] }],
@@ -465,10 +472,8 @@ define([
         map.set("restoreState", { activeFeatureIds: ["building-42"] });
         map.applyFeatureRestoreState();
 
-        expect(map.get("isLoadingLayers")).to.equal(true);
-        expect(map.get("loadingLayersMessage")).to.equal(
-          "Loading Habitat roads",
-        );
+        expect(map.get("isLoadingLayers")).to.equal(false);
+        expect(map.get("loadingLayersMessage")).to.equal(null);
 
         expect(
           (map.getSelectedFeatures()?.models || []).some(
