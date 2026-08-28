@@ -328,27 +328,55 @@ define([
       },
 
       /**
+       * Derive the current status state being rendered for this layer.
+       * @returns {object} State data used by the status UI.
+       */
+      getStatusState() {
+        const layerModel = this.model;
+        const notice = layerModel.get("notification");
+
+        return {
+          status: layerModel.get("status"),
+          isLoading: layerModel.get("isLoadingLayer") === true,
+          notice,
+          badge: notice ? notice.badge : null,
+          errorMessage: layerModel.get("statusDetails"),
+        };
+      },
+
+      /**
+       * Append a status-related element to the layer label while keeping UI setup
+       * centralized.
+       * @param {HTMLElement} element The element to append.
+       */
+      appendStatusElement(element) {
+        if (!element || !this.labelEl) {
+          return;
+        }
+        this.labelEl.append(element);
+      },
+
+      /**
        * Gets the Map Asset model's status and updates this Layer Item View to reflect
        * that status to the user.
        */
       showStatus() {
-        const layerModel = this.model;
-        const status = layerModel.get("status");
-        const isLoadingLayer = layerModel.get("isLoadingLayer") === true;
+        const { status, isLoading, badge, notice, errorMessage } =
+          this.getStatusState();
+
         if (status === "error") {
-          const errorMessage = layerModel.get("statusDetails");
           this.showError(errorMessage);
-        } else if (isLoadingLayer) {
+          return;
+        }
+
+        if (isLoading) {
           this.showLoading();
-        } else if (status === "ready") {
-          this.removeStatuses();
-          const notice = layerModel.get("notification");
-          const badge = notice ? notice.badge : null;
-          if (badge) {
-            this.showBadge(badge, notice.style);
-          }
-        } else {
-          this.removeStatuses();
+          return;
+        }
+
+        this.removeStatuses();
+        if (status === "ready" && badge) {
+          this.showBadge(badge, notice?.style);
         }
       },
 
@@ -359,9 +387,11 @@ define([
       removeStatuses() {
         if (this.statusIcon) {
           this.statusIcon.remove();
+          this.statusIcon = null;
         }
         if (this.badge) {
           this.badge.remove();
+          this.badge = null;
         }
         this.$el.tooltip("destroy");
       },
@@ -380,7 +410,7 @@ define([
         this.badge = document.createElement("span");
         this.badge.classList.add(this.classes.badge);
         this.badge.innerText = text;
-        this.labelEl.append(this.badge);
+        this.appendStatusElement(this.badge);
         if (style) {
           const badgeClass = `${this.classes.badge}--${style}`;
           this.badge.classList.add(badgeClass);
@@ -403,7 +433,7 @@ define([
         this.statusIcon = document.createElement("span");
         this.statusIcon.innerHTML = `<i class="icon-warning-sign icon icon-on-right"></i>`;
         this.statusIcon.style.opacity = "0.6";
-        this.labelEl.append(this.statusIcon);
+        this.appendStatusElement(this.statusIcon);
 
         // Show a tooltip with the error message
         let fullMessage = this.errorMessage;
@@ -433,7 +463,7 @@ define([
         this.statusIcon = document.createElement("span");
         this.statusIcon.innerHTML = `<i class="icon-spinner icon-spin icon-small loading icon icon-on-right"></i>`;
         this.statusIcon.style.opacity = "0.6";
-        this.labelEl.append(this.statusIcon);
+        this.appendStatusElement(this.statusIcon);
       },
 
       /**

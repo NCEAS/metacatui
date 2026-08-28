@@ -97,6 +97,62 @@ define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
           clock.restore();
         }
       });
+
+      it("only delays the first reveal and updates immediately afterward", () => {
+        const clock = sinon.useFakeTimers();
+        const view = new MapView({
+          model: new MapAsset({
+            showToolbar: false,
+          }),
+        });
+        view.$el.hide();
+        document.body.appendChild(view.el);
+
+        try {
+          view.render();
+
+          const indicator = view.el.querySelector(".map-view__loading-indicator");
+          const message = view.el.querySelector(".map-view__loading-text");
+
+          view.model.set({
+            isLoadingLayers: true,
+            loadingLayersMessage: "Loading Habitat roads",
+          });
+
+          clock.tick(499);
+          expect(indicator.hidden).to.equal(true);
+
+          clock.tick(1);
+          expect(indicator.hidden).to.equal(false);
+          expect(message.textContent).to.equal("Loading Habitat roads");
+
+          view.model.set({
+            loadingLayersMessage: "Loading Wetlands",
+          });
+          expect(indicator.hidden).to.equal(false);
+          expect(message.textContent).to.equal("Loading Wetlands");
+
+          view.model.set({
+            isLoadingLayers: false,
+            loadingLayersMessage: null,
+          });
+          expect(indicator.hidden).to.equal(true);
+
+          view.model.set({
+            isLoadingLayers: true,
+            loadingLayersMessage: "Loading Roads",
+          });
+          expect(indicator.hidden).to.equal(true);
+          clock.tick(499);
+          expect(indicator.hidden).to.equal(true);
+          clock.tick(1);
+          expect(indicator.hidden).to.equal(false);
+          expect(message.textContent).to.equal("Loading Roads");
+        } finally {
+          view.remove();
+          clock.restore();
+        }
+      });
     });
   });
 });

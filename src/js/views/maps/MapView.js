@@ -102,6 +102,64 @@ define([
 
         this.model = options?.model ? options.model : new Map();
         this.isPortalMap = options?.isPortalMap;
+        this.loadingIndicatorTimer = null;
+        this.hasShownLoadingIndicator = false;
+      },
+
+      /**
+       * Get the current map loading indicator state.
+       * @returns {object} State used to render the loading widget.
+       */
+      getLoadingIndicatorState() {
+        return {
+          indicator: this.subElements?.loadingIndicator,
+          messageTextEl: this.subElements?.loadingText,
+          isLoading: this.model.get("isLoadingLayers") === true,
+          message:
+            this.model.get("loadingLayersMessage") || "Loading layers",
+        };
+      },
+
+      /**
+       * Hide the map-level loading indicator and clear any pending reveal timer.
+       * @param {HTMLElement} [indicator] The indicator element to hide.
+       */
+      hideLoadingIndicator(indicator = this.subElements?.loadingIndicator) {
+        const loadingIndicator = indicator || this.subElements?.loadingIndicator;
+        if (!loadingIndicator) {
+          return;
+        }
+
+        this.clearLayerLoadingIndicatorTimer();
+        loadingIndicator.hidden = true;
+        this.hasShownLoadingIndicator = false;
+      },
+
+      /**
+       * Schedule the loading indicator reveal after the configured delay.
+       * The delay only applies to the first reveal in a loading cycle.
+       */
+      scheduleLoadingIndicatorReveal() {
+        const { indicator, messageTextEl, isLoading } =
+          this.getLoadingIndicatorState();
+        if (!indicator || !messageTextEl || !isLoading) {
+          return;
+        }
+
+        if (indicator.hidden && !this.loadingIndicatorTimer && !this.hasShownLoadingIndicator) {
+          const loadingIndicator = indicator;
+          this.loadingIndicatorTimer = setTimeout(() => {
+            this.loadingIndicatorTimer = null;
+            if (this.model.get("isLoadingLayers") !== true) {
+              return;
+            }
+
+            messageTextEl.textContent =
+              this.model.get("loadingLayersMessage") || "Loading layers";
+            loadingIndicator.hidden = false;
+            this.hasShownLoadingIndicator = true;
+          }, LOADING_INDICATOR_DELAY_MS);
+        }
       },
 
       /**
@@ -207,31 +265,24 @@ define([
        * @since 0.0.0
        */
       updateLayerLoadingIndicator() {
-        const indicator = this.subElements?.loadingIndicator;
-        const messageTextEl = this.subElements?.loadingText;
+        const { indicator, messageTextEl, isLoading, message } =
+          this.getLoadingIndicatorState();
         if (!indicator || !messageTextEl) return;
-
-        const isLoading = this.model.get("isLoadingLayers") === true;
-        const message = this.model.get("loadingLayersMessage") || "Loading layers";
 
         messageTextEl.textContent = message;
 
         if (!isLoading) {
-          this.clearLayerLoadingIndicatorTimer();
-          indicator.hidden = true;
+          this.hideLoadingIndicator(indicator);
           return;
         }
 
-        if (!this.loadingIndicatorTimer && indicator.hidden) {
-          this.loadingIndicatorTimer = setTimeout(() => {
-            this.loadingIndicatorTimer = null;
-            if (this.model.get("isLoadingLayers") === true) {
-              messageTextEl.textContent =
-                this.model.get("loadingLayersMessage") || "Loading layers";
-              indicator.hidden = false;
-            }
-          }, LOADING_INDICATOR_DELAY_MS);
+        if (indicator.hidden && !this.hasShownLoadingIndicator) {
+          this.scheduleLoadingIndicatorReveal();
+          return;
         }
+
+        indicator.hidden = false;
+        this.hasShownLoadingIndicator = true;
       },
 
       /**
