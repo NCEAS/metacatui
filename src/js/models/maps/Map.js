@@ -396,6 +396,8 @@ define([
        * debugging aids and overlays for development.
        * @property {boolean} [show3DTilesInspector=false] - Whether or not to
        * show Cesium's built-in 3D Tiles inspector widget.
+       * @property {number} [featureRestoreTimeoutMs=15000] - Maximum time to
+       * keep asynchronous feature-restore waiters active before canceling.
        * @property {ZoomPresets} [zoomPresets] - @deprecated use ViewfinderCards instead.
        * @property {ViewfinderCards} [viewfinderCards=null] - A
        * Backbone.Collection of a predefined list of locations with an enabled
@@ -439,6 +441,7 @@ define([
           globeBaseColor: null,
           debug: false,
           show3DTilesInspector: false,
+          featureRestoreTimeoutMs: 15000,
           viewfinderCards: null,
           activeVisualizationAction: null,
           activeVisualizationActionId: null,
@@ -633,8 +636,13 @@ define([
           this.loadingStateLayers.forEach((layer) => {
             this.stopListening(
               layer,
-              "change:visible change:status change:displayReady change:label",
+              "change:status change:displayReady change:label",
               this.updateLayerLoadingState,
+            );
+            this.stopListening(
+              layer,
+              "change:visible",
+              this.handleLayerVisibilityChange,
             );
           });
         }
@@ -650,10 +658,29 @@ define([
           if (!layer) return;
           this.listenTo(
             layer,
-            "change:visible change:status change:displayReady change:label",
+            "change:status change:displayReady change:label",
             this.updateLayerLoadingState,
           );
+          this.listenTo(
+            layer,
+            "change:visible",
+            this.handleLayerVisibilityChange,
+          );
         });
+
+        this.updateLayerLoadingState();
+      },
+
+      /**
+       * Reconcile restore-session waiters when a layer is toggled.
+       * Hidden layers should not keep map loading state active.
+       * @since 0.0.0
+       */
+      handleLayerVisibilityChange() {
+        const activeFeatureIds = this.get("restoreState")?.activeFeatureIds;
+        if (this.shouldSyncUrlState() && isNonEmptyArray(activeFeatureIds)) {
+          this.applyFeatureRestoreState();
+        }
 
         this.updateLayerLoadingState();
       },
@@ -698,6 +725,22 @@ define([
       },
 
       /**
+       * Sync each layer's canonical loading flag to match current tracked loading state.
+       * @param {Backbone.Model[]} [loadingLayers] Optional precomputed loading layers.
+       * @since 0.0.0
+       */
+      syncTrackedLayerLoadingFlags(loadingLayers = this.getTrackedLoadingLayers()) {
+        const loadingLayerSet = new Set(loadingLayers);
+
+        this.getAllLayers().forEach((layer) => {
+          if (!layer) return;
+          const isLoadingLayer = loadingLayerSet.has(layer);
+          if (layer.get("isLoadingLayer") === isLoadingLayer) return;
+          layer.set("isLoadingLayer", isLoadingLayer);
+        });
+      },
+
+      /**
        * Return true when any visible layer is actively loading.
        * @returns {boolean} Whether a visible layer is still loading.
        * @since 0.0.0
@@ -719,25 +762,24 @@ define([
 
       /**
        * Get the distinct labels for layers contributing to the current loading state.
+       * @param {Backbone.Model[]} [loadingLayers] Optional precomputed loading layers.
        * @returns {string[]} A deduplicated list of loading layer labels.
        * @since 0.0.0
        */
-      getLoadingLayerLabels() {
-        const visibleLoadingLabels = this.getTrackedLoadingLayers()
+      getLoadingLayerLabels(loadingLayers = this.getTrackedLoadingLayers()) {
+        return loadingLayers
           .map((layer) => this.getLoadingLayerLabel(layer))
           .filter(Boolean);
-        const restoreLabels = this.featureRestoreSession?.layerLabels || [];
-
-        return [...new Set([...visibleLoadingLabels, ...restoreLabels])];
       },
 
       /**
        * Format the map-level loading message from the loading layer labels.
+       * @param {Backbone.Model[]} [loadingLayers] Optional precomputed loading layers.
        * @returns {string|null} The user-facing loading message.
        * @since 0.0.0
        */
-      getLoadingLayersMessage() {
-        const labels = this.getLoadingLayerLabels();
+      getLoadingLayersMessage(loadingLayers = this.getTrackedLoadingLayers()) {
+        const labels = this.getLoadingLayerLabels(loadingLayers);
         if (!labels.length) {
           return this.get("isLoadingLayers") ? "Loading layers" : null;
         }
@@ -758,11 +800,13 @@ define([
        * @since 0.0.0
        */
       updateLayerLoadingState() {
+        const loadingLayers = this.getTrackedLoadingLayers();
+        this.syncTrackedLayerLoadingFlags(loadingLayers);
+
         const hadLoadingState = this.get("isLoadingLayers") === true;
-        const isLoadingLayers =
-          this.hasVisibleLoadingLayers() || Boolean(this.featureRestoreSession);
+        const isLoadingLayers = loadingLayers.length > 0;
         const loadingLayersMessage = isLoadingLayers
-          ? this.getLoadingLayersMessage() || "Loading layers"
+          ? this.getLoadingLayersMessage(loadingLayers) || "Loading layers"
           : null;
 
         if (

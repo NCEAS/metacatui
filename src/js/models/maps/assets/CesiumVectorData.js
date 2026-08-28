@@ -231,7 +231,7 @@ define([
             })
             .otherwise((error) => {
               console.log("Failed to load Cesium Vector Data.", error);
-              model.setError.bind(model, error.message || error);
+              model.setError(error?.message || error);
             });
         } catch (error) {
           console.log("Failed to create a VectorData Cesium Model.", error);

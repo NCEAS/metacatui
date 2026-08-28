@@ -109,5 +109,37 @@ define([
         });
       });
     });
+
+    describe("status rendering", () => {
+      it("shows loading icon only when layer is visible", () => {
+        state.view.model.set({
+          status: "ready",
+          visible: true,
+          isLoadingLayer: true,
+        });
+        const iconVisible = state.view.el.querySelector(".icon-spinner.loading");
+        expect(iconVisible).to.not.equal(null);
+
+        state.view.model.set("visible", false);
+        state.view.model.set("isLoadingLayer", false);
+        const iconHidden = state.view.el.querySelector(".icon-spinner.loading");
+        expect(iconHidden).to.equal(null);
+      });
+
+      it("shows loading icon when map model marks layer as loading", () => {
+        state.view.model.set({
+          status: "ready",
+          visible: true,
+          isLoadingLayer: true,
+        });
+
+        const iconVisible = state.view.el.querySelector(".icon-spinner.loading");
+        expect(iconVisible).to.not.equal(null);
+
+        state.view.model.set("isLoadingLayer", false);
+        const iconHidden = state.view.el.querySelector(".icon-spinner.loading");
+        expect(iconHidden).to.equal(null);
+      });
+    });
   });
 });

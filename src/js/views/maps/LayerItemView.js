@@ -168,6 +168,7 @@ define([
         this.stopListening(this.model, "change:visible");
         this.listenTo(this.model, "change:visible", () => {
           this.showVisibility();
+          this.showStatus();
           this.toggleFilterIconVisibility();
         });
 
@@ -175,6 +176,8 @@ define([
         // been an error.
         this.stopListening(this.model, "change:status");
         this.listenTo(this.model, "change:status", this.showStatus);
+        this.stopListening(this.model, "change:isLoadingLayer");
+        this.listenTo(this.model, "change:isLoadingLayer", this.showStatus);
 
         this.stopListening(this.model, "change:filters");
         this.listenTo(
@@ -331,9 +334,12 @@ define([
       showStatus() {
         const layerModel = this.model;
         const status = layerModel.get("status");
+        const isLoadingLayer = layerModel.get("isLoadingLayer") === true;
         if (status === "error") {
           const errorMessage = layerModel.get("statusDetails");
           this.showError(errorMessage);
+        } else if (isLoadingLayer) {
+          this.showLoading();
         } else if (status === "ready") {
           this.removeStatuses();
           const notice = layerModel.get("notification");
@@ -341,8 +347,8 @@ define([
           if (badge) {
             this.showBadge(badge, notice.style);
           }
-        } else if (status === "loading") {
-          this.showLoading();
+        } else {
+          this.removeStatuses();
         }
       },
 
