@@ -10,6 +10,7 @@ define([
   "collections/maps/AssetCategories",
   "collections/maps/viewfinder/ViewfinderCardCategories",
   "common/SearchParams",
+  "models/maps/LayerLoadingCoordinator",
 ], (
   $,
   _,
@@ -20,6 +21,7 @@ define([
   AssetCategories,
   ViewfinderCardCategories,
   SearchParams,
+  LayerLoadingCoordinator,
 ) => {
   /**
    * Determine if array is empty.
@@ -637,7 +639,7 @@ define([
             this.stopListening(
               layer,
               "change:status change:displayReady change:label",
-              this.updateLayerLoadingState,
+              () => LayerLoadingCoordinator.updateLayerLoadingState(this),
             );
             this.stopListening(
               layer,
@@ -659,7 +661,7 @@ define([
           this.listenTo(
             layer,
             "change:status change:displayReady change:label",
-            this.updateLayerLoadingState,
+            () => LayerLoadingCoordinator.updateLayerLoadingState(this),
           );
           this.listenTo(
             layer,
@@ -668,7 +670,7 @@ define([
           );
         });
 
-        this.updateLayerLoadingState();
+        LayerLoadingCoordinator.updateLayerLoadingState(this);
       },
 
       /**
@@ -682,148 +684,7 @@ define([
           this.applyFeatureRestoreState();
         }
 
-        this.updateLayerLoadingState();
-      },
-
-      /**
-       * Return true when a layer should participate in map loading state.
-       * Internal helper overlays can opt out explicitly.
-       * @param {Backbone.Model|object} layer The layer model to check.
-       * @returns {boolean} Whether the layer should be tracked.
-       * @since 0.0.0
-       */
-      shouldTrackLayerLoading(layer) {
-        return layer?.get("excludeFromLoadingState") !== true;
-      },
-
-      /**
-       * Return true when a tracked layer is enabled but not yet displayed.
-       * @param {Backbone.Model|object} layer The layer model to check.
-       * @returns {boolean} Whether the layer is still loading.
-       * @since 0.0.0
-       */
-      isTrackedLayerLoading(layer) {
-        if (!this.shouldTrackLayerLoading(layer)) return false;
-        if (layer?.get("visible") !== true) return false;
-        if (layer.get("status") === "error") return false;
-
-        return (
-          layer.get("status") === "loading" ||
-          layer.get("displayReady") === false
-        );
-      },
-
-      /**
-       * Get visible tracked layers that are actively loading.
-       * @returns {Array} The layers still loading into the map.
-       * @since 0.0.0
-       */
-      getTrackedLoadingLayers() {
-        return this.getAllLayers().filter((layer) =>
-          this.isTrackedLayerLoading(layer),
-        );
-      },
-
-      /**
-       * Sync each layer's canonical loading flag to match current tracked loading state.
-       * @param {Backbone.Model[]} [loadingLayers] Optional precomputed loading layers.
-       * @since 0.0.0
-       */
-      syncTrackedLayerLoadingFlags(loadingLayers = this.getTrackedLoadingLayers()) {
-        const loadingLayerSet = new Set(loadingLayers);
-
-        this.getAllLayers().forEach((layer) => {
-          if (!layer) return;
-          const isLoadingLayer = loadingLayerSet.has(layer);
-          if (layer.get("isLoadingLayer") === isLoadingLayer) return;
-          layer.set("isLoadingLayer", isLoadingLayer);
-        });
-      },
-
-      /**
-       * Return true when any visible layer is actively loading.
-       * @returns {boolean} Whether a visible layer is still loading.
-       * @since 0.0.0
-       */
-      hasVisibleLoadingLayers() {
-        return this.getTrackedLoadingLayers().length > 0;
-      },
-
-      /**
-       * Get a user-facing label for a loading layer.
-       * @param {Backbone.Model|object} layer The layer model.
-       * @returns {string|null} The label to surface in the loading message.
-       * @since 0.0.0
-       */
-      getLoadingLayerLabel(layer) {
-        const label = layer?.get("label");
-        return typeof label === "string" && label.trim().length ? label.trim() : null;
-      },
-
-      /**
-       * Get the distinct labels for layers contributing to the current loading state.
-       * @param {Backbone.Model[]} [loadingLayers] Optional precomputed loading layers.
-       * @returns {string[]} A deduplicated list of loading layer labels.
-       * @since 0.0.0
-       */
-      getLoadingLayerLabels(loadingLayers = this.getTrackedLoadingLayers()) {
-        return loadingLayers
-          .map((layer) => this.getLoadingLayerLabel(layer))
-          .filter(Boolean);
-      },
-
-      /**
-       * Format the map-level loading message from the loading layer labels.
-       * @param {Backbone.Model[]} [loadingLayers] Optional precomputed loading layers.
-       * @returns {string|null} The user-facing loading message.
-       * @since 0.0.0
-       */
-      getLoadingLayersMessage(loadingLayers = this.getTrackedLoadingLayers()) {
-        const labels = this.getLoadingLayerLabels(loadingLayers);
-        if (!labels.length) {
-          return this.get("isLoadingLayers") ? "Loading layers" : null;
-        }
-
-        if (labels.length === 1) {
-          return `Loading ${labels[0]}`;
-        }
-
-        if (labels.length === 2) {
-          return `Loading ${labels[0]} and ${labels[1]}`;
-        }
-
-        return `Loading ${labels[0]} and ${labels.length - 1} more layers`;
-      },
-
-      /**
-       * Sync the aggregate map loading indicator state.
-       * @since 0.0.0
-       */
-      updateLayerLoadingState() {
-        const loadingLayers = this.getTrackedLoadingLayers();
-        this.syncTrackedLayerLoadingFlags(loadingLayers);
-
-        const hadLoadingState = this.get("isLoadingLayers") === true;
-        const isLoadingLayers = loadingLayers.length > 0;
-        const loadingLayersMessage = isLoadingLayers
-          ? this.getLoadingLayersMessage(loadingLayers) || "Loading layers"
-          : null;
-
-        if (
-          this.get("isLoadingLayers") === isLoadingLayers &&
-          this.get("loadingLayersMessage") === loadingLayersMessage
-        ) {
-          return;
-        }
-
-        this.set({
-          isLoadingLayers,
-          loadingLayersMessage,
-        });
-
-        if (!hadLoadingState && isLoadingLayers && !loadingLayersMessage) {
-          this.trigger("loading:started");
-        }
+        LayerLoadingCoordinator.updateLayerLoadingState(this);
       },
 
       /**

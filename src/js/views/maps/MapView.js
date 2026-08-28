@@ -115,8 +115,7 @@ define([
           indicator: this.subElements?.loadingIndicator,
           messageTextEl: this.subElements?.loadingText,
           isLoading: this.model.get("isLoadingLayers") === true,
-          message:
-            this.model.get("loadingLayersMessage") || "Loading layers",
+          message: this.model.get("loadingLayersMessage") || "Loading layers",
         };
       },
 
