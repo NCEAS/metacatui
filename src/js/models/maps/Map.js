@@ -680,7 +680,11 @@ define([
        */
       handleLayerVisibilityChange() {
         const activeFeatureIds = this.get("restoreState")?.activeFeatureIds;
-        if (this.shouldSyncUrlState() && isNonEmptyArray(activeFeatureIds)) {
+        if (
+          this.shouldSyncUrlState() &&
+          isNonEmptyArray(activeFeatureIds) &&
+          this.featureRestoreSession
+        ) {
           this.applyFeatureRestoreState();
         }
 
