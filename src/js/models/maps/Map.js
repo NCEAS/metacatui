@@ -634,42 +634,52 @@ define([
           this.setUpLayerLoadingStateListeners,
         );
 
-        if (this.loadingStateLayers?.length) {
-          this.loadingStateLayers.forEach((layer) => {
+        if (this.loadingStateLayerGroups?.length) {
+          this.loadingStateLayerGroups.forEach((layers) => {
             this.stopListening(
-              layer,
-              "change:status change:displayReady change:label",
-              () => LayerLoadingCoordinator.updateLayerLoadingState(this),
+              layers,
+              "change:status change:displayReady change:label change:visible",
+              this.handleLayerVisibilityChange,
             );
             this.stopListening(
-              layer,
-              "change:visible",
-              this.handleLayerVisibilityChange,
+              layers,
+              "update reset",
+              this.handleLayerGroupMutation,
             );
           });
         }
 
-        this.loadingStateLayers = this.getAllLayers();
+        this.loadingStateLayerGroups = this.getLayerGroups().filter(Boolean);
         this.listenTo(
           this,
           "change:layers change:layerCategories",
           this.setUpLayerLoadingStateListeners,
         );
 
-        this.loadingStateLayers.forEach((layer) => {
-          if (!layer) return;
+        this.loadingStateLayerGroups.forEach((layers) => {
           this.listenTo(
-            layer,
-            "change:status change:displayReady change:label",
-            () => LayerLoadingCoordinator.updateLayerLoadingState(this),
+            layers,
+            "change:status change:displayReady change:label change:visible",
+            this.handleLayerVisibilityChange,
           );
           this.listenTo(
-            layer,
-            "change:visible",
-            this.handleLayerVisibilityChange,
+            layers,
+            "update reset",
+            this.handleLayerGroupMutation,
           );
         });
 
+        this.refreshAllLayers();
+        LayerLoadingCoordinator.updateLayerLoadingState(this);
+      },
+
+      /**
+       * Rebuild flattened layers after collection mutations and recalculate
+       * aggregate loading state.
+       * @since 0.0.0
+       */
+      handleLayerGroupMutation() {
+        this.refreshAllLayers();
         LayerLoadingCoordinator.updateLayerLoadingState(this);
       },
 
@@ -727,7 +737,7 @@ define([
           this.urlStateLayerGroups.forEach((layers) => {
             this.stopListening(
               layers,
-              "change:visible",
+              "change:visible update reset",
               this.debouncedUpdateSearchParams,
             );
           });
@@ -771,7 +781,7 @@ define([
           if (layers) {
             this.listenTo(
               layers,
-              "change:visible",
+              "change:visible update reset",
               this.debouncedUpdateSearchParams,
             );
           }

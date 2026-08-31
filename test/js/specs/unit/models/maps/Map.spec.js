@@ -4,6 +4,7 @@ define([
   "models/maps/AssetCategory",
   "collections/maps/AssetCategories",
   "collections/maps/MapAssets",
+  "models/maps/LayerLoadingCoordinator",
   "/test/js/specs/shared/clean-state.js",
   "common/SearchParams",
 ], (
@@ -12,6 +13,7 @@ define([
   AssetCategory,
   AssetCategories,
   MapAssets,
+  LayerLoadingCoordinator,
   cleanState,
   SearchParams,
 ) => {
@@ -780,7 +782,7 @@ define([
         map.set("restoreState", { activeFeatureIds: ["road-feature-1"] });
 
         map.applyFeatureRestoreState();
-        map.updateLayerLoadingState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
 
         expect(map.featureRestoreSession).to.not.equal(null);
         expect(map.get("isLoadingLayers")).to.equal(false);
@@ -807,7 +809,7 @@ define([
         map.set("restoreState", { activeFeatureIds: ["road-feature-1"] });
 
         map.applyFeatureRestoreState();
-        map.updateLayerLoadingState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
 
         expect(map.get("isLoadingLayers")).to.equal(true);
         expect(map.get("loadingLayersMessage")).to.equal(
@@ -816,14 +818,14 @@ define([
 
         layer.set("visible", false);
         map.applyFeatureRestoreState();
-        map.updateLayerLoadingState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
 
         expect(map.get("isLoadingLayers")).to.equal(false);
         expect(map.get("loadingLayersMessage")).to.equal(null);
 
         layer.set("visible", true);
         map.applyFeatureRestoreState();
-        map.updateLayerLoadingState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
 
         expect(map.get("isLoadingLayers")).to.equal(true);
         expect(map.get("loadingLayersMessage")).to.equal(
@@ -841,12 +843,73 @@ define([
         });
 
         map.getAllLayers = () => [layer];
-        map.updateLayerLoadingState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
 
         expect(map.get("isLoadingLayers")).to.equal(true);
         expect(map.get("loadingLayersMessage")).to.equal(
           "Loading Habitat roads",
         );
+      });
+
+      it("recalculates loading state when a loading layer is added dynamically", () => {
+        const map = new Map({
+          showShareUrl: false,
+          layers: [
+            {
+              layerId: "base",
+              label: "Base",
+              visible: true,
+              status: "ready",
+              displayReady: true,
+              excludeFromLoadingState: true,
+            },
+          ],
+        });
+
+        expect(map.get("isLoadingLayers")).to.equal(false);
+
+        map.addAsset({
+          layerId: "roads",
+          label: "Roads",
+          visible: true,
+          status: "ready",
+          displayReady: false,
+        });
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal("Loading Roads");
+      });
+
+      it("recalculates loading state when a loading layer is removed dynamically", () => {
+        const map = new Map({
+          showShareUrl: false,
+          layers: [
+            {
+              layerId: "base",
+              label: "Base",
+              visible: true,
+              status: "ready",
+              displayReady: true,
+              excludeFromLoadingState: true,
+            },
+          ],
+        });
+
+        const roads = map.addAsset({
+          layerId: "roads",
+          label: "Roads",
+          visible: true,
+          status: "loading",
+          displayReady: false,
+        });
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal("Loading Roads");
+
+        map.removeAsset(roads);
+
+        expect(map.get("isLoadingLayers")).to.equal(false);
+        expect(map.get("loadingLayersMessage")).to.equal(null);
       });
 
       it("does not treat failed visible layers as still loading", () => {
@@ -859,7 +922,7 @@ define([
         });
 
         map.getAllLayers = () => [layer];
-        map.updateLayerLoadingState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
 
         expect(map.get("isLoadingLayers")).to.equal(false);
         expect(map.get("loadingLayersMessage")).to.equal(null);
@@ -875,7 +938,7 @@ define([
         });
 
         map.getAllLayers = () => [layer];
-        map.updateLayerLoadingState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
 
         expect(map.get("isLoadingLayers")).to.equal(true);
         expect(map.get("loadingLayersMessage")).to.equal(
@@ -899,14 +962,14 @@ define([
         });
 
         map.getAllLayers = () => [roads, buildings];
-        map.updateLayerLoadingState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
 
         expect(roads.get("isLoadingLayer")).to.equal(true);
         expect(buildings.get("isLoadingLayer")).to.equal(false);
         expect(map.get("isLoadingLayers")).to.equal(true);
 
         roads.set("displayReady", true);
-        map.updateLayerLoadingState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
 
         expect(roads.get("isLoadingLayer")).to.equal(false);
         expect(buildings.get("isLoadingLayer")).to.equal(false);
@@ -932,7 +995,7 @@ define([
         ];
 
         map.getAllLayers = () => layers;
-        map.updateLayerLoadingState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
 
         expect(map.get("isLoadingLayers")).to.equal(true);
         expect(map.get("loadingLayersMessage")).to.equal(
@@ -963,7 +1026,7 @@ define([
         ];
 
         map.getAllLayers = () => layers;
-        map.updateLayerLoadingState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
 
         expect(map.get("loadingLayersMessage")).to.equal(
           "Loading Habitat roads and 2 more layers",
