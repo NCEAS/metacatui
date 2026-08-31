@@ -481,6 +481,9 @@ define([
       close() {
         this.el.classList.remove(this.classes.open);
         this.isOpen = false;
+        if (this.mapModel) {
+          this.mapModel.clearFeatureRestoreSession();
+        }
         // When the feature info panel is closed, remove the Feature model from the
         // Features collection. This will trigger the map widget to remove
         // highlighting from the feature.

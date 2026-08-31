@@ -1,7 +1,17 @@
-define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
+define(
+  ["views/maps/MapView", "models/maps/Map", "common/SearchParams"],
+  (MapView, MapAsset, SearchParams) => {
   const expect = chai.expect;
 
   describe("MapView Test Suite", () => {
+    beforeEach(() => {
+      SearchParams.clearStateInUrl();
+    });
+
+    afterEach(() => {
+      SearchParams.clearStateInUrl();
+    });
+
     describe("Initialization", () => {
       it("creates a MapView instance", () => {
         const view = new MapView();
@@ -45,6 +55,45 @@ define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
 
           expect(view.el.querySelector(".visualization-panel--open")).to.not.be
             .null;
+        } finally {
+          view.remove();
+        }
+      });
+
+      it("clears feature restore encoding when the feature info panel is closed", () => {
+        const map = new MapAsset({
+          showShareUrl: true,
+          showToolbar: false,
+        });
+        const featureAttrs = {
+          featureID: "dismiss-me",
+          properties: {},
+          mapAsset: null,
+          featureObject: {},
+          label: null,
+        };
+
+        map.featureRestoreSession = {
+          requestedIds: ["dismiss-me"],
+          cancelers: [],
+          key: "dismiss-me",
+        };
+        map.set("restoreState", { activeFeatureIds: ["dismiss-me"] });
+        map.selectFeatures([featureAttrs]);
+
+        const view = new MapView({ model: map });
+        view.$el.hide();
+        document.body.appendChild(view.el);
+
+        try {
+          view.render();
+          view.featureInfo.close();
+
+          expect(map.featureRestoreSession).to.equal(null);
+          expect(map.get("restoreState")?.activeFeatureIds).to.deep.equal([]);
+          expect(SearchParams.parseStateFromUrl().activeFeatureIds).to.deep.equal(
+            [],
+          );
         } finally {
           view.remove();
         }
@@ -159,4 +208,5 @@ define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
       });
     });
   });
-});
+  },
+);

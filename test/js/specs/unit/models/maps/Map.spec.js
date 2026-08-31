@@ -679,6 +679,47 @@ define([
         expect(waitCallCount).to.equal(1);
       });
 
+      it("re-runs feature restore when a hidden searchable layer becomes visible after no session was created", () => {
+        const map = new Map({ showShareUrl: true });
+        const fakeFeature = {};
+        const fakeAttrs = {
+          featureID: "hidden-feature-1",
+          properties: {},
+          mapAsset: null,
+          featureObject: fakeFeature,
+          label: null,
+        };
+
+        const layer = makeLayer({
+          layerId: "searchable-layer",
+          visible: false,
+          status: "ready",
+          getFeatureById: (id) =>
+            id === "hidden-feature-1" ? fakeFeature : null,
+          getFeatureAttributes: () => fakeAttrs,
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", { activeFeatureIds: ["hidden-feature-1"] });
+
+        map.applyFeatureRestoreState();
+        expect(map.featureRestoreSession).to.equal(null);
+        expect(
+          (map.getSelectedFeatures()?.models || []).some(
+            (feature) => feature.get("featureID") === "hidden-feature-1",
+          ),
+        ).to.equal(false);
+
+        layer.set("visible", true);
+        map.handleLayerVisibilityChange();
+
+        expect(
+          (map.getSelectedFeatures()?.models || []).some(
+            (feature) => feature.get("featureID") === "hidden-feature-1",
+          ),
+        ).to.equal(true);
+      });
+
       it("replaces restore waiters when visible searchable layers change for the same requested feature ids", (done) => {
         const map = new Map({ showShareUrl: true });
         const fakeFeature = {};
@@ -764,6 +805,43 @@ define([
         map.applyFeatureRestoreState();
 
         expect(map.get("isLoadingLayers")).to.equal(false);
+      });
+
+      it("clears pending feature restore ids from the URL when the restoring layer is hidden before the feature appears", () => {
+        const map = new Map({ showShareUrl: true });
+        let cancelCount = 0;
+
+        const roadsLayer = makeLayer({
+          layerId: "roads",
+          label: "Roads",
+          visible: true,
+          status: "ready",
+          getFeatureById: () => null,
+          waitForFeatureById: () => {
+            return () => {
+              cancelCount += 1;
+            };
+          },
+        });
+
+        map.getAllLayers = () => [roadsLayer];
+        map.set("restoreState", { activeFeatureIds: ["road-feature-1"] });
+
+        map.applyFeatureRestoreState();
+        expect(map.featureRestoreSession).to.not.equal(null);
+        expect(SearchParams.parseStateFromUrl().activeFeatureIds).to.deep.equal(
+          [],
+        );
+
+        roadsLayer.set("visible", false);
+        map.handleLayerVisibilityChange(roadsLayer, false);
+
+        expect(cancelCount).to.equal(1);
+        expect(map.featureRestoreSession).to.equal(null);
+        expect(map.get("restoreState")?.activeFeatureIds).to.deep.equal([]);
+        expect(SearchParams.parseStateFromUrl().activeFeatureIds).to.deep.equal(
+          [],
+        );
       });
 
       it("does not treat feature restore sessions as map layer loading state", () => {

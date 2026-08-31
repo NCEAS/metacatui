@@ -600,6 +600,30 @@ define([
       },
 
       /**
+       * Remove any currently selected features that belong to a given layer.
+       * @param {MapAsset} layer The layer being hidden.
+       * @returns {boolean} True when at least one selected feature was removed.
+       * @since 0.0.0
+       */
+      clearSelectedFeaturesForLayer(layer) {
+        if (!layer) return false;
+
+        const selectedFeatures = this.getSelectedFeatures();
+        const currentFeatures = selectedFeatures?.models || [];
+        if (!currentFeatures.length) return false;
+
+        const remainingFeatures = currentFeatures.filter(
+          (feature) => feature?.get("mapAsset") !== layer,
+        );
+        if (remainingFeatures.length === currentFeatures.length) {
+          return false;
+        }
+
+        this.selectFeatures(remainingFeatures);
+        return true;
+      },
+
+      /**
        * Returns true when the map should sync URL state.
        * @returns {boolean} Whether URL sync is enabled.
        * @since 0.0.0
@@ -686,14 +710,28 @@ define([
       /**
        * Reconcile restore-session waiters when a layer is toggled.
        * Hidden layers should not keep map loading state active.
+       * @param {MapAsset} layer The layer whose visibility changed.
+       * @param {boolean} visible The layer's new visible value.
        * @since 0.0.0
        */
-      handleLayerVisibilityChange() {
+      handleLayerVisibilityChange(layer, visible) {
         const activeFeatureIds = this.get("restoreState")?.activeFeatureIds;
+
         if (
+          visible === false &&
           this.shouldSyncUrlState() &&
-          isNonEmptyArray(activeFeatureIds) &&
-          this.featureRestoreSession
+          isNonEmptyArray(activeFeatureIds)
+        ) {
+          this.clearFeatureRestoreSession();
+          const removedSelectedFeatures = this.clearSelectedFeaturesForLayer(
+            layer,
+          );
+          if (!removedSelectedFeatures) {
+            this.syncSelectedFeaturesToUrl();
+          }
+        } else if (
+          this.shouldSyncUrlState() &&
+          isNonEmptyArray(activeFeatureIds)
         ) {
           this.applyFeatureRestoreState();
         }
@@ -818,9 +856,15 @@ define([
       syncSelectedFeaturesToUrl() {
         if (!this.shouldSyncUrlState()) return;
         const selectedIds = this.getSelectedFeatureIdsForUrlState();
-        SearchParams.updateActiveFeatureIds(
-          this.featureRestoreController.getRequestedIdsForUrlSync(selectedIds),
-        );
+        const activeFeatureIds =
+          this.featureRestoreController.getRequestedIdsForUrlSync(selectedIds);
+        SearchParams.updateActiveFeatureIds(activeFeatureIds);
+
+        const restoreState = this.get("restoreState") || {};
+        this.set("restoreState", {
+          ...restoreState,
+          activeFeatureIds,
+        });
       },
 
       /**
