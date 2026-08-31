@@ -318,8 +318,8 @@ define([
         return (
           (this.getEntities() || []).find((entity) =>
             propertyMatchesId(this.getPropertiesFromFeature(entity), id),
-        ) ??
-        this.getEntityCollection()?.getById(id) ??
+          ) ??
+          this.getEntityCollection()?.getById(id) ??
           null
         );
       },

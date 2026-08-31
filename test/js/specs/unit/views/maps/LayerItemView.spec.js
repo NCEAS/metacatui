@@ -117,7 +117,9 @@ define([
           visible: true,
           isLoadingLayer: true,
         });
-        const iconVisible = state.view.el.querySelector(".icon-spinner.loading");
+        const iconVisible = state.view.el.querySelector(
+          ".icon-spinner.loading",
+        );
         expect(iconVisible).to.not.equal(null);
 
         state.view.model.set("visible", false);
@@ -133,7 +135,9 @@ define([
           isLoadingLayer: true,
         });
 
-        const iconVisible = state.view.el.querySelector(".icon-spinner.loading");
+        const iconVisible = state.view.el.querySelector(
+          ".icon-spinner.loading",
+        );
         expect(iconVisible).to.not.equal(null);
 
         state.view.model.set("isLoadingLayer", false);

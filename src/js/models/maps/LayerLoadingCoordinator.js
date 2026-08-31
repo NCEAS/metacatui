@@ -24,8 +24,7 @@ define([], () => {
     if (layer.get("status") === "error") return false;
 
     return (
-      layer.get("status") === "loading" ||
-      layer.get("displayReady") === false
+      layer.get("status") === "loading" || layer.get("displayReady") === false
     );
   }
 
@@ -36,7 +35,9 @@ define([], () => {
    * @since 0.0.0
    */
   function getTrackedLoadingLayers(mapModel) {
-    return mapModel.getAllLayers().filter((layer) => isTrackedLayerLoading(layer));
+    return mapModel
+      .getAllLayers()
+      .filter((layer) => isTrackedLayerLoading(layer));
   }
 
   /**
@@ -67,7 +68,9 @@ define([], () => {
    */
   function getLoadingLayerLabel(layer) {
     const label = layer?.get("label");
-    return typeof label === "string" && label.trim().length ? label.trim() : null;
+    return typeof label === "string" && label.trim().length
+      ? label.trim()
+      : null;
   }
 
   /**
@@ -89,7 +92,10 @@ define([], () => {
    * @returns {string|null} The user-facing loading message.
    * @since 0.0.0
    */
-  function getLoadingLayersMessage(mapModel, loadingLayers = getTrackedLoadingLayers(mapModel)) {
+  function getLoadingLayersMessage(
+    mapModel,
+    loadingLayers = getTrackedLoadingLayers(mapModel),
+  ) {
     const labels = getLoadingLayerLabels(loadingLayers);
     if (!labels.length) {
       return mapModel.get("isLoadingLayers") ? "Loading layers" : null;

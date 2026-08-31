@@ -124,7 +124,8 @@ define([
        * @param {HTMLElement} [indicator] The indicator element to hide.
        */
       hideLoadingIndicator(indicator = this.subElements?.loadingIndicator) {
-        const loadingIndicator = indicator || this.subElements?.loadingIndicator;
+        const loadingIndicator =
+          indicator || this.subElements?.loadingIndicator;
         if (!loadingIndicator) {
           return;
         }
@@ -145,7 +146,11 @@ define([
           return;
         }
 
-        if (indicator.hidden && !this.loadingIndicatorTimer && !this.hasShownLoadingIndicator) {
+        if (
+          indicator.hidden &&
+          !this.loadingIndicatorTimer &&
+          !this.hasShownLoadingIndicator
+        ) {
           const loadingIndicator = indicator;
           this.loadingIndicatorTimer = setTimeout(() => {
             this.loadingIndicatorTimer = null;

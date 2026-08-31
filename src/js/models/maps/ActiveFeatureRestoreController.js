@@ -1,6 +1,9 @@
 "use strict";
 
-define(["backbone", "models/maps/LayerLoadingCoordinator"], (Backbone, LayerLoadingCoordinator) => {
+define(["backbone", "models/maps/LayerLoadingCoordinator"], (
+  Backbone,
+  LayerLoadingCoordinator,
+) => {
   /**
    * Extract a feature id from either a Feature model or plain attrs object.
    * @param {Backbone.Model|object} feature Feature model or attrs object.
@@ -59,9 +62,7 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (Backbone, LayerLoad
    */
   function isObservableLayer(layer) {
     return (
-      layer &&
-      typeof layer.on === "function" &&
-      typeof layer.off === "function"
+      layer && typeof layer.on === "function" && typeof layer.off === "function"
     );
   }
 

@@ -1725,7 +1725,9 @@ define([
           if (mapAsset.get("displayReady") !== true) {
             mapAsset.set("displayReady", true);
           }
-          if (typeof cesiumModel._mcuiRemoveDisplayReadyListener === "function") {
+          if (
+            typeof cesiumModel._mcuiRemoveDisplayReadyListener === "function"
+          ) {
             cesiumModel._mcuiRemoveDisplayReadyListener();
             cesiumModel._mcuiRemoveDisplayReadyListener = null;
           }
@@ -1745,7 +1747,9 @@ define([
        * @since 2.27.0
        */
       remove3DTileset(cesiumModel) {
-        if (typeof cesiumModel?._mcuiRemoveDisplayReadyListener === "function") {
+        if (
+          typeof cesiumModel?._mcuiRemoveDisplayReadyListener === "function"
+        ) {
           cesiumModel._mcuiRemoveDisplayReadyListener();
           cesiumModel._mcuiRemoveDisplayReadyListener = null;
         }

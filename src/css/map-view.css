@@ -306,7 +306,10 @@
   transform: none;
   width: min(
     26rem,
-    calc(100% - var(--map-top-controls-left-reserved) - var(--map-top-controls-right-reserved))
+    calc(
+      100% - var(--map-top-controls-left-reserved) -
+        var(--map-top-controls-right-reserved)
+    )
   );
   height: var(--map-top-control-height);
   min-height: var(--map-top-control-height);
@@ -330,7 +333,10 @@
   height: 0.2rem;
   width: 100%;
   overflow: hidden;
-  background: var(--portal-col-primary-2, var(--map-col-bkg-lighter__deprecate));
+  background: var(
+    --portal-col-primary-2,
+    var(--map-col-bkg-lighter__deprecate)
+  );
 }
 
 .map-view__loading-bar::after {

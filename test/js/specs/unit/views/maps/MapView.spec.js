@@ -68,7 +68,9 @@ define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
           const mapWidgetContainer = view.el.querySelector(
             ".map-view__map-widget-container",
           );
-          const indicator = view.el.querySelector(".map-view__loading-indicator");
+          const indicator = view.el.querySelector(
+            ".map-view__loading-indicator",
+          );
           const message = view.el.querySelector(".map-view__loading-text");
 
           view.model.set({
@@ -111,7 +113,9 @@ define(["views/maps/MapView", "models/maps/Map"], (MapView, MapAsset) => {
         try {
           view.render();
 
-          const indicator = view.el.querySelector(".map-view__loading-indicator");
+          const indicator = view.el.querySelector(
+            ".map-view__loading-indicator",
+          );
           const message = view.el.querySelector(".map-view__loading-text");
 
           view.model.set({

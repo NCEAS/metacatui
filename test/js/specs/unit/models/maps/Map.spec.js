@@ -943,9 +943,23 @@ define([
       it("summarizes multiple visible loading layers in the loading message", () => {
         const map = new Map({ showShareUrl: false });
         const layers = [
-          makeLayer({ label: "Habitat roads", status: "loading", visible: true }),
-          makeLayer({ label: "Wetlands", status: "ready", visible: true, displayReady: false }),
-          makeLayer({ label: "Elevation", status: "ready", visible: true, displayReady: false }),
+          makeLayer({
+            label: "Habitat roads",
+            status: "loading",
+            visible: true,
+          }),
+          makeLayer({
+            label: "Wetlands",
+            status: "ready",
+            visible: true,
+            displayReady: false,
+          }),
+          makeLayer({
+            label: "Elevation",
+            status: "ready",
+            visible: true,
+            displayReady: false,
+          }),
         ];
 
         map.getAllLayers = () => layers;
