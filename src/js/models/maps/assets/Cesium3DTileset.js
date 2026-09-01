@@ -448,6 +448,67 @@ define([
       },
 
       /**
+       * Start tracking visible tiles and mark this asset display-ready once a
+       * tile from this tileset is rendered.
+       * @since 0.0.0
+       */
+      startDisplayReadyTracking: function () {
+        const model = this;
+        const cesiumModel = model.get("cesiumModel");
+        this.stopDisplayReadyTracking();
+
+        if (!cesiumModel) {
+          return;
+        }
+
+        let removeListener = null;
+        let isCanceled = false;
+
+        const cleanup = function () {
+          if (isCanceled) {
+            return;
+          }
+          isCanceled = true;
+          if (typeof removeListener === "function") {
+            removeListener();
+            removeListener = null;
+          }
+          model.displayReadyTrackerCancel = null;
+        };
+
+        const markDisplayed = function () {
+          if (isCanceled) {
+            return;
+          }
+          if (model.get("cesiumModel") !== cesiumModel) {
+            cleanup();
+            return;
+          }
+          if (model.get("displayReady") !== true) {
+            model.set("displayReady", true);
+          }
+          cleanup();
+        };
+
+        removeListener = cesiumModel.tileVisible.addEventListener(function () {
+          markDisplayed();
+        });
+
+        model.displayReadyTrackerCancel = cleanup;
+      },
+
+      /**
+       * Stop any pending display-ready watcher for this tileset.
+       * @since 0.0.0
+       */
+      stopDisplayReadyTracking: function () {
+        if (typeof this.displayReadyTrackerCancel === "function") {
+          this.displayReadyTrackerCancel();
+        }
+        this.displayReadyTrackerCancel = null;
+      },
+
+      /**
        * Creates a function that takes a Cesium3DTileFeature (see
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/Cesium3DTileFeature.html}) and
        * returns a Cesium color based on the colorPalette property set on this model.

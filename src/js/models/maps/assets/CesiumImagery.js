@@ -320,6 +320,119 @@ define([
       },
 
       /**
+       * Returns true when this imagery layer has at least one drawable tile
+       * in cache and is currently shown in the scene.
+       * @param {Cesium.Scene} scene The scene where this imagery is rendered.
+       * @returns {boolean} True when imagery should be considered display-ready.
+       * @since 0.0.0
+       */
+      isDisplayReadyInScene: function (scene) {
+        const imageryLayer = this.get("cesiumModel");
+        if (!imageryLayer || !scene || !scene.imageryLayers) {
+          return false;
+        }
+        if (!imageryLayer.show || !scene.imageryLayers.contains(imageryLayer)) {
+          return false;
+        }
+
+        const imageryCache = imageryLayer["_imageryCache"];
+        if (!imageryCache || typeof imageryCache !== "object") {
+          return false;
+        }
+
+        const cacheEntries = Object.values(imageryCache);
+        if (!cacheEntries.length) {
+          return false;
+        }
+
+        const imageryState = Cesium.ImageryState;
+        return cacheEntries.some(function (entry) {
+          if (!entry) {
+            return false;
+          }
+          return (
+            entry.state === imageryState.READY ||
+            entry.state === imageryState.TEXTURE_LOADED
+          );
+        });
+      },
+
+      /**
+       * Start watching scene tile events and mark this asset display-ready only
+       * after imagery tiles for this layer are drawable.
+       * @param {object} context A context object with a Cesium scene.
+       * @param {Cesium.Scene} context.scene The scene where imagery is drawn.
+       * @since 0.0.0
+       */
+      startDisplayReadyTracking: function (context) {
+        const scene = context?.scene;
+        const model = this;
+        this.stopDisplayReadyTracking();
+
+        if (!scene || !this.get("cesiumModel")) {
+          return;
+        }
+
+        let isCanceled = false;
+        let removePostRenderListener = null;
+        let removeTileLoadListener = null;
+
+        const cleanup = function () {
+          if (isCanceled) {
+            return;
+          }
+          isCanceled = true;
+          if (typeof removePostRenderListener === "function") {
+            removePostRenderListener();
+            removePostRenderListener = null;
+          }
+          if (typeof removeTileLoadListener === "function") {
+            removeTileLoadListener();
+            removeTileLoadListener = null;
+          }
+          model.displayReadyTrackerCancel = null;
+        };
+
+        const maybeMarkDisplayed = function () {
+          if (isCanceled) {
+            return;
+          }
+          if (model.get("status") === "error") {
+            cleanup();
+            return;
+          }
+          if (!model.isDisplayReadyInScene(scene)) {
+            return;
+          }
+          if (model.get("displayReady") !== true) {
+            model.set("displayReady", true);
+          }
+          cleanup();
+        };
+
+        removePostRenderListener =
+          scene.postRender.addEventListener(maybeMarkDisplayed);
+        removeTileLoadListener =
+          scene.globe.tileLoadProgressEvent.addEventListener(
+            maybeMarkDisplayed,
+          );
+        this.displayReadyTrackerCancel = cleanup;
+
+        maybeMarkDisplayed();
+      },
+
+      /**
+       * Stop any pending display-ready watcher for this imagery layer.
+       * @since 0.0.0
+       */
+      stopDisplayReadyTracking: function () {
+        if (typeof this.displayReadyTrackerCancel === "function") {
+          this.displayReadyTrackerCancel();
+        }
+        this.displayReadyTrackerCancel = null;
+      },
+
+      /**
        * Gets a Cesium Bounding Sphere that can be used to navigate to view the full
        * extent of the imagery. See
        * {@link https://cesium.com/learn/cesiumjs/ref-doc/BoundingSphere.html}

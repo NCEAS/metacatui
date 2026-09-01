@@ -751,10 +751,27 @@ define([
        * @since 2.21.0
        */
       resetStatus() {
+        this.stopDisplayReadyTracking();
         this.set("status", "loading");
         this.set("statusDetails", null);
         this.set("displayReady", false);
       },
+
+      /**
+       * Start tracking when the asset is actually displayed in the active map
+       * scene. Subclasses can override to attach Cesium-type-specific
+       * listeners and set displayReady when visual content is on screen.
+       * @param {object} _context Optional map-view context (e.g. scene).
+       * @since 0.0.0
+       */
+      startDisplayReadyTracking(_context) {},
+
+      /**
+       * Stop any in-flight display-ready listeners started by
+       * startDisplayReadyTracking.
+       * @since 0.0.0
+       */
+      stopDisplayReadyTracking() {},
 
       /**
        * Checks if the asset information has been fetched and is ready to use.
