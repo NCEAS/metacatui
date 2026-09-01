@@ -44,6 +44,21 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
   }
 
   /**
+   * Serialize a feature-restore scope without ambiguity between ids that may
+   * contain separator characters.
+   * @param {string[]} featureIds Requested feature ids.
+   * @param {string[]} layerIds Searchable layer ids.
+   * @returns {string} Stable scope key.
+   * @since 0.0.0
+   */
+  function serializeRestoreScopeKey(featureIds, layerIds) {
+    return JSON.stringify({
+      featureIds: [...new Set(featureIds)].sort(),
+      layerIds: [...new Set(layerIds)].sort(),
+    });
+  }
+
+  /**
    * Manage asynchronous feature restore state for a map model.
    * @param {object} options Controller options.
    * @param {MapModel} options.mapModel Owning map model.
@@ -257,11 +272,13 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
       const unresolvedIds = activeFeatureIds.filter(
         (id) => !resolvedIds.has(id),
       );
-      const restoreKey = activeFeatureIds.join(",");
-      const searchableLayerKey = allSearchableLayers
+      const searchableLayerIds = allSearchableLayers
         .map((layer) => layer.get("layerId") || layer.cid || "")
-        .join(",");
-      const restoreScopeKey = `${restoreKey}|${searchableLayerKey}`;
+        .filter((layerId) => typeof layerId === "string" && layerId.length);
+      const restoreScopeKey = serializeRestoreScopeKey(
+        activeFeatureIds,
+        searchableLayerIds,
+      );
       const canResolveAsynchronously = allSearchableLayers.some(
         (layer) =>
           layer.get("status") !== "ready" ||

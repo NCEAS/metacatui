@@ -679,6 +679,33 @@ define([
         expect(waitCallCount).to.equal(1);
       });
 
+      it("replaces a stale restore session when comma-containing ids form a different scope", () => {
+        const map = new Map({ showShareUrl: true });
+        const layer = makeLayer({
+          layerId: "layer-1",
+          getFeatureById: () => null,
+          waitForFeatureById: () => () => {},
+        });
+
+        map.getAllLayers = () => [layer];
+        map.featureRestoreSession = {
+          cancelers: [],
+          key: JSON.stringify({
+            featureIds: ["a", "b,c"],
+            layerIds: ["layer-1"],
+          }),
+          requestedIds: ["a", "b,c"],
+        };
+        map.set("restoreState", { activeFeatureIds: ["a,b", "c"] });
+
+        map.applyFeatureRestoreState();
+
+        expect(map.featureRestoreSession?.requestedIds).to.deep.equal([
+          "a,b",
+          "c",
+        ]);
+      });
+
       it("re-runs feature restore when a hidden searchable layer becomes visible after no session was created", () => {
         const map = new Map({ showShareUrl: true });
         const fakeFeature = {};
