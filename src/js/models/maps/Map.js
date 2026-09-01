@@ -686,11 +686,7 @@ define([
             "change:status change:displayReady change:label change:visible",
             this.handleLayerVisibilityChange,
           );
-          this.listenTo(
-            layers,
-            "update reset",
-            this.handleLayerGroupMutation,
-          );
+          this.listenTo(layers, "update reset", this.handleLayerGroupMutation);
         });
 
         this.refreshAllLayers();
@@ -723,9 +719,8 @@ define([
           isNonEmptyArray(activeFeatureIds)
         ) {
           this.clearFeatureRestoreSession();
-          const removedSelectedFeatures = this.clearSelectedFeaturesForLayer(
-            layer,
-          );
+          const removedSelectedFeatures =
+            this.clearSelectedFeaturesForLayer(layer);
           if (!removedSelectedFeatures) {
             this.syncSelectedFeaturesToUrl();
           }

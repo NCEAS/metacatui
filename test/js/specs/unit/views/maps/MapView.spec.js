@@ -1,6 +1,8 @@
-define(
-  ["views/maps/MapView", "models/maps/Map", "common/SearchParams"],
-  (MapView, MapAsset, SearchParams) => {
+define(["views/maps/MapView", "models/maps/Map", "common/SearchParams"], (
+  MapView,
+  MapAsset,
+  SearchParams,
+) => {
   const expect = chai.expect;
 
   describe("MapView Test Suite", () => {
@@ -91,9 +93,9 @@ define(
 
           expect(map.featureRestoreSession).to.equal(null);
           expect(map.get("restoreState")?.activeFeatureIds).to.deep.equal([]);
-          expect(SearchParams.parseStateFromUrl().activeFeatureIds).to.deep.equal(
-            [],
-          );
+          expect(
+            SearchParams.parseStateFromUrl().activeFeatureIds,
+          ).to.deep.equal([]);
         } finally {
           view.remove();
         }
@@ -208,5 +210,4 @@ define(
       });
     });
   });
-  },
-);
+});
