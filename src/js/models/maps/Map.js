@@ -662,7 +662,12 @@ define([
           this.loadingStateLayerGroups.forEach((layers) => {
             this.stopListening(
               layers,
-              "change:status change:displayReady change:label change:visible",
+              "change:status change:displayReady change:label",
+              this.handleLayerLoadingStateChange,
+            );
+            this.stopListening(
+              layers,
+              "change:visible",
               this.handleLayerVisibilityChange,
             );
             this.stopListening(
@@ -683,7 +688,12 @@ define([
         this.loadingStateLayerGroups.forEach((layers) => {
           this.listenTo(
             layers,
-            "change:status change:displayReady change:label change:visible",
+            "change:status change:displayReady change:label",
+            this.handleLayerLoadingStateChange,
+          );
+          this.listenTo(
+            layers,
+            "change:visible",
             this.handleLayerVisibilityChange,
           );
           this.listenTo(layers, "update reset", this.handleLayerGroupMutation);
@@ -700,6 +710,14 @@ define([
        */
       handleLayerGroupMutation() {
         this.refreshAllLayers();
+        LayerLoadingCoordinator.updateLayerLoadingState(this);
+      },
+
+      /**
+       * Recalculate aggregate loading state when layer readiness metadata changes.
+       * @since 0.0.0
+       */
+      handleLayerLoadingStateChange() {
         LayerLoadingCoordinator.updateLayerLoadingState(this);
       },
 
@@ -731,7 +749,7 @@ define([
           this.applyFeatureRestoreState();
         }
 
-        LayerLoadingCoordinator.updateLayerLoadingState(this);
+        this.handleLayerLoadingStateChange();
       },
 
       /**
