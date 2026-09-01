@@ -158,9 +158,9 @@ define([
               return;
             }
 
+            loadingIndicator.hidden = false;
             messageTextEl.textContent =
               this.model.get("loadingLayersMessage") || "Loading layers";
-            loadingIndicator.hidden = false;
             this.hasShownLoadingIndicator = true;
           }, LOADING_INDICATOR_DELAY_MS);
         }
@@ -273,8 +273,6 @@ define([
           this.getLoadingIndicatorState();
         if (!indicator || !messageTextEl) return;
 
-        messageTextEl.textContent = message;
-
         if (!isLoading) {
           this.hideLoadingIndicator(indicator);
           return;
@@ -286,6 +284,7 @@ define([
         }
 
         indicator.hidden = false;
+        messageTextEl.textContent = message;
         this.hasShownLoadingIndicator = true;
       },
 
