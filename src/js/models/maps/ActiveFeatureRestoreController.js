@@ -306,6 +306,11 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
         return;
       }
 
+      if (!allSearchableLayers.length) {
+        this.clearSession();
+        return;
+      }
+
       if (!canResolveAsynchronously) {
         this.clearSession();
         mapModel.syncSelectedFeaturesToUrl();

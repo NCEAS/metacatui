@@ -662,7 +662,7 @@ define([
           this.loadingStateLayerGroups.forEach((layers) => {
             this.stopListening(
               layers,
-              "change:status change:displayReady change:label",
+              "change:status change:displayReady",
               this.handleLayerLoadingStateChange,
             );
             this.stopListening(
@@ -688,7 +688,7 @@ define([
         this.loadingStateLayerGroups.forEach((layers) => {
           this.listenTo(
             layers,
-            "change:status change:displayReady change:label",
+            "change:status change:displayReady",
             this.handleLayerLoadingStateChange,
           );
           this.listenTo(
@@ -718,6 +718,10 @@ define([
        * @since 0.0.0
        */
       handleLayerLoadingStateChange() {
+        const activeFeatureIds = this.get("restoreState")?.activeFeatureIds;
+        if (this.shouldSyncUrlState() && isNonEmptyArray(activeFeatureIds)) {
+          this.applyFeatureRestoreState();
+        }
         LayerLoadingCoordinator.updateLayerLoadingState(this);
       },
 

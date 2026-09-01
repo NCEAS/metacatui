@@ -407,7 +407,12 @@ define([
           const model = this;
           const entities = this.getEntities();
           const entityCollection = this.getEntityCollection();
-          this.set("displayReady", false);
+          // Only reset display readiness for active layer load cycles.
+          // Selection/highlight restyling also calls updateAppearance, but it
+          // should not trigger map-level loading indicators.
+          if (this.get("status") === "loading") {
+            this.set("displayReady", false);
+          }
 
           if (entities && entities.length) {
             if (model.isVisible()) {

@@ -278,6 +278,8 @@ define([
           return;
         }
 
+        messageTextEl.textContent = message;
+
         if (indicator.hidden && !this.hasShownLoadingIndicator) {
           this.scheduleLoadingIndicatorReveal();
           return;

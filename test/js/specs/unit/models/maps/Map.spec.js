@@ -497,6 +497,48 @@ define([
         }, 0);
       });
 
+      it("retries feature restore when layer loading metadata changes", () => {
+        const map = new Map({ showShareUrl: true });
+        const fakeFeature = {};
+        const fakeAttrs = {
+          featureID: "road-feature-1",
+          properties: {},
+          mapAsset: null,
+          featureObject: fakeFeature,
+          label: null,
+        };
+
+        let featureAvailable = false;
+        const layer = makeLayer({
+          label: "Habitat roads",
+          status: "loading",
+          displayReady: false,
+          getFeatureById: (id) =>
+            id === "road-feature-1" && featureAvailable ? fakeFeature : null,
+          getFeatureAttributes: () => fakeAttrs,
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", { activeFeatureIds: ["road-feature-1"] });
+        map.applyFeatureRestoreState();
+
+        expect(
+          (map.getSelectedFeatures()?.models || []).some(
+            (f) => f.get("featureID") === "road-feature-1",
+          ),
+        ).to.equal(false);
+
+        featureAvailable = true;
+        layer.set("status", "ready");
+        map.handleLayerLoadingStateChange();
+
+        expect(
+          (map.getSelectedFeatures()?.models || []).some(
+            (f) => f.get("featureID") === "road-feature-1",
+          ),
+        ).to.equal(true);
+      });
+
       it("keeps the restore session active across partial feature resolution", (done) => {
         const map = new Map({ showShareUrl: true });
         const originalUpdateActiveFeatureIds =
