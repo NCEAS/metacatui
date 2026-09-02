@@ -9,7 +9,7 @@ define([
   "views/portals/editor/PortEditorSectionView",
   "views/portals/editor/PortEditorImageView",
   "text!templates/portals/editor/portEditorMdSection.html",
-], function (
+], (
   _,
   $,
   Backbone,
@@ -20,15 +20,16 @@ define([
   PortEditorSectionView,
   ImageEdit,
   Template,
-) {
+) => {
   /**
    * @class PortEditorMdSectionView
-   * @classdesc A section of the Portal Editor for adding/editing a Markdown page to a Portal
+   * @classdesc A section of the Portal Editor for adding/editing a Markdown
+   * page to a Portal
    * @classcategory Views/Portals/Editor
-   * @extends PortEditorSectionView
-   * @constructor
+   * @augments PortEditorSectionView
+   * @class
    */
-  var PortEditorMdSectionView = PortEditorSectionView.extend(
+  const PortEditorMdSectionView = PortEditorSectionView.extend(
     /** @lends PortEditorMdSectionView.prototype */ {
       /**
        * The type of View this is
@@ -41,7 +42,7 @@ define([
        * The HTML classes to use for this view's element
        * @type {string}
        */
-      className: PortEditorSectionView.prototype.className + " port-editor-md",
+      className: `${PortEditorSectionView.prototype.className} port-editor-md`,
 
       /**
        * The HTML attributes to set on this view's element
@@ -58,27 +59,29 @@ define([
       model: undefined,
 
       /**
-       * References to templates for this view. HTML files are converted to Underscore.js templates
+       * References to templates for this view. HTML files are converted to
+       * Underscore.js templates
        * @type {Underscore.Template}
        */
       template: _.template(Template),
 
       /**
-       * A jQuery selector for the element that will contain the ImageUploader view
+       * A jQuery selector for the element that will contain the ImageUploader
+       * view
        * @type {string}
        */
       imageUploaderContainer: ".portal-display-image",
 
       /**
-       * A jQuery selector for the element that will contain the markdown section
-       * title text
+       * A jQuery selector for the element that will contain the markdown
+       * section title text
        * @type {string}
        */
       titleEl: ".title",
 
       /**
-       * A jQuery selector for the element that will contain the markdown section
-       * introduction text
+       * A jQuery selector for the element that will contain the markdown
+       * section introduction text
        * @type {string}
        */
       introEl: ".introduction",
@@ -103,34 +106,42 @@ define([
       sectionType: "freeform",
 
       /**
-       * The events this view will listen to and the associated function to call.
-       * @type {Object}
+       * The events this view will listen to and the associated function to
+       * call.
+       * @type {object}
        */
       events: {},
 
       /**
        * Is executed when a new PortEditorMdSectionView is created
-       * @param {Object} options - A literal object with options to pass to the view
+       * @param {object} options - A literal object with options to pass to the
+       * view
        */
-      initialize: function (options) {
-        //Call the superclass initialize() function
-        //Passing the parameters to the super class constructor
+      initialize(options) {
+        // Call the superclass initialize() function Passing the parameters to
+        // the super class constructor
         PortEditorSectionView.prototype.initialize(options);
       },
 
       /**
        * Renders this view
        */
-      render: function () {
+      render() {
         try {
-          //Attach this view to the view Element
+          // Attach this view to the view Element
           this.$el.data("view", this);
 
           /**
-           * PortalVizSection models aren't editable yet, so show a message and exit.
-           * @todo Create a PortalVizSectionView for PortalVizSection models, rather than
-           * checking the section type here. */
-          if (this.model.type == "PortalVizSection") {
+           * PortalVizSection models aren't editable yet, so show a message and
+           * exit.
+           * @todo Create a PortalVizSectionView for PortalVizSection models,
+           * rather than checking the section type here.
+           */
+          if (this.model.type === "PortalVizSection") {
+            console.log(this.model);
+            console.log(
+              "PortalVizSection models aren't editable yet, so show a message and exit.",
+            );
             MetacatUI.appView.showAlert(
               "You're all set! A Fluid Earth Viewer data visualization will appear here.",
               "alert-info",
@@ -158,7 +169,7 @@ define([
             .data("view", this);
 
           // Render the Markdown Editor View
-          var mdEditor = new MarkdownEditor({
+          const mdEditor = new MarkdownEditor({
             model: this.model.get("content"),
             markdownPlaceholder:
               "# Content\n\nAdd content here. Styling with markdown is supported.",
@@ -169,15 +180,15 @@ define([
           mdEditor.render();
           this.$(this.markdownEditorContainer).html(mdEditor.el);
 
-          // Attach the appropriate models to the textarea elements,
-          // so that PortalEditorView.updateBasicText(e) can access them
-          // Don't use the updateBasicText function on content/markdown sections,
-          // because we don't want to "cleanXMLText" for markdown
+          // Attach the appropriate models to the textarea elements, so that
+          // PortalEditorView.updateBasicText(e) can access them Don't use the
+          // updateBasicText function on content/markdown sections, because we
+          // don't want to "cleanXMLText" for markdown
           this.$(this.titleEl).data({ model: this.model });
           this.$(this.introEl).data({ model: this.model });
 
-          // Add an ImageEdit view for the sectionImage
-          // If the section has no image yet, add the default PortalImage model
+          // Add an ImageEdit view for the sectionImage If the section has no
+          // image yet, add the default PortalImage model
           if (!this.model.get("image")) {
             this.model.set("image", new PortalImage({ nodeName: "image" }));
           }
@@ -210,25 +221,23 @@ define([
             this.sectionImageUploader,
           );
 
-          // Set listeners to auto-resize the height of the intoduction and title
-          // textareas on user-input and on window resize events. This way the
-          // fields appear more closely to how they will look on the portal view.
-          var view = this;
-          $(window).resize(function () {
+          // Set listeners to auto-resize the height of the intoduction and
+          // title textareas on user-input and on window resize events. This way
+          // the fields appear more closely to how they will look on the portal
+          // view.
+          const view = this;
+          $(window).resize(() => {
             view.$("textarea.auto-resize").trigger("textareaResize");
           });
           this.$("textarea.auto-resize").off("input textareaResize");
-          this.$("textarea.auto-resize").on(
-            "input textareaResize",
-            function (e) {
-              view.resizeTextarea($(e.target));
-            },
-          );
+          this.$("textarea.auto-resize").on("input textareaResize", (e) => {
+            view.resizeTextarea($(e.target));
+          });
 
           // Make sure the textareas are the right size with their pre-filled
           // content the first time the section is viewed, because scrollHeight
           // is 0px when the element is not displayed.
-          this.listenToOnce(this, "active", function () {
+          this.listenToOnce(this, "active", () => {
             view.resizeTextarea(view.$("textarea.auto-resize"));
           });
 
@@ -249,37 +258,38 @@ define([
       /**
        * resizeTextarea - Set the height of a textarea element based on its
        * scrollHeight.
-       *
-       * @param  {jQuery} textareas The textarea element or elements to be resized.
+       * @param  {jQuery} textareas The textarea element or elements to be
+       * resized.
        */
-      resizeTextarea: function (textareas) {
+      resizeTextarea(textareas) {
         try {
           if (textareas) {
-            _.each(textareas, function (textarea) {
+            _.each(textareas, (textarea) => {
               if (textarea.style) {
                 textarea.style.height = "0px"; // note: textfield MUST have a min-height set
-                textarea.style.height = textarea.scrollHeight + "px";
+                textarea.style.height = `${textarea.scrollHeight}px`;
               }
             });
           }
         } catch (e) {
-          console.log("failed to resize textarea element. Error message: " + r);
+          console.log(`failed to resize textarea element. Error message: ${r}`);
         }
       },
 
       /**
-       * showValidation - Display validation errors if any are retuned by the PortalSection model
+       * showValidation - Display validation errors if any are retuned by the
+       * PortalSection model
        */
-      showValidation: function () {
+      showValidation() {
         try {
-          var errors = this.model.validate();
+          const errors = this.model.validate();
 
           _.each(
             errors,
             function (errorMsg, category) {
-              var categoryEls = this.$("[data-category='" + category + "']");
+              const categoryEls = this.$(`[data-category='${category}']`);
 
-              //Use the showValidationMessage function from the parent view
+              // Use the showValidationMessage function from the parent view
               if (this.editorView && this.editorView.showValidationMessage) {
                 this.editorView.showValidationMessage(categoryEls, errorMsg);
               }
