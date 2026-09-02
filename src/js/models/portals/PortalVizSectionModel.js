@@ -40,7 +40,10 @@ define([
         // Create a jQuery object of the XML DOM
         const $objectDOM = $(objectDOM);
         // Parse the XML using the parent class, PortalSectionModel.parse()
-        const modelJSON = this.constructor.__super__.parse(objectDOM);
+        const modelJSON = PortalSectionModel.prototype.parse.call(
+          this,
+          objectDOM,
+        );
 
         // Parse the visualization type
         const allOptions = $objectDOM.children("option");
@@ -54,7 +57,7 @@ define([
 
           // Right now, only support "fever" as a visualization type, until this
           // feature is expanded.
-          if (vizType == "fever") {
+          if (vizType === "fever") {
             //  modelJSON.visualizationType = "fever";
           }
 
@@ -65,7 +68,7 @@ define([
 
           // Find the map configuration JSON in the section option, if there is
           // one.
-          if (vizType == "cesium") {
+          if (vizType === "cesium") {
             const mapConfigNode = allOptions.find(
               "optionName:contains(mapConfig)",
             );
@@ -92,7 +95,7 @@ define([
        *  portal document
        */
       updateDOM() {
-        var objectDOM = this.get("objectDOM");
+        let objectDOM = this.get("objectDOM");
 
         // Clone the DOM if it exists already
         if (objectDOM) {
@@ -103,8 +106,11 @@ define([
           const xmlText =
             "<section>  <content>FEVer visualization</content><option><optionName>sectionType</optionName><optionValue>visualization</optionValue>" +
             "</option><option><optionName>visualizationType</optionName><optionValue>fever</optionValue></option></section>";
-          var objectDOM = new DOMParser().parseFromString(xmlText, "text/xml");
-          var objectDOM = $(objectDOM).children()[0];
+          const xmlDocument = new DOMParser().parseFromString(
+            xmlText,
+            "text/xml",
+          );
+          [objectDOM] = $(xmlDocument).children();
         }
 
         // Get and update the simple text strings (everything but content)
@@ -114,13 +120,13 @@ define([
 
         _.map(
           sectionTextData,
-          function (value, nodeName) {
+          function updateSectionText(value, nodeName) {
             // Don't serialize default values, except for default label strings,
             // since labels are required
             if (
               value &&
-              (value != this.defaults()[nodeName] ||
-                (nodeName == "label" && typeof value === "string"))
+              (value !== this.defaults()[nodeName] ||
+                (nodeName === "label" && typeof value === "string"))
             ) {
               // Make new sub-node
               const sectionSubnodeSerialized =
@@ -145,7 +151,7 @@ define([
           if (contentEl[0].childNodes.length) {
             // If there is only text in the <content> element, we need to wrap
             // it in a <markdown> element so it's schema valid
-            if (contentEl[0].childNodes[0].nodeType == 3) {
+            if (contentEl[0].childNodes[0].nodeType === 3) {
               $(contentEl[0]).html(
                 `<markdown>${contentEl[0].childNodes[0].textContent}</markdown>`,
               );
@@ -165,7 +171,7 @@ define([
        * Overrides the default Backbone.Model.validate.function() to check if
        * this PortalSection model has all the required values necessary to save
        * to the server.
-       * @returns {object} If there are errors, an object comprising error
+       * @returns {object|undefined} If there are errors, an object comprising error
        *                   messages. If no errors, returns nothing.
        */
       validate() {
@@ -185,8 +191,11 @@ define([
 
           // Return the errors object
           if (Object.keys(errors).length) return errors;
+          return undefined;
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.error(e);
+          return undefined;
         }
       },
 

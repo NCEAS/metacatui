@@ -135,7 +135,7 @@ define([
        * Creates a new PortEditorSectionView
        * @param {object} options - A literal object with options to pass to the
        * view
-       * @property {PortalSection} options.model - The PortalSection rendered in
+       * @param {PortalSection} options.model - The PortalSection rendered in
        * this view
        */
       initialize(options) {
@@ -144,7 +144,7 @@ define([
           const optionKeys = Object.keys(options);
           _.each(
             optionKeys,
-            function (key, i) {
+            function assignOption(key) {
               this[key] = options[key];
             },
             this,
@@ -164,7 +164,7 @@ define([
           // select from.
           _.each(
             this.sectionsOptions,
-            function (sectionData, sectionType) {
+            function renderSectionOption(sectionData, sectionType) {
               this.$(this.sectionsOptionsContainer).append(
                 this.sectionOptionTemplate({
                   id: `section-option-${sectionType}`,
@@ -189,10 +189,11 @@ define([
                 this.listenTo(
                   this.model,
                   `change:${sectionData.limiter}`,
-                  function () {
+                  function updateSectionOption() {
                     try {
                       this.toggleDisableSectionOption(sectionType);
                     } catch (e) {
+                      // eslint-disable-next-line no-console
                       console.log(
                         `Cannot toggle disabling of section types, error message: ${e}`,
                       );
@@ -207,6 +208,7 @@ define([
           // Save a reference to this view
           this.$el.data("view", this);
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.log(`Section view cannot be rendered, error message: ${e}`);
         }
       },
@@ -243,11 +245,13 @@ define([
             }
             // If limiter is neither a string nor a number
           } else {
+            // eslint-disable-next-line no-console
             console.log(
               "Error: In toggleDisableSectionOption(sectionType), the sectionType must be a string or a number.",
             );
           }
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.error(e);
         }
       },
@@ -265,6 +269,7 @@ define([
             !sectionType ||
             !(typeof sectionType === "string" || sectionType instanceof String)
           ) {
+            // eslint-disable-next-line no-console
             console.error(
               "Error: In disableSectionOption(sectionType), a string that indicates the sectionType is required",
             );
@@ -303,6 +308,7 @@ define([
           // Make sure disabled option isn't clickable
           sectionOption.off("click");
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.error(e);
         }
       },
@@ -320,6 +326,7 @@ define([
             !sectionType ||
             !(typeof sectionType === "string" || sectionType instanceof String)
           ) {
+            // eslint-disable-next-line no-console
             console.log(
               "Error: In enableSectionOption(sectionType), a string that indicates the sectionType is required",
             );
@@ -339,6 +346,7 @@ define([
           // Remove the tooltip
           sectionOption.tooltip("destroy");
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.error(e);
         }
       },

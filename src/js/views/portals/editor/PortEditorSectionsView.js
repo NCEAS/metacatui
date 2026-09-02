@@ -86,7 +86,7 @@ define([
        * The subviews contained within this view to be removed with onClose
        * @type {Array}
        */
-      subviews: new Array(),
+      subviews: [],
 
       /**
        * A reference to the PortalEditorView
@@ -201,7 +201,7 @@ define([
       initialize(options) {
         // Reset arrays and objects set on this View, otherwise they will be
         // shared across intances, causing errors
-        this.subviews = new Array();
+        this.subviews = [];
         this.editorView = null;
 
         // Get all the options and apply them to this view
@@ -209,7 +209,7 @@ define([
           const optionKeys = Object.keys(options);
           _.each(
             optionKeys,
-            function (key, i) {
+            function applyOption(key) {
               this[key] = options[key];
             },
             this,
@@ -274,20 +274,22 @@ define([
               return bIndex - aIndex;
             });
             // Rearrange the links in the DOM
-            for (i = 0; i < sortableLinksArray.length; ++i) {
+            for (let i = 0; i < sortableLinksArray.length; i += 1) {
               // Use preprend so that Settings and AddPage tabs remain last in
               // list
               linksContainer.prepend(sortableLinksArray[i]);
             }
           }
         } catch (error) {
+          // Preserve the diagnostic when page-order sorting fails.
+          // eslint-disable-next-line no-console
           console.log(
             `Error re-arranging tabs according to the pageOrder option. Error message: ${error}`,
           );
         }
 
         // Initialize user-controlled tab re-ordering
-        const sortable = Sortable.create(linksContainer, {
+        Sortable.create(linksContainer, {
           direction: "horizontal",
           easing: "cubic-bezier(1, 0, 0, 1)",
           animation: 200,
@@ -296,7 +298,7 @@ define([
           draggable: sortableLinksSelector,
           // When the tab order is changed, update the portal model option with
           // new order
-          onUpdate(evt) {
+          onUpdate(_evt) {
             view.updatePageOrder();
           },
         });
@@ -374,13 +376,15 @@ define([
         // PortalModel
         _.each(
           sections,
-          function (section) {
+          function renderSection(section) {
             try {
               if (section) {
                 // Render the content section
                 this.renderContentSection(section);
               }
             } catch (e) {
+              // Preserve the diagnostic when a section cannot be rendered.
+              // eslint-disable-next-line no-console
               console.error(e);
             }
           },
@@ -396,9 +400,8 @@ define([
        */
       renderContentSection(section, isNew) {
         try {
-          if (typeof isNew === "undefined" || isNew == null) {
-            var isNew = false;
-          }
+          const isNewSection =
+            typeof isNew === "undefined" || isNew === null ? false : isNew;
 
           if (section) {
             // Create and render and markdown section view
@@ -429,12 +432,18 @@ define([
             sectionView.render();
 
             // Add the tab to the tab navigation
-            this.addSectionLink(sectionView, ["Rename", "Delete"], isNew);
+            this.addSectionLink(
+              sectionView,
+              ["Rename", "Delete"],
+              isNewSection,
+            );
 
             // Add the sections to the list of subviews
             this.subviews.push(sectionView);
           }
         } catch (e) {
+          // Preserve the diagnostic when a section cannot be rendered.
+          // eslint-disable-next-line no-console
           console.error(e);
         }
       },
@@ -476,21 +485,27 @@ define([
           // When the Data section has been hidden or shown, update the section
           // link
           this.stopListening(this.model, "change:hideData");
-          this.listenTo(this.model, "change:hideData", function () {
-            // Create the menu options for the Data section link
-            const menuOptions = [];
-            if (this.model.get("hideData") === true) {
-              menuOptions.push("Show");
-            } else {
-              menuOptions.push("Hide");
-            }
+          this.listenTo(
+            this.model,
+            "change:hideData",
+            function updateDataSectionLink() {
+              // Create the menu options for the Data section link
+              const updatedMenuOptions = [];
+              if (this.model.get("hideData") === true) {
+                updatedMenuOptions.push("Show");
+              } else {
+                updatedMenuOptions.push("Hide");
+              }
 
-            this.updateSectionLink(dataView, menuOptions);
-          });
+              this.updateSectionLink(dataView, updatedMenuOptions);
+            },
+          );
 
           // Add the data section to the list of subviews
           this.subviews.push(dataView);
         } catch (e) {
+          // Preserve the diagnostic when the data section cannot be rendered.
+          // eslint-disable-next-line no-console
           console.error(e);
         }
       },
@@ -569,6 +584,8 @@ define([
             this.addSectionLink(this.metricsView, ["Delete"]);
           }
         } catch (e) {
+          // Preserve the diagnostic when the metrics link cannot be toggled.
+          // eslint-disable-next-line no-console
           console.error(e);
         }
       },
@@ -623,7 +640,7 @@ define([
           `\\/(${label}|${originalLabel})(\\/[^\\/]*)?$`,
           "i",
         );
-        newPathName = pathName.replace(pathRE, "");
+        let newPathName = pathName.replace(pathRE, "");
 
         // If there is a label, add it to the new path. (there will always be a
         // label unless this is a new portal)
@@ -639,7 +656,7 @@ define([
 
         // If the path has changed, navigate to the new path, which creates a
         // record in the browser history
-        if (pathName != newPathName) {
+        if (pathName !== newPathName) {
           // Update the window location
           MetacatUI.uiRouter.navigate(newPathName, {
             trigger: false,
@@ -650,20 +667,22 @@ define([
       /**
        * Returns the section view that has a label matching the one given.
        * @param {string} label - The label for the section
-       * @returns {PortEditorSectionView|false} - Returns false if a matching
-       * section view isn't found
+       * @returns {PortEditorSectionView|undefined} - The matching section view,
+       * or undefined if one isn't found
        */
       getSectionByLabel(label) {
         // If no label is given, exit
         if (!label) {
-          return;
+          return undefined;
         }
 
         // Find the section view whose unique label matches the given label.
         // Case-insensitive matching.
         return _.find(this.subviews, (view) => {
           if (typeof view.uniqueSectionLabel === "string") {
-            return view.uniqueSectionLabel.toLowerCase() == label.toLowerCase();
+            return (
+              view.uniqueSectionLabel.toLowerCase() === label.toLowerCase()
+            );
           }
           return false;
         });
@@ -672,13 +691,13 @@ define([
       /**
        * Returns the section view that has a label matching the one given.
        * @param {PortalSectionModel} section - The section model
-       * @returns {PortEditorSectionView|false} - Returns false if a matching
-       * section view isn't found
+       * @returns {PortEditorSectionView|undefined} - The matching section view,
+       * or undefined if one isn't found
        */
       getSectionByModel(section) {
         // If no section is given, exit
         if (!section) {
-          return;
+          return undefined;
         }
 
         // Find the section view whose unique label matches the given label.
@@ -707,7 +726,7 @@ define([
         // Concatenate a number to the label if this one already exists
         while (sectionLabels.includes(sectionLabel)) {
           sectionLabel = unalteredLabel + i;
-          i++;
+          i += 1;
         }
 
         return sectionLabel;
@@ -724,24 +743,25 @@ define([
         // Create a flag for whether the section label should be shown in the
         // URL
         let showSectionLabelInURL = true;
+        let activeSectionView = sectionView;
 
         // If no section view is given, use the active section in the view.
-        if (!sectionView) {
+        if (!activeSectionView) {
           // Use the sectionView set already
           if (this.activeSection) {
-            var sectionView = this.activeSection;
+            activeSectionView = this.activeSection;
           }
           // Or find the section view by name, which may have been passed
           // through the URL
           else if (this.activeSectionLabel) {
-            var sectionView = this.getSectionByLabel(this.activeSectionLabel);
+            activeSectionView = this.getSectionByLabel(this.activeSectionLabel);
           }
         }
 
         // If no section view was indicated, just default to the first visible
         // one
-        if (!sectionView) {
-          var sectionView = this.$(
+        if (!activeSectionView) {
+          activeSectionView = this.$(
             `${this.sectionLinkContainer}:not(.removing)`,
           )
             .first()
@@ -752,19 +772,19 @@ define([
           showSectionLabelInURL = false;
 
           // If there are no section views on the page at all, exit now
-          if (!sectionView) {
+          if (!activeSectionView) {
             return;
           }
         }
 
         // Update the activeSection set on the view
-        this.activeSection = sectionView;
+        this.activeSection = activeSectionView;
 
         // Activate the section content
         this.$(this.sectionEls).each((i, contentEl) => {
-          if ($(contentEl).data("view") == sectionView) {
+          if ($(contentEl).data("view") === activeSectionView) {
             $(contentEl).addClass("active");
-            sectionView.trigger("active");
+            activeSectionView.trigger("active");
           } else {
             // make sure no other sections are active
             $(contentEl).removeClass("active");
@@ -773,7 +793,7 @@ define([
 
         // Activate the link to the content
         this.$(this.sectionLinkContainer).each((i, linkEl) => {
-          if ($(linkEl).data("view") == sectionView) {
+          if ($(linkEl).data("view") === activeSectionView) {
             $(linkEl).addClass("active");
           } else {
             // make sure no other sections are active
@@ -829,15 +849,14 @@ define([
        */
       addSectionLink(sectionView, menuOptions, isFocused) {
         try {
-          if (typeof isFocused !== "boolean") {
-            var isFocused = false;
-          }
+          const shouldFocus =
+            typeof isFocused === "boolean" ? isFocused : false;
 
           const view = this;
 
           const newLink = this.createSectionLink(sectionView, menuOptions);
           const isMarkdownSection =
-            $(newLink).data("view").type == "PortEditorMdSection";
+            $(newLink).data("view").type === "PortEditorMdSection";
 
           // Make the tab hidden to start
           $(newLink)
@@ -886,7 +905,7 @@ define([
             // already a "+" link, add new link before the "+" link
           } else if (
             addSectionEl &&
-            sectionView.uniqueSectionLabel != "Settings"
+            sectionView.uniqueSectionLabel !== "Settings"
           ) {
             $(addSectionEl).before(newLink);
             // If the new link is "Settings", or there's no "+" link yet, insert
@@ -898,15 +917,16 @@ define([
           // If this is a newly added markdown section, highlight the section
           // name and make it content editable. Currently only markdown sections
           // labels are editable.
-          if (isFocused && isMarkdownSection) {
+          if (shouldFocus && isMarkdownSection) {
             const newSectionLink = $(newLink).children(".portal-section-link");
             newSectionLink.attr("contenteditable", true);
             newSectionLink.focus();
 
             // Select the text of the link
+            let range;
             if (window.getSelection && window.document.createRange) {
               const selection = window.getSelection();
-              var range = window.document.createRange();
+              range = window.document.createRange();
               range.selectNodeContents(newSectionLink[0]);
               selection.removeAllRanges();
               selection.addRange(range);
@@ -934,6 +954,8 @@ define([
               },
             );
         } catch (e) {
+          // Preserve the diagnostic when a section link cannot be added.
+          // eslint-disable-next-line no-console
           console.error(
             `Could not add a new section link. Error message: ${e}`,
           );
@@ -959,7 +981,7 @@ define([
 
           // If there's just one section, hide the delete and hide option on
           // last remaining section link
-          if (totalPages == 1) {
+          if (totalPages === 1) {
             removeSectionLinks.addClass("disabled");
 
             if (!removeSectionLinks.closest("li").find(".tooltip").length) {
@@ -972,14 +994,15 @@ define([
             }
 
             // If there are 2 sections, re-show the delete or hide options.
-          } else if (totalPages == 2) {
+          } else if (totalPages === 2) {
             removeSectionLinks.removeClass("disabled");
             removeSectionLinks.closest("li").tooltip("destroy");
 
             // If there are three or more pages, nothing needs to be changed.
-          } else {
           }
         } catch (e) {
+          // Preserve the diagnostic when the remove-section option cannot be updated.
+          // eslint-disable-next-line no-console
           console.log(
             `Failure to show/hide the remove section option. Error message: ${e}`,
           );
@@ -991,7 +1014,7 @@ define([
        * @param {PortEditorSectionView} sectionView - The view to add a link to
        * @param {string[]} menuOptions - An array of menu options for this
        * section. e.g. Rename, Delete
-       * @returns {Element}
+       * @returns {Element} The rendered section link element
        */
       createSectionLink(sectionView, menuOptions) {
         let classes = "";
@@ -1010,7 +1033,8 @@ define([
           this.sectionLinkTemplate({
             menuOptions: menuOptions || [],
             uniqueLabel: sectionView.uniqueSectionLabel,
-            sectionLabel: PortalSection.prototype.isPrototypeOf(
+            sectionLabel: Object.prototype.isPrototypeOf.call(
+              PortalSection.prototype,
               sectionView.model,
             )
               ? sectionView.model.get("label")
@@ -1030,7 +1054,7 @@ define([
         });
 
         if (
-          sectionView.sectionType == "freeform" &&
+          sectionView.sectionType === "freeform" &&
           menuOptions.includes("Delete")
         ) {
           const content = $(document.createElement("div")).append(
@@ -1081,7 +1105,7 @@ define([
         this.$(this.sectionLinksContainer)
           .children()
           .each((i, link) => {
-            if ($(link).data("view") == sectionView) {
+            if ($(link).data("view") === sectionView) {
               $(link).replaceWith(sectionLink);
             }
           });
@@ -1093,7 +1117,7 @@ define([
        */
       removeSectionLink(sectionView) {
         // Switch to the default section the user is deleting the active section
-        if (sectionView == this.activeSection) {
+        if (sectionView === this.activeSection) {
           this.switchSection();
         }
 
@@ -1103,7 +1127,7 @@ define([
           this.$(this.sectionLinksContainer)
             .children()
             .each((i, link) => {
-              if ($(link).data("view") == sectionView) {
+              if ($(link).data("view") === sectionView) {
                 // Remove the menu link
                 $(link)
                   .addClass("removing")
@@ -1133,6 +1157,8 @@ define([
               }
             });
         } catch (e) {
+          // Preserve the diagnostic when a section link cannot be removed.
+          // eslint-disable-next-line no-console
           console.error(e);
         }
       },
@@ -1155,17 +1181,17 @@ define([
                 this.renderMetricsSection();
                 this.switchSection(this.metricsView);
                 break;
-              case "freeform":
+              case "freeform": {
                 // Set up page ordering if it isn't already. This allows us to
                 // add a new freeform page at the end of the list of tabs,
                 // instead of before Data and Metrics (the default before page
                 // ordering was enabled).
-                var pageOrder = this.model.get("pageOrder");
-                if (!pageOrder || !pageOrder.length) {
+                const freeformPageOrder = this.model.get("pageOrder");
+                if (!freeformPageOrder || !freeformPageOrder.length) {
                   this.updatePageOrder();
                 }
                 // Get the section model that was just added
-                var newestSection =
+                const newestSection =
                   this.model.get("sections")[
                     this.model.get("sections").length - 1
                   ];
@@ -1174,8 +1200,11 @@ define([
                 // Switch to that new view
                 this.switchSection(this.getSectionByModel(newestSection));
                 break;
+              }
               case "members":
                 // TODO this.switchSection(this.getSectionByLabel("Members"));
+                break;
+              default:
                 break;
             }
 
@@ -1187,13 +1216,14 @@ define([
 
             // Add the item to the the pageOrder option on the model, if it
             // exists
-            var pageOrder = this.model.get("pageOrder");
+            const pageOrder = this.model.get("pageOrder");
             if (pageOrder && pageOrder.length) {
               this.updatePageOrder();
             }
-          } else {
           }
         } catch (e) {
+          // Preserve the diagnostic when a section cannot be added.
+          // eslint-disable-next-line no-console
           console.error(e);
         }
       },
@@ -1201,35 +1231,41 @@ define([
       /**
        * Removes a section and its tab from this view and the PortalModel. At
        * least one of the parameters is required, but not both
-       * @param {Event} [e] - (optional) The click event on the Remove button
+       * @param {Event} [event] - (optional) The click event on the Remove button
        * @param {Element|jQuery} [sectionLink] - The link element of the section
        * to be removed.
        */
-      removeSection(e, sectionLink) {
+      removeSection(event, sectionLink) {
         try {
-          if (!sectionLink || !sectionLink.length) {
-            const clickedEl = $(e.target);
+          let resolvedSectionLink = sectionLink;
+          if (!resolvedSectionLink || !resolvedSectionLink.length) {
+            const clickedEl = $(event.target);
 
             // Get the PortalSection model for this remove button
-            var sectionLink = clickedEl
+            resolvedSectionLink = clickedEl
               .parents(this.sectionLinkContainer)
               .first();
 
             // Exit if no section link was found
-            if (!sectionLink || !sectionLink.length) {
+            if (!resolvedSectionLink || !resolvedSectionLink.length) {
               return;
             }
           }
 
           // Get the section model and view
-          const sectionModel = sectionLink.data("model");
-          const sectionView = sectionLink.data("view");
-          const sectionType = sectionLink.data("section-type");
+          const sectionModel = resolvedSectionLink.data("model");
+          const sectionView = resolvedSectionLink.data("view");
+          const sectionType = resolvedSectionLink.data("section-type");
           const { uniqueSectionLabel } = sectionView;
           const sectionLabelIndex =
             this.sectionLabels.indexOf(uniqueSectionLabel);
 
-          if (PortalSection.prototype.isPrototypeOf(sectionModel)) {
+          if (
+            Object.prototype.isPrototypeOf.call(
+              PortalSection.prototype,
+              sectionModel,
+            )
+          ) {
             // Remove this section from the Portal
             this.model.removeSection(sectionModel);
             // Remove the section label from the list of unique section labels
@@ -1249,7 +1285,7 @@ define([
 
             // If this is not the Data section, remove the view, since Data
             // sections can only be hidden
-            if (sectionType.toLowerCase() != "data") {
+            if (sectionType.toLowerCase() !== "data") {
               // remove the sectionView
               this.removeSectionLink(sectionView);
 
@@ -1261,7 +1297,7 @@ define([
 
               // Reset the active section, if the one that was removed is
               // currently active
-              if (this.activeSection == sectionView) {
+              if (this.activeSection === sectionView) {
                 this.activeSection = undefined;
 
                 // Switch to the default section
@@ -1269,6 +1305,8 @@ define([
               }
             }
           } catch (error) {
+            // Preserve the diagnostic when a section view cannot be removed.
+            // eslint-disable-next-line no-console
             console.error(error);
           }
 
@@ -1278,6 +1316,8 @@ define([
 
           this.editorView.showControls();
         } catch (e) {
+          // Preserve the diagnostic and user-facing alert on deletion failure.
+          // eslint-disable-next-line no-console
           console.error(e);
           MetacatUI.appView.showAlert(
             `The section could not be deleted. (${e.message})`,
@@ -1297,7 +1337,12 @@ define([
           let section = sectionLink.data("model");
 
           // If this section is not a PortalSection model, get the section type
-          if (!PortalSection.prototype.isPrototypeOf(section)) {
+          if (
+            !Object.prototype.isPrototypeOf.call(
+              PortalSection.prototype,
+              section,
+            )
+          ) {
             section = sectionLink.data("section-type");
           }
 
@@ -1312,10 +1357,12 @@ define([
           // If the section we're now showing is now one of two sections,
           // re-enable the hide/delete button on the other section link.
           this.toggleRemoveSectionOption();
-        } catch (e) {
-          console.error(e);
+        } catch (error) {
+          // Preserve the diagnostic and user-facing alert on show failure.
+          // eslint-disable-next-line no-console
+          console.error(error);
           MetacatUI.appView.showAlert(
-            `The section could not be shown. (${e.message})`,
+            `The section could not be shown. (${error.message})`,
             "alert-error",
           );
         }
@@ -1330,13 +1377,11 @@ define([
           // Get the PortalSection model for this rename button
           const sectionLink = $(e.target).parents(this.sectionLinkContainer);
           const targetLink = sectionLink.children(this.sectionLinks);
-          const section = sectionLink.data("model");
-
           // double-click events
           if (e.type === "dblclick") {
             // Continue editing tab-name on double click only for markdown
             // sections
-            if ($(sectionLink).data("view").type != "PortEditorMdSection") {
+            if ($(sectionLink).data("view").type !== "PortEditorMdSection") {
               return;
             }
           }
@@ -1348,9 +1393,10 @@ define([
           targetLink.focus();
 
           // Select the text of the link
+          let range;
           if (window.getSelection && window.document.createRange) {
             const selection = window.getSelection();
-            var range = window.document.createRange();
+            range = window.document.createRange();
             range.selectNodeContents(targetLink[0]);
             selection.removeAllRanges();
             selection.addRange(range);
@@ -1360,6 +1406,8 @@ define([
             range.select();
           }
         } catch (error) {
+          // Preserve the diagnostic when a section rename cannot be completed.
+          // eslint-disable-next-line no-console
           console.error(error);
         }
       },
@@ -1379,7 +1427,7 @@ define([
           const currentLabel = $(e.target).text();
 
           // If the RETURN key is pressed
-          if (e.which == 13) {
+          if (e.which === 13) {
             // Don't allow character to be entered
             e.preventDefault();
             e.stopPropagation();
@@ -1389,7 +1437,7 @@ define([
           }
 
           // If the TAB key is pressed
-          if (e.which == 9) {
+          if (e.which === 9) {
             // Don't allow character to be entered
             e.preventDefault();
             e.stopPropagation();
@@ -1442,13 +1490,17 @@ define([
             $(e.delegateTarget).find(".tooltip").remove();
           }
         } catch (error) {
-          `Error limiting user input in label field, error message: ${error}`;
+          // Preserve the diagnostic when label input cannot be processed.
+          // eslint-disable-next-line no-console
+          console.error(
+            `Error limiting user input in label field, error message: ${error}`,
+          );
         }
       },
 
       /**
        * Update the section label
-       * @param e The event triggering this method
+       * @param {Event} e - The event triggering this method
        */
       updateName(e) {
         // Remove tooltip incase one was set by limitLabelInput function
@@ -1461,7 +1513,6 @@ define([
           const sectionModel = sectionLink.data("model");
           const sectionView = sectionLink.data("view");
           // Clean up the typed in name so it's valid for XML
-          const oldLabel = sectionModel.get("label");
           const newLabel = this.model.cleanXMLText(targetLink.text().trim());
           const pageOrder = this.model.get("pageOrder");
 
@@ -1472,7 +1523,10 @@ define([
           // label.
           if (
             sectionModel &&
-            PortalSection.prototype.isPrototypeOf(sectionModel)
+            Object.prototype.isPrototypeOf.call(
+              PortalSection.prototype,
+              sectionModel,
+            )
           ) {
             // update the label on the model
             sectionModel.set("label", newLabel);
@@ -1512,6 +1566,8 @@ define([
           // Update the label set on the view
           sectionView.uniqueSectionLabel = newUniqueLabel;
         } catch (error) {
+          // Preserve the diagnostic when a section label cannot be updated.
+          // eslint-disable-next-line no-console
           console.error(error);
         }
       },
@@ -1539,6 +1595,8 @@ define([
           view.model.set("pageOrder", pageOrder);
           view.editorView.showControls();
         } catch (error) {
+          // Preserve the diagnostic when page order cannot be updated.
+          // eslint-disable-next-line no-console
           console.log(
             `Error updating the portal page order, message: ${error}`,
           );
@@ -1549,7 +1607,7 @@ define([
        * Add a new unique label to the list of unique section labels (used the
        * ensure that tab links and anchors are unique, otherwise, tab switching
        * does not work)
-       * @param newLabel
+       * @param {string} newLabel - The unique section label to add
        */
       updateSectionLabelsList(newLabel) {
         try {
@@ -1558,6 +1616,8 @@ define([
           }
           this.sectionLabels.push(newLabel);
         } catch (error) {
+          // Preserve the diagnostic when section labels cannot be updated.
+          // eslint-disable-next-line no-console
           console.log(
             `Error updating the list of unique section labels. Error message: ${error}`,
           );
@@ -1575,17 +1635,17 @@ define([
           // Get the parent elements that have ids set
           const sectionEls = elements.parents(this.sectionEls);
 
-          // See if there is a matching section link
-          for (let i = 0; i < sectionEls.length; i++) {
-            // Get the section view attached to the section element
-            var sectionView = sectionEls.data("view");
+          // Get the section view attached to the section element
+          const sectionView = sectionEls.data("view");
 
+          // See if there is a matching section link
+          for (let i = 0; i < sectionEls.length; i += 1) {
             // If a section view was found,
             if (sectionView) {
               // Find the section link that links to this section view
               const matchingLink = _.find(
                 $(this.sectionLinkContainer),
-                (link) => $(link).data("view") == sectionView,
+                (link) => $(link).data("view") === sectionView,
               );
 
               // Add the error class and display the error icon
@@ -1597,6 +1657,8 @@ define([
             }
           }
         } catch (e) {
+          // Preserve the diagnostic when validation styling cannot be applied.
+          // eslint-disable-next-line no-console
           console.error("Error showing validation message: ", e);
         }
       },
@@ -1616,7 +1678,7 @@ define([
         // Remove each subview from the DOM and remove listeners
         _.invoke(this.subviews, "remove");
 
-        this.subviews = new Array();
+        this.subviews = [];
 
         // Remove the reference to the EditorView
         this.editorView = null;

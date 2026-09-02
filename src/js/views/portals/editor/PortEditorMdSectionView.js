@@ -138,10 +138,6 @@ define([
            * rather than checking the section type here.
            */
           if (this.model.type === "PortalVizSection") {
-            console.log(this.model);
-            console.log(
-              "PortalVizSection models aren't editable yet, so show a message and exit.",
-            );
             MetacatUI.appView.showAlert(
               "You're all set! A Fluid Earth Viewer data visualization will appear here.",
               "alert-info",
@@ -241,13 +237,22 @@ define([
             view.resizeTextarea(view.$("textarea.auto-resize"));
           });
 
-          this.listenTo(this.model.get("content"), "change", function () {
-            this.editorView.showControls();
-          });
-          this.listenTo(this.model.get("image"), "change", function () {
-            this.editorView.showControls();
-          });
+          this.listenTo(
+            this.model.get("content"),
+            "change",
+            function showContentControls() {
+              this.editorView.showControls();
+            },
+          );
+          this.listenTo(
+            this.model.get("image"),
+            "change",
+            function showImageControls() {
+              this.editorView.showControls();
+            },
+          );
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.log(
             "The portal editor markdown section view could not be rendered, error message: ",
             e,
@@ -265,14 +270,16 @@ define([
         try {
           if (textareas) {
             _.each(textareas, (textarea) => {
-              if (textarea.style) {
-                textarea.style.height = "0px"; // note: textfield MUST have a min-height set
-                textarea.style.height = `${textarea.scrollHeight}px`;
+              const { style } = textarea;
+              if (style) {
+                style.height = "0px"; // note: textfield MUST have a min-height set
+                style.height = `${textarea.scrollHeight}px`;
               }
             });
           }
         } catch (e) {
-          console.log(`failed to resize textarea element. Error message: ${r}`);
+          // eslint-disable-next-line no-console
+          console.log(`failed to resize textarea element. Error message: ${e}`);
         }
       },
 
@@ -286,7 +293,7 @@ define([
 
           _.each(
             errors,
-            function (errorMsg, category) {
+            function showValidationError(errorMsg, category) {
               const categoryEls = this.$(`[data-category='${category}']`);
 
               // Use the showValidationMessage function from the parent view
@@ -297,6 +304,7 @@ define([
             this,
           );
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.error(e);
         }
       },
