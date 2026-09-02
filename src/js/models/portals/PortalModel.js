@@ -153,8 +153,7 @@ define([
       /**
        * Overrides the default Backbone.Model.initialize() function to provide
        * some custom initialize options
-       * @param {} options -
-       * @param attrs
+       * @param {object} attrs - Initial model attributes.
        */
       initialize(attrs) {
         // Call the super class initialize function
@@ -180,7 +179,7 @@ define([
             defaultSections.length &&
             Array.isArray(defaultSections)
           ) {
-            defaultSections.forEach(function (section, index) {
+            defaultSections.forEach(function addDefaultSection(section) {
               // If there is at least one section default set...
               if (section.title || section.label) {
                 const newDefaultSection = new PortalSectionModel({
@@ -201,7 +200,7 @@ define([
           this.listenTo(
             MetacatUI.appUserModel,
             "change:dataoneSubscription",
-            function () {
+            function setTrialPortalLabel() {
               if (
                 MetacatUI.appUserModel.get("dataoneSubscription").isTrialing()
               ) {
@@ -224,11 +223,13 @@ define([
        * will not return the same image until all the images have been returned
        * at least once. If an image would return a 404 error, it is skipped. If
        * all images give 404s, an empty string is returned.
-       * @returns {PortalImage}  A portal image model to use in a section model
+       * @returns {(PortalImage|string|undefined)} A portal image model, an
+       * empty string when configured images are unavailable, or undefined when
+       * no images are configured.
        */
       getRandomSectionImage() {
         // This variable will hold the section image to return, if any
-        var newSectionImage = "";
+        let newSectionImage = "";
         // The default portal values set in the config
         const portalDefaults = MetacatUI.appModel.get("portalDefaults");
         // Check if default images are set on the model already
@@ -248,11 +249,17 @@ define([
           // If some are configured...
           if (defaultImageIds && defaultImageIds.length) {
             // ...Shuffle the images...
-            for (let i = defaultImageIds.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [defaultImageIds[i], defaultImageIds[j]] = [
-                defaultImageIds[j],
-                defaultImageIds[i],
+            for (
+              let imageIndex = defaultImageIds.length - 1;
+              imageIndex > 0;
+              imageIndex -= 1
+            ) {
+              const shuffledIndex = Math.floor(
+                Math.random() * (imageIndex + 1),
+              );
+              [defaultImageIds[imageIndex], defaultImageIds[shuffledIndex]] = [
+                defaultImageIds[shuffledIndex],
+                defaultImageIds[imageIndex],
               ];
             }
             // ... and save the shuffled list to the portal model
@@ -261,11 +268,8 @@ define([
         }
 
         // Can't get a random image if none are configured
-        if (!defaultImageIds) {
-          console.log(
-            "Can't set a default image on new markdown sections because there are no default image IDs set. Check portalDefaults.sectionImageIdentifiers in the config file.",
-          );
-          return;
+        if (!defaultImageIds || !defaultImageIds.length) {
+          return undefined;
         }
 
         // Select one of the image IDs
@@ -275,32 +279,36 @@ define([
           }
 
           // Go through the shuffled array of image IDs in order
-          for (i = runningNumber; i < defaultImageIds.length; i++) {
+          for (
+            let imageIndex = runningNumber;
+            imageIndex < defaultImageIds.length;
+            imageIndex += 1
+          ) {
             // Skip images that have already returned 404 errors
-            if (defaultImageIds[i] == "NOT FOUND") {
-              continue;
-            }
+            if (defaultImageIds[imageIndex] !== "NOT FOUND") {
+              // Section images are PortalImage models
+              newSectionImage = new PortalImage({
+                identifier: defaultImageIds[imageIndex],
+                portalModel: this.get("portalModel"),
+              });
 
-            // Section images are PortalImage models
-            var newSectionImage = new PortalImage({
-              identifier: defaultImageIds[i],
-              portalModel: this.get("portalModel"),
-            });
+              // Skip adding an image if it doesn't exist given the identifer
+              // and baseUrl found in the image model
+              if (newSectionImage.imageExists()) {
+                runningNumber = imageIndex;
+                break;
+              }
 
-            // Skip adding an image if it doesn't exist given the identifer and
-            // baseUrl found in the image model
-            if (newSectionImage.imageExists()) {
-              break;
               // If the image doesn't exist, mark it so we don't have to check
               // again next time
-            } else {
-              defaultImageIds[i] = "NOT FOUND";
+              defaultImageIds[imageIndex] = "NOT FOUND";
               newSectionImage = "";
             }
+            runningNumber = imageIndex + 1;
           }
         }
 
-        this.set("defaultImageRunningNumber", i + 1);
+        this.set("defaultImageRunningNumber", runningNumber + 1);
         this.set("defaultSectionImageIds", defaultImageIds);
 
         return newSectionImage;
@@ -338,31 +346,33 @@ define([
       /**
        * Overrides the default Backbone.Model.fetch() function to provide some
        * custom fetch options
-       * @param [options] {object} - Options for this fetch
-       * @property [options.objectOnly] {Boolean} - If true, only the object
+       * @param {object} [options] - Options for this fetch.
+       * @param {boolean} [options.objectOnly] - If true, only the object
        * will be retrieved and not the system metadata
-       * @property [options.systemMetadataOnly] {Boolean} - If true, only the
+       * @param {boolean} [options.systemMetadataOnly] - If true, only the
        * system metadata will be retrieved
-       * @returns {XMLDocument} The XMLDocument returned from the fetch() AJAX
-       * call
+       * @returns {(jqXHR|undefined)} The fetch request, or undefined when the
+       * request is deferred or only system metadata is fetched.
        */
       fetch(options) {
-        if (!options) var options = {};
-        else var options = _.clone(options);
+        const fetchOptions = options ? _.clone(options) : {};
 
         // If the seriesId has not been found yet, get it from Solr
         if (!this.get("id") && !this.get("seriesId") && this.get("label")) {
-          this.once("change:seriesId", function () {
-            this.fetch(options);
+          this.once("change:seriesId", function fetchWhenSeriesIdChanges() {
+            this.fetch(fetchOptions);
           });
-          this.once("latestVersionFound", function () {
-            this.fetch(options);
-          });
+          this.once(
+            "latestVersionFound",
+            function fetchWhenLatestVersionFound() {
+              this.fetch(fetchOptions);
+            },
+          );
 
           // Get the series ID of this object
           this.getSeriesIdByLabel();
 
-          return;
+          return undefined;
         }
         // If we found the latest version in this pid version chain,
         if (this.get("id") && this.get("latestVersion")) {
@@ -394,11 +404,11 @@ define([
         }
 
         // Fetch the system metadata
-        if (!options.objectOnly || options.systemMetadataOnly) {
+        if (!fetchOptions.objectOnly || fetchOptions.systemMetadataOnly) {
           this.fetchSystemMetadata();
 
-          if (options.systemMetadataOnly) {
-            return;
+          if (fetchOptions.systemMetadataOnly) {
+            return undefined;
           }
         }
 
@@ -407,7 +417,7 @@ define([
           error(model, response) {
             model.trigger("error", model, response);
 
-            if (response && response.status == 404) {
+            if (response && response.status === 404) {
               model.trigger("notFound");
             }
           },
@@ -456,6 +466,7 @@ define([
             candidates = [MetacatUI.appModel.get("queryServiceUrl")];
           }
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.error(
             "Error determining queryServiceUrl candidates; falling back to AppModel setting.",
             e,
@@ -470,7 +481,7 @@ define([
           return;
         }
 
-        const tryIndex = function (i) {
+        const tryIndex = function tryQueryServiceUrl(i) {
           if (i >= candidates.length) {
             model.trigger("notFound");
             return;
@@ -502,6 +513,7 @@ define([
               }
             })
             .catch((e) => {
+              // eslint-disable-next-line no-console
               console.error(e);
               tryIndex(i + 1);
             });
@@ -543,6 +555,7 @@ define([
               portalNode = el;
               return false;
             }
+            return true;
           });
 
         // If a portal XML node wasn't found, return an empty JSON object
@@ -572,7 +585,7 @@ define([
         modelJSON.acknowledgmentsLogos = [];
         _.each(
           logos,
-          function (logo, i) {
+          function parseAcknowledgmentsLogo(logo) {
             if (!logo) return;
 
             const imageModel = new PortalImage({
@@ -620,7 +633,7 @@ define([
               }
             }
 
-            if (sectionType == "visualization") {
+            if (sectionType === "visualization") {
               // Create a new PortalVizSectionModel
               modelJSON.sections.push(
                 new PortalVizSectionModel({
@@ -651,28 +664,30 @@ define([
 
         // Parse the awards
         modelJSON.awards = [];
-        const parse_it = this.parseTextNode;
+        const { parseTextNode } = this;
         $(portalNode)
           .children("award")
-          .each((i, award) => {
-            const award_parsed = {};
+          .each((_awardIndex, award) => {
+            const awardParsed = {};
             $(award)
               .children()
-              .each((i, award_attr) => {
-                if (award_attr.nodeName != "funderLogo") {
+              .each((_attributeIndex, awardAttribute) => {
+                if (awardAttribute.nodeName !== "funderLogo") {
                   // parse the text nodes
-                  award_parsed[award_attr.nodeName] = parse_it(
+                  awardParsed[awardAttribute.nodeName] = parseTextNode(
                     award,
-                    award_attr.nodeName,
+                    awardAttribute.nodeName,
                   );
                 } else {
                   // parse funderLogo which is type ImageType
-                  const imageModel = new PortalImage({ objectDOM: award_attr });
+                  const imageModel = new PortalImage({
+                    objectDOM: awardAttribute,
+                  });
                   imageModel.set(imageModel.parse());
-                  award_parsed[award_attr.nodeName] = imageModel;
+                  awardParsed[awardAttribute.nodeName] = imageModel;
                 }
               });
-            modelJSON.awards.push(award_parsed);
+            modelJSON.awards.push(awardParsed);
           });
 
         // Parse the associatedParties
@@ -740,8 +755,8 @@ define([
           const mapOptions = modelJSON.mapModel.get("mapOptions");
 
           if (modelJSON.mapZoomLevel) {
-            mapOptions.zoom = parseInt(modelJSON.mapZoomLevel);
-            mapOptions.minZoom = parseInt(modelJSON.mapZoomLevel);
+            mapOptions.zoom = parseInt(modelJSON.mapZoomLevel, 10);
+            mapOptions.minZoom = parseInt(modelJSON.mapZoomLevel, 10);
           }
           if (
             (modelJSON.mapCenterLatitude ||
@@ -803,7 +818,7 @@ define([
         }
         // If exactly one node is found and we are only expecting one, return
         // the text content
-        if (node.length == 1 && !isMultiple) {
+        if (node.length === 1 && !isMultiple) {
           return new EMLText({
             objectDOM: node[0],
           });
@@ -811,9 +826,9 @@ define([
         // If more than one node is found, parse into an array
         return _.map(
           node,
-          (node) =>
+          (emlNode) =>
             new EMLText({
-              objectDOM: node,
+              objectDOM: emlNode,
             }),
         );
       },
@@ -889,7 +904,7 @@ define([
         const position = _.indexOf(nodeOrder, nodeName);
 
         // First check that nodeName is in the list of nodes
-        if (position == -1) {
+        if (position === -1) {
           return false;
         }
 
@@ -900,7 +915,7 @@ define([
         }
         // Go through each node in the node list and find the position after
         // which this node will be inserted
-        for (let i = position - 1; i >= 0; i--) {
+        for (let i = position - 1; i >= 0; i -= 1) {
           if ($(portalNode).children(nodeOrder[i]).length) {
             return $(portalNode).children(nodeOrder[i]).last();
           }
@@ -912,7 +927,8 @@ define([
       /**
        * Retrieves the model attributes and serializes into portal XML, to
        * produce the new or modified portal document.
-       * @returns {string} - Returns the portal XML as a string.
+       * @returns {(string|undefined)} The portal XML, or undefined when
+       * serialization fails.
        */
       serialize() {
         try {
@@ -973,7 +989,7 @@ define([
             xmlDoc.adoptNode(logoSerialized);
 
             // Insert new node at correct position
-            var insertAfter = this.getXMLPosition(portalNode, "logo");
+            const insertAfter = this.getXMLPosition(portalNode, "logo");
             if (insertAfter) {
               insertAfter.after(logoSerialized);
             } else {
@@ -1047,7 +1063,7 @@ define([
             });
 
             // Insert new element at correct position
-            var insertAfter = this.getXMLPosition(
+            const insertAfter = this.getXMLPosition(
               portalNode,
               "literatureCited",
             );
@@ -1069,7 +1085,7 @@ define([
           if (sections) {
             _.each(
               sections,
-              function (sectionModel) {
+              function serializeSection(sectionModel) {
                 // Don't serialize sections with default values
                 if (!this.sectionIsDefault(sectionModel)) {
                   const sectionSerialized = sectionModel.updateDOM();
@@ -1085,7 +1101,7 @@ define([
 
                   // Remove sections entirely if the content is blank
                   const newMD = $(sectionSerialized).find("markdown")[0];
-                  if (!newMD || newMD.textContent == "") {
+                  if (!newMD || newMD.textContent === "") {
                     $(sectionSerialized).find("markdown").remove();
                   }
 
@@ -1118,7 +1134,7 @@ define([
 
           _.each(
             textFields,
-            function (field) {
+            function serializeTextField(field) {
               const fieldName = field;
 
               // Get the EMLText model
@@ -1133,7 +1149,7 @@ define([
               // Update the DOMs for each model
               _.each(
                 emlTextModels,
-                function (thisTextModel, i) {
+                function serializeEMLText(thisTextModel, i) {
                   // Don't serialize falsey values
                   if (!thisTextModel) return;
 
@@ -1188,7 +1204,7 @@ define([
               // create the <award> subnodes
               _.map(award, (value, nodeName) => {
                 // serialize the simple text nodes
-                if (nodeName != "funderLogo") {
+                if (nodeName !== "funderLogo") {
                   // Don't serialize falsey values
                   if (value) {
                     // Make new sub-nodes
@@ -1229,7 +1245,7 @@ define([
             _.each(parties, (party) => {
               // Update the DOM of the EMLParty
               const partyEl = party.updateDOM();
-              partyDoc = $.parseXML(party.formatXML($(partyEl)[0]));
+              const partyDoc = $.parseXML(party.formatXML($(partyEl)[0]));
 
               // Make sure we don't insert empty EMLParty nodes into the EML
               if (partyDoc.childNodes.length) {
@@ -1274,7 +1290,6 @@ define([
             _.each(optNames, (optName) => {
               // Get the value on the model
               const optValue = model.get(optName);
-              let existingValue;
 
               // Get the existing optionName element
               let matchingOption = $portalNode
@@ -1284,18 +1299,17 @@ define([
               //
               if (
                 !matchingOption.length ||
-                matchingOption.first().text() != optName
+                matchingOption.first().text() !== optName
               ) {
                 matchingOption = false;
-              } else {
-                // Get the value for this option from the Portal doc
-                existingValue = matchingOption.siblings("optionValue").text();
               }
 
               // Don't serialize null or undefined values. Also don't serialize
               // values that match the default model value
               if (
                 (optValue || optValue === 0 || optValue === false) &&
+                // XML option values are strings, while model defaults can be numbers.
+                // eslint-disable-next-line eqeqeq
                 optValue != model.defaults()[optName]
               ) {
                 // Replace the existing option, if it exists
@@ -1327,15 +1341,14 @@ define([
                     insertAfter.after(optionSerialized);
                   }
                 }
-              } else {
+              } else if (matchingOption) {
                 // Remove the elements from the portal XML when the value is
                 // invalid
-                if (matchingOption) {
-                  matchingOption.parent("option").remove();
-                }
+                matchingOption.parent("option").remove();
               }
             });
           } catch (e) {
+            // eslint-disable-next-line no-console
             console.error(e);
           }
 
@@ -1351,7 +1364,7 @@ define([
 
           // Make a new node for each filter group in the model
           _.each(filterGroups, (filterGroup) => {
-            filterGroupSerialized = filterGroup.updateDOM();
+            const filterGroupSerialized = filterGroup.updateDOM();
 
             if (filterGroupSerialized) {
               // Add the new element to the XMLDocument
@@ -1407,18 +1420,20 @@ define([
           xmlString = new XMLSerializer().serializeToString(xmlDoc);
 
           // If there isn't an XML declaration, add one
-          if (xmlString.indexOf("<?xml") == -1) {
+          if (xmlString.indexOf("<?xml") === -1) {
             xmlString = `<?xml version="1.0" encoding="UTF-8"?>${xmlString}`;
           }
 
           return xmlString;
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.error("Error while serializing the Portal XML document: ", e);
           this.set("errorMessage", e.stack);
           this.trigger(
             "errorSaving",
             MetacatUI.appModel.get("portalEditSaveErrorMsg"),
           );
+          return undefined;
         }
       },
 
@@ -1445,13 +1460,13 @@ define([
           if (
             // Check whether markdown matches the content that's auto-filled or
             // whether it's empty currentMarkdown === this.markdownExample ||
-            (currentMarkdown == "" || currentMarkdown == null) &&
+            (currentMarkdown === "" || currentMarkdown == null) &&
             sectionModel.get("image") === defaults.image &&
             sectionModel.get("introduction") === defaults.introduction &&
             // Check whether label starts with the default new page name, or
             // whether it's empty
             (labelRegex.test(sectionModel.get("label")) ||
-              sectionModel.get("label") == "" ||
+              sectionModel.get("label") === "" ||
               sectionModel.get("label") == null) &&
             sectionModel.get("literatureCited") === defaults.literatureCited &&
             sectionModel.get("title") === defaults.title
@@ -1464,6 +1479,7 @@ define([
         } catch (e) {
           // If there's a problem with this function for some reason, return
           // false so that the section is serialized to avoid losing information
+          // eslint-disable-next-line no-console
           console.log(
             `Failed to check whether section model is default. Serializing it anyway. Error message:${e}`,
           );
@@ -1491,14 +1507,14 @@ define([
        * Overrides the default Backbone.Model.validate.function() to check if
        * this portal model has all the required values necessary to save to the
        * server.
-       * @param {object} [attrs] - A literal object of model attributes to
+       * @param {object} [_attrs] - A literal object of model attributes to
        * validate.
-       * @param {object} [options] - A literal object of options for this
+       * @param {object} [_options] - A literal object of options for this
        * validation process
-       * @returns {object} If there are errors, an object comprising error
-       *                   messages. If no errors, returns nothing.
+       * @returns {(object|undefined)} An object of error messages, or undefined
+       * when there are no errors.
        */
-      validate(attrs, options) {
+      validate(_attrs, _options) {
         try {
           let errors = {};
           const requiredFields =
@@ -1506,7 +1522,7 @@ define([
 
           // Execute the superclass validate() function
           const collectionErrors =
-            this.constructor.__super__.validate.call(this);
+            CollectionModel.prototype.validate.call(this);
           if (
             typeof collectionErrors === "object" &&
             Object.keys(collectionErrors).length
@@ -1525,7 +1541,7 @@ define([
           // Iterate over each text field
           _.each(
             Object.keys(textFields),
-            function (field) {
+            function validateTextField(field) {
               // If this field is required, and it is a string
               if (
                 requiredFields[field] &&
@@ -1568,7 +1584,7 @@ define([
           ) {
             errors.logo = "A logo image is required";
           } else if (this.get("logo")) {
-            logoErrors = this.get("logo").validate();
+            const logoErrors = this.get("logo").validate();
             if (logoErrors && Object.keys(logoErrors).length) {
               errors.logo = "A logo image is required";
             }
@@ -1617,8 +1633,10 @@ define([
           // Return the errors object
           if (Object.keys(errors).length) return errors;
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.error(e);
         }
+        return undefined;
       },
 
       /**
@@ -1667,6 +1685,7 @@ define([
 
       errorValidatingLabel(e) {
         const msg = e || "There was an error validating the portal label.";
+        // eslint-disable-next-line no-console
         console.error(msg);
         this.trigger("errorValidatingLabel");
       },
@@ -1706,12 +1725,12 @@ define([
         $.ajax({
           url: MetacatUI.appModel.get("nodeServiceUrl"),
           dataType: "text",
-          error(data, textStatus, xhr) {
+          error(_data, _textStatus, _xhr) {
             // if there is an error in retrieving the node list; proceed with
             // the existing node list to perform the checks
             this.set("checkedNodeLabels", "true");
           },
-          success(data, textStatus, xhr) {
+          success(data, _textStatus, _xhr) {
             const xmlResponse = $.parseXML(data) || null;
             if (!xmlResponse) return;
 
@@ -1724,9 +1743,8 @@ define([
       /**
        * Parses the retrieved XML document and saves the node information to the
        * BlockList
-       * @param {XMLDocument} The XMLDocument returned from the fetch() AJAX
-       * call
-       * @param xml
+       * @param {XMLDocument} xml - The XMLDocument returned from the fetch()
+       * AJAX call.
        */
       saveNodeBlockList(xml) {
         const model = this;
@@ -1748,14 +1766,14 @@ define([
 
             // Grab information about this node from XML nodes
             _.each(nodeProperties, (nodeProperty) => {
-              if (nodeProperty.nodeName == "property")
+              if (nodeProperty.nodeName === "property")
                 node[$(nodeProperty).attr("key")] = nodeProperty.textContent;
               else node[nodeProperty.nodeName] = nodeProperty.textContent;
 
               // Check if this member node has v2 read capabilities - important
               // for the Package service
               if (
-                nodeProperty.nodeName == "services" &&
+                nodeProperty.nodeName === "services" &&
                 nodeProperty.childNodes.length
               ) {
                 const v2 = $(nodeProperty).find(
@@ -1816,18 +1834,18 @@ define([
         // Remove the extra nodes
         const extraNodes = nodes.length - models.length;
         if (extraNodes > 0) {
-          for (let i = models.length; i < nodes.length; i++) {
+          for (let i = models.length; i < nodes.length; i += 1) {
             $(nodes[i]).remove();
           }
         }
       },
 
       /**
-       * Saves the portal XML document to the server using the DataONE API
+       * Saves the portal XML document to the server using the DataONE API.
+       * @returns {(false|undefined)} False when validation fails; otherwise
+       * undefined.
        */
       save() {
-        const model = this;
-
         // Remove empty filters from the custom portal search filters.
         this.get("filterGroups").forEach((filterGroupModel) => {
           filterGroupModel.get("filters").removeEmptyFilters();
@@ -1847,11 +1865,11 @@ define([
         }
         // Double-check that the label is available, if it was changed
         if (
-          (this.isNew() || this.get("originalLabel") != this.get("label")) &&
+          (this.isNew() || this.get("originalLabel") !== this.get("label")) &&
           !this.get("labelDoubleChecked")
         ) {
           // If the label is taken
-          this.once("labelTaken", function () {
+          this.once("labelTaken", function handleLabelTaken() {
             // Stop listening to the label availability
             this.stopListening("labelAvailable");
 
@@ -1880,7 +1898,7 @@ define([
             }
           });
 
-          this.once("labelAvailable", function () {
+          this.once("labelAvailable", function handleLabelAvailable() {
             this.stopListening("labelTaken");
             this.set("labelDoubleChecked", true);
             this.save();
@@ -1889,10 +1907,8 @@ define([
           // Check label availability
           this.checkLabelAvailability(this.get("label"));
 
-          // console.log("Double checking label");
-
           // Don't proceed with the rest of the save
-          return;
+          return undefined;
         }
         this.trigger("valid");
 
@@ -1914,7 +1930,7 @@ define([
               );
             }
 
-            return;
+            return undefined;
           }
 
           const xmlBlob = new Blob([xml], { type: "application/xml" });
@@ -1929,10 +1945,11 @@ define([
           this.calculateChecksum();
 
           // Exit this function until the checksum is done
-          return;
+          return undefined;
         }
 
-        this.constructor.__super__.save.call(this);
+        CollectionModel.prototype.save.call(this);
+        return undefined;
       },
 
       /**
@@ -1957,19 +1974,26 @@ define([
               case "members":
                 this.set("hideMembers", true);
                 break;
+              default:
+                break;
             }
           }
           // If this section is a section model, delete it from this Portal
-          else if (PortalSectionModel.prototype.isPrototypeOf(section)) {
+          else if (
+            Object.prototype.isPrototypeOf.call(
+              PortalSectionModel.prototype,
+              section,
+            )
+          ) {
             // Remove the section from the model's sections array object. Use
             // clone() to create new array reference and ensure change event is
             // tirggered.
             const sectionModels = _.clone(this.get("sections"));
             sectionModels.splice($.inArray(section, sectionModels), 1);
             this.set({ sections: sectionModels });
-          } else {
           }
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.error(e);
         }
       },
@@ -1996,10 +2020,10 @@ define([
               case "members":
                 this.set("hideMembers", null);
                 break;
-              case "freeform":
+              case "freeform": {
                 // Add a new, blank markdown section with a default image
-                var sectionModels = _.clone(this.get("sections"));
-                var newSection = new PortalSectionModel({
+                const sectionModels = _.clone(this.get("sections"));
+                const newSection = new PortalSectionModel({
                   portalModel: this,
                   // Include a default image if some are configured.
                   image: this.getRandomSectionImage(),
@@ -2010,18 +2034,26 @@ define([
                 // Trigger event manually so we can just pass newSection
                 this.trigger("addSection", newSection);
                 break;
+              }
+              default:
+                break;
             }
           }
           // If this section is a section model, add it to this Portal
-          else if (PortalSectionModel.prototype.isPrototypeOf(section)) {
-            var sectionModels = _.clone(this.get("sections"));
+          else if (
+            Object.prototype.isPrototypeOf.call(
+              PortalSectionModel.prototype,
+              section,
+            )
+          ) {
+            const sectionModels = _.clone(this.get("sections"));
             sectionModels.push(section);
             this.set({ sections: sectionModels });
             // trigger event manually so we can just pass newSection
             this.trigger("addSection", section);
-          } else {
           }
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.error(e);
         }
       },
@@ -2041,19 +2073,23 @@ define([
               }
               break;
             case "image":
-              _.each(this.get("sections"), (section, i) => {
+              _.each(this.get("sections"), (section, _i) => {
                 if (portalImage === section.get("image")) {
                   section.set("image", section.defaults().image);
                 }
               });
               break;
-            case "acknowledgmentsLogo":
-              var ackLogos = _.clone(this.get("acknowledgmentsLogos"));
+            case "acknowledgmentsLogo": {
+              const ackLogos = _.clone(this.get("acknowledgmentsLogos"));
               ackLogos.splice($.inArray(portalImage, ackLogos), 1);
               this.set({ acknowledgmentsLogos: ackLogos });
               break;
+            }
+            default:
+              break;
           }
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.log(
             `Failed to remove a portalImage model, error message: ${e}`,
           );
@@ -2074,7 +2110,7 @@ define([
 
       /**
        * Creates a URL for viewing more information about this object
-       * @returns {string}
+       * @returns {string} The URL for viewing this portal.
        */
       createViewURL() {
         return `${MetacatUI.root}/${MetacatUI.appModel.get(
@@ -2090,23 +2126,19 @@ define([
        * NodeModel 'members' array
        */
       createNodeAttributes(nodeInfoObject) {
-        const nodePortalModel = {};
-
-        if (nodeInfoObject === undefined) {
-          nodeInfoObject = {};
-        }
+        const nodeInfo = nodeInfoObject === undefined ? {} : nodeInfoObject;
 
         // TODO - check for undefined for each of the nodeInfo properties
 
         // Setting basic properties from the node info object
-        this.set("name", nodeInfoObject.name);
-        this.set("logo", nodeInfoObject.logo);
-        this.set("description", nodeInfoObject.description);
+        this.set("name", nodeInfo.name);
+        this.set("logo", nodeInfo.logo);
+        this.set("description", nodeInfo.description);
 
         // Creating repo specific Filters
         const nodeFilterModel = new FilterModel({
           fields: ["datasource"],
-          values: [nodeInfoObject.identifier],
+          values: [nodeInfo.identifier],
           label: "Datasets for a repository",
           matchSubstring: false,
           operator: "OR",
@@ -2123,36 +2155,38 @@ define([
        * Cleans up the given text so that it is XML-valid by escaping reserved
        * characters, trimming white space, etc.
        * @param {string} textString - The string to clean up
-       * @returns {string} - The cleaned up string
+       * @returns {(string|undefined)} The cleaned string, or undefined for a
+       * non-string value.
        */
       cleanXMLText(textString) {
-        if (typeof textString !== "string") return;
+        if (typeof textString !== "string") return undefined;
 
-        textString = textString.trim();
+        let cleanText = textString.trim();
 
         // Check for XML/HTML elements
-        _.each(textString.match(/<\s*[^>]*>/g), (xmlNode) => {
+        _.each(cleanText.match(/<\s*[^>]*>/g), (xmlNode) => {
           // Encode <, >, and </ substrings
           let tagName = xmlNode.replace(/>/g, "&gt;");
           tagName = tagName.replace(/</g, "&lt;");
 
           // Replace the xmlNode in the full text string
-          textString = textString.replace(xmlNode, tagName);
+          cleanText = cleanText.replace(xmlNode, tagName);
         });
 
         // Remove Unicode characters that are not valid XML characters Create a
         // regular expression that matches any character that is not a valid XML
         // character (see https://www.w3.org/TR/xml/#charsets)
         const invalidCharsRegEx =
+          // eslint-disable-next-line no-control-regex -- XML 1.0 valid-character range.
           /[^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]/g;
-        textString = textString.replace(invalidCharsRegEx, "");
+        cleanText = cleanText.replace(invalidCharsRegEx, "");
 
-        return textString;
+        return cleanText;
       },
 
       /**
        * Generates a random portal label for free trial portals
-       * @fires PortalModel#change:label
+       * Triggers the `change:label` event.
        * @since 2.14.0
        */
       setRandomLabel() {
