@@ -1,10 +1,7 @@
 define([
   "underscore",
   "jquery",
-  "backbone",
-  "models/portals/PortalSectionModel",
   "models/portals/PortalImage",
-  "views/ImageUploaderView",
   "views/MarkdownEditorView",
   "views/portals/editor/PortEditorSectionView",
   "views/portals/editor/PortEditorImageView",
@@ -12,10 +9,7 @@ define([
 ], (
   _,
   $,
-  Backbone,
-  PortalSectionModel,
   PortalImage,
-  ImageUploader,
   MarkdownEditor,
   PortEditorSectionView,
   ImageEdit,
@@ -27,7 +21,6 @@ define([
    * page to a Portal
    * @classcategory Views/Portals/Editor
    * @augments PortEditorSectionView
-   * @class
    */
   const PortEditorMdSectionView = PortEditorSectionView.extend(
     /** @lends PortEditorMdSectionView.prototype */ {
@@ -54,7 +47,7 @@ define([
 
       /**
        * The PortalSectionModel that is being edited
-       * @type {PortalSection}
+       * @type {PortalSectionModel}
        */
       model: undefined,
 
@@ -124,7 +117,8 @@ define([
       },
 
       /**
-       * Renders this view
+       * Renders this view.
+       * @returns {PortEditorMdSectionView} This view
        */
       render() {
         try {
@@ -145,7 +139,7 @@ define([
             );
             this.$el.addClass("port-editor-viz");
 
-            return;
+            return this;
           }
 
           // Insert the template into the view
@@ -251,12 +245,15 @@ define([
               this.editorView.showControls();
             },
           );
+
+          return this;
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(
             "The portal editor markdown section view could not be rendered, error message: ",
             e,
           );
+          return this;
         }
       },
 

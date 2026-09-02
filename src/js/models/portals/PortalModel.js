@@ -1,6 +1,4 @@
-/**
- * @exports PortalModel
- */
+/** @exports PortalModel */
 define([
   "jquery",
   "underscore",
@@ -40,12 +38,11 @@ define([
    * and visualizations.  It also includes settings for customized filtering of
    * the associated data, and properties used to customized the map display and
    * the overall branding of the portal.
-   * @class PortalModel
    * @classcategory Models/Portals
    * @augments CollectionModel
    * @module models/PortalModel
    * @name PortalModel
-   * @class
+   * @class PortalModel
    */
   const PortalModel = CollectionModel.extend(
     /** @lends PortalModel.prototype */ {
@@ -58,7 +55,7 @@ define([
       /**
        * Overrides the default Backbone.Model.defaults() function to specify
        * default attributes for the portal model
-       * @type {object}
+       * @returns {object} The default portal attributes
        */
       defaults() {
         return _.extend(CollectionModel.prototype.defaults(), {
@@ -355,7 +352,7 @@ define([
        * request is deferred or only system metadata is fetched.
        */
       fetch(options) {
-        const fetchOptions = options ? _.clone(options) : {};
+        const fetchOptions = options ? { ...options } : {};
 
         // If the seriesId has not been found yet, get it from Solr
         if (!this.get("id") && !this.get("seriesId") && this.get("label")) {
@@ -389,10 +386,11 @@ define([
         // fetch the Portal, if available as an alt repo.
         if (MetacatUI.appModel.get("isCN") && this.get("datasource")) {
           // Check if the origin MN (datasource) is an alt repo option
-          const altRepo = _.findWhere(
-            MetacatUI.appModel.get("alternateRepositories"),
-            { identifier: this.get("datasource") },
-          );
+          const altRepo = MetacatUI.appModel
+            .get("alternateRepositories")
+            .find(
+              (repository) => repository.identifier === this.get("datasource"),
+            );
 
           if (altRepo) {
             // Set the origin MN (datasource) as the active alt repo
@@ -475,7 +473,7 @@ define([
         if (!candidates.length && MetacatUI.appModel.get("queryServiceUrl")) {
           candidates = [MetacatUI.appModel.get("queryServiceUrl")];
         }
-        candidates = _.uniq(candidates.filter(Boolean));
+        candidates = [...new Set(candidates.filter(Boolean))];
         if (!candidates.length) {
           this.trigger("notFound");
           return;
@@ -538,7 +536,7 @@ define([
        * custom portal XML document
        * @param {XMLDocument} response - The XMLDocument returned from the
        * fetch() AJAX call
-       * @returns {JSON} The result of the parsed XML, in JSON. To be set
+       * @returns {object} The parsed portal attributes, to be set
        * directly on the model.
        */
       parse(response) {
@@ -803,8 +801,8 @@ define([
        * EMLText nodes
        * @param {string} nodeName - The name of the XML node to parse
        * @param {boolean} isMultiple - If true, parses the nodes into an array
-       * @returns {(string|Array)} A string or array of strings comprising the
-       * text content
+       * @returns {(EMLText|EMLText[]|null)} The parsed EMLText model or models,
+       * or null when a single matching node is not found
        */
       parseEMLTextNode(parentNode, nodeName, isMultiple) {
         const node = $(parentNode).children(nodeName);
@@ -862,7 +860,8 @@ define([
       /**
        * Converts hex color values to RGB
        * @param {string} hex - a color in hexadecimal format
-       * @returns {rgb} a color in RGB format
+       * @returns {(PortalModel#rgb|null)} The RGB color, or null if the hex
+       * value is invalid
        */
       hexToRGB(hex) {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -901,7 +900,7 @@ define([
           "option",
         ];
 
-        const position = _.indexOf(nodeOrder, nodeName);
+        const position = nodeOrder.indexOf(nodeName);
 
         // First check that nodeName is in the list of nodes
         if (position === -1) {
@@ -1394,11 +1393,11 @@ define([
           // If there is at least one id in the EML...
           if (allIDs && allIDs.length) {
             // Boil the array down to just the unique values
-            const uniqueIDs = _.uniq(allIDs);
+            const uniqueIDs = new Set(allIDs);
 
             // If the unique array is shorter than the array of all ids, then
             // there is a duplicate somewhere
-            if (uniqueIDs.length < allIDs.length) {
+            if (uniqueIDs.size < allIDs.length) {
               // For each element in the EML that has an id,
               _.each(elementsWithIDs, (el) => {
                 // Get the id for this element
@@ -1673,16 +1672,25 @@ define([
         this.queryForLabel(label);
       },
 
+      /** Reports that the current portal label is available */
       labelAvailable() {
         this.trigger("labelAvailable");
       },
 
+      /**
+       * Adds a label to the local block list and reports that it is taken.
+       * @param {string} label - The unavailable portal label
+       */
       labelTaken(label) {
         const blockList = this.get("labelBlockList");
         if (Array.isArray(blockList)) blockList.push(label);
         this.trigger("labelTaken");
       },
 
+      /**
+       * Reports a failure while checking portal label availability.
+       * @param {(Error|string)} [e] - The error to log
+       */
       errorValidatingLabel(e) {
         const msg = e || "There was an error validating the portal label.";
         // eslint-disable-next-line no-console
@@ -1690,6 +1698,14 @@ define([
         this.trigger("errorValidatingLabel");
       },
 
+      /**
+       * Queries a repository for an existing portal label and reports whether
+       * it is available.
+       * @param {string} label - The portal label to query for
+       * @param {string} [urlBase] - The query service URL
+       * @param {boolean} [tryAltRepo] - Whether to query an alternate
+       * repository when the label is not found. Defaults to true.
+       */
       queryForLabel(label, urlBase, tryAltRepo = true) {
         const q = `label:"${label}" AND formatId:"${this.get("formatId")}"`;
         const opts = { q, rows: 0, useAuth: true };
@@ -1716,9 +1732,7 @@ define([
           .catch((e) => this.errorValidatingLabel(e));
       },
 
-      /**
-       * Queries the CN Solr to retrieve the updated BlockList
-       */
+      /** Queries the CN Solr to retrieve the updated BlockList */
       updateNodeBlockList() {
         const model = this;
 
@@ -1985,11 +1999,9 @@ define([
               section,
             )
           ) {
-            // Remove the section from the model's sections array object. Use
-            // clone() to create new array reference and ensure change event is
-            // tirggered.
-            const sectionModels = _.clone(this.get("sections"));
-            sectionModels.splice($.inArray(section, sectionModels), 1);
+            // Copy the sections so setting the updated array triggers a change.
+            const sectionModels = [...this.get("sections")];
+            sectionModels.splice(sectionModels.indexOf(section), 1);
             this.set({ sections: sectionModels });
           }
         } catch (e) {
@@ -2022,7 +2034,7 @@ define([
                 break;
               case "freeform": {
                 // Add a new, blank markdown section with a default image
-                const sectionModels = _.clone(this.get("sections"));
+                const sectionModels = [...this.get("sections")];
                 const newSection = new PortalSectionModel({
                   portalModel: this,
                   // Include a default image if some are configured.
@@ -2046,7 +2058,7 @@ define([
               section,
             )
           ) {
-            const sectionModels = _.clone(this.get("sections"));
+            const sectionModels = [...this.get("sections")];
             sectionModels.push(section);
             this.set({ sections: sectionModels });
             // trigger event manually so we can just pass newSection
@@ -2061,7 +2073,7 @@ define([
       /**
        * removePortalImage - remove a PortalImage model from either the logo,
        * sections, or acknowledgmentsLogos node of the portal model.
-       * @param  {Image} portalImage the portalImage model to remove
+       * @param {PortalImage} portalImage - The portal image model to remove
        */
       removePortalImage(portalImage) {
         try {
@@ -2080,8 +2092,8 @@ define([
               });
               break;
             case "acknowledgmentsLogo": {
-              const ackLogos = _.clone(this.get("acknowledgmentsLogos"));
-              ackLogos.splice($.inArray(portalImage, ackLogos), 1);
+              const ackLogos = [...this.get("acknowledgmentsLogos")];
+              ackLogos.splice(ackLogos.indexOf(portalImage), 1);
               this.set({ acknowledgmentsLogos: ackLogos });
               break;
             }
@@ -2096,9 +2108,7 @@ define([
         }
       },
 
-      /**
-       * Saves a reference to this Portal on the MetacatUI global object
-       */
+      /** Saves a reference to this Portal on the MetacatUI global object */
       cachePortal() {
         if (this.get("id")) {
           MetacatUI.portals = MetacatUI.portals || {};
@@ -2203,6 +2213,10 @@ define([
         }
       },
 
+      /**
+       * Reports which portal section is active to every section model.
+       * @param {PortalSectionModel} [model] - The active section model
+       */
       reportSectionChange(model) {
         this.get("sections").forEach((section) => {
           section.reportSectionChange(model === section);

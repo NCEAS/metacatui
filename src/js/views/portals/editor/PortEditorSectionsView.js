@@ -34,7 +34,6 @@ define([
    * @classdesc A view of one or more Portal Editor sections
    * @classcategory Views/Portals/Editor
    * @augments Backbone.View
-   * @class
    */
   const PortEditorSectionsView = Backbone.View.extend(
     /** @lends PortEditorSectionsView.prototype */ {
@@ -98,17 +97,11 @@ define([
        * References to templates for this view. HTML files are converted to
        * Underscore.js templates
        */
-      /**
-    @type {Underscore.Template}
-       */
+      /** @type {Underscore.Template} */
       template: _.template(Template),
-      /**
-    @type {Underscore.Template}
-       */
+      /** @type {Underscore.Template} */
       sectionLinkTemplate: _.template(SectionLinkTemplate),
-      /**
-    @type {Underscore.Template}
-       */
+      /** @type {Underscore.Template} */
       metricsSectionTemplate: _.template(MetricsSectionTemplate),
 
       /**
@@ -167,9 +160,7 @@ define([
        */
       displaySectionInUrl: true,
 
-      /**
-       * @borrows PortalEditorView.newPortalTempName as newPortalTempName
-       */
+      /** @borrows PortalEditorView.newPortalTempName as newPortalTempName */
       newPortalTempName: "",
 
       /**
@@ -218,7 +209,8 @@ define([
       },
 
       /**
-       * Renders the PortEditorSectionsView
+       * Renders the PortEditorSectionsView.
+       * @returns {PortEditorSectionsView} This view
        */
       render() {
         // Insert the template into the view
@@ -317,11 +309,11 @@ define([
           // Switch to the default section
           this.switchSection();
         }
+
+        return this;
       },
 
-      /**
-       * Render a section for adding a new section
-       */
+      /** Render a section for adding a new section */
       renderAddSection() {
         // Create a unique label for this section and save it
         this.updateSectionLabelsList(this.addPageLabel);
@@ -420,9 +412,6 @@ define([
 
             this.updateSectionLabelsList(uniqueLabel);
 
-            // Attach the editor view to this view
-            sectionView.editorView = this.editorView;
-
             sectionView.$el.attr("id", uniqueLabel);
 
             // Insert the PortEditorMdSectionView element into this view
@@ -448,9 +437,7 @@ define([
         }
       },
 
-      /**
-       * Renders a Data section in this view
-       */
+      /** Renders a Data section in this view */
       renderDataSection() {
         try {
           this.updateSectionLabelsList("Data");
@@ -510,9 +497,7 @@ define([
         }
       },
 
-      /**
-       * Renders the Metrics section of the editor
-       */
+      /** Renders the Metrics section of the editor */
       renderMetricsSection() {
         // Render a PortEditorSectionView for the Metrics section if metrics is
         // set to show, and the view hasn't already been rendered.
@@ -557,9 +542,7 @@ define([
         this.toggleMetricsLink();
       },
 
-      /**
-       * navigateToData - Navigate to the data tab.
-       */
+      /** Navigate to the data tab */
       navigateToData() {
         if (this.dataView) {
           this.switchSection(this.dataView);
@@ -590,9 +573,7 @@ define([
         }
       },
 
-      /**
-       * Renders the Settings section of the editor
-       */
+      /** Renders the Settings section of the editor */
       renderSettings() {
         // Create a unique label for this section and save it
         this.updateSectionLabelsList("Settings");
@@ -665,7 +646,7 @@ define([
       },
 
       /**
-       * Returns the section view that has a label matching the one given.
+       * Returns the section view with the given label.
        * @param {string} label - The label for the section
        * @returns {PortEditorSectionView|undefined} - The matching section view,
        * or undefined if one isn't found
@@ -678,7 +659,7 @@ define([
 
         // Find the section view whose unique label matches the given label.
         // Case-insensitive matching.
-        return _.find(this.subviews, (view) => {
+        return this.subviews.find((view) => {
           if (typeof view.uniqueSectionLabel === "string") {
             return (
               view.uniqueSectionLabel.toLowerCase() === label.toLowerCase()
@@ -689,7 +670,7 @@ define([
       },
 
       /**
-       * Returns the section view that has a label matching the one given.
+       * Returns the section view associated with the given model.
        * @param {PortalSectionModel} section - The section model
        * @returns {PortEditorSectionView|undefined} - The matching section view,
        * or undefined if one isn't found
@@ -700,16 +681,15 @@ define([
           return undefined;
         }
 
-        // Find the section view whose unique label matches the given label.
-        // Case-insensitive matching.
-        return _.findWhere(this.subviews, { model: section });
+        // Find the section view for this model.
+        return this.subviews.find((view) => view.model === section);
       },
 
       /**
        * Creates and returns a unique label for the given section. This label is
        * just used in the view, because portal sections can have duplicate
        * labels. But unique labels need to be used for navigation in the view.
-       * @param {PortEditorSection} sectionModel - The section for which to
+       * @param {PortalSectionModel} sectionModel - The section for which to
        * create a unique label
        * @returns {string} The unique label string
        */
@@ -814,10 +794,6 @@ define([
        */
       handleSwitchSection(e) {
         e.preventDefault();
-
-        // Make sure any markdown editor toolbar modals are closed (otherwise
-        // they persist in new tab)
-        $("body").find(".wk-prompt").remove();
 
         // Make sure any markdown editor toolbar modals are closed (otherwise
         // they persist in new tab)
@@ -1643,10 +1619,9 @@ define([
             // If a section view was found,
             if (sectionView) {
               // Find the section link that links to this section view
-              const matchingLink = _.find(
+              const matchingLink = Array.from(
                 $(this.sectionLinkContainer),
-                (link) => $(link).data("view") === sectionView,
-              );
+              ).find((link) => $(link).data("view") === sectionView);
 
               // Add the error class and display the error icon
               if (matchingLink) {
@@ -1663,9 +1638,7 @@ define([
         }
       },
 
-      /**
-       * Closes all the popovers in this view
-       */
+      /** Closes all the popovers in this view */
       closePopovers() {
         this.$(".popover-this").popover("hide");
       },
@@ -1676,7 +1649,7 @@ define([
        */
       onClose() {
         // Remove each subview from the DOM and remove listeners
-        _.invoke(this.subviews, "remove");
+        this.subviews.forEach((subview) => subview.remove());
 
         this.subviews = [];
 
