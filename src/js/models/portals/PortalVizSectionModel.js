@@ -1,10 +1,8 @@
-define([
-  "jquery",
-  "underscore",
-  "backbone",
-  "models/portals/PortalSectionModel",
-  "models/maps/Map",
-], ($, _, Backbone, PortalSectionModel, Map) => {
+define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
+  $,
+  PortalSectionModel,
+  Map,
+) => {
   /**
    * @class PortalVizSectionModel
    * @classdesc A Portal Section for Data Visualizations. This is still an
@@ -17,20 +15,22 @@ define([
     /** @lends PortalVizSectionModel.prototype */ {
       type: "PortalVizSection",
 
+      /** @returns {object} The default visualization section attributes */
       defaults() {
-        return _.extend(PortalSectionModel.prototype.defaults(), {
+        return {
+          ...PortalSectionModel.prototype.defaults(),
           sectionType: "visualization",
           visualizationType: "",
           supportedVisualizationTypes: ["fever", "cesium"],
-        });
+        };
       },
 
       /**
        * Parses a <section> element from a portal document
        *  @param {XMLElement} objectDOM - A ContentSectionType XML element from
        *  a portal document
-       *  @returns {JSON} The result of the parsed XML, in JSON. To be set
-       *  directly on the model.
+       *  @returns {object} The parsed section attributes, to be set directly on
+       *  the model.
        */
       parse(objectDOM) {
         if (!objectDOM) {
@@ -54,12 +54,6 @@ define([
         );
         if (vizTypeNode.length) {
           vizType = vizTypeNode.first().siblings("optionValue").text();
-
-          // Right now, only support "fever" as a visualization type, until this
-          // feature is expanded.
-          if (vizType === "fever") {
-            //  modelJSON.visualizationType = "fever";
-          }
 
           const vizTypes = this.get("supportedVisualizationTypes");
           if (Array.isArray(vizTypes) && vizTypes.includes(vizType)) {
@@ -91,8 +85,8 @@ define([
        *  values from the model. For now, this function only updates the label.
        *  All other parts of Viz sections are not editable in MetacatUI, since
        *  this is still an experimental feature.
-       *  @returns {XMLElement} An updated ContentSectionType XML element from a
-       *  portal document
+       *  @returns {(XMLElement|string)} An updated ContentSectionType XML
+       *  element, or an empty string when nothing is serialized
        */
       updateDOM() {
         let objectDOM = this.get("objectDOM");
@@ -113,36 +107,15 @@ define([
           [objectDOM] = $(xmlDocument).children();
         }
 
-        // Get and update the simple text strings (everything but content)
-        const sectionTextData = {
-          label: this.get("label"),
-        };
-
-        _.map(
-          sectionTextData,
-          function updateSectionText(value, nodeName) {
-            // Don't serialize default values, except for default label strings,
-            // since labels are required
-            if (
-              value &&
-              (value !== this.defaults()[nodeName] ||
-                (nodeName === "label" && typeof value === "string"))
-            ) {
-              // Make new sub-node
-              const sectionSubnodeSerialized =
-                objectDOM.ownerDocument.createElement(nodeName);
-              $(sectionSubnodeSerialized).text(value);
-
-              this.addUpdatedXMLNode(objectDOM, sectionSubnodeSerialized);
-            }
-            // If the value was removed from the model, then remove the element
-            // from the XML
-            else {
-              $(objectDOM).children(nodeName).remove();
-            }
-          },
-          this,
-        );
+        // Update the required label
+        const label = this.get("label");
+        if (label) {
+          const labelElement = objectDOM.ownerDocument.createElement("label");
+          $(labelElement).text(label);
+          this.addUpdatedXMLNode(objectDOM, labelElement);
+        } else {
+          $(objectDOM).children("label").remove();
+        }
 
         // Make sure the content element is valid
         const contentEl = $(objectDOM).children("content");

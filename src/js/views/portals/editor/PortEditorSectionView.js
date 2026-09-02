@@ -2,7 +2,6 @@ define([
   "underscore",
   "jquery",
   "backbone",
-  "models/portals/PortalSectionModel",
   "text!templates/portals/editor/portEditorSection.html",
   "text!templates/portals/editor/portEditorSectionOption.html",
   "text!templates/portals/editor/portEditorSectionOptionImgs/freeform.svg",
@@ -11,7 +10,6 @@ define([
   _,
   $,
   Backbone,
-  PortalSectionModel,
   Template,
   SectionOptionTemplate,
   FreeformSVG,
@@ -23,7 +21,6 @@ define([
    * section view displays a choice of which PortalSection to add to the Portal.
    * @classcategory Views/Portals/Editor
    * @augments Backbone.View
-   * @class
    */
   const PortEditorSectionView = Backbone.View.extend(
     /** @lends PortEditorSectionView.prototype */ {
@@ -55,7 +52,7 @@ define([
 
       /**
        * The PortalSectionModel being displayed
-       * @type {PortalSection}
+       * @type {PortalSectionModel}
        */
       model: undefined,
 
@@ -80,7 +77,7 @@ define([
       sectionsOptionsContainer: "#section-options-container",
 
       /**
-       * @typedef {object} PorttEditorSectionView#sectionOption - Information
+       * @typedef {object} PortEditorSectionView#sectionOption - Information
        * about a section type that can be added to a portal
        * @property {string} title - The name of the section type to be displayed
        * to the user
@@ -105,7 +102,7 @@ define([
       /**
        * Information about each of the section types available to a user. Note
        * that the key (e.g. "freeform") is used to ID the UI selection element.
-       * @type {PorttEditorSectionView#sectionOption[]}
+       * @type {Object<string, PortEditorSectionView#sectionOption>}
        */
       sectionsOptions: {
         freeform: {
@@ -135,8 +132,8 @@ define([
        * Creates a new PortEditorSectionView
        * @param {object} options - A literal object with options to pass to the
        * view
-       * @param {PortalSection} options.model - The PortalSection rendered in
-       * this view
+       * @param {PortalSectionModel} options.model - The section rendered in this
+       * view
        */
       initialize(options) {
         // Get all the options and apply them to this view
@@ -153,7 +150,8 @@ define([
       },
 
       /**
-       * Renders this view
+       * Renders this view.
+       * @returns {PortEditorSectionView} This view
        */
       render() {
         try {
@@ -211,6 +209,8 @@ define([
           // eslint-disable-next-line no-console
           console.log(`Section view cannot be rendered, error message: ${e}`);
         }
+
+        return this;
       },
 
       /**
