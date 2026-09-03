@@ -1,16 +1,20 @@
 define([
   "jquery",
   "backbone",
+  "models/maps/Map",
   "models/portals/PortalSectionModel",
   "models/portals/PortalVizSectionModel",
+  "views/portals/editor/PortEditorMapSectionView",
   "views/portals/editor/PortEditorMdSectionView",
   "views/portals/editor/PortEditorSectionsView",
   "/test/js/specs/shared/clean-state.js",
 ], (
   $,
   Backbone,
+  Map,
   PortalSectionModel,
   PortalVizSectionModel,
+  PortEditorMapSectionView,
   PortEditorMdSectionView,
   PortEditorSectionsView,
   cleanState,
@@ -71,6 +75,21 @@ define([
       expect(state.view.el.contains(sectionView.el)).to.equal(true);
       expect(state.view.switchSection.calledWith(sectionView)).to.equal(true);
       expect(state.view.updatePageOrder.calledOnce).to.equal(true);
+    });
+
+    it("uses the Cesium section map model in its map editor", () => {
+      const mapModel = new Map();
+      const section = new PortalVizSectionModel({
+        label: "Map",
+        visualizationType: "cesium",
+        mapModel,
+      });
+
+      state.view.renderContentSection(section);
+
+      const sectionView = state.view.getSectionByModel(section);
+      expect(sectionView).to.be.instanceof(PortEditorMapSectionView);
+      expect(sectionView.mapEditorView.model).to.equal(mapModel);
     });
 
     it("removes a freeform section", () => {
