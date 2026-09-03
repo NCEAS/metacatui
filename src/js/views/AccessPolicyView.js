@@ -405,9 +405,6 @@ define([
           }
         }
 
-        // Get the public/private help text
-        const helpText = this.getPublicToggleHelpText();
-
         // Or if the public toggle is limited to a set of users and/or groups,
         // and the current user is not in that list, then display a message
         // instead of the toggle
@@ -426,7 +423,7 @@ define([
           this.$(".public-toggle-container").html(
             $(document.createElement("p"))
               .addClass(`public-toggle-disabled-text ${isPublicClass}`)
-              .text(helpText),
+              .text(this.getPublicToggleHelpText()),
           );
           this.$(this.publicToggleSection).find("p.help").remove();
           return;
@@ -445,7 +442,7 @@ define([
           .tooltip({
             placement: "top",
             trigger: "hover",
-            title: helpText,
+            title: () => this.getPublicToggleHelpText(),
             container: this.$(".public-toggle-container"),
             delay: {
               show: 800,
@@ -468,6 +465,13 @@ define([
        * @since 2.15.0
        */
       getPublicToggleHelpText() {
+        // DataPackage stages changes through onApply; Portal saves System Metadata directly.
+        if (this.onApply) {
+          return this.collection.isPublic()
+            ? `Public selected. Select Done and submit the dataset to make this ${this.resourceType} visible to anyone in searches or by a direct link.`
+            : `Private selected. Select Done and submit the dataset so only people you approve can see this ${this.resourceType}.`;
+        }
+
         if (this.collection.isPublic()) {
           return `Your ${this.resourceType} is public. Anyone can see this ${this.resourceType} in searches or by a direct link.`;
         }

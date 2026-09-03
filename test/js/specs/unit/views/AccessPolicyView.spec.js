@@ -134,6 +134,26 @@ define([
       expect(view.$(".apply-to-all-members").is(":checked")).to.equal(false);
     });
 
+    it("updates the draft public/private tooltip after the toggle changes", () => {
+      createView();
+      view.renderPublicToggle.restore();
+      MetacatUI.appModel.get.withArgs("showDatasetPublicToggle").returns(true);
+      MetacatUI.appModel.get
+        .withArgs("showDatasetPublicToggleForSubjects")
+        .returns([]);
+      view.render();
+
+      const tooltip = view.$(".public-toggle-container").data("tooltip");
+      expect(tooltip.getTitle()).to.contain("Private selected");
+
+      view
+        .$(".public-toggle-container input")
+        .prop("checked", true)
+        .trigger("change");
+
+      expect(tooltip.getTitle()).to.contain("Public selected");
+    });
+
     it("disables package propagation with a Formantic tooltip for nested packages", () => {
       createView();
       rootDataPackage.getNestedResourceMapMembers.returns([
