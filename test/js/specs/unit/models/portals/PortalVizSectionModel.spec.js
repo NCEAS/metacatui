@@ -165,6 +165,7 @@ define([
 
       expect(section).to.be.instanceof(PortalVizSectionModel);
       expect(section.get("visualizationType")).to.equal("cesium");
+      expect(section.get("mapModel")).to.be.instanceof(Map);
       expect(portal.sectionIsDefault(section)).to.equal(false);
 
       section.set("label", "Map");
