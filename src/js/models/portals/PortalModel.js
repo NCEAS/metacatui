@@ -1460,6 +1460,8 @@ define([
             // Check whether markdown matches the content that's auto-filled or
             // whether it's empty currentMarkdown === this.markdownExample ||
             (currentMarkdown === "" || currentMarkdown == null) &&
+            sectionModel.get("visualizationType") ===
+              defaults.visualizationType &&
             sectionModel.get("image") === defaults.image &&
             sectionModel.get("introduction") === defaults.introduction &&
             // Check whether label starts with the default new page name, or
@@ -2017,57 +2019,77 @@ define([
        * sections in the portals are not tied to PortalSectionModels, because
        * they are created from other parts of the Portal document. For example,
        * the Data, Metrics, and Members sections.
+       * @returns {(PortalSectionModel|null)} The section that was added if it
+       * was a markdown or cesium section, or null if it was a data, metrics, or
+       * members section.
        */
       addSection(section) {
-        try {
-          // If this section is a string, add it by adding custom options
-          if (typeof section === "string") {
-            switch (section.toLowerCase()) {
-              case "data":
-                this.set("hideData", null);
-                break;
-              case "metrics":
-                this.set("hideMetrics", null);
-                break;
-              case "members":
-                this.set("hideMembers", null);
-                break;
-              case "freeform": {
-                // Add a new, blank markdown section with a default image
-                const sectionModels = [...this.get("sections")];
-                const newSection = new PortalSectionModel({
-                  portalModel: this,
-                  // Include a default image if some are configured.
-                  image: this.getRandomSectionImage(),
-                });
-
-                sectionModels.push(newSection);
-                this.set("sections", sectionModels);
-                // Trigger event manually so we can just pass newSection
-                this.trigger("addSection", newSection);
-                break;
-              }
-              default:
-                break;
+        let addedSection = null;
+        // If this section is a string, add it by adding custom options
+        if (typeof section === "string") {
+          switch (section.toLowerCase()) {
+            case "data":
+              this.set("hideData", null);
+              break;
+            case "metrics":
+              this.set("hideMetrics", null);
+              break;
+            case "members":
+              this.set("hideMembers", null);
+              break;
+            case "freeform": {
+              // Add a new, blank markdown section with a default image
+              const newSection = new PortalSectionModel({
+                portalModel: this,
+                // Include a default image if some are configured.
+                image: this.getRandomSectionImage(),
+              });
+              this.pushSectionToSectionsArray(newSection);
+              addedSection = newSection;
+              break;
             }
+            case "cesium": {
+              const newSection = new PortalVizSectionModel({
+                portalModel: this,
+                visualizationType: "cesium",
+              });
+              this.pushSectionToSectionsArray(newSection);
+              addedSection = newSection;
+              break;
+            }
+            default:
+              break;
           }
-          // If this section is a section model, add it to this Portal
-          else if (
-            Object.prototype.isPrototypeOf.call(
-              PortalSectionModel.prototype,
-              section,
-            )
-          ) {
-            const sectionModels = [...this.get("sections")];
-            sectionModels.push(section);
-            this.set({ sections: sectionModels });
-            // trigger event manually so we can just pass newSection
-            this.trigger("addSection", section);
-          }
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.error(e);
         }
+        // If this section is a section model, add it to this Portal
+        else if (
+          Object.prototype.isPrototypeOf.call(
+            PortalSectionModel.prototype,
+            section,
+          )
+        ) {
+          this.pushSectionToSectionsArray(section);
+          addedSection = section;
+        }
+        return addedSection;
+      },
+
+      /**
+       * Adds the given section to the sections array on the model and triggers
+       * an "addSection" event with the new section as an argument. Necessary
+       * because Backbone doesn't trigger a "change" event when an array is
+       * updated. Sections should be a collection instead of an array, but this
+       * is a workaround for now.
+       * @param {PortalSectionModel} newSection - The section to add to the
+       * sections array on the model.
+       * @since 0.0.0
+       */
+      pushSectionToSectionsArray(newSection) {
+        const sectionModels = [...this.get("sections")];
+        sectionModels.push(newSection);
+        this.set("sections", sectionModels);
+        // Trigger event manually so we can just pass newSection
+        this.trigger("addSection", newSection);
       },
 
       /**
