@@ -97,14 +97,23 @@ define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
           // Or create a new DOM
         } else {
           // create an XML section element from scratch
-          const xmlText =
-            "<section>  <content>FEVer visualization</content><option><optionName>sectionType</optionName><optionValue>visualization</optionValue>" +
-            "</option><option><optionName>visualizationType</optionName><optionValue>fever</optionValue></option></section>";
+          const xmlText = `
+            <section>
+              <label></label>
+                <content>Visualization</content>
+                <option>
+                  <optionName>sectionType</optionName>
+                  <optionValue>visualization</optionValue>
+                </option>
+                <option>
+                  <optionName>visualizationType</optionName>
+                  <optionValue>${this.get("visualizationType")}</optionValue>
+                </option></section>`;
           const xmlDocument = new DOMParser().parseFromString(
             xmlText,
             "text/xml",
           );
-          [objectDOM] = $(xmlDocument).children();
+          [objectDOM] = $(xmlDocument).children().toArray();
         }
 
         // Update the required label
