@@ -2,6 +2,7 @@ define([
   "jquery",
   "backbone",
   "models/portals/PortalSectionModel",
+  "models/portals/PortalVizSectionModel",
   "views/portals/editor/PortEditorMdSectionView",
   "views/portals/editor/PortEditorSectionsView",
   "/test/js/specs/shared/clean-state.js",
@@ -9,6 +10,7 @@ define([
   $,
   Backbone,
   PortalSectionModel,
+  PortalVizSectionModel,
   PortEditorMdSectionView,
   PortEditorSectionsView,
   cleanState,
@@ -23,12 +25,12 @@ define([
         sections: [],
       });
       model.addSection = (sectionType) => {
+        let section = null;
         if (sectionType === "freeform") {
-          model.set("sections", [
-            ...model.get("sections"),
-            new PortalSectionModel(),
-          ]);
+          section = new PortalSectionModel();
+          model.set("sections", [...model.get("sections"), section]);
         }
+        return section;
       };
       model.removeSection = (section) => {
         model.set(
@@ -68,6 +70,7 @@ define([
       expect(sectionView.model).to.equal(section);
       expect(state.view.el.contains(sectionView.el)).to.equal(true);
       expect(state.view.switchSection.calledWith(sectionView)).to.equal(true);
+      expect(state.view.updatePageOrder.calledOnce).to.equal(true);
     });
 
     it("removes a freeform section", () => {
@@ -84,6 +87,12 @@ define([
         .data("view", sectionView)
         .data("section-type", "freeform");
 
+      state.view.removeSection(
+        { currentTarget: $('<a class="disabled"></a>')[0] },
+        sectionLink,
+      );
+      expect(state.model.get("sections")).to.deep.equal([section]);
+
       state.view.removeSection(null, sectionLink);
 
       expect(state.model.get("sections")).to.deep.equal([]);
@@ -93,6 +102,37 @@ define([
       expect(state.view.removeSectionLink.calledWith(sectionView)).to.equal(
         true,
       );
+    });
+
+    it("places a Cesium section before non-content pages by default", () => {
+      state.view.addSectionLink.restore();
+      state.view.$el.html(`
+        <ul class="section-links-container">
+          <li class="section-link-container" data-section-name="Data"></li>
+          <li class="section-link-container" data-section-name="AddPage"></li>
+        </ul>
+      `);
+
+      const sectionView = new Backbone.View({
+        model: new PortalVizSectionModel({
+          label: "Map",
+          visualizationType: "cesium",
+        }),
+      });
+      sectionView.type = "PortEditorMapSection";
+      sectionView.sectionType = "cesium";
+      sectionView.uniqueSectionLabel = "Map";
+
+      state.view.addSectionLink(sectionView, [], false);
+
+      const sectionNames = state.view
+        .$(state.view.sectionLinksContainer)
+        .children()
+        .map((index, link) => $(link).data("section-name"))
+        .get();
+      expect(sectionNames).to.deep.equal(["Map", "Data", "AddPage"]);
+
+      sectionView.remove();
     });
   });
 });
