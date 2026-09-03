@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 165 180" width="165" height="180">
+  <defs>
+    <clipPath id="cesium-viewer-globe-clip">
+      <circle cx="82.5" cy="111" r="72"/>
+    </clipPath>
+  </defs>
+
+  <g transform="translate(0 -8)">
+    <circle cx="82.5" cy="114" r="72" fill="#e0e0e0" opacity=".45"/>
+    <circle cx="82.5" cy="111" r="72" class="theme-primary-fill" opacity=".5"/>
+
+    <g clip-path="url(#cesium-viewer-globe-clip)">
+      <g fill="none" stroke="#fafafa" stroke-width="1.4" opacity=".65" transform="rotate(-10 82.5 111)">
+        <ellipse cx="82.5" cy="111" rx="28" ry="72"/>
+        <ellipse cx="82.5" cy="111" rx="52" ry="72"/>
+        <path d="M10.5 111h144M15.5 85c35 15 99 15 134 0M15.5 137c35-15 99-15 134 0"/>
+      </g>
+
+      <path fill="#e0e0e0" d="M8 78c12-8 26-10 38-5l12-3 12 10-5 11-10 4-4 9-8 2-2 13-10 5-10-8-1-12-9-6z"/>
+      <path class="theme-secondary-fill" d="M84 50c13-9 30-6 43 3l14 12 14 15-4 13-14 3-8 11-14-2-7-11-10-5-6-13-10-8z" opacity=".8"/>
+      <path class="theme-secondary-fill" d="M96 91l18 5 8 13-7 14-3 17-10 10-7-14-5-16-5-13z" opacity=".8"/>
+      <path fill="#c7c7c7" d="M123 139c9-7 23-6 31 2l-4 13-15 6-12-8z"/>
+      <path fill="#e0e0e0" d="M14 164c23-9 45-5 66 3 24 9 51 6 74-3l10 23H2z"/>
+
+      <g fill="none" stroke="#fafafa" stroke-width="1.4" opacity=".35" transform="rotate(-10 82.5 111)">
+        <ellipse cx="82.5" cy="111" rx="28" ry="72"/>
+        <ellipse cx="82.5" cy="111" rx="52" ry="72"/>
+        <path d="M10.5 111h144M15.5 85c35 15 99 15 134 0M15.5 137c35-15 99-15 134 0"/>
+      </g>
+    </g>
+
+    <circle cx="82.5" cy="111" r="72" fill="none" stroke="#c7c7c7" stroke-width="2"/>
+
+    <path class="theme-accent-fill" d="M105 57a14 14 0 0 0-14 14c0 10 14 26 14 26s14-16 14-26a14 14 0 0 0-14-14z"/>
+    <circle cx="105" cy="71" r="5.5" fill="#fafafa"/>
+  </g>
+</svg>

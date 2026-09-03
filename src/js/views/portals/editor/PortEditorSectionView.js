@@ -6,6 +6,7 @@ define([
   "text!templates/portals/editor/portEditorSectionOption.html",
   "text!templates/portals/editor/portEditorSectionOptionImgs/freeform.svg",
   "text!templates/portals/editor/portEditorSectionOptionImgs/metrics.svg",
+  "text!templates/portals/editor/portEditorSectionOptionImgs/cesiumViewer.svg",
 ], (
   _,
   $,
@@ -14,6 +15,7 @@ define([
   SectionOptionTemplate,
   FreeformSVG,
   MetricsSVG,
+  CesiumSVG,
 ) => {
   /**
    * @class PortEditorSectionView
@@ -117,6 +119,12 @@ define([
           limiter: "hideMetrics",
           svg: MetricsSVG,
         },
+        cesium: {
+          title: "3D Map",
+          description: "Show your data on a 3D map",
+          limiter: 1,
+          svg: CesiumSVG,
+        },
       },
 
       /**
@@ -163,6 +171,13 @@ define([
           _.each(
             this.sectionsOptions,
             function renderSectionOption(sectionData, sectionType) {
+              if (
+                sectionType === "cesium" &&
+                !MetacatUI.appModel.get("enableCesium")
+              ) {
+                return;
+              }
+
               this.$(this.sectionsOptionsContainer).append(
                 this.sectionOptionTemplate({
                   id: `section-option-${sectionType}`,
@@ -198,6 +213,14 @@ define([
                     }
                   },
                 );
+              } else if (
+                typeof sectionData.limiter === "number" ||
+                sectionData.limiter instanceof Number
+              ) {
+                this.stopListening(this.model, "change:sections");
+                this.listenTo(this.model, "change:sections", () => {
+                  this.toggleDisableSectionOption(sectionType);
+                });
               }
             },
             this,
@@ -238,7 +261,16 @@ define([
             // If limiter's a number, compare it to the count of sections in the
             // model
           } else if (typeof limiter === "number" || limiter instanceof Number) {
-            if (this.model.get("sections").length < limiter) {
+            const sections = this.model.get("sections");
+            const sectionCount =
+              sectionType === "cesium"
+                ? sections.filter(
+                    (section) =>
+                      section.get("visualizationType") === sectionType,
+                  ).length
+                : sections.length;
+
+            if (sectionCount < limiter) {
               this.enableSectionOption(sectionType);
             } else {
               this.disableSectionOption(sectionType);

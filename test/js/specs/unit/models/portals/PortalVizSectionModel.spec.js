@@ -159,6 +159,25 @@ define([
       expect(portal.get("sections")[0]).to.equal(sectionToKeep);
     });
 
+    it("creates a Cesium section by type", () => {
+      const portal = new PortalModel({});
+      const section = portal.addSection("cesium");
+
+      expect(section).to.be.instanceof(PortalVizSectionModel);
+      expect(section.get("visualizationType")).to.equal("cesium");
+      expect(portal.sectionIsDefault(section)).to.equal(false);
+
+      section.set("label", "Map");
+      const sectionDOM = section.updateDOM();
+      expect(sectionDOM.getElementsByTagName("label")[0].textContent).to.equal(
+        "Map",
+      );
+      expect(sectionDOM.firstElementChild.tagName).to.equal("label");
+      expect(getOptionValue(sectionDOM, "visualizationType")).to.equal(
+        "cesium",
+      );
+    });
+
     it("round-trips freeform and Cesium sections through serialization", () => {
       const portal = createMixedPortal();
       const serializedPortal = portal.serialize();
