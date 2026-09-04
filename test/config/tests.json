@@ -71,6 +71,7 @@
     "./js/specs/unit/models/connectors/GeoPoints-CesiumPolygon.spec.js",
     "./js/specs/unit/models/maps/GeoBoundingBox.spec.js",
     "./js/specs/unit/models/maps/GeoUtilities.spec.js",
+    "./js/specs/unit/models/maps/featureIdHelpers.spec.js",
     "./js/specs/unit/models/maps/MapInteraction.spec.js",
     "./js/specs/unit/models/connectors/Filters-Map.spec.js",
     "./js/specs/unit/models/connectors/Filters-Search.spec.js",

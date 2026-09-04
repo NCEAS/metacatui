@@ -5,8 +5,9 @@ define([
   "underscore",
   "backbone",
   "models/maps/Feature",
+  "models/maps/featureIdHelpers",
   "text!templates/maps/feature-info/feature-info.html",
-], ($, _, Backbone, Feature, Template) => {
+], ($, _, Backbone, Feature, { FEATURE_ID_KEYS }, Template) => {
   /**
    * @class FeatureInfoView
    * @classdesc An info-box / panel that shows more details about a specific geo-spatial
@@ -135,6 +136,20 @@ define([
       isOpen: false,
 
       /**
+       * Collapses the iframe by setting its height to 0 and opacity to 0. 
+       * This is used when the feature info box opens for the first time so
+       * the iFrame doesn't flash empty before it's ready.
+       * @since 0.0.0
+       */
+      collapseiFrame() { 
+        const iFrame = this.elements?.iFrame;
+        if (iFrame) {
+          iFrame.style.height = "0";
+          iFrame.style.opacity = "0";
+        }
+      },
+
+      /**
        * Executed when a new FeatureInfoView is created
        * @param {object} [options] - A literal object with options to pass to the view
        */
@@ -213,6 +228,10 @@ define([
           zoomButton: view.el.querySelector(`.${classes.zoomButton}`),
         };
 
+        // Start collapsed so the panel does not flash at the browser's default
+        // iframe height before content is rendered.
+        this.collapseiFrame()
+
         view.update();
 
         // Ensure the view's main element has the given class name
@@ -226,8 +245,11 @@ define([
 
       /**
        * Updates the view with information from the current Feature model
+       * @param {object} [options] - Options that control content update behavior
+       * @param {boolean} [options.collapseBeforeLoad] - Whether to collapse the
+       * content iframe before loading new content
        */
-      updateContent() {
+      updateContent({ collapseBeforeLoad = false } = {}) {
         const view = this;
 
         // Elements to update
@@ -250,11 +272,17 @@ define([
         // Insert the title into the title element
         this.elements.title.innerHTML = title;
 
+        // Collapse only when opening from a closed state. When switching between
+        // selected features, keep the current height and transition directly to the
+        // new content height.
+        if (collapseBeforeLoad) {
+          this.collapseiFrame();
+        }
+
         // Update the iFrame content
         this.getContent().then((html) => {
           iFrameDiv.innerHTML = html;
-          iFrame.style.height = 0;
-          iFrame.style.opacity = 0;
+          iFrame.style.opacity = 1;
           // Not the ideal solution, but check the height of the iFrame
           // again after some time to allow external content to load. This
           // is necessary for content that loads asynchronously, like
@@ -262,7 +290,7 @@ define([
           // may be from a different domain.
           setTimeout(() => {
             view.updateIFrameHeight();
-          }, 500);
+          }, 250);
         });
 
         // Show or hide the layer details button, update the text
@@ -381,8 +409,9 @@ define([
           if (!name) {
             title = "Feature";
 
-            let searchKeys = ["name", "title", "id", "identifier"];
-            searchKeys = searchKeys.map((key) => key.toLowerCase());
+            const searchKeys = FEATURE_ID_KEYS.map((key) =>
+              key.toLowerCase(),
+            );
             const propKeys = Object.keys(properties);
             const propKeysLower = propKeys.map((key) => key.toLowerCase());
 
@@ -478,8 +507,9 @@ define([
             this.close();
           }
         } else {
+          const wasOpen = this.isOpen;
           this.open();
-          this.updateContent();
+          this.updateContent({ collapseBeforeLoad: !wasOpen });
         }
       },
 
