@@ -480,7 +480,11 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("parses repeated f params as activeFeatureIds when sv=1", () => {
-        window.history.replaceState(null, "", "?sv=1&f=id-one&f=id-two&f=id-three");
+        window.history.replaceState(
+          null,
+          "",
+          "?sv=1&f=id-one&f=id-two&f=id-three",
+        );
 
         const state = SearchParams.parseStateFromUrl();
         expect(state.activeFeatureIds).to.deep.equal([
@@ -513,7 +517,10 @@ define(["common/SearchParams"], (SearchParams) => {
         });
 
         const state = SearchParams.parseStateFromUrl();
-        expect(state.activeFeatureIds).to.deep.equal(["Washington, DC", "id-b"]);
+        expect(state.activeFeatureIds).to.deep.equal([
+          "Washington, DC",
+          "id-b",
+        ]);
       });
 
       it("omits f param when activeFeatureIds is empty", () => {

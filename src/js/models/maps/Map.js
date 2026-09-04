@@ -10,6 +10,7 @@ define([
   "collections/maps/AssetCategories",
   "collections/maps/viewfinder/ViewfinderCardCategories",
   "common/SearchParams",
+  "models/maps/LayerLoadingCoordinator",
 ], (
   $,
   _,
@@ -20,6 +21,7 @@ define([
   AssetCategories,
   ViewfinderCardCategories,
   SearchParams,
+  LayerLoadingCoordinator,
 ) => {
   /**
    * Determine if array is empty.
@@ -396,6 +398,8 @@ define([
        * debugging aids and overlays for development.
        * @property {boolean} [show3DTilesInspector=false] - Whether or not to
        * show Cesium's built-in 3D Tiles inspector widget.
+       * @property {number} [featureRestoreTimeoutMs=15000] - Maximum time to
+       * keep asynchronous feature-restore waiters active before canceling.
        * @property {ZoomPresets} [zoomPresets] - @deprecated use ViewfinderCards instead.
        * @property {ViewfinderCards} [viewfinderCards=null] - A
        * Backbone.Collection of a predefined list of locations with an enabled
@@ -419,6 +423,7 @@ define([
             {
               type: "OpenStreetMapImageryProvider",
               label: "Base layer",
+              excludeFromLoadingState: true,
             },
           ]),
           terrains: new MapAssets(),
@@ -438,10 +443,13 @@ define([
           globeBaseColor: null,
           debug: false,
           show3DTilesInspector: false,
+          featureRestoreTimeoutMs: 15000,
           viewfinderCards: null,
           activeVisualizationAction: null,
           activeVisualizationActionId: null,
           activeVisualizationUrl: null,
+          isLoadingLayers: false,
+          loadingLayersMessage: null,
         };
       },
 
@@ -542,6 +550,8 @@ define([
           mapModel: this,
         });
         this.featureRestoreSession = null;
+        this.loadingStateLayerGroups = [];
+        this.setUpLayerLoadingStateListeners();
         this.setUpUrlStateListeners();
         this.applyRestoreState();
       },
@@ -590,6 +600,30 @@ define([
       },
 
       /**
+       * Remove any currently selected features that belong to a given layer.
+       * @param {MapAsset} layer The layer being hidden.
+       * @returns {boolean} True when at least one selected feature was removed.
+       * @since 0.0.0
+       */
+      clearSelectedFeaturesForLayer(layer) {
+        if (!layer) return false;
+
+        const selectedFeatures = this.getSelectedFeatures();
+        const currentFeatures = selectedFeatures?.models || [];
+        if (!currentFeatures.length) return false;
+
+        const remainingFeatures = currentFeatures.filter(
+          (feature) => feature?.get("mapAsset") !== layer,
+        );
+        if (remainingFeatures.length === currentFeatures.length) {
+          return false;
+        }
+
+        this.selectFeatures(remainingFeatures);
+        return true;
+      },
+
+      /**
        * Returns true when the map should sync URL state.
        * @returns {boolean} Whether URL sync is enabled.
        * @since 2.38.0
@@ -611,6 +645,115 @@ define([
           this.clearFeatureRestoreSession();
         }
         this.setUpUrlStateListeners();
+      },
+
+      /**
+       * Set up listeners that aggregate visible-layer and restore-session loading state.
+       * @since 0.0.0
+       */
+      setUpLayerLoadingStateListeners() {
+        this.stopListening(
+          this,
+          "change:layers change:layerCategories",
+          this.setUpLayerLoadingStateListeners,
+        );
+
+        if (this.loadingStateLayerGroups?.length) {
+          this.loadingStateLayerGroups.forEach((layers) => {
+            this.stopListening(
+              layers,
+              "change:status change:displayReady",
+              this.handleLayerLoadingStateChange,
+            );
+            this.stopListening(
+              layers,
+              "change:visible",
+              this.handleLayerVisibilityChange,
+            );
+            this.stopListening(
+              layers,
+              "update reset",
+              this.handleLayerGroupMutation,
+            );
+          });
+        }
+
+        this.loadingStateLayerGroups = this.getLayerGroups().filter(Boolean);
+        this.listenTo(
+          this,
+          "change:layers change:layerCategories",
+          this.setUpLayerLoadingStateListeners,
+        );
+
+        this.loadingStateLayerGroups.forEach((layers) => {
+          this.listenTo(
+            layers,
+            "change:status change:displayReady",
+            this.handleLayerLoadingStateChange,
+          );
+          this.listenTo(
+            layers,
+            "change:visible",
+            this.handleLayerVisibilityChange,
+          );
+          this.listenTo(layers, "update reset", this.handleLayerGroupMutation);
+        });
+
+        this.refreshAllLayers();
+        LayerLoadingCoordinator.updateLayerLoadingState(this);
+      },
+
+      /**
+       * Rebuild flattened layers after collection mutations and recalculate
+       * aggregate loading state.
+       * @since 0.0.0
+       */
+      handleLayerGroupMutation() {
+        this.refreshAllLayers();
+        LayerLoadingCoordinator.updateLayerLoadingState(this);
+      },
+
+      /**
+       * Recalculate aggregate loading state when layer readiness metadata changes.
+       * @since 0.0.0
+       */
+      handleLayerLoadingStateChange() {
+        const activeFeatureIds = this.get("restoreState")?.activeFeatureIds;
+        if (this.shouldSyncUrlState() && isNonEmptyArray(activeFeatureIds)) {
+          this.applyFeatureRestoreState();
+        }
+        LayerLoadingCoordinator.updateLayerLoadingState(this);
+      },
+
+      /**
+       * Reconcile restore-session waiters when a layer is toggled.
+       * Hidden layers should not keep map loading state active.
+       * @param {MapAsset} layer The layer whose visibility changed.
+       * @param {boolean} visible The layer's new visible value.
+       * @since 0.0.0
+       */
+      handleLayerVisibilityChange(layer, visible) {
+        const activeFeatureIds = this.get("restoreState")?.activeFeatureIds;
+
+        if (
+          visible === false &&
+          this.shouldSyncUrlState() &&
+          isNonEmptyArray(activeFeatureIds)
+        ) {
+          this.clearFeatureRestoreSession();
+          const removedSelectedFeatures =
+            this.clearSelectedFeaturesForLayer(layer);
+          if (!removedSelectedFeatures) {
+            this.syncSelectedFeaturesToUrl();
+          }
+        } else if (
+          this.shouldSyncUrlState() &&
+          isNonEmptyArray(activeFeatureIds)
+        ) {
+          this.applyFeatureRestoreState();
+        }
+
+        this.handleLayerLoadingStateChange();
       },
 
       /**
@@ -649,7 +792,7 @@ define([
           this.urlStateLayerGroups.forEach((layers) => {
             this.stopListening(
               layers,
-              "change:visible",
+              "change:visible update reset",
               this.debouncedUpdateSearchParams,
             );
           });
@@ -693,7 +836,7 @@ define([
           if (layers) {
             this.listenTo(
               layers,
-              "change:visible",
+              "change:visible update reset",
               this.debouncedUpdateSearchParams,
             );
           }
@@ -730,9 +873,15 @@ define([
       syncSelectedFeaturesToUrl() {
         if (!this.shouldSyncUrlState()) return;
         const selectedIds = this.getSelectedFeatureIdsForUrlState();
-        SearchParams.updateActiveFeatureIds(
-          this.featureRestoreController.getRequestedIdsForUrlSync(selectedIds),
-        );
+        const activeFeatureIds =
+          this.featureRestoreController.getRequestedIdsForUrlSync(selectedIds);
+        SearchParams.updateActiveFeatureIds(activeFeatureIds);
+
+        const restoreState = this.get("restoreState") || {};
+        this.set("restoreState", {
+          ...restoreState,
+          activeFeatureIds,
+        });
       },
 
       /**

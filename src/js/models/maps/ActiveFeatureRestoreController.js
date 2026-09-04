@@ -1,6 +1,9 @@
 "use strict";
 
-define(["backbone"], (Backbone) => {
+define(["backbone", "models/maps/LayerLoadingCoordinator"], (
+  Backbone,
+  LayerLoadingCoordinator,
+) => {
   /**
    * Extract a feature id from either a Feature model or plain attrs object.
    * @param {Backbone.Model|object} feature Feature model or attrs object.
@@ -41,6 +44,21 @@ define(["backbone"], (Backbone) => {
   }
 
   /**
+   * Serialize a feature-restore scope without ambiguity between ids that may
+   * contain separator characters.
+   * @param {string[]} featureIds Requested feature ids.
+   * @param {string[]} layerIds Searchable layer ids.
+   * @returns {string} Stable scope key.
+   * @since 0.0.0
+   */
+  function serializeRestoreScopeKey(featureIds, layerIds) {
+    return JSON.stringify({
+      featureIds: [...new Set(featureIds)].sort(),
+      layerIds: [...new Set(layerIds)].sort(),
+    });
+  }
+
+  /**
    * Manage asynchronous feature restore state for a map model.
    * @param {object} options Controller options.
    * @param {MapModel} options.mapModel Owning map model.
@@ -49,6 +67,18 @@ define(["backbone"], (Backbone) => {
    */
   function MapFeatureRestoreController({ mapModel }) {
     this.mapModel = mapModel;
+  }
+
+  /**
+   * Check whether a layer supports Backbone-style event listening.
+   * @param {object} layer Candidate layer object.
+   * @returns {boolean} True when the layer has on/off event functions.
+   * @since 0.0.0
+   */
+  function isObservableLayer(layer) {
+    return (
+      layer && typeof layer.on === "function" && typeof layer.off === "function"
+    );
   }
 
   MapFeatureRestoreController.prototype = {
@@ -107,21 +137,33 @@ define(["backbone"], (Backbone) => {
     /**
      * Start a new feature restore session, canceling any previous one.
      * @param {string[]} activeFeatureIds The ids being restored.
+     * @param {string} [sessionKey] Optional key describing restore scope.
      * @returns {object} The active restore session.
      * @since 0.0.0
      */
-    beginSession(activeFeatureIds) {
-      const sessionKey = activeFeatureIds.join(",");
+    beginSession(activeFeatureIds, sessionKey = activeFeatureIds.join(",")) {
       if (this.getSession()?.key === sessionKey) {
         return this.getSession();
       }
 
       this.clearSession();
-      return this.setSession({
+      const session = this.setSession({
         cancelers: [],
         key: sessionKey,
         requestedIds: activeFeatureIds.slice(),
       });
+
+      // Ensure restores have a bounded lifetime so unresolved waits do not
+      // persist forever when no matching feature ever arrives.
+      const timeoutMs = this.mapModel.get("featureRestoreTimeoutMs") || 15000;
+      const timeoutId = setTimeout(() => {
+        if (!this.isActiveSession(session)) return;
+        this.clearSession();
+        LayerLoadingCoordinator.updateLayerLoadingState(this.mapModel);
+      }, timeoutMs);
+      this.addWaiter(() => clearTimeout(timeoutId), session);
+
+      return session;
     },
 
     /**
@@ -154,15 +196,18 @@ define(["backbone"], (Backbone) => {
      * Search all layers for features matching the given ids and return
      * feature attribute objects ready to be passed to selectFeatures().
      * @param {string[]} ids Feature ids to search for.
+     * @param {Array<object>} [layers] Layers to search within.
      * @returns {object[]} Matching feature attribute objects.
      * @since 0.0.0
      */
-    findFeatureAttributesByIds(ids) {
-      const allLayers = this.mapModel.getAllLayers();
-
+    findFeatureAttributesByIds(ids, layers = this.mapModel.getAllLayers()) {
       return ids.reduce((result, id) => {
-        const featureAttrs = allLayers.reduce((foundAttrs, layer) => {
-          if (foundAttrs || typeof layer.getFeatureById !== "function") {
+        const featureAttrs = layers.reduce((foundAttrs, layer) => {
+          if (
+            foundAttrs ||
+            typeof layer.getFeatureById !== "function" ||
+            layer.get("status") === "error"
+          ) {
             return foundAttrs;
           }
 
@@ -203,10 +248,18 @@ define(["backbone"], (Backbone) => {
       const selectedRequestedIds = (selectedFeatures?.models || [])
         .map((feature) => getFeatureId(feature))
         .filter((id) => activeFeatureIds.includes(id));
-      const allSearchableLayers = mapModel.getAllLayers().filter(
-        (layer) => typeof layer.getFeatureById === "function",
+      const allSearchableLayers = mapModel
+        .getAllLayers()
+        .filter(
+          (layer) =>
+            layer.get("visible") !== false &&
+            typeof layer.getFeatureById === "function" &&
+            layer.get("status") !== "error",
+        );
+      const featureAttrs = this.findFeatureAttributesByIds(
+        activeFeatureIds,
+        allSearchableLayers,
       );
-      const featureAttrs = this.findFeatureAttributesByIds(activeFeatureIds);
       const resolvedIds = new Set(selectedRequestedIds);
 
       featureAttrs.forEach((feature) => {
@@ -219,7 +272,13 @@ define(["backbone"], (Backbone) => {
       const unresolvedIds = activeFeatureIds.filter(
         (id) => !resolvedIds.has(id),
       );
-      const restoreKey = activeFeatureIds.join(",");
+      const searchableLayerIds = allSearchableLayers
+        .map((layer) => layer.get("layerId") || layer.cid || "")
+        .filter((layerId) => typeof layerId === "string" && layerId.length);
+      const restoreScopeKey = serializeRestoreScopeKey(
+        activeFeatureIds,
+        searchableLayerIds,
+      );
       const canResolveAsynchronously = allSearchableLayers.some(
         (layer) =>
           layer.get("status") !== "ready" ||
@@ -231,9 +290,9 @@ define(["backbone"], (Backbone) => {
       if (
         unresolvedIds.length &&
         canResolveAsynchronously &&
-        existingSession?.key !== restoreKey
+        existingSession?.key !== restoreScopeKey
       ) {
-        restoreSession = this.beginSession(activeFeatureIds);
+        restoreSession = this.beginSession(activeFeatureIds, restoreScopeKey);
       }
 
       if (featureAttrs.length) {
@@ -247,13 +306,21 @@ define(["backbone"], (Backbone) => {
         return;
       }
 
+      if (!allSearchableLayers.length) {
+        this.clearSession();
+        return;
+      }
+
       if (!canResolveAsynchronously) {
         this.clearSession();
         mapModel.syncSelectedFeaturesToUrl();
         return;
       }
 
-      if (this.getSession()?.key === restoreKey && existingSession?.key === restoreKey) {
+      if (
+        this.getSession()?.key === restoreScopeKey &&
+        existingSession?.key === restoreScopeKey
+      ) {
         return;
       }
 
@@ -269,7 +336,10 @@ define(["backbone"], (Backbone) => {
           return;
         }
 
-        const attrs = this.findFeatureAttributesByIds(activeFeatureIds);
+        const attrs = this.findFeatureAttributesByIds(
+          activeFeatureIds,
+          allSearchableLayers,
+        );
         if (attrs.length) {
           mapModel.selectFeatures(
             mergeFeatureSelections(
@@ -291,6 +361,7 @@ define(["backbone"], (Backbone) => {
 
       const registerTileWaiters = (layer) => {
         if (!this.isActiveSession(restoreSession)) return;
+        if (layer.get("status") === "error") return;
         if (typeof layer.waitForFeatureById !== "function") return;
 
         const selectedIds = (mapModel.getSelectedFeatures()?.models || []).map(
@@ -310,6 +381,11 @@ define(["backbone"], (Backbone) => {
 
       allSearchableLayers.forEach((layer) => {
         if (layer.get("status") !== "ready") {
+          if (!isObservableLayer(layer)) {
+            registerTileWaiters(layer);
+            return;
+          }
+
           const statusListener = () => {
             if (!this.isActiveSession(restoreSession)) {
               mapModel.stopListening(layer, "change:status", statusListener);

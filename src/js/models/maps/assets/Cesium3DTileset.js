@@ -136,6 +136,7 @@ define([
             this.getCesiumURL(cesiumOptions) || cesiumOptions.url;
 
           cesiumModel = new Cesium.Cesium3DTileset(cesiumOptions);
+          cesiumModel.mapAssetModel = model;
           model.set("cesiumModel", cesiumModel);
           cesiumModel.readyPromise
             .then(function () {
@@ -444,6 +445,67 @@ define([
         return () => {
           cleanup();
         };
+      },
+
+      /**
+       * Start tracking visible tiles and mark this asset display-ready once a
+       * tile from this tileset is rendered.
+       * @since 0.0.0
+       */
+      startDisplayReadyTracking: function () {
+        const model = this;
+        const cesiumModel = model.get("cesiumModel");
+        this.stopDisplayReadyTracking();
+
+        if (!cesiumModel) {
+          return;
+        }
+
+        let removeListener = null;
+        let isCanceled = false;
+
+        const cleanup = function () {
+          if (isCanceled) {
+            return;
+          }
+          isCanceled = true;
+          if (typeof removeListener === "function") {
+            removeListener();
+            removeListener = null;
+          }
+          model.displayReadyTrackerCancel = null;
+        };
+
+        const markDisplayed = function () {
+          if (isCanceled) {
+            return;
+          }
+          if (model.get("cesiumModel") !== cesiumModel) {
+            cleanup();
+            return;
+          }
+          if (model.get("displayReady") !== true) {
+            model.set("displayReady", true);
+          }
+          cleanup();
+        };
+
+        removeListener = cesiumModel.tileVisible.addEventListener(function () {
+          markDisplayed();
+        });
+
+        model.displayReadyTrackerCancel = cleanup;
+      },
+
+      /**
+       * Stop any pending display-ready watcher for this tileset.
+       * @since 0.0.0
+       */
+      stopDisplayReadyTracking: function () {
+        if (typeof this.displayReadyTrackerCancel === "function") {
+          this.displayReadyTrackerCancel();
+        }
+        this.displayReadyTrackerCancel = null;
       },
 
       /**

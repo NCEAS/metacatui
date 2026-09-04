@@ -29,7 +29,13 @@ define([
   // CSS
   MapCSS,
 ) => {
+  const LOADING_INDICATOR_DELAY_MS = 500;
+
   const CLASS_NAMES = {
+    loadingIndicator: "map-view__loading-indicator",
+    loadingBar: "map-view__loading-bar",
+    loadingMessage: "map-view__loading-message",
+    loadingText: "map-view__loading-text",
     mapWidgetContainer: "map-view__map-widget-container",
     featureInfoContainer: "map-view__feature-info-container",
     toolbarContainer: "map-view__toolbar-container",
@@ -96,6 +102,68 @@ define([
 
         this.model = options?.model ? options.model : new Map();
         this.isPortalMap = options?.isPortalMap;
+        this.loadingIndicatorTimer = null;
+        this.hasShownLoadingIndicator = false;
+      },
+
+      /**
+       * Get the current map loading indicator state.
+       * @returns {object} State used to render the loading widget.
+       */
+      getLoadingIndicatorState() {
+        return {
+          indicator: this.subElements?.loadingIndicator,
+          messageTextEl: this.subElements?.loadingText,
+          isLoading: this.model.get("isLoadingLayers") === true,
+          message: this.model.get("loadingLayersMessage") || "Loading layers",
+        };
+      },
+
+      /**
+       * Hide the map-level loading indicator and clear any pending reveal timer.
+       * @param {HTMLElement} [indicator] The indicator element to hide.
+       */
+      hideLoadingIndicator(indicator = this.subElements?.loadingIndicator) {
+        const loadingIndicator =
+          indicator || this.subElements?.loadingIndicator;
+        if (!loadingIndicator) {
+          return;
+        }
+
+        this.clearLayerLoadingIndicatorTimer();
+        loadingIndicator.hidden = true;
+        this.hasShownLoadingIndicator = false;
+      },
+
+      /**
+       * Schedule the loading indicator reveal after the configured delay.
+       * The delay only applies to the first reveal in a loading cycle.
+       */
+      scheduleLoadingIndicatorReveal() {
+        const { indicator, messageTextEl, isLoading } =
+          this.getLoadingIndicatorState();
+        if (!indicator || !messageTextEl || !isLoading) {
+          return;
+        }
+
+        if (
+          indicator.hidden &&
+          !this.loadingIndicatorTimer &&
+          !this.hasShownLoadingIndicator
+        ) {
+          const loadingIndicator = indicator;
+          this.loadingIndicatorTimer = setTimeout(() => {
+            this.loadingIndicatorTimer = null;
+            if (this.model.get("isLoadingLayers") !== true) {
+              return;
+            }
+
+            loadingIndicator.hidden = false;
+            messageTextEl.textContent =
+              this.model.get("loadingLayersMessage") || "Loading layers";
+            this.hasShownLoadingIndicator = true;
+          }, LOADING_INDICATOR_DELAY_MS);
+        }
       },
 
       /**
@@ -125,6 +193,17 @@ define([
 
         // Render the (Cesium) map
         this.renderMapWidget();
+        this.renderLayerLoadingIndicator();
+        this.updateLayerLoadingIndicator();
+        this.stopListening(
+          this.model,
+          "change:isLoadingLayers change:loadingLayersMessage",
+        );
+        this.listenTo(
+          this.model,
+          "change:isLoadingLayers change:loadingLayersMessage",
+          this.updateLayerLoadingIndicator,
+        );
 
         // Optionally add the toolbar, layer details, and feature info box.
         if (this.model.get("showToolbar")) {
@@ -136,6 +215,79 @@ define([
         }
         this.renderVisualizationPanel();
         return this;
+      },
+
+      /**
+       * Clear any pending delayed loading-indicator reveal.
+       * @since 0.0.0
+       */
+      clearLayerLoadingIndicatorTimer() {
+        if (this.loadingIndicatorTimer) {
+          clearTimeout(this.loadingIndicatorTimer);
+          this.loadingIndicatorTimer = null;
+        }
+      },
+
+      /**
+       * Render the map-level loading indicator within the map widget container.
+       * @returns {HTMLElement|null} The loading indicator element.
+       * @since 0.0.0
+       */
+      renderLayerLoadingIndicator() {
+        const container = this.subElements?.mapWidgetContainer;
+        if (!container) return null;
+
+        const indicator = document.createElement("div");
+        indicator.className = CLASS_NAMES.loadingIndicator;
+        indicator.hidden = true;
+        indicator.setAttribute("aria-live", "polite");
+        indicator.setAttribute("aria-atomic", "true");
+        indicator.innerHTML = `
+          <div class="${CLASS_NAMES.loadingBar}"></div>
+          <div class="${CLASS_NAMES.loadingMessage}">
+            <span class="${CLASS_NAMES.loadingText}"></span>
+          </div>
+        `;
+        container.appendChild(indicator);
+
+        this.subElements.loadingIndicator = indicator;
+        this.subElements.loadingBar = indicator.querySelector(
+          `.${CLASS_NAMES.loadingBar}`,
+        );
+        this.subElements.loadingMessage = indicator.querySelector(
+          `.${CLASS_NAMES.loadingMessage}`,
+        );
+        this.subElements.loadingText = indicator.querySelector(
+          `.${CLASS_NAMES.loadingText}`,
+        );
+
+        return indicator;
+      },
+
+      /**
+       * Update the map-level loading indicator based on aggregate layer state.
+       * @since 0.0.0
+       */
+      updateLayerLoadingIndicator() {
+        const { indicator, messageTextEl, isLoading, message } =
+          this.getLoadingIndicatorState();
+        if (!indicator || !messageTextEl) return;
+
+        if (!isLoading) {
+          this.hideLoadingIndicator(indicator);
+          return;
+        }
+
+        messageTextEl.textContent = message;
+
+        if (indicator.hidden && !this.hasShownLoadingIndicator) {
+          this.scheduleLoadingIndicatorReveal();
+          return;
+        }
+
+        indicator.hidden = false;
+        messageTextEl.textContent = message;
+        this.hasShownLoadingIndicator = true;
       },
 
       /**
@@ -249,6 +401,7 @@ define([
 
         view.featureInfo = new FeatureInfoView({
           el: view.subElements.featureInfoContainer,
+          mapModel: view.model,
           model: features.at(0),
         }).render();
 
@@ -318,6 +471,7 @@ define([
        * @since 2.27.0
        */
       onClose() {
+        this.clearLayerLoadingIndicatorTimer();
         const subViews = this.getSubViews();
         subViews.forEach((subView) => {
           if (subView && typeof subView.onClose === "function") {
