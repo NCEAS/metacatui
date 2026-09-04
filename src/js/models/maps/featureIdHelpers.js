@@ -47,7 +47,7 @@ define([], () => {
   }
 
   /**
-   * Return true if any FEATURE_ID_KEYS property in props equals id.
+   * Return true if props resolves to the same canonical ID as id.
    * @param {object} props Feature properties (any key casing).
    * @param {string} id The feature ID to match.
    * @returns {boolean} True if a match is found, false otherwise.
@@ -58,11 +58,7 @@ define([], () => {
       return false;
     }
 
-    const lower = toLowerCaseProps(props);
-    return FEATURE_ID_KEYS.some((key) => {
-      const val = lower[key];
-      return val != null && String(val).trim() === normalizedId;
-    });
+    return getIdFromProperties(props) === normalizedId;
   }
 
   return { FEATURE_ID_KEYS, getIdFromProperties, propertyMatchesId };
