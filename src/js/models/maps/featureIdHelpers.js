@@ -61,5 +61,9 @@ define([], () => {
     return getIdFromProperties(props) === normalizedId;
   }
 
-  return { FEATURE_ID_KEYS, getIdFromProperties, propertyMatchesId };
+  return {
+    FEATURE_ID_KEYS,
+    getIdFromProperties,
+    propertyMatchesId,
+  };
 });

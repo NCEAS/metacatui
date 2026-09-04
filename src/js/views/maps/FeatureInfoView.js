@@ -5,8 +5,9 @@ define([
   "underscore",
   "backbone",
   "models/maps/Feature",
+  "models/maps/featureIdHelpers",
   "text!templates/maps/feature-info/feature-info.html",
-], ($, _, Backbone, Feature, Template) => {
+], ($, _, Backbone, Feature, { FEATURE_ID_KEYS }, Template) => {
   /**
    * @class FeatureInfoView
    * @classdesc An info-box / panel that shows more details about a specific geo-spatial
@@ -396,15 +397,9 @@ define([
           if (!name) {
             title = "Feature";
 
-            let searchKeys = [
-              "name",
-              "title",
-              "label",
-              "uuid",
-              "id",
-              "identifier",
-            ];
-            searchKeys = searchKeys.map((key) => key.toLowerCase());
+            const searchKeys = FEATURE_ID_KEYS.map((key) =>
+              key.toLowerCase(),
+            );
             const propKeys = Object.keys(properties);
             const propKeysLower = propKeys.map((key) => key.toLowerCase());
 
