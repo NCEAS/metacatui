@@ -136,6 +136,20 @@ define([
       isOpen: false,
 
       /**
+       * Collapses the iframe by setting its height to 0 and opacity to 0. 
+       * This is used when the feature info box opens for the first time so
+       * the iFrame doesn't flash empty before it's ready.
+       * @since 0.0.0
+       */
+      collapseiFrame() { 
+        const iFrame = this.elements?.iFrame;
+        if (iFrame) {
+          iFrame.style.height = "0";
+          iFrame.style.opacity = "0";
+        }
+      },
+
+      /**
        * Executed when a new FeatureInfoView is created
        * @param {object} [options] - A literal object with options to pass to the view
        */
@@ -216,8 +230,7 @@ define([
 
         // Start collapsed so the panel does not flash at the browser's default
         // iframe height before content is rendered.
-        iFrame.style.height = 0;
-        iFrame.style.opacity = 0;
+        this.collapseiFrame()
 
         view.update();
 
@@ -263,8 +276,7 @@ define([
         // selected features, keep the current height and transition directly to the
         // new content height.
         if (collapseBeforeLoad) {
-          iFrame.style.height = 0;
-          iFrame.style.opacity = 0;
+          this.collapseiFrame();
         }
 
         // Update the iFrame content
@@ -278,7 +290,7 @@ define([
           // may be from a different domain.
           setTimeout(() => {
             view.updateIFrameHeight();
-          }, 500);
+          }, 250);
         });
 
         // Show or hide the layer details button, update the text
