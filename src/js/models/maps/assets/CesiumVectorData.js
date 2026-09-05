@@ -8,6 +8,7 @@ define([
   "models/maps/AssetColorPalette",
   "collections/maps/VectorFilters",
   "common/IconUtilities",
+  "models/maps/featureIdHelpers",
 ], function (
   _,
   Cesium,
@@ -16,6 +17,7 @@ define([
   AssetColorPalette,
   VectorFilters,
   IconUtilities,
+  { getIdFromProperties, propertyMatchesId },
 ) {
   // Source: https://fontawesome.com/v6/icons/location-dot?f=classic&s=solid
   const PIN_SVG_STRING =
@@ -313,26 +315,13 @@ define([
        * @since 2.35.0
        */
       getFeatureById: function (id) {
-        let feature = this.getEntityCollection()?.getById(id);
-        if (!feature) {
-          // get the propreties of all entities and see if any have an id
-          const entities = this.getEntities() || [];
-          for (let x = 0; x < entities.length; x++) {
-            const props = this.getPropertiesFromFeature(entities[x]);
-            const keys = Object.keys(props || {});
-            const keysLower = keys.map((k) => k.toLowerCase());
-            const keysToCheck = ["id", "identifier", "name", "title", "label"];
-            for (let y = 0; y < keysToCheck.length; y++) {
-              const index = keysLower.indexOf(keysToCheck[y]);
-              if (index > -1 && props[keys[index]] == id) {
-                feature = entities[x];
-                break;
-              }
-            }
-            if (feature) break;
-          }
-        }
-        return feature;
+        return (
+          (this.getEntities() || []).find((entity) =>
+            propertyMatchesId(this.getPropertiesFromFeature(entity), id),
+          ) ??
+          this.getEntityCollection()?.getById(id) ??
+          null
+        );
       },
 
       /**
@@ -401,7 +390,12 @@ define([
       getIDFromFeature: function (feature) {
         feature = this.getEntityFromMapObject(feature);
         if (!feature) return null;
-        return feature.id;
+        // Prefer a stable property-based ID over Cesium's auto-generated entity
+        // UUID (which changes on every page load).
+        return (
+          getIdFromProperties(this.getPropertiesFromFeature(feature)) ??
+          feature.id
+        );
       },
 
       /**

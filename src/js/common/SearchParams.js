@@ -16,6 +16,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   const SCHEMA_VERSION_ID = "sv";
   const ACTIVE_ACTION_ID = "a";
   const OPEN_PANEL_ID = "op";
+  const ACTIVE_FEATURES_ID = "f";
 
   /** The search parameter ID for enabled layers in the save to URL feature. */
   const ENABLED_LAYERS_ID = "el";
@@ -42,6 +43,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
     SCHEMA_VERSION_ID,
     ACTIVE_ACTION_ID,
     OPEN_PANEL_ID,
+    ACTIVE_FEATURES_ID,
     ENABLED_LAYERS_ID,
   ];
 
@@ -57,6 +59,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
     enabledLayerStateProvided: false,
     activeActionId: null,
     openPanel: null,
+    activeFeatures: [],
   });
 
   /**
@@ -94,10 +97,85 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @returns {string|null} A normalized ID string, or null if invalid.
    * @since 2.38.0
    */
-  const normalizeId = (value) => {
+  function normalizeId(value) {
     if (typeof value !== "string") return null;
     const trimmed = value.trim();
     return trimmed.length ? trimmed : null;
+  }
+
+  /**
+   * Normalize active feature entries into { featureId, layerId } pairs.
+   * @param {unknown} value Candidate active feature entries.
+   * @returns {{featureId: string, layerId: (string|null)}[]} Normalized entries.
+   * @since 0.0.0
+   */
+  const normalizeActiveFeatures = (value) => {
+    if (!Array.isArray(value)) return [];
+
+    const normalized = [];
+    const seen = new Set();
+
+    value.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+
+      const featureId = normalizeId(entry.featureId);
+      if (!featureId) return;
+
+      const layerId = normalizeId(entry.layerId);
+      const normalizedEntry = {
+        featureId,
+        layerId: layerId || null,
+      };
+      const dedupeKey = JSON.stringify(normalizedEntry);
+      if (seen.has(dedupeKey)) return;
+
+      seen.add(dedupeKey);
+      normalized.push(normalizedEntry);
+    });
+
+    return normalized;
+  };
+
+  /**
+   * Parse a single encoded active-feature token from the URL.
+   * Expects JSON object payloads containing feature/layer ids.
+   * @param {unknown} token Candidate f param value.
+   * @returns {{featureId: string, layerId: (string|null)}|null} Parsed entry.
+   * @since 0.0.0
+   */
+  const parseActiveFeatureToken = (token) => {
+    if (typeof token !== "string") return null;
+
+    try {
+      const parsed = JSON.parse(token);
+      if (!parsed || typeof parsed !== "object") return null;
+
+      const featureId = normalizeId(parsed.featureId);
+      if (!featureId) return null;
+
+      return {
+        featureId,
+        layerId: normalizeId(parsed.layerId) || null,
+      };
+    } catch (_error) {
+      return null;
+    }
+  };
+
+  /**
+   * Serialize one active-feature entry into a stable URL token.
+   * @param {{featureId: string, layerId: (string|null)}} feature Active feature entry.
+   * @returns {string|null} JSON-encoded token string.
+   * @since 0.0.0
+   */
+  const serializeActiveFeatureToken = (feature) => {
+    const [normalizedFeature] = normalizeActiveFeatures([feature]);
+    if (!normalizedFeature) return null;
+
+    return JSON.stringify({
+      featureId: normalizedFeature.featureId,
+      layerId: normalizedFeature.layerId,
+    });
   };
 
   /**
@@ -149,6 +227,10 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    */
   const normalizeState = (state = {}) => {
     const defaults = getDefaultState();
+    const normalizedActiveFeatures = normalizeActiveFeatures(
+      Array.isArray(state.activeFeatures) ? state.activeFeatures : [],
+    );
+
     const normalized = {
       ...defaults,
       ...state,
@@ -161,6 +243,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       enabledLayerStateProvided: Boolean(state.enabledLayerStateProvided),
       activeActionId: normalizeId(state.activeActionId),
       openPanel: normalizeId(state.openPanel),
+      activeFeatures: normalizedActiveFeatures,
     };
 
     const requestedSchema = Number(state.schemaVersion);
@@ -169,8 +252,11 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
         ? Math.floor(requestedSchema)
         : 0;
 
-    // Phase 1 fields imply schema 1 writing.
-    if (normalized.activeActionId || normalized.openPanel) {
+    if (
+      normalized.activeActionId ||
+      normalized.openPanel ||
+      normalized.activeFeatures.length
+    ) {
       normalized.schemaVersion = Math.max(1, normalized.schemaVersion);
     }
 
@@ -211,11 +297,18 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       enabledLayerStateProvided: url.searchParams.has(ENABLED_LAYERS_ID),
       activeActionId: null,
       openPanel: null,
+      activeFeatures: [],
     };
 
     if (schemaVersion >= 1) {
       base.activeActionId = normalizeId(url.searchParams.get(ACTIVE_ACTION_ID));
       base.openPanel = normalizeId(url.searchParams.get(OPEN_PANEL_ID));
+      base.activeFeatures = normalizeActiveFeatures(
+        url.searchParams
+          .getAll(ACTIVE_FEATURES_ID)
+          .map((token) => parseActiveFeatureToken(token))
+          .filter((entry) => entry != null),
+      );
     }
 
     return normalizeState(base);
@@ -265,6 +358,14 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       }
       if (normalized.openPanel) {
         url.searchParams.set(OPEN_PANEL_ID, normalized.openPanel);
+      }
+      if (normalized.activeFeatures.length) {
+        normalized.activeFeatures.forEach(({ featureId, layerId }) => {
+          const token = serializeActiveFeatureToken({ featureId, layerId });
+          if (token) {
+            url.searchParams.append(ACTIVE_FEATURES_ID, token);
+          }
+        });
       }
     }
 
@@ -410,7 +511,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @param {object} action Viewfinder action object.
    * @param {string} action.id Stable action identifier.
    * @param {string} action.url RFC6570 URL template.
-   * @param {boolean} [showShareUrl=true] Whether to read namespaced browser
+   * @param {boolean} [showShareUrl] Whether to read namespaced browser
    *   state when resolving the template.
    * @returns {string|null} The resolved iframe URL or null when no URL exists.
    * @since 2.38.0
@@ -507,6 +608,16 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   };
 
   /**
+   * Set active features in URL state as feature/layer pairs.
+   * @param {{featureId: string, layerId: (string|null)}[]} activeFeatures
+   * The feature state entries to write.
+   * @since 0.0.0
+   */
+  const updateActiveFeatures = (activeFeatures) => {
+    updateStateInUrl({ activeFeatures });
+  };
+
+  /**
    * @namespace SearchParams
    * @description Helpful functions for dealing with various search parameter
    * changes.
@@ -523,6 +634,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
     resolveActionUrl,
     syncActionStateFromVisualizationUrl,
     updateActiveActionId,
+    updateActiveFeatures,
     updateOpenPanel,
     updateStateInUrl,
     writeActionStateToUrl,

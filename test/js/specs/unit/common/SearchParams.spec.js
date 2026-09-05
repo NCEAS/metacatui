@@ -458,5 +458,189 @@ define(["common/SearchParams"], (SearchParams) => {
         expect(url.searchParams.get("wt-lat")).to.be.null;
       });
     });
+
+    describe("activeFeatures", () => {
+      const encodeFeature = ({ featureId, layerId = null }) =>
+        encodeURIComponent(JSON.stringify({ featureId, layerId }));
+
+      it("returns empty activeFeatures by default", () => {
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatures).to.deep.equal([]);
+      });
+
+      it("parses encoded f entries as activeFeatures when sv=1", () => {
+        window.history.replaceState(
+          null,
+          "",
+          `?sv=1&f=${encodeFeature({ featureId: "feature-abc-123" })}`,
+        );
+
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatures).to.deep.equal([
+          { featureId: "feature-abc-123", layerId: null },
+        ]);
+      });
+
+      it("ignores encoded f entries when sv is absent", () => {
+        window.history.replaceState(
+          null,
+          "",
+          `?f=${encodeFeature({ featureId: "feature-abc-123" })}`,
+        );
+
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatures).to.deep.equal([]);
+      });
+
+      it("ignores non-JSON f entries", () => {
+        window.history.replaceState(null, "", "?f=legacy-id-1&f=legacy-id-2");
+
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatures).to.deep.equal([]);
+      });
+
+      it("parses repeated encoded f params as activeFeatures when sv=1", () => {
+        window.history.replaceState(
+          null,
+          "",
+          `?sv=1&f=${encodeFeature({ featureId: "id-one" })}&f=${encodeFeature({ featureId: "id-two" })}&f=${encodeFeature({ featureId: "id-three" })}`,
+        );
+
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatures).to.deep.equal([
+          { featureId: "id-one", layerId: null },
+          { featureId: "id-two", layerId: null },
+          { featureId: "id-three", layerId: null },
+        ]);
+      });
+
+      it("writes activeFeatures as repeated f params", () => {
+        SearchParams.updateStateInUrl({
+          activeFeatures: [{ featureId: "feat-xyz", layerId: null }],
+        });
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.getAll("f")).to.deep.equal([
+          JSON.stringify({ featureId: "feat-xyz", layerId: null }),
+        ]);
+        expect(url.searchParams.get("sv")).to.equal("1");
+      });
+
+      it("writes multiple activeFeatures as repeated f params", () => {
+        SearchParams.updateStateInUrl({
+          activeFeatures: [
+            { featureId: "id-a", layerId: null },
+            { featureId: "id-b", layerId: null },
+          ],
+        });
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.getAll("f")).to.deep.equal([
+          JSON.stringify({ featureId: "id-a", layerId: null }),
+          JSON.stringify({ featureId: "id-b", layerId: null }),
+        ]);
+        expect(url.searchParams.get("sv")).to.equal("1");
+      });
+
+      it("round-trips feature ids containing commas", () => {
+        SearchParams.updateStateInUrl({
+          activeFeatures: [
+            { featureId: "Washington, DC", layerId: null },
+            { featureId: "id-b", layerId: null },
+          ],
+        });
+
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatures).to.deep.equal([
+          { featureId: "Washington, DC", layerId: null },
+          { featureId: "id-b", layerId: null },
+        ]);
+      });
+
+      it("omits f param when activeFeatures is empty", () => {
+        SearchParams.updateStateInUrl({
+          openPanel: "viewfinder",
+          activeFeatures: [],
+        });
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.has("f")).to.equal(false);
+      });
+
+      it("clears f param via clearStateInUrl", () => {
+        window.history.replaceState(
+          null,
+          "",
+          "?sv=1&f=feature-abc-123&op=viewfinder",
+        );
+
+        SearchParams.clearStateInUrl();
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.has("f")).to.equal(false);
+        expect(url.searchParams.has("op")).to.equal(false);
+      });
+
+      it("preserves unrelated params when writing activeFeatures", () => {
+        window.history.replaceState(null, "", "?unrelated=keep");
+
+        SearchParams.updateStateInUrl({
+          activeFeatures: [{ featureId: "feat-1", layerId: null }],
+        });
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.get("unrelated")).to.equal("keep");
+        expect(url.searchParams.get("sv")).to.equal("1");
+        expect(url.searchParams.getAll("f")).to.deep.equal([
+          JSON.stringify({ featureId: "feat-1", layerId: null }),
+        ]);
+      });
+
+      it("round-trips activeFeatures through updateStateInUrl and parseStateFromUrl", () => {
+        SearchParams.updateStateInUrl({
+          activeFeatures: [
+            { featureId: "uuid-1", layerId: null },
+            { featureId: "uuid-2", layerId: null },
+          ],
+        });
+
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatures).to.deep.equal([
+          { featureId: "uuid-1", layerId: null },
+          { featureId: "uuid-2", layerId: null },
+        ]);
+      });
+
+      it("writes feature-layer pairs as repeated encoded f params", () => {
+        SearchParams.updateActiveFeatures([
+          { featureId: "feat-1", layerId: "layer-a" },
+          { featureId: "feat-1", layerId: "layer-b" },
+          { featureId: "feat-2", layerId: null },
+        ]);
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.getAll("f")).to.deep.equal([
+          JSON.stringify({ featureId: "feat-1", layerId: "layer-a" }),
+          JSON.stringify({ featureId: "feat-1", layerId: "layer-b" }),
+          JSON.stringify({ featureId: "feat-2", layerId: null }),
+        ]);
+        expect(url.searchParams.get("sv")).to.equal("1");
+      });
+
+      it("parses feature-layer pairs into activeFeatures when sv=1", () => {
+        window.history.replaceState(
+          null,
+          "",
+          `?sv=1&f=${encodeFeature({ featureId: "feat-1", layerId: "layer-a" })}&f=${encodeFeature({ featureId: "feat-1", layerId: "layer-b" })}&f=${encodeFeature({ featureId: "feat-2" })}`,
+        );
+
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatures).to.deep.equal([
+          { featureId: "feat-1", layerId: "layer-a" },
+          { featureId: "feat-1", layerId: "layer-b" },
+          { featureId: "feat-2", layerId: null },
+        ]);
+      });
+    });
   });
 });
