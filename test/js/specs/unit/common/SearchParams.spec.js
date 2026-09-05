@@ -459,67 +459,108 @@ define(["common/SearchParams"], (SearchParams) => {
       });
     });
 
-    describe("activeFeatureIds", () => {
-      it("returns empty array by default", () => {
+    describe("activeFeatures", () => {
+      const encodeFeature = ({ featureId, layerId = null }) =>
+        encodeURIComponent(JSON.stringify({ featureId, layerId }));
+
+      it("returns empty activeFeatures by default", () => {
         const state = SearchParams.parseStateFromUrl();
-        expect(state.activeFeatureIds).to.deep.equal([]);
+        expect(state.activeFeatures).to.deep.equal([]);
       });
 
-      it("parses f param as activeFeatureIds when sv=1", () => {
-        window.history.replaceState(null, "", "?sv=1&f=feature-abc-123");
+      it("parses encoded f entries as activeFeatures when sv=1", () => {
+        window.history.replaceState(
+          null,
+          "",
+          `?sv=1&f=${encodeFeature({ featureId: "feature-abc-123" })}`,
+        );
 
         const state = SearchParams.parseStateFromUrl();
-        expect(state.activeFeatureIds).to.deep.equal(["feature-abc-123"]);
-      });
-
-      it("ignores f param when sv is absent (schema 0)", () => {
-        window.history.replaceState(null, "", "?f=feature-abc-123");
-
-        const state = SearchParams.parseStateFromUrl();
-        expect(state.activeFeatureIds).to.deep.equal([]);
-      });
-
-      it("parses repeated f params as activeFeatureIds when sv=1", () => {
-        window.history.replaceState(null, "", "?sv=1&f=id-one&f=id-two&f=id-three");
-
-        const state = SearchParams.parseStateFromUrl();
-        expect(state.activeFeatureIds).to.deep.equal([
-          "id-one",
-          "id-two",
-          "id-three",
+        expect(state.activeFeatures).to.deep.equal([
+          { featureId: "feature-abc-123", layerId: null },
         ]);
       });
 
-      it("writes activeFeatureIds as repeated f params and bumps schema to 1", () => {
-        SearchParams.updateStateInUrl({ activeFeatureIds: ["feat-xyz"] });
+      it("ignores encoded f entries when sv is absent", () => {
+        window.history.replaceState(
+          null,
+          "",
+          `?f=${encodeFeature({ featureId: "feature-abc-123" })}`,
+        );
 
-        const url = new URL(window.location.href);
-        expect(url.searchParams.getAll("f")).to.deep.equal(["feat-xyz"]);
-        expect(url.searchParams.get("sv")).to.equal("1");
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatures).to.deep.equal([]);
       });
 
-      it("writes multiple feature ids as repeated f params", () => {
+      it("ignores non-JSON f entries", () => {
+        window.history.replaceState(null, "", "?f=legacy-id-1&f=legacy-id-2");
+
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatures).to.deep.equal([]);
+      });
+
+      it("parses repeated encoded f params as activeFeatures when sv=1", () => {
+        window.history.replaceState(
+          null,
+          "",
+          `?sv=1&f=${encodeFeature({ featureId: "id-one" })}&f=${encodeFeature({ featureId: "id-two" })}&f=${encodeFeature({ featureId: "id-three" })}`,
+        );
+
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatures).to.deep.equal([
+          { featureId: "id-one", layerId: null },
+          { featureId: "id-two", layerId: null },
+          { featureId: "id-three", layerId: null },
+        ]);
+      });
+
+      it("writes activeFeatures as repeated f params", () => {
         SearchParams.updateStateInUrl({
-          activeFeatureIds: ["id-a", "id-b"],
+          activeFeatures: [{ featureId: "feat-xyz", layerId: null }],
         });
 
         const url = new URL(window.location.href);
-        expect(url.searchParams.getAll("f")).to.deep.equal(["id-a", "id-b"]);
+        expect(url.searchParams.getAll("f")).to.deep.equal([
+          JSON.stringify({ featureId: "feat-xyz", layerId: null }),
+        ]);
+        expect(url.searchParams.get("sv")).to.equal("1");
+      });
+
+      it("writes multiple activeFeatures as repeated f params", () => {
+        SearchParams.updateStateInUrl({
+          activeFeatures: [
+            { featureId: "id-a", layerId: null },
+            { featureId: "id-b", layerId: null },
+          ],
+        });
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.getAll("f")).to.deep.equal([
+          JSON.stringify({ featureId: "id-a", layerId: null }),
+          JSON.stringify({ featureId: "id-b", layerId: null }),
+        ]);
+        expect(url.searchParams.get("sv")).to.equal("1");
       });
 
       it("round-trips feature ids containing commas", () => {
         SearchParams.updateStateInUrl({
-          activeFeatureIds: ["Washington, DC", "id-b"],
+          activeFeatures: [
+            { featureId: "Washington, DC", layerId: null },
+            { featureId: "id-b", layerId: null },
+          ],
         });
 
         const state = SearchParams.parseStateFromUrl();
-        expect(state.activeFeatureIds).to.deep.equal(["Washington, DC", "id-b"]);
+        expect(state.activeFeatures).to.deep.equal([
+          { featureId: "Washington, DC", layerId: null },
+          { featureId: "id-b", layerId: null },
+        ]);
       });
 
-      it("omits f param when activeFeatureIds is empty", () => {
+      it("omits f param when activeFeatures is empty", () => {
         SearchParams.updateStateInUrl({
           openPanel: "viewfinder",
-          activeFeatureIds: [],
+          activeFeatures: [],
         });
 
         const url = new URL(window.location.href);
@@ -540,23 +581,65 @@ define(["common/SearchParams"], (SearchParams) => {
         expect(url.searchParams.has("op")).to.equal(false);
       });
 
-      it("preserves unrelated params when writing activeFeatureIds", () => {
+      it("preserves unrelated params when writing activeFeatures", () => {
         window.history.replaceState(null, "", "?unrelated=keep");
 
-        SearchParams.updateStateInUrl({ activeFeatureIds: ["feat-1"] });
+        SearchParams.updateStateInUrl({
+          activeFeatures: [{ featureId: "feat-1", layerId: null }],
+        });
 
         const url = new URL(window.location.href);
         expect(url.searchParams.get("unrelated")).to.equal("keep");
-        expect(url.searchParams.getAll("f")).to.deep.equal(["feat-1"]);
+        expect(url.searchParams.get("sv")).to.equal("1");
+        expect(url.searchParams.getAll("f")).to.deep.equal([
+          JSON.stringify({ featureId: "feat-1", layerId: null }),
+        ]);
       });
 
-      it("round-trips activeFeatureIds through updateStateInUrl and parseStateFromUrl", () => {
+      it("round-trips activeFeatures through updateStateInUrl and parseStateFromUrl", () => {
         SearchParams.updateStateInUrl({
-          activeFeatureIds: ["uuid-1", "uuid-2"],
+          activeFeatures: [
+            { featureId: "uuid-1", layerId: null },
+            { featureId: "uuid-2", layerId: null },
+          ],
         });
 
         const state = SearchParams.parseStateFromUrl();
-        expect(state.activeFeatureIds).to.deep.equal(["uuid-1", "uuid-2"]);
+        expect(state.activeFeatures).to.deep.equal([
+          { featureId: "uuid-1", layerId: null },
+          { featureId: "uuid-2", layerId: null },
+        ]);
+      });
+
+      it("writes feature-layer pairs as repeated encoded f params", () => {
+        SearchParams.updateActiveFeatures([
+          { featureId: "feat-1", layerId: "layer-a" },
+          { featureId: "feat-1", layerId: "layer-b" },
+          { featureId: "feat-2", layerId: null },
+        ]);
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.getAll("f")).to.deep.equal([
+          JSON.stringify({ featureId: "feat-1", layerId: "layer-a" }),
+          JSON.stringify({ featureId: "feat-1", layerId: "layer-b" }),
+          JSON.stringify({ featureId: "feat-2", layerId: null }),
+        ]);
+        expect(url.searchParams.get("sv")).to.equal("1");
+      });
+
+      it("parses feature-layer pairs into activeFeatures when sv=1", () => {
+        window.history.replaceState(
+          null,
+          "",
+          `?sv=1&f=${encodeFeature({ featureId: "feat-1", layerId: "layer-a" })}&f=${encodeFeature({ featureId: "feat-1", layerId: "layer-b" })}&f=${encodeFeature({ featureId: "feat-2" })}`,
+        );
+
+        const state = SearchParams.parseStateFromUrl();
+        expect(state.activeFeatures).to.deep.equal([
+          { featureId: "feat-1", layerId: "layer-a" },
+          { featureId: "feat-1", layerId: "layer-b" },
+          { featureId: "feat-2", layerId: null },
+        ]);
       });
     });
   });

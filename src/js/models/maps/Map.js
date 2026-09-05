@@ -590,6 +590,54 @@ define([
       },
 
       /**
+       * Find a feature by id, optionally scoped to a single layer id.
+       * @param {string} featureId Feature id to find.
+       * @param {string} [layerId] Optional layer id to constrain search.
+       * @returns {{layer: MapAsset, feature: object, attributes: object}|null}
+       * Matching feature result or null when not found.
+       * @since 0.0.0
+       */
+      findFeature(featureId, layerId) {
+        const normalizedFeatureId =
+          typeof featureId === "string" ? featureId.trim() : "";
+        if (!normalizedFeatureId.length) return null;
+
+        const normalizedLayerId =
+          typeof layerId === "string" && layerId.trim().length
+            ? layerId.trim()
+            : null;
+
+        const searchableLayers = this.getAllLayers().filter(
+          (layer) => typeof layer.getFeatureById === "function",
+        );
+        const candidateLayers = normalizedLayerId
+          ? searchableLayers.filter(
+              (layer) => layer.get("layerId") === normalizedLayerId,
+            )
+          : searchableLayers;
+
+        return (
+          candidateLayers.reduce((match, layer) => {
+            if (match) return match;
+
+            const feature = layer.getFeatureById(normalizedFeatureId);
+            if (!feature || typeof layer.getFeatureAttributes !== "function") {
+              return match;
+            }
+
+            const attributes = layer.getFeatureAttributes(feature);
+            if (!attributes) return match;
+
+            return {
+              layer,
+              feature,
+              attributes,
+            };
+          }, null) || null
+        );
+      },
+
+      /**
        * Returns true when the map should sync URL state.
        * @returns {boolean} Whether URL sync is enabled.
        * @since 0.0.0
@@ -709,16 +757,43 @@ define([
       },
 
       /**
-       * Get selected feature ids from the current map interaction state for URL
-       * state sync.
-       * @returns {string[]} Feature ids of all currently selected features.
+       * Get selected feature/layer entries from current map interaction state
+       * for URL sync.
+       * @returns {{featureId: string, layerId: (string|null)}[]}
+       * Selected feature state entries.
        * @since 0.0.0
        */
-      getSelectedFeatureIdsForUrlState() {
+      getSelectedFeatureStateForUrlState() {
         const selectedFeatures = this.getSelectedFeatures();
-        return (selectedFeatures?.models || [])
-          .map((f) => f.get("featureID"))
-          .filter((id) => typeof id === "string" && id.length > 0);
+        const seen = new Set();
+        const selected = [];
+
+        (selectedFeatures?.models || []).forEach((feature) => {
+          const featureId = feature?.get("featureID");
+          if (typeof featureId !== "string" || !featureId.trim().length) {
+            return;
+          }
+
+          const mapAsset = feature.get("mapAsset");
+          const layerId =
+            mapAsset && typeof mapAsset.get === "function"
+              ? mapAsset.get("layerId")
+              : null;
+          const entry = {
+            featureId: featureId.trim(),
+            layerId:
+              typeof layerId === "string" && layerId.trim().length
+                ? layerId.trim()
+                : null,
+          };
+          const dedupeKey = JSON.stringify(entry);
+          if (seen.has(dedupeKey)) return;
+
+          seen.add(dedupeKey);
+          selected.push(entry);
+        });
+
+        return selected;
       },
 
       /**
@@ -729,9 +804,11 @@ define([
        */
       syncSelectedFeaturesToUrl() {
         if (!this.shouldSyncUrlState()) return;
-        const selectedIds = this.getSelectedFeatureIdsForUrlState();
-        SearchParams.updateActiveFeatureIds(
-          this.featureRestoreController.getRequestedIdsForUrlSync(selectedIds),
+        const selectedFeatures = this.getSelectedFeatureStateForUrlState();
+        SearchParams.updateActiveFeatures(
+          this.featureRestoreController.getRequestedFeaturesForUrlSync(
+            selectedFeatures,
+          ),
         );
       },
 

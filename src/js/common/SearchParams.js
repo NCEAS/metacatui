@@ -59,7 +59,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
     enabledLayerStateProvided: false,
     activeActionId: null,
     openPanel: null,
-    activeFeatureIds: [],
+    activeFeatures: [],
   });
 
   /**
@@ -104,16 +104,78 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   }
 
   /**
-   * Normalize a list of IDs from array input.
-   * @param {unknown} value Candidate IDs from URL or model state.
-   * @returns {string[]} Normalized non-empty IDs.
+   * Normalize active feature entries into { featureId, layerId } pairs.
+   * @param {unknown} value Candidate active feature entries.
+   * @returns {{featureId: string, layerId: (string|null)}[]} Normalized entries.
    * @since 0.0.0
    */
-  const normalizeIdList = (value) => {
+  const normalizeActiveFeatures = (value) => {
     if (!Array.isArray(value)) return [];
-    return value
-      .map((item) => normalizeId(item))
-      .filter((item) => item != null);
+
+    const normalized = [];
+    const seen = new Set();
+
+    value.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+
+      const featureId = normalizeId(entry.featureId);
+      if (!featureId) return;
+
+      const layerId = normalizeId(entry.layerId);
+      const normalizedEntry = {
+        featureId,
+        layerId: layerId || null,
+      };
+      const dedupeKey = JSON.stringify(normalizedEntry);
+      if (seen.has(dedupeKey)) return;
+
+      seen.add(dedupeKey);
+      normalized.push(normalizedEntry);
+    });
+
+    return normalized;
+  };
+
+  /**
+   * Parse a single encoded active-feature token from the URL.
+   * Expects JSON object payloads containing feature/layer ids.
+   * @param {unknown} token Candidate f param value.
+   * @returns {{featureId: string, layerId: (string|null)}|null} Parsed entry.
+   * @since 0.0.0
+   */
+  const parseActiveFeatureToken = (token) => {
+    if (typeof token !== "string") return null;
+
+    try {
+      const parsed = JSON.parse(token);
+      if (!parsed || typeof parsed !== "object") return null;
+
+      const featureId = normalizeId(parsed.featureId);
+      if (!featureId) return null;
+
+      return {
+        featureId,
+        layerId: normalizeId(parsed.layerId) || null,
+      };
+    } catch (_error) {
+      return null;
+    }
+  };
+
+  /**
+   * Serialize one active-feature entry into a stable URL token.
+   * @param {{featureId: string, layerId: (string|null)}} feature Active feature entry.
+   * @returns {string|null} JSON-encoded token string.
+   * @since 0.0.0
+   */
+  const serializeActiveFeatureToken = (feature) => {
+    const [normalizedFeature] = normalizeActiveFeatures([feature]);
+    if (!normalizedFeature) return null;
+
+    return JSON.stringify({
+      featureId: normalizedFeature.featureId,
+      layerId: normalizedFeature.layerId,
+    });
   };
 
   /**
@@ -165,6 +227,10 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    */
   const normalizeState = (state = {}) => {
     const defaults = getDefaultState();
+    const normalizedActiveFeatures = normalizeActiveFeatures(
+      Array.isArray(state.activeFeatures) ? state.activeFeatures : [],
+    );
+
     const normalized = {
       ...defaults,
       ...state,
@@ -177,7 +243,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       enabledLayerStateProvided: Boolean(state.enabledLayerStateProvided),
       activeActionId: normalizeId(state.activeActionId),
       openPanel: normalizeId(state.openPanel),
-      activeFeatureIds: normalizeIdList(state.activeFeatureIds),
+      activeFeatures: normalizedActiveFeatures,
     };
 
     const requestedSchema = Number(state.schemaVersion);
@@ -186,11 +252,10 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
         ? Math.floor(requestedSchema)
         : 0;
 
-    // Phase 1 fields imply schema 1 writing.
     if (
       normalized.activeActionId ||
       normalized.openPanel ||
-      normalized.activeFeatureIds.length
+      normalized.activeFeatures.length
     ) {
       normalized.schemaVersion = Math.max(1, normalized.schemaVersion);
     }
@@ -232,14 +297,17 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       enabledLayerStateProvided: url.searchParams.has(ENABLED_LAYERS_ID),
       activeActionId: null,
       openPanel: null,
-      activeFeatureIds: [],
+      activeFeatures: [],
     };
 
     if (schemaVersion >= 1) {
       base.activeActionId = normalizeId(url.searchParams.get(ACTIVE_ACTION_ID));
       base.openPanel = normalizeId(url.searchParams.get(OPEN_PANEL_ID));
-      base.activeFeatureIds = normalizeIdList(
-        url.searchParams.getAll(ACTIVE_FEATURES_ID),
+      base.activeFeatures = normalizeActiveFeatures(
+        url.searchParams
+          .getAll(ACTIVE_FEATURES_ID)
+          .map((token) => parseActiveFeatureToken(token))
+          .filter((entry) => entry != null),
       );
     }
 
@@ -291,9 +359,12 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
       if (normalized.openPanel) {
         url.searchParams.set(OPEN_PANEL_ID, normalized.openPanel);
       }
-      if (normalized.activeFeatureIds.length) {
-        normalized.activeFeatureIds.forEach((featureId) => {
-          url.searchParams.append(ACTIVE_FEATURES_ID, featureId);
+      if (normalized.activeFeatures.length) {
+        normalized.activeFeatures.forEach(({ featureId, layerId }) => {
+          const token = serializeActiveFeatureToken({ featureId, layerId });
+          if (token) {
+            url.searchParams.append(ACTIVE_FEATURES_ID, token);
+          }
         });
       }
     }
@@ -537,12 +608,13 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   };
 
   /**
-   * Set active feature ids in URL state.
-   * @param {string[]} activeFeatureIds The feature ids to write.
+   * Set active features in URL state as feature/layer pairs.
+   * @param {{featureId: string, layerId: (string|null)}[]} activeFeatures
+   * The feature state entries to write.
    * @since 0.0.0
    */
-  const updateActiveFeatureIds = (activeFeatureIds) => {
-    updateStateInUrl({ activeFeatureIds });
+  const updateActiveFeatures = (activeFeatures) => {
+    updateStateInUrl({ activeFeatures });
   };
 
   /**
@@ -562,7 +634,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
     resolveActionUrl,
     syncActionStateFromVisualizationUrl,
     updateActiveActionId,
-    updateActiveFeatureIds,
+    updateActiveFeatures,
     updateOpenPanel,
     updateStateInUrl,
     writeActionStateToUrl,
