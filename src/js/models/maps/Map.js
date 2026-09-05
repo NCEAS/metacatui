@@ -10,6 +10,7 @@ define([
   "collections/maps/AssetCategories",
   "collections/maps/viewfinder/ViewfinderCardCategories",
   "common/SearchParams",
+  "models/maps/featureIdHelpers",
 ], (
   $,
   _,
@@ -20,6 +21,7 @@ define([
   AssetCategories,
   ViewfinderCardCategories,
   SearchParams,
+  { getIdFromProperties },
 ) => {
   /**
    * Determine if array is empty.
@@ -769,8 +771,8 @@ define([
         const selected = [];
 
         (selectedFeatures?.models || []).forEach((feature) => {
-          const featureId = feature?.get("featureID");
-          if (typeof featureId !== "string" || !featureId.trim().length) {
+          const featureId = getIdFromProperties(feature?.get("properties"));
+          if (!featureId) {
             return;
           }
 
@@ -780,7 +782,7 @@ define([
               ? mapAsset.get("layerId")
               : null;
           const entry = {
-            featureId: featureId.trim(),
+            featureId,
             layerId:
               typeof layerId === "string" && layerId.trim().length
                 ? layerId.trim()

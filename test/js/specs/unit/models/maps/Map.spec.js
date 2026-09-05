@@ -378,6 +378,43 @@ define([
           SearchParams.updateActiveFeatures = originalUpdateActiveFeatures;
         }
       });
+
+      it("syncs only stable property-based feature ids to URL state", () => {
+        const map = new Map({ showShareUrl: true });
+        const originalUpdateActiveFeatures = SearchParams.updateActiveFeatures;
+        let latestFeatures = null;
+
+        SearchParams.updateActiveFeatures = (features) => {
+          latestFeatures = features;
+        };
+
+        try {
+          map.selectFeatures([
+            {
+              featureID: "cesium-generated-uuid",
+              properties: {
+                id: "stable-feature-id",
+              },
+              mapAsset: null,
+              featureObject: {},
+              label: null,
+            },
+            {
+              featureID: "another-unstable-uuid",
+              properties: {},
+              mapAsset: null,
+              featureObject: {},
+              label: null,
+            },
+          ]);
+
+          expect(latestFeatures).to.deep.equal([
+            { featureId: "stable-feature-id", layerId: null },
+          ]);
+        } finally {
+          SearchParams.updateActiveFeatures = originalUpdateActiveFeatures;
+        }
+      });
     });
 
     describe("applyFeatureRestoreState", () => {
@@ -501,14 +538,14 @@ define([
         const mapAsset = new Backbone.Model({ layerId: "layer-main" });
         const fakeAttrsA = {
           featureID: "feature-a",
-          properties: {},
+          properties: { id: "feature-a" },
           mapAsset,
           featureObject: fakeFeatureA,
           label: null,
         };
         const fakeAttrsB = {
           featureID: "feature-b",
-          properties: {},
+          properties: { id: "feature-b" },
           mapAsset,
           featureObject: fakeFeatureB,
           label: null,
@@ -586,12 +623,10 @@ define([
                 { featureId: "feature-a", layerId: "layer-main" },
                 { featureId: "feature-b", layerId: "layer-main" },
               ]);
-              SearchParams.updateActiveFeatures =
-                originalUpdateActiveFeatures;
+              SearchParams.updateActiveFeatures = originalUpdateActiveFeatures;
               done();
             } catch (error) {
-              SearchParams.updateActiveFeatures =
-                originalUpdateActiveFeatures;
+              SearchParams.updateActiveFeatures = originalUpdateActiveFeatures;
               done(error);
             }
           }, 0);
