@@ -136,12 +136,12 @@ define([
       isOpen: false,
 
       /**
-       * Collapses the iframe by setting its height to 0 and opacity to 0. 
+       * Collapses the iframe by setting its height to 0 and opacity to 0.
        * This is used when the feature info box opens for the first time so
        * the iFrame doesn't flash empty before it's ready.
        * @since 0.0.0
        */
-      collapseiFrame() { 
+      collapseiFrame() {
         const iFrame = this.elements?.iFrame;
         if (iFrame) {
           iFrame.style.height = "0";
@@ -230,7 +230,7 @@ define([
 
         // Start collapsed so the panel does not flash at the browser's default
         // iframe height before content is rendered.
-        this.collapseiFrame()
+        this.collapseiFrame();
 
         view.update();
 
@@ -409,9 +409,7 @@ define([
           if (!name) {
             title = "Feature";
 
-            const searchKeys = FEATURE_ID_KEYS.map((key) =>
-              key.toLowerCase(),
-            );
+            const searchKeys = FEATURE_ID_KEYS.map((key) => key.toLowerCase());
             const propKeys = Object.keys(properties);
             const propKeysLower = propKeys.map((key) => key.toLowerCase());
 

@@ -43,9 +43,9 @@ define(["models/maps/featureIdHelpers"], ({
       });
 
       it("trims both compared values", () => {
-        expect(propertyMatchesId({ identifier: "  feat-1  " }, "feat-1")).to.equal(
-          true,
-        );
+        expect(
+          propertyMatchesId({ identifier: "  feat-1  " }, "feat-1"),
+        ).to.equal(true);
       });
     });
   });

@@ -33,7 +33,9 @@ define(["backbone"], (Backbone) => {
    */
   function getLayerId(feature) {
     const mapAsset =
-      feature instanceof Backbone.Model ? feature.get("mapAsset") : feature?.mapAsset;
+      feature instanceof Backbone.Model
+        ? feature.get("mapAsset")
+        : feature?.mapAsset;
     if (!mapAsset || typeof mapAsset.get !== "function") return null;
     return normalizeId(mapAsset.get("layerId"));
   }
@@ -380,9 +382,9 @@ define(["backbone"], (Backbone) => {
           matchesRequestedFeature(requestedFeature, featureState),
         ),
       );
-      const allSearchableLayers = mapModel.getAllLayers().filter(
-        (layer) => typeof layer.getFeatureById === "function",
-      );
+      const allSearchableLayers = mapModel
+        .getAllLayers()
+        .filter((layer) => typeof layer.getFeatureById === "function");
       const featureAttrs = this.findFeatureAttributes(activeFeatures);
       const resolvedFeatures = selectedRequestedFeatures.slice();
 
@@ -428,7 +430,10 @@ define(["backbone"], (Backbone) => {
         return;
       }
 
-      if (this.getSession()?.key === restoreKey && existingSession?.key === restoreKey) {
+      if (
+        this.getSession()?.key === restoreKey &&
+        existingSession?.key === restoreKey
+      ) {
         return;
       }
 
