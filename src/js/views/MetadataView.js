@@ -1241,7 +1241,7 @@ define([
           if (
             member.sysMeta ||
             member.sysMetaMissing === true ||
-            member._sysMetaReadDenied === true
+            member.sysMetaReadDenied === true
           ) {
             return false;
           }
@@ -1991,6 +1991,7 @@ define([
             return;
           }
           this.refreshMetadataHeaderFromPackage(dataPackage, renderOptions);
+          this.confirmPackageDownloadAll(dataPackage);
           if (result.changed) {
             await this.mergeCurrentFileTableRows(
               dataPackage,
@@ -2052,6 +2053,15 @@ define([
               onlyExisting: true,
               signal,
             });
+            if (
+              !this.isCurrentFileTable(
+                dataPackage,
+                fileTableView,
+                renderOptions,
+              )
+            ) {
+              return;
+            }
             this.refreshMetadataHeaderFromPackage(dataPackage, renderOptions);
             this.confirmPackageDownloadAll(dataPackage);
             await this.mergeCurrentFileTableRows(

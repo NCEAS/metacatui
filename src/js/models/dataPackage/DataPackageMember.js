@@ -273,7 +273,7 @@ define([
       const service =
         sysMetaService || new SysMetaService(sysMetaServiceOptions);
       const sysMeta = await service.download(pid, downloadOptions);
-      this._sysMetaReadDenied = false;
+      this.sysMetaReadDenied = false;
       if (!this.remotePid && this.aggregatedPid) {
         this.remotePid = this.aggregatedPid;
       }
@@ -1092,6 +1092,7 @@ define([
           key === "objectFormats" ||
           key === "events" ||
           key === "rawData" ||
+          key === "sysMetaReadDenied" ||
           typeof value === "function" ||
           value instanceof AuthorizationService ||
           value instanceof ObjectService ||

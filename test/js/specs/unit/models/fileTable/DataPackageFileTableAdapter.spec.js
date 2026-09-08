@@ -46,8 +46,9 @@ define([
         sandbox.restore();
       });
 
-      it("fetches active members missing file-table details", async () => {
+      it("fetches unindexed ResourceMap members and members missing details", async () => {
         const dataPackage = new DataPackage({
+          sources: ["index"],
           members: [
             {
               pid: "resource_map_1",
@@ -87,6 +88,20 @@ define([
               size: 12,
               fileName: "complete.csv",
             },
+            {
+              pid: "complete-unindexed.1",
+              formatType: "DATA",
+              formatId: "text/csv",
+              size: 12,
+              fileName: "complete-unindexed.csv",
+            },
+            {
+              pid: "complete-local.1",
+              formatType: "DATA",
+              formatId: "text/csv",
+              size: 12,
+              fileName: "complete-local.csv",
+            },
             { pid: "has-sysmeta.1", formatType: "DATA" },
             {
               pid: "known-missing.1",
@@ -97,6 +112,8 @@ define([
           ],
         });
         dataPackage.rootResourceMapPid = "resource_map_1";
+        dataPackage.getMember("complete-unindexed.1").sources = ["resourceMap"];
+        dataPackage.getMember("complete-local.1").sources = [];
         dataPackage.getMember("has-sysmeta.1").sysMeta = {
           identifier: "has-sysmeta.1",
         };
@@ -116,6 +133,7 @@ define([
           "missing-size.1",
           "missing-format.1",
           "missing-display.1",
+          "complete-unindexed.1",
         ]);
         result.changed.should.equal(false);
         sinon.assert.calledOnceWithExactly(fetchSysMeta, result.attemptedPids, {
@@ -170,13 +188,18 @@ define([
         result.should.deep.equal({
           attemptedPids: ["found.1", "missing.1", "unresolved.1"],
           fetchedPids: ["found.1"],
-          missingPids: ["missing.1"],
           changed: true,
         });
         dataPackage.getMember("missing.1").sysMetaMissing.should.equal(true);
         expect(dataPackage.getMember("unresolved.1").sysMetaMissing).to.equal(
           undefined,
         );
+
+        dataPackage.fetchSysMeta.resolves([]);
+        const retry = await Adapter.enrichMembers(dataPackage);
+
+        retry.attemptedPids.should.deep.equal(["unresolved.1"]);
+        sinon.assert.calledTwice(dataPackage.fetchSysMeta);
       });
 
       [401, 403].forEach((httpStatus) => {
@@ -194,12 +217,17 @@ define([
           const result = await Adapter.enrichMembers(dataPackage);
           const deniedMember = dataPackage.getMember("denied.1");
 
-          result.missingPids.should.deep.equal([]);
-          deniedMember._sysMetaReadDenied.should.equal(true);
+          result.changed.should.equal(false);
+          deniedMember.sysMetaReadDenied.should.equal(true);
           expect(deniedMember.sysMetaMissing).to.equal(undefined);
           expect(deniedMember.toJSON()).not.to.have.property(
-            "_sysMetaReadDenied",
+            "sysMetaReadDenied",
           );
+
+          const retry = await Adapter.enrichMembers(dataPackage);
+
+          retry.attemptedPids.should.deep.equal([]);
+          sinon.assert.calledOnce(dataPackage.fetchSysMeta);
         });
       });
     });

@@ -2010,7 +2010,7 @@ define([
               pid: "denied.1",
               formatType: "DATA",
               isPlaceHolder_b: true,
-              _sysMetaReadDenied: true,
+              sysMetaReadDenied: true,
             },
           ],
         });
@@ -2033,7 +2033,6 @@ define([
           .resolves({
             attemptedPids: ["data.1"],
             fetchedPids: ["data.1"],
-            missingPids: [],
             changed: true,
           });
         const fileTableView = { viewModel: { mergeRows: sandbox.stub() } };
@@ -2043,6 +2042,7 @@ define([
           isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
           isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
           refreshMetadataHeaderFromPackage: sandbox.stub().returns(true),
+          confirmPackageDownloadAll: sandbox.stub(),
           mergeCurrentFileTableRows: sandbox.stub().resolves(true),
           scheduleFileTableIndexRefresh: sandbox.stub(),
         });
@@ -2078,7 +2078,6 @@ define([
             return {
               attemptedPids: ["data.1"],
               fetchedPids: ["data.1"],
-              missingPids: [],
               changed: true,
             };
           });
@@ -2116,7 +2115,6 @@ define([
         sandbox.stub(DataPackageFileTableAdapter, "enrichMembers").resolves({
           attemptedPids: [],
           fetchedPids: [],
-          missingPids: [],
           changed: false,
         });
         const fileTableView = { viewModel: { mergeRows: sandbox.stub() } };
@@ -2126,6 +2124,7 @@ define([
           isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
           isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
           refreshMetadataHeaderFromPackage: sandbox.stub().returns(true),
+          confirmPackageDownloadAll: sandbox.stub(),
           mergeCurrentFileTableRows: sandbox.stub().resolves(true),
           scheduleFileTableIndexRefresh: sandbox.stub(),
         });
@@ -2138,6 +2137,124 @@ define([
     });
 
     describe("scheduleFileTableIndexRefresh()", () => {
+      describe("download availability after enrichment", () => {
+        let clock;
+        let dataPackage;
+        let fileTableView;
+        let context;
+
+        beforeEach(() => {
+          clock = sandbox.useFakeTimers();
+          dataPackage = createViewerDataPackage();
+          dataPackage
+            .toArray()
+            .forEach((member) => member.addSources(["resourceMap"]));
+          dataPackage.resourceManifestIsFetched = true;
+          dataPackage.indexManifestTotal = 2;
+          dataPackage.getMember("meta.1").addSources(["index"]);
+          sandbox
+            .stub(dataPackage, "getManifestFromIndex")
+            .callsFake(async () => {
+              dataPackage.getMember("data.1").addSources(["index"]);
+            });
+          setPackageAppModel();
+          fileTableView = { viewModel: { mergeRows: sandbox.stub() } };
+          context = withRenderContext({
+            dataPackage,
+            fileTableView,
+            isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
+            isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
+            refreshMetadataTitleFromIndex: sandbox.stub().resolves(),
+            refreshMetadataHeaderFromPackage: sandbox.stub(),
+            confirmPackageDownloadAll:
+              MetadataView.prototype.confirmPackageDownloadAll,
+            mergeCurrentFileTableRows: sandbox.stub().resolves(true),
+            packageNeedsIndexRefresh: sandbox.stub().returns(false),
+            scheduleFileTableIndexRefresh:
+              MetadataView.prototype.scheduleFileTableIndexRefresh,
+          });
+          context.confirmPackageDownloadAll(dataPackage);
+        });
+
+        it("enables Download All after System Metadata arrives without waiting for the index", async () => {
+          sandbox
+            .stub(dataPackage, "fetchSysMeta")
+            .callsFake(async (memberPids) => {
+              memberPids.should.include("data.1");
+              dataPackage.getMember("data.1").sysMeta = {
+                identifier: "data.1",
+              };
+              return [];
+            });
+          context.mergeCurrentFileTableRows.callsFake(async () => {
+            context.packageDownloadUrl.should.equal(
+              "https://cn.test/package/rm.1",
+            );
+            return true;
+          });
+
+          await MetadataView.prototype.enrichFileTableMemberDetails.call(
+            context,
+          );
+          await clock.runAllAsync();
+
+          context.packageDownloadUnavailableReason.should.equal("");
+          sinon.assert.calledOnce(context.mergeCurrentFileTableRows);
+          sinon.assert.notCalled(dataPackage.getManifestFromIndex);
+          dataPackage.indexManifestTotal.should.equal(2);
+        });
+
+        it("does not schedule a final count check for inaccessible members", async () => {
+          dataPackage.getMember("data.1").sysMetaReadDenied = true;
+          context.scheduleFileTableIndexRefresh(dataPackage, fileTableView);
+          await clock.runAllAsync();
+
+          sinon.assert.notCalled(dataPackage.getManifestFromIndex);
+          context.packageDownloadUrl.should.equal("");
+        });
+
+        it("stops after the regular retries without a final count check", async () => {
+          context.packageNeedsIndexRefresh.returns(true);
+          dataPackage.getManifestFromIndex.callsFake(async () => {});
+          context.scheduleFileTableIndexRefresh(dataPackage, fileTableView);
+          await clock.runAllAsync();
+
+          dataPackage.getManifestFromIndex.callCount.should.equal(6);
+          context.packageDownloadUrl.should.equal("");
+        });
+
+        it("cancels pending polling when the render is aborted", async () => {
+          context.packageNeedsIndexRefresh.returns(true);
+          context.scheduleFileTableIndexRefresh(dataPackage, fileTableView);
+          MetadataView.prototype.abortRender.call(context);
+          await clock.runAllAsync();
+
+          sinon.assert.notCalled(dataPackage.getManifestFromIndex);
+        });
+
+        it("does not change download state after an in-flight check becomes stale", async () => {
+          context.packageNeedsIndexRefresh.returns(true);
+          let finishQuery;
+          dataPackage.getManifestFromIndex.callsFake(
+            () =>
+              new Promise((resolve) => {
+                finishQuery = () => {
+                  dataPackage.getMember("data.1").addSources(["index"]);
+                  resolve();
+                };
+              }),
+          );
+          context.scheduleFileTableIndexRefresh(dataPackage, fileTableView);
+          await clock.tickAsync(2000);
+          context.renderId = "new-render";
+          finishQuery();
+          await clock.tickAsync(0);
+
+          context.packageDownloadUrl.should.equal("");
+          sinon.assert.notCalled(context.mergeCurrentFileTableRows);
+        });
+      });
+
       it("polls until the index catches up and re-enables Download All", async () => {
         const clock = sandbox.useFakeTimers();
         let attempts = 0;

@@ -340,29 +340,13 @@ define([
     });
 
     describe("hasPrivateMembers()", () => {
-      it("fails closed until both manifests and the index total are available", () => {
-        const pkg = buildPackage(
-          [
-            {
-              pid: "rm.1",
-              formatType: "RESOURCE",
-              formatId: RESOURCE_MAP_FORMAT_ID,
-            },
-          ],
-          "rm.1",
-        );
+      let pkg;
 
-        pkg.hasPrivateMembers().should.equal(true);
-        pkg.resourceManifestIsFetched = true;
-        pkg.hasPrivateMembers().should.equal(true);
-        pkg.indexManifestFetched = true;
-        pkg.hasPrivateMembers().should.equal(true);
-      });
-
-      it("compares the full index match count with ResourceMap membership", () => {
-        const pkg = buildPackage(
+      beforeEach(() => {
+        pkg = buildPackage(
           [
-            { pid: "data.1", formatType: "DATA" },
+            { pid: "data.1" },
+            { pid: "data.2" },
             {
               pid: "rm.1",
               formatType: "RESOURCE",
@@ -375,18 +359,88 @@ define([
           merge: true,
           sources: ["resourceMap"],
         });
-        pkg.members.add({ pid: "rm.1" }, { merge: true, sources: ["index"] });
         pkg.resourceManifestIsFetched = true;
-        pkg.indexManifestFetched = true;
+      });
 
-        pkg.indexManifestTotal = 2;
-        pkg.hasPrivateMembers().should.equal(false);
-        pkg.indexManifestTotal = 1;
+      it("treats member access as unknown until ResourceMap membership is loaded", () => {
+        pkg.members.add(pkg.toArray(), { merge: true, sources: ["index"] });
+        pkg.resourceManifestIsFetched = false;
+
         pkg.hasPrivateMembers().should.equal(true);
+      });
+
+      it("accepts indexed members without an index count or root index result", () => {
+        pkg.members.add([{ pid: "data.1" }, { pid: "data.2" }], {
+          merge: true,
+          sources: ["index"],
+        });
+
+        pkg.hasPrivateMembers().should.equal(false);
+      });
+
+      it("accepts mixed system metadata and index evidence despite a lagging count", () => {
+        pkg.getMember("data.1").sysMeta = new SystemMetadata({
+          identifier: "data.1",
+        });
+        pkg.members.add({ pid: "data.2" }, { merge: true, sources: ["index"] });
+        pkg.indexManifestTotal = 1;
+
+        pkg.hasPrivateMembers().should.equal(false);
+      });
+
+      it("requires evidence for every member even when the index count is complete", () => {
+        pkg.members.add({ pid: "data.1" }, { merge: true, sources: ["index"] });
+        pkg.indexManifestTotal = 3;
+
+        pkg.hasPrivateMembers().should.equal(true);
+      });
+
+      it("accepts an index placeholder as evidence of access", () => {
+        pkg.members.add(
+          [{ pid: "data.1", isPlaceHolder_b: true }, { pid: "data.2" }],
+          { merge: true, sources: ["index"] },
+        );
+
+        pkg.hasPrivateMembers().should.equal(false);
+      });
+
+      ["sysMetaMissing", "sysMetaReadDenied"].forEach((failureFlag) => {
+        it(`keeps downloads unavailable for ${failureFlag} without readable evidence`, () => {
+          pkg.getMember("data.1")[failureFlag] = true;
+          pkg.members.add(
+            { pid: "data.2" },
+            { merge: true, sources: ["index"] },
+          );
+
+          pkg.hasPrivateMembers().should.equal(true);
+        });
       });
     });
 
     describe("getManifestFromIndex()", () => {
+      it("requests only the count when rows is zero and preserves members", async () => {
+        const sandbox = sinon.createSandbox();
+        const pkg = buildPackage(
+          [{ pid: "data.1", fileName: "data.csv" }],
+          "rm.1",
+        );
+        const query = sandbox.stub(QueryService, "queryWithFetch").resolves({
+          response: { numFound: 3, docs: [] },
+        });
+        const membersBefore = pkg.toArray();
+
+        try {
+          await pkg.getManifestFromIndex({ rows: 0, onlyExisting: true });
+
+          query.firstCall.args[0].rows.should.equal(0);
+          pkg.indexManifestTotal.should.equal(3);
+          pkg.toArray().should.deep.equal(membersBefore);
+          pkg.getMember("data.1").getFileName().should.equal("data.csv");
+        } finally {
+          sandbox.restore();
+        }
+      });
+
       it("retains the full match count when Solr returns only one page", async () => {
         const sandbox = sinon.createSandbox();
         const pkg = buildPackage(

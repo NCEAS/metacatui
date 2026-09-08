@@ -1791,22 +1791,22 @@ define([
     }
 
     /**
-     * Estimate whether the ResourceMap contains members absent from the index.
-     * The bagit package service can fail when any object is private.
-     * ResourceMap membership is authoritative, while the index count estimates
-     * how many members are visible to the current user. If either the
-     * ResourceMap or the index is not loaded, then this method returns true to
-     * avoid false negatives.
-     * @returns {boolean} Whether the package may have private members
+     * Check whether any ResourceMap member lacks evidence that the current user
+     * can read it. Downloaded system metadata or an index result
+     * confirms access even when package indexing is incomplete. The loaded root
+     * ResourceMap already confirms its own accessibility.
+     * @returns {boolean} Whether package membership or member access is unknown
      */
     hasPrivateMembers() {
-      if (!this.resourceManifestIsFetched || this.indexManifestTotal == null) {
-        return true;
-      }
-      return (
-        this.indexManifestTotal <
-        this.members.getFromSource("resourceMap").length
-      );
+      if (!this.resourceManifestIsFetched) return true;
+      return this.members
+        .getFromSource("resourceMap")
+        .some(
+          (member) =>
+            member.pid !== this.rootResourceMapPid &&
+            !member.sysMeta &&
+            !member.sources.includes("index"),
+        );
     }
 
     /**

@@ -324,7 +324,7 @@ define([
       };
       const member = new DataPackageMember({ pid: "data.1" });
 
-      member._sysMetaReadDenied = true;
+      member.sysMetaReadDenied = true;
 
       const fetched = await member.fetchSysMeta({
         sysMetaService,
@@ -333,7 +333,7 @@ define([
 
       fetched.identifier.should.equal("data.1");
       member.sysMeta.identifier.should.equal("data.1");
-      member._sysMetaReadDenied.should.equal(false);
+      member.sysMetaReadDenied.should.equal(false);
       sinon.assert.calledOnceWithExactly(sysMetaService.download, "data.1", {
         cacheKey: "data.1-cache",
       });

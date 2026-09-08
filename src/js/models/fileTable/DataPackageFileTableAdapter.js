@@ -50,7 +50,8 @@ define([
   });
 
   /**
-   * Return active members missing details displayed in the file table.
+   * Return members missing file table details or an index result for a
+   * ResourceMap member.
    * @param {DataPackage} dataPackage Package to inspect
    * @returns {DataPackageMember[]} Members needing system metadata
    * @private
@@ -64,7 +65,8 @@ define([
         !member.pid ||
         member.pid === rootPid ||
         member.sysMeta ||
-        member.sysMetaMissing === true
+        member.sysMetaMissing === true ||
+        member.sysMetaReadDenied === true
       ) {
         return false;
       }
@@ -77,7 +79,14 @@ define([
         ? member.title[0]
         : member.title;
       const hasDisplayName = Boolean(member.getFileName() || title);
-      return member.isPlaceholder() || !hasSize || !formatId || !hasDisplayName;
+      return (
+        (member.sources.includes("resourceMap") &&
+          !member.sources.includes("index")) ||
+        member.isPlaceholder() ||
+        !hasSize ||
+        !formatId ||
+        !hasDisplayName
+      );
     });
   }
 
@@ -85,7 +94,7 @@ define([
    * Fetch system metadata needed to populate file table rows.
    * @param {DataPackage} dataPackage Package to enrich
    * @param {object} [options] Options passed to `DataPackage#fetchSysMeta`
-   * @returns {Promise<object>} Attempted, fetched, and missing PIDs with a change flag
+   * @returns {Promise<object>} Attempted and fetched PIDs with a change flag
    */
   async function enrichMembers(dataPackage, options = {}) {
     const members = getMembersNeedingSysMeta(dataPackage);
@@ -94,22 +103,20 @@ define([
       return {
         attemptedPids,
         fetchedPids: [],
-        missingPids: [],
         changed: false,
       };
     }
 
     const errors = await dataPackage.fetchSysMeta(attemptedPids, options);
-    const missingPids = [];
+    let hasMissingMembers = false;
     errors.forEach(({ pid, error }) => {
       const member = dataPackage.members.get(pid);
       if (!member) return;
       if (error?.status === 401 || error?.status === 403) {
-        // A denied read should not keep index placeholder polling alive
-        member._sysMetaReadDenied = true;
+        member.sysMetaReadDenied = true;
       } else if (error?.status === 404) {
         member.sysMetaMissing = true;
-        missingPids.push(pid);
+        hasMissingMembers = true;
       }
     });
     const fetchedPids = members
@@ -118,8 +125,7 @@ define([
     return {
       attemptedPids,
       fetchedPids,
-      missingPids,
-      changed: Boolean(fetchedPids.length || missingPids.length),
+      changed: fetchedPids.length > 0 || hasMissingMembers,
     };
   }
 

@@ -773,7 +773,7 @@ define([
       const response = await QueryService.queryWithFetch({
         q: query,
         fields: allFields,
-        rows: rows || DEFAULT_ROWS,
+        rows: rows ?? DEFAULT_ROWS,
         archived,
         usePost,
         urlBase,
