@@ -314,7 +314,7 @@ define([
       sysMeta.seriesId.should.equal("data.series");
     });
 
-    it("uses an injected SysMeta service when fetching system metadata", async () => {
+    it("uses an injected SysMeta service and clears an earlier read denial", async () => {
       const sysMeta = new SystemMetadata({
         ...SYSTEM_METADATA_DEFAULTS,
         identifier: "data.1",
@@ -324,6 +324,8 @@ define([
       };
       const member = new DataPackageMember({ pid: "data.1" });
 
+      member._sysMetaReadDenied = true;
+
       const fetched = await member.fetchSysMeta({
         sysMetaService,
         cacheKey: "data.1-cache",
@@ -331,6 +333,7 @@ define([
 
       fetched.identifier.should.equal("data.1");
       member.sysMeta.identifier.should.equal("data.1");
+      member._sysMetaReadDenied.should.equal(false);
       sinon.assert.calledOnceWithExactly(sysMetaService.download, "data.1", {
         cacheKey: "data.1-cache",
       });

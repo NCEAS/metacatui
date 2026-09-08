@@ -273,6 +273,7 @@ define([
       const service =
         sysMetaService || new SysMetaService(sysMetaServiceOptions);
       const sysMeta = await service.download(pid, downloadOptions);
+      this._sysMetaReadDenied = false;
       if (!this.remotePid && this.aggregatedPid) {
         this.remotePid = this.aggregatedPid;
       }

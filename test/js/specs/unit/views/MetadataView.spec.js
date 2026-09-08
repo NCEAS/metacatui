@@ -1914,7 +1914,7 @@ define([
           .should.equal(true);
       });
 
-      it("accepts a valid member whose System Metadata has no file name", () => {
+      it("accepts a placeholder whose loaded System Metadata has no file name", () => {
         const dataPackage = createViewerDataPackage({
           members: [
             {
@@ -1933,6 +1933,8 @@ define([
               formatType: "DATA",
               formatId: "text/csv",
               size: 12,
+              isPlaceHolder_b: true,
+              sysMeta: { identifier: "data.1", formatId: "text/csv", size: 12 },
             },
           ],
         });
@@ -1978,7 +1980,7 @@ define([
           .should.equal(true);
       });
 
-      it("ignores resource maps and confirmed missing members", () => {
+      it("ignores resource maps, confirmed missing members, and denied reads", () => {
         const dataPackage = createViewerDataPackage({
           members: [
             {
@@ -2004,6 +2006,12 @@ define([
               size: 12,
               sysMetaMissing: true,
             },
+            {
+              pid: "denied.1",
+              formatType: "DATA",
+              isPlaceHolder_b: true,
+              _sysMetaReadDenied: true,
+            },
           ],
         });
         const context = {
@@ -2026,7 +2034,6 @@ define([
             attemptedPids: ["data.1"],
             fetchedPids: ["data.1"],
             missingPids: [],
-            unresolvedPlaceholderPids: [],
             changed: true,
           });
         const fileTableView = { viewModel: { mergeRows: sandbox.stub() } };
@@ -2037,7 +2044,6 @@ define([
           isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
           refreshMetadataHeaderFromPackage: sandbox.stub().returns(true),
           mergeCurrentFileTableRows: sandbox.stub().resolves(true),
-          packageNeedsIndexRefresh: sandbox.stub().returns(true),
           scheduleFileTableIndexRefresh: sandbox.stub(),
         });
 
@@ -2073,7 +2079,6 @@ define([
               attemptedPids: ["data.1"],
               fetchedPids: ["data.1"],
               missingPids: [],
-              unresolvedPlaceholderPids: [],
               changed: true,
             };
           });
@@ -2112,7 +2117,6 @@ define([
           attemptedPids: [],
           fetchedPids: [],
           missingPids: [],
-          unresolvedPlaceholderPids: [],
           changed: false,
         });
         const fileTableView = { viewModel: { mergeRows: sandbox.stub() } };
@@ -2121,10 +2125,6 @@ define([
           fileTableView,
           isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
           isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
-          metadataHeaderNeedsIndexRefresh:
-            MetadataView.prototype.metadataHeaderNeedsIndexRefresh,
-          packageNeedsIndexRefresh:
-            MetadataView.prototype.packageNeedsIndexRefresh,
           refreshMetadataHeaderFromPackage: sandbox.stub().returns(true),
           mergeCurrentFileTableRows: sandbox.stub().resolves(true),
           scheduleFileTableIndexRefresh: sandbox.stub(),
@@ -2138,23 +2138,30 @@ define([
     });
 
     describe("scheduleFileTableIndexRefresh()", () => {
-      it("polls until the package no longer needs index data", async () => {
+      it("polls until the index catches up and re-enables Download All", async () => {
         const clock = sandbox.useFakeTimers();
         let attempts = 0;
         const dataPackage = {
+          rootResourceMapPid: "rm.1",
           getManifestFromIndex: sandbox.stub().callsFake(async () => {
             attempts += 1;
           }),
+          hasPrivateMembers: () => attempts < 2,
         };
+        setPackageAppModel();
         const fileTableView = { viewModel: { mergeRows: sandbox.stub() } };
         const context = withRenderContext({
           dataPackage,
           fileTableView,
           fileTableIndexRefreshTimer: null,
+          packageDownloadUrl: "",
+          packageDownloadUnavailableReason: "",
           isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
           isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
           refreshMetadataTitleFromIndex: sandbox.stub().resolves(),
           refreshMetadataHeaderFromPackage: sandbox.stub().returns(true),
+          confirmPackageDownloadAll:
+            MetadataView.prototype.confirmPackageDownloadAll,
           mergeCurrentFileTableRows: sandbox.stub().resolves(true),
           packageNeedsIndexRefresh: sandbox
             .stub()
@@ -2180,6 +2187,7 @@ define([
           dataPackage,
         );
         context.mergeCurrentFileTableRows.calledTwice.should.equal(true);
+        context.packageDownloadUrl.should.equal("https://cn.test/package/rm.1");
       });
     });
 

@@ -117,7 +117,6 @@ define([
           "missing-format.1",
           "missing-display.1",
         ]);
-        result.unresolvedPlaceholderPids.should.deep.equal(["placeholder.1"]);
         result.changed.should.equal(false);
         sinon.assert.calledOnceWithExactly(fetchSysMeta, result.attemptedPids, {
           signal: controller.signal,
@@ -125,7 +124,7 @@ define([
         });
       });
 
-      it("marks only 404 failures missing and reports unresolved placeholders", async () => {
+      it("marks only 404 failures missing", async () => {
         const dataPackage = new DataPackage({
           members: [
             { pid: "found.1", formatType: "DATA" },
@@ -159,8 +158,8 @@ define([
               },
               {
                 pid: "unresolved.1",
-                error: Object.assign(new Error("unauthorized"), {
-                  status: 401,
+                error: Object.assign(new Error("server error"), {
+                  status: 500,
                 }),
               },
             ];
@@ -172,13 +171,36 @@ define([
           attemptedPids: ["found.1", "missing.1", "unresolved.1"],
           fetchedPids: ["found.1"],
           missingPids: ["missing.1"],
-          unresolvedPlaceholderPids: ["unresolved.1"],
           changed: true,
         });
         dataPackage.getMember("missing.1").sysMetaMissing.should.equal(true);
         expect(dataPackage.getMember("unresolved.1").sysMetaMissing).to.equal(
           undefined,
         );
+      });
+
+      [401, 403].forEach((httpStatus) => {
+        it(`records a ${httpStatus} read denial without marking the member missing`, async () => {
+          const dataPackage = new DataPackage({
+            members: [{ pid: "denied.1", isPlaceHolder_b: true }],
+          });
+          sandbox.stub(dataPackage, "fetchSysMeta").resolves([
+            {
+              pid: "denied.1",
+              error: Object.assign(new Error("denied"), { status: httpStatus }),
+            },
+          ]);
+
+          const result = await Adapter.enrichMembers(dataPackage);
+          const deniedMember = dataPackage.getMember("denied.1");
+
+          result.missingPids.should.deep.equal([]);
+          deniedMember._sysMetaReadDenied.should.equal(true);
+          expect(deniedMember.sysMetaMissing).to.equal(undefined);
+          expect(deniedMember.toJSON()).not.to.have.property(
+            "_sysMetaReadDenied",
+          );
+        });
       });
     });
 

@@ -1238,7 +1238,13 @@ define([
 
         return dataPackage.toArray().some((member) => {
           if (!member?.pid || member.isResourceMap?.()) return false;
-          if (member.sysMetaMissing === true) return false;
+          if (
+            member.sysMeta ||
+            member.sysMetaMissing === true ||
+            member._sysMetaReadDenied === true
+          ) {
+            return false;
+          }
           const title = Array.isArray(member.title)
             ? member.title[0]
             : member.title;
@@ -1992,16 +1998,11 @@ define([
               renderOptions,
             );
           }
-          if (
-            result.unresolvedPlaceholderPids.length ||
-            this.packageNeedsIndexRefresh(dataPackage)
-          ) {
-            this.scheduleFileTableIndexRefresh(
-              dataPackage,
-              fileTableView,
-              renderOptions,
-            );
-          }
+          this.scheduleFileTableIndexRefresh(
+            dataPackage,
+            fileTableView,
+            renderOptions,
+          );
         } catch (error) {
           if (
             isAbortError(error) ||
@@ -2052,6 +2053,7 @@ define([
               signal,
             });
             this.refreshMetadataHeaderFromPackage(dataPackage, renderOptions);
+            this.confirmPackageDownloadAll(dataPackage);
             await this.mergeCurrentFileTableRows(
               dataPackage,
               fileTableView,

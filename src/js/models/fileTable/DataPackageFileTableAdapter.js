@@ -85,7 +85,7 @@ define([
    * Fetch system metadata needed to populate file table rows.
    * @param {DataPackage} dataPackage Package to enrich
    * @param {object} [options] Options passed to `DataPackage#fetchSysMeta`
-   * @returns {Promise<object>} Attempted, fetched, missing, and unresolved PIDs
+   * @returns {Promise<object>} Attempted, fetched, and missing PIDs with a change flag
    */
   async function enrichMembers(dataPackage, options = {}) {
     const members = getMembersNeedingSysMeta(dataPackage);
@@ -95,7 +95,6 @@ define([
         attemptedPids,
         fetchedPids: [],
         missingPids: [],
-        unresolvedPlaceholderPids: [],
         changed: false,
       };
     }
@@ -103,30 +102,23 @@ define([
     const errors = await dataPackage.fetchSysMeta(attemptedPids, options);
     const missingPids = [];
     errors.forEach(({ pid, error }) => {
-      if (error?.status !== 404) return;
       const member = dataPackage.members.get(pid);
       if (!member) return;
-      member.sysMetaMissing = true;
-      missingPids.push(pid);
+      if (error?.status === 401 || error?.status === 403) {
+        // A denied read should not keep index placeholder polling alive
+        member._sysMetaReadDenied = true;
+      } else if (error?.status === 404) {
+        member.sysMetaMissing = true;
+        missingPids.push(pid);
+      }
     });
     const fetchedPids = members
       .filter((member) => member.sysMeta)
       .map((member) => member.pid);
-    const unresolvedPlaceholderPids = dataPackage.members
-      .getActiveMembers()
-      .filter(
-        (member) =>
-          member.isPlaceholder() &&
-          !member.sysMeta &&
-          member.sysMetaMissing !== true,
-      )
-      .map((member) => member.pid);
-
     return {
       attemptedPids,
       fetchedPids,
       missingPids,
-      unresolvedPlaceholderPids,
       changed: Boolean(fetchedPids.length || missingPids.length),
     };
   }
