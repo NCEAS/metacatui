@@ -618,6 +618,7 @@ define([
             },
           });
 
+        sandbox.stub(rmr, "reducePidsToLatest").resolves(["meta.1"]);
         sandbox.stub(rmr, "status").callsFake((pid, _status, rm) => ({
           success: !!rm,
           pid,

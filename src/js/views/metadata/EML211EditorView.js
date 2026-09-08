@@ -795,20 +795,13 @@ define([
        */
       async getDataPackage(model, options = {}) {
         const { renderId, signal } = this.getRenderOptions(options);
-        const metaModel = model || this.model;
+        let metaModel = model || this.model;
         const metaServiceUrl = await Utilities.awaitMetacatUI({
           property: "metaServiceUrl",
         });
         if (!this.isCurrentRender(renderId)) return null;
 
-        const metaPid =
-          metaModel.get("id") ||
-          metaModel.get("identifier") ||
-          metaModel.get("seriesId") ||
-          this.pid;
-
         if (metaModel.isNew()) {
-          if (!this.isCurrentRender(renderId)) return null;
           this.createDataPackage();
           if (!this.isCurrentRender(renderId)) return null;
           const resourceMapMember =
@@ -826,7 +819,11 @@ define([
           return MetacatUI.rootDataPackage;
         }
 
-        if (!this.isCurrentRender(renderId)) return null;
+        const inputPid =
+          metaModel.get("id") ||
+          metaModel.get("identifier") ||
+          metaModel.get("seriesId") ||
+          this.pid;
         MetacatUI.rootDataPackage = null;
         const dataPackage = new DataPackage({
           versionTrackerOptions: { metaServiceUrl },
@@ -840,9 +837,9 @@ define([
         this.updateLoadingText(MESSAGES.checkingLatestMetadata);
         const latestPid = await dataPackage
           .getVersionTracker()
-          .getLatestVersion(metaPid, { signal });
+          .getLatestVersion(inputPid, { signal });
         if (!this.isCurrentRender(renderId)) return null;
-        if (latestPid !== metaPid) {
+        if (latestPid !== inputPid) {
           metaModel.set("latestVersion", latestPid);
           this.showLatestVersion();
           return null;
@@ -850,13 +847,11 @@ define([
 
         try {
           this.updateLoadingText(MESSAGES.loadingEditableDataPackage);
-          const maxMembers = this.getEditorPackageMemberLimit();
-          const loadOptions = {
+          await dataPackage.loadEditablePackage(inputPid, {
             resolverOptions: { metaServiceUrl },
-            maxMembers,
+            maxMembers: this.getEditorPackageMemberLimit(),
             signal,
-          };
-          await dataPackage.loadEditablePackage(metaPid, loadOptions);
+          });
           if (!this.isCurrentRender(renderId)) return null;
         } catch (error) {
           if (isAbortError(error) || !this.isCurrentRender(renderId)) {
@@ -874,6 +869,25 @@ define([
 
         const resourceMapMember = dataPackage.getRootResourceMapMember();
         const metadataMember = dataPackage.getPrimaryMetadataMember();
+        if (inputPid === resourceMapMember.pid) {
+          const latestMetadataPid = await dataPackage.getLatestVersionPid({
+            signal,
+          });
+          if (!this.isCurrentRender(renderId)) return null;
+          if (latestMetadataPid !== metadataMember.pid) {
+            metaModel.set("latestVersion", latestMetadataPid);
+            this.showLatestVersion();
+            return null;
+          }
+
+          // Keep the selected package: its metadata may belong to other maps.
+          const metadataModel = await metadataMember.fetchObject({ signal });
+          if (!this.isCurrentRender(renderId)) return null;
+          this.stopListening(metaModel);
+          metaModel = metadataModel;
+          this.model = metadataModel;
+          this.pid = metadataMember.pid;
+        }
         this.updateLoadingText(MESSAGES.checkingPermissions);
         const permissionOptions = { refresh: true, signal };
         const authorizationService = dataPackage.getAuthorizationService();

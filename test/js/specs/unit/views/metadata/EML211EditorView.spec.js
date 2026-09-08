@@ -793,6 +793,117 @@ define([
       sinon.assert.calledOnce(view.setListeners);
     });
 
+    ["loaded", "stale", "newer metadata"].forEach((outcome) => {
+      it(`opens Resource Map metadata with a ${outcome} result`, async function () {
+        const resourceMapPid = "urn:uuid:package.1";
+        const metadataPid = "urn:uuid:metadata/1";
+        const resourceMap = { type: "ResourceMap" };
+        const metadataModel = new Backbone.Model({
+          id: metadataPid,
+          formatId: "https://eml.ecoinformatics.org/eml-2.2.0",
+          resourceMap: [resourceMapPid, "another-package"],
+        });
+        globalThis.MetacatUI = {
+          ...(originalMetacatUI || {}),
+          rootDataPackage: null,
+        };
+        view.pid = resourceMapPid;
+        model.set({
+          id: resourceMapPid,
+          formatId: "http://www.openarchives.org/ore/terms",
+        });
+        const signal = new AbortController().signal;
+        sandbox
+          .stub(Utilities, "awaitMetacatUI")
+          .resolves("https://example.org/meta");
+        const getLatestVersion = sandbox
+          .stub()
+          .callsFake(async (pid) =>
+            pid === metadataPid && outcome === "newer metadata"
+              ? "metadata.2"
+              : pid,
+          );
+        sandbox
+          .stub(DataPackage.prototype, "getVersionTracker")
+          .returns({ getLatestVersion });
+        sandbox
+          .stub(DataPackage.prototype, "getUploadRecoveryStore")
+          .returns({ get: sandbox.stub().resolves(null) });
+        let loadedPackage, fetchMetadata;
+        const loadEditablePackage = sandbox
+          .stub(DataPackage.prototype, "loadEditablePackage")
+          .callsFake(async function () {
+            loadedPackage = this;
+            this.members.add([
+              {
+                pid: resourceMapPid,
+                formatType: "RESOURCE",
+                objectModel: resourceMap,
+              },
+              { pid: metadataPid, formatType: "METADATA" },
+            ]);
+            this.rootResourceMapPid = resourceMapPid;
+            sandbox
+              .stub(this.getRootResourceMapMember(), "checkWritePermission")
+              .resolves(true);
+            const metadataMember = this.getPrimaryMetadataMember();
+            sandbox.stub(metadataMember, "checkWritePermission").resolves(true);
+            fetchMetadata = sandbox
+              .stub(metadataMember, "fetchObject")
+              .callsFake(async () => {
+                if (outcome === "stale") view.renderId = "render-next";
+                return metadataModel;
+              });
+            return this;
+          });
+        sandbox.stub(view, "setListeners");
+        sandbox.stub(view, "updateLoadingText");
+        sandbox.stub(view, "showLatestVersion");
+        sandbox.spy(view, "attachMetadataModelToPackage");
+
+        const loaded = await view.getDataPackage(model, { signal });
+
+        sinon.assert.calledOnce(loadEditablePackage);
+        loadEditablePackage.firstCall.args[0].should.equal(resourceMapPid);
+        sinon.assert.calledWithExactly(getLatestVersion, metadataPid, {
+          signal,
+        });
+        const resourceMapMember = loadedPackage.getRootResourceMapMember();
+        resourceMapMember.formatType.should.equal("RESOURCE");
+        resourceMapMember.objectModel.should.equal(resourceMap);
+        if (outcome === "loaded") {
+          loaded.should.equal(loadedPackage);
+          loaded.should.equal(globalThis.MetacatUI.rootDataPackage);
+          view.pid.should.equal(metadataPid);
+          view.model.should.equal(metadataModel);
+          loaded
+            .getPrimaryMetadataMember()
+            .objectModel.should.equal(metadataModel);
+          metadataModel.get("isAuthorized_write").should.equal(true);
+          sinon.assert.calledOnceWithExactly(fetchMetadata, { signal });
+          sinon.assert.calledOnceWithExactly(
+            view.attachMetadataModelToPackage,
+            metadataModel,
+          );
+          sinon.assert.calledOnce(view.setListeners);
+        } else {
+          chai.expect(loaded).to.equal(null);
+          chai.expect(globalThis.MetacatUI.rootDataPackage).to.equal(null);
+          view.model.should.equal(model);
+          sinon.assert.notCalled(view.attachMetadataModelToPackage);
+          sinon.assert.notCalled(view.setListeners);
+          if (outcome === "newer metadata") {
+            model.get("latestVersion").should.equal("metadata.2");
+            sinon.assert.calledOnce(view.showLatestVersion);
+            sinon.assert.notCalled(fetchMetadata);
+          } else {
+            sinon.assert.calledOnce(fetchMetadata);
+            sinon.assert.notCalled(view.showLatestVersion);
+          }
+        }
+      });
+    });
+
     it("continues loading when the recovery store is unavailable", async function () {
       globalThis.MetacatUI = { ...(originalMetacatUI || {}) };
       model.set("id", "metadata.1");
