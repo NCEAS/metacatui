@@ -900,7 +900,7 @@ define([
     it("commits members, exhausts ResourceMap retries, then retries without repeating committed writes", async () => {
       const rmFailure = httpError(502, "bad gateway");
       // The ResourceMap update fails transiently on every in-upload attempt
-      // (3 = RESOURCE_MAP_WRITE_ATTEMPTS), exhausting the automatic verified
+      // (3 = OBJECT_WRITE_ATTEMPTS), exhausting the automatic verified
       // retry, then succeeds on the manual retryUpload (4th call).
       let rmUpdateCalls = 0;
       const services = saveServices({
@@ -1068,10 +1068,10 @@ define([
   });
 
   // --------------------------------------------------------------------------
-  // ResourceMap write retry (P2)
+  // Object write retry
   // --------------------------------------------------------------------------
 
-  describe("DataPackage workflows: ResourceMap write retry", () => {
+  describe("DataPackage workflows: object write retry", () => {
     it("retries a transient ResourceMap failure once it verifies the map did not commit", async () => {
       const { pkg, services } = newEditablePackage();
       let rmAttempts = 0;
@@ -1097,7 +1097,7 @@ define([
       pkg.hasUnsavedChanges().should.equal(false);
     });
 
-    it("does not retry a transient member (non-ResourceMap) write", async () => {
+    it("stops after three verified-missing metadata write attempts", async () => {
       const { pkg, services } = newEditablePackage();
       let metaAttempts = 0;
       services.objectService.create.callsFake(async ({ pid, fileName }) => {
@@ -1113,10 +1113,9 @@ define([
 
       const result = await pkg.upload();
 
-      // The metadata write is attempted once and the upload fails; only the
-      // ResourceMap phase gets verified retries.
+      // Persistent transient failures exhaust the bounded retry limit.
       result.outcome.should.equal(UploadResult.Outcomes.PARTIAL_FAILURE);
-      metaAttempts.should.equal(1);
+      metaAttempts.should.equal(3);
     });
   });
 

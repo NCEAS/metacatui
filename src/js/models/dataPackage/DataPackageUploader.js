@@ -8,6 +8,7 @@ define([
   "common/Utilities",
   "common/ValueUtilities",
   "models/dataONEServices/DataONEService",
+  "models/dataONEServices/HttpRetryPolicy",
   "models/sysmeta/AccessPolicy",
   "models/resourceMap/ResourceMap",
   "models/resourceMap/ResourceMapResolver",
@@ -19,6 +20,7 @@ define([
   Utilities,
   Values,
   DataONEService,
+  HttpRetryPolicy,
   AccessPolicy,
   ResourceMap,
   ResourceMapResolver,
@@ -45,13 +47,11 @@ define([
   const { abortableDelay, createAbortError, isAbortError, throwIfAborted } =
     ErrorUtilities;
 
-  // The ResourceMap is the last, orphan-critical write. A transient failure is
-  // re-attempted a bounded number of times (initial attempt included), but only
-  // after verifying the write did not commit — so an ambiguous success is never
-  // duplicated. Other writes attempt exactly once and defer to action-level
-  // ambiguity handling.
-  const RESOURCE_MAP_WRITE_ATTEMPTS = 3;
-  const RESOURCE_MAP_RETRY_BASE_DELAY_MS = 500;
+  // Retry rate-limit rejections and verified-missing ambiguous object writes.
+  // The limit includes the initial attempt and applies to data, metadata, and
+  // Resource Maps. Mutable System Metadata writes attempt once.
+  const OBJECT_WRITE_ATTEMPTS = 3;
+  const OBJECT_WRITE_RETRY_BASE_DELAY_MS = 500;
 
   /**
    * Link one internal upload controller to an optional caller signal.
@@ -1452,10 +1452,10 @@ define([
     }
 
     /**
-     * Write one action, retrying the ResourceMap write after a transient
-     * failure only after verification confirms it did not commit. This avoids
-     * duplicating an ambiguous success. Other actions attempt
-     * exactly once and defer to action level ambiguity handling.
+     * Retry rate-limited object creates and updates after Retry-After or the
+     * default delay. Ambiguous failures require a verified-missing target PID.
+     * System Metadata updates attempt once and defer to action-level ambiguity
+     * handling because they modify an existing object.
      * @param {object} action Upload action
      * @param {object} writeOptions Transport options
      * @param {DataPackageMember} member Member being written
@@ -1465,29 +1465,44 @@ define([
      * @throws {Error} When the write remains unconfirmed after retries
      */
     async _writeWithRetry(action, writeOptions, member, signal) {
+      const retryPolicy = new HttpRetryPolicy();
       const maxAttempts =
-        action.phase === UPLOAD_PHASES.RESOURCE_MAP
-          ? RESOURCE_MAP_WRITE_ATTEMPTS
-          : 1;
+        action.operation === UPLOAD_OPERATIONS.UPDATE_SYSTEM_METADATA
+          ? 1
+          : OBJECT_WRITE_ATTEMPTS;
       for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
         try {
           await this._invokeWrite(action, writeOptions, member);
           return;
         } catch (error) {
+          const rateLimited = Number(error?.status) === 429;
           const canRetry =
             attempt < maxAttempts &&
             !signal?.aborted &&
-            DataONEService.isAmbiguousWriteError(error);
-          // Retry only when the write provably did not commit; a committed or
-          // inconclusive write must reach the ambiguous-verification path.
+            (rateLimited || DataONEService.isAmbiguousWriteError(error)) &&
+            !DataPackageUploader._getObsoletingPidFromError(error);
           if (!canRetry) throw error;
-          const verification = await this._verifyAmbiguousAction(
-            action,
-            signal,
-          );
-          if (!verification.notFound) throw error;
+          // A 429 is a rejected write; ambiguous failures still need verification.
+          if (!rateLimited) {
+            const verification = await this._verifyAmbiguousAction(
+              action,
+              signal,
+            );
+            throwIfAborted(signal, UPLOAD_CANCELLED_MESSAGE);
+            if (verification.confirmed) {
+              member.markRemoteSuccess({
+                pid: action.targetPid,
+                sysMeta: verification.sysMeta,
+              });
+              return;
+            }
+            // Only a missing target permits another write.
+            if (!verification.notFound) throw error;
+          }
+          // Do not shorten the server's requested delay with the policy's cap.
+          const retryAfterMs = retryPolicy.parseRetryAfter(error.headers, null);
           await abortableDelay(
-            RESOURCE_MAP_RETRY_BASE_DELAY_MS * attempt,
+            retryAfterMs ?? OBJECT_WRITE_RETRY_BASE_DELAY_MS * attempt,
             signal,
             UPLOAD_CANCELLED_MESSAGE,
           );
@@ -1761,7 +1776,7 @@ define([
         return null;
       }
       const message = Values.normalizeText(error?.message);
-      const match = message.match(/made obsolete by:?\s*(\S+)/i);
+      const match = message?.match(/made obsolete by:?\s*(\S+)/i);
       return match?.[1] || null;
     }
 

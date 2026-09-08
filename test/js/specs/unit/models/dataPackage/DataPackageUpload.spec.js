@@ -1813,6 +1813,166 @@ define([
   });
 
   describe("ambiguous writes and retry", () => {
+    [PHASES.DATA, PHASES.METADATA].forEach((phase) => {
+      [OPERATIONS.CREATE, OPERATIONS.UPDATE].forEach((operation) => {
+        it(`retries a verified-missing ${phase} ${operation} after timeout and 503`, async () => {
+          const clock = state.sandbox.useFakeTimers({ toFake: ["setTimeout"] });
+          const write = state.sandbox.stub();
+          write.onFirstCall().rejects({ name: "TimeoutError" });
+          write.onSecondCall().rejects({ status: 503 });
+          write.onThirdCall().resolves({ data: { identifier: "data.1" } });
+          const download = state.sandbox.stub().rejects({ status: 404 });
+          const { pkg, dataMember } = makeExecutorPackage({
+            objectService: { [operation]: write },
+            sysMetaService: {
+              download,
+              invalidate: state.sandbox.stub().resolves(),
+            },
+          });
+          const action = {
+            ...dataAndResourceMapActions()[0],
+            id: `${operation}:data.1`,
+            phase,
+            operation,
+            sourcePid: operation === OPERATIONS.UPDATE ? "data.old" : null,
+          };
+
+          const uploading = executeActions(pkg, [action]);
+          await clock.tickAsync(1500);
+          const result = await uploading;
+
+          result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+          dataMember.remotePid.should.equal("data.1");
+          write.callCount.should.equal(3);
+          download.callCount.should.equal(2);
+          write.getCalls().forEach((call) => {
+            call.args[0].should.deep.equal(write.firstCall.args[0]);
+          });
+          sinon.assert.callOrder(write, download, write, download, write);
+        });
+      });
+
+      [
+        {
+          status: 429,
+          verificationStatus: 404,
+          attempts: 3,
+          expectedStatus: UploadResult.Statuses.FAILED,
+        },
+        {
+          status: 503,
+          verificationStatus: 404,
+          attempts: 3,
+          expectedStatus: UploadResult.Statuses.FAILED,
+        },
+        {
+          status: 400,
+          verificationStatus: 404,
+          attempts: 1,
+          expectedStatus: UploadResult.Statuses.FAILED,
+        },
+        {
+          status: 403,
+          verificationStatus: 404,
+          attempts: 1,
+          expectedStatus: UploadResult.Statuses.FAILED,
+        },
+        {
+          status: 409,
+          verificationStatus: 404,
+          attempts: 1,
+          expectedStatus: UploadResult.Statuses.FAILED,
+        },
+        {
+          status: 503,
+          verificationStatus: 503,
+          attempts: 1,
+          expectedStatus: UploadResult.Statuses.AMBIGUOUS,
+        },
+      ].forEach(({ status, verificationStatus, attempts, expectedStatus }) => {
+        it(`limits ${phase} writes to ${attempts} attempt(s) for ${status} with verification ${verificationStatus}`, async () => {
+          const clock = state.sandbox.useFakeTimers({ toFake: ["setTimeout"] });
+          const create = state.sandbox.stub().rejects({ status });
+          const download = state.sandbox
+            .stub()
+            .rejects({ status: verificationStatus });
+          const { pkg } = makeExecutorPackage({
+            objectService: { create },
+            sysMetaService: {
+              download,
+              invalidate: state.sandbox.stub().resolves(),
+            },
+          });
+          const uploading = executeActions(pkg, [
+            { ...dataAndResourceMapActions()[0], phase },
+          ]);
+          await clock.tickAsync(1500);
+          const result = await uploading;
+
+          create.callCount.should.equal(attempts);
+          result.getStatus("create:data.1").should.equal(expectedStatus);
+          result.getError("create:data.1").status.should.equal(status);
+          if (status < 500) sinon.assert.notCalled(download);
+        });
+      });
+    });
+
+    [
+      { retryAfter: "10", delayMs: 10000 },
+      { retryAfter: "Tue, 08 Sep 2026 12:00:10 GMT", delayMs: 10000 },
+      { retryAfter: undefined, delayMs: 500 },
+      { retryAfter: "invalid", delayMs: 500 },
+    ].forEach(({ retryAfter, delayMs }) => {
+      it(`retries a 429 after ${delayMs}ms with Retry-After ${retryAfter}`, async () => {
+        const clock = state.sandbox.useFakeTimers({
+          now: Date.parse("2026-09-08T12:00:00Z"),
+          toFake: ["Date", "setTimeout"],
+        });
+        const create = state.sandbox.stub();
+        create.onFirstCall().rejects({
+          status: 429,
+          headers: { "retry-after": retryAfter },
+        });
+        create.onSecondCall().resolves({ data: { identifier: "data.1" } });
+        const download = state.sandbox.stub();
+        const { pkg } = makeExecutorPackage({
+          objectService: { create },
+          sysMetaService: {
+            download,
+            invalidate: state.sandbox.stub().resolves(),
+          },
+        });
+
+        const uploading = executeActions(pkg, [dataAndResourceMapActions()[0]]);
+        await clock.tickAsync(delayMs - 1);
+        sinon.assert.calledOnce(create);
+        await clock.tickAsync(1);
+        const result = await uploading;
+
+        result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+        sinon.assert.calledTwice(create);
+        sinon.assert.notCalled(download);
+        create.secondCall.args[0].should.deep.equal(create.firstCall.args[0]);
+      });
+    });
+
+    it("cancels a 429 retry while waiting for Retry-After", async () => {
+      const clock = state.sandbox.useFakeTimers({ toFake: ["setTimeout"] });
+      const create = state.sandbox.stub().rejects({
+        status: 429,
+        headers: { "retry-after": "10" },
+      });
+      const { pkg } = makeExecutorPackage({ objectService: { create } });
+      const uploading = executeActions(pkg, [dataAndResourceMapActions()[0]]);
+      await clock.tickAsync(1000);
+      pkg.cancelUpload();
+      const result = await uploading;
+      await clock.tickAsync(10000);
+
+      result.outcome.should.equal(UploadResult.Outcomes.CANCELLED);
+      sinon.assert.calledOnce(create);
+    });
+
     it("confirms an object create that committed before a timeout", async () => {
       const timeout = Object.assign(new Error("timeout"), {
         name: "TimeoutError",
@@ -1857,6 +2017,7 @@ define([
 
       result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
       member.remotePid.should.equal("data.timeout");
+      sinon.assert.calledOnce(pkg.getObjectService().create);
     });
 
     it("confirms a committed private policy using mutable System Metadata", async () => {
@@ -2030,7 +2191,7 @@ define([
       upload.calledOnce.should.equal(true);
     });
 
-    it("confirms an object update when the latest version is the target PID", async () => {
+    it("keeps a confirmed object update successful without verifying it again", async () => {
       const timeout = Object.assign(new Error("timeout"), {
         name: "TimeoutError",
       });
@@ -2047,6 +2208,7 @@ define([
           checksum: "intended",
         }),
       );
+      download.onSecondCall().rejects({ status: 503 });
       const getLatestVersion = state.sandbox.stub().resolves("data.2");
       const pkg = new DataPackage({
         members: [member],
@@ -2086,10 +2248,8 @@ define([
       result.reloadRequired.should.equal(false);
       member.remotePid.should.equal("data.2");
       verificationSignal.should.be.instanceOf(AbortSignal);
-      sinon.assert.calledOnceWithExactly(getLatestVersion, "data.1", {
-        useCache: false,
-        signal: verificationSignal,
-      });
+      sinon.assert.notCalled(getLatestVersion);
+      sinon.assert.calledOnce(pkg.getObjectService().update);
       sinon.assert.calledOnceWithExactly(download, "data.2", {
         useCache: false,
         signal: verificationSignal,
@@ -2256,8 +2416,8 @@ define([
     });
 
     it("keeps cancellation authoritative during stale-source verification", async () => {
-      const timeout = Object.assign(new Error("timeout"), {
-        name: "TimeoutError",
+      const conflict = Object.assign(new Error("conflict"), {
+        status: 409,
       });
       let verificationStarted;
       let finishVerification;
@@ -2289,7 +2449,7 @@ define([
         members: [member],
         objectService: {
           create: state.sandbox.stub(),
-          update: state.sandbox.stub().rejects(timeout),
+          update: state.sandbox.stub().rejects(conflict),
         },
         sysMetaService: {
           download,
@@ -2326,6 +2486,7 @@ define([
       member.remoteState.should.equal(DataPackageMember.RemoteState.AMBIGUOUS);
       verificationOptions.signal.aborted.should.equal(true);
       sinon.assert.notCalled(download);
+      sinon.assert.calledOnce(pkg.getObjectService().update);
     });
 
     it("keeps cancellation authoritative during ambiguous-write verification", async () => {
