@@ -821,6 +821,8 @@ define([
    * @param {string|string[]} options.packageTitle Dataset title
    * @param {string} options.packageId Package/root resource map PID
    * @param {string} options.packageDownloadUrl Whole package download URL
+   * @param {string} options.packageDownloadUnavailableReason Explanation shown
+   * when whole package download is unavailable
    * @param {string} options.mode "viewer" or "editor"
    * @param {boolean} options.showMetrics Whether metrics are shown
    * @param {boolean} options.showShare Whether sharing controls are shown
@@ -833,6 +835,7 @@ define([
     packageTitle,
     packageId,
     packageDownloadUrl,
+    packageDownloadUnavailableReason,
     mode,
     showMetrics,
     showShare = true,
@@ -866,6 +869,19 @@ define([
           "",
           {
             className: "btn btn-primary downloadAction",
+          },
+        ),
+      );
+    } else if (packageDownloadUnavailableReason) {
+      actions.push(
+        action(
+          "download",
+          "Download All",
+          packageDownloadUnavailableReason,
+          "",
+          {
+            className: "btn btn-primary downloadAction",
+            isDisabled: true,
           },
         ),
       );
@@ -932,6 +948,8 @@ define([
    * id when a caller needs a stable identity across package PID changes
    * @param {string} [options.packageServiceUrl] Package download service URL
    * @param {string} [options.packageDownloadUrl] Whole package download URL
+   * @param {string} [options.packageDownloadUnavailableReason] Explanation
+   * shown when whole package download is unavailable
    * @returns {object[]} Render ready rows for `FileTableViewModel#setRows`
    */
   function buildRows(dataPackage, options = {}) {
@@ -948,6 +966,7 @@ define([
       preferredDatasetRootId = "",
       packageServiceUrl = "",
       packageDownloadUrl = "",
+      packageDownloadUnavailableReason = "",
     } = options;
     const rowOptions = {
       mode,
@@ -1013,6 +1032,9 @@ define([
         packageTitle,
         packageId,
         packageDownloadUrl: hasMissingMember ? "" : packageDownloadUrl,
+        packageDownloadUnavailableReason: hasMissingMember
+          ? ""
+          : packageDownloadUnavailableReason,
         mode,
         showMetrics,
         showShare,

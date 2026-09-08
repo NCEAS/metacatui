@@ -922,7 +922,7 @@ define([
     });
 
     describe("getFileTableRows()", () => {
-      it("omits Download All before private-member status is confirmed", () => {
+      it("omits Download All when its URL is unavailable", () => {
         const dataPackage = createViewerDataPackage();
         sandbox.stub(dataPackage, "hasPrivateMembers").returns(false);
         setPackageAppModel();
@@ -931,7 +931,7 @@ define([
           model: { get: sandbox.stub().withArgs("title").returns("Dataset") },
           fileTableMetricsByPid: null,
           metricsModel: null,
-          packageDownloadAllAllowed: false,
+          packageDownloadUrl: "",
           getFriendlyFormatName: sandbox.stub().returns(""),
         };
 
@@ -946,31 +946,25 @@ define([
         const dataPackage = createViewerDataPackage();
         sandbox.stub(dataPackage, "hasPrivateMembers").returns(false);
         setPackageAppModel();
-        const fileTableView = {
-          viewModel: { mergeRows: sandbox.stub() },
-        };
-        const context = withRenderContext({
+        const context = {
           dataPackage,
-          fileTableView,
           model: { get: sandbox.stub().withArgs("title").returns("Dataset") },
           fileTableMetricsByPid: null,
           metricsModel: null,
-          packageDownloadAllAllowed: false,
+          packageDownloadUrl: "",
+          packageDownloadUnavailableReason: "stale reason",
           getFriendlyFormatName: sandbox.stub().returns(""),
           getFileTableRows: MetadataView.prototype.getFileTableRows,
-          isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
-          isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
-          scheduleFileTableScrollIndicatorUpdate: sandbox.stub(),
-        });
+        };
 
         const confirmed = MetadataView.prototype.confirmPackageDownloadAll.call(
           context,
           dataPackage,
-          fileTableView,
-          { renderId: "render-test" },
         );
         confirmed.should.equal(true);
-        const rows = fileTableView.viewModel.mergeRows.firstCall.args[0];
+        context.packageDownloadUrl.should.equal("https://cn.test/package/rm.1");
+        context.packageDownloadUnavailableReason.should.equal("");
+        const rows = context.getFileTableRows();
         const rootRow = rows.find((row) => row.id === "dataset:rm.1");
 
         rootRow.actions
@@ -979,30 +973,50 @@ define([
         rootRow.downloadUrl.should.equal("https://cn.test/package/rm.1");
       });
 
-      it("does not add Download All when private members may be present", () => {
+      it("explains private members before checking package size", () => {
         const dataPackage = createViewerDataPackage();
-        setPackageAppModel();
-        const fileTableView = {
-          viewModel: { mergeRows: sandbox.stub() },
+        dataPackage.getData()[0].size = null;
+        const getTotalSize = sandbox.spy(dataPackage, "getTotalSize");
+        setPackageAppModel({ maxDownloadSize: 100 });
+        const context = {
+          packageDownloadUrl: "stale URL",
+          packageDownloadUnavailableReason: "",
         };
-        const context = withRenderContext({
-          dataPackage,
-          fileTableView,
-          packageDownloadAllAllowed: false,
-          isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
-          isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
-        });
 
         const confirmed = MetadataView.prototype.confirmPackageDownloadAll.call(
           context,
           dataPackage,
-          fileTableView,
-          { renderId: "render-test" },
         );
 
         confirmed.should.equal(false);
-        context.packageDownloadAllAllowed.should.equal(false);
-        fileTableView.viewModel.mergeRows.called.should.equal(false);
+        context.packageDownloadUrl.should.equal("");
+        context.packageDownloadUnavailableReason.should.equal(
+          "This dataset may contain private data, so each data file should be downloaded individually.",
+        );
+        sinon.assert.notCalled(getTotalSize);
+      });
+
+      it("does not give a private-data reason when package downloads are unconfigured", () => {
+        const dataPackage = createViewerDataPackage();
+        const hasPrivateMembers = sandbox.stub(
+          dataPackage,
+          "hasPrivateMembers",
+        );
+        setPackageAppModel({ packageServiceUrl: "" });
+        const context = {
+          packageDownloadUrl: "stale URL",
+          packageDownloadUnavailableReason: "stale reason",
+        };
+
+        const confirmed = MetadataView.prototype.confirmPackageDownloadAll.call(
+          context,
+          dataPackage,
+        );
+
+        confirmed.should.equal(false);
+        context.packageDownloadUrl.should.equal("");
+        context.packageDownloadUnavailableReason.should.equal("");
+        sinon.assert.notCalled(hasPrivateMembers);
       });
 
       it("does not add Download All when the package exceeds maxDownloadSize", () => {
@@ -1023,27 +1037,18 @@ define([
         });
         sandbox.stub(dataPackage, "hasPrivateMembers").returns(false);
         setPackageAppModel({ maxDownloadSize: 100 });
-        const fileTableView = {
-          viewModel: { mergeRows: sandbox.stub() },
+        const context = {
+          packageDownloadUrl: "",
+          packageDownloadUnavailableReason: "",
         };
-        const context = withRenderContext({
-          dataPackage,
-          fileTableView,
-          packageDownloadAllAllowed: false,
-          isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
-          isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
-        });
 
         const confirmed = MetadataView.prototype.confirmPackageDownloadAll.call(
           context,
           dataPackage,
-          fileTableView,
-          { renderId: "render-test" },
         );
 
         confirmed.should.equal(false);
-        dataPackage.hasPrivateMembers.called.should.equal(false);
-        fileTableView.viewModel.mergeRows.called.should.equal(false);
+        dataPackage.hasPrivateMembers.calledOnce.should.equal(true);
       });
 
       it("does not add Download All when a member size is missing", () => {
@@ -1069,29 +1074,18 @@ define([
         });
         sandbox.stub(dataPackage, "hasPrivateMembers").returns(false);
         setPackageAppModel({ maxDownloadSize: 100 });
-        const fileTableView = {
-          viewModel: { mergeRows: sandbox.stub() },
+        const context = {
+          packageDownloadUrl: "",
+          packageDownloadUnavailableReason: "",
         };
-        const context = withRenderContext({
-          dataPackage,
-          fileTableView,
-          packageDownloadAllAllowed: false,
-          isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
-          isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
-          getFileTableRows: sandbox.stub().returns([]),
-          scheduleFileTableScrollIndicatorUpdate: sandbox.stub(),
-        });
 
         const confirmed = MetadataView.prototype.confirmPackageDownloadAll.call(
           context,
           dataPackage,
-          fileTableView,
-          { renderId: "render-test" },
         );
 
         confirmed.should.equal(false);
-        dataPackage.hasPrivateMembers.called.should.equal(false);
-        fileTableView.viewModel.mergeRows.called.should.equal(false);
+        dataPackage.hasPrivateMembers.calledOnce.should.equal(true);
       });
     });
 
@@ -1109,7 +1103,7 @@ define([
         );
         const context = withRenderContext({
           dataPackage,
-          packageDownloadAllAllowed: false,
+          packageDownloadUrl: "",
           fileTableDownloadStates: new Map(),
           getFileTableRows: MetadataView.prototype.getFileTableRows,
           getFriendlyFormatName: () => "",
@@ -1182,7 +1176,7 @@ define([
         );
         const context = withRenderContext({
           dataPackage,
-          packageDownloadAllAllowed: false,
+          packageDownloadUrl: "",
           fileTableDownloadStates: new Map(),
           getFileTableRows: MetadataView.prototype.getFileTableRows,
           getFriendlyFormatName: () => "",
@@ -1309,7 +1303,7 @@ define([
           model: { get: sandbox.stub().withArgs("title").returns("Dataset") },
           fileTableMetricsByPid: null,
           metricsModel: null,
-          packageDownloadAllAllowed: false,
+          packageDownloadUrl: "",
           getFileTableRows: MetadataView.prototype.getFileTableRows,
           getFriendlyFormatName: sandbox.stub().returns(""),
           stopListening: sandbox.stub(),
@@ -1342,6 +1336,55 @@ define([
           .should.equal("Package: rm.1");
         context.teardownFileTableScrollIndicators();
         context.fileTableView.remove();
+      });
+
+      it("explains mixed-access Download All in the initial rows", async () => {
+        const reason =
+          "This dataset may contain private data, so each data file should be downloaded individually.";
+        const el = document.createElement("div");
+        el.innerHTML = `
+          <div id="table-container"></div>
+          <div id="data-package-container"><div class="loading"></div></div>
+        `;
+        const dataPackage = createViewerDataPackage();
+        const hasPrivateMembers = sandbox
+          .stub(dataPackage, "hasPrivateMembers")
+          .returns(true);
+        const mergeRows = sandbox.spy(
+          FileTableViewModel.prototype,
+          "mergeRows",
+        );
+        setPackageAppModel();
+        const view = new MetadataView({ el });
+        view.renderId = "render-test";
+        view.dataPackage = dataPackage;
+        view.model = {
+          get: sandbox.stub().withArgs("title").returns("Dataset"),
+        };
+        view.subviews = [];
+        sandbox.stub(view, "setupFileTableScrollIndicators");
+        sandbox.stub(view, "ensureFriendlyFormatLabels");
+        sandbox.stub(view, "loadNestedPackageTitles");
+        sandbox.stub(view, "enrichFileTableMemberDetails");
+        sandbox.stub(view, "loadFileTableMetrics");
+
+        await view.insertPackageTable(null, { renderId: "render-test" });
+
+        const rootRow = view.fileTableView.viewModel
+          .getRows()
+          .get("dataset:rm.1");
+        const downloadAction = rootRow.getActions().get("download");
+        downloadAction.toJSON().should.include({
+          label: "Download All",
+          title: reason,
+          ariaLabel: reason,
+          isDisabled: true,
+        });
+        sinon.assert.calledOnce(hasPrivateMembers);
+        sinon.assert.notCalled(mergeRows);
+
+        view.fileTableView.remove();
+        view.remove();
       });
     });
 

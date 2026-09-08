@@ -705,6 +705,30 @@ define([
           .should.equal(true);
       });
 
+      it("explains why Download All is unavailable", () => {
+        const reason =
+          "This dataset may contain private data, so each data file should be downloaded individually.";
+        const rows = Adapter.buildRows(null, {
+          mode: "viewer",
+          members: datasetMembers(),
+          packageId: "resource_map_1",
+          packageTitle: "My Dataset",
+          packageDownloadUnavailableReason: reason,
+        });
+
+        row(rows, "dataset:resource_map_1").actions.should.deep.equal([
+          {
+            id: "download",
+            label: "Download All",
+            title: reason,
+            ariaLabel: reason,
+            iconClass: "",
+            className: "btn btn-primary downloadAction",
+            isDisabled: true,
+          },
+        ]);
+      });
+
       it("keeps a member distinct from a colliding dataset root", () => {
         const memberPid = "dataset:root.rm";
         const rows = Adapter.buildRows(null, {

@@ -191,6 +191,8 @@ define([
     packageSubtitle(packageId) {
       return packageId ? `Package: ${packageId}` : "";
     },
+    packageDownloadMayContainPrivateData:
+      "This dataset may contain private data, so each data file should be downloaded individually.",
     parentDataset(label) {
       return `Parent dataset: ${label}`;
     },
@@ -321,7 +323,8 @@ define([
         this.fileTableMetricsByPid = null;
         this.fileTableMetricsLoading = false;
         this.fileTableDownloadStates = new Map();
-        this.packageDownloadAllAllowed = false;
+        this.packageDownloadUrl = "";
+        this.packageDownloadUnavailableReason = "";
         this.saveProvPending = false;
 
         this.dataPackage = null;
@@ -1655,12 +1658,6 @@ define([
         const packageTitle = metadataMember?.title || "";
         const packageServiceUrl =
           MetacatUI.appModel.get("packageServiceUrl") || "";
-        const packageDownloadUrl =
-          this.packageDownloadAllAllowed === true &&
-          packageId &&
-          packageServiceUrl
-            ? packageServiceUrl + encodeURIComponent(packageId)
-            : "";
         const metricsByPid = this.fileTableMetricsByPid || null;
 
         const rows = DataPackageFileTableAdapter.buildRows(dataPackage, {
@@ -1670,7 +1667,9 @@ define([
           packageId,
           packageTitle,
           packageServiceUrl,
-          packageDownloadUrl,
+          packageDownloadUrl: this.packageDownloadUrl,
+          packageDownloadUnavailableReason:
+            this.packageDownloadUnavailableReason,
           formatName: this.getFriendlyFormatName,
           showMetrics: Boolean(this.metricsModel),
           getRowMetric: metricsByPid
@@ -1716,7 +1715,7 @@ define([
         const { dataPackage } = this;
         if (!dataPackage) return this;
 
-        this.packageDownloadAllAllowed = false;
+        this.confirmPackageDownloadAll(dataPackage);
         const rows = this.getFileTableRows(fallbackMember);
         if (renderId && !this.isCurrentRender(renderId)) return this;
         const packageId = dataPackage.rootResourceMapPid || "";
@@ -1779,11 +1778,6 @@ define([
         // Friendly Type labels need the object-format list; fill them in once
         // it is loaded. Per-file metrics fill in their column when they arrive.
         this.ensureFriendlyFormatLabels(renderOptions);
-        this.confirmPackageDownloadAll(
-          dataPackage,
-          this.fileTableView,
-          renderOptions,
-        );
         this.loadNestedPackageTitles(renderOptions);
         this.enrichFileTableMemberDetails(renderOptions);
         this.loadFileTableMetrics();
@@ -1888,22 +1882,24 @@ define([
       },
 
       /**
-       * Enable whole package download when the package is safe to download
+       * Set whole package download state before file table rows are built
        * @param {DataPackage} dataPackage Package to inspect
-       * @param {FileTableView} fileTableView Active file table
-       * @param {object} [options] Render options
        * @returns {boolean} Whether whole package download was enabled
        * @since 0.0.0
        */
-      confirmPackageDownloadAll(dataPackage, fileTableView, options = {}) {
+      confirmPackageDownloadAll(dataPackage) {
+        this.packageDownloadUrl = "";
+        this.packageDownloadUnavailableReason = "";
         if (!dataPackage) return false;
-        if (!this.isCurrentFileTable(dataPackage, fileTableView, options)) {
-          return false;
-        }
         const packageId = dataPackage.rootResourceMapPid || "";
         const packageServiceUrl =
           MetacatUI.appModel.get("packageServiceUrl") || "";
         if (!packageId || !packageServiceUrl) {
+          return false;
+        }
+        if (dataPackage.hasPrivateMembers()) {
+          this.packageDownloadUnavailableReason =
+            MESSAGES.packageDownloadMayContainPrivateData;
           return false;
         }
         const maxDownloadSize = Number(
@@ -1920,10 +1916,8 @@ define([
           }
         }
 
-        if (dataPackage.hasPrivateMembers()) return false;
-        this.packageDownloadAllAllowed = true;
-        fileTableView.viewModel.mergeRows(this.getFileTableRows());
-        this.scheduleFileTableScrollIndicatorUpdate();
+        this.packageDownloadUrl =
+          packageServiceUrl + encodeURIComponent(packageId);
         return true;
       },
 
