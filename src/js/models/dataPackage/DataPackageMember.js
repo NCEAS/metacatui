@@ -599,9 +599,18 @@ define([
         preparedValues && !replacementFileNameChanged
           ? preparedValues.fileName
           : this.fileName || desiredValues.fileName;
+      // Selected files carry new format signals; generated metadata Blobs
+      // retain their explicit DataONE format ID.
+      const formatId =
+        blob instanceof File
+          ? (this.objectFormats || FALLBACK_OBJECT_FORMATS).getFormatId({
+              filename: blob.name,
+              mediaType: blob.type,
+            })
+          : this.formatId || defaults.formatId;
       const sysMeta = new SystemMetadata({
         identifier: this.pid,
-        formatId: this.formatId || defaults.formatId,
+        formatId,
         size: blob.size,
         checksum,
         submitter: desiredValues.submitter || defaults.submitter,

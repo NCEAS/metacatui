@@ -242,6 +242,37 @@ define([
         .should.contain("<identifier>data.new</identifier>");
     });
 
+    ["image/png", ""].forEach((mediaType) => {
+      it(`resolves a replacement PNG format with media type "${mediaType}"`, async () => {
+        const remoteSysMeta = new SystemMetadata({
+          ...SYSTEM_METADATA_DEFAULTS,
+          identifier: "data.1",
+          fileName: "original.csv",
+        });
+        const member = new DataPackageMember({
+          pid: "data.2",
+          formatId: "text/csv",
+          remotePid: "data.1",
+          sysMeta: remoteSysMeta,
+          remoteSysMeta,
+        });
+        member.setLocalFile(
+          new File(["replacement"], "replacement.png", { type: mediaType }),
+        );
+
+        const sysMeta = await member.buildObjectSystemMetadata(
+          SYSTEM_METADATA_DEFAULTS,
+        );
+
+        sysMeta.formatId.should.equal("image/png");
+        sysMeta.fileName.should.equal("replacement.png");
+        member.remoteSysMeta.formatId.should.equal("text/csv");
+        member
+          .serializeSystemMetadata()
+          .should.contain("<formatId>image/png</formatId>");
+      });
+    });
+
     it("preserves remote sysmeta when replacing existing content", async () => {
       const remoteSysMeta = new SystemMetadata({
         ...SYSTEM_METADATA_DEFAULTS,
@@ -486,6 +517,9 @@ define([
       await member.buildObjectSystemMetadata(SYSTEM_METADATA_DEFAULTS);
 
       expect(member.uploadFile).to.be.instanceof(Blob);
+      member.sysMeta.formatId.should.equal(
+        "eml://ecoinformatics.org/eml-2.1.1",
+      );
       const secondUpload = await member.uploadFile.text();
       expect(secondUpload).to.equal('<eml id="metadata.2">v2</eml>');
       expect(firstUpload).to.not.equal(secondUpload);
