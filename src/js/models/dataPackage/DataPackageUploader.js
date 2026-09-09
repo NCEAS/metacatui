@@ -1284,7 +1284,8 @@ define([
           const action = actions[index];
           const status = previousResult.getStatus(action.id);
           if (status === UploadResult.Statuses.SUCCEEDED) {
-            result.markSkipped(action.id);
+            // Preserve confirmed writes across every retry.
+            result.markSucceeded(action.id);
           } else if (status === UploadResult.Statuses.AMBIGUOUS) {
             const verification = await this._verifyAmbiguousAction(
               action,

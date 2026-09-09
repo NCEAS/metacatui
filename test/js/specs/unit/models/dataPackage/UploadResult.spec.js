@@ -63,7 +63,7 @@ define(["models/dataPackage/UploadResult"], (UploadResult) => {
 
     it("classifies success and partial failure", () => {
       const success = new UploadResult(actionsFor(["a", "b"]));
-      success.markSucceeded("create:a").markSkipped("create:b").finalize();
+      success.markSucceeded("create:a").markSucceeded("create:b").finalize();
       success.outcome.should.equal(Outcomes.SUCCESS);
       success.retryable.should.equal(false);
 
@@ -71,6 +71,13 @@ define(["models/dataPackage/UploadResult"], (UploadResult) => {
       failed.markSucceeded("create:a").markFailed("create:b").finalize();
       failed.outcome.should.equal(Outcomes.PARTIAL_FAILURE);
       failed.retryable.should.equal(true);
+    });
+
+    it("classifies skipped work as a retryable partial failure", () => {
+      const result = new UploadResult(actionsFor(["a", "b"]));
+      result.markSucceeded("create:a").markSkipped("create:b").finalize();
+      result.outcome.should.equal(Outcomes.PARTIAL_FAILURE);
+      result.retryable.should.equal(true);
     });
 
     it("classifies ambiguous actions as retryable failures", () => {

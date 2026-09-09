@@ -181,6 +181,7 @@ define([], () => {
       const anyFailed = statuses.some(
         (status) => status === STATUSES.FAILED || status === STATUSES.AMBIGUOUS,
       );
+      const anySkipped = statuses.includes(STATUSES.SKIPPED);
       const anyCancelled = statuses.some(
         (status) => status === STATUSES.CANCELLED,
       );
@@ -191,7 +192,7 @@ define([], () => {
       } else if (anyCancelled) {
         this.outcome = OUTCOMES.CANCELLED;
         this.reloadRequired = true;
-      } else if (anyFailed) {
+      } else if (anyFailed || anySkipped) {
         this.outcome = OUTCOMES.PARTIAL_FAILURE;
         this.retryable = true;
       } else {

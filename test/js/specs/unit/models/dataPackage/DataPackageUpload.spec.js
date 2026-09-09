@@ -2164,7 +2164,7 @@ define([
       objectService.update.calledTwice.should.equal(true);
       second
         .getStatus("create:data.1")
-        .should.equal(UploadResult.Statuses.SKIPPED);
+        .should.equal(UploadResult.Statuses.SUCCEEDED);
     });
 
     it("prepares a fresh upload after the package revision changes", async () => {
