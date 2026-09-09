@@ -70,7 +70,7 @@ MetacatUI.AppConfig = Object.assign(
     enableCreatePortals: true,
     enableBookkeeperServices: true,
     dataonePlusPreviewMode: true,
-    portalLimit: 5,
+    portalLimit: 1000,
     portalInfoURL: "https://dataone.org/plus",
     portalSearchFiltersInfoURL: "https://dataone.org/custom-search",
     portalDefaults: {
