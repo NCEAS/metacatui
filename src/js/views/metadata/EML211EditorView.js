@@ -1548,7 +1548,9 @@ ${supportDetails}`;
       },
 
       /**
-       * Match data members to existing EML entities without mutating them.
+       * Match data members with existing EML entities without changing either.
+       * Each entity can match one member. Resolve strong matches before
+       * fallbacks.
        * @param {DataPackageMember[]} [members] Members to match
        * @param {EML211} [metadataModel] Metadata model containing entities
        * @returns {Map<string, EMLEntity>} Entities keyed by member PID
@@ -1561,57 +1563,80 @@ ${supportDetails}`;
 
         const byDownloadId = new Map();
         const byXmlId = new Map();
-        const byFileName = new Map();
-        const byFormatName = new Map();
-        const rememberUnique = (map, key, entity) => {
+        const rememberUnique = (map, key, value) => {
           if (!key) return;
-          const normalized = String(key).toLowerCase();
-          const existingEntity = map.get(normalized);
-          if (!map.has(normalized)) {
-            map.set(normalized, entity);
-          } else if (existingEntity !== entity) {
-            map.set(normalized, null);
-          }
+          // Keep conflicting keys ambiguous, including on later insertions.
+          const isUnique = !map.has(key) || map.get(key) === value;
+          map.set(key, isUnique ? value : null);
         };
 
         entities.each((entity) => {
           const dataPid = entity.getDataPid?.();
           const xmlId = entity.get?.("xmlID");
-          const fileName =
-            entity.get?.("physicalObjectName") || entity.get?.("entityName");
-          const formatName = entity.get?.("entityType");
           if (dataPid) byDownloadId.set(dataPid, entity);
           if (xmlId) byXmlId.set(xmlId, entity);
-          rememberUnique(byFileName, fileName, entity);
-          rememberUnique(byFileName, fileName?.replace?.(/ /g, "_"), entity);
-          rememberUnique(byFormatName, formatName, entity);
         });
 
         const dataMembers = members.filter((member) => member.isData?.());
-        dataMembers.forEach((member) => {
+        const matchedEntities = new Set();
+        const matchUnique = (getCandidate) => {
+          const memberByEntity = new Map();
+          dataMembers.forEach((member) => {
+            if (matches.has(member.pid)) return;
+            const entity = getCandidate(member);
+            if (!entity || matchedEntities.has(entity)) return;
+            const dataPid = entity.getDataPid?.();
+            if (dataPid && dataPid !== member.pid) return;
+            rememberUnique(memberByEntity, entity, member);
+          });
+          memberByEntity.forEach((member, entity) => {
+            if (!member) return;
+            matches.set(member.pid, entity);
+            matchedEntities.add(entity);
+          });
+        };
+        const indexAvailableEntities = (getKeys) => {
+          const index = new Map();
+          entities.each((entity) => {
+            if (matchedEntities.has(entity)) return;
+            getKeys(entity).forEach((key) =>
+              rememberUnique(index, key, entity),
+            );
+          });
+          return index;
+        };
+
+        matchUnique((member) => {
           const { pid } = member;
           const xmlId =
             member.getXMLSafeID?.() ||
             (pid ? String(pid).replace(/</g, "-").replace(/:/g, "-") : "");
+          return byDownloadId.get(pid) || byXmlId.get(xmlId);
+        });
+
+        const byFileName = indexAvailableEntities((entity) => {
+          const fileName = (
+            entity.get?.("physicalObjectName") || entity.get?.("entityName")
+          )?.toLowerCase();
+          return [fileName, fileName?.replace(/ /g, "_")];
+        });
+        matchUnique((member) => byFileName.get(member.fileName?.toLowerCase()));
+
+        const byFormatName = indexAvailableEntities((entity) => [
+          entity.get?.("entityType")?.toLowerCase(),
+        ]);
+        matchUnique((member) => {
           const formatId =
             member.formatId ||
             member.mediaType ||
             member.uploadFile?.type ||
             "application/octet-stream";
-          let entity =
-            byDownloadId.get(pid) ||
-            byXmlId.get(xmlId) ||
-            byFileName.get(member.fileName?.toLowerCase()) ||
-            byFormatName.get(formatId?.toLowerCase());
-
-          if (!entity && dataMembers.length === 1 && entities.length === 1) {
-            entity = entities.at(0);
-          }
-          if (!entity) return;
-          if (entity.getDataPid?.() && entity.getDataPid() !== pid) return;
-
-          matches.set(pid, entity);
+          return byFormatName.get(formatId?.toLowerCase());
         });
+
+        if (dataMembers.length === 1 && entities.length === 1) {
+          matchUnique(() => entities.at(0));
+        }
 
         return matches;
       },

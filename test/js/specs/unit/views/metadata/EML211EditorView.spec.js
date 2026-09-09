@@ -3640,6 +3640,188 @@ define([
       filenameEntity.get("xmlID").should.equal("data.filename");
     });
 
+    it("keeps an existing description with its filename match", function () {
+      const rootDataPackage = createEditorRootDataPackage({
+        members: [
+          { pid: "resource_map_1", formatType: "RESOURCE" },
+          {
+            pid: "metadata.1",
+            formatType: "METADATA",
+            documents: ["data.a", "data.b"],
+          },
+          {
+            pid: "data.a",
+            formatType: "DATA",
+            formatId: "text/csv",
+            fileName: "a.csv",
+          },
+          {
+            pid: "data.b",
+            formatType: "DATA",
+            formatId: "text/csv",
+            fileName: "b.csv",
+          },
+        ],
+      });
+      const entity = new Backbone.Model({
+        entityName: "b.csv",
+        entityType: "text/csv",
+        entityDescription: "Description intended for b.csv",
+      });
+      entity.getDataPid = function () {
+        return this.get("downloadID") || null;
+      };
+      const metadataModel = new Backbone.Model({
+        entities: new Backbone.Collection([entity]),
+      });
+      metadataModel.addEntity = sandbox.stub().callsFake((added) => {
+        metadataModel.get("entities").add(added);
+      });
+      const metadataMember = rootDataPackage.getMember("metadata.1");
+      metadataMember.objectModel = metadataModel;
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+      };
+
+      view.syncMetadataEntities(metadataMember);
+
+      entity.get("downloadID").should.equal("data.b");
+      entity
+        .get("entityDescription")
+        .should.equal("Description intended for b.csv");
+      view.entityByMemberPid.get("data.b").should.equal(entity);
+      const added = view.entityByMemberPid.get("data.a");
+      added.should.not.equal(entity);
+      added.get("downloadID").should.equal("data.a");
+      sinon.assert.calledOnce(metadataModel.addEntity);
+      metadataModel.get("entities").length.should.equal(2);
+
+      view.syncMetadataEntities(metadataMember);
+      sinon.assert.calledOnce(metadataModel.addEntity);
+    });
+
+    [
+      {
+        name: "reserves PID matches before filename matches",
+        members: [{ pid: "a", fileName: "b.csv" }, { pid: "b" }],
+        entities: [{ downloadID: "b", entityName: "b.csv" }],
+        expected: [["b", 0]],
+      },
+      {
+        name: "allows a unique remaining filename after a PID match",
+        members: [{ pid: "a" }, { pid: "b", fileName: "same.csv" }],
+        entities: [
+          { downloadID: "a", entityName: "same.csv" },
+          { entityName: "same.csv" },
+        ],
+        expected: [
+          ["a", 0],
+          ["b", 1],
+        ],
+      },
+      {
+        name: "reserves XML ID matches before filename matches",
+        members: [{ pid: "a", fileName: "b.csv" }, { pid: "b" }],
+        entities: [{ xmlID: "b", entityName: "b.csv" }],
+        expected: [["b", 0]],
+      },
+      {
+        name: "rejects two members competing for a filename",
+        members: [
+          { pid: "a", fileName: "same.csv" },
+          { pid: "b", fileName: "same.csv" },
+        ],
+        entities: [{ entityName: "same.csv", entityType: "text/csv" }],
+        expected: [],
+      },
+      {
+        name: "rejects two members competing for one format entity",
+        members: [{ pid: "a" }, { pid: "b" }],
+        entities: [{ entityType: "text/csv" }],
+        expected: [],
+      },
+      {
+        name: "rejects two remaining entities for one format",
+        members: [{ pid: "a" }],
+        entities: [{ entityType: "text/csv" }, { entityType: "text/csv" }],
+        expected: [],
+      },
+      {
+        name: "allows a unique remaining format after a filename match",
+        members: [{ pid: "a", fileName: "a.csv" }, { pid: "b" }],
+        entities: [
+          { entityName: "a.csv", entityType: "text/csv" },
+          { entityType: "text/csv" },
+        ],
+        expected: [
+          ["a", 0],
+          ["b", 1],
+        ],
+      },
+      {
+        name: "rejects a fallback with a conflicting download PID",
+        members: [{ pid: "a", fileName: "a.csv" }],
+        entities: [
+          { downloadID: "other", entityName: "a.csv", entityType: "text/csv" },
+        ],
+        expected: [],
+      },
+      {
+        name: "retains the whole-input singleton fallback",
+        members: [{ pid: "a" }],
+        entities: [{ entityName: "unrelated.txt", entityType: "text/plain" }],
+        expected: [["a", 0]],
+      },
+      {
+        name: "does not guess an unrelated remaining pair",
+        members: [{ pid: "a", fileName: "a.csv" }, { pid: "b" }],
+        entities: [
+          { entityName: "a.csv" },
+          { entityName: "unrelated.txt", entityType: "text/plain" },
+        ],
+        expected: [["a", 0]],
+      },
+      {
+        name: "retains filename case folding and the underscore alias",
+        members: [
+          { pid: "a", fileName: "MY_FILE.CSV" },
+          { pid: "b", formatId: "image/png" },
+        ],
+        entities: [{ physicalObjectName: "my file.csv" }],
+        expected: [["a", 0]],
+      },
+    ].forEach(({ name, members, entities, expected }) => {
+      it(name, function () {
+        const entityModels = entities.map((attributes) => {
+          const entity = new Backbone.Model(attributes);
+          entity.getDataPid = function () {
+            return this.get("downloadID") || null;
+          };
+          return entity;
+        });
+        const metadataModel = new Backbone.Model({
+          entities: new Backbone.Collection(entityModels),
+        });
+        const dataMembers = members.map((attributes) => ({
+          formatId: "text/csv",
+          isData: () => true,
+          ...attributes,
+        }));
+        [dataMembers, [...dataMembers].reverse()].forEach((ordered) => {
+          const matches = view.buildEntityByMemberPid(ordered, metadataModel);
+          matches.size.should.equal(expected.length);
+          expected.forEach(([pid, entityIndex]) => {
+            matches.get(pid).should.equal(entityModels[entityIndex]);
+          });
+          new Set(matches.values()).size.should.equal(matches.size);
+          entityModels
+            .map((entity) => entity.toJSON())
+            .should.deep.equal(entities);
+        });
+      });
+    });
+
     it("syncs EML entities when files are added from the file table", async function () {
       const metadataMember = {
         pid: "metadata.1",
