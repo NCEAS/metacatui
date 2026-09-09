@@ -320,6 +320,8 @@ define([
 
         // Reset per-render state.
         this.subviews = [];
+        this.metricsModel = null;
+        this.fileTableMetricsModel = null;
         this.fileTableMetricsByPid = null;
         this.fileTableMetricsLoading = false;
         this.fileTableDownloadStates = new Map();
@@ -2162,20 +2164,25 @@ define([
        * @since 0.0.0
        */
       async loadFileTableMetrics() {
-        if (this.fileTableMetricsByPid || this.fileTableMetricsLoading) return;
-
         const { dataPackage, fileTableView, metricsModel } = this;
-        if (!metricsModel) return;
-        if (typeof fileTableView?.viewModel?.set === "function") {
-          fileTableView.viewModel.set("showMetrics", true);
+        if (metricsModel !== this.fileTableMetricsModel) {
+          if (this.fileTableMetricsModel) {
+            this.stopListening(this.fileTableMetricsModel, "sync error");
+          }
+          this.fileTableMetricsModel = metricsModel;
+          this.fileTableMetricsByPid = null;
+          this.fileTableMetricsLoading = false;
         }
+        if (this.fileTableMetricsByPid || this.fileTableMetricsLoading) return;
+        if (!metricsModel) return;
+        fileTableView?.viewModel.set("showMetrics", true);
         this.fileTableMetricsLoading = true;
         const isCurrentMetrics = () =>
           this.isCurrentDataPackage(dataPackage) &&
           fileTableView === this.fileTableView &&
           metricsModel === this.metricsModel;
 
-        const updateTableMetrics = async () => {
+        const updateTableMetrics = () => {
           if (!isCurrentMetrics()) {
             this.fileTableMetricsLoading = false;
             return;
@@ -2184,19 +2191,12 @@ define([
           this.fileTableMetricsByPid = FileTableMetrics.parse(
             metricsModel.toJSON(),
           );
-          if (this.fileTableMetricsByPid.size && this.fileTableView) {
-            const rows = this.getFileTableRows();
-            if (!isCurrentMetrics()) {
-              this.fileTableMetricsLoading = false;
-              return;
-            }
-            fileTableView.viewModel.mergeRows(rows);
-          }
+          fileTableView?.viewModel.mergeRows(this.getFileTableRows());
           this.fileTableMetricsLoading = false;
         };
 
         if (metricsModel.get("synced")) {
-          await updateTableMetrics();
+          updateTableMetrics();
           return;
         }
 
