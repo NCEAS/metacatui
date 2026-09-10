@@ -48,7 +48,7 @@ define([
   const { throwIfAborted } = ErrorUtilities;
   const LOAD_PROGRESS_MESSAGES = Object.freeze({
     [DataPackageLoader.LoadPhases.RESOLVE]:
-      "Find the files that belong to this package...",
+      "Finding the files that belong to this package...",
     [DataPackageLoader.LoadPhases.RESOURCE_MAP_MEMBERSHIP]:
       "Loading the file list...",
     [DataPackageLoader.LoadPhases.RESOURCE_MAP_DOWNLOAD]:

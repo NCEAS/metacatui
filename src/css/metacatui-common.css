@@ -8056,6 +8056,9 @@ ul.side-nav-items {
 #data-package-container {
   overflow: auto;
   position: relative;
+  z-index: 0;
+  /* Keep table-internal sticky layers below page alerts and menus. */
+  isolation: isolate;
 }
 
 /* Editor package table */
