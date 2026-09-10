@@ -837,7 +837,7 @@ define([
         this.updateLoadingText(MESSAGES.checkingLatestMetadata);
         const latestPid = await dataPackage
           .getVersionTracker()
-          .getLatestVersion(inputPid, { signal });
+          .getLatestVersion(inputPid, { signal, requireComplete: true });
         if (!this.isCurrentRender(renderId)) return null;
         if (latestPid !== inputPid) {
           metaModel.set("latestVersion", latestPid);
@@ -872,6 +872,7 @@ define([
         if (inputPid === resourceMapMember.pid) {
           const latestMetadataPid = await dataPackage.getLatestVersionPid({
             signal,
+            requireComplete: true,
           });
           if (!this.isCurrentRender(renderId)) return null;
           if (latestMetadataPid !== metadataMember.pid) {
@@ -2232,10 +2233,15 @@ ${supportDetails}`;
         this.startFileReplacementPreview(rowId, member);
 
         try {
-          const versionTracker = MetacatUI.rootDataPackage.getVersionTracker();
-          const latestPid = await versionTracker.getLatestVersion(sourcePid, {
-            useCache: false,
-          });
+          let versionTracker = null;
+          let latestPid = sourcePid;
+          if (member?.remotePid) {
+            versionTracker = MetacatUI.rootDataPackage.getVersionTracker();
+            latestPid = await versionTracker.getLatestVersion(sourcePid, {
+              useCache: false,
+              requireComplete: true,
+            });
+          }
 
           if (latestPid && latestPid !== sourcePid) {
             let latestSysMeta = null;

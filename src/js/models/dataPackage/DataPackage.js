@@ -1856,11 +1856,13 @@ define([
      * Find the latest PID for the package's primary object.
      * @param {object} [options] Lookup options
      * @param {AbortSignal} [options.signal] Abort signal
+     * @param {boolean} [options.requireComplete] Require proof that each
+     * version walk reached the end of its chain
      * @returns {Promise<string|null>} Latest primary PID, or null
      * @throws {Error} When the version lookup fails
      */
     async getLatestVersionPid(options = {}) {
-      const { signal } = options;
+      const { signal, requireComplete = false } = options;
       let metadata = this.getPrimaryMetadataMember();
       if (!metadata) {
         await this.getManifestFromResourceMap({ merge: true, signal });
@@ -1870,6 +1872,7 @@ define([
       if (metadata) {
         const newest = await versionTracker.getLatestVersion(metadata.pid, {
           signal,
+          requireComplete,
         });
         return newest || metadata.pid;
       }
@@ -1881,6 +1884,7 @@ define([
           resourceMap.pid,
           {
             signal,
+            requireComplete,
           },
         );
         if (newestRm && newestRm !== resourceMap.pid) {
@@ -1890,7 +1894,10 @@ define([
             resolverOptions: this.resolverOptions,
           });
           await newDataPackage.resolveFromPid(newestRm, { signal });
-          return newDataPackage.getLatestVersionPid({ signal });
+          return newDataPackage.getLatestVersionPid({
+            signal,
+            requireComplete,
+          });
         }
         return resourceMap.pid;
       }

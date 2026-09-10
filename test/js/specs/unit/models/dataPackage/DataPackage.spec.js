@@ -3029,10 +3029,20 @@ define([
             });
 
           await pkg.resolveFromPid("resource_map_1", { resolverOptions });
-          const latest = await pkg.getLatestVersionPid();
+          const latest = await pkg.getLatestVersionPid({
+            requireComplete: true,
+          });
 
           latest.should.equal("meta.3");
           sinon.assert.calledTwice(getLatestVersion);
+          sinon.assert.calledWithExactly(getLatestVersion, "resource_map_1", {
+            signal: undefined,
+            requireComplete: true,
+          });
+          sinon.assert.calledWithExactly(getLatestVersion, "meta.2", {
+            signal: undefined,
+            requireComplete: true,
+          });
           sinon.assert.neverCalledWith(getLatestVersion, "resource_map_2");
           sinon.assert.notCalled(awaitObjectFormats);
           expect(resolve.secondCall.thisValue.storage).to.equal(
@@ -3054,10 +3064,31 @@ define([
         );
         pkg.versionTracker = { getLatestVersion };
 
-        const latest = await pkg.getLatestVersionPid();
+        const signal = new AbortController().signal;
+        const latest = await pkg.getLatestVersionPid({
+          signal,
+          requireComplete: true,
+        });
 
         latest.should.equal("meta.2");
-        getLatestVersion.calledOnceWith("meta.1").should.equal(true);
+        sinon.assert.calledOnceWithExactly(getLatestVersion, "meta.1", {
+          signal,
+          requireComplete: true,
+        });
+      });
+
+      it("uses best-effort version lookup by default", async () => {
+        const getLatestVersion = sinon.stub().resolves("meta.1");
+        const pkg = buildPackage([{ pid: "meta.1", formatType: "METADATA" }]);
+        pkg.versionTracker = { getLatestVersion };
+
+        const latest = await pkg.getLatestVersionPid();
+
+        latest.should.equal("meta.1");
+        sinon.assert.calledOnceWithExactly(getLatestVersion, "meta.1", {
+          signal: undefined,
+          requireComplete: false,
+        });
       });
 
       it("propagates metadata latest-version lookup failures", async () => {

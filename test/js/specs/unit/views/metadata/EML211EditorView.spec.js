@@ -763,6 +763,7 @@ define([
 
       sinon.assert.calledOnceWithExactly(getLatestVersion, "metadata.1", {
         signal: undefined,
+        requireComplete: true,
       });
       sinon.assert.calledOnceWithExactly(loadEditablePackage, "metadata.1", {
         resolverOptions: { metaServiceUrl: "https://example.org/meta" },
@@ -867,6 +868,7 @@ define([
         loadEditablePackage.firstCall.args[0].should.equal(resourceMapPid);
         sinon.assert.calledWithExactly(getLatestVersion, metadataPid, {
           signal,
+          requireComplete: true,
         });
         const resourceMapMember = loadedPackage.getRootResourceMapMember();
         resourceMapMember.formatType.should.equal("RESOURCE");
@@ -4184,6 +4186,52 @@ define([
       sinon.assert.notCalled(view.finishFileReplacementPreview);
     });
 
+    it("replaces a failed new file without checking remote version history", async function () {
+      const file = new Blob(["replacement"], { type: "text/plain" });
+      const member = {
+        pid: "data.local",
+        remotePid: null,
+        remoteState: "failed",
+        getFormatType: sandbox.stub().returns("DATA"),
+      };
+      const getLatestVersion = sandbox.stub().rejects(
+        Object.assign(new Error("Not found"), {
+          status: 404,
+        }),
+      );
+      const rootDataPackage = {
+        cancelEagerUpload: sandbox.stub().returns(false),
+        getMember: sandbox.stub().withArgs("data.local").returns(member),
+        getVersionTracker: sandbox.stub().returns({ getLatestVersion }),
+        replaceFile: sandbox.stub().resolves(member),
+      };
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+        appView: {
+          showAlert: sandbox.stub(),
+        },
+      };
+      sandbox.stub(view, "choosePackageFiles").resolves([file]);
+      sandbox.stub(view, "toggleEnableControls");
+      sandbox.stub(view, "startFileReplacementPreview");
+      sandbox.stub(view, "finishFileReplacementPreview");
+
+      const handled = await view.handleFileTableReplaceAction(
+        new Backbone.Model({ id: "data.local", label: "local.csv" }),
+      );
+
+      handled.should.equal(true);
+      sinon.assert.notCalled(rootDataPackage.getVersionTracker);
+      sinon.assert.notCalled(getLatestVersion);
+      sinon.assert.calledOnceWithExactly(
+        rootDataPackage.replaceFile,
+        "data.local",
+        file,
+      );
+      sinon.assert.notCalled(globalThis.MetacatUI.appView.showAlert);
+    });
+
     it("replaces the selected file immediately when it is the latest version", async function () {
       const file = new Blob(["replacement"], { type: "text/plain" });
       const member = {
@@ -4242,6 +4290,7 @@ define([
       handled.should.equal(true);
       sinon.assert.calledOnceWithExactly(getLatestVersion, "data.1", {
         useCache: false,
+        requireComplete: true,
       });
       sinon.assert.calledOnceWithExactly(
         rootDataPackage.replaceFile,
@@ -4320,6 +4369,7 @@ define([
       handled.should.equal(true);
       sinon.assert.calledOnceWithExactly(getLatestVersion, "data.1", {
         useCache: false,
+        requireComplete: true,
       });
       sinon.assert.calledOnceWithExactly(getSysMeta, "data.2", {
         useCache: false,
@@ -4456,6 +4506,7 @@ define([
       handled.should.equal(true);
       sinon.assert.calledOnceWithExactly(getLatestVersion, "data.1", {
         useCache: false,
+        requireComplete: true,
       });
       sinon.assert.notCalled(rootDataPackage.cancelEagerUpload);
       sinon.assert.notCalled(rootDataPackage.replaceFile);

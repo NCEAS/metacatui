@@ -53,6 +53,8 @@ define([
    * private version was encountered
    * @property {boolean} endNotFound Whether the fetching stopped because a
    * version was not found (404)
+   * @property {string|null} latestAccessiblePid Latest PID whose System
+   * Metadata was successfully read during a forward walk
    * @property {DateConflict[]} dateConflicts Array of detected
    * sequence date conflicts in the versions found
    */
@@ -247,6 +249,7 @@ define([
         chainComplete: false,
         endIsPrivate: false,
         endNotFound: false,
+        latestAccessiblePid: null,
         dateConflicts: [],
       };
 
@@ -305,7 +308,16 @@ define([
             if (!currentStepSysMeta) {
               currentStepSysMeta = await this.getSysMeta(currentPid, options);
             }
+            // A linked PID is only accessible after its System Metadata read
+            // succeeds, even though it is still recorded in versions.
+            if (forward) {
+              record.latestAccessiblePid =
+                currentStepSysMeta?.identifier || currentPid;
+            }
             const adjSysMeta = await this.getSysMeta(adjPid, options);
+            if (forward) {
+              record.latestAccessiblePid = adjSysMeta?.identifier || adjPid;
+            }
             const conflict = VersionTracker.detectDateConflict(
               currentStepSysMeta,
               adjSysMeta,
@@ -343,11 +355,24 @@ define([
           const lastPid = versions.length
             ? versions[versions.length - 1]
             : startPid;
-          record.chainComplete = await this.isEndOfChain(
-            lastPid,
-            forward,
-            options,
-          );
+          try {
+            record.chainComplete = await this.isEndOfChain(
+              lastPid,
+              forward,
+              options,
+            );
+            if (forward && versions.length) {
+              record.latestAccessiblePid = lastPid;
+            }
+          } catch (error) {
+            if (PRIVATE_STATUSES.includes(error?.status)) {
+              record.endIsPrivate = true;
+            } else if (error?.status === 404) {
+              record.endNotFound = true;
+            } else {
+              throw error;
+            }
+          }
         }
       } catch (error) {
         traversalError = error;
@@ -434,6 +459,7 @@ define([
      * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<string|null>} resolves to the PID at the given number
      * of steps, or null if no such version exists.
+     * @throws {Error} if the requested version is private or missing
      */
     async getNth(pid, steps, options = {}) {
       if (typeof pid !== "string" || !pid) {
@@ -445,7 +471,13 @@ define([
       if (Math.abs(completedSteps) < Math.abs(steps)) {
         return null;
       }
-      return versions[versions.length - 1];
+      const nthPid = versions[versions.length - 1];
+      if (record.endIsPrivate || record.endNotFound) {
+        const error = new Error(`Cannot access version "${nthPid}"`);
+        error.status = record.endIsPrivate ? 401 : 404;
+        throw error;
+      }
+      return nthPid;
     }
 
     /**
@@ -528,25 +560,36 @@ define([
     }
 
     /**
-     * Get the latest version in the version chain for the given PID. If the
-     * newest versions are private or not found, this will return the last
-     * available version.
+     * Get the latest accessible version in the forward version chain.
      * @param {string} pid PID to get the latest version for
-     * @param {object} [options] options to pass to SysMetaService.download
-     * @returns {Promise<string>} resolves to the latest version PID, or the
-     * original PID if no newer versions exist or are accessible.
+     * @param {object} [options] Lookup options
+     * @param {boolean} [options.requireComplete] Require proof that the
+     * end of the version chain was reached
+     * @returns {Promise<string|null>} Latest accessible PID, or null when the
+     * starting PID is inaccessible
+     * @throws {Error} When a complete result is required but cannot be proven
      */
     async getLatestVersion(pid, options = {}) {
-      const record = await this.getAllVersionsOneDirection(pid, true, options);
-      const { versions, completedSteps } = record;
+      const { requireComplete = false, ...lookupOptions } = options;
+      const record = await this.getAllVersionsOneDirection(
+        pid,
+        true,
+        lookupOptions,
+      );
+      if (requireComplete && !record.chainComplete) {
+        throw new Error(`Cannot determine the latest version of "${pid}"`);
+      }
+      if (record.latestAccessiblePid) return record.latestAccessiblePid;
+
+      const { completedSteps } = record;
       if (completedSteps === 0) {
+        if (record.endIsPrivate || record.endNotFound) return null;
         // In case the input PID is a series ID, make sure we return the PID of
         // the version, not the series ID.
-        if (record.endIsPrivate || record.endNotFound) return pid;
-        const sysMeta = await this.getSysMeta(pid, options);
+        const sysMeta = await this.getSysMeta(pid, lookupOptions);
         return sysMeta?.identifier || pid;
       }
-      return versions[versions.length - 1];
+      return null;
     }
 
     /**
@@ -562,19 +605,10 @@ define([
       const { errors } = await Utilities.processConcurrently(
         pids,
         async (pid, index) => {
-          const record = await this.getAllVersionsOneDirection(
-            pid,
-            true,
-            lookupOptions,
-          );
-          // Retaining the input PID for a partial chain looks identical to a
-          // confirmed result, so callers must not publish that fallback.
-          if (!record.chainComplete) {
-            throw new Error(`Cannot determine the latest version of "${pid}"`);
-          }
-          latestVersions[index] = record.versions.length
-            ? record.versions[record.versions.length - 1]
-            : (await this.getSysMeta(pid, lookupOptions))?.identifier || pid;
+          latestVersions[index] = await this.getLatestVersion(pid, {
+            ...lookupOptions,
+            requireComplete: true,
+          });
         },
         {
           maxConcurrent,

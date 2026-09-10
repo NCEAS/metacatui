@@ -660,6 +660,29 @@ define([
         expect(result).to.equal("pid.3");
       });
 
+      [401, 404].forEach((status) => {
+        it(`getNth rejects when the requested version ends with ${status}`, async () => {
+          const error = Object.assign(new Error("Cannot read sysmeta"), {
+            status,
+          });
+          state.sandbox.stub(state.vt, "notify").resolves();
+          state.service.download
+            .withArgs("pid.1")
+            .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+          state.service.download.withArgs("pid.2").rejects(error);
+
+          let caught;
+          try {
+            await state.vt.getNth("pid.1", 1);
+          } catch (error) {
+            caught = error;
+          }
+
+          expect(caught).to.be.instanceof(Error);
+          caught.status.should.equal(status);
+        });
+      });
+
       it("getNth returns the same PID for zero steps without traversal", async () => {
         const versionsStub = state.sandbox.stub(state.vt, "getVersions");
         const result = await state.vt.getNth("pid.1", 0);
@@ -778,21 +801,24 @@ define([
         isEnd.should.equal(true);
       });
 
-      it("getLatestVersion returns the last accessible PID", async () => {
-        state.sandbox.stub(state.vt, "getAllVersionsOneDirection").resolves({
-          versions: ["pid.2", "pid.3"],
-          completedSteps: 2,
-        });
+      it("getLatestVersion returns the latest PID when the chain ends at the hop limit", async () => {
+        state.vt.MAX_CHAIN_HOPS = 2;
+        state.service.download
+          .withArgs("pid.1")
+          .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+        state.service.download
+          .withArgs("pid.2")
+          .resolves(makeIdentifiedSysMeta("pid.2", "pid.3", "pid.1"));
+        state.service.download
+          .withArgs("pid.3")
+          .resolves(makeIdentifiedSysMeta("pid.3", null, "pid.2"));
 
         const latest = await state.vt.getLatestVersion("pid.1");
         latest.should.equal("pid.3");
       });
 
       it("returns self when no newer versions exist", async () => {
-        state.sandbox.stub(state.vt, "getAllVersionsOneDirection").resolves({
-          versions: [],
-          completedSteps: 0,
-        });
+        state.service.download.resolves(makeIdentifiedSysMeta("pid.1"));
 
         const latest = await state.vt.getLatestVersion("pid.1");
         latest.should.equal("pid.1");
@@ -808,17 +834,109 @@ define([
         latest.should.equal("pid.1");
       });
 
-      it("returns the input PID when the starting sysmeta is not accessible", async () => {
-        state.sandbox.stub(state.vt, "getAllVersionsOneDirection").resolves({
-          versions: [],
-          completedSteps: 0,
-          endIsPrivate: true,
+      it("returns the terminal PID when a transient 404 clears during traversal", async () => {
+        const missing = Object.assign(new Error("Not found"), { status: 404 });
+        state.sandbox.stub(state.vt, "notify").resolves();
+        const getAllVersions = state.sandbox.spy(
+          state.vt,
+          "getAllVersionsOneDirection",
+        );
+        state.service.download
+          .withArgs("pid.1")
+          .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+        state.service.download
+          .withArgs("pid.2")
+          .onFirstCall()
+          .rejects(missing)
+          .onSecondCall()
+          .resolves(makeIdentifiedSysMeta("pid.2", null, "pid.1"))
+          .onThirdCall()
+          .resolves(makeIdentifiedSysMeta("pid.2", null, "pid.1"));
+
+        const latest = await state.vt.getLatestVersion("pid.1", {
+          requireComplete: true,
         });
+        const record = await getAllVersions.firstCall.returnValue;
+
+        latest.should.equal("pid.2");
+        record.latestAccessiblePid.should.equal("pid.2");
+      });
+
+      it("returns the latest accessible version when the hop limit stops the walk", async () => {
+        state.vt.MAX_CHAIN_HOPS = 1;
+        state.service.download
+          .withArgs("pid.1")
+          .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+        state.service.download
+          .withArgs("pid.2")
+          .resolves(makeIdentifiedSysMeta("pid.2", "pid.3", "pid.1"));
 
         const latest = await state.vt.getLatestVersion("pid.1");
 
-        latest.should.equal("pid.1");
-        state.service.download.called.should.equal(false);
+        latest.should.equal("pid.2");
+      });
+
+      it("rejects an incomplete chain when a complete result is required", async () => {
+        state.vt.MAX_CHAIN_HOPS = 1;
+        state.service.download
+          .withArgs("pid.1")
+          .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+        state.service.download
+          .withArgs("pid.2")
+          .resolves(makeIdentifiedSysMeta("pid.2", "pid.3", "pid.1"));
+
+        let caught;
+        try {
+          await state.vt.getLatestVersion("pid.1", { requireComplete: true });
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceOf(Error);
+        caught.message.should.include("latest version");
+      });
+
+      [
+        { status: 401, failedPid: "pid.1", expected: null },
+        { status: 404, failedPid: "pid.1", expected: null },
+        { status: 401, failedPid: "pid.2", expected: "pid.1" },
+        { status: 404, failedPid: "pid.2", expected: "pid.1" },
+      ].forEach(({ status, failedPid, expected }) => {
+        it(`returns the latest accessible version when ${failedPid} returns ${status}`, async () => {
+          const readError = Object.assign(new Error("Cannot read sysmeta"), {
+            status,
+          });
+          state.service.download
+            .withArgs("pid.1")
+            .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+          state.service.download.withArgs(failedPid).rejects(readError);
+
+          const latest = await state.vt.getLatestVersion("pid.1");
+
+          expect(latest).to.equal(expected);
+        });
+
+        it(`rejects a required complete lookup when ${failedPid} returns ${status}`, async () => {
+          const readError = Object.assign(new Error("Cannot read sysmeta"), {
+            status,
+          });
+          state.service.download
+            .withArgs("pid.1")
+            .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+          state.service.download.withArgs(failedPid).rejects(readError);
+
+          let caught;
+          try {
+            await state.vt.getLatestVersion("pid.1", {
+              requireComplete: true,
+            });
+          } catch (error) {
+            caught = error;
+          }
+
+          expect(caught).to.be.instanceOf(Error);
+          caught.message.should.include("latest version");
+        });
       });
 
       it("gets conclusive latest versions with bounded concurrency", async () => {
@@ -831,6 +949,7 @@ define([
           concurrency.track((pid) => ({
             versions: [`${pid}.latest`],
             chainComplete: true,
+            latestAccessiblePid: `${pid}.latest`,
           })),
         );
 
