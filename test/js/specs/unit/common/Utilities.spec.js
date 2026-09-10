@@ -497,25 +497,45 @@ define(["backbone", "collections/ObjectFormats", "common/Utilities"], function (
     });
 
     describe("awaitObjectFormats", function () {
-      it("returns formats and allows retry after a fetch failure", async function () {
+      it("waits for the format fetch and allows retry after failure", async function () {
         const formats = new ObjectFormats();
-        formats.fetch = sinon.stub().callsFake(function () {
-          this.trigger("error", this);
-        });
-        window.MetacatUI = { objectFormats: formats };
-
-        const result = await Utilities.awaitObjectFormats();
-
-        expect(result).to.equal(formats);
-        expect(formats.isFetching).to.equal(false);
-        expect(formats.hasRemoteFormats).to.equal(false);
-        expect(formats.lastFetchError.message).to.equal(
-          "Failed to fetch object formats: Unknown error",
+        let resolveFetch;
+        formats.fetchPromise = sinon.stub();
+        formats.fetchPromise.onFirstCall().returns(
+          new Promise((resolve) => {
+            resolveFetch = resolve;
+          }),
         );
+        const error = new Error("format fetch failed");
+        formats.fetchPromise.onSecondCall().rejects(error);
+        formats.fetchPromise.onThirdCall().resolves(formats);
+        window.MetacatUI = { objectFormats: formats };
+        let settled = false;
 
-        await Utilities.awaitObjectFormats();
+        const fetching = Utilities.awaitObjectFormats().then((result) => {
+          settled = true;
+          return result;
+        });
+        await Promise.resolve();
+        await Promise.resolve();
 
-        expect(formats.fetch.calledTwice).to.equal(true);
+        expect(settled).to.equal(false);
+
+        resolveFetch();
+
+        expect(await fetching).to.equal(formats);
+
+        let firstError;
+        try {
+          await Utilities.awaitObjectFormats();
+        } catch (caught) {
+          firstError = caught;
+        }
+        expect(firstError).to.equal(error);
+
+        expect(await Utilities.awaitObjectFormats()).to.equal(formats);
+
+        expect(formats.fetchPromise.calledThrice).to.equal(true);
       });
     });
   });

@@ -3,20 +3,10 @@ define([
   "jquery",
   "backbone",
   "models/DataONEObject",
-  "common/Utilities",
   "Dropzone",
   "text!templates/imageUploader.html",
   "corejs",
-], function (
-  _,
-  $,
-  Backbone,
-  DataONEObject,
-  Utilities,
-  Dropzone,
-  Template,
-  corejs,
-) {
+], (_, $, Backbone, DataONEObject, Dropzone, Template, _corejs) => {
   /**
    * @class ImageUploaderView
    * @classdesc A view that allows a person to upload an image to the repository
@@ -172,9 +162,6 @@ define([
               this.url = this.model.url();
             }
           }
-
-          // Ensure the object formats are cached for uploader's use
-          Utilities.awaitObjectFormats();
 
           // Bug fix: Overwrite a dropzone function that causes a bug in Edge 16 &
           // 17 browser. If we update our dropzone with a fallback, this function

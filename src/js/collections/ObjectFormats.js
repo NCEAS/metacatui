@@ -1,13 +1,11 @@
 "use strict";
 
 define([
-  "jquery",
-  "underscore",
   "backbone",
   "common/ValueUtilities",
   "x2js",
   "models/formats/ObjectFormat",
-], ($, _, Backbone, ValueUtilities, X2JS, ObjectFormat) => {
+], (Backbone, ValueUtilities, X2JS, ObjectFormat) => {
   const FORMAT_IDS = {
     RESOURCE_MAP: "http://www.openarchives.org/ore/terms",
   };
@@ -21,6 +19,43 @@ define([
   });
 
   const FORMAT_TYPE_VALUES = Object.values(FORMAT_TYPES);
+
+  const OBJECT_TYPES = Object.freeze({
+    ANNOTATION: "annotation",
+    COLLECTION: "collection",
+    DATA: "data",
+    IMAGE: "image",
+    METADATA: "metadata",
+    PDF: "PDF",
+    PORTAL: "portal",
+    PROGRAM: "program",
+  });
+
+  const OBJECT_TYPE_FORMAT_IDS = Object.freeze({
+    ANNOTATION: Object.freeze([
+      "http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html",
+    ]),
+    COLLECTION: Object.freeze([
+      "https://purl.dataone.org/collections-1.0.0",
+      "https://purl.dataone.org/collections-1.1.0",
+    ]),
+    IMAGE: Object.freeze([
+      "image/gif",
+      "image/jp2",
+      "image/jpeg",
+      "image/png",
+      "image/svg xml",
+      "image/svg+xml",
+      "image/bmp",
+    ]),
+    PDF: Object.freeze(["application/pdf"]),
+    PORTAL: Object.freeze([
+      "https://purl.dataone.org/portals-1.0.0",
+      "https://purl.dataone.org/portals-1.1.0",
+    ]),
+  });
+
+  const PROVONE_PROGRAM_CLASS = "#Program";
 
   const EML_FORMATS = [
     "eml://ecoinformatics.org/*",
@@ -283,9 +318,8 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
   /**
    * @class ObjectFormats
    * @classdesc ObjectFormats represents the DataONE object format list found at
-   * https://cn.dataone.org/cn/v2/formats, or the Coordinating Node environment
-   * configured `AppModel.d1CNBaseUrl` This collection starts with built-in
-   * fallback definitions and refreshes from the configured formats service when
+   * https://cn.dataone.org/cn/v2/formats. This collection starts with built-in
+   * fallback definitions and refreshes from an injected formats service when
    * available.
    * @classcategory Collections
    * @augments Backbone.Collection
@@ -297,6 +331,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
       DEFAULT_FORMAT_ID,
       FORMAT_TYPES,
       FORMAT_TYPE_VALUES,
+      OBJECT_TYPES,
       EML_FORMATS,
       FALLBACK_FORMATS,
 
@@ -309,9 +344,11 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * @param {boolean} [options.remote] Whether the models are remote
        * formats.
        * @param {boolean} [options.fallback] Set false to skip fallback formats.
+       * @param {string} [options.formatsServiceUrl] URL used to fetch formats
        * @since 0.0.0
        */
       initialize(models, options = {}) {
+        this.formatsServiceUrl = options.formatsServiceUrl || null;
         this.hasRemoteFormats = options.remote === true;
         this.usingFallback = models == null && options.fallback !== false;
         if (this.usingFallback) {
@@ -321,11 +358,10 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
 
       /**
        * The constructed URL of the collection (/cn/v2/formats)
-       * @returns {string} - The URL to use during fetch
+       * @returns {string|null} URL used during fetch
        */
       url() {
-        // no need for authentication token, just the URL
-        return MetacatUI.appModel.get("formatsServiceUrl");
+        return this.formatsServiceUrl;
       },
 
       /**
@@ -335,9 +371,28 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * @returns {jqXHR} Backbone fetch request.
        */
       fetch(options) {
-        const fetchOptions = _.extend({ dataType: "text" }, options);
-        const { success } = fetchOptions;
+        const fetchOptions = { dataType: "text", ...options };
+        const { success, error } = fetchOptions;
+        this.parseError = null;
         fetchOptions.success = (collection, response, fetchOptionsArg) => {
+          if (collection.parseError) {
+            const { parseError } = collection;
+            Object.assign(collection, {
+              lastFetchError: parseError,
+              hasRemoteFormats: false,
+              usingFallback: true,
+              parseError: null,
+            });
+            if (typeof error === "function") {
+              error.call(
+                fetchOptions.context,
+                collection,
+                parseError,
+                fetchOptionsArg,
+              );
+            }
+            return;
+          }
           Object.assign(collection, {
             hasRemoteFormats: true,
             usingFallback: false,
@@ -352,7 +407,69 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
             );
           }
         };
-        return Backbone.Model.prototype.fetch.call(this, fetchOptions);
+        fetchOptions.error = (collection, response, fetchOptionsArg) => {
+          Object.assign(collection, {
+            lastFetchError: new Error(
+              `Failed to fetch object formats: ${response?.responseText || response?.status || "Unknown error"}`,
+            ),
+            hasRemoteFormats: false,
+            usingFallback: true,
+          });
+          if (typeof error === "function") {
+            error.call(
+              fetchOptions.context,
+              collection,
+              response,
+              fetchOptionsArg,
+            );
+          }
+        };
+        return Backbone.Collection.prototype.fetch.call(this, fetchOptions);
+      },
+
+      /**
+       * Fetch the formats and return a promise that settles with the Backbone
+       * sync or error event.
+       * @param {object} [options] Options to pass to {@link ObjectFormats#fetch}
+       * @returns {Promise<ObjectFormats>} Promise resolving to this collection
+       * @since 0.0.0
+       */
+      fetchPromise(options) {
+        if (this.fetchingPromise) return this.fetchingPromise;
+        const listener = new Backbone.Model();
+        let resolveFetch;
+        let rejectFetch;
+        const promise = new Promise((resolve, reject) => {
+          resolveFetch = resolve;
+          rejectFetch = reject;
+        });
+        const done = () => {
+          listener.stopListening();
+          this.fetchingPromise = null;
+        };
+
+        this.fetchingPromise = promise;
+        listener.listenToOnce(this, "sync", () => {
+          const { lastFetchError } = this;
+          done();
+          if (lastFetchError) {
+            rejectFetch(lastFetchError);
+          } else {
+            resolveFetch(this);
+          }
+        });
+        listener.listenToOnce(this, "error", (_collection, response) => {
+          done();
+          rejectFetch(response);
+        });
+        try {
+          this.fetch(options);
+        } catch (error) {
+          done();
+          rejectFetch(error);
+        }
+
+        return promise;
       },
 
       /**
@@ -364,11 +481,20 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
         // If the collection is already parsed, just return it
         if (typeof response === "object") return response;
 
-        // Otherwise, parse it
-        const x2js = new X2JS();
-        const formats = x2js.xml_str2json(response);
-
-        return formats.objectFormatList.objectFormat;
+        try {
+          const x2js = new X2JS();
+          const formats = x2js.xml_str2json(response);
+          const objectFormats = formats?.objectFormatList?.objectFormat;
+          if (!objectFormats) {
+            throw new Error(
+              "Object formats response is missing its format list",
+            );
+          }
+          return objectFormats;
+        } catch (error) {
+          this.parseError = error;
+          return this.toJSON();
+        }
       },
 
       /**
@@ -382,7 +508,9 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
         if (!formatId) return formatId;
         return (
           FRIENDLY_FORMAT_NAMES[formatId] ||
-          this.findWhere({ formatId })?.get("formatName") ||
+          this.models
+            .find((format) => format.get("formatId") === formatId)
+            ?.get("formatName") ||
           formatId
         );
       },
@@ -411,16 +539,22 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
           models.length === 1 ? models[0].get("formatId") : null;
 
         const formatIdMedia = mt
-          ? this.findWhere({ formatId: mt })?.get("formatId") ||
-            singleFormatId(this.where({ mediaType: mt }))
+          ? this.models
+              .find((format) => format.get("formatId") === mt)
+              ?.get("formatId") ||
+            singleFormatId(
+              this.models.filter((format) => format.get("mediaType") === mt),
+            )
           : null;
         let formatIdExt = null;
         if (ext) {
           const preferredFormatId = PREFERRED_EXTENSION_FORMAT_IDS[ext];
           formatIdExt = preferredFormatId
-            ? this.findWhere({ formatId: preferredFormatId })?.get("formatId")
+            ? this.models
+                .find((format) => format.get("formatId") === preferredFormatId)
+                ?.get("formatId")
             : singleFormatId(
-                this.filter(
+                this.models.filter(
                   (format) =>
                     ValueUtilities.normalizeText(
                       format.get("extension"),
@@ -462,8 +596,64 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
           );
           if (matchedFormatType) return matchedFormatType;
         }
-        const format = this.findWhere({ formatId: this.getFormatId(props) });
+        const formatId = this.getFormatId(props);
+        const format = this.models.find(
+          (objectFormat) => objectFormat.get("formatId") === formatId,
+        );
         return format ? format.get("formatType") : null;
+      },
+
+      /**
+       * Determine the general display type for an object.
+       * @param {object} [props] Object format and provenance properties
+       * @returns {string} A value from {@link ObjectFormats#OBJECT_TYPES}
+       * @since 0.0.0
+       */
+      getType(props = {}) {
+        const instanceOfClass = props.prov_instanceOfClass;
+        if (typeof instanceOfClass === "undefined") {
+          if (props.prov_generated || props.prov_used) {
+            return OBJECT_TYPES.PROGRAM;
+          }
+        } else if (
+          instanceOfClass?.some((className) =>
+            className.includes(PROVONE_PROGRAM_CLASS),
+          )
+        ) {
+          return OBJECT_TYPES.PROGRAM;
+        }
+
+        const { formatId, formatType } = props;
+        if (OBJECT_TYPE_FORMAT_IDS.COLLECTION.includes(formatId)) {
+          return OBJECT_TYPES.COLLECTION;
+        }
+        if (OBJECT_TYPE_FORMAT_IDS.PORTAL.includes(formatId)) {
+          return OBJECT_TYPES.PORTAL;
+        }
+        if (formatType === FORMAT_TYPES.METADATA) {
+          return OBJECT_TYPES.METADATA;
+        }
+        if (OBJECT_TYPE_FORMAT_IDS.IMAGE.includes(formatId)) {
+          return OBJECT_TYPES.IMAGE;
+        }
+        if (OBJECT_TYPE_FORMAT_IDS.PDF.includes(formatId)) {
+          return OBJECT_TYPES.PDF;
+        }
+        if (OBJECT_TYPE_FORMAT_IDS.ANNOTATION.includes(formatId)) {
+          return OBJECT_TYPES.ANNOTATION;
+        }
+        return OBJECT_TYPES.DATA;
+      },
+
+      /**
+       * Check whether format properties identify a previewable image.
+       * @param {object} props Object format and provenance properties accepted
+       * by {@link ObjectFormats#getType}
+       * @returns {boolean} True when the object has an image display type
+       * @since 0.0.0
+       */
+      isImage(props) {
+        return this.getType(props) === OBJECT_TYPES.IMAGE;
       },
 
       /**
@@ -542,6 +732,8 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
     FRIENDLY_FORMAT_NAMES[formatId] ||
     FALLBACK_FORMAT_NAMES[formatId] ||
     formatId;
+
+  ObjectFormats.FRIENDLY_FORMAT_NAMES = FRIENDLY_FORMAT_NAMES;
 
   ObjectFormats.FALLBACK_FORMATS = FALLBACK_FORMATS;
 

@@ -5,6 +5,10 @@ define([
   "common/QueryService",
   "collections/ObjectFormats",
 ], ($, _, Backbone, QueryService, ObjectFormats) => {
+  const FALLBACK_OBJECT_FORMATS = new ObjectFormats();
+  const getObjectFormats = () =>
+    globalThis.MetacatUI?.objectFormats || FALLBACK_OBJECT_FORMATS;
+
   const DEFAULT_INFO_FIELDS = [
     "abstract",
     "id",
@@ -152,58 +156,12 @@ define([
       },
 
       /**
-       * Returns a plain-english version of the general format - either image,
-       * program, metadata, PDF, annotation or data
+       * Return the general display type for this object.
        * @returns {string} The type of this object, such as "image", "program",
        * "metadata", "PDF", "annotation" or "data"
        */
       getType() {
-        // The list of formatIds that are images
-        const imageIds = [
-          "image/gif",
-          "image/jp2",
-          "image/jpeg",
-          "image/png",
-          "image/svg xml",
-          "image/svg+xml",
-          "image/bmp",
-        ];
-        // The list of formatIds that are images
-        const pdfIds = ["application/pdf"];
-        const annotationIds = [
-          "http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html",
-        ];
-        const collectionIds = [
-          "https://purl.dataone.org/collections-1.0.0",
-          "https://purl.dataone.org/collections-1.1.0",
-        ];
-        const portalIds = [
-          "https://purl.dataone.org/portals-1.0.0",
-          "https://purl.dataone.org/portals-1.1.0",
-        ];
-
-        // Determine the type via provONE
-        const instanceOfClass = this.get("prov_instanceOfClass");
-        if (typeof instanceOfClass !== "undefined") {
-          const programClass = _.filter(
-            instanceOfClass,
-            (className) => className.indexOf("#Program") > -1,
-          );
-          if (typeof programClass !== "undefined" && programClass.length)
-            return "program";
-        } else if (this.get("prov_generated") || this.get("prov_used"))
-          return "program";
-
-        // Determine the type via file format
-        if (_.contains(collectionIds, this.get("formatId")))
-          return "collection";
-        if (_.contains(portalIds, this.get("formatId"))) return "portal";
-        if (this.get("formatType") === "METADATA") return "metadata";
-        if (_.contains(imageIds, this.get("formatId"))) return "image";
-        if (_.contains(pdfIds, this.get("formatId"))) return "PDF";
-        if (_.contains(annotationIds, this.get("formatId")))
-          return "annotation";
-        return "data";
+        return getObjectFormats().getType(this.toJSON());
       },
 
       /**
@@ -589,11 +547,7 @@ define([
             // Check if this is a metadata doc
             const formatId = $(data).find("formatid").text() || "";
             model.set("formatId", formatId);
-            const objectFormats =
-              typeof MetacatUI.objectFormats?.isMetadata === "function"
-                ? MetacatUI.objectFormats
-                : new ObjectFormats();
-            if (objectFormats.isMetadata({ formatId })) {
+            if (getObjectFormats().isMetadata({ formatId })) {
               model.set("formatType", "METADATA");
             }
 

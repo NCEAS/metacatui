@@ -5,7 +5,6 @@ define([
   "he",
   "collections/AccessPolicy",
   "collections/ObjectFormats",
-  "common/Utilities",
   "common/ValueUtilities",
   "md5",
   "common/QueryService",
@@ -16,11 +15,14 @@ define([
   he,
   AccessPolicy,
   ObjectFormats,
-  Utilities,
   ValueUtilities,
   md5,
   QueryService,
 ) => {
+  const FALLBACK_OBJECT_FORMATS = new ObjectFormats();
+  const getObjectFormats = () =>
+    globalThis.MetacatUI?.objectFormats || FALLBACK_OBJECT_FORMATS;
+
   /**
    * @class DataONEObject
    * @classdesc A DataONEObject represents a DataONE object, such as a data file,
@@ -173,9 +175,6 @@ define([
         // Find Member Node object that might be the authoritative MN
         // This is helpful when MetacatUI may be displaying content from multiple MNs
         this.setPossibleAuthMNs();
-
-        // Ensure the object formats are cached for this model's use
-        Utilities.awaitObjectFormats();
       },
 
       /**
@@ -1267,6 +1266,7 @@ define([
        * Get the object format identifier for this object
        */
       getFormatId() {
+        const formats = getObjectFormats();
         let formatId = "application/octet-stream"; // default to untyped data
         const objectFormats = {
           mediaTypes: [], // The list of potential formatIds based on mediaType matches
@@ -1275,7 +1275,7 @@ define([
         const fileName = this.get("fileName"); // the fileName for this object
         let ext; // The extension of the filename for this object
 
-        objectFormats.mediaTypes = MetacatUI.objectFormats.where({
+        objectFormats.mediaTypes = formats.where({
           formatId: this.get("mediaType"),
         });
         if (
@@ -1287,7 +1287,7 @@ define([
             fileName.lastIndexOf(".") + 1,
             fileName.length,
           );
-          objectFormats.extensions = MetacatUI.objectFormats.where({
+          objectFormats.extensions = formats.where({
             extension: ext,
           });
         }
@@ -2061,11 +2061,10 @@ define([
        * Creates a file name for this DataONEObject and updates the `fileName` attribute
        */
       setMissingFileName() {
-        let objectFormats;
         let filename;
         let extension;
 
-        objectFormats = MetacatUI.objectFormats.where({
+        const objectFormats = getObjectFormats().where({
           formatId: this.get("formatId"),
         });
         if (objectFormats.length > 0) {

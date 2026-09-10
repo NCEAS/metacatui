@@ -926,7 +926,7 @@ define([
           const container = this.findEntityDetailsContainer(member);
           if (!container) return;
 
-          if (this.getMemberFormatId(member).startsWith("image/")) {
+          if (member.isImage()) {
             this.insertImagePreview(member, container);
           }
 
@@ -941,15 +941,6 @@ define([
       },
 
       /**
-       * Get the format ID for a package member, preferring System Metadata.
-       * @param {DataPackageMember} member Package member
-       * @returns {string} The member's format ID, or an empty string
-       */
-      getMemberFormatId(member) {
-        return member?.sysMeta?.formatId || member?.formatId || "";
-      },
-
-      /**
        * Adapt a package member into a model shaped like a SolrResult for the
        * data download/view buttons, which consume the SolrResult API (`get()`,
        * `getInfo()`, `downloadWithCredentials()`).
@@ -961,6 +952,18 @@ define([
         return new SolrResult({
           ...member.toJSON(),
           id: member.pid,
+        });
+      },
+
+      /**
+       * Resolve a package member's public state with the package's shared
+       * SysMeta service.
+       * @param {DataPackageMember} member Package member
+       * @returns {Promise<boolean|null>} Public state, or null when unknown
+       */
+      async getMemberPublicState(member) {
+        return member.isPublic({
+          sysMetaService: this.dataPackage.getSysMetaService(),
         });
       },
 
@@ -996,17 +999,23 @@ define([
 
         let isPublic;
         try {
-          isPublic =
-            typeof member.isPublic === "function"
-              ? await member.isPublic()
-              : member.isPublic;
+          isPublic = await this.getMemberPublicState(member);
         } catch {
           return;
         }
         if (this.isClosed || this.signal?.aborted) return;
         if (isPublic === false) {
           try {
-            const blob = await new ObjectService().download(member.pid);
+            const objectService =
+              this.dataPackage?.getObjectService?.() ||
+              new ObjectService({
+                readBaseUrl:
+                  MetacatUI.appModel.get("objectServiceUrl") ||
+                  MetacatUI.appModel.get("resolveServiceUrl"),
+              });
+            const blob = await objectService.download(member.pid, {
+              signal: this.signal,
+            });
             if (this.isClosed || this.signal?.aborted) return;
             const objectUrl = window.URL.createObjectURL(blob);
             this.previewObjectUrls.add(objectUrl);
@@ -1032,10 +1041,7 @@ define([
 
         let isPublic = null;
         try {
-          isPublic =
-            typeof member.isPublic === "function"
-              ? await member.isPublic()
-              : member.isPublic;
+          isPublic = await this.getMemberPublicState(member);
         } catch {
           // Unknown access falls back to the credentialed download path.
         }

@@ -90,16 +90,17 @@ define([
     /**
      * Create a package member.
      * @param {object} [info] Member fields and editable state
+     * @param {ObjectFormats} [info.objectFormats] Format collection used for
+     * classification
      */
     constructor(info = {}) {
       this.pid = Values.normalizeText(info.pid || info.id || info.identifier);
       this.events = { ...Backbone.Events };
       this.sources = [];
       this.addSources(info.sources);
-      // Injected ObjectFormats collection used for synchronous format
-      // classification (getFormatType/isMetadata/etc.). Explicitly excluded
-      // from toJSON()/merge() so the collection is never serialized.
-      this.objectFormats = info.objectFormats || null;
+      // Package members receive their collection's shared formats. Standalone
+      // members use the built-in formats without starting a remote request.
+      this.objectFormats = info.objectFormats || FALLBACK_OBJECT_FORMATS;
       // Preserve Solr, ResourceMap, and View Service fields that package
       // table, viewer, and provenance paths may read directly.
       Object.entries(info).forEach(([key, value]) => {
@@ -603,7 +604,7 @@ define([
       // retain their explicit DataONE format ID.
       const formatId =
         blob instanceof File
-          ? (this.objectFormats || FALLBACK_OBJECT_FORMATS).getFormatId({
+          ? this.objectFormats.getFormatId({
               filename: blob.name,
               mediaType: blob.type,
             })
@@ -943,7 +944,7 @@ define([
      * @returns {DataPackageMember} This member
      */
     setObjectFormats(objectFormats) {
-      this.objectFormats = objectFormats || null;
+      this.objectFormats = objectFormats || FALLBACK_OBJECT_FORMATS;
       return this;
     }
 
@@ -1016,8 +1017,9 @@ define([
      */
     isMetadata() {
       const props = this.getFormatProperties();
-      const objectFormats = this.objectFormats || FALLBACK_OBJECT_FORMATS;
-      return objectFormats.isMetadata(props) || objectFormats.isEML(props);
+      return (
+        this.objectFormats.isMetadata(props) || this.objectFormats.isEML(props)
+      );
     }
 
     /**
@@ -1034,8 +1036,7 @@ define([
       ) {
         return false;
       }
-      const objectFormats = this.objectFormats || FALLBACK_OBJECT_FORMATS;
-      return objectFormats.isData(props);
+      return this.objectFormats.isData(props);
     }
 
     /**
@@ -1044,10 +1045,9 @@ define([
      */
     isResourceMap() {
       const props = this.getFormatProperties();
-      const objectFormats = this.objectFormats || FALLBACK_OBJECT_FORMATS;
       return props.formatId
-        ? objectFormats.isResourceMap(props)
-        : objectFormats.isResource(props);
+        ? this.objectFormats.isResourceMap(props)
+        : this.objectFormats.isResource(props);
     }
 
     /**
@@ -1055,8 +1055,16 @@ define([
      * @returns {boolean} Whether the member is EML
      */
     isEML() {
-      const objectFormats = this.objectFormats || FALLBACK_OBJECT_FORMATS;
-      return objectFormats.isEML(this.getFormatProperties());
+      return this.objectFormats.isEML(this.getFormatProperties());
+    }
+
+    /**
+     * Check whether the member has a previewable image format.
+     * @returns {boolean} Whether the member can use an image preview
+     * @since 0.0.0
+     */
+    isImage() {
+      return this.objectFormats.isImage(this.getFormatProperties());
     }
 
     /**
@@ -1069,12 +1077,13 @@ define([
 
     /**
      * Check whether the member's access policy is public.
+     * @param {object} [options] Options forwarded to `fetchSysMeta`
      * @returns {Promise<boolean|null>} Public state, or null when unknown
      */
-    async isPublic() {
+    async isPublic(options = {}) {
       if (!this.sysMeta) {
         try {
-          await this.fetchSysMeta();
+          await this.fetchSysMeta(options);
         } catch (error) {
           if (error?.status === 401 || error?.status === 403) return false;
           return null;

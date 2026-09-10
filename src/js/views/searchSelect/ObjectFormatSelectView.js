@@ -1,7 +1,8 @@
-define(["views/searchSelect/SearchSelectView", "common/Utilities"], (
-  SearchSelect,
-  Utilities,
-) => {
+define([
+  "views/searchSelect/SearchSelectView",
+  "collections/ObjectFormats",
+  "common/Utilities",
+], (SearchSelect, ObjectFormats, Utilities) => {
   /**
    * @class ObjectFormatSelect
    * @classdesc A select interface that allows the user to search for and
@@ -46,10 +47,9 @@ define(["views/searchSelect/SearchSelectView", "common/Utilities"], (
           const objectFormats = await Utilities.awaitObjectFormats();
           formats = objectFormats?.toJSON() || [];
         } catch (error) {
-          /* eslint-disable no-console */
-          console.error("Error fetching object formats:", error);
-          this.updateOptions([]);
-          return;
+          // Use the built-in formats when the remote request fails.
+          const objectFormats = new ObjectFormats();
+          formats = objectFormats?.toJSON() || [];
         }
 
         const options = formats

@@ -932,7 +932,6 @@ define([
           fileTableMetricsByPid: null,
           metricsModel: null,
           packageDownloadUrl: "",
-          getFriendlyFormatName: sandbox.stub().returns(""),
         };
 
         const rows = MetadataView.prototype.getFileTableRows.call(context);
@@ -953,7 +952,6 @@ define([
           metricsModel: null,
           packageDownloadUrl: "",
           packageDownloadUnavailableReason: "stale reason",
-          getFriendlyFormatName: sandbox.stub().returns(""),
           getFileTableRows: MetadataView.prototype.getFileTableRows,
         };
 
@@ -1106,7 +1104,6 @@ define([
           packageDownloadUrl: "",
           fileTableDownloadStates: new Map(),
           getFileTableRows: MetadataView.prototype.getFileTableRows,
-          getFriendlyFormatName: () => "",
           isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
           isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
           createDataDetailsModel: sandbox.stub().returns(downloadModel),
@@ -1179,7 +1176,6 @@ define([
           packageDownloadUrl: "",
           fileTableDownloadStates: new Map(),
           getFileTableRows: MetadataView.prototype.getFileTableRows,
-          getFriendlyFormatName: () => "",
           isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
           isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
           createDataDetailsModel: sandbox.stub().returns(downloadModel),
@@ -1305,7 +1301,6 @@ define([
           metricsModel: null,
           packageDownloadUrl: "",
           getFileTableRows: MetadataView.prototype.getFileTableRows,
-          getFriendlyFormatName: sandbox.stub().returns(""),
           stopListening: sandbox.stub(),
           listenTo: sandbox.stub(),
           $: (selector) => $(el).find(selector),
@@ -1316,7 +1311,6 @@ define([
           teardownFileTableScrollIndicators:
             MetadataView.prototype.teardownFileTableScrollIndicators,
           getFileListingNotice: MetadataView.prototype.getFileListingNotice,
-          ensureFriendlyFormatLabels: sandbox.stub(),
           confirmPackageDownloadAll: sandbox.stub(),
           loadNestedPackageTitles: sandbox.stub(),
           enrichFileTableMemberDetails: sandbox.stub(),
@@ -1363,7 +1357,6 @@ define([
         };
         view.subviews = [];
         sandbox.stub(view, "setupFileTableScrollIndicators");
-        sandbox.stub(view, "ensureFriendlyFormatLabels");
         sandbox.stub(view, "loadNestedPackageTitles");
         sandbox.stub(view, "enrichFileTableMemberDetails");
         sandbox.stub(view, "loadFileTableMetrics");

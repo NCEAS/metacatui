@@ -47,6 +47,7 @@ define([
   const DEFAULT_EDITOR_PACKAGE_MEMBER_LIMIT = 700;
   const INDEX_MANIFEST_ROW_LIMIT = 1000;
   const EDITOR_FILE_TABLE_ROOT_ROW_ID = "dataset:editor-root";
+  const FALLBACK_OBJECT_FORMATS = new ObjectFormats();
   // A draft re-serializes the entire EML, which blocks the main thread
   // roughly linearly in document size. Coalesce bursts of change events into
   // one trailing save, and skip documents so large that producing the draft
@@ -424,8 +425,6 @@ define([
 
       /** @inheritdoc */
       initialize(options = {}) {
-        // Ensure the object formats are cached for the editor's use
-        Utilities.awaitObjectFormats();
         this.pid = options?.pid || null;
         this.fileTableEditInProgress = false;
         this.fileUploadProgressByPid = {};
@@ -826,6 +825,7 @@ define([
           this.pid;
         MetacatUI.rootDataPackage = null;
         const dataPackage = new DataPackage({
+          objectFormats: MetacatUI.objectFormats,
           versionTrackerOptions: { metaServiceUrl },
         });
         this.listenTo(dataPackage.events, "load:progress", (progress) => {
@@ -1165,6 +1165,7 @@ ${supportDetails}`;
         });
 
         MetacatUI.rootDataPackage = new DataPackage({
+          objectFormats: MetacatUI.objectFormats,
           members: [
             {
               pid: resourceMapPid,
@@ -2672,7 +2673,8 @@ ${supportDetails}`;
         // from the event
         if (typeof model.get !== "function") return;
         const formatId = model.get("formatId");
-        const objectFormats = MetacatUI.objectFormats || new ObjectFormats();
+        const objectFormats =
+          MetacatUI.objectFormats || FALLBACK_OBJECT_FORMATS;
         const editableFormats = MetacatUI.appModel.get("editableFormats") || [];
         const isEditableFormat =
           !editableFormats.length || editableFormats.includes(formatId);

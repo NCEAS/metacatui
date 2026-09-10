@@ -8,7 +8,7 @@ define([
   "common/QueryService",
   "common/ErrorUtilities",
   "common/UrlUtilities",
-  "common/Utilities",
+  "collections/ObjectFormats",
   "common/ValueUtilities",
 ], (
   Backbone,
@@ -20,9 +20,11 @@ define([
   QueryService,
   ErrorUtilities,
   UrlUtilities,
-  Utilities,
+  ObjectFormats,
   ValueUtilities,
 ) => {
+  const OBJECT_FORMATS = new ObjectFormats();
+
   // Index field names
   const FIELDS = Object.freeze({
     RM: "resourceMap",
@@ -669,19 +671,18 @@ define([
       if (idMatch.length > 1) throw new Error(STATUS.multiResultSamePid);
       if (idMatch.length === 1) {
         const doc = idMatch[0];
-        const objectFormats = await Utilities.awaitObjectFormats();
         const formatProps = {
           formatId: doc[FIELDS.FORMAT_ID],
           formatType: doc[FIELDS.FORMAT_TYPE],
         };
-        const formatType = objectFormats.getFormatType(formatProps);
+        const formatType = OBJECT_FORMATS.getFormatType(formatProps);
         meta.formatType = formatType;
         meta.indexMatch = doc;
-        if (objectFormats.isData(formatProps)) {
+        if (OBJECT_FORMATS.isData(formatProps)) {
           meta.isData = true;
-        } else if (objectFormats.isMetadata(formatProps)) {
+        } else if (OBJECT_FORMATS.isMetadata(formatProps)) {
           meta.isMetadata = true;
-        } else if (objectFormats.isResourceMap(formatProps)) {
+        } else if (OBJECT_FORMATS.isResourceMap(formatProps)) {
           meta.isResourceMap = true;
           result.rm = doc[FIELDS.ID];
         }

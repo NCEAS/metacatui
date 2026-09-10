@@ -717,7 +717,6 @@ define([
           ],
           "resource_map_1",
         );
-        sandbox.stub(DataPackageLoader, "ensureObjectFormats").resolves();
         return pkg;
       }
 
@@ -848,7 +847,6 @@ define([
       let sandbox;
       beforeEach(() => {
         sandbox = sinon.createSandbox();
-        sandbox.stub(Utilities, "awaitObjectFormats").resolves([]);
       });
       afterEach(() => {
         sandbox.restore();
@@ -3015,13 +3013,9 @@ define([
 
     describe("resolveFromPid() field assignment", () => {
       let sandbox;
-      let awaitObjectFormats;
       let trackMissingResourceMap;
       beforeEach(() => {
         sandbox = sinon.createSandbox();
-        awaitObjectFormats = sandbox
-          .stub(Utilities, "awaitObjectFormats")
-          .resolves([]);
         trackMissingResourceMap = sandbox.stub(
           ResourceMapResolver.prototype,
           "trackMissingResourceMap",
@@ -3162,7 +3156,11 @@ define([
       it("does not recognize an unindexed non-ORE resource as a resource map", async () => {
         const formatId =
           "http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html";
-        const pkg = new DataPackage();
+        const pkg = new DataPackage({
+          objectFormats: new ObjectFormats([
+            { formatId, formatType: "RESOURCE" },
+          ]),
+        });
         sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
           pid: "annotation.1",
           rm: null,
@@ -3174,8 +3172,6 @@ define([
             formatId,
           }),
         );
-        awaitObjectFormats.resolves([{ formatId, formatType: "RESOURCE" }]);
-
         const result = await pkg.resolveFromPid("annotation.1");
 
         result.success.should.equal(false);
@@ -3251,7 +3247,9 @@ define([
         },
       ].forEach(({ label, formatId, formatType, resultField }) => {
         it(`classifies unindexed ${label} from its format ID`, async () => {
-          const pkg = new DataPackage();
+          const pkg = new DataPackage({
+            objectFormats: new ObjectFormats([{ formatId, formatType }]),
+          });
           sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
             pid: `${label}.1`,
             rm: null,
@@ -3263,8 +3261,6 @@ define([
               formatId,
             }),
           );
-          awaitObjectFormats.resolves([{ formatId, formatType }]);
-
           const result = await pkg.resolveFromPid(`${label}.1`);
 
           result[resultField].should.equal(true);

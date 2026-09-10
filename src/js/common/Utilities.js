@@ -1,11 +1,10 @@
 "use strict";
 
-define([
-  "backbone",
-  "collections/ObjectFormats",
-  "common/ValueUtilities",
-  "md5",
-], (Backbone, ObjectFormats, ValueUtilities, md5) => {
+define(["collections/ObjectFormats", "common/ValueUtilities", "md5"], (
+  ObjectFormats,
+  ValueUtilities,
+  md5,
+) => {
   const DEFAULT_MAX_CONCURRENT = 4;
   const KIBIBYTE = 1024;
   const MEBIBYTE = KIBIBYTE * 1024;
@@ -676,46 +675,17 @@ define([
      */
     async awaitObjectFormats() {
       const app = await Utilities.awaitMetacatUI();
-      if (!app.objectFormats) app.objectFormats = new ObjectFormats();
-      const formats = app.objectFormats;
-      if (formats.hasRemoteFormats || formats.isFetching) return formats;
-
-      const listener = new Backbone.Model();
-      const finish = () => {
-        listener.stopListening();
-        formats.isFetching = false;
-      };
-
-      listener.listenToOnce(formats, "sync", () => {
-        Object.assign(formats, {
-          hasRemoteFormats: true,
-          usingFallback: false,
-          lastFetchError: null,
+      if (!app.objectFormats) {
+        app.objectFormats = new ObjectFormats(undefined, {
+          formatsServiceUrl: Utilities.getMetacatUIProperty(
+            "formatsServiceUrl",
+            app,
+          ),
         });
-        finish();
-      });
-      listener.listenToOnce(formats, "error", (_collection, response) => {
-        const errText =
-          response?.responseText || response?.status || "Unknown error";
-        formats.lastFetchError = new Error(
-          `Failed to fetch object formats: ${errText}`,
-        );
-        finish();
-      });
-
-      if (typeof formats.fetch !== "function") {
-        finish();
-        return formats;
       }
-
-      formats.isFetching = true;
-      try {
-        formats.fetch();
-      } catch (error) {
-        formats.lastFetchError = error;
-        finish();
-      }
-
+      const formats = app.objectFormats;
+      if (formats.hasRemoteFormats) return formats;
+      await formats.fetchPromise();
       return formats;
     },
   };

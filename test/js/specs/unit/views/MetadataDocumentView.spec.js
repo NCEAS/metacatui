@@ -50,6 +50,7 @@ define([
       let originalMetacatUI;
       let originalCreateObjectURL;
       let originalRevokeObjectURL;
+      let dataPackage;
       let sandbox;
 
       beforeEach(() => {
@@ -75,6 +76,10 @@ define([
 
         window.URL.createObjectURL = sandbox.stub().returns("blob:preview");
         window.URL.revokeObjectURL = sandbox.stub();
+        dataPackage = {
+          events: { ...Backbone.Events },
+          getSysMetaService: sandbox.stub().returns({}),
+        };
       });
 
       afterEach(() => {
@@ -91,11 +96,12 @@ define([
           .resolves(blob);
         const view = new MetadataDocumentView({
           el: document.createElement("div"),
+          dataPackage,
         });
         const container = $("<section><label>Image</label></section>");
         const member = {
           pid: "image.1",
-          isPublic: false,
+          isPublic: sandbox.stub().returns(false),
         };
 
         await view.insertImagePreview(member, container);
@@ -121,9 +127,10 @@ define([
           );
         const view = new MetadataDocumentView({
           el: document.createElement("div"),
+          dataPackage,
         });
         const previewPromise = view.insertImagePreview(
-          { pid: "image.1", isPublic: false },
+          { pid: "image.1", isPublic: sandbox.stub().returns(false) },
           $("<section></section>"),
         );
         await Promise.resolve();
@@ -141,6 +148,7 @@ define([
         const download = sandbox.stub(ObjectService.prototype, "download");
         const view = new MetadataDocumentView({
           el: document.createElement("div"),
+          dataPackage,
         });
         const previewPromise = view.insertImagePreview(
           {
@@ -164,6 +172,7 @@ define([
         const download = sandbox.stub(ObjectService.prototype, "download");
         const view = new MetadataDocumentView({
           el: document.createElement("div"),
+          dataPackage,
         });
 
         await view.insertImagePreview(

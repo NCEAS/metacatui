@@ -339,7 +339,9 @@ define([
         // renderId guards cover legacy async work that cannot be cancelled.
         this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
 
-        const dataPackage = new DataPackage();
+        const dataPackage = new DataPackage({
+          objectFormats: MetacatUI.objectFormats,
+        });
         this.dataPackage = dataPackage;
         this.listenTo(dataPackage.events, "load:progress", (progress) => {
           if (!this.isCurrentRender(renderId)) return;
@@ -1678,7 +1680,11 @@ define([
           packageDownloadUrl: this.packageDownloadUrl,
           packageDownloadUnavailableReason:
             this.packageDownloadUnavailableReason,
-          formatName: this.getFriendlyFormatName,
+          formatName: (formatId) => {
+            const formatName =
+              dataPackage.objectFormats?.getFriendlyFormat?.(formatId);
+            return formatName && formatName !== formatId ? formatName : "";
+          },
           showMetrics: Boolean(this.metricsModel),
           getRowMetric: metricsByPid
             ? FileTableMetrics.getRowMetric(metricsByPid)
@@ -1694,20 +1700,6 @@ define([
           }
         });
         return rows;
-      },
-
-      /**
-       * Resolve a human readable format name from the DataONE object format
-       * list, used for the file table's Type column.
-       * @param {string} formatId DataONE format identifier
-       * @returns {string} Friendly format name, or "" when unknown
-       * @since 0.0.0
-       */
-      getFriendlyFormatName(formatId) {
-        if (!formatId) return "";
-        const formatName =
-          MetacatUI.objectFormats?.getFriendlyFormat?.(formatId);
-        return formatName && formatName !== formatId ? formatName : "";
       },
 
       /**
@@ -1783,9 +1775,6 @@ define([
         const packageTableContainer = this.$("#data-package-container");
         $(packageTableContainer).children(`.${CLASS_NAMES.loading}`).remove();
 
-        // Friendly Type labels need the object-format list; fill them in once
-        // it is loaded. Per-file metrics fill in their column when they arrive.
-        this.ensureFriendlyFormatLabels(renderOptions);
         this.loadNestedPackageTitles(renderOptions);
         this.enrichFileTableMemberDetails(renderOptions);
         this.loadFileTableMetrics();
@@ -2122,37 +2111,6 @@ define([
         } catch (error) {
           if (isAbortError(error) || !isCurrentTable()) return;
           console.warn("Nested package titles could not be loaded:", error);
-        }
-      },
-
-      /**
-       * Ensure the DataONE object format list is loaded so the file table's
-       * Type column can show friendly format names, then rerender the rows.
-       * @param {object} [options] Render options
-       * @returns {Promise<void>}
-       * @since 0.0.0
-       */
-      async ensureFriendlyFormatLabels(options = {}) {
-        const renderOptions = this.getRenderOptions(options);
-        const { signal } = renderOptions;
-        const { dataPackage, fileTableView } = this;
-        const isCurrentTable = () =>
-          this.isCurrentFileTable(dataPackage, fileTableView, renderOptions);
-        try {
-          await Utilities.awaitObjectFormats();
-        } catch (error) {
-          if (isAbortError(error)) return;
-          console.warn("Object formats could not be loaded:", error);
-          return;
-        }
-        if (signal?.aborted) return;
-        if (!isCurrentTable()) return;
-        if (fileTableView) {
-          await this.mergeCurrentFileTableRows(
-            dataPackage,
-            fileTableView,
-            renderOptions,
-          );
         }
       },
 

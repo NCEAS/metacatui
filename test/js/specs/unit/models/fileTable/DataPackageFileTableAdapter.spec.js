@@ -131,7 +131,6 @@ define([
         result.attemptedPids.should.deep.equal([
           "placeholder.1",
           "missing-size.1",
-          "missing-format.1",
           "missing-display.1",
           "complete-unindexed.1",
         ]);

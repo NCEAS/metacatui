@@ -6,21 +6,18 @@
 define([
   "common/QueryService",
   "common/ErrorUtilities",
-  "common/Utilities",
   "common/ValueUtilities",
   "models/resourceMap/ResourceMapResolver",
   "collections/ObjectFormats",
 ], (
   QueryService,
   ErrorUtilities,
-  Utilities,
   Values,
   ResourceMapResolver,
   ObjectFormats,
 ) => {
   const DEFAULT_ROWS = 1000;
   const LOAD_PHASES = Object.freeze({
-    OBJECT_FORMATS: "objectFormats",
     RESOLVE: "resolve",
     RESOURCE_MAP_MEMBERSHIP: "resourceMapMembership",
     RESOURCE_MAP_DOWNLOAD: "resourceMapDownload",
@@ -158,10 +155,13 @@ define([
         merge: true,
         sources: ["sysMeta"],
       });
-      const objectFormats =
-        await DataPackageLoader.ensureObjectFormats(dataPackage);
-      throwIfAborted(signal, "Data package resolution cancelled");
-      const formatType = objectFormats.getFormatType(sysMeta);
+      const { objectFormats } = dataPackage;
+      let formatType = objectFormats.getFormatType(sysMeta);
+      if (!formatType && objectFormats.fetchingPromise) {
+        await objectFormats.fetchingPromise.catch(() => objectFormats);
+        throwIfAborted(signal, "Data package resolution cancelled");
+        formatType = objectFormats.getFormatType(sysMeta);
+      }
       result.type = formatType || null;
       result.isData = formatType === FORMAT_TYPES.DATA;
       result.isMetadata = formatType === FORMAT_TYPES.METADATA;
@@ -450,27 +450,6 @@ define([
     },
 
     /**
-     * Ensure a DataONE object format list is available and inject it into the
-     * member collection so members can classify their format type synchronously.
-     * @param {DataPackage} dataPackage Package being loaded
-     * @returns {Promise<ObjectFormats>} The ObjectFormats collection
-     */
-    async ensureObjectFormats(dataPackage) {
-      if (!dataPackage.objectFormats) {
-        const objectFormats = await Utilities.awaitObjectFormats();
-        if (typeof objectFormats?.getFormatType === "function") {
-          dataPackage.objectFormats = objectFormats;
-        } else if (Array.isArray(objectFormats) && objectFormats.length) {
-          dataPackage.objectFormats = new ObjectFormats(objectFormats);
-        } else {
-          dataPackage.objectFormats = new ObjectFormats();
-        }
-        dataPackage.members.setObjectFormats(dataPackage.objectFormats);
-      }
-      return dataPackage.objectFormats;
-    },
-
-    /**
      * Resolve the single root resource map for an input PID. This seeds only
      * the input object and resolved resource map shell; package manifests are
      * loaded separately.
@@ -484,13 +463,6 @@ define([
       const { signal } = options;
       const inputId = Values.requireNonEmptyString(pid, ERROR_MSGS.MISSING_PID);
       dataPackage.inputId = inputId;
-      await DataPackageLoader.reportLoadProgress(
-        dataPackage,
-        LOAD_PHASES.OBJECT_FORMATS,
-        { inputId },
-      );
-      await DataPackageLoader.ensureObjectFormats(dataPackage);
-      throwIfAborted(signal, "Data package resolution cancelled");
       await DataPackageLoader.reportLoadProgress(
         dataPackage,
         LOAD_PHASES.RESOLVE,
@@ -760,7 +732,6 @@ define([
         LOAD_PHASES.INDEX_MANIFEST,
         { rootResourceMapPid: resourceMapPid },
       );
-      await DataPackageLoader.ensureObjectFormats(dataPackage);
       throwIfAborted(signal, "Package index manifest load cancelled");
       const query = [
         QueryService.getQueryPart("resourceMap", resourceMapPid),
@@ -884,7 +855,6 @@ define([
         LOAD_PHASES.RESOURCE_MAP_DOWNLOAD,
         { rootResourceMapPid: resourceMapPid },
       );
-      await DataPackageLoader.ensureObjectFormats(dataPackage);
       throwIfAborted(signal, "Resource map manifest load cancelled");
       let resourceMap = resourceMapMember.objectModel;
       if (!resourceMap) {

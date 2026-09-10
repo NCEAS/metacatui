@@ -47,8 +47,6 @@ define([
   const { DEFAULT_MAX_CONCURRENT, processConcurrently } = Utilities;
   const { throwIfAborted } = ErrorUtilities;
   const LOAD_PROGRESS_MESSAGES = Object.freeze({
-    [DataPackageLoader.LoadPhases.OBJECT_FORMATS]:
-      "Loading file format information...",
     [DataPackageLoader.LoadPhases.RESOLVE]:
       "Find the files that belong to this package...",
     [DataPackageLoader.LoadPhases.RESOURCE_MAP_MEMBERSHIP]:
@@ -118,9 +116,8 @@ define([
       this.type = "DataPackage";
       this.events = { ...Backbone.Events };
       // Loaded ObjectFormats collection, injected into members so they can
-      // classify their format type synchronously. Loaded lazily (and once) by
-      // DataPackageLoader before any member manifest is parsed.
-      this.objectFormats = options.objectFormats || null;
+      // classify their format type synchronously.
+      this.objectFormats = options.objectFormats || new ObjectFormats();
       this.members = new DataPackageMembers(this.objectFormats, this.events);
       // For storing the PID or SID originally passed to resolveFromPid()
       this.inputId = null;
