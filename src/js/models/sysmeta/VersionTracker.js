@@ -26,6 +26,7 @@ define([
    * the version chain to cache. Defaults to 200 hops.
    */
   const DEFAULT_MAX_CHAIN_HOPS = 200;
+  const PRIVATE_STATUSES = Object.freeze([401, 403]);
 
   /**
    * Get the field name for the next or previous version link.
@@ -282,7 +283,7 @@ define([
             status = error.status;
             adjPid = null;
             // Stop if we hit an error fetching the adjacent version
-            if (error.status === 401) {
+            if (PRIVATE_STATUSES.includes(error.status)) {
               record.endIsPrivate = true;
             } else if (error.status === 404) {
               record.endNotFound = true;
@@ -318,7 +319,10 @@ define([
             if (ErrorUtilities.isAbortError(error)) {
               throw error;
             }
-            if (error?.status !== 401 && error?.status !== 404) {
+            if (
+              !PRIVATE_STATUSES.includes(error?.status) &&
+              error?.status !== 404
+            ) {
               throw error;
             }
             // Conflict detection is best-effort; keep traversal and notifications
@@ -595,7 +599,8 @@ define([
      * @param {string} pid The PID whose chain is being updated.
      * @param {string|null} foundPid The PID that was found, or null.
      * @param {number} steps Offset from the original PID (positive/negative).
-     * @param {404|401|null} [error] Status code explaining why foundPid is null.
+     * @param {404|403|401|null} [error] Status code explaining why foundPid is
+     * null
      * @param {object} [options] Options passed to SysMetaService.download.
      * @private
      * @fires Backbone.Events#versionFound
@@ -606,11 +611,15 @@ define([
       let sysMeta = null;
 
       // If we have the SysMeta cached for the foundPid, get it
-      if (foundPid && !errors.includes(404) && !errors.includes(401)) {
+      if (
+        foundPid &&
+        !errors.includes(404) &&
+        !errors.some((status) => PRIVATE_STATUSES.includes(status))
+      ) {
         try {
           sysMeta = await this.getSysMeta(foundPid, options);
         } catch (e) {
-          if (e.status === 404 || e.status === 401) {
+          if (e.status === 404 || PRIVATE_STATUSES.includes(e.status)) {
             errors.push(e.status);
             sysMeta = new SysMetaService.SystemMetadata({
               identifier: foundPid,

@@ -10,6 +10,7 @@ define([
   "models/dataPackage/DataPackageRecovery",
   "models/dataPackage/UploadRecoveryStore",
   "common/QueryService",
+  "common/DateUtilities",
   "common/ErrorUtilities",
   "common/Utilities",
   "common/ValueUtilities",
@@ -40,6 +41,7 @@ define([
   DataPackageRecovery,
   UploadRecoveryStore,
   QueryService,
+  DateUtilities,
   ErrorUtilities,
   Utilities,
   ValueUtilities,
@@ -105,6 +107,7 @@ define([
   const FILE_LISTING_STATES = {
     ambiguous: "ambiguousListing",
     limited: "limitedListing",
+    newerVersionUnavailable: "newerVersionUnavailable",
     permissionUnavailable: "permissionUnavailable",
     recoverable: "recoverableLimitedListing",
     serverUnavailable: "serverUnavailable",
@@ -117,7 +120,7 @@ define([
     back: "Back",
     backToSearch: " Back to search",
     chooseOneToView: " Choose one to view:",
-    choosePackageToViewFiles: " Choose a package to view its files:",
+    chooseFileListToView: " Choose a file list to view:",
     errorRenderingMetadataView(error) {
       return `Error rendering metadata view. ${error?.message || String(error)}`;
     },
@@ -130,6 +133,8 @@ define([
         "More than one file listing is associated with this dataset. Only the metadata document is shown.",
       [FILE_LISTING_STATES.limited]:
         "A full file listing is not available for this dataset.",
+      [FILE_LISTING_STATES.newerVersionUnavailable]:
+        "A newer file list exists but is not accessible. Showing the newest file list you can access.",
       [FILE_LISTING_STATES.permissionUnavailable]:
         "Permission is required to view the file list for this dataset. Log-in with an account that has access to see the complete file listing.",
       // Public-facing note for an incomplete listing without implying the dataset is broken.
@@ -170,11 +175,10 @@ define([
     },
     multipleResourceMapsHtml(items) {
       return (
-        `<h4>This dataset could not be resolved to a single data package.</h4>` +
-        `<p>The metadata is linked to more than one data package and we ` +
-        `could not determine which is current.${
-          items ? MESSAGES.choosePackageToViewFiles : ""
-        }</p>${items ? `<ul>${items}</ul>` : ""}`
+        `<h4>This dataset has more than one file list.</h4>` +
+        `<p>The metadata is included in multiple data packages with different ` +
+        `file lists.${items ? MESSAGES.chooseFileListToView : ""}</p>` +
+        `${items ? `<ul>${items}</ul>` : ""}`
       );
     },
     noChangesToSave: "There are no changes to save.",
@@ -817,9 +821,8 @@ define([
       },
 
       /**
-       * Handle metadata that is linked to multiple resource maps that the
-       * resolver could not narrow to one current package. Lists each candidate
-       * with its /view/ route rather than choosing one.
+       * Handle metadata that is linked to multiple unrelated resource maps.
+       * Lists each candidate with its upload time and /view/ route.
        * @param {object} result Resolution result from resolveFromPid
        * @param {object} [options] Options
        * @param {boolean} [options.scoped] When true, metadata is already on
@@ -830,13 +833,24 @@ define([
        */
       showMultipleResourceMaps(result, { scoped = true } = {}) {
         const candidates = result?.candidateResourceMapPids || [];
+        const dates = result?.candidateResourceMapDates || {};
         const items = candidates
-          .map(
-            (pid) =>
+          .map((pid) => {
+            const uploaded = dates[pid]
+              ? DateUtilities.toLocalTimestampWithZone(dates[pid])
+              : null;
+            const uploadedLabel = uploaded
+              ? `Uploaded ${uploaded}`
+              : "Upload time unavailable";
+            return (
               `<li><a href="${MetacatUI.root}/view/${encodeURIComponent(
                 pid,
-              )}">${Utilities.encodeHTML(pid)}</a></li>`,
-          )
+              )}">${Utilities.encodeHTML(pid)}</a> ` +
+              `<span class="muted">${Utilities.encodeHTML(
+                uploadedLabel,
+              )}</span></li>`
+            );
+          })
           .join("");
         const msg = MESSAGES.multipleResourceMapsHtml(items);
 
@@ -907,6 +921,9 @@ define([
           (await this.hasRecoverablePackageRecord(options))
         ) {
           return FILE_LISTING_STATES.recoverable;
+        }
+        if (result?.newerResourceMapUnavailable) {
+          return FILE_LISTING_STATES.newerVersionUnavailable;
         }
         if (this.resourceMap) return null;
         if (result?.multipleRMs) return FILE_LISTING_STATES.ambiguous;
@@ -1027,8 +1044,8 @@ define([
 
       /**
        * Determine whether provenance may be edited. Provenance editing requires
-       * write access to the resource map and a resource map that is not
-       * archived; it must not be inferred from metadata write permission.
+       * write access to a current, unarchived resource map; it must not be
+       * inferred from metadata write permission.
        * @param {object} [options] Render options
        * @returns {Promise<boolean>} Whether provenance editing is allowed
        * @since 0.0.0
@@ -1038,16 +1055,15 @@ define([
         const { renderId, signal } = renderOptions;
         const rmArchived = this.resourceMap?.archived === true;
         const { dataPackage } = this;
-        if (!dataPackage) return false;
+        this.canEditProvenance = false;
+        if (!dataPackage || rmArchived) return false;
 
         const editBlockers = [
           ...(this.resourceMapEditBlockers || []),
           ...(dataPackage.getResourceMapModel()?.getEditBlockers() || []),
         ];
-        if (editBlockers.length) {
-          this.canEditProvenance = false;
-          return false;
-        }
+        if (editBlockers.length) return false;
+
         let canWriteRM = false;
         try {
           canWriteRM = await dataPackage.checkResourceMapWritePermission({
@@ -1061,7 +1077,29 @@ define([
           console.error("Error checking resource map write permission:", error);
         }
         if (!this.isCurrentRender(renderId)) return false;
-        this.canEditProvenance = canWriteRM === true && !rmArchived;
+        if (canWriteRM !== true) return false;
+
+        const resourceMapPid = dataPackage.getRootResourceMapMember()?.pid;
+        if (!resourceMapPid) return false;
+        try {
+          const [currentResourceMapPid] = await dataPackage
+            .getVersionTracker()
+            .getLatestVersions([resourceMapPid], { signal });
+          if (
+            !this.isCurrentRender(renderId) ||
+            currentResourceMapPid !== resourceMapPid
+          ) {
+            return false;
+          }
+        } catch (error) {
+          if (isAbortError(error) || !this.isCurrentRender(renderId)) {
+            return false;
+          }
+          console.error("Error checking current Resource Map version:", error);
+          return false;
+        }
+
+        this.canEditProvenance = true;
         return this.canEditProvenance;
       },
 

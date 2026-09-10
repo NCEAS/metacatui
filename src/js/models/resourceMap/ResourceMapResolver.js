@@ -54,8 +54,7 @@ define([
     smMiss: "Resource map pid not found by walking sysmeta",
     guessMiss: "Resource map pid not found by guessing",
     multiRMMiss:
-      "Multiple resource maps found in index, but could not resolve to a single RM." +
-      " They are either not versions of each other and/or are all are obsoleted.",
+      "Multiple resource maps found in index, but no single package could be selected.",
     // special cases
     pidIsSeriesId: "PID is a series ID, not an object PID",
     noPidForSeriesId: "PID not found for series ID",
@@ -302,8 +301,8 @@ define([
         resolutionMeta.rms || [],
       );
       if (rmCandidates.length > 1) {
-        // Multiple resource maps found. If they are all versions of each other
-        // and one is not yet obsoleted, then that is the one we want.
+        // Prefer the newest accessible candidate when all matches belong to
+        // one Resource Map version chain.
         const multiResult = await this.multiRMCheck(rmCandidates, options);
         const multiMeta = {
           ...resolutionMeta,
@@ -317,8 +316,8 @@ define([
             multipleRMsResolvedToSingleRoot: true,
           });
         }
-        // If not found, then continue with the resolution process
-        this.status(pid, STATUS.multiRMMiss, null, multiMeta);
+        // Do not let a later strategy silently pick one of several packages.
+        return this.status(pid, STATUS.multiRMMiss, null, multiMeta);
       }
 
       this.status(pid, STATUS.indexMiss, null, resolutionMeta);
@@ -536,8 +535,8 @@ define([
     /**
      * When 2 or more resource maps are found in the index for a PID, then this
      * method is called to check if they are all versions of each other. If so,
-     * it returns the most recent resource map PID, but only if that PID is not
-     * obsoleted.
+     * it returns the newest accessible candidate. A newer Resource Map that no
+     * longer contains the requested object is not a candidate.
      * @param {Array<string>} rms An array of resource map PIDs to check
      * @param {object} [options] Version-chain lookup options
      * @param {AbortSignal} [options.signal] Signal used to cancel resolver work
@@ -548,44 +547,86 @@ define([
     async multiRMCheck(rms, options = {}) {
       const result = { rm: null, meta: {} };
 
-      let versionChain;
+      let candidateDetails;
       try {
-        versionChain = await this.versionTracker.checkPidsInSameVersionChain(
-          rms,
-          options,
+        candidateDetails = await Promise.all(
+          rms.map(async (pid) => {
+            try {
+              return {
+                pid,
+                sysMeta: await this.getSysMeta(pid, options),
+              };
+            } catch (error) {
+              if (ErrorUtilities.isAbortError(error)) throw error;
+              if ([401, 403, 404].includes(error?.status)) {
+                return { pid, status: error.status, sysMeta: null };
+              }
+              throw error;
+            }
+          }),
         );
-      } catch (e) {
-        if (ErrorUtilities.isAbortError(e)) throw e;
-        result.meta.error = this.constructor.errorValue(e);
-        this.warn(`Error fetching version chain for PID ${rms[0]}`, e);
+      } catch (error) {
+        if (ErrorUtilities.isAbortError(error)) throw error;
+        result.meta.error = this.constructor.errorValue(error);
+        this.warn(`Error fetching system metadata for PID ${rms[0]}`, error);
         return result;
       }
-      const { newestInChain, newestPid: newestRm, sameChain } = versionChain;
 
-      // If the next chain is incomplete, we cannot be sure we have the most
-      // recent RM
-      if (!versionChain.chainComplete) {
+      const accessibleRms = candidateDetails
+        .filter(({ sysMeta }) => sysMeta)
+        .map(({ pid }) => pid);
+      const inaccessibleRms = rms.filter((pid) => !accessibleRms.includes(pid));
+      const resourceMapDates = Object.fromEntries(
+        candidateDetails.map(({ pid, sysMeta }) => [
+          pid,
+          sysMeta?.dateUploaded || null,
+        ]),
+      );
+
+      if (!accessibleRms.length) {
+        result.meta.resourceMapDates = resourceMapDates;
         result.meta.chainIncomplete = true;
-        if (versionChain.endIsPrivate) {
+        if (
+          candidateDetails.some(({ status }) => [401, 403].includes(status))
+        ) {
           result.meta.unauthorized = true;
         }
-        if (versionChain.endNotFound) {
+        if (candidateDetails.some(({ status }) => status === 404)) {
           result.meta.notFound = true;
         }
         return result;
       }
 
+      let versionChain;
+      try {
+        versionChain = await this.versionTracker.checkPidsInSameVersionChain(
+          [...accessibleRms, ...inaccessibleRms],
+          options,
+        );
+      } catch (e) {
+        if (ErrorUtilities.isAbortError(e)) throw e;
+        result.meta.error = this.constructor.errorValue(e);
+        result.meta.resourceMapDates = resourceMapDates;
+        this.warn(`Error fetching version chain for PID ${rms[0]}`, e);
+        return result;
+      }
+      const { newestPid, sameChain } = versionChain;
+
       // If the version history of one RM contains all of the others, then they
       // are all versions of each other. If not, we cannot resolve to a single RM.
       if (!sameChain) {
         result.meta.multipleRMsNotVersions = true;
+        result.meta.resourceMapDates = resourceMapDates;
         return result;
       }
 
-      // Only resolve when one candidate is the unobsoleted head of the chain.
-      if (!newestRm || newestRm !== newestInChain) {
-        result.meta.multipleRMsAllObsoleted = true;
-        return result;
+      const accessibleSet = new Set(accessibleRms);
+      const newestRm = [...versionChain.chain]
+        .reverse()
+        .find((pid) => accessibleSet.has(pid));
+
+      if (newestPid !== newestRm) {
+        result.meta.newerResourceMapUnavailable = true;
       }
 
       result.rm = newestRm;

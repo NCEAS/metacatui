@@ -857,8 +857,11 @@ define([
        * @param {DataPackage} pkg Package under test
        * @returns {object} The sinon stub
        */
-      const stubResolveWithResourceMap = (pkg) =>
-        sandbox.stub(pkg, "resolveFromPid").callsFake(async () => {
+      const stubResolveWithResourceMap = (pkg) => {
+        pkg.versionTracker = {
+          getLatestVersions: sandbox.stub().resolves(["resource_map_1"]),
+        };
+        return sandbox.stub(pkg, "resolveFromPid").callsFake(async () => {
           pkg.rootResourceMapPid = "resource_map_1";
           pkg.members.add({
             pid: "resource_map_1",
@@ -867,6 +870,7 @@ define([
           pkg.resolutionResult = {};
           return pkg.resolutionResult;
         });
+      };
 
       const stubSuccessfulBaselineFetch = (pkg) =>
         sandbox.stub(pkg, "fetchSysMeta").callsFake(async (pids) => {
@@ -899,6 +903,86 @@ define([
         expect(caught).to.be.instanceOf(Error);
         caught.code.should.equal("resource_map_unavailable");
         caught.reason.should.equal("missing");
+      });
+
+      it("advances a cached Resource Map before loading editable membership", async () => {
+        const pkg = new DataPackage();
+        sandbox.stub(ResourceMapResolver, "searchIndex").resolves({
+          pid: "meta.1",
+          rm: null,
+          meta: { isSid: false, rms: [] },
+        });
+        sandbox
+          .stub(ResourceMapResolver.prototype, "checkStorage")
+          .resolves("rm.old");
+        sandbox.stub(ResourceMapResolver.prototype, "verify").resolves(true);
+        sandbox.stub(ResourceMapResolver.prototype, "addToStorage").resolves();
+        const getLatestVersions = sandbox.stub().resolves(["rm.current"]);
+        pkg.versionTracker = { getLatestVersions };
+        sandbox.stub(pkg, "getManifestFromResourceMap").resolves({
+          ok: false,
+          reason: "missing",
+        });
+
+        let caught;
+        try {
+          await pkg.loadEditablePackage("meta.1");
+        } catch (error) {
+          caught = error;
+        }
+
+        caught.code.should.equal("resource_map_unavailable");
+        caught.reason.should.equal("missing");
+        pkg.rootResourceMapPid.should.equal("rm.current");
+        pkg.getRootResourceMapMember().pid.should.equal("rm.current");
+        sinon.assert.calledOnceWithExactly(getLatestVersions, ["rm.old"], {
+          signal: undefined,
+        });
+      });
+
+      it("blocks an unindexed Resource Map when currentness cannot be confirmed", async () => {
+        const pkg = new DataPackage();
+        sandbox.stub(ResourceMapResolver, "searchIndex").resolves({
+          pid: "rm.old",
+          rm: null,
+          meta: { isSid: false, rms: [] },
+        });
+        sandbox
+          .stub(ResourceMapResolver.prototype, "checkStorage")
+          .resolves(null);
+        sandbox
+          .stub(ResourceMapResolver.prototype, "walkSysmeta")
+          .resolves({ rm: null, meta: {} });
+        sandbox.stub(ResourceMapResolver.prototype, "guessPid").resolves(null);
+        sandbox.stub(ResourceMapResolver.prototype, "getSysMeta").resolves(
+          new SystemMetadata({
+            identifier: "rm.old",
+            formatId: RESOURCE_MAP_FORMAT_ID,
+          }),
+        );
+        const currentnessError = new Error(
+          'Cannot determine the latest version of "rm.old"',
+        );
+        pkg.versionTracker = {
+          getLatestVersions: sandbox.stub().rejects(currentnessError),
+        };
+        const getManifestFromResourceMap = sandbox.stub(
+          pkg,
+          "getManifestFromResourceMap",
+        );
+
+        let caught;
+        try {
+          await pkg.loadEditablePackage("rm.old");
+        } catch (error) {
+          caught = error;
+        }
+
+        caught.code.should.equal("resource_map_unavailable");
+        caught.reason.should.equal("error");
+        caught.rootResourceMapPid.should.equal("rm.old");
+        caught.cause.should.equal(currentnessError);
+        sinon.assert.notCalled(getManifestFromResourceMap);
       });
 
       it("throws resource_map_unavailable when the resource map cannot be parsed", async () => {
@@ -1075,6 +1159,14 @@ define([
       it("passes the caller signal through editable package loading", async () => {
         const pkg = new DataPackage();
         const controller = new AbortController();
+        pkg.versionTracker = {
+          getLatestVersions: sandbox
+            .stub()
+            .callsFake(async (_pids, options) => {
+              options.signal.should.equal(controller.signal);
+              return ["resource_map_1"];
+            }),
+        };
         sandbox.stub(pkg, "resolveFromPid").callsFake(async (_pid, options) => {
           options.signal.should.equal(controller.signal);
           pkg.rootResourceMapPid = "resource_map_1";
@@ -3110,6 +3202,10 @@ define([
           meta: {
             rms: ["resource_map_1", "resource_map_2"],
             metadataCandidates: ["meta.1", "meta.2"],
+            resourceMapDates: {
+              resource_map_1: "2021-02-09T18:15:00.000Z",
+              resource_map_2: "2021-02-09T18:20:00.000Z",
+            },
           },
           multipleRMs: true,
         });
@@ -3127,8 +3223,29 @@ define([
           "resource_map_2",
         ]);
         result.candidateMetadataPids.should.deep.equal(["meta.1", "meta.2"]);
+        result.candidateResourceMapDates.should.deep.equal({
+          resource_map_1: "2021-02-09T18:15:00.000Z",
+          resource_map_2: "2021-02-09T18:20:00.000Z",
+        });
         pkg.resolutionResult.should.equal(result);
         sinon.assert.calledOnceWithExactly(trackMissingResourceMap, "meta.1");
+      });
+
+      it("preserves notice that the viewer selected an older accessible Resource Map", async () => {
+        const pkg = new DataPackage();
+        sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
+          pid: "meta.1",
+          rm: "rm.public",
+          meta: {
+            newerResourceMapUnavailable: true,
+            indexMatch: { id: "meta.1", formatType: "METADATA" },
+          },
+        });
+
+        const result = await pkg.resolveFromPid("meta.1");
+
+        result.newerResourceMapUnavailable.should.equal(true);
+        result.success.should.equal(true);
       });
 
       it("recognizes an unindexed resource map from its system metadata", async () => {

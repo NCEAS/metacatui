@@ -378,15 +378,17 @@ define([
         caught.message.should.match(/Steps must be an integer/);
       });
 
-      it("marks endIsPrivate on 401 errors", async () => {
-        const error = new Error("private");
-        error.status = 401;
-        state.sandbox.stub(state.vt, "getAdjacent").rejects(error);
+      [401, 403].forEach((status) => {
+        it(`marks endIsPrivate on ${status} errors`, async () => {
+          const error = new Error("private");
+          error.status = status;
+          state.sandbox.stub(state.vt, "getAdjacent").rejects(error);
 
-        const record = await state.vt.getVersions("pid.1", 2);
-        record.endIsPrivate.should.equal(true);
-        record.endNotFound.should.equal(false);
-        record.chainComplete.should.equal(false);
+          const record = await state.vt.getVersions("pid.1", 2);
+          record.endIsPrivate.should.equal(true);
+          record.endNotFound.should.equal(false);
+          record.chainComplete.should.equal(false);
+        });
       });
 
       it("marks endNotFound on 404 errors", async () => {
@@ -921,18 +923,20 @@ define([
         sysMeta.errors.should.deep.equal([]);
       });
 
-      it("sets status for private or missing sysmeta", async () => {
-        const error = new Error("private");
-        error.status = 401;
-        state.sandbox.stub(state.vt, "getSysMeta").rejects(error);
-        const updateSpy = sinon.spy();
-        state.vt.events.on("versionFound", updateSpy);
+      [401, 403].forEach((status) => {
+        it(`sets status for ${status} sysmeta`, async () => {
+          const error = new Error("private");
+          error.status = status;
+          state.sandbox.stub(state.vt, "getSysMeta").rejects(error);
+          const updateSpy = sinon.spy();
+          state.vt.events.on("versionFound", updateSpy);
 
-        await state.vt.notify("pid.1", "pid.2", 1);
-        const sysMeta = updateSpy.firstCall.args[0];
-        sysMeta.identifier.should.equal("pid.2");
-        sysMeta.errors.should.deep.equal([401]);
-        sysMeta.versionHistory["pid.1"].should.equal(1);
+          await state.vt.notify("pid.1", "pid.2", 1);
+          const sysMeta = updateSpy.firstCall.args[0];
+          sysMeta.identifier.should.equal("pid.2");
+          sysMeta.errors.should.deep.equal([status]);
+          sysMeta.versionHistory["pid.1"].should.equal(1);
+        });
       });
 
       it("sets status for missing (404) sysmeta", async () => {

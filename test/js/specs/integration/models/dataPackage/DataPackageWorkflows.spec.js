@@ -235,6 +235,7 @@ define([
         ),
       },
       versionTracker: overrides.versionTracker || {
+        getLatestVersions: state.sandbox.stub().callsFake(async (pids) => pids),
         getSysMeta: state.sandbox.stub().callsFake(async (pid) =>
           systemMetadata(pid, {
             formatId:
@@ -400,7 +401,11 @@ define([
         }),
         resourceMapXmlByPid: { resource_map_1: xml },
       });
-      const pkg = new DataPackage();
+      const pkg = new DataPackage({
+        versionTracker: {
+          getLatestVersions: state.sandbox.stub().resolves(["resource_map_1"]),
+        },
+      });
 
       let error = null;
       try {

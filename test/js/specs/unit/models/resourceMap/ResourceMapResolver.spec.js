@@ -594,6 +594,54 @@ define([
         rmr.multiRMCheck.calledOnce.should.be.true;
       });
 
+      it("keeps a directly requested Resource Map exact for viewing", async () => {
+        const { sandbox, rmr } = state;
+        sandbox.stub(ResourceMapResolver, "searchIndex").resolves({
+          rm: "rm.old",
+          meta: { isResourceMap: true },
+        });
+        sandbox.stub(rmr, "addToStorage").resolves();
+
+        const result = await rmr.resolve("rm.old");
+
+        result.rm.should.equal("rm.old");
+      });
+
+      it("returns unrelated Resource Maps for user selection without falling back", async () => {
+        const { sandbox, rmr } = state;
+
+        sandbox.stub(ResourceMapResolver, "searchIndex").resolves({
+          rm: null,
+          meta: { isSid: false, rms: ["rm1", "rm2"] },
+        });
+        sandbox.stub(rmr, "multiRMCheck").resolves({
+          rm: null,
+          meta: {
+            multipleRMsNotVersions: true,
+            resourceMapDates: {
+              rm1: "2021-02-09T18:15:00.000Z",
+              rm2: "2021-02-09T18:20:00.000Z",
+            },
+          },
+        });
+        const checkStorage = sandbox.stub(rmr, "checkStorage").resolves(null);
+        const walkSysmeta = sandbox
+          .stub(rmr, "walkSysmeta")
+          .resolves({ rm: null, meta: {} });
+        const guessPid = sandbox.stub(rmr, "guessPid").resolves(null);
+
+        const result = await rmr.resolve("objPid");
+
+        result.multipleRMs.should.equal(true);
+        result.meta.resourceMapDates.should.deep.equal({
+          rm1: "2021-02-09T18:15:00.000Z",
+          rm2: "2021-02-09T18:20:00.000Z",
+        });
+        sinon.assert.notCalled(checkStorage);
+        sinon.assert.notCalled(walkSysmeta);
+        sinon.assert.notCalled(guessPid);
+      });
+
       it("resolves a data PID via metadata links from isDocumentedBy", async () => {
         const { sandbox, rmr } = state;
 
@@ -853,24 +901,65 @@ define([
     });
 
     describe("multiRMCheck()", () => {
-      it("resolves to the latest RM when the given RMs are all versions of each other", async () => {
-        const { sandbox, rmr } = state;
+      const stubCandidateSysMeta = (sandbox, rmr, dates = {}) =>
+        sandbox.stub(rmr, "getSysMeta").callsFake(async (pid) => ({
+          identifier: pid,
+          dateUploaded: dates[pid] || null,
+        }));
+
+      const stubVersionHistory = (
+        sandbox,
+        rmr,
+        records,
+        inaccessiblePid,
+        status,
+      ) => {
+        sandbox.stub(rmr.versionTracker, "sysMetaIsCached").resolves(false);
         sandbox
-          .stub(rmr.versionTracker, "checkPidsInSameVersionChain")
-          .resolves({
-            sameChain: true,
-            newestPid: "rm2",
-            newestInChain: "rm2",
-            chainComplete: true,
+          .stub(rmr.versionTracker, "getSysMeta")
+          .callsFake(async (pid) => {
+            if (pid === inaccessiblePid) {
+              throw Object.assign(new Error("inaccessible"), { status });
+            }
+            if (!records[pid]) throw new Error(`Unexpected PID ${pid}`);
+            return records[pid];
           });
+      };
 
-        const result = await rmr.multiRMCheck(["rm1", "rm2"]);
+      [401, 403].forEach((status) => {
+        it(`resolves the latest candidate when older history returns ${status}`, async () => {
+          const { sandbox, rmr } = state;
+          stubVersionHistory(
+            sandbox,
+            rmr,
+            {
+              rm1: {
+                identifier: "rm1",
+                obsoletes: "private-old",
+                obsoletedBy: "rm2",
+              },
+              rm2: {
+                identifier: "rm2",
+                obsoletes: "rm1",
+                obsoletedBy: null,
+              },
+            },
+            "private-old",
+            status,
+          );
 
-        result.should.deep.equal({ rm: "rm2", meta: {} });
+          const result = await rmr.multiRMCheck(["rm1", "rm2"]);
+
+          result.should.deep.equal({ rm: "rm2", meta: {} });
+        });
       });
 
       it("flags RMs that are not versions of each other", async () => {
         const { sandbox, rmr } = state;
+        stubCandidateSysMeta(sandbox, rmr, {
+          rmA: "2021-02-09T18:15:00.000Z",
+          rmC: "2021-02-09T18:20:00.000Z",
+        });
         sandbox
           .stub(rmr.versionTracker, "checkPidsInSameVersionChain")
           .resolves({ sameChain: false, chainComplete: true });
@@ -878,40 +967,58 @@ define([
         const result = await rmr.multiRMCheck(["rmA", "rmC"]);
         result.should.deep.equal({
           rm: null,
-          meta: { multipleRMsNotVersions: true },
+          meta: {
+            multipleRMsNotVersions: true,
+            resourceMapDates: {
+              rmA: "2021-02-09T18:15:00.000Z",
+              rmC: "2021-02-09T18:20:00.000Z",
+            },
+          },
         });
       });
 
-      it("flags when all RMs are versions of each other but all are obsoleted", async () => {
+      it("resolves the latest candidate when a newer RM no longer contains the EML", async () => {
         const { sandbox, rmr } = state;
+        stubCandidateSysMeta(sandbox, rmr);
         sandbox
           .stub(rmr.versionTracker, "checkPidsInSameVersionChain")
           .resolves({
             sameChain: true,
             newestPid: "r2",
             newestInChain: "r3",
+            chain: ["r1", "r2", "r3"],
             chainComplete: true,
           });
 
         const result = await rmr.multiRMCheck(["r1", "r2"]);
 
-        result.should.deep.equal({
-          rm: null,
-          meta: { multipleRMsAllObsoleted: true },
-        });
+        result.should.deep.equal({ rm: "r2", meta: {} });
       });
 
-      it("returns chainIncomplete details when latest RM cannot be confirmed", async () => {
-        const { sandbox, rmr } = state;
-        sandbox
-          .stub(rmr.versionTracker, "checkPidsInSameVersionChain")
-          .resolves({ chainComplete: false, endIsPrivate: true });
+      [401, 403].forEach((status) => {
+        it(`uses the newest accessible candidate when a newer candidate returns ${status}`, async () => {
+          const { sandbox, rmr } = state;
+          stubVersionHistory(
+            sandbox,
+            rmr,
+            {
+              "rm.public": {
+                identifier: "rm.public",
+                obsoletes: null,
+                obsoletedBy: "rm.private",
+                dateUploaded: "2021-02-09T18:15:00.000Z",
+              },
+            },
+            "rm.private",
+            status,
+          );
 
-        const result = await rmr.multiRMCheck(["rm1", "rm2"]);
+          const result = await rmr.multiRMCheck(["rm.private", "rm.public"]);
 
-        result.should.deep.equal({
-          rm: null,
-          meta: { chainIncomplete: true, unauthorized: true },
+          result.should.deep.equal({
+            rm: "rm.public",
+            meta: { newerResourceMapUnavailable: true },
+          });
         });
       });
     });

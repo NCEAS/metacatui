@@ -7,6 +7,7 @@ define([
   "models/fileTable/DataPackageFileTableAdapter",
   "models/fileTable/FileTableViewModel",
   "views/schemaOrg/SchemaOrgView",
+  "common/DateUtilities",
 ], (
   MetadataView,
   MetadataDocumentView,
@@ -16,6 +17,7 @@ define([
   DataPackageFileTableAdapter,
   FileTableViewModel,
   SchemaOrgView,
+  DateUtilities,
 ) => {
   const should = chai.should();
   const expect = chai.expect;
@@ -1382,8 +1384,20 @@ define([
     });
 
     describe("checkProvenanceWritePermission()", () => {
+      const stubLatestResourceMap = (dataPackage, result) => {
+        const getLatestVersions = sandbox.stub();
+        if (result instanceof Error) {
+          getLatestVersions.rejects(result);
+        } else {
+          getLatestVersions.resolves([result]);
+        }
+        dataPackage.versionTracker = { getLatestVersions };
+        return getLatestVersions;
+      };
+
       it("allows provenance editing when the resource map is writable and not archived", async () => {
         const dataPackage = createViewerDataPackage();
+        stubLatestResourceMap(dataPackage, "rm.1");
         sandbox
           .stub(dataPackage, "checkResourceMapWritePermission")
           .resolves(true);
@@ -1400,6 +1414,48 @@ define([
 
         result.should.equal(true);
         context.canEditProvenance.should.equal(true);
+      });
+
+      it("disables provenance editing for an obsolete Resource Map", async () => {
+        const dataPackage = createViewerDataPackage();
+        stubLatestResourceMap(dataPackage, "rm.2");
+        sandbox
+          .stub(dataPackage, "checkResourceMapWritePermission")
+          .resolves(true);
+        const context = withRenderContext({
+          resourceMap: { archived: false },
+          dataPackage,
+          isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
+        });
+
+        const result =
+          await MetadataView.prototype.checkProvenanceWritePermission.call(
+            context,
+          );
+
+        result.should.equal(false);
+        context.canEditProvenance.should.equal(false);
+      });
+
+      it("disables provenance editing when currentness cannot be confirmed", async () => {
+        const dataPackage = createViewerDataPackage();
+        stubLatestResourceMap(dataPackage, new Error("version lookup failed"));
+        sandbox
+          .stub(dataPackage, "checkResourceMapWritePermission")
+          .resolves(true);
+        const context = withRenderContext({
+          resourceMap: { archived: false },
+          dataPackage,
+          isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
+        });
+
+        const result =
+          await MetadataView.prototype.checkProvenanceWritePermission.call(
+            context,
+          );
+
+        result.should.equal(false);
+        context.canEditProvenance.should.equal(false);
       });
 
       it("disables provenance editing when the resource map is archived", async () => {
@@ -1453,6 +1509,7 @@ define([
 
       it("does not infer editability from metadata write permission", async () => {
         const dataPackage = createViewerDataPackage();
+        const getLatestResourceMap = stubLatestResourceMap(dataPackage, "rm.1");
         const checkWritePermissions = sandbox
           .stub(dataPackage, "checkWritePermissions")
           .resolves(true);
@@ -1471,6 +1528,7 @@ define([
 
         context.canEditProvenance.should.equal(false);
         checkWritePermissions.called.should.equal(false);
+        sinon.assert.notCalled(getLatestResourceMap);
       });
     });
 
@@ -2585,8 +2643,11 @@ define([
     });
 
     describe("ambiguous-package messaging", () => {
-      it("lists each candidate resource map as a /view/ link at the page level", () => {
+      it("lists each candidate file list with its upload time at the page level", () => {
         const showError = sandbox.stub();
+        sandbox
+          .stub(DateUtilities, "toLocalTimestampWithZone")
+          .callsFake((value) => `formatted ${value}`);
         const context = {
           stopPackageLoading: sandbox.stub(),
           hideLoading: sandbox.stub(),
@@ -2595,7 +2656,13 @@ define([
 
         MetadataView.prototype.showMultipleResourceMaps.call(
           context,
-          { candidateResourceMapPids: ["rm.1", "rm.2"] },
+          {
+            candidateResourceMapPids: ["rm.1", "rm.2"],
+            candidateResourceMapDates: {
+              "rm.1": "2021-02-09T18:15:00.000Z",
+              "rm.2": "2021-02-09T18:20:00.000Z",
+            },
+          },
           { scoped: false },
         );
 
@@ -2603,6 +2670,10 @@ define([
         const msg = showError.firstCall.args[0];
         msg.should.contain("/view/rm.1");
         msg.should.contain("/view/rm.2");
+        msg.should.contain("formatted 2021-02-09T18:15:00.000Z");
+        msg.should.contain("formatted 2021-02-09T18:20:00.000Z");
+        msg.should.contain("more than one file list");
+        msg.should.not.contain("could not determine which is current");
       });
 
       it("keeps the ambiguity warning scoped to the file area when metadata is rendered", () => {
@@ -2693,6 +2764,21 @@ define([
 
         permissionState.should.equal("permissionUnavailable");
         serverState.should.equal("serverUnavailable");
+      });
+
+      it("notes when a newer Resource Map is inaccessible", async () => {
+        const context = withRenderContext({
+          resourceMap: { pid: "rm.public" },
+          canWrite: false,
+          hasRecoverablePackageRecord: sandbox.stub().resolves(false),
+        });
+
+        const state = await MetadataView.prototype.resolveFileListingState.call(
+          context,
+          { newerResourceMapUnavailable: true },
+        );
+
+        state.should.equal("newerVersionUnavailable");
       });
 
       it("offers recovery when the loaded map has a matching interrupted-save record", async () => {

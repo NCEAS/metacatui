@@ -78,7 +78,11 @@ define([
     if (resolverResult.multipleRMs) {
       result.multipleRMs = true;
       result.candidateResourceMapPids = meta.rms || [];
+      result.candidateResourceMapDates = meta.resourceMapDates || {};
       result.candidateMetadataPids = candidateMetadataPids;
+    }
+    if (meta.newerResourceMapUnavailable) {
+      result.newerResourceMapUnavailable = true;
     }
     if (resolverResult.unauthorized) result.unauthorized = true;
 
@@ -230,7 +234,7 @@ define([
       throw error;
     }
 
-    const resourceMapMember = dataPackage.getRootResourceMapMember();
+    let resourceMapMember = dataPackage.getRootResourceMapMember();
     if (!resourceMapMember) {
       const resolution = dataPackage.resolutionResult || {};
       // Only a clean, unambiguous miss is safe to repair as orphaned metadata.
@@ -247,6 +251,38 @@ define([
         reason,
         httpStatus: resolution.error?.status ?? null,
         cause: resolution.error || null,
+      });
+    }
+
+    try {
+      const [currentResourceMapPid] = await dataPackage
+        .getVersionTracker()
+        .getLatestVersions([resourceMapMember.pid], { signal });
+      if (!currentResourceMapPid) {
+        throw new Error(
+          `Cannot determine the latest version of "${resourceMapMember.pid}"`,
+        );
+      }
+      if (currentResourceMapPid !== resourceMapMember.pid) {
+        dataPackage.members.add(
+          {
+            pid: currentResourceMapPid,
+            formatId: RESOURCE_MAP_FORMAT_ID,
+            formatType: FORMAT_TYPES.RESOURCE,
+          },
+          { merge: true, sources: ["resourceMapResolver"] },
+        );
+        dataPackage.rootResourceMapPid = currentResourceMapPid;
+        resourceMapMember = dataPackage.getRootResourceMapMember();
+      }
+    } catch (error) {
+      if (isAbortError(error)) throw error;
+      throw DataPackageLoader.resourceMapUnavailableError({
+        inputId: dataPackage.inputId || pid,
+        rootResourceMapPid: resourceMapMember.pid,
+        reason: "error",
+        httpStatus: error?.status ?? null,
+        cause: error,
       });
     }
 
