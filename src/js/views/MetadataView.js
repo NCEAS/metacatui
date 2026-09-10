@@ -7,6 +7,8 @@ define([
   "models/SolrResult",
   "models/CitationModel",
   "models/dataONEServices/PublishService",
+  "models/dataONEServices/ObjectService",
+  "models/dataONEServices/SysMetaService",
   "models/dataPackage/DataPackageRecovery",
   "models/dataPackage/UploadRecoveryStore",
   "common/QueryService",
@@ -38,6 +40,8 @@ define([
   SolrResult,
   CitationModel,
   PublishService,
+  ObjectService,
+  SysMetaService,
   DataPackageRecovery,
   UploadRecoveryStore,
   QueryService,
@@ -344,6 +348,7 @@ define([
         this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
 
         const dataPackage = new DataPackage({
+          ...MetacatUI.appModel.getDataPackageServiceOptions(),
           objectFormats: MetacatUI.objectFormats,
         });
         this.dataPackage = dataPackage;
@@ -1007,9 +1012,17 @@ define([
         button.prop("disabled", true);
         status.text(MESSAGES.fileListingRecoveryRunning);
         try {
+          const serviceOptions =
+            MetacatUI.appModel.getDataPackageServiceOptions();
           const result = await new DataPackageRecovery({
             resolveServiceUrl: MetacatUI.appModel.get("resolveServiceUrl"),
             objectServiceUrl: MetacatUI.appModel.get("objectServiceUrl"),
+            objectService: new ObjectService(
+              serviceOptions.objectServiceOptions,
+            ),
+            sysMetaService: new SysMetaService(
+              serviceOptions.sysMetaServiceOptions,
+            ),
           }).recover(metadataPid);
           if (!this.isCurrentRender(renderId)) return;
           if (result?.recovered) {
@@ -2870,7 +2883,9 @@ define([
           if (member.isPublic === "false") return false;
         }
         if (typeof member.isPublic === "function") {
-          return member.isPublic();
+          return member.isPublic({
+            sysMetaService: this.dataPackage?.getSysMetaService(),
+          });
         }
         return null;
       },

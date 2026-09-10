@@ -22,6 +22,7 @@ define([
       const rmr = new ResourceMapResolver({
         consoleLevel: "info",
         metaServiceUrl: "https://example.org/sysmeta",
+        resolveServiceUrl: "https://example.org/resolve",
       });
       return { sandbox, rmr };
     }, beforeEach);
@@ -39,6 +40,38 @@ define([
         state.rmr.eventLog.logs.size.should.equal(0);
         state.rmr.eventLog.consoleLevel.should.equal("info");
         state.rmr.versionTracker.should.exist;
+      });
+
+      it("requires explicit metadata and object-read endpoints", () => {
+        const originalMetacatUI = globalThis.MetacatUI;
+        globalThis.MetacatUI = {
+          appModel: { get: () => "https://global.example.org/service" },
+        };
+        try {
+          expect(
+            () =>
+              new ResourceMapResolver({
+                resolveServiceUrl: "https://example.org/resolve",
+              }),
+          ).to.throw("ResourceMapResolver: metaServiceUrl is required");
+          expect(
+            () =>
+              new ResourceMapResolver({
+                metaServiceUrl: "https://example.org/meta",
+              }),
+          ).to.throw(
+            "ResourceMapResolver: resolveServiceUrl or objectServiceUrl is required",
+          );
+          expect(
+            () =>
+              new ResourceMapResolver({
+                metaServiceUrl: "https://example.org/meta",
+                objectServiceUrl: "https://example.org/object",
+              }),
+          ).not.to.throw();
+        } finally {
+          globalThis.MetacatUI = originalMetacatUI;
+        }
       });
     });
 
@@ -164,47 +197,52 @@ define([
     describe("fetchResourceMap()", () => {
       it("passes configured services when parsing a downloaded Resource Map", async () => {
         const originalMetacatUI = globalThis.MetacatUI;
-        globalThis.MetacatUI = {
-          ...(originalMetacatUI || {}),
-          appModel: {
-            get(key) {
-              if (key === "resolveServiceUrl") {
-                return "https://cn.example.org/cn/v2/resolve";
-              }
-              if (key === "objectServiceUrl") {
-                return "https://mn.example.org/mn/v2/object";
-              }
-              return null;
-            },
-          },
+        const resolveServiceUrl = "https://cn.example.org/cn/v2/resolve";
+        const objectServiceUrl = "https://mn.example.org/mn/v2/object";
+        const objectService = {
+          download: state.sandbox.stub().resolves("<rdf:RDF></rdf:RDF>"),
         };
-        const download = state.sandbox
-          .stub(ObjectService.prototype, "download")
-          .callsFake(function fakeDownload() {
-            this.readBaseUrl.should.equal(
-              "https://mn.example.org/mn/v2/object",
-            );
-            return "<rdf:RDF></rdf:RDF>";
-          });
+        const resolver = new ResourceMapResolver({
+          objectService,
+          metaServiceUrl: "https://cn.example.org/cn/v2/meta",
+          resolveServiceUrl,
+          objectServiceUrl,
+        });
         const fromXml = state.sandbox.stub(ResourceMap, "fromXml").returns({
           getMemberPids: () => [],
         });
 
+        globalThis.MetacatUI = {
+          appModel: {
+            get() {
+              throw new Error("ResourceMapResolver read application globals");
+            },
+          },
+        };
+        let result;
         try {
-          await state.rmr.fetchResourceMap("resource_map_1", { timeoutMs: 0 });
+          result = await resolver.fetchResourceMap("resource_map_1", {
+            timeoutMs: 0,
+          });
         } finally {
           globalThis.MetacatUI = originalMetacatUI;
         }
 
-        download.firstCall.args[1].timeoutMs.should.equal(0);
+        sinon.assert.calledOnceWithExactly(
+          objectService.download,
+          "resource_map_1",
+          {
+            responseType: "text",
+            timeoutMs: 0,
+            signal: undefined,
+          },
+        );
+        result.status.should.equal(200);
         sinon.assert.calledOnceWithExactly(
           fromXml,
           "resource_map_1",
           "<rdf:RDF></rdf:RDF>",
-          {
-            resolveServiceUrl: "https://cn.example.org/cn/v2/resolve",
-            objectServiceUrl: "https://mn.example.org/mn/v2/object",
-          },
+          { resolveServiceUrl, objectServiceUrl },
         );
       });
 

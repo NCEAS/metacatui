@@ -2822,6 +2822,35 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
         return urls;
       },
 
+      /**
+       * Return explicit read and write endpoints for DataPackage services with
+       * no repository selection side effects.
+       * @returns {object} ObjectService, SysMetaService, and ResourceMapResolver
+       * constructor options
+       * @since 0.0.0
+       */
+      getDataPackageServiceOptions() {
+        const objectServiceUrl = this.get("objectServiceUrl");
+        const metaServiceUrl = this.get("metaServiceUrl");
+        const resolveServiceUrl = this.get("resolveServiceUrl");
+        return {
+          objectServiceOptions: {
+            readBaseUrl: objectServiceUrl || resolveServiceUrl,
+            writeBaseUrl: objectServiceUrl || undefined,
+          },
+          sysMetaServiceOptions: {
+            readBaseUrl: metaServiceUrl || undefined,
+            writeBaseUrl:
+              objectServiceUrl && metaServiceUrl ? metaServiceUrl : undefined,
+          },
+          resolverOptions: {
+            metaServiceUrl,
+            resolveServiceUrl,
+            objectServiceUrl,
+          },
+        };
+      },
+
       changePid: function (model, name) {
         this.set("previousPid", model.previous("pid"));
       },

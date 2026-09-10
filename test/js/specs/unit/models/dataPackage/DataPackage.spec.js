@@ -31,6 +31,10 @@ define([
   const { expect } = chai;
 
   const RESOURCE_MAP_FORMAT_ID = "http://www.openarchives.org/ore/terms";
+  const RESOLVER_OPTIONS = {
+    metaServiceUrl: "https://example.org/sysmeta",
+    resolveServiceUrl: "https://example.org/resolve",
+  };
 
   /**
    * Build a DataPackage seeded with the given member infos and a known root
@@ -155,6 +159,7 @@ define([
     pids = ["data.1", "data.2", "data.3", "data.4"],
   ) {
     const pkg = buildPackage(pids.map((pid) => ({ pid, formatType: "DATA" })));
+    pkg.sysMetaService = {};
     const concurrency = trackConcurrency();
     pkg.members.toArray().forEach((member) => {
       member.fetchSysMeta = concurrency.track(() => {
@@ -659,6 +664,7 @@ define([
 
       it("returns failures for unique requested PIDs absent from the package", async () => {
         const pkg = buildPackage([{ pid: "data.1", formatType: "DATA" }]);
+        pkg.sysMetaService = {};
         pkg.getMember("data.1").sysMeta = { identifier: "data.1" };
 
         const failures = await pkg.fetchSysMeta([
@@ -676,6 +682,7 @@ define([
         const sandbox = sinon.createSandbox();
         const fetchError = new Error("offline");
         const pkg = buildPackage([{ pid: "data.1", formatType: "DATA" }]);
+        pkg.sysMetaService = {};
         sandbox
           .stub(pkg.getMember("data.1"), "fetchSysMeta")
           .rejects(fetchError);
@@ -717,6 +724,7 @@ define([
           ],
           "resource_map_1",
         );
+        pkg.objectService = {};
         return pkg;
       }
 
@@ -906,7 +914,7 @@ define([
       });
 
       it("advances a cached Resource Map before loading editable membership", async () => {
-        const pkg = new DataPackage();
+        const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
         sandbox.stub(ResourceMapResolver, "searchIndex").resolves({
           pid: "meta.1",
           rm: null,
@@ -941,7 +949,7 @@ define([
       });
 
       it("blocks an unindexed Resource Map when currentness cannot be confirmed", async () => {
-        const pkg = new DataPackage();
+        const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
         sandbox.stub(ResourceMapResolver, "searchIndex").resolves({
           pid: "rm.old",
           rm: null,
@@ -2991,10 +2999,28 @@ define([
           const versionTracker = { getLatestVersion };
           const resolverStorage = {};
           const resolverOptions = {
-            metaServiceUrl: "https://example.org/sysmeta",
+            ...RESOLVER_OPTIONS,
+            metaServiceUrl: "https://package.example.org/sysmeta",
             storage: resolverStorage,
           };
-          const pkg = new DataPackage({ objectFormats, versionTracker });
+          const objectService = {};
+          const sysMetaService = {
+            readBaseUrl: "https://package.example.org/sysmeta",
+          };
+          const objectServiceOptions = {
+            readBaseUrl: "https://example.org/object",
+          };
+          const sysMetaServiceOptions = {
+            readBaseUrl: "https://example.org/sysmeta",
+          };
+          const pkg = new DataPackage({
+            objectFormats,
+            versionTracker,
+            objectService,
+            objectServiceOptions,
+            sysMetaService,
+            sysMetaServiceOptions,
+          });
           const awaitObjectFormats = sandbox
             .stub(Utilities, "awaitObjectFormats")
             .rejects(new Error("should not load ObjectFormats globally"));
@@ -3047,6 +3073,22 @@ define([
           sinon.assert.notCalled(awaitObjectFormats);
           expect(resolve.secondCall.thisValue.storage).to.equal(
             resolverStorage,
+          );
+          expect(resolve.secondCall.thisValue.objectService).to.equal(
+            objectService,
+          );
+          resolve.secondCall.thisValue.versionTracker.metaServiceUrl.should.equal(
+            sysMetaService.readBaseUrl,
+          );
+          const followedPackage =
+            getManifestFromResourceMap.secondCall.thisValue;
+          followedPackage.objectService.should.equal(objectService);
+          followedPackage.objectServiceOptions.should.equal(
+            objectServiceOptions,
+          );
+          followedPackage.sysMetaService.should.equal(sysMetaService);
+          followedPackage.sysMetaServiceOptions.should.equal(
+            sysMetaServiceOptions,
           );
         } finally {
           sandbox.restore();
@@ -3149,7 +3191,7 @@ define([
       });
 
       it("persists inputId, rootResourceMapPid, and resolutionResult", async () => {
-        const pkg = new DataPackage();
+        const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
         // Stub the resolver so resolveFromPid takes the resource-map-found
         // path without any network access or sysmeta fallback.
         sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
@@ -3159,7 +3201,7 @@ define([
         });
 
         const result = await pkg.resolveFromPid("input.1", {
-          resolverOptions: { metaServiceUrl: "https://example.org/sysmeta" },
+          resolverOptions: RESOLVER_OPTIONS,
         });
 
         pkg.inputId.should.equal("input.1");
@@ -3169,7 +3211,7 @@ define([
       });
 
       it("persists primaryMetadataPid when resolution identifies metadata", async () => {
-        const pkg = new DataPackage();
+        const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
         sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
           pid: "meta.1",
           rm: "resource_map_1",
@@ -3190,7 +3232,7 @@ define([
       });
 
       it("retains matched and resolved identities when they differ", async () => {
-        const pkg = new DataPackage();
+        const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
         sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
           pid: "resolved.1",
           rm: "resource_map_1",
@@ -3209,7 +3251,7 @@ define([
       });
 
       it("seeds primary metadata from one resolver candidate", async () => {
-        const pkg = new DataPackage();
+        const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
         sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
           pid: "data.1",
           rm: "resource_map_1",
@@ -3226,7 +3268,7 @@ define([
       });
 
       it("preserves multiple-ResourceMap resolver details", async () => {
-        const pkg = new DataPackage();
+        const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
         sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
           pid: "meta.1",
           rm: null,
@@ -3263,7 +3305,7 @@ define([
       });
 
       it("preserves notice that the viewer selected an older accessible Resource Map", async () => {
-        const pkg = new DataPackage();
+        const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
         sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
           pid: "meta.1",
           rm: "rm.public",
@@ -3280,7 +3322,7 @@ define([
       });
 
       it("recognizes an unindexed resource map from its system metadata", async () => {
-        const pkg = new DataPackage();
+        const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
         sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
           pid: "resource_map_1",
           rm: null,
@@ -3308,6 +3350,7 @@ define([
           objectFormats: new ObjectFormats([
             { formatId, formatType: "RESOURCE" },
           ]),
+          resolverOptions: RESOLVER_OPTIONS,
         });
         sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
           pid: "annotation.1",
@@ -3357,7 +3400,7 @@ define([
         },
       ].forEach(({ label, error, resultField }) => {
         it(`classifies ${label}`, async () => {
-          const pkg = new DataPackage();
+          const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
           sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
             pid: "unresolved.1",
             rm: null,
@@ -3397,6 +3440,7 @@ define([
         it(`classifies unindexed ${label} from its format ID`, async () => {
           const pkg = new DataPackage({
             objectFormats: new ObjectFormats([{ formatId, formatType }]),
+            resolverOptions: RESOLVER_OPTIONS,
           });
           sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({
             pid: `${label}.1`,
@@ -3611,7 +3655,7 @@ define([
         const pkg = new DataPackage({
           members: [{ pid: "source.1", formatType: "METADATA" }],
           sysMetaService: { download },
-          resolverOptions: { storage: resolverStorage },
+          resolverOptions: { ...RESOLVER_OPTIONS, storage: resolverStorage },
         });
 
         const result = await pkg.publish();

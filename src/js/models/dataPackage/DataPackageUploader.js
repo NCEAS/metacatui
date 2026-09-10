@@ -1207,6 +1207,7 @@ define([
         }
       });
 
+      Object.assign(result, { wasCancelled: Boolean(signal?.aborted) });
       result.finalize();
       await this._invalidateCommittedSysMeta(actions, result);
       if (result.outcome === UploadResult.Outcomes.SUCCESS) {
@@ -1219,10 +1220,9 @@ define([
     }
 
     /**
-     * Cancel the active upload, aborting new work where supported. In flight
-     * writes are left in an unknown state and the result is marked
-     * reload required; the package must be reloaded to reconcile what
-     * committed.
+     * Cancel the active upload and stop scheduling new work. In-flight writes
+     * are verified before settling the result; unresolved remote state requires
+     * reloading the package.
      * @returns {boolean} Whether an upload was cancelled
      */
     cancelUpload() {
@@ -1593,62 +1593,42 @@ define([
      * @throws {Error} When ambiguous write verification cannot complete
      */
     async _handleActionFailure(action, result, member, error, { signal } = {}) {
-      const markCancelled = () => {
-        // Cancellation leaves the remote state unknown. Rather than verifying
-        // each in-flight write, mark the action cancelled; the package must be
-        // reloaded to reconcile what actually committed.
-        member.markRemoteFailure(error, { ambiguous: true });
-        result.markCancelled(action.id);
-        return false;
-      };
-
-      if (signal?.aborted) return markCancelled();
-
       const staleError = await this._detectStaleRemoteAction(
         action,
         error,
         signal,
       );
-      if (signal?.aborted) return markCancelled();
       if (staleError) {
         member.markRemoteFailure(staleError);
         result.markStaleRemote(action.id, staleError);
         return false;
       }
 
-      if (DataONEService.isAmbiguousWriteError(error)) {
-        let verification;
-        try {
-          verification = await this._verifyAmbiguousAction(action, signal);
-        } catch (verificationError) {
-          if (isAbortError(verificationError) || signal?.aborted) {
-            return markCancelled();
-          }
-          throw verificationError;
-        }
-        if (signal?.aborted) return markCancelled();
-        if (verification.confirmed) {
-          member.markRemoteSuccess({
-            pid: action.targetPid,
-            sysMeta: verification.sysMeta,
-          });
-          result.markSucceeded(action.id);
-          return true;
-        }
-
-        member.markRemoteFailure(error, {
-          ambiguous: !verification.notFound,
-        });
-        if (verification.notFound) {
-          result.markFailed(action.id, error);
-        } else {
-          result.markAmbiguous(action.id, error);
-        }
+      if (!DataONEService.isAmbiguousWriteError(error)) {
+        member.markRemoteFailure(error);
+        result.markFailed(action.id, error);
         return false;
       }
 
-      member.markRemoteFailure(error);
-      result.markFailed(action.id, error);
+      // Let terminal verification settle even after the upload is aborted.
+      const verification = await this._verifyAmbiguousAction(action);
+      if (verification.confirmed) {
+        member.markRemoteSuccess({
+          pid: action.targetPid,
+          sysMeta: verification.sysMeta,
+        });
+        result.markSucceeded(action.id);
+        return true;
+      }
+
+      // A cancelled request can still commit after a missing-target lookup.
+      const ambiguous = signal?.aborted || !verification.notFound;
+      member.markRemoteFailure(error, { ambiguous });
+      if (ambiguous) {
+        result.markAmbiguous(action.id, error);
+      } else {
+        result.markFailed(action.id, error);
+      }
       return false;
     }
 
@@ -1666,12 +1646,11 @@ define([
       try {
         sysMeta = await this.dataPackage
           .getSysMetaService()
-          .download(action.targetPid, {
-            useCache: false,
-            signal,
-          });
+          .downloadFromWriteTarget(action.targetPid, { signal });
       } catch (error) {
-        if (isAbortError(error) || signal?.aborted) throw error;
+        // Only cancellable lookups propagate aborts. Terminal failures remain
+        // inconclusive so the upload result can settle.
+        if (signal && (isAbortError(error) || signal.aborted)) throw error;
         if (Number(error?.status) === 404) {
           return { confirmed: false, notFound: true };
         }
@@ -1685,42 +1664,27 @@ define([
         return { confirmed: false };
       }
 
+      let confirmed;
       if (action.operation === UPLOAD_OPERATIONS.UPDATE_SYSTEM_METADATA) {
-        const mutableFields = verification.mutableFields || {};
-        if (!Object.keys(mutableFields).length) {
-          return { confirmed: false };
-        }
-        const matches = Object.entries(mutableFields).every(([field, value]) =>
-          Values.deepEqual(remote[field], value),
+        const mutableFields = Object.entries(verification.mutableFields || {});
+        confirmed =
+          mutableFields.length > 0 &&
+          mutableFields.every(([field, value]) =>
+            Values.deepEqual(remote[field], value),
+          );
+      } else {
+        // Every object action carries the checksum calculated before its write.
+        const { checksum } = verification;
+        confirmed = Boolean(
+          checksum?.value &&
+            checksum.algorithm &&
+            checksum.value.toUpperCase() ===
+              Values.normalizeText(remote.checksum)?.toUpperCase() &&
+            checksum.algorithm.toUpperCase() ===
+              Values.normalizeText(remote.checksumAlgorithm)?.toUpperCase(),
         );
-        if (!matches) return { confirmed: false };
-        return { confirmed: true, sysMeta };
       }
-
-      const intendedChecksum = Values.normalizeText(
-        verification.checksum?.value || verification.checksum,
-      );
-      const remoteChecksum = Values.normalizeText(remote.checksum);
-      const intendedAlgorithm = Values.normalizeText(
-        verification.checksum?.algorithm || verification.checksumAlgorithm,
-      )?.toUpperCase();
-      const remoteAlgorithm = Values.normalizeText(
-        remote.checksumAlgorithm,
-      )?.toUpperCase();
-      const checksumsAreComparable = Boolean(
-        intendedChecksum &&
-          remoteChecksum &&
-          intendedAlgorithm &&
-          remoteAlgorithm &&
-          intendedAlgorithm === remoteAlgorithm,
-      );
-      // A different or missing algorithm cannot prove a mismatch. The target
-      // PID still confirms the immutable object exists; compare bytes only when
-      // both sides describe them with the same algorithm.
-      if (checksumsAreComparable && intendedChecksum !== remoteChecksum) {
-        return { confirmed: false };
-      }
-      return { confirmed: true, sysMeta };
+      return confirmed ? { confirmed: true, sysMeta } : { confirmed: false };
     }
 
     /**
@@ -1745,17 +1709,19 @@ define([
         );
       }
       try {
-        const latest = await this.dataPackage
+        const record = await this.dataPackage
           .getVersionTracker()
-          .getLatestVersion(action.sourcePid, { useCache: false, signal });
-        if (
-          latest &&
-          latest !== action.sourcePid &&
-          latest !== action.targetPid
-        ) {
+          .getAllVersionsOneDirection(action.sourcePid, true, {
+            useCache: false,
+            signal,
+          });
+        const conflictingPid = record.versions.find(
+          (pid) => pid !== action.targetPid,
+        );
+        if (conflictingPid) {
           return DataPackageUploader.staleRemoteError(
             action.sourcePid,
-            latest,
+            conflictingPid,
             "upload source",
           );
         }

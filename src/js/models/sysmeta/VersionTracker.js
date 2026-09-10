@@ -136,7 +136,7 @@ define([
       // Get a SysMetaService instance for this metaServiceUrl (singleton per
       // URL and config)
       this.sysMetaService = new SysMetaService({
-        baseUrl: this.metaServiceUrl,
+        readBaseUrl: this.metaServiceUrl,
         storageConfig: {
           ttlMs: this.ttlMs,
         },

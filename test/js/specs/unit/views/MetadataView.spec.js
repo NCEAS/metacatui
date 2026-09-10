@@ -1,5 +1,6 @@
 define([
   "views/MetadataView",
+  "models/AppModel",
   "views/MetadataDocumentView",
   "models/dataPackage/DataPackage",
   "models/dataPackage/DataPackageRecovery",
@@ -10,6 +11,7 @@ define([
   "common/DateUtilities",
 ], (
   MetadataView,
+  AppModel,
   MetadataDocumentView,
   DataPackage,
   DataPackageRecovery,
@@ -98,6 +100,8 @@ define([
 
     const setPackageAppModel = (values = {}) => {
       globalThis.MetacatUI.appModel = {
+        getDataPackageServiceOptions:
+          AppModel.prototype.getDataPackageServiceOptions,
         get: (key) =>
           ({
             packageServiceUrl: "https://cn.test/package/",
@@ -151,6 +155,8 @@ define([
     describe("insertCitationMetaTags()", () => {
       it("emits citation_doi for bare DOI identifiers", () => {
         globalThis.MetacatUI.appModel = {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           isDOI: sandbox.stub().returns(true),
         };
         const context = {
@@ -219,7 +225,12 @@ define([
           abortRender: MetadataView.prototype.abortRender,
           render: MetadataView.prototype.render,
         });
-        globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+        globalThis.MetacatUI.appModel = {
+          get: () => "",
+          set: sandbox.stub(),
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
+        };
         globalThis.MetacatUI.appUserModel = {};
 
         await MetadataView.prototype.render.call(context, {
@@ -250,7 +261,12 @@ define([
             };
           });
 
-        globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+        globalThis.MetacatUI.appModel = {
+          get: () => "",
+          set: sandbox.stub(),
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
+        };
         globalThis.MetacatUI.appUserModel = {};
         const context = withRenderContext({
           pid: null,
@@ -304,7 +320,12 @@ define([
           abortRender: MetadataView.prototype.abortRender,
           render: MetadataView.prototype.render,
         });
-        globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+        globalThis.MetacatUI.appModel = {
+          get: () => "",
+          set: sandbox.stub(),
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
+        };
         globalThis.MetacatUI.appUserModel = {};
 
         await MetadataView.prototype.render.call(context, {
@@ -337,7 +358,12 @@ define([
           abortRender: MetadataView.prototype.abortRender,
           render: MetadataView.prototype.render,
         });
-        globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+        globalThis.MetacatUI.appModel = {
+          get: () => "",
+          set: sandbox.stub(),
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
+        };
         globalThis.MetacatUI.appUserModel = {};
 
         await MetadataView.prototype.render.call(context, {
@@ -372,7 +398,12 @@ define([
           abortRender: MetadataView.prototype.abortRender,
           render: MetadataView.prototype.render,
         });
-        globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+        globalThis.MetacatUI.appModel = {
+          get: () => "",
+          set: sandbox.stub(),
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
+        };
         globalThis.MetacatUI.appUserModel = {};
 
         await MetadataView.prototype.render.call(context, {
@@ -410,7 +441,12 @@ define([
           abortRender: MetadataView.prototype.abortRender,
           render: MetadataView.prototype.render,
         });
-        globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+        globalThis.MetacatUI.appModel = {
+          get: () => "",
+          set: sandbox.stub(),
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
+        };
         globalThis.MetacatUI.appUserModel = {};
 
         const firstRender = MetadataView.prototype.render.call(context, {
@@ -470,7 +506,12 @@ define([
           "getManifestFromIndex",
         );
 
-        globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+        globalThis.MetacatUI.appModel = {
+          get: () => "",
+          set: sandbox.stub(),
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
+        };
         globalThis.MetacatUI.appUserModel = {};
         const context = withRenderContext({
           pid: null,
@@ -538,7 +579,12 @@ define([
             }
           });
 
-        globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+        globalThis.MetacatUI.appModel = {
+          get: () => "",
+          set: sandbox.stub(),
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
+        };
         globalThis.MetacatUI.appUserModel = {};
         globalThis.MetacatUI.uiRouter = {
           navigate: sandbox.stub(),
@@ -628,7 +674,12 @@ define([
             .stub(DataPackage.prototype, "getManifestFromIndex")
             .resolves({ ok: true });
 
-          globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+          globalThis.MetacatUI.appModel = {
+            get: () => "",
+            set: sandbox.stub(),
+            getDataPackageServiceOptions:
+              AppModel.prototype.getDataPackageServiceOptions,
+          };
           globalThis.MetacatUI.appUserModel = {};
           const context = withRenderContext({
             pid: null,
@@ -689,7 +740,12 @@ define([
             };
           });
 
-        globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+        globalThis.MetacatUI.appModel = {
+          get: () => "",
+          set: sandbox.stub(),
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
+        };
         globalThis.MetacatUI.appUserModel = {};
         const context = withRenderContext({
           pid: null,
@@ -771,7 +827,12 @@ define([
             return { ok: true };
           });
 
-        globalThis.MetacatUI.appModel = { set: sandbox.stub() };
+        globalThis.MetacatUI.appModel = {
+          get: () => "",
+          set: sandbox.stub(),
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
+        };
         globalThis.MetacatUI.appUserModel = {};
         const context = withRenderContext({
           pid: null,
@@ -2381,6 +2442,8 @@ define([
             getResourceMapModel: () => ({
               hasUnsavedChanges: () => true,
             }),
+            getObjectService: () => ({ writeBaseUrl: "https://object.test" }),
+            getSysMetaService: () => ({ writeBaseUrl: "https://meta.test" }),
             upload: sandbox.stub().rejects(error),
           },
           showSaving: sandbox.stub(),
@@ -2398,6 +2461,8 @@ define([
           getResourceMapModel: () => ({
             hasUnsavedChanges: () => true,
           }),
+          getObjectService: () => ({ writeBaseUrl: "https://object.test" }),
+          getSysMetaService: () => ({ writeBaseUrl: "https://meta.test" }),
           upload: sandbox.stub().returns(
             new Promise((resolve) => {
               resolveUpload = resolve;
@@ -2450,6 +2515,8 @@ define([
         const clock = sandbox.useFakeTimers();
         const el = document.createElement("div");
         globalThis.MetacatUI.appModel = {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: (key) =>
             ({
               baseUrl: "https://example.test",
@@ -2496,6 +2563,8 @@ define([
         const el = document.createElement("div");
         const showAlert = sandbox.stub();
         globalThis.MetacatUI.appModel = {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: (key) =>
             ({
               baseUrl: "https://example.test",
@@ -2539,6 +2608,8 @@ define([
     describe("onClose()", () => {
       it("removes all citation metadata tags when the view closes", () => {
         globalThis.MetacatUI.appModel = {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: () => null,
           resetTitle: sandbox.stub(),
         };
@@ -2870,6 +2941,8 @@ define([
 
       it("uses exact replay when repairing a viewer interrupted save", async () => {
         globalThis.MetacatUI.appModel = {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox.stub().callsFake(
             (key) =>
               ({
@@ -2899,6 +2972,8 @@ define([
 
       it("does not update recovery controls after a newer render starts", async () => {
         globalThis.MetacatUI.appModel = {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox.stub().returns("https://service.test/"),
         };
         const button = { prop: sandbox.stub() };

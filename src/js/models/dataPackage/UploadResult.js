@@ -45,6 +45,7 @@ define([], () => {
       this.retryable = false;
       this.reloadRequired = false;
       this.staleRemote = false;
+      this.wasCancelled = false;
     }
 
     /**
@@ -108,6 +109,7 @@ define([], () => {
      * @returns {UploadResult} This result
      */
     markCancelled(actionId) {
+      this.wasCancelled = true;
       return this.setStatus(actionId, STATUSES.CANCELLED);
     }
 
@@ -182,16 +184,17 @@ define([], () => {
         (status) => status === STATUSES.FAILED || status === STATUSES.AMBIGUOUS,
       );
       const anySkipped = statuses.includes(STATUSES.SKIPPED);
-      const anyCancelled = statuses.some(
-        (status) => status === STATUSES.CANCELLED,
+      const allCommitted = statuses.every(
+        (status) => status === STATUSES.SUCCEEDED,
       );
 
       if (this.staleRemote) {
         this.outcome = OUTCOMES.STALE_REMOTE;
         this.reloadRequired = true;
-      } else if (anyCancelled) {
+      } else if (this.wasCancelled && !allCommitted) {
         this.outcome = OUTCOMES.CANCELLED;
-        this.reloadRequired = true;
+        this.reloadRequired = statuses.includes(STATUSES.AMBIGUOUS);
+        this.retryable = !this.reloadRequired;
       } else if (anyFailed || anySkipped) {
         this.outcome = OUTCOMES.PARTIAL_FAILURE;
         this.retryable = true;

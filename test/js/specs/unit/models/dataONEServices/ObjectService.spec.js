@@ -39,6 +39,20 @@ define([
     });
 
     describe("construction", () => {
+      it("requires an explicit read URL even when app endpoints exist", () => {
+        globalThis.MetacatUI = {
+          appModel: {
+            get() {
+              return "https://app.example.org/object";
+            },
+          },
+        };
+
+        expect(() => new ObjectService()).to.throw(
+          "ObjectService: readBaseUrl is required",
+        );
+      });
+
       it("uses explicit read and write base URLs", () => {
         const service = new ObjectService({
           readBaseUrl: "https://example.org/object/read/",
@@ -47,9 +61,6 @@ define([
 
         service.client.baseUrl.should.equal("https://example.org/object/read");
         service.readBaseUrl.should.equal("https://example.org/object/read");
-        service.explicitWriteBaseUrl.should.equal(
-          "https://example.org/object/write",
-        );
         service.writeBaseUrl.should.equal("https://example.org/object/write");
       });
 
@@ -75,45 +86,6 @@ define([
         service.client.retryPolicy.maxRetries.should.be.above(0);
       });
 
-      it("falls back to the app model objectServiceUrl on an MN", () => {
-        globalThis.MetacatUI = {
-          appModel: {
-            get(key) {
-              if (key === "objectServiceUrl") {
-                return "https://mn.example.org/object/";
-              }
-              if (key === "resolveServiceUrl") {
-                return "https://cn.example.org/resolve/";
-              }
-              return null;
-            },
-          },
-        };
-
-        const service = new ObjectService();
-        service.client.baseUrl.should.equal("https://mn.example.org/object");
-        service
-          .resolveWriteBaseUrl()
-          .should.equal("https://mn.example.org/object");
-      });
-
-      it("falls back to resolveServiceUrl for reads on a CN", () => {
-        globalThis.MetacatUI = {
-          appModel: {
-            get(key) {
-              if (key === "resolveServiceUrl") {
-                return "https://cn.example.org/resolve/";
-              }
-              return null;
-            },
-          },
-        };
-
-        const service = new ObjectService();
-        service.client.baseUrl.should.equal("https://cn.example.org/resolve");
-        service.resolveWriteBaseUrl().should.equal("");
-      });
-
       it("builds the full request URL from the selected read service", () => {
         const service = new ObjectService({
           readBaseUrl: "https://mn.example.org/object",
@@ -124,71 +96,6 @@ define([
           .should.equal(
             "https://mn.example.org/object/doi:10.5063%2Fexample%2Bdata",
           );
-      });
-
-      it("uses the active alt repo for writes on a CN", () => {
-        globalThis.MetacatUI = {
-          appModel: {
-            get(key) {
-              if (key === "resolveServiceUrl") {
-                return "https://cn.example.org/resolve/";
-              }
-              return null;
-            },
-            getActiveAltRepo() {
-              return {
-                objectServiceUrl: "https://mn.example.org/object/",
-              };
-            },
-          },
-        };
-
-        const service = new ObjectService();
-        service
-          .resolveWriteBaseUrl()
-          .should.equal("https://mn.example.org/object");
-      });
-
-      it("calls setActiveAltRepo once when no active alt repo is selected", () => {
-        const appModel = {
-          get(key) {
-            if (key === "resolveServiceUrl") {
-              return "https://cn.example.org/resolve/";
-            }
-            if (key === "alternateRepositories") {
-              return [{ id: "urn:node:MN1" }];
-            }
-            return null;
-          },
-          getActiveAltRepo: state.sandbox
-            .stub()
-            .onFirstCall()
-            .returns(null)
-            .onSecondCall()
-            .returns({
-              objectServiceUrl: "https://mn.example.org/object/",
-            }),
-          setActiveAltRepo: state.sandbox.stub(),
-        };
-        globalThis.MetacatUI = { appModel };
-
-        const service = new ObjectService();
-        service
-          .resolveWriteBaseUrl("create")
-          .should.equal("https://mn.example.org/object");
-        appModel.setActiveAltRepo.calledOnce.should.be.true;
-      });
-
-      it("throws when no read base URL can be resolved", () => {
-        globalThis.MetacatUI = {
-          appModel: {
-            get() {
-              return null;
-            },
-          },
-        };
-
-        expect(() => new ObjectService()).to.throw(/readBaseUrl is required/i);
       });
     });
 
@@ -222,6 +129,55 @@ define([
 
         const payload = await service.download("pid.1");
         payload.should.equal("payload");
+      });
+
+      it("separates normal reads from write-target reads", async () => {
+        const fetchStub = state.sandbox
+          .stub(globalThis, "fetch")
+          .callsFake(async () => makeResponse(new Blob(["object"])));
+        const service = new ObjectService({
+          readBaseUrl: "https://cn.example.org/resolve",
+          writeBaseUrl: "https://mn.example.org/object",
+        });
+
+        await service.download("doi:10.5063/example", { auth: false });
+        await service.downloadFromWriteTarget("doi:10.5063/example", {
+          auth: false,
+        });
+
+        fetchStub.firstCall.args[0].should.equal(
+          "https://cn.example.org/resolve/doi:10.5063%2Fexample",
+        );
+        fetchStub.secondCall.args[0].should.equal(
+          "https://mn.example.org/object/doi:10.5063%2Fexample",
+        );
+      });
+
+      it("rejects write-target reads when writeBaseUrl is absent", async () => {
+        globalThis.MetacatUI = {
+          appModel: {
+            get() {
+              return "https://app.example.org/object";
+            },
+          },
+        };
+        const service = new ObjectService({
+          readBaseUrl: "https://cn.example.org/resolve",
+        });
+        const requestStub = state.sandbox.spy(service, "requestWithClient");
+
+        let caught = null;
+        try {
+          await service.downloadFromWriteTarget("pid.1");
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        expect(caught.message).to.match(
+          /writeBaseUrl is required for downloadFromWriteTarget/i,
+        );
+        sinon.assert.notCalled(requestStub);
       });
 
       it("does not use persistent cache for object payloads", async () => {
@@ -264,6 +220,14 @@ define([
           readBaseUrl: "https://example.org/object/read",
           writeBaseUrl: "https://example.org/object/write",
         });
+        globalThis.MetacatUI = {
+          appModel: {
+            get: () => "https://other.example.org/object",
+            getActiveAltRepo: () => ({
+              objectServiceUrl: "https://other.example.org/object",
+            }),
+          },
+        };
         const reqStub = state.sandbox
           .stub(service, "requestWithClient")
           .resolves({ data: IDENTIFIER_XML, status: 200 });
@@ -365,34 +329,6 @@ define([
         const opts = reqStub.firstCall.args[1];
         opts.headers.accept.should.equal("application/xml");
         should.not.exist(opts.headers.Accept);
-      });
-
-      it("create throws when no write base URL can be resolved", async () => {
-        globalThis.MetacatUI = {
-          appModel: {
-            get(key) {
-              if (key === "resolveServiceUrl") {
-                return "https://cn.example.org/resolve/";
-              }
-              return null;
-            },
-          },
-        };
-        const service = new ObjectService();
-
-        let caught = null;
-        try {
-          await service.create({
-            pid: "pid.1",
-            object: new Blob(["abc"], { type: "text/plain" }),
-            sysMetaXml: "<systemMetadata></systemMetadata>",
-          });
-        } catch (error) {
-          caught = error;
-        }
-
-        expect(caught).to.be.instanceof(Error);
-        expect(caught.message).to.match(/writeBaseUrl is required for create/i);
       });
 
       it("create validates required params", async () => {

@@ -54,6 +54,12 @@ define([
   const EML_FORMAT_ID = "https://eml.ecoinformatics.org/eml-2.2.0";
   const RESOLVE_BASE = "https://cn.test.dataone.org/cn/v2/resolve";
   const OBJECT_BASE = "https://mn.test.dataone.org/mn/v2/object";
+  const META_BASE = "https://mn.test.dataone.org/mn/v2/meta";
+  const RESOLVER_OPTIONS = {
+    metaServiceUrl: META_BASE,
+    resolveServiceUrl: RESOLVE_BASE,
+    objectServiceUrl: OBJECT_BASE,
+  };
 
   const state = cleanState(() => {
     const sandbox = sinon.createSandbox();
@@ -212,6 +218,7 @@ define([
    */
   function saveServices(overrides = {}) {
     return {
+      resolverOptions: RESOLVER_OPTIONS,
       objectService: overrides.objectService || {
         create: state.sandbox
           .stub()
@@ -223,6 +230,9 @@ define([
       sysMetaService: overrides.sysMetaService || {
         update: state.sandbox.stub().resolves({ data: "" }),
         invalidate: state.sandbox.stub().resolves(),
+        downloadFromWriteTarget: state.sandbox
+          .stub()
+          .callsFake(async (pid) => systemMetadata(pid)),
         download: state.sandbox.stub().callsFake(async (pid) =>
           systemMetadata(pid, {
             formatId:
@@ -352,6 +362,8 @@ define([
       ],
     });
     const services = saveServices();
+    services.objectService.download = network.downloadStub;
+    services.objectService.readBaseUrl = RESOLVE_BASE;
     const pkg = new DataPackage(services);
     await pkg.loadEditablePackage("meta.1");
     return { pkg, rm, services, network };
@@ -359,14 +371,6 @@ define([
 
   describe("DataPackage workflows: editable Resource Map preflight", () => {
     it("uses the configured MN endpoint to block contradictory member identity", async () => {
-      const appModel = globalThis.MetacatUI?.appModel;
-      const originalGet = appModel.get;
-      state.sandbox.stub(appModel, "get").callsFake(function get(key) {
-        if (key === "resolveServiceUrl") return RESOLVE_BASE;
-        if (key === "objectServiceUrl") return OBJECT_BASE;
-        return originalGet.call(this, key);
-      });
-
       const rm = makeResourceMap({
         memberPids: ["meta.1"],
         links: [],
@@ -402,6 +406,8 @@ define([
         resourceMapXmlByPid: { resource_map_1: xml },
       });
       const pkg = new DataPackage({
+        objectServiceOptions: { readBaseUrl: OBJECT_BASE },
+        resolverOptions: RESOLVER_OPTIONS,
         versionTracker: {
           getLatestVersions: state.sandbox.stub().resolves(["resource_map_1"]),
         },
@@ -452,7 +458,10 @@ define([
           { id: "data.1", formatId: "text/csv", formatType: "DATA" },
         ],
       });
-      const pkg = new DataPackage();
+      const pkg = new DataPackage({
+        objectServiceOptions: { readBaseUrl: RESOLVE_BASE },
+        resolverOptions: RESOLVER_OPTIONS,
+      });
 
       const result = await pkg.resolveFromPid("meta.1");
       result.isMetadata.should.equal(true);
@@ -490,7 +499,10 @@ define([
         },
       });
       network.indexStub.rejects(httpError(503, "index unavailable"));
-      const pkg = new DataPackage();
+      const pkg = new DataPackage({
+        objectServiceOptions: { readBaseUrl: RESOLVE_BASE },
+        resolverOptions: RESOLVER_OPTIONS,
+      });
 
       const result = await pkg.resolveFromPid("data.1");
       result.isData.should.equal(true);
@@ -521,7 +533,10 @@ define([
           { id: "data.1", formatId: "text/csv", formatType: "DATA" },
         ],
       });
-      const pkg = new DataPackage();
+      const pkg = new DataPackage({
+        objectServiceOptions: { readBaseUrl: RESOLVE_BASE },
+        resolverOptions: RESOLVER_OPTIONS,
+      });
 
       const result = await pkg.resolveFromPid(bareRmPid);
       result.isResourceMap.should.equal(true);
@@ -559,7 +574,10 @@ define([
           },
         ],
       });
-      const pkg = new DataPackage();
+      const pkg = new DataPackage({
+        objectServiceOptions: { readBaseUrl: RESOLVE_BASE },
+        resolverOptions: RESOLVER_OPTIONS,
+      });
 
       await pkg.resolveFromPid("meta.1");
       await pkg.getManifestFromResourceMap({ merge: true });
@@ -579,7 +597,7 @@ define([
           throw httpError(401, "not authorized");
         },
       });
-      const pkg = new DataPackage();
+      const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
 
       const result = await pkg.resolveFromPid("private.1");
 
@@ -593,7 +611,7 @@ define([
         resolve: resolverResult({ pid: "missing.1", formatType: undefined }),
         getSysMeta: async () => null,
       });
-      const pkg = new DataPackage();
+      const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
 
       const result = await pkg.resolveFromPid("missing.1");
 
@@ -630,7 +648,10 @@ define([
       network.indexStub.resolves({
         response: { numFound: memberPids.length + 1, docs: broadDocs },
       });
-      const pkg = new DataPackage();
+      const pkg = new DataPackage({
+        objectServiceOptions: { readBaseUrl: RESOLVE_BASE },
+        resolverOptions: RESOLVER_OPTIONS,
+      });
 
       await pkg.resolveFromPid("meta.1");
       await pkg.getManifestFromResourceMap({ merge: true });
@@ -924,7 +945,9 @@ define([
         sysMetaService: {
           update: state.sandbox.stub().resolves({ data: "" }),
           invalidate: state.sandbox.stub().resolves(),
-          download: state.sandbox.stub().rejects(httpError(404, "missing")),
+          downloadFromWriteTarget: state.sandbox
+            .stub()
+            .rejects(httpError(404, "missing")),
         },
       });
       const rm = makeResourceMap({
@@ -1091,7 +1114,7 @@ define([
       });
       // Verifying the ambiguous failure finds nothing committed (404), so the
       // retry is safe to proceed rather than duplicate a committed write.
-      services.sysMetaService.download.callsFake(async () => {
+      services.sysMetaService.downloadFromWriteTarget.callsFake(async () => {
         throw httpError(404, "not found");
       });
 
@@ -1099,6 +1122,11 @@ define([
 
       result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
       rmAttempts.should.equal(2);
+      sinon.assert.calledOnceWithExactly(
+        services.sysMetaService.downloadFromWriteTarget,
+        pkg.rootResourceMapPid,
+        { signal: sinon.match.any },
+      );
       pkg.hasUnsavedChanges().should.equal(false);
     });
 
@@ -1112,7 +1140,7 @@ define([
         }
         return { data: { identifier: pid } };
       });
-      services.sysMetaService.download.callsFake(async () => {
+      services.sysMetaService.downloadFromWriteTarget.callsFake(async () => {
         throw httpError(404, "not found");
       });
 
@@ -1129,6 +1157,38 @@ define([
   // --------------------------------------------------------------------------
 
   describe("DataPackage workflows: orphaned metadata recovery", () => {
+    it("uses configured endpoints for default recovery collaborators", () => {
+      const objectService = { readBaseUrl: OBJECT_BASE };
+      const sysMetaService = {
+        readBaseUrl: "https://mn.test.dataone.org/mn/v2/meta",
+      };
+      const recovery = makeRecovery({ objectService, sysMetaService });
+
+      recovery.versionTracker.metaServiceUrl.should.equal(
+        sysMetaService.readBaseUrl,
+      );
+      recovery.resolver.objectService.should.equal(objectService);
+      recovery.resolver.versionTracker.metaServiceUrl.should.equal(
+        sysMetaService.readBaseUrl,
+      );
+      recovery.resolver.resolveServiceUrl.should.equal(RESOLVE_BASE);
+      recovery.resolver.objectServiceUrl.should.equal(OBJECT_BASE);
+    });
+
+    it("requires explicitly configured object and sysmeta services", () => {
+      expect(
+        () =>
+          new DataPackageRecovery({
+            resolveServiceUrl: RESOLVE_BASE,
+            versionTracker: {},
+            resolver: {},
+            recoveryStore: {},
+          }),
+      ).to.throw(
+        "DataPackageRecovery: objectService and sysMetaService are required",
+      );
+    });
+
     it("reports resource_map_unavailable when a fresh load finds no resource map", async () => {
       // Post-crash server state: the metadata committed, but no resource map
       // exists and none can be resolved (index/storage/sysmeta/guess all miss).
@@ -1139,7 +1199,7 @@ define([
           indexMatch: { formatId: EML_FORMAT_ID },
         }),
       });
-      const pkg = new DataPackage();
+      const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
 
       let error = null;
       try {
@@ -1275,14 +1335,12 @@ define([
         create: state.sandbox.stub().resolves({}),
       };
       const sysMetaService = {
-        download: state.sandbox.stub().callsFake(async (pid) => {
-          if (pid === "resource_map_2") {
-            return SystemMetadata.fromXml(
-              objectService.update.firstCall.args[0].sysMetaXml,
-            );
-          }
-          return systemMetadata(pid);
-        }),
+        download: state.sandbox
+          .stub()
+          .callsFake(async (pid) => systemMetadata(pid)),
+        downloadFromWriteTarget: state.sandbox
+          .stub()
+          .resolves(SystemMetadata.fromXml(record.rmSysMetaXml)),
       };
       const resolver = { addToStorage: state.sandbox.stub().resolves() };
 
@@ -1296,6 +1354,12 @@ define([
 
       result.recovered.should.equal(true);
       result.resourceMapPid.should.equal("resource_map_2");
+      sinon.assert.calledOnceWithExactly(
+        sysMetaService.downloadFromWriteTarget,
+        "resource_map_2",
+        { signal: undefined },
+      );
+      sinon.assert.neverCalledWith(sysMetaService.download, "resource_map_2");
       recoveryStore.remove.calledWith("meta.orphan").should.equal(true);
     });
 
@@ -1322,9 +1386,19 @@ define([
       const objectService = {
         update: state.sandbox.stub().rejects(writeError),
         create: state.sandbox.stub(),
+        downloadFromWriteTarget: state.sandbox.stub().resolves(
+          makeResourceMap({
+            pid: "resource_map_other",
+            memberPids: ["meta.other"],
+            links: [],
+          }).serialize({ validate: false }),
+        ),
       };
       const sysMetaService = {
-        download: state.sandbox.stub().callsFake(async (pid) => {
+        download: state.sandbox
+          .stub()
+          .callsFake(async (pid) => systemMetadata(pid)),
+        downloadFromWriteTarget: state.sandbox.stub().callsFake(async (pid) => {
           if (pid === "resource_map_2") {
             return systemMetadata(pid, {
               formatId: RESOURCE_MAP_FORMAT_ID,
@@ -1357,20 +1431,72 @@ define([
         resolver,
         recoveryStore,
       });
+      const signal = new AbortController().signal;
 
       let error;
       try {
-        await recovery.recover("meta.orphan");
+        await recovery.recover("meta.orphan", { signal });
       } catch (caught) {
         error = caught;
       }
 
       should.equal(error, writeError);
-      resolver.verify
-        .calledWith("resource_map_other", "meta.orphan")
-        .should.equal(true);
+      sinon.assert.calledOnceWithExactly(
+        objectService.downloadFromWriteTarget,
+        "resource_map_other",
+        { responseType: "text", signal },
+      );
+      sinon.assert.notCalled(resolver.verify);
       resolver.addToStorage.called.should.equal(false);
       recoveryStore.remove.called.should.equal(false);
+    });
+
+    it("retains recovery state when receiver confirmation is unavailable", async () => {
+      const rmXml = makeResourceMap({
+        pid: "resource_map_2",
+        memberPids: ["meta.orphan"],
+        links: [],
+      }).serialize({ validate: false });
+      const recoveryStore = {
+        get: state.sandbox.stub().resolves({
+          metadataPid: "meta.orphan",
+          rmPid: "resource_map_2",
+          obsoletesRmPid: "resource_map_1",
+          rmXml,
+          rmSysMetaXml: systemMetadata("resource_map_2", {
+            formatId: RESOURCE_MAP_FORMAT_ID,
+            obsoletes: "resource_map_1",
+          }).serialize(),
+        }),
+        remove: state.sandbox.stub().resolves(),
+      };
+      const objectService = {
+        update: state.sandbox.stub(),
+        create: state.sandbox.stub(),
+      };
+      const sysMetaService = {
+        download: state.sandbox
+          .stub()
+          .callsFake(async (pid) => systemMetadata(pid)),
+        downloadFromWriteTarget: state.sandbox.stub(),
+      };
+      const resolver = { addToStorage: state.sandbox.stub().resolves() };
+      const recovery = makeRecovery({
+        objectService,
+        sysMetaService,
+        resolver,
+        recoveryStore,
+      });
+      const verificationError = httpError(503, "receiver unavailable");
+      objectService.update.rejects({ name: "TimeoutError" });
+      sysMetaService.downloadFromWriteTarget.rejects(verificationError);
+
+      const result = await recovery.recover("meta.orphan");
+
+      result.should.deep.equal({ recovered: false, reason: "ambiguous" });
+      sinon.assert.notCalled(resolver.addToStorage);
+      sinon.assert.notCalled(recoveryStore.remove);
+      sinon.assert.calledOnce(objectService.update);
     });
 
     it("reconstructs the resource map from the prior version when no record exists (R2)", async () => {

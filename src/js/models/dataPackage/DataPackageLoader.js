@@ -504,7 +504,23 @@ define([
         LOAD_PHASES.RESOLVE,
         { inputId },
       );
-      const resolver = new ResourceMapResolver(options.resolverOptions || {});
+      const resolverOptions = { ...(options.resolverOptions || {}) };
+      if (
+        !resolverOptions.objectService &&
+        (dataPackage.objectService ||
+          dataPackage.objectServiceOptions?.readBaseUrl)
+      ) {
+        resolverOptions.objectService = dataPackage.getObjectService();
+      }
+      if (
+        !resolverOptions.metaServiceUrl &&
+        (dataPackage.sysMetaService ||
+          dataPackage.sysMetaServiceOptions?.readBaseUrl)
+      ) {
+        resolverOptions.metaServiceUrl =
+          dataPackage.getSysMetaService().readBaseUrl;
+      }
+      const resolver = new ResourceMapResolver(resolverOptions);
       resolver.events.on("update", () => {
         DataPackageLoader.reportLoadProgress(dataPackage, LOAD_PHASES.RESOLVE, {
           inputId,

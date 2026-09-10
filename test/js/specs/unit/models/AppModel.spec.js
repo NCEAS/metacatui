@@ -54,5 +54,82 @@ define(["models/AppModel"], (AppModel) => {
         );
       });
     });
+
+    describe("getDataPackageServiceOptions", () => {
+      it("uses the local Member Node for reads and writes", () => {
+        const context = {
+          get: sinon.stub(),
+          getActiveAltRepo: sinon.stub(),
+          setActiveAltRepoIfRequired: sinon.stub(),
+        };
+        context.get
+          .withArgs("objectServiceUrl")
+          .returns("https://mn.example.org/object/");
+        context.get
+          .withArgs("metaServiceUrl")
+          .returns("https://mn.example.org/meta/");
+        context.get
+          .withArgs("resolveServiceUrl")
+          .returns("https://cn.example.org/resolve/");
+
+        AppModel.prototype.getDataPackageServiceOptions
+          .call(context)
+          .should.deep.equal({
+            objectServiceOptions: {
+              readBaseUrl: "https://mn.example.org/object/",
+              writeBaseUrl: "https://mn.example.org/object/",
+            },
+            sysMetaServiceOptions: {
+              readBaseUrl: "https://mn.example.org/meta/",
+              writeBaseUrl: "https://mn.example.org/meta/",
+            },
+            resolverOptions: {
+              metaServiceUrl: "https://mn.example.org/meta/",
+              resolveServiceUrl: "https://cn.example.org/resolve/",
+              objectServiceUrl: "https://mn.example.org/object/",
+            },
+          });
+        sinon.assert.notCalled(context.getActiveAltRepo);
+        sinon.assert.notCalled(context.setActiveAltRepoIfRequired);
+      });
+
+      it("keeps Coordinating Node packages read-only", () => {
+        const context = {
+          get: sinon.stub(),
+          getActiveAltRepo: sinon.stub().returns({
+            objectServiceUrl: "https://mn.example.org/object/",
+            metaServiceUrl: "https://mn.example.org/meta/",
+          }),
+          setActiveAltRepoIfRequired: sinon.stub(),
+        };
+        context.get.withArgs("objectServiceUrl").returns(null);
+        context.get
+          .withArgs("metaServiceUrl")
+          .returns("https://cn.example.org/meta/");
+        context.get
+          .withArgs("resolveServiceUrl")
+          .returns("https://cn.example.org/resolve/");
+
+        AppModel.prototype.getDataPackageServiceOptions
+          .call(context)
+          .should.deep.equal({
+            objectServiceOptions: {
+              readBaseUrl: "https://cn.example.org/resolve/",
+              writeBaseUrl: undefined,
+            },
+            sysMetaServiceOptions: {
+              readBaseUrl: "https://cn.example.org/meta/",
+              writeBaseUrl: undefined,
+            },
+            resolverOptions: {
+              metaServiceUrl: "https://cn.example.org/meta/",
+              resolveServiceUrl: "https://cn.example.org/resolve/",
+              objectServiceUrl: null,
+            },
+          });
+        sinon.assert.notCalled(context.getActiveAltRepo);
+        sinon.assert.notCalled(context.setActiveAltRepoIfRequired);
+      });
+    });
   });
 });

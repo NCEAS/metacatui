@@ -4,8 +4,6 @@ define([
   "common/ErrorUtilities",
   "common/Utilities",
   "common/ValueUtilities",
-  "models/dataONEServices/ObjectService",
-  "models/dataONEServices/SysMetaService",
   "models/sysmeta/SystemMetadata",
   "models/sysmeta/VersionTracker",
   "models/resourceMap/ResourceMap",
@@ -17,8 +15,6 @@ define([
   ErrorUtilities,
   Utilities,
   Values,
-  ObjectService,
-  SysMetaService,
   SystemMetadata,
   VersionTracker,
   ResourceMap,
@@ -112,8 +108,8 @@ define([
      * to ResourceMap parsing
      * @param {string} [options.objectServiceUrl] Object service base URL passed
      * to ResourceMap parsing for configured endpoint identity checks
-     * @param {ObjectService} [options.objectService] Object write service
-     * @param {SysMetaService} [options.sysMetaService] System metadata service
+     * @param {ObjectService} options.objectService Object write service
+     * @param {SysMetaService} options.sysMetaService System metadata service
      * @param {VersionTracker} [options.versionTracker] Version tracker used to
      * map prior members to their latest versions
      * @param {ResourceMapResolver} [options.resolver] Resolver for the prior
@@ -134,10 +130,24 @@ define([
         "resolveServiceUrl required",
       );
       this.objectServiceUrl = Values.normalizeText(objectServiceUrl) || null;
-      this.objectService = objectService || new ObjectService();
-      this.sysMetaService = sysMetaService || new SysMetaService();
-      this.versionTracker = versionTracker || new VersionTracker();
-      this.resolver = resolver || new ResourceMapResolver();
+      if (!objectService || !sysMetaService) {
+        throw new Error(
+          "DataPackageRecovery: objectService and sysMetaService are required",
+        );
+      }
+      this.objectService = objectService;
+      this.sysMetaService = sysMetaService;
+      this.versionTracker =
+        versionTracker ||
+        new VersionTracker({ metaServiceUrl: sysMetaService.readBaseUrl });
+      this.resolver =
+        resolver ||
+        new ResourceMapResolver({
+          metaServiceUrl: sysMetaService.readBaseUrl,
+          resolveServiceUrl,
+          objectServiceUrl,
+          objectService,
+        });
       this.recoveryStore = recoveryStore || new UploadRecoveryStore();
     }
 
@@ -329,7 +339,8 @@ define([
      * @param {string} plan.rmSysMetaXml Serialized resource map system metadata
      * @param {string} [plan.fileName] Resource map file name
      * @param {AbortSignal} [signal] Abort signal
-     * @returns {Promise<string>} The committed resource map PID
+     * @returns {Promise<string|null>} The committed resource map PID, or null
+     * when receiver verification cannot complete
      * @private
      * @throws {Error} When the resource map write cannot be confirmed
      */
@@ -359,11 +370,21 @@ define([
         return rmPid;
       } catch (error) {
         if (ErrorUtilities.isAbortError(error) || signal?.aborted) throw error;
-        const committed = await this._resolveAlreadyCommitted(
-          { metadataPid, rmPid, obsoletesRmPid, rmSysMetaXml },
-          signal,
-        );
-        if (committed) return committed;
+        try {
+          const committed = await this._resolveAlreadyCommitted(
+            { metadataPid, rmPid, obsoletesRmPid, rmSysMetaXml },
+            signal,
+          );
+          if (committed) return committed;
+        } catch (verificationError) {
+          if (
+            ErrorUtilities.isAbortError(verificationError) ||
+            signal?.aborted
+          ) {
+            throw verificationError;
+          }
+          return null;
+        }
         throw error;
       }
     }
@@ -385,7 +406,7 @@ define([
       { metadataPid, rmPid, obsoletesRmPid, rmSysMetaXml },
       signal,
     ) {
-      const intended = await this._getSysMeta(rmPid, signal);
+      const intended = await this._getWriteTargetSysMeta(rmPid, signal);
       if (intended) {
         const expected = SystemMetadata.fromXml(rmSysMetaXml).toJSON();
         const remote = sysMetaJson(intended);
@@ -395,13 +416,24 @@ define([
         }
       }
       if (obsoletesRmPid) {
-        const prior = await this._getSysMeta(obsoletesRmPid, signal);
+        const prior = await this._getWriteTargetSysMeta(obsoletesRmPid, signal);
         const candidatePid = sysMetaJson(prior).obsoletedBy;
         if (candidatePid) {
-          const candidate = await this._getSysMeta(candidatePid, signal);
+          const candidate = await this._getWriteTargetSysMeta(
+            candidatePid,
+            signal,
+          );
+          const candidateXml = await this.objectService.downloadFromWriteTarget(
+            candidatePid,
+            { responseType: "text", signal },
+          );
+          const candidateMap = ResourceMap.fromXml(candidatePid, candidateXml, {
+            resolveServiceUrl: this.resolveServiceUrl,
+            objectServiceUrl: this.objectServiceUrl,
+          });
           if (
             sysMetaJson(candidate).obsoletes === obsoletesRmPid &&
-            (await this.resolver.verify(candidatePid, metadataPid, { signal }))
+            candidateMap.getMemberPids().includes(metadataPid)
           ) {
             return candidatePid;
           }
@@ -462,6 +494,28 @@ define([
     }
 
     /**
+     * Download receiver system metadata, returning null when confirmed absent.
+     * @param {string} pid PID to look up
+     * @param {AbortSignal} [signal] Abort signal
+     * @returns {Promise<object|null>} System metadata, or null
+     * @private
+     * @since 0.0.0
+     * @throws {Error} When receiver system metadata cannot be downloaded
+     */
+    async _getWriteTargetSysMeta(pid, signal) {
+      try {
+        return (
+          (await this.sysMetaService.downloadFromWriteTarget(pid, {
+            signal,
+          })) || null
+        );
+      } catch (error) {
+        if (error?.status === 404 && !signal?.aborted) return null;
+        throw error;
+      }
+    }
+
+    /**
      * Commit a recovered resource map: write it, cache the mapping so the
      * package resolves immediately, clear the now redundant record, and report
      * success. Shared by both strategies so every recovery finishes the same
@@ -470,7 +524,7 @@ define([
      * @param {object} plan Resource map write plan for {@link #_writeResourceMap}
      * @param {string} strategy Recovery strategy name
      * @param {AbortSignal} [signal] Abort signal
-     * @returns {Promise<object>} Successful recovery result
+     * @returns {Promise<object>} Recovery result
      * @private
      */
     async _commitRecovery(metadataPid, plan, strategy, signal) {
@@ -478,6 +532,9 @@ define([
         { metadataPid, ...plan },
         signal,
       );
+      if (!resourceMapPid) {
+        return { recovered: false, reason: "ambiguous" };
+      }
       await this.resolver
         .addToStorage(metadataPid, resourceMapPid)
         .catch(() => {});

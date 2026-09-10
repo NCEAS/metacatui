@@ -1892,6 +1892,10 @@ define([
             objectFormats: this.objectFormats,
             versionTracker,
             resolverOptions: this.resolverOptions,
+            objectService: this.objectService,
+            objectServiceOptions: this.objectServiceOptions,
+            sysMetaService: this.sysMetaService,
+            sysMetaServiceOptions: this.sysMetaServiceOptions,
           });
           await newDataPackage.resolveFromPid(newestRm, { signal });
           return newDataPackage.getLatestVersionPid({

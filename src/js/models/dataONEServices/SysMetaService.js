@@ -1,8 +1,16 @@
 define([
   "models/dataONEServices/DataONEService",
+  "models/dataONEServices/DataONEHttpClient",
   "models/sysmeta/SystemMetadata",
+  "common/UrlUtilities",
   "common/ValueUtilities",
-], (DataONEService, SystemMetadata, ValueUtilities) => {
+], (
+  DataONEService,
+  DataONEHttpClient,
+  SystemMetadata,
+  UrlUtilities,
+  ValueUtilities,
+) => {
   /**
    * Service for fetching and caching DataONE system metadata.
    * @class SysMetaService
@@ -12,10 +20,45 @@ define([
     /**
      * @param {object} [options] Options for the SysMetaService. See
      * {@link DataONEService.optionsFromDescriptor} for the shared option shape.
-     * @param {string} [options.baseUrl] Base URL for the DataONE endpoint.
+     * @param {string} [options.readBaseUrl] Base URL for System Metadata reads
+     * @param {string} [options.writeBaseUrl] Base URL for System Metadata
+     * writes and reads after a write
      */
     constructor(options = {}) {
-      super(SysMetaService.optionsFromDescriptor(options));
+      const readBaseUrl = UrlUtilities.normalizeUrl(options.readBaseUrl);
+      if (!readBaseUrl) {
+        throw new Error("SysMetaService: readBaseUrl is required");
+      }
+      const serviceOptions = SysMetaService.optionsFromDescriptor({
+        ...options,
+        baseUrl: readBaseUrl,
+      });
+      super(serviceOptions);
+      this.readBaseUrl = readBaseUrl;
+      this.writeBaseUrl = UrlUtilities.normalizeUrl(options.writeBaseUrl);
+      this.writeClientConfig = {
+        ...serviceOptions.clientConfig,
+        baseUrl: "",
+      };
+    }
+
+    /**
+     * Return the client for System Metadata writes and subsequent reads.
+     * @param {string} operation Operation name for error reporting
+     * @returns {DataONEHttpClient} Client for the write endpoint
+     * @private
+     * @since 0.0.0
+     */
+    getWriteClient(operation) {
+      if (!this.writeBaseUrl) {
+        throw new Error(
+          `SysMetaService: writeBaseUrl is required for ${operation}`,
+        );
+      }
+      return DataONEHttpClient.get({
+        ...this.writeClientConfig,
+        baseUrl: this.writeBaseUrl,
+      });
     }
 
     /**
@@ -60,6 +103,32 @@ define([
     }
 
     /**
+     * Fetch uncached System Metadata from the repository that accepts writes.
+     * @param {string} pid PID of the object to fetch System Metadata for
+     * @param {object} [options] Request options
+     * @returns {Promise<SystemMetadata>} Parsed System Metadata model
+     * @since 0.0.0
+     */
+    async downloadFromWriteTarget(pid, options = {}) {
+      const normalizedPid = this.constructor.normalizePid(pid, "pid");
+      const response = await this.requestWithClient(
+        this.getWriteClient("downloadFromWriteTarget"),
+        this.constructor.buildRequestOptions({
+          options,
+          path: this.constructor.encodePidPath(normalizedPid),
+          method: "GET",
+        }),
+      );
+
+      try {
+        return SystemMetadata.fromXml(response.data);
+      } catch (error) {
+        error.message = `Failed to parse SystemMetadata XML for PID ${normalizedPid}: ${error.message}`;
+        throw error;
+      }
+    }
+
+    /**
      * Remove a cached System Metadata record for a PID.
      * @param {string} pid PID to invalidate.
      * @returns {Promise<void>} Promise resolving when invalidation completes.
@@ -82,15 +151,21 @@ define([
         "SysMetaService.upload requires sysMetaXml",
       );
       // TODO: accept pid?
-      return super.upload("", {
-        ...options,
-        method: "POST",
-        headers: {
-          ...(options.headers || {}),
-          "Content-Type": "application/xml",
-        },
-        body: normalizedSysMetaXml,
-      });
+      return this.requestWithClient(
+        this.getWriteClient("upload"),
+        this.constructor.buildRequestOptions({
+          options: {
+            ...options,
+            headers: {
+              ...(options.headers || {}),
+              "Content-Type": "application/xml",
+            },
+          },
+          path: "",
+          method: "POST",
+          body: normalizedSysMetaXml,
+        }),
+      );
     }
 
     /**
@@ -118,23 +193,24 @@ define([
       });
       formData.append("sysmeta", xmlBlob, "sysmeta.xml");
 
-      return super.upload(this.constructor.encodePidPath(normalizedPid), {
-        ...options,
-        method: "PUT",
-        useCache: false,
-        dedupe: false,
-        transport: "xhr",
-        responseType: "text",
-        encodePath: false,
-        body: formData,
-      });
+      return this.requestWithClient(
+        this.getWriteClient("update"),
+        this.constructor.buildRequestOptions({
+          options,
+          path: this.constructor.encodePidPath(normalizedPid),
+          method: "PUT",
+          dedupe: false,
+          responseType: "text",
+          body: formData,
+          extra: { transport: "xhr", useCache: false },
+        }),
+      );
     }
   }
 
   /** @type {DataONEService#DataONEServiceConfig} */
   SysMetaService.config = {
     endpoint: "sysmeta",
-    appModelKeys: ["metaServiceUrl"],
     client: {
       timeoutMs: 2 * 60 * 1000, // 2 minutes
       methods: ["GET", "POST", "PUT"],

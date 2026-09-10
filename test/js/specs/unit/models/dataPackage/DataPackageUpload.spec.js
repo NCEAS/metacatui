@@ -7,6 +7,9 @@ define([
   "models/dataPackage/UploadResult",
   "models/resourceMap/ResourceMapResolver",
   "models/sysmeta/SystemMetadata",
+  "models/dataONEServices/ObjectService",
+  "models/dataONEServices/SysMetaService",
+  "models/dataONEServices/DataONEHttpClient",
 ], (
   cleanState,
   trackConcurrency,
@@ -16,10 +19,17 @@ define([
   UploadResult,
   ResourceMapResolver,
   SystemMetadata,
+  ObjectService,
+  SysMetaService,
+  DataONEHttpClient,
 ) => {
   const should = chai.should();
   const { expect } = chai;
   const RESOURCE_MAP_FORMAT_ID = "http://www.openarchives.org/ore/terms";
+  const RESOLVER_OPTIONS = {
+    metaServiceUrl: "https://example.org/sysmeta",
+    resolveServiceUrl: "https://example.org/resolve",
+  };
   const PHASES = {
     DATA: "data",
     METADATA: "metadata",
@@ -164,19 +174,25 @@ define([
       formatId: RESOURCE_MAP_FORMAT_ID,
       objectModel: rmModel,
     });
+    const resolvedSysMetaService = sysMetaService || {
+      downloadFromWriteTarget: state.sandbox.stub().resolves(systemMetadata()),
+      invalidate: state.sandbox.stub().resolves(),
+    };
     const pkg = new DataPackage({
       members: [dataMember, rmMember],
+      resolverOptions: RESOLVER_OPTIONS,
       objectService: objectService || {
         create: state.sandbox
           .stub()
           .resolves({ data: { identifier: "data.1" } }),
         update: state.sandbox.stub().resolves({ data: { identifier: "rm.2" } }),
       },
-      sysMetaService: sysMetaService || {
-        invalidate: state.sandbox.stub().resolves(),
-      },
+      sysMetaService: resolvedSysMetaService,
       versionTracker: {
         getLatestVersion: state.sandbox.stub().callsFake(async (pid) => pid),
+        getAllVersionsOneDirection: state.sandbox
+          .stub()
+          .resolves({ versions: [] }),
       },
     });
     pkg.rootResourceMapPid = "rm.2";
@@ -192,6 +208,7 @@ define([
         targetPid: "data.1",
         payload: new Blob(["data"]),
         sysMetaXml: "<sysmeta/>",
+        verification: { checksum: { value: "checksum", algorithm: "MD5" } },
       },
       {
         phase: PHASES.RESOURCE_MAP,
@@ -201,11 +218,16 @@ define([
         targetPid: "rm.2",
         payload: new Blob(['<rdf:RDF rdf:about="rm.2"/>']),
         sysMetaXml: "<sysmeta/>",
+        verification: { checksum: { value: "checksum", algorithm: "MD5" } },
       },
     ]);
   }
 
-  function makeAccessPolicyPackage({ update, download } = {}) {
+  function makeAccessPolicyPackage({
+    update,
+    download,
+    downloadFromWriteTarget,
+  } = {}) {
     const publicPolicy = [{ subjects: ["public"], permissions: ["read"] }];
     const dataMember = new DataPackageMember({
       pid: "data.1",
@@ -229,6 +251,11 @@ define([
         state.sandbox
           .stub()
           .resolves(systemMetadata({ accessPolicy: publicPolicy })),
+      downloadFromWriteTarget:
+        downloadFromWriteTarget ||
+        state.sandbox
+          .stub()
+          .resolves(systemMetadata({ accessPolicy: publicPolicy })),
       update: update || state.sandbox.stub().resolves({ data: "" }),
       invalidate: state.sandbox.stub().resolves(),
     };
@@ -249,6 +276,9 @@ define([
           }),
         ),
         getLatestVersion: state.sandbox.stub().callsFake(async (pid) => pid),
+        getAllVersionsOneDirection: state.sandbox
+          .stub()
+          .resolves({ versions: [] }),
       },
       authorizationService: {
         checkAll: state.sandbox
@@ -1552,8 +1582,11 @@ define([
         },
         versionTracker: {
           getLatestVersion: state.sandbox.stub().callsFake(async (pid) => pid),
+          getAllVersionsOneDirection: state.sandbox
+            .stub()
+            .resolves({ versions: [] }),
         },
-        resolverOptions: { storage: resolverStorage },
+        resolverOptions: { ...RESOLVER_OPTIONS, storage: resolverStorage },
       });
       pkg.rootResourceMapPid = "rm.2";
       const removeRecovery = state.sandbox.stub().resolves();
@@ -1614,10 +1647,14 @@ define([
       const pkg = new DataPackage({
         members: [primary, nested, rmMember],
         primaryMetadataPid: "metadata.2",
+        resolverOptions: RESOLVER_OPTIONS,
         objectService,
         sysMetaService: { invalidate: state.sandbox.stub().resolves() },
         versionTracker: {
           getLatestVersion: state.sandbox.stub().callsFake(async (pid) => pid),
+          getAllVersionsOneDirection: state.sandbox
+            .stub()
+            .resolves({ versions: [] }),
         },
       });
       pkg.rootResourceMapPid = "rm.2";
@@ -1813,108 +1850,219 @@ define([
   });
 
   describe("ambiguous writes and retry", () => {
-    [PHASES.DATA, PHASES.METADATA].forEach((phase) => {
-      [OPERATIONS.CREATE, OPERATIONS.UPDATE].forEach((operation) => {
-        it(`retries a verified-missing ${phase} ${operation} after timeout and 503`, async () => {
-          const clock = state.sandbox.useFakeTimers({ toFake: ["setTimeout"] });
-          const write = state.sandbox.stub();
-          write.onFirstCall().rejects({ name: "TimeoutError" });
-          write.onSecondCall().rejects({ status: 503 });
-          write.onThirdCall().resolves({ data: { identifier: "data.1" } });
-          const download = state.sandbox.stub().rejects({ status: 404 });
-          const { pkg, dataMember } = makeExecutorPackage({
-            objectService: { [operation]: write },
-            sysMetaService: {
-              download,
-              invalidate: state.sandbox.stub().resolves(),
-            },
-          });
-          const action = {
-            ...dataAndResourceMapActions()[0],
-            id: `${operation}:data.1`,
-            phase,
-            operation,
-            sourcePid: operation === OPERATIONS.UPDATE ? "data.old" : null,
+    [
+      { value: "abcdef", algorithm: null, confirmed: false },
+      { value: "abcdef", algorithm: "SHA-1", confirmed: false },
+      { value: "ABCDEF", algorithm: "md5", confirmed: true },
+    ].forEach(({ value, algorithm, confirmed }) => {
+      it(`verifies checksum ${value} with algorithm ${algorithm} as ${confirmed ? "confirmed" : "ambiguous"}`, async () => {
+        const remote = systemMetadata();
+        remote.checksum.set(value, algorithm);
+        const create = state.sandbox.stub().rejects({ name: "TimeoutError" });
+        const readDownload = state.sandbox.stub().rejects({ status: 404 });
+        const writeTargetDownload = state.sandbox.stub().resolves(remote);
+        const { pkg, dataMember } = makeExecutorPackage({
+          objectService: { create },
+          sysMetaService: {
+            download: readDownload,
+            downloadFromWriteTarget: writeTargetDownload,
+            invalidate: state.sandbox.stub().resolves(),
+          },
+        });
+        const action = {
+          ...dataAndResourceMapActions()[0],
+          verification: { checksum: { value: "abcdef", algorithm: "MD5" } },
+        };
+
+        const result = await executeActions(pkg, [action]);
+
+        result
+          .getStatus(action.id)
+          .should.equal(
+            confirmed
+              ? UploadResult.Statuses.SUCCEEDED
+              : UploadResult.Statuses.AMBIGUOUS,
+          );
+        expect(dataMember.remotePid).to.equal(confirmed ? "data.1" : null);
+        sinon.assert.calledOnce(create);
+        sinon.assert.notCalled(readDownload);
+        sinon.assert.calledWithExactly(writeTargetDownload, action.targetPid, {
+          signal: sinon.match.any,
+        });
+        writeTargetDownload.callCount.should.equal(confirmed ? 1 : 2);
+      });
+    });
+
+    it("keeps a write ambiguous when its repository has no metadata endpoint", async () => {
+      const create = state.sandbox.stub().rejects({ name: "TimeoutError" });
+      const downloadFromWriteTarget = state.sandbox
+        .stub()
+        .throws(new Error("writeBaseUrl is required"));
+      const { pkg, dataMember } = makeExecutorPackage({
+        objectService: { create },
+        sysMetaService: { downloadFromWriteTarget },
+      });
+
+      const result = await executeActions(pkg, [
+        dataAndResourceMapActions()[0],
+      ]);
+
+      result
+        .getStatus("create:data.1")
+        .should.equal(UploadResult.Statuses.AMBIGUOUS);
+      dataMember.remoteState.should.equal(
+        DataPackageMember.RemoteState.AMBIGUOUS,
+      );
+      sinon.assert.calledOnce(create);
+      sinon.assert.calledTwice(downloadFromWriteTarget);
+    });
+
+    it("verifies a committed create at its Member Node after a timeout", async () => {
+      const writeBaseUrl = "https://mn.example.org/d1/mn/v2/object";
+      const writeMetaBaseUrl =
+        "https://metadata.mn.example.org/system-metadata";
+      const objectService = new ObjectService({
+        readBaseUrl: "https://cn.example.org/cn/v2/resolve",
+        writeBaseUrl,
+        getToken: async () => "test-token",
+      });
+      const sysMetaService = new SysMetaService({
+        readBaseUrl: "https://cn.example.org/cn/v2/meta",
+        writeBaseUrl: writeMetaBaseUrl,
+        getToken: async () => "test-token",
+      });
+      const { pkg, dataMember } = makeExecutorPackage({
+        objectService,
+        sysMetaService,
+      });
+      const requests = [];
+      state.sandbox
+        .stub(DataONEHttpClient.prototype, "performRequest")
+        .callsFake(async (options) => {
+          requests.push(options);
+          if (options.method !== "GET") {
+            throw Object.assign(new Error("response unavailable"), {
+              name: "TimeoutError",
+            });
+          }
+          return {
+            ok: true,
+            status: 200,
+            headers: {},
+            url: options.url,
+            data: '<systemMetadata xmlns="http://ns.dataone.org/service/types/v2.0"><identifier>data.1</identifier><formatId>text/csv</formatId><size>4</size><checksum algorithm="MD5">checksum</checksum><rightsHolder>uid=test</rightsHolder></systemMetadata>',
           };
-
-          const uploading = executeActions(pkg, [action]);
-          await clock.tickAsync(1500);
-          const result = await uploading;
-
-          result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
-          dataMember.remotePid.should.equal("data.1");
-          write.callCount.should.equal(3);
-          download.callCount.should.equal(2);
-          write.getCalls().forEach((call) => {
-            call.args[0].should.deep.equal(write.firstCall.args[0]);
-          });
-          sinon.assert.callOrder(write, download, write, download, write);
         });
+
+      const result = await executeActions(pkg, [
+        dataAndResourceMapActions()[0],
+      ]);
+
+      result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+      dataMember.remotePid.should.equal("data.1");
+      requests.should.have.lengthOf(2);
+      requests[0].url.should.equal(writeBaseUrl);
+      requests[1].url.should.equal(`${writeMetaBaseUrl}/data.1`);
+      requests[1].headers.Authorization.should.equal("Bearer test-token");
+      expect(requests[1].signal).to.equal(requests[0].signal);
+    });
+
+    [
+      { phase: PHASES.DATA, operation: OPERATIONS.CREATE },
+      { phase: PHASES.METADATA, operation: OPERATIONS.UPDATE },
+      { phase: PHASES.RESOURCE_MAP, operation: OPERATIONS.UPDATE },
+    ].forEach(({ phase, operation }) => {
+      it(`retries verified-missing ${phase} ${operation} at the receiver`, async () => {
+        const clock = state.sandbox.useFakeTimers({ toFake: ["setTimeout"] });
+        const write = state.sandbox.stub();
+        write.onFirstCall().rejects({ name: "TimeoutError" });
+        const downloadFromWriteTarget = state.sandbox
+          .stub()
+          .rejects({ status: 404 });
+        const { pkg, dataMember } = makeExecutorPackage({
+          objectService: { [operation]: write },
+          sysMetaService: {
+            downloadFromWriteTarget,
+            invalidate: state.sandbox.stub().resolves(),
+          },
+        });
+        if (phase === PHASES.RESOURCE_MAP) dataMember.markRemoteSuccess();
+        const baseAction =
+          phase === PHASES.RESOURCE_MAP
+            ? dataAndResourceMapActions()[1]
+            : dataAndResourceMapActions()[0];
+        const action = {
+          ...baseAction,
+          id: `${operation}:${baseAction.targetPid}`,
+          phase,
+          operation,
+          sourcePid:
+            operation === OPERATIONS.UPDATE
+              ? baseAction.sourcePid || "data.old"
+              : null,
+        };
+        write
+          .onSecondCall()
+          .resolves({ data: { identifier: action.targetPid } });
+
+        const uploading = executeActions(pkg, [action], {
+          markPackageSaved: false,
+        });
+        await clock.tickAsync(500);
+        const result = await uploading;
+
+        result
+          .getStatus(action.id)
+          .should.equal(UploadResult.Statuses.SUCCEEDED);
+        sinon.assert.calledTwice(write);
+        sinon.assert.calledOnceWithExactly(
+          downloadFromWriteTarget,
+          action.targetPid,
+          { signal: sinon.match.any },
+        );
+        sinon.assert.callOrder(write, downloadFromWriteTarget, write);
+      });
+    });
+
+    it("does not retry a definite object rejection", async () => {
+      const create = state.sandbox.stub().rejects({ status: 400 });
+      const downloadFromWriteTarget = state.sandbox.stub();
+      const { pkg } = makeExecutorPackage({
+        objectService: { create },
+        sysMetaService: { downloadFromWriteTarget },
       });
 
-      [
-        {
-          status: 429,
-          verificationStatus: 404,
-          attempts: 3,
-          expectedStatus: UploadResult.Statuses.FAILED,
-        },
-        {
-          status: 503,
-          verificationStatus: 404,
-          attempts: 3,
-          expectedStatus: UploadResult.Statuses.FAILED,
-        },
-        {
-          status: 400,
-          verificationStatus: 404,
-          attempts: 1,
-          expectedStatus: UploadResult.Statuses.FAILED,
-        },
-        {
-          status: 403,
-          verificationStatus: 404,
-          attempts: 1,
-          expectedStatus: UploadResult.Statuses.FAILED,
-        },
-        {
-          status: 409,
-          verificationStatus: 404,
-          attempts: 1,
-          expectedStatus: UploadResult.Statuses.FAILED,
-        },
-        {
-          status: 503,
-          verificationStatus: 503,
-          attempts: 1,
-          expectedStatus: UploadResult.Statuses.AMBIGUOUS,
-        },
-      ].forEach(({ status, verificationStatus, attempts, expectedStatus }) => {
-        it(`limits ${phase} writes to ${attempts} attempt(s) for ${status} with verification ${verificationStatus}`, async () => {
-          const clock = state.sandbox.useFakeTimers({ toFake: ["setTimeout"] });
-          const create = state.sandbox.stub().rejects({ status });
-          const download = state.sandbox
-            .stub()
-            .rejects({ status: verificationStatus });
-          const { pkg } = makeExecutorPackage({
-            objectService: { create },
-            sysMetaService: {
-              download,
-              invalidate: state.sandbox.stub().resolves(),
-            },
-          });
-          const uploading = executeActions(pkg, [
-            { ...dataAndResourceMapActions()[0], phase },
-          ]);
-          await clock.tickAsync(1500);
-          const result = await uploading;
+      const result = await executeActions(pkg, [
+        dataAndResourceMapActions()[0],
+      ]);
 
-          create.callCount.should.equal(attempts);
-          result.getStatus("create:data.1").should.equal(expectedStatus);
-          result.getError("create:data.1").status.should.equal(status);
-          if (status < 500) sinon.assert.notCalled(download);
-        });
+      result
+        .getStatus("create:data.1")
+        .should.equal(UploadResult.Statuses.FAILED);
+      result.getError("create:data.1").status.should.equal(400);
+      sinon.assert.calledOnce(create);
+      sinon.assert.notCalled(downloadFromWriteTarget);
+    });
+
+    it("does not retry an ambiguous object write when the receiver is unavailable", async () => {
+      const create = state.sandbox.stub().rejects({ status: 503 });
+      const downloadFromWriteTarget = state.sandbox
+        .stub()
+        .rejects({ status: 503 });
+      const { pkg } = makeExecutorPackage({
+        objectService: { create },
+        sysMetaService: { downloadFromWriteTarget },
       });
+
+      const result = await executeActions(pkg, [
+        dataAndResourceMapActions()[0],
+      ]);
+
+      result
+        .getStatus("create:data.1")
+        .should.equal(UploadResult.Statuses.AMBIGUOUS);
+      sinon.assert.calledOnce(create);
+      sinon.assert.calledTwice(downloadFromWriteTarget);
     });
 
     [
@@ -1934,11 +2082,11 @@ define([
           headers: { "retry-after": retryAfter },
         });
         create.onSecondCall().resolves({ data: { identifier: "data.1" } });
-        const download = state.sandbox.stub();
+        const downloadFromWriteTarget = state.sandbox.stub();
         const { pkg } = makeExecutorPackage({
           objectService: { create },
           sysMetaService: {
-            download,
+            downloadFromWriteTarget,
             invalidate: state.sandbox.stub().resolves(),
           },
         });
@@ -1951,7 +2099,7 @@ define([
 
         result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
         sinon.assert.calledTwice(create);
-        sinon.assert.notCalled(download);
+        sinon.assert.notCalled(downloadFromWriteTarget);
         create.secondCall.args[0].should.deep.equal(create.firstCall.args[0]);
       });
     });
@@ -1962,7 +2110,14 @@ define([
         status: 429,
         headers: { "retry-after": "10" },
       });
-      const { pkg } = makeExecutorPackage({ objectService: { create } });
+      const { pkg } = makeExecutorPackage({
+        objectService: { create },
+        sysMetaService: {
+          downloadFromWriteTarget: state.sandbox
+            .stub()
+            .rejects({ status: 404 }),
+        },
+      });
       const uploading = executeActions(pkg, [dataAndResourceMapActions()[0]]);
       await clock.tickAsync(1000);
       pkg.cancelUpload();
@@ -1973,69 +2128,15 @@ define([
       sinon.assert.calledOnce(create);
     });
 
-    it("confirms an object create that committed before a timeout", async () => {
-      const timeout = Object.assign(new Error("timeout"), {
-        name: "TimeoutError",
-      });
-      const member = new DataPackageMember({
-        pid: "data.timeout",
-        formatType: "DATA",
-        contentDirty: true,
-      });
-      const pkg = new DataPackage({
-        members: [member],
-        objectService: {
-          create: state.sandbox.stub().rejects(timeout),
-          update: state.sandbox.stub(),
-        },
-        sysMetaService: {
-          download: state.sandbox.stub().resolves(
-            systemMetadata({
-              identifier: "data.timeout",
-              checksum: "intended",
-            }),
-          ),
-          invalidate: state.sandbox.stub().resolves(),
-        },
-      });
-      const actions = [
-        {
-          phase: PHASES.DATA,
-          operation: OPERATIONS.CREATE,
-          memberPid: "data.timeout",
-          targetPid: "data.timeout",
-          payload: new Blob(["data"]),
-          sysMetaXml: "<sysmeta/>",
-          verification: {
-            identifier: "data.timeout",
-            checksum: { value: "intended", algorithm: "MD5" },
-          },
-        },
-      ];
-
-      const result = await executeActions(pkg, actions);
-
-      result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
-      member.remotePid.should.equal("data.timeout");
-      sinon.assert.calledOnce(pkg.getObjectService().create);
-    });
-
     it("confirms a committed private policy using mutable System Metadata", async () => {
-      const publicPolicy = [{ subjects: ["public"], permissions: ["read"] }];
       const timeout = Object.assign(new Error("timeout"), {
         name: "TimeoutError",
       });
-      const download = state.sandbox.stub();
-      download
-        .onFirstCall()
-        .resolves(
-          systemMetadata({ identifier: "data.1", accessPolicy: publicPolicy }),
-        );
-      download
-        .onSecondCall()
+      const downloadFromWriteTarget = state.sandbox
+        .stub()
         .resolves(systemMetadata({ identifier: "data.1", accessPolicy: [] }));
       const { pkg, sysMetaService } = makeAccessPolicyPackage({
-        download,
+        downloadFromWriteTarget,
         update: state.sandbox.stub().rejects(timeout),
       });
 
@@ -2044,7 +2145,10 @@ define([
 
       result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
       sysMetaService.update.calledOnce.should.equal(true);
-      download.callCount.should.equal(2);
+      sinon.assert.calledOnce(sysMetaService.download);
+      sinon.assert.calledOnceWithExactly(downloadFromWriteTarget, "data.1", {
+        signal: undefined,
+      });
     });
 
     it("does not repeat a System Metadata write when mutable fields do not match", async () => {
@@ -2052,13 +2156,16 @@ define([
       const timeout = Object.assign(new Error("timeout"), {
         name: "TimeoutError",
       });
-      const download = state.sandbox
+      const downloadFromWriteTarget = state.sandbox
         .stub()
         .resolves(
           systemMetadata({ identifier: "data.1", accessPolicy: publicPolicy }),
         );
       const update = state.sandbox.stub().rejects(timeout);
-      const { pkg } = makeAccessPolicyPackage({ download, update });
+      const { pkg } = makeAccessPolicyPackage({
+        downloadFromWriteTarget,
+        update,
+      });
       await pkg.setMemberAccessPolicy("data.1", []);
       const first = await pkg.upload();
 
@@ -2075,6 +2182,7 @@ define([
       }
       caught.code.should.equal("ambiguous_write_unresolved");
       update.calledOnce.should.equal(true);
+      sinon.assert.calledTwice(downloadFromWriteTarget);
     });
 
     it("invalidates System Metadata after retry verifies an ambiguous write", async () => {
@@ -2093,16 +2201,21 @@ define([
         sysMeta: systemMetadata({ identifier: "data.1", accessPolicy: [] }),
         sysMetaDirty: true,
       });
-      const download = state.sandbox.stub();
-      download.onFirstCall().rejects(verificationUnavailable);
-      download
+      const downloadFromWriteTarget = state.sandbox.stub();
+      downloadFromWriteTarget.onFirstCall().rejects(verificationUnavailable);
+      downloadFromWriteTarget
         .onSecondCall()
         .resolves(systemMetadata({ identifier: "data.1", accessPolicy: [] }));
       const update = state.sandbox.stub().rejects(timeout);
       const invalidate = state.sandbox.stub().resolves();
       const pkg = new DataPackage({
         members: [member],
-        sysMetaService: { download, update, invalidate },
+        objectService: {},
+        sysMetaService: {
+          downloadFromWriteTarget,
+          update,
+          invalidate,
+        },
       });
       const actions = [
         {
@@ -2150,7 +2263,7 @@ define([
       const { pkg } = makeExecutorPackage({
         objectService,
         sysMetaService: {
-          download: state.sandbox.stub().rejects(notFound),
+          downloadFromWriteTarget: state.sandbox.stub().rejects(notFound),
           invalidate: state.sandbox.stub().resolves(),
         },
       });
@@ -2202,14 +2315,16 @@ define([
         formatType: "DATA",
         contentDirty: true,
       });
-      const download = state.sandbox.stub().resolves(
+      const downloadFromWriteTarget = state.sandbox.stub().resolves(
         systemMetadata({
           identifier: "data.2",
           checksum: "intended",
         }),
       );
-      download.onSecondCall().rejects({ status: 503 });
-      const getLatestVersion = state.sandbox.stub().resolves("data.2");
+      downloadFromWriteTarget.onSecondCall().rejects({ status: 503 });
+      const getAllVersionsOneDirection = state.sandbox.stub().resolves({
+        versions: ["data.2"],
+      });
       const pkg = new DataPackage({
         members: [member],
         objectService: {
@@ -2217,10 +2332,10 @@ define([
           update: state.sandbox.stub().rejects(timeout),
         },
         sysMetaService: {
-          download,
+          downloadFromWriteTarget,
           invalidate: state.sandbox.stub().resolves(),
         },
-        versionTracker: { getLatestVersion },
+        versionTracker: { getAllVersionsOneDirection },
       });
 
       const upload = executeActions(pkg, [
@@ -2248,10 +2363,9 @@ define([
       result.reloadRequired.should.equal(false);
       member.remotePid.should.equal("data.2");
       verificationSignal.should.be.instanceOf(AbortSignal);
-      sinon.assert.notCalled(getLatestVersion);
+      sinon.assert.notCalled(getAllVersionsOneDirection);
       sinon.assert.calledOnce(pkg.getObjectService().update);
-      sinon.assert.calledOnceWithExactly(download, "data.2", {
-        useCache: false,
+      sinon.assert.calledOnceWithExactly(downloadFromWriteTarget, "data.2", {
         signal: verificationSignal,
       });
     });
@@ -2273,7 +2387,10 @@ define([
             .rejects(Object.assign(new Error("conflict"), { status: 409 })),
         },
         versionTracker: {
-          getLatestVersion: state.sandbox.stub().resolves("data.concurrent"),
+          getAllVersionsOneDirection: state.sandbox.stub().resolves({
+            versions: ["data.concurrent"],
+            chainComplete: false,
+          }),
         },
       });
       const result = await executeActions(pkg, [
@@ -2306,14 +2423,16 @@ define([
         ),
         { dataONEErrorName: "IdentifierNotUnique" },
       );
-      const getLatestVersion = state.sandbox.stub().resolves("data.1");
+      const getAllVersionsOneDirection = state.sandbox.stub().resolves({
+        versions: [],
+      });
       const pkg = new DataPackage({
         members: [member],
         objectService: {
           create: state.sandbox.stub(),
           update: state.sandbox.stub().rejects(obsoleteError),
         },
-        versionTracker: { getLatestVersion },
+        versionTracker: { getAllVersionsOneDirection },
       });
 
       const result = await executeActions(pkg, [
@@ -2330,7 +2449,7 @@ define([
 
       result.outcome.should.equal(UploadResult.Outcomes.STALE_REMOTE);
       result.getError("update:data.2").latestPid.should.equal("data.latest");
-      sinon.assert.notCalled(getLatestVersion);
+      sinon.assert.notCalled(getAllVersionsOneDirection);
     });
   });
 
@@ -2353,205 +2472,486 @@ define([
       should.equal(pkg.activeUpload, null);
     });
 
-    it("aborts an in-flight write without verifying and requires reload", async () => {
-      const abortError = Object.assign(new Error("aborted"), {
-        name: "AbortError",
-      });
-      let started;
-      const didStart = new Promise((resolve) => {
-        started = resolve;
-      });
-      const member = new DataPackageMember({
-        pid: "data.cancel",
-        formatType: "DATA",
-        contentDirty: true,
-      });
-      const download = state.sandbox.stub();
-      const pkg = new DataPackage({
-        members: [member],
-        objectService: {
-          create: state.sandbox.stub().callsFake(
-            (_params, options) =>
-              new Promise((_resolve, reject) => {
-                started();
-                options.signal.addEventListener("abort", () =>
-                  reject(abortError),
-                );
-              }),
-          ),
-          update: state.sandbox.stub(),
-        },
-        sysMetaService: {
-          download,
-          invalidate: state.sandbox.stub().resolves(),
-        },
-      });
-      const upload = executeActions(pkg, [
-        {
-          phase: PHASES.DATA,
-          operation: OPERATIONS.CREATE,
-          memberPid: "data.cancel",
-          targetPid: "data.cancel",
-          payload: new Blob(["data"]),
-          sysMetaXml: "<sysmeta/>",
-        },
-      ]);
-      await didStart;
-      pkg.cancelUpload().should.equal(true);
+    [
+      {
+        name: "confirms a committed in-flight create after cancellation",
+        remoteChecksum: "intended",
+        expectedStatus: UploadResult.Statuses.SUCCEEDED,
+        expectedOutcome: UploadResult.Outcomes.SUCCESS,
+        expectedRemoteState: DataPackageMember.RemoteState.UPLOADED,
+        reloadRequired: false,
+      },
+      {
+        name: "keeps a post-abort missing target ambiguous",
+        lookupError: { status: 404 },
+        expectedStatus: UploadResult.Statuses.AMBIGUOUS,
+        expectedOutcome: UploadResult.Outcomes.CANCELLED,
+        expectedRemoteState: DataPackageMember.RemoteState.AMBIGUOUS,
+        reloadRequired: true,
+      },
+      {
+        name: "keeps a post-abort checksum mismatch ambiguous",
+        remoteChecksum: "different",
+        expectedStatus: UploadResult.Statuses.AMBIGUOUS,
+        expectedOutcome: UploadResult.Outcomes.CANCELLED,
+        expectedRemoteState: DataPackageMember.RemoteState.AMBIGUOUS,
+        reloadRequired: true,
+      },
+      {
+        name: "keeps a post-abort failed lookup ambiguous",
+        lookupError: { status: 503 },
+        expectedStatus: UploadResult.Statuses.AMBIGUOUS,
+        expectedOutcome: UploadResult.Outcomes.CANCELLED,
+        expectedRemoteState: DataPackageMember.RemoteState.AMBIGUOUS,
+        reloadRequired: true,
+      },
+      {
+        name: "keeps an aborted terminal lookup ambiguous",
+        lookupError: { name: "AbortError" },
+        expectedStatus: UploadResult.Statuses.AMBIGUOUS,
+        expectedOutcome: UploadResult.Outcomes.CANCELLED,
+        expectedRemoteState: DataPackageMember.RemoteState.AMBIGUOUS,
+        reloadRequired: true,
+      },
+      {
+        name: "preserves a definite rejection after cancellation",
+        writeError: { status: 400 },
+        expectedStatus: UploadResult.Statuses.FAILED,
+        expectedOutcome: UploadResult.Outcomes.CANCELLED,
+        expectedRemoteState: DataPackageMember.RemoteState.FAILED,
+        reloadRequired: false,
+        retryable: true,
+      },
+    ].forEach((testCase) => {
+      it(testCase.name, async () => {
+        let started;
+        const didStart = new Promise((resolve) => {
+          started = resolve;
+        });
+        const create = state.sandbox.stub().callsFake(
+          (_params, options) =>
+            new Promise((_resolve, reject) => {
+              started();
+              options.signal.addEventListener("abort", () =>
+                reject(testCase.writeError || { name: "AbortError" }),
+              );
+            }),
+        );
+        const downloadFromWriteTarget = state.sandbox.stub();
+        if (testCase.lookupError)
+          downloadFromWriteTarget.rejects(testCase.lookupError);
+        else {
+          downloadFromWriteTarget.resolves(
+            systemMetadata({ checksum: testCase.remoteChecksum }),
+          );
+        }
+        const { pkg, dataMember } = makeExecutorPackage({
+          objectService: { create },
+          sysMetaService: {
+            downloadFromWriteTarget,
+            invalidate: state.sandbox.stub().resolves(),
+          },
+        });
+        const action = {
+          ...dataAndResourceMapActions()[0],
+          verification: {
+            checksum: { value: "intended", algorithm: "MD5" },
+          },
+        };
+        const upload = executeActions(pkg, [action]);
+        await didStart;
+        pkg.cancelUpload().should.equal(true);
 
-      const result = await upload;
+        const result = await upload;
 
-      result.outcome.should.equal(UploadResult.Outcomes.CANCELLED);
-      result.reloadRequired.should.equal(true);
-      member.remoteState.should.equal(DataPackageMember.RemoteState.AMBIGUOUS);
-      sinon.assert.notCalled(download);
-
-      let caught;
-      try {
-        await pkg.upload();
-      } catch (error) {
-        caught = error;
-      }
-      caught.code.should.equal("reload_required");
+        result.getStatus(action.id).should.equal(testCase.expectedStatus);
+        result.outcome.should.equal(testCase.expectedOutcome);
+        result.wasCancelled.should.equal(true);
+        result.reloadRequired.should.equal(testCase.reloadRequired);
+        result.retryable.should.equal(Boolean(testCase.retryable));
+        dataMember.remoteState.should.equal(testCase.expectedRemoteState);
+        sinon.assert.calledOnce(create);
+        if (testCase.writeError)
+          sinon.assert.notCalled(downloadFromWriteTarget);
+        else {
+          sinon.assert.calledOnceWithExactly(
+            downloadFromWriteTarget,
+            "data.1",
+            {
+              signal: undefined,
+            },
+          );
+        }
+        if (testCase.reloadRequired) {
+          let caught;
+          try {
+            await pkg.retryUpload(result);
+          } catch (error) {
+            caught = error;
+          }
+          caught.code.should.equal("reload_required");
+          sinon.assert.calledOnce(create);
+        }
+      });
     });
 
-    it("keeps cancellation authoritative during stale-source verification", async () => {
-      const conflict = Object.assign(new Error("conflict"), {
-        status: 409,
+    [
+      { latestPid: "data.concurrent", stale: true },
+      { latestPid: "data.2", stale: false },
+      { lookupAborted: true, stale: false },
+    ].forEach(({ latestPid, lookupAborted, stale }) => {
+      it(`preserves write evidence when cancellation interrupts a source lookup (${latestPid || "aborted"})`, async () => {
+        const conflict = Object.assign(new Error("conflict"), { status: 409 });
+        let verificationStarted;
+        let finishVerification;
+        let rejectVerification;
+        const didStartVerification = new Promise((resolve) => {
+          verificationStarted = resolve;
+        });
+        const getAllVersionsOneDirection = state.sandbox
+          .stub()
+          .callsFake((_pid, _forward, options) => {
+            verificationStarted(options);
+            return new Promise((resolve, reject) => {
+              finishVerification = resolve;
+              rejectVerification = reject;
+            });
+          });
+        const downloadFromWriteTarget = state.sandbox.stub();
+        const member = new DataPackageMember({
+          pid: "data.2",
+          remotePid: "data.1",
+          aggregatedPid: "data.1",
+          formatType: "DATA",
+          contentDirty: true,
+        });
+        const update = state.sandbox.stub().rejects(conflict);
+        const pkg = new DataPackage({
+          members: [member],
+          objectService: { update },
+          sysMetaService: { downloadFromWriteTarget },
+          versionTracker: { getAllVersionsOneDirection },
+        });
+        const upload = executeActions(pkg, [
+          {
+            phase: PHASES.DATA,
+            operation: OPERATIONS.UPDATE,
+            memberPid: "data.2",
+            sourcePid: "data.1",
+            targetPid: "data.2",
+            payload: new Blob(["data"]),
+            sysMetaXml: "<sysmeta/>",
+          },
+        ]);
+        const verificationOptions = await didStartVerification;
+        pkg.cancelUpload().should.equal(true);
+        if (lookupAborted) rejectVerification({ name: "AbortError" });
+        else {
+          finishVerification({
+            versions: latestPid === "data.1" ? [] : [latestPid],
+          });
+        }
+
+        const result = await upload;
+
+        result
+          .getStatus("update:data.2")
+          .should.equal(UploadResult.Statuses.FAILED);
+        result.outcome.should.equal(
+          stale
+            ? UploadResult.Outcomes.STALE_REMOTE
+            : UploadResult.Outcomes.CANCELLED,
+        );
+        result.reloadRequired.should.equal(stale);
+        result.retryable.should.equal(!stale);
+        member.remoteState.should.equal(DataPackageMember.RemoteState.FAILED);
+        verificationOptions.signal.aborted.should.equal(true);
+        sinon.assert.notCalled(downloadFromWriteTarget);
+        sinon.assert.calledOnce(update);
       });
-      let verificationStarted;
-      let finishVerification;
-      const didStartVerification = new Promise((resolve) => {
-        verificationStarted = resolve;
+    });
+
+    [
+      { code: "stale_remote", latestPid: "rm.concurrent" },
+      {
+        dataONEErrorName: "IdentifierNotUnique",
+        message:
+          "The previous identifier has already been made obsolete by: rm.concurrent",
+      },
+    ].forEach((error) => {
+      it(`preserves known stale state after cancellation (${error.code || error.dataONEErrorName})`, async () => {
+        const { pkg, rmMember } = makeExecutorPackage();
+        const update = pkg.getObjectService().update;
+        update.callsFake(async () => {
+          pkg.cancelUpload();
+          throw error;
+        });
+        const downloadFromWriteTarget = state.sandbox.stub();
+        pkg.sysMetaService.downloadFromWriteTarget = downloadFromWriteTarget;
+        const result = await executeActions(pkg, dataAndResourceMapActions());
+
+        result.outcome.should.equal(UploadResult.Outcomes.STALE_REMOTE);
+        result
+          .getStatus("update:rm.2")
+          .should.equal(UploadResult.Statuses.FAILED);
+        result.getError("update:rm.2").latestPid.should.equal("rm.concurrent");
+        result.reloadRequired.should.equal(true);
+        rmMember.remoteState.should.equal(DataPackageMember.RemoteState.FAILED);
+        sinon.assert.notCalled(
+          pkg.getVersionTracker().getAllVersionsOneDirection,
+        );
+        sinon.assert.notCalled(downloadFromWriteTarget);
+        sinon.assert.calledOnce(update);
       });
-      const getLatestVersion = state.sandbox
-        .stub()
-        .callsFake((_pid, options) => {
+    });
+
+    [false, true].forEach((lookupAborted) => {
+      it(`uses fresh terminal verification after cancelling retry verification (${lookupAborted ? "aborted" : "resolved"})`, async () => {
+        let verificationStarted;
+        let finishVerification;
+        let rejectVerification;
+        const didStartVerification = new Promise((resolve) => {
+          verificationStarted = resolve;
+        });
+        const downloadFromWriteTarget = state.sandbox
+          .stub()
+          .resolves(systemMetadata());
+        downloadFromWriteTarget.onFirstCall().callsFake((_pid, options) => {
           verificationStarted(options);
-          return new Promise((resolve) => {
+          return new Promise((resolve, reject) => {
             finishVerification = resolve;
+            rejectVerification = reject;
           });
         });
-      const download = state.sandbox.stub().resolves(
-        systemMetadata({
-          identifier: "data.2",
-          checksum: "intended",
-        }),
-      );
-      const member = new DataPackageMember({
-        pid: "data.2",
-        remotePid: "data.1",
-        aggregatedPid: "data.1",
-        formatType: "DATA",
-        contentDirty: true,
-      });
-      const pkg = new DataPackage({
-        members: [member],
-        objectService: {
-          create: state.sandbox.stub(),
-          update: state.sandbox.stub().rejects(conflict),
-        },
-        sysMetaService: {
-          download,
-          invalidate: state.sandbox.stub().resolves(),
-        },
-        versionTracker: { getLatestVersion },
-      });
-      const upload = executeActions(pkg, [
-        {
-          phase: PHASES.DATA,
-          operation: OPERATIONS.UPDATE,
-          memberPid: "data.2",
-          sourcePid: "data.1",
-          targetPid: "data.2",
-          payload: new Blob(["data"]),
-          sysMetaXml: "<sysmeta/>",
-          verification: {
-            identifier: "data.2",
-            checksum: { value: "intended", algorithm: "MD5" },
+        const create = state.sandbox.stub().rejects({ name: "TimeoutError" });
+        const { pkg, dataMember } = makeExecutorPackage({
+          objectService: { create },
+          sysMetaService: {
+            downloadFromWriteTarget,
+            invalidate: state.sandbox.stub().resolves(),
           },
-        },
-      ]);
-      const verificationOptions = await didStartVerification;
-      pkg.cancelUpload().should.equal(true);
-      finishVerification("data.2");
+        });
+        const upload = executeActions(pkg, [dataAndResourceMapActions()[0]]);
+        const verificationOptions = await didStartVerification;
+        pkg.cancelUpload().should.equal(true);
+        if (lookupAborted) rejectVerification({ name: "AbortError" });
+        else finishVerification(systemMetadata());
 
-      const result = await upload;
+        const result = await upload;
 
-      result.outcome.should.equal(UploadResult.Outcomes.CANCELLED);
-      result
-        .getStatus("update:data.2")
-        .should.equal(UploadResult.Statuses.CANCELLED);
-      result.reloadRequired.should.equal(true);
-      member.remoteState.should.equal(DataPackageMember.RemoteState.AMBIGUOUS);
-      verificationOptions.signal.aborted.should.equal(true);
-      sinon.assert.notCalled(download);
-      sinon.assert.calledOnce(pkg.getObjectService().update);
+        result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+        result
+          .getStatus("create:data.1")
+          .should.equal(UploadResult.Statuses.SUCCEEDED);
+        result.wasCancelled.should.equal(true);
+        result.reloadRequired.should.equal(false);
+        dataMember.remotePid.should.equal("data.1");
+        verificationOptions.signal.aborted.should.equal(true);
+        sinon.assert.calledTwice(downloadFromWriteTarget);
+        downloadFromWriteTarget.secondCall.args.should.deep.equal([
+          "data.1",
+          {
+            signal: undefined,
+          },
+        ]);
+        sinon.assert.calledOnce(create);
+      });
     });
 
-    it("keeps cancellation authoritative during ambiguous-write verification", async () => {
-      const timeout = Object.assign(new Error("timeout"), {
-        name: "TimeoutError",
-      });
-      let verificationStarted;
-      let finishVerification;
-      const didStartVerification = new Promise((resolve) => {
-        verificationStarted = resolve;
-      });
-      const download = state.sandbox.stub().callsFake((_pid, options) => {
-        verificationStarted(options);
-        return new Promise((resolve) => {
-          finishVerification = resolve;
+    [true, false].forEach((matches) => {
+      it(`lets terminal mutable System Metadata verification settle after cancellation (${matches ? "matching" : "mismatched"} fields)`, async () => {
+        let verificationStarted;
+        let finishVerification;
+        const didStartVerification = new Promise((resolve) => {
+          verificationStarted = resolve;
         });
-      });
-      const member = new DataPackageMember({
-        pid: "data.cancel",
-        formatType: "DATA",
-        contentDirty: true,
-      });
-      const pkg = new DataPackage({
-        members: [member],
-        objectService: {
-          create: state.sandbox.stub().rejects(timeout),
-          update: state.sandbox.stub(),
-        },
-        sysMetaService: {
-          download,
-          invalidate: state.sandbox.stub().resolves(),
-        },
-      });
-      const upload = executeActions(pkg, [
-        {
-          phase: PHASES.DATA,
-          operation: OPERATIONS.CREATE,
-          memberPid: "data.cancel",
-          targetPid: "data.cancel",
-          payload: new Blob(["data"]),
-          sysMetaXml: "<sysmeta/>",
-          verification: {
-            identifier: "data.cancel",
-            checksum: { value: "intended", algorithm: "MD5" },
+        const downloadFromWriteTarget = state.sandbox
+          .stub()
+          .callsFake((_pid, options) => {
+            verificationStarted(options);
+            return new Promise((resolve) => {
+              finishVerification = resolve;
+            });
+          });
+        const update = state.sandbox.stub().rejects({ name: "TimeoutError" });
+        const member = new DataPackageMember({
+          pid: "data.1",
+          remotePid: "data.1",
+          aggregatedPid: "data.1",
+          formatType: "DATA",
+          sysMeta: systemMetadata({ rightsHolder: "uid=intended" }),
+          sysMetaDirty: true,
+        });
+        const pkg = new DataPackage({
+          members: [member],
+          objectService: {},
+          sysMetaService: {
+            update,
+            downloadFromWriteTarget,
+            invalidate: state.sandbox.stub().resolves(),
           },
-        },
-      ]);
-      const verificationOptions = await didStartVerification;
-      pkg.cancelUpload().should.equal(true);
-      finishVerification(
-        systemMetadata({
-          identifier: "data.cancel",
-          checksum: "intended",
-        }),
-      );
+        });
+        const upload = executeActions(pkg, [
+          {
+            phase: PHASES.SYSTEM_METADATA,
+            operation: OPERATIONS.UPDATE_SYSTEM_METADATA,
+            memberPid: "data.1",
+            targetPid: "data.1",
+            sysMetaXml: "<sysmeta/>",
+            verification: { mutableFields: { rightsHolder: "uid=intended" } },
+          },
+        ]);
+        const verificationOptions = await didStartVerification;
+        pkg.cancelUpload().should.equal(true);
+        finishVerification(
+          systemMetadata({
+            rightsHolder: matches ? "uid=intended" : "uid=old",
+          }),
+        );
 
-      const result = await upload;
+        const result = await upload;
 
-      result.outcome.should.equal(UploadResult.Outcomes.CANCELLED);
-      result
-        .getStatus("create:data.cancel")
+        result
+          .getStatus("updateSystemMetadata:data.1")
+          .should.equal(
+            matches
+              ? UploadResult.Statuses.SUCCEEDED
+              : UploadResult.Statuses.AMBIGUOUS,
+          );
+        result.outcome.should.equal(
+          matches
+            ? UploadResult.Outcomes.SUCCESS
+            : UploadResult.Outcomes.CANCELLED,
+        );
+        result.reloadRequired.should.equal(!matches);
+        result.wasCancelled.should.equal(true);
+        member.sysMetaDirty.should.equal(!matches);
+        should.equal(verificationOptions.signal, undefined);
+        sinon.assert.calledOnceWithExactly(downloadFromWriteTarget, "data.1", {
+          signal: undefined,
+        });
+        sinon.assert.calledOnce(update);
+      });
+    });
+
+    it("retries pending Resource Map work while skipping an object confirmed after cancellation", async () => {
+      const { pkg, dataMember, rmMember, rmModel } = makeExecutorPackage();
+      const create = pkg.getObjectService().create;
+      create.callsFake(async () => {
+        pkg.cancelUpload();
+        throw { name: "AbortError" };
+      });
+      pkg.sysMetaService.downloadFromWriteTarget = state.sandbox
+        .stub()
+        .resolves(systemMetadata());
+      pkg.uploadRecoveryStore = { remove: state.sandbox.stub().resolves() };
+      pkg.primaryMetadataPid = "meta.1";
+      const storeResourceMap = state.sandbox
+        .stub(ResourceMapResolver.prototype, "addToStorage")
+        .resolves();
+      pkg.draftRevision = 1;
+      const first = await executeActions(pkg, dataAndResourceMapActions());
+
+      first.outcome.should.equal(UploadResult.Outcomes.CANCELLED);
+      first
+        .getStatus("create:data.1")
+        .should.equal(UploadResult.Statuses.SUCCEEDED);
+      first
+        .getStatus("update:rm.2")
         .should.equal(UploadResult.Statuses.CANCELLED);
-      result.reloadRequired.should.equal(true);
-      member.remoteState.should.equal(DataPackageMember.RemoteState.AMBIGUOUS);
-      verificationOptions.signal.aborted.should.equal(true);
+      first.reloadRequired.should.equal(false);
+      first.retryable.should.equal(true);
+      dataMember.remotePid.should.equal("data.1");
+      should.equal(dataMember.aggregatedPid, null);
+      rmMember.remotePid.should.equal("rm.1");
+      pkg.savedRevision.should.equal(0);
+      sinon.assert.notCalled(pkg.getObjectService().update);
+      sinon.assert.notCalled(pkg.uploadRecoveryStore.remove);
+
+      const second = await pkg.retryUpload(first);
+
+      second.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+      second
+        .getStatus("create:data.1")
+        .should.equal(UploadResult.Statuses.SUCCEEDED);
+      dataMember.aggregatedPid.should.equal("data.1");
+      rmMember.aggregatedPid.should.equal("rm.2");
+      rmModel.saved.should.equal(true);
+      pkg.savedRevision.should.equal(1);
+      sinon.assert.calledOnce(create);
+      sinon.assert.calledOnce(pkg.getObjectService().update);
+      sinon.assert.calledOnceWithExactly(
+        pkg.uploadRecoveryStore.remove,
+        "meta.1",
+      );
+      sinon.assert.calledOnceWithExactly(storeResourceMap, "meta.1", "rm.2");
+    });
+
+    it("preserves committed writes across repeated cancelled retries", async () => {
+      const { pkg } = makeExecutorPackage();
+      const objectService = pkg.getObjectService();
+      objectService.update.callsFake(async () => {
+        pkg.cancelUpload();
+        throw Object.assign(new Error("rejected"), { status: 400 });
+      });
+      objectService.update.onThirdCall().resolves({
+        data: { identifier: "rm.2" },
+      });
+
+      const first = await executeActions(pkg, dataAndResourceMapActions());
+      first.outcome.should.equal(UploadResult.Outcomes.CANCELLED);
+      first.reloadRequired.should.equal(false);
+
+      const second = await pkg.retryUpload(first);
+      second.outcome.should.equal(UploadResult.Outcomes.CANCELLED);
+      second.reloadRequired.should.equal(false);
+
+      const third = await pkg.retryUpload(second);
+      third.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+      sinon.assert.calledOnce(objectService.create);
+      sinon.assert.calledThrice(objectService.update);
+    });
+
+    it("finalizes a final Resource Map write confirmed after cancellation", async () => {
+      const { pkg, dataMember, rmMember, rmModel } = makeExecutorPackage();
+      const update = pkg.getObjectService().update;
+      update.callsFake(async () => {
+        pkg.cancelUpload();
+        throw { name: "AbortError" };
+      });
+      const downloadFromWriteTarget = state.sandbox
+        .stub()
+        .resolves(systemMetadata({ identifier: "rm.2" }));
+      pkg.sysMetaService.downloadFromWriteTarget = downloadFromWriteTarget;
+      pkg.uploadRecoveryStore = { remove: state.sandbox.stub().resolves() };
+      pkg.primaryMetadataPid = "meta.1";
+      const storeResourceMap = state.sandbox
+        .stub(ResourceMapResolver.prototype, "addToStorage")
+        .resolves();
+      pkg.draftRevision = 1;
+
+      const result = await executeActions(pkg, dataAndResourceMapActions());
+
+      result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+      result
+        .getStatus("update:rm.2")
+        .should.equal(UploadResult.Statuses.SUCCEEDED);
+      result.wasCancelled.should.equal(true);
+      result.reloadRequired.should.equal(false);
+      dataMember.aggregatedPid.should.equal("data.1");
+      rmMember.remotePid.should.equal("rm.2");
+      rmMember.aggregatedPid.should.equal("rm.2");
+      rmModel.saved.should.equal(true);
+      pkg.savedRevision.should.equal(1);
+      sinon.assert.calledOnce(update);
+      sinon.assert.calledOnceWithExactly(downloadFromWriteTarget, "rm.2", {
+        signal: undefined,
+      });
+      sinon.assert.calledOnceWithExactly(
+        pkg.uploadRecoveryStore.remove,
+        "meta.1",
+      );
+      sinon.assert.calledOnceWithExactly(storeResourceMap, "meta.1", "rm.2");
     });
 
     it("blocks a full save after an eager upload is cancelled in flight", async () => {
@@ -2583,7 +2983,12 @@ define([
           ),
           update: state.sandbox.stub(),
         },
-        sysMetaService: { invalidate: state.sandbox.stub().resolves() },
+        sysMetaService: {
+          downloadFromWriteTarget: state.sandbox
+            .stub()
+            .rejects({ status: 404 }),
+          invalidate: state.sandbox.stub().resolves(),
+        },
         uploadDefaults: {
           submitter: "uid=test",
           rightsHolder: "uid=test",

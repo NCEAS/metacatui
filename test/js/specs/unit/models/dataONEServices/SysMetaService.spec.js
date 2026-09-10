@@ -39,22 +39,83 @@ define([
   describe("SysMetaService", () => {
     const state = cleanState(() => {
       const sandbox = sinon.createSandbox();
-      return { sandbox };
+      const originalMetacatUI = globalThis.MetacatUI;
+      return { sandbox, originalMetacatUI };
     }, beforeEach);
 
     afterEach(() => {
       state.sandbox.restore();
       SysMetaService.instances = new Map();
-      // delete globalThis.MetacatUI;
+      globalThis.MetacatUI = state.originalMetacatUI;
       if (globalThis.fetch && globalThis.fetch.restore) {
         globalThis.fetch.restore();
       }
     });
 
     describe("construction", () => {
+      it("requires an explicit read URL even when app endpoints exist", () => {
+        globalThis.MetacatUI = {
+          appModel: {
+            get() {
+              return "https://app.example.org/meta";
+            },
+          },
+        };
+
+        expect(() => new SysMetaService()).to.throw(
+          "SysMetaService: readBaseUrl is required",
+        );
+      });
+
+      it("rejects the former baseUrl constructor option", () => {
+        expect(
+          () =>
+            new SysMetaService({
+              baseUrl: "https://example.org/meta",
+            }),
+        ).to.throw("SysMetaService: readBaseUrl is required");
+      });
+
+      it("rejects write-target operations before starting transport", async () => {
+        const fetchStub = state.sandbox.stub(globalThis, "fetch");
+        const xhrStub = state.sandbox.stub(globalThis, "XMLHttpRequest");
+        globalThis.MetacatUI = {
+          appModel: {
+            get() {
+              return "https://app.example.org/meta";
+            },
+          },
+        };
+        const service = new SysMetaService({
+          readBaseUrl: "https://cn.example.org/meta",
+        });
+        const xml = "<systemMetadata></systemMetadata>";
+        const captureError = (promise) => promise.catch((error) => error);
+
+        const [uploadError, updateError, verificationError] = await Promise.all(
+          [
+            captureError(service.upload(xml)),
+            captureError(service.update("pid.1", xml)),
+            captureError(service.downloadFromWriteTarget("pid.1")),
+          ],
+        );
+
+        uploadError.message.should.equal(
+          "SysMetaService: writeBaseUrl is required for upload",
+        );
+        updateError.message.should.equal(
+          "SysMetaService: writeBaseUrl is required for update",
+        );
+        verificationError.message.should.equal(
+          "SysMetaService: writeBaseUrl is required for downloadFromWriteTarget",
+        );
+        sinon.assert.notCalled(fetchStub);
+        sinon.assert.notCalled(xhrStub);
+      });
+
       it("applies default client and storage config", () => {
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
         });
         service.storageConfig.ttlMs.should.equal(60 * 60 * 1000);
         service.storageConfig.schemaVersion.should.equal(1);
@@ -68,7 +129,7 @@ define([
 
       it("merges storage overrides", () => {
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
           storageConfig: {
             ttlMs: 5000,
             schemaVersion: 2,
@@ -88,7 +149,7 @@ define([
     describe("download", () => {
       it("validates required PIDs before fetching", async () => {
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
         });
 
         let caught = null;
@@ -108,7 +169,7 @@ define([
           .resolves(makeResponse(SAMPLE_XML));
 
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
         });
         const result = await service.download("pid.1", {
           auth: false,
@@ -119,13 +180,58 @@ define([
         result.identifier.should.equal("sample.1");
       });
 
+      it("reads from baseUrl when a separate writeBaseUrl is configured", async () => {
+        const fetchStub = state.sandbox
+          .stub(globalThis, "fetch")
+          .callsFake((url) => {
+            url.should.equal("https://cn.example.org/meta/pid.1");
+            return Promise.resolve(makeResponse(SAMPLE_XML));
+          });
+
+        const service = new SysMetaService({
+          readBaseUrl: "https://cn.example.org/meta",
+          writeBaseUrl: "https://mn.example.org/meta",
+        });
+        await service.download("pid.1", {
+          auth: false,
+          useCache: false,
+        });
+
+        sinon.assert.calledOnce(fetchStub);
+      });
+
+      it("can read uncached System Metadata from the write target", async () => {
+        const fetchStub = state.sandbox
+          .stub(globalThis, "fetch")
+          .callsFake((url) => {
+            url.should.equal("https://mn.example.org/meta/pid.1");
+            return Promise.resolve(makeResponse(SAMPLE_XML));
+          });
+
+        const service = new SysMetaService({
+          readBaseUrl: "https://cn.example.org/meta",
+          writeBaseUrl: "https://mn.example.org/meta",
+        });
+        const getCached = state.sandbox.spy(service, "getCached");
+        const setCached = state.sandbox.spy(service, "setCached");
+
+        const result = await service.downloadFromWriteTarget("pid.1", {
+          auth: false,
+        });
+
+        result.identifier.should.equal("sample.1");
+        sinon.assert.calledOnce(fetchStub);
+        sinon.assert.notCalled(getCached);
+        sinon.assert.notCalled(setCached);
+      });
+
       it("returns the schema seriesId when a SID request resolves to a PID", async () => {
         state.sandbox
           .stub(globalThis, "fetch")
           .resolves(makeResponse(SAMPLE_XML_WITH_SERIES_ID));
 
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
         });
         const result = await service.download("series.1", {
           auth: false,
@@ -138,7 +244,7 @@ define([
 
       it("returns cached XML when available", async () => {
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
         });
         const store = {
           getItem: state.sandbox.stub().resolves(SAMPLE_XML),
@@ -159,7 +265,7 @@ define([
 
       it("uses explicit cache keys when provided", async () => {
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
         });
         const store = {
           getItem: state.sandbox.stub().resolves(null),
@@ -187,7 +293,7 @@ define([
           });
 
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
         });
         await service.download(" doi:10.5063/abc ", {
           auth: false,
@@ -199,7 +305,7 @@ define([
 
       it("invalidates cache and rejects when XML parsing fails", async () => {
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
         });
         state.sandbox.stub(service, "getCached").resolves(null);
         state.sandbox.stub(service, "request").resolves({ data: "<not-xml>" });
@@ -229,7 +335,7 @@ define([
     describe("invalidate", () => {
       it("removes cached entries for a PID", async () => {
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
         });
         const removeStub = state.sandbox
           .stub(service, "removeCached")
@@ -241,7 +347,7 @@ define([
 
       it("no-ops without a PID", async () => {
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
         });
         const removeStub = state.sandbox
           .stub(service, "removeCached")
@@ -255,7 +361,7 @@ define([
     describe("upload", () => {
       it("validates sysmeta XML before posting", async () => {
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
         });
 
         let caught = null;
@@ -271,7 +377,8 @@ define([
 
       it("posts XML with the correct headers", async () => {
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
+          writeBaseUrl: "https://example.org/sysmeta",
         });
         const reqStub = state.sandbox
           .stub(service.client, "request")
@@ -286,12 +393,41 @@ define([
         opts.headers["Content-Type"].should.equal("application/xml");
         opts.body.should.equal(xml);
       });
+
+      it("posts XML to writeBaseUrl", async () => {
+        const fetchStub = state.sandbox
+          .stub(globalThis, "fetch")
+          .callsFake((url, options) => {
+            url.should.equal("https://mn.example.org/meta");
+            options.method.should.equal("POST");
+            return Promise.resolve(makeResponse("ok"));
+          });
+        const service = new SysMetaService({
+          readBaseUrl: "https://cn.example.org/meta",
+          writeBaseUrl: "https://mn.example.org/meta",
+        });
+        globalThis.MetacatUI = {
+          appModel: {
+            get: () => "https://other.example.org/meta",
+            getActiveAltRepo: () => ({
+              metaServiceUrl: "https://other.example.org/meta",
+            }),
+          },
+        };
+
+        await service.upload("<systemMetadata></systemMetadata>", {
+          auth: false,
+          useCache: false,
+        });
+
+        sinon.assert.calledOnce(fetchStub);
+      });
     });
 
     describe("update", () => {
       it("validates required update inputs", async () => {
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
         });
 
         let missingPid = null;
@@ -315,10 +451,11 @@ define([
 
       it("puts multipart sysmeta updates with XHR transport", async () => {
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
+          writeBaseUrl: "https://example.org/sysmeta",
         });
         const reqStub = state.sandbox
-          .stub(service, "request")
+          .stub(service.getWriteClient("update"), "request")
           .resolves({ data: "ok" });
         const setCachedStub = state.sandbox
           .stub(service, "setCached")
@@ -377,7 +514,8 @@ define([
         });
 
         const service = new SysMetaService({
-          baseUrl: "https://example.org/sysmeta",
+          readBaseUrl: "https://example.org/sysmeta",
+          writeBaseUrl: "https://example.org/sysmeta",
         });
         const xml = "<systemMetadata></systemMetadata>";
 
@@ -385,6 +523,44 @@ define([
         requests[0].should.equal(
           "https://example.org/sysmeta/doi:10.5063%2Fabc",
         );
+      });
+
+      it("puts updates to writeBaseUrl", async () => {
+        const requests = [];
+        class FakeXMLHttpRequest {
+          open(method, url) {
+            this.method = method;
+            this.url = url;
+          }
+
+          setRequestHeader() {}
+
+          getAllResponseHeaders() {
+            return "";
+          }
+
+          send() {
+            requests.push(this.url);
+            this.status = 200;
+            this.responseText = "ok";
+            this.responseURL = this.url;
+            this.onload();
+          }
+        }
+        state.sandbox.stub(globalThis, "XMLHttpRequest").callsFake(() => {
+          return new FakeXMLHttpRequest();
+        });
+
+        const service = new SysMetaService({
+          readBaseUrl: "https://cn.example.org/meta",
+          writeBaseUrl: "https://mn.example.org/meta",
+        });
+
+        await service.update("pid.1", "<systemMetadata></systemMetadata>", {
+          auth: false,
+        });
+
+        requests.should.deep.equal(["https://mn.example.org/meta/pid.1"]);
       });
     });
   });

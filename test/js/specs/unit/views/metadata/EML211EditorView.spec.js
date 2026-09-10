@@ -1,6 +1,7 @@
 define([
   "jquery",
   "backbone",
+  "models/AppModel",
   "models/dataPackage/DataPackage",
   "models/dataPackage/DataPackageRecovery",
   "models/dataONEServices/SysMetaService",
@@ -11,6 +12,7 @@ define([
 ], function (
   $,
   Backbone,
+  AppModel,
   DataPackage,
   DataPackageRecovery,
   SysMetaService,
@@ -200,6 +202,8 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox.stub().callsFake((key) => {
             if (key === "metaServiceUrl") {
               return "https://example.org/meta";
@@ -234,6 +238,8 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox.stub().callsFake((key) => {
             if (key === "metaServiceUrl") {
               return "https://example.org/meta";
@@ -267,6 +273,8 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox.stub().returns(""),
         },
         rootDataPackage,
@@ -327,6 +335,8 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox.stub().returns(""),
         },
         rootDataPackage,
@@ -558,6 +568,8 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: (key) => {
             if (key === "allowAccessPolicyChanges") return true;
             if (key === "allowAccessPolicyChangesDatasets") return true;
@@ -597,6 +609,8 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox.stub().callsFake((key) => {
             if (key === "d1CNBaseUrl") {
               return "https://cn-stage.test.dataone.org";
@@ -646,6 +660,8 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox.stub().callsFake((key) => {
             if (key === "d1CNBaseUrl") {
               return "https://cn-stage.test.dataone.org";
@@ -766,7 +782,6 @@ define([
         requireComplete: true,
       });
       sinon.assert.calledOnceWithExactly(loadEditablePackage, "metadata.1", {
-        resolverOptions: { metaServiceUrl: "https://example.org/meta" },
         maxMembers: 123,
         signal: undefined,
       });
@@ -1087,6 +1102,8 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox.stub().callsFake((key) => {
             if (key === "maxEditorPackageMembers") return 2;
             return null;
@@ -1120,7 +1137,6 @@ define([
       chai.expect(loaded).to.equal(null);
       chai.expect(globalThis.MetacatUI.rootDataPackage).to.equal(null);
       sinon.assert.calledOnceWithExactly(loadEditablePackage, "metadata.1", {
-        resolverOptions: { metaServiceUrl: "https://example.org/meta" },
         maxMembers: 2,
         signal: undefined,
       });
@@ -1144,6 +1160,8 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox.stub().callsFake((key) => {
             if (key === "maxEditorPackageMembers") return 2000;
             return null;
@@ -1433,6 +1451,8 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox
             .stub()
             .callsFake((key) =>
@@ -2536,6 +2556,52 @@ define([
         .should.equal(true);
     });
 
+    ["resolved cancellation", "preparation abort"].forEach((scenario) => {
+      it(`allows another save after ${scenario}`, async function () {
+        model.validationError = null;
+        const rootDataPackage = {
+          toArray: sandbox.stub().returns([]),
+          hasMetadataContentEdits: sandbox.stub().returns(false),
+          getChangedMembers: sandbox.stub().returns([]),
+          getPrimaryMetadataMember: sandbox.stub().returns({
+            pid: "metadata.1",
+            contentDirty: false,
+          }),
+          upload: sandbox.stub(),
+        };
+        if (scenario === "resolved cancellation") {
+          rootDataPackage.upload.onFirstCall().resolves({
+            outcome: "cancelled",
+            reloadRequired: false,
+            retryable: true,
+          });
+        } else {
+          rootDataPackage.upload.onFirstCall().rejects(
+            Object.assign(new Error("Upload cancelled"), {
+              name: "AbortError",
+            }),
+          );
+        }
+        rootDataPackage.upload.onSecondCall().resolves({ outcome: "success" });
+        globalThis.MetacatUI = {
+          ...(originalMetacatUI || {}),
+          rootDataPackage,
+        };
+        sandbox.stub(view, "showSaving");
+        sandbox.stub(view, "refreshFileTable");
+        sandbox.stub(view, "saveSuccess");
+        sandbox.stub(view, "saveError");
+
+        await view.save({ target: $("<button></button>")[0] });
+        await view.save({ target: $("<button></button>")[0] });
+
+        sinon.assert.calledTwice(rootDataPackage.upload);
+        sinon.assert.calledOnce(view.saveSuccess);
+        sinon.assert.calledOnce(view.saveError);
+        chai.expect(view.packageSaveReloadMessage).to.equal(null);
+      });
+    });
+
     it("uses the stale message for an upload preparation error", async function () {
       model.validationError = null;
       const staleError = Object.assign(new Error("metadata superseded"), {
@@ -3230,8 +3296,10 @@ define([
         };
       });
       const authorizationService = {};
+      const sysMetaService = {};
       const rootDataPackage = {
         getAuthorizationService: sandbox.stub().returns(authorizationService),
+        getSysMetaService: sandbox.stub().returns(sysMetaService),
         getMember: sandbox.stub().withArgs("data.1").returns(member),
         setMemberAccessPolicy: sandbox.stub().resolves(member),
       };
@@ -3253,6 +3321,7 @@ define([
       shown.should.equal(true);
       sinon.assert.calledOnceWithExactly(member.fetchSysMeta, {
         useCache: false,
+        sysMetaService,
       });
       sinon.assert.calledOnceWithExactly(
         member.checkPermission,
@@ -3304,8 +3373,10 @@ define([
         getFileName: () => "a.csv",
       };
       const authorizationService = {};
+      const sysMetaService = {};
       const rootDataPackage = {
         getAuthorizationService: sandbox.stub().returns(authorizationService),
+        getSysMetaService: sandbox.stub().returns(sysMetaService),
         getMember: sandbox.stub().withArgs("data.1").returns(member),
       };
       globalThis.MetacatUI = {
@@ -3343,6 +3414,8 @@ define([
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: (key) => {
             if (key === "allowAccessPolicyChanges") return true;
             if (key === "allowAccessPolicyChangesDatasets") return false;
@@ -3381,8 +3454,10 @@ define([
         getFileName: () => "resource_map_1",
       };
       const authorizationService = {};
+      const sysMetaService = {};
       const rootDataPackage = {
         getAuthorizationService: sandbox.stub().returns(authorizationService),
+        getSysMetaService: sandbox.stub().returns(sysMetaService),
         getRootResourceMapMember: sandbox.stub().returns(member),
         setPackageAccessPolicy: sandbox.stub().resolves([member]),
       };
@@ -3440,7 +3515,9 @@ define([
         checkPermission: sandbox.stub().resolves(true),
         getFileName: () => "a.csv",
       };
+      const sysMetaService = {};
       const rootDataPackage = {
+        getSysMetaService: sandbox.stub().returns(sysMetaService),
         getMember: sandbox.stub().withArgs("data.1").returns(member),
       };
       globalThis.MetacatUI = {
@@ -3467,6 +3544,7 @@ define([
       sinon.assert.calledOnce(showAccessPolicyLoadingModal);
       sinon.assert.calledOnceWithExactly(member.fetchSysMeta, {
         useCache: false,
+        sysMetaService,
       });
       sinon.assert.calledOnceWithExactly(
         showAccessPolicyLoadError,
@@ -3494,7 +3572,9 @@ define([
           },
         };
       });
+      const sysMetaService = {};
       const rootDataPackage = {
+        getSysMetaService: sandbox.stub().returns(sysMetaService),
         getMember: sandbox.stub().withArgs("data.1").returns(member),
       };
       globalThis.MetacatUI = {
@@ -3851,6 +3931,8 @@ define([
         ...(originalMetacatUI || {}),
         rootDataPackage,
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: (key) =>
             key === "inheritAccessPolicy"
               ? false
@@ -3931,6 +4013,8 @@ define([
         ...(originalMetacatUI || {}),
         rootDataPackage,
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: (key) =>
             key === "inheritAccessPolicy"
               ? false
@@ -4006,6 +4090,8 @@ define([
         ...(originalMetacatUI || {}),
         rootDataPackage,
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: (key) =>
             key === "inheritAccessPolicy"
               ? false
@@ -4104,6 +4190,8 @@ define([
         ...(originalMetacatUI || {}),
         rootDataPackage,
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: (key) =>
             key === "inheritAccessPolicy"
               ? false
@@ -4329,6 +4417,8 @@ define([
         ...(originalMetacatUI || {}),
         rootDataPackage,
         appModel: {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox
             .stub()
             .callsFake((key) =>

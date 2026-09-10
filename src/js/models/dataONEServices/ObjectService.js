@@ -29,9 +29,9 @@ define([
    */
   const DEFAULT_WRITE_CLIENT_OPTIONS = {
     timeoutMs: null,
-    allowedHttpMethods: ["POST", "PUT"],
+    allowedHttpMethods: ["GET", "POST", "PUT"],
     headerNamesForDedup: ["Authorization", "Content-Type", "Accept"],
-    responseTypes: ["text"],
+    responseTypes: ["json", "arrayBuffer", "blob", "text"],
     retry: {
       maxRetries: 0,
       retryOn: [],
@@ -62,9 +62,7 @@ define([
       defaultAuth,
       getToken,
     } = {}) {
-      const normalizedReadBaseUrl = ObjectService.resolveReadBaseUrl({
-        readBaseUrl,
-      });
+      const normalizedReadBaseUrl = UrlUtilities.normalizeUrl(readBaseUrl);
       if (!normalizedReadBaseUrl) {
         throw new Error("ObjectService: readBaseUrl is required");
       }
@@ -84,35 +82,12 @@ define([
       });
 
       this.readBaseUrl = normalizedReadBaseUrl;
-      this.explicitWriteBaseUrl = UrlUtilities.normalizeUrl(writeBaseUrl);
-      this.writeBaseUrl = this.explicitWriteBaseUrl;
+      this.writeBaseUrl = UrlUtilities.normalizeUrl(writeBaseUrl);
       this.writeClientConfig = ObjectService.buildClientConfig({
         defaults: DEFAULT_WRITE_CLIENT_OPTIONS,
         overrides: clientConfig,
         baseUrl: "",
       });
-    }
-
-    /**
-     * Resolve the default read base URL.
-     * @param {object} [options] Resolution options.
-     * @param {string} [options.readBaseUrl] Explicit read base URL.
-     * @returns {string} Normalized read base URL or empty string.
-     */
-    static resolveReadBaseUrl({ readBaseUrl = "" } = {}) {
-      const explicitReadBaseUrl = UrlUtilities.normalizeUrl(readBaseUrl);
-      if (explicitReadBaseUrl) {
-        return explicitReadBaseUrl;
-      }
-
-      const appModel = globalThis.MetacatUI?.appModel;
-      // MN deployments can read newly saved objects immediately. CN-only
-      // deployments have no local object service, so they read via /resolve/.
-      return (
-        UrlUtilities.normalizeUrl(appModel?.get?.("objectServiceUrl")) ||
-        UrlUtilities.normalizeUrl(appModel?.get?.("resolveServiceUrl")) ||
-        ""
-      );
     }
 
     /**
@@ -198,72 +173,19 @@ define([
     }
 
     /**
-     * Resolve the write base URL using the existing app alt-repo rules.
-     * @param {string} [operation] Operation name for error reporting.
-     * @returns {string} Normalized write base URL.
-     */
-    resolveWriteBaseUrl(operation = "") {
-      if (this.explicitWriteBaseUrl) {
-        this.writeBaseUrl = this.explicitWriteBaseUrl;
-        return this.writeBaseUrl;
-      }
-
-      const appModel = globalThis.MetacatUI?.appModel;
-      const appObjectUrl = UrlUtilities.normalizeUrl(
-        appModel?.get?.("objectServiceUrl"),
-      );
-      if (appObjectUrl) {
-        this.writeBaseUrl = appObjectUrl;
-        return this.writeBaseUrl;
-      }
-
-      const activeAltRepo = appModel?.getActiveAltRepo?.();
-      const activeAltRepoUrl = UrlUtilities.normalizeUrl(
-        activeAltRepo?.objectServiceUrl,
-      );
-      if (activeAltRepoUrl) {
-        this.writeBaseUrl = activeAltRepoUrl;
-        return this.writeBaseUrl;
-      }
-
-      const alternateRepositories = appModel?.get?.("alternateRepositories");
-      if (
-        Array.isArray(alternateRepositories) &&
-        alternateRepositories.length &&
-        typeof appModel?.setActiveAltRepo === "function"
-      ) {
-        appModel.setActiveAltRepo();
-        const selectedAltRepo = appModel?.getActiveAltRepo?.();
-        const selectedAltRepoUrl = UrlUtilities.normalizeUrl(
-          selectedAltRepo?.objectServiceUrl,
-        );
-        if (selectedAltRepoUrl) {
-          this.writeBaseUrl = selectedAltRepoUrl;
-          return this.writeBaseUrl;
-        }
-      }
-
-      if (operation) {
-        this.writeBaseUrl = "";
-        throw new Error(
-          `ObjectService: writeBaseUrl is required for ${operation}`,
-        );
-      }
-
-      this.writeBaseUrl = "";
-      return "";
-    }
-
-    /**
      * Get the write client for create/update requests.
      * @param {string} operation Operation name for error reporting.
      * @returns {DataONEHttpClient} Write client instance.
      */
     getWriteClient(operation) {
-      const writeBaseUrl = this.resolveWriteBaseUrl(operation);
+      if (!this.writeBaseUrl) {
+        throw new Error(
+          `ObjectService: writeBaseUrl is required for ${operation}`,
+        );
+      }
       return DataONEHttpClient.get({
         ...this.writeClientConfig,
-        baseUrl: writeBaseUrl,
+        baseUrl: this.writeBaseUrl,
       });
     }
 
@@ -319,6 +241,28 @@ define([
      */
     async download(pid, options = {}) {
       const response = await this.fetch(pid, options);
+      return response.data;
+    }
+
+    /**
+     * Download object content from the repository that accepts writes.
+     * @param {string} pid PID to download
+     * @param {object} [options] Request options
+     * @returns {Promise<*>} Response payload
+     * @since 0.0.0
+     */
+    async downloadFromWriteTarget(pid, options = {}) {
+      const normalizedPid = this.constructor.normalizePid(pid);
+      const { responseType = "blob", ...requestOptions } = options;
+      const response = await this.requestWithClient(
+        this.getWriteClient("downloadFromWriteTarget"),
+        this.constructor.buildRequestOptions({
+          options: requestOptions,
+          path: this.constructor.buildPidPath(normalizedPid),
+          method: "GET",
+          responseType,
+        }),
+      );
       return response.data;
     }
 
@@ -398,17 +342,9 @@ define([
     }
   }
 
-  /**
-   * ObjectService resolves separate read and write base URLs (see
-   * {@link ObjectService.resolveReadBaseUrl} and
-   * {@link ObjectService#resolveWriteBaseUrl}), so it keeps a custom
-   * constructor rather than using the shared descriptor resolution. The
-   * `appModelKeys` here document the read-side fallback order.
-   * @type {DataONEService#DataONEServiceConfig}
-   */
+  /** @type {DataONEService#DataONEServiceConfig} */
   ObjectService.config = {
     endpoint: "object",
-    appModelKeys: ["objectServiceUrl", "resolveServiceUrl"],
     persistPrivate: false,
     defaultAuth: true,
   };

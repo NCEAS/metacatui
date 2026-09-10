@@ -9,6 +9,7 @@ define([
   "models/metadata/ScienceMetadata",
   "models/resourceMap/ResourceMap",
   "models/dataPackage/DataPackageRecovery",
+  "models/dataONEServices/ObjectService",
   "models/dataONEServices/SysMetaService",
   "views/EditorView",
   "views/CitationView",
@@ -31,6 +32,7 @@ define([
   ScienceMetadata,
   ResourceMap,
   DataPackageRecovery,
+  ObjectService,
   SysMetaService,
   EditorView,
   CitationView,
@@ -233,8 +235,6 @@ define([
     if (
       state?.reloadRequired === true ||
       state?.code === "reload_required" ||
-      state?.outcome === "cancelled" ||
-      isAbortError(state) ||
       hasUncertainMember
     ) {
       return MESSAGES.saveStateUncertain;
@@ -601,7 +601,9 @@ define([
       async handleMetadataNotFound(options = {}) {
         const { renderId, signal } = this.getRenderOptions(options);
         this.updateLoadingText(MESSAGES.lookingForMetadata);
-        const sysMetaService = new SysMetaService();
+        const sysMetaService = new SysMetaService({
+          readBaseUrl: MetacatUI.appModel.get("metaServiceUrl"),
+        });
 
         try {
           await sysMetaService.download(this.pid, { signal });
@@ -825,6 +827,7 @@ define([
           this.pid;
         MetacatUI.rootDataPackage = null;
         const dataPackage = new DataPackage({
+          ...MetacatUI.appModel.getDataPackageServiceOptions(),
           objectFormats: MetacatUI.objectFormats,
           versionTrackerOptions: { metaServiceUrl },
         });
@@ -848,7 +851,6 @@ define([
         try {
           this.updateLoadingText(MESSAGES.loadingEditableDataPackage);
           await dataPackage.loadEditablePackage(inputPid, {
-            resolverOptions: { metaServiceUrl },
             maxMembers: this.getEditorPackageMemberLimit(),
             signal,
           });
@@ -1166,6 +1168,7 @@ ${supportDetails}`;
         });
 
         MetacatUI.rootDataPackage = new DataPackage({
+          ...MetacatUI.appModel.getDataPackageServiceOptions(),
           objectFormats: MetacatUI.objectFormats,
           members: [
             {
@@ -2399,7 +2402,10 @@ ${supportDetails}`;
         // Refresh sysmeta first so the modal shows the current remote rules.
         try {
           if (member.remotePid || member.aggregatedPid) {
-            await member.fetchSysMeta({ useCache: false });
+            await member.fetchSysMeta({
+              useCache: false,
+              sysMetaService: MetacatUI.rootDataPackage.getSysMetaService(),
+            });
             member.isAuthorized_changePermission = await member.checkPermission(
               "changePermission",
               {
@@ -3838,9 +3844,17 @@ ${supportDetails}`;
           `<i class="icon icon-spinner icon-spin" aria-hidden="true"></i> Repairing your dataset. This may take a couple of minutes...`,
         );
         try {
+          const serviceOptions =
+            MetacatUI.appModel.getDataPackageServiceOptions();
           const result = await new DataPackageRecovery({
             resolveServiceUrl: MetacatUI.appModel.get("resolveServiceUrl"),
             objectServiceUrl: MetacatUI.appModel.get("objectServiceUrl"),
+            objectService: new ObjectService(
+              serviceOptions.objectServiceOptions,
+            ),
+            sysMetaService: new SysMetaService(
+              serviceOptions.sysMetaServiceOptions,
+            ),
           }).recover(metadataPid, recoveryOptions);
           if (result?.recovered) {
             controls.removeAttr("aria-busy");

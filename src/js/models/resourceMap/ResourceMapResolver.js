@@ -94,9 +94,14 @@ define([
    */
   class ResourceMapResolver {
     /**
+     * Requires `metaServiceUrl` and at least one object-read service URL.
      * @param {object} options Options for the resolver
-     * @param {string} [options.metaServiceUrl] The base URL for service to get
+     * @param {string} options.metaServiceUrl The base URL for service to get
      * System Metadata
+     * @param {string} [options.resolveServiceUrl] Resolve service base URL
+     * @param {string} [options.objectServiceUrl] Object service base URL
+     * @param {ObjectService} [options.objectService] Object service used to
+     * download Resource Maps
      * @param {PersistentStorage} [options.storage] An instance of
      * PersistentStorage to use for storing obj:resMap PID pairs. If not
      * provided, a new instance will be created.
@@ -116,11 +121,30 @@ define([
      */
     constructor(options = {}) {
       this.events = { ...Backbone.Events };
+      this.objectService = options.objectService || null;
 
-      const url =
-        options.metaServiceUrl ||
-        globalThis.MetacatUI?.appModel?.get("metaServiceUrl");
-      const normalizedUrl = UrlUtilities.normalizeUrl(url);
+      const normalizedUrl = UrlUtilities.normalizeUrl(options.metaServiceUrl);
+      if (!normalizedUrl) {
+        throw new Error("ResourceMapResolver: metaServiceUrl is required");
+      }
+      const resolveServiceUrl = ValueUtilities.isNonEmptyString(
+        options.resolveServiceUrl,
+      )
+        ? options.resolveServiceUrl
+        : null;
+      const objectServiceUrl = ValueUtilities.isNonEmptyString(
+        options.objectServiceUrl,
+      )
+        ? options.objectServiceUrl
+        : null;
+      if (!resolveServiceUrl && !objectServiceUrl) {
+        throw new Error(
+          "ResourceMapResolver: resolveServiceUrl or objectServiceUrl is required",
+        );
+      }
+      this.metaServiceUrl = normalizedUrl;
+      this.resolveServiceUrl = resolveServiceUrl || objectServiceUrl;
+      this.objectServiceUrl = objectServiceUrl;
 
       // Storage to store obj:ResMap pid pairs.
       const storageOptions = {
@@ -942,24 +966,19 @@ define([
     async fetchResourceMap(rm, options = {}) {
       const timeout = options.timeoutMs ?? this.maxFetchTime;
       try {
-        const appModel = globalThis.MetacatUI?.appModel;
-        const resolveServiceUrl = ValueUtilities.normalizeText(
-          appModel?.get?.("resolveServiceUrl"),
-        );
-        const objectServiceUrl = ValueUtilities.normalizeText(
-          appModel?.get?.("objectServiceUrl"),
-        );
-        // ObjectService centralizes MetacatUI's MN-first read policy, falling
-        // back to /resolve/ only for CN deployments without an object service.
-        const objectService = new ObjectService();
+        const objectService =
+          this.objectService ||
+          new ObjectService({
+            readBaseUrl: this.objectServiceUrl || this.resolveServiceUrl,
+          });
         const xml = await objectService.download(rm, {
           responseType: "text",
           timeoutMs: timeout,
           signal: options.signal,
         });
         const model = ResourceMap.fromXml(rm, xml, {
-          resolveServiceUrl,
-          objectServiceUrl,
+          resolveServiceUrl: this.resolveServiceUrl,
+          objectServiceUrl: this.objectServiceUrl,
         });
         return { model, status: 200 };
       } catch (e) {
