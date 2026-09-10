@@ -577,7 +577,13 @@ define([
         lookupOptions,
       );
       if (requireComplete && !record.chainComplete) {
-        throw new Error(`Cannot determine the latest version of "${pid}"`);
+        const error = new Error(
+          `Cannot determine the latest version of "${pid}"`,
+        );
+        if (record.endIsPrivate && record.completedSteps === 0) {
+          error.status = 401;
+        }
+        throw error;
       }
       if (record.latestAccessiblePid) return record.latestAccessiblePid;
 

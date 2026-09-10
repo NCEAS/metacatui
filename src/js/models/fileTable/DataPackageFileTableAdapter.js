@@ -108,15 +108,16 @@ define([
     }
 
     const errors = await dataPackage.fetchSysMeta(attemptedPids, options);
-    let hasMissingMembers = false;
+    let hasChangedMemberState = false;
     errors.forEach(({ pid, error }) => {
       const member = dataPackage.members.get(pid);
       if (!member) return;
       if (error?.status === 401 || error?.status === 403) {
         member.sysMetaReadDenied = true;
+        hasChangedMemberState = true;
       } else if (error?.status === 404) {
         member.sysMetaMissing = true;
-        hasMissingMembers = true;
+        hasChangedMemberState = true;
       }
     });
     const fetchedPids = members
@@ -125,7 +126,7 @@ define([
     return {
       attemptedPids,
       fetchedPids,
-      changed: fetchedPids.length > 0 || hasMissingMembers,
+      changed: fetchedPids.length > 0 || hasChangedMemberState,
     };
   }
 
@@ -348,16 +349,20 @@ define([
   /**
    * Build the editor share action for one row.
    * @param {string} label Target label
+   * @param {boolean} readDenied Whether system metadata access was denied
    * @returns {object} Share action descriptor
    */
-  function shareAction(label) {
+  function shareAction(label, readDenied = false) {
     return action(
       "share",
       "Share",
-      `Click to change who can access ${label}`,
+      readDenied
+        ? `You do not have permission to read ${label}, so its sharing settings cannot be changed.`
+        : `Click to change who can access ${label}`,
       "icon icon-group icon-on-left",
       {
         className: "btn access-policy-control",
+        isDisabled: readDenied,
       },
     );
   }
@@ -396,6 +401,8 @@ define([
    * @param {boolean} context.isNestedPackage Whether this row links to a
    * nested dataset
    * @param {boolean} context.isUnavailable Whether object metadata is missing
+   * @param {boolean} context.sysMetaReadDenied Whether system metadata access
+   * was denied
    * @returns {object[]} Action descriptors
    */
   function buildActions({
@@ -406,6 +413,7 @@ define([
     isResourceMapMember,
     isNestedPackage,
     isUnavailable,
+    sysMetaReadDenied,
   }) {
     const actions = [];
 
@@ -446,7 +454,11 @@ define([
                 action(
                   "replace",
                   "Replace",
-                  `Replace ${label} with a different file`,
+                  sysMetaReadDenied
+                    ? `You do not have permission to read ${label}, so it cannot be replaced.`
+                    : `Replace ${label} with a different file`,
+                  "",
+                  { isDisabled: sysMetaReadDenied },
                 ),
                 action("remove", "Remove", `Remove ${label} from this dataset`),
               ],
@@ -666,7 +678,9 @@ define([
       showMetrics: Boolean(showMetrics),
       showShare: shareEnabled,
       shareAction:
-        shareEnabled && !isResourceMapMember ? shareAction(label) : null,
+        shareEnabled && !isResourceMapMember
+          ? shareAction(label, member.sysMetaReadDenied === true)
+          : null,
       metricLabel: metric?.label || "",
       metricTitle: metric?.title || "",
       metricIconClass: metric?.iconClass || "",
@@ -687,6 +701,7 @@ define([
             isResourceMapMember,
             isNestedPackage,
             isUnavailable,
+            sysMetaReadDenied: member.sysMetaReadDenied === true,
           }),
     };
   }

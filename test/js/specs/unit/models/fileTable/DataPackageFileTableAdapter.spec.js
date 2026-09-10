@@ -216,7 +216,7 @@ define([
           const result = await Adapter.enrichMembers(dataPackage);
           const deniedMember = dataPackage.getMember("denied.1");
 
-          result.changed.should.equal(false);
+          result.changed.should.equal(true);
           deniedMember.sysMetaReadDenied.should.equal(true);
           expect(deniedMember.sysMetaMissing).to.equal(undefined);
           expect(deniedMember.toJSON()).not.to.have.property(
@@ -226,6 +226,7 @@ define([
           const retry = await Adapter.enrichMembers(dataPackage);
 
           retry.attemptedPids.should.deep.equal([]);
+          retry.changed.should.equal(false);
           sinon.assert.calledOnce(dataPackage.fetchSysMeta);
         });
       });
@@ -343,6 +344,43 @@ define([
     });
 
     describe("editor rows", () => {
+      it("keeps read-denied files visible and disables Replace and Share", () => {
+        const data = member({
+          pid: "denied.1",
+          formatType: "DATA",
+          fileName: "private.csv",
+        });
+        const [readableRow] = Adapter.buildRows(null, {
+          mode: "editor",
+          members: [data],
+        });
+        expect(readableRow.actions[0].menuItems[0].isDisabled).not.to.equal(
+          true,
+        );
+
+        data.sysMetaReadDenied = true;
+        const rows = Adapter.buildRows(null, {
+          mode: "editor",
+          members: [data],
+        });
+
+        rows.should.have.length(1);
+        const deniedRow = rows[0];
+        deniedRow.id.should.equal("denied.1");
+        const describe = deniedRow.actions.find((a) => a.id === "describe");
+        const replace = describe.menuItems.find((a) => a.id === "replace");
+        expect(replace.isDisabled).to.equal(true);
+        replace.title.should.match(/permission to read/i);
+        expect(describe.isDisabled).not.to.equal(true);
+        expect(
+          describe.menuItems.find((a) => a.id === "remove").isDisabled,
+        ).not.to.equal(true);
+        deniedRow.shareAction.id.should.equal("share");
+        expect(deniedRow.shareAction.isDisabled).to.equal(true);
+        deniedRow.shareAction.title.should.match(/permission to read/i);
+        deniedRow.isRenamable.should.equal(true);
+      });
+
       it("emits a describe menu and share action with an upload status, and never a download", () => {
         const data = member({
           pid: "data.2",

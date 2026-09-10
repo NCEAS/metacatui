@@ -896,6 +896,27 @@ define([
         caught.message.should.include("latest version");
       });
 
+      [401, 403].forEach((status) => {
+        it(`preserves a ${status} denial for an inaccessible starting PID`, async () => {
+          const readError = Object.assign(new Error("Cannot read sysmeta"), {
+            status,
+          });
+          state.service.download.withArgs("pid.1").rejects(readError);
+
+          let caught;
+          try {
+            await state.vt.getLatestVersion("pid.1", {
+              requireComplete: true,
+            });
+          } catch (error) {
+            caught = error;
+          }
+
+          expect(caught).to.be.instanceOf(Error);
+          caught.status.should.equal(401);
+        });
+      });
+
       [
         { status: 401, failedPid: "pid.1", expected: null },
         { status: 404, failedPid: "pid.1", expected: null },

@@ -163,6 +163,8 @@ define([
     replaceFileFailed(details) {
       return `Failed to replace the file in the dataset. Please try again.${details}`;
     },
+    replaceFileReadDenied:
+      "You do not have permission to read this file, so it cannot be replaced.",
     resourceMapUnavailable:
       "Resource Map not found for existing metadata document",
     resourceMapNotEditable:
@@ -172,6 +174,8 @@ define([
     saveStateUncertain:
       "The upload state is uncertain. Reload the package before saving again.",
     seeTechnicalDetails: "See technical details",
+    sharingSettingsReadDenied:
+      "You do not have permission to view or change sharing settings for this file.",
     sharingSettingsLoadError:
       "Sharing settings could not be loaded. Please try again.",
     startingEditor: "Starting the editor...",
@@ -1894,16 +1898,17 @@ ${supportDetails}`;
       /**
        * Show a temporary alert for a failed file replacement.
        * @param {Error} error Replacement failure
+       * @param {string} [message] User-facing message override
        * @returns {void}
        * @since 0.0.0
        */
-      showReplaceFileFailedAlert(error) {
+      showReplaceFileFailedAlert(error, message = "") {
         const details = error?.message || (error ? String(error) : "");
         const detailMessage = details
           ? ` ${Utilities.encodeHTML(details)}`
           : "";
         MetacatUI.appView.showAlert(
-          MESSAGES.replaceFileFailed(detailMessage),
+          message || MESSAGES.replaceFileFailed(detailMessage),
           CLASS_NAMES.alertError,
           this.$el,
           10000,
@@ -2292,7 +2297,12 @@ ${supportDetails}`;
             await this.replaceFileFromFileTable(rowId, file, { member });
           }
         } catch (error) {
-          this.showReplaceFileFailedAlert(error);
+          const readDenied = error?.status === 401 || error?.status === 403;
+          if (readDenied) member.sysMetaReadDenied = true;
+          this.showReplaceFileFailedAlert(
+            error,
+            readDenied ? MESSAGES.replaceFileReadDenied : "",
+          );
         } finally {
           this.fileTableEditInProgress = false;
           this.finishFileReplacementPreview(rowId);
@@ -2428,10 +2438,17 @@ ${supportDetails}`;
             member.isAuthorized_changePermission = true;
           }
         } catch (error) {
+          const readDenied = error?.status === 401 || error?.status === 403;
+          if (readDenied) {
+            member.sysMetaReadDenied = true;
+            this.refreshFileTable();
+          }
           if (!modalWasClosed()) {
             EditorView.prototype.showAccessPolicyLoadError.call(
               this,
-              MESSAGES.sharingSettingsLoadError,
+              readDenied
+                ? MESSAGES.sharingSettingsReadDenied
+                : MESSAGES.sharingSettingsLoadError,
             );
           }
           // eslint-disable-next-line no-console

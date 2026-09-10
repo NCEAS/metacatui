@@ -3574,6 +3574,58 @@ define([
       sinon.assert.calledOnce(consoleError);
     });
 
+    [401, 403].forEach((status) => {
+      it(`records a ${status} sharing read denial and refreshes the file row`, async function () {
+        const error = Object.assign(new Error("READ not allowed"), { status });
+        const member = {
+          pid: "data.1",
+          remotePid: "data.1",
+          sysMeta: null,
+          fetchSysMeta: sandbox.stub().rejects(error),
+          isMetadata: () => false,
+          isResourceMap: () => false,
+          isAuthorized_write: true,
+          checkPermission: sandbox.stub().resolves(true),
+          getFileName: () => "private.csv",
+        };
+        const sysMetaService = {};
+        const rootDataPackage = {
+          getSysMetaService: sandbox.stub().returns(sysMetaService),
+          getMember: sandbox.stub().withArgs("data.1").returns(member),
+        };
+        globalThis.MetacatUI = {
+          ...(originalMetacatUI || {}),
+          rootDataPackage,
+        };
+        sandbox
+          .stub(EditorView.prototype, "showAccessPolicyLoadingModal")
+          .returns(true);
+        const showAccessPolicyLoadError = sandbox.stub(
+          EditorView.prototype,
+          "showAccessPolicyLoadError",
+        );
+        const showAccessPolicyModal = sandbox.stub(
+          EditorView.prototype,
+          "showAccessPolicyModal",
+        );
+        const refreshFileTable = sandbox.stub(view, "refreshFileTable");
+        sandbox.stub(console, "error");
+        const rowModel = new Backbone.Model({ id: "data.1", kind: "data" });
+
+        const shown = await view.showFileTableAccessPolicy(rowModel, {});
+
+        shown.should.equal(true);
+        member.sysMetaReadDenied.should.equal(true);
+        sinon.assert.calledOnce(refreshFileTable);
+        sinon.assert.calledOnceWithExactly(
+          showAccessPolicyLoadError,
+          "You do not have permission to view or change sharing settings for this file.",
+        );
+        sinon.assert.notCalled(member.checkPermission);
+        sinon.assert.notCalled(showAccessPolicyModal);
+      });
+    });
+
     it("does not reopen sharing when the loading modal was closed", async function () {
       const member = {
         pid: "data.1",
@@ -4630,6 +4682,52 @@ define([
       );
       globalThis.MetacatUI.appView.showAlert.firstCall.args[0].should.contain(
         "Version service unavailable",
+      );
+    });
+
+    it("records a read denial when replace cannot inspect the selected file", async function () {
+      const file = new Blob(["replacement"], { type: "text/plain" });
+      const member = {
+        pid: "data.1",
+        remotePid: "data.1",
+      };
+      const readError = Object.assign(new Error("Cannot read sysmeta"), {
+        status: 401,
+      });
+      const getLatestVersion = sandbox.stub().rejects(readError);
+      const rootDataPackage = {
+        cancelEagerUpload: sandbox.stub(),
+        getMember: sandbox.stub().withArgs("data.1").returns(member),
+        getVersionTracker: sandbox.stub().returns({ getLatestVersion }),
+        replaceFile: sandbox.stub(),
+      };
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+        appView: {
+          showAlert: sandbox.stub(),
+        },
+      };
+      sandbox.stub(view, "choosePackageFiles").resolves([file]);
+      sandbox.stub(view, "refreshFileTable");
+      sandbox.stub(view, "toggleEnableControls");
+      view.fileTableView = {
+        viewModel: {
+          updateRow: sandbox.stub().returns({}),
+        },
+      };
+
+      const handled = await view.handleFileTableReplaceAction(
+        new Backbone.Model({ id: "data.1" }),
+      );
+
+      handled.should.equal(true);
+      member.sysMetaReadDenied.should.equal(true);
+      sinon.assert.notCalled(rootDataPackage.replaceFile);
+      sinon.assert.calledOnce(view.refreshFileTable);
+      sinon.assert.calledOnce(globalThis.MetacatUI.appView.showAlert);
+      globalThis.MetacatUI.appView.showAlert.firstCall.args[0].should.equal(
+        "You do not have permission to read this file, so it cannot be replaced.",
       );
     });
 
