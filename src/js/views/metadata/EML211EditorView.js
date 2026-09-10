@@ -590,9 +590,8 @@ define([
 
       /**
        * If the pid for the metadata doc is not in Solr, then try fetching the
-       * system metadata. If sysMeta exists, then the metadata document is being
-       * indexed, so notify user. Otherwise, the document doesn't exist, so show
-       * a 404.
+       * system metadata. Resolve a SID to its metadata PID, or notify the user
+       * that an existing PID is being indexed. If the lookup fails, show a 404.
        * @param {object} [options] Lookup options owned by the active render
        * @param {string} [options.renderId] Render identifier for stale guards
        * @param {AbortSignal} [options.signal] Signal for fetch capable calls
@@ -606,8 +605,17 @@ define([
         });
 
         try {
-          await sysMetaService.download(this.pid, { signal });
+          const sysMeta = await sysMetaService.download(this.pid, { signal });
           if (!this.isCurrentRender(renderId)) return;
+          if (
+            sysMeta.seriesId === this.pid &&
+            sysMeta.identifier &&
+            sysMeta.identifier !== this.pid
+          ) {
+            this.model.set("latestVersion", sysMeta.identifier);
+            this.showLatestVersion();
+            return;
+          }
           this.showNotIndexed();
           // TODO: we can get the formatType from the sysMeta and download
           // metadata if it's EML so indexing status doesn't matter. However,

@@ -223,7 +223,7 @@ define([
       sandbox.stub(view, "showNotFound");
       const downloadStub = sandbox
         .stub(SysMetaService.prototype, "download")
-        .resolves({});
+        .resolves({ identifier: "pid.1" });
 
       await view.handleMetadataNotFound();
 
@@ -231,6 +231,26 @@ define([
         signal: undefined,
       });
       sinon.assert.calledOnce(view.showNotIndexed);
+      sinon.assert.notCalled(view.showNotFound);
+    });
+
+    it("redirects a metadata SID to its resolved PID instead of showing indexing", async function () {
+      view.pid = "doi:10.18739/A20Z70Z1H";
+      const metadataPid = "urn:uuid:metadata.1";
+      sandbox.stub(view, "updateLoadingText");
+      sandbox.stub(view, "showLatestVersion");
+      sandbox.stub(view, "showNotIndexed");
+      sandbox.stub(view, "showNotFound");
+      sandbox.stub(SysMetaService.prototype, "download").resolves({
+        seriesId: view.pid,
+        identifier: metadataPid,
+      });
+
+      await view.handleMetadataNotFound();
+
+      model.get("latestVersion").should.equal(metadataPid);
+      sinon.assert.calledOnce(view.showLatestVersion);
+      sinon.assert.notCalled(view.showNotIndexed);
       sinon.assert.notCalled(view.showNotFound);
     });
 
