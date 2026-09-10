@@ -1267,7 +1267,7 @@ ${supportDetails}`;
       },
 
       /**
-       * Add missing EML entities for data members documented by the metadata.
+       * Add missing EML entities and fill missing fields for data members documented by the metadata.
        * @param {DataPackageMember} metadataMember Primary metadata member
        * @returns {void}
        * @since 0.0.0
@@ -1512,7 +1512,10 @@ ${supportDetails}`;
             { signal },
           );
           if (!isCurrentTable()) return;
-          if (result.changed) this.refreshFileTable();
+          if (result.changed) {
+            this.syncMetadataEntities(dataPackage.getPrimaryMetadataMember());
+            this.refreshFileTable();
+          }
         } catch (error) {
           if (isAbortError(error) || !isCurrentTable()) return;
           // eslint-disable-next-line no-console
