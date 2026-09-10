@@ -26,6 +26,28 @@ define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
       },
 
       /**
+       * Initializes a PortalVizSectionModel instance.
+       * @param {object} [attributes] - The attributes to set on the model
+       * @param {object} [attributes.mapConfig] - The map configuration to
+       * initialize the map model with
+       * @param {object} [options] - Options to pass to the model
+       * @since 0.0.0
+       */
+      initialize(attributes = {}, options = {}) {
+        PortalSectionModel.prototype.initialize.call(this, attributes, options);
+
+        // If this is a Cesium map section, initialize the map model
+        const isCesium =
+          this.get("visualizationType") === "cesium" ||
+          attributes?.visualizationType === "cesium";
+        const mapConfig = attributes?.mapConfig || this.get("mapConfig");
+        const mapModel = attributes?.mapModel || this.get("mapModel");
+        if (isCesium) {
+          this.initializeCesiumMap(mapConfig || mapModel);
+        }
+      },
+
+      /**
        * Parses a <section> element from a portal document
        *  @param {XMLElement} objectDOM - A ContentSectionType XML element from
        *  a portal document
@@ -69,15 +91,29 @@ define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
             let mapConfig = {};
             if (mapConfigNode.length) {
               mapConfig = mapConfigNode.first().siblings("optionValue").text();
-              if (mapConfig && mapConfig.length) {
+              if (mapConfig?.length) {
                 mapConfig = JSON.parse(mapConfig);
               }
             }
-            modelJSON.mapModel = new Map(mapConfig);
+            this.initializeCesiumMap(mapConfig);
           }
         }
 
         return modelJSON;
+      },
+
+      /**
+       * Initializes a Cesium map model for this portal section.
+       * @param {object|Map} [mapConfigOrModel] The map to initialize the map
+       * model with
+       * @since 0.0.0
+       */
+      initializeCesiumMap(mapConfigOrModel = {}) {
+        const mapModel =
+          mapConfigOrModel instanceof Map
+            ? mapConfigOrModel
+            : new Map(mapConfigOrModel || {});
+        this.set("mapModel", mapModel);
       },
 
       /**
@@ -97,14 +133,23 @@ define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
           // Or create a new DOM
         } else {
           // create an XML section element from scratch
-          const xmlText =
-            "<section>  <content>FEVer visualization</content><option><optionName>sectionType</optionName><optionValue>visualization</optionValue>" +
-            "</option><option><optionName>visualizationType</optionName><optionValue>fever</optionValue></option></section>";
+          const xmlText = `
+            <section>
+              <label></label>
+                <content>Visualization</content>
+                <option>
+                  <optionName>sectionType</optionName>
+                  <optionValue>visualization</optionValue>
+                </option>
+                <option>
+                  <optionName>visualizationType</optionName>
+                  <optionValue>${this.get("visualizationType")}</optionValue>
+                </option></section>`;
           const xmlDocument = new DOMParser().parseFromString(
             xmlText,
             "text/xml",
           );
-          [objectDOM] = $(xmlDocument).children();
+          [objectDOM] = $(xmlDocument).children().toArray();
         }
 
         // Update the required label

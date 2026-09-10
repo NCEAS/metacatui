@@ -9,6 +9,7 @@ define([
   "views/portals/editor/PortEditorSettingsView",
   "views/portals/editor/PortEditorDataView",
   "views/portals/editor/PortEditorMdSectionView",
+  "views/portals/editor/PortEditorMapSectionView",
   "text!templates/portals/editor/portEditorSections.html",
   "text!templates/portals/editor/portEditorMetrics.html",
   "text!templates/portals/editor/portEditorSectionLink.html",
@@ -24,6 +25,7 @@ define([
   PortEditorSettingsView,
   PortEditorDataView,
   PortEditorMdSectionView,
+  PortEditorMapSectionView,
   Template,
   MetricsSectionTemplate,
   SectionLinkTemplate,
@@ -364,8 +366,7 @@ define([
         // Get the sections from the Portal
         const sections = this.model.get("sections");
 
-        // Render each markdown (aka "freeform") section already in the
-        // PortalModel
+        // Render each content section already in the PortalModel
         _.each(
           sections,
           function renderSection(section) {
@@ -385,51 +386,54 @@ define([
       },
 
       /**
-       * Render a single markdown section in the editor (sectionView + link)
+       * Render a single content section in the editor (sectionView + link)
        * @param {PortalSectionModel} section - The section to render
        * @param {boolean} isNew - If true, this section will be rendered as a
        * section that was just added by the user
        */
       renderContentSection(section, isNew) {
         try {
-          const isNewSection =
-            typeof isNew === "undefined" || isNew === null ? false : isNew;
+          if (!section) return;
+          const isNewSection = isNew === true;
+          const sectionType = section.get("sectionType");
+          const vizType = section.get("visualizationType");
 
-          if (section) {
-            // Create and render and markdown section view
-            const sectionView = new PortEditorMdSectionView({
+          let sectionView = null;
+          if (sectionType === "visualization" && vizType === "cesium") {
+            sectionView = new PortEditorMapSectionView({
               model: section,
             });
-
-            // Pass the portal editor view onto the section
-            sectionView.editorView = this.editorView;
-
-            // Create a unique label for this section and save it
-            const uniqueLabel = this.getUniqueSectionLabel(section);
-
-            // Set the unique section label for this view
-            sectionView.uniqueSectionLabel = uniqueLabel;
-
-            this.updateSectionLabelsList(uniqueLabel);
-
-            sectionView.$el.attr("id", uniqueLabel);
-
-            // Insert the PortEditorMdSectionView element into this view
-            this.$(this.sectionsContainer).append(sectionView.$el);
-
-            // Render the PortEditorMdSectionView
-            sectionView.render();
-
-            // Add the tab to the tab navigation
-            this.addSectionLink(
-              sectionView,
-              ["Rename", "Delete"],
-              isNewSection,
-            );
-
-            // Add the sections to the list of subviews
-            this.subviews.push(sectionView);
+          } else {
+            // Create and render and markdown section view
+            sectionView = new PortEditorMdSectionView({
+              model: section,
+            });
           }
+
+          // Pass the portal editor view onto the section
+          sectionView.editorView = this.editorView;
+
+          // Create a unique label for this section and save it
+          const uniqueLabel = this.getUniqueSectionLabel(section);
+
+          // Set the unique section label for this view
+          sectionView.uniqueSectionLabel = uniqueLabel;
+
+          this.updateSectionLabelsList(uniqueLabel);
+
+          sectionView.$el.attr("id", uniqueLabel);
+
+          // Insert the section view element into this view
+          this.$(this.sectionsContainer).append(sectionView.$el);
+
+          // Render the section view
+          sectionView.render();
+
+          // Add the tab to the tab navigation
+          this.addSectionLink(sectionView, ["Rename", "Delete"], isNewSection);
+
+          // Add the sections to the list of subviews
+          this.subviews.push(sectionView);
         } catch (e) {
           // Preserve the diagnostic when a section cannot be rendered.
           // eslint-disable-next-line no-console
@@ -833,6 +837,10 @@ define([
           const newLink = this.createSectionLink(sectionView, menuOptions);
           const isMarkdownSection =
             $(newLink).data("view").type === "PortEditorMdSection";
+          const isContentSection = Object.prototype.isPrototypeOf.call(
+            PortalSection.prototype,
+            sectionView.model,
+          );
 
           // Make the tab hidden to start
           $(newLink)
@@ -852,27 +860,28 @@ define([
             `${this.sectionLinkContainer}[data-section-name='${this.addPageLabel}']`,
           )[0];
 
-          // If the new link is for a markdown section and there's no
-          // user-defined page order, then insert the markdown sections before
-          // the data and metrics section (this is the default order when there
-          // is no page ordering).
+          // If the new link is for a content section and there's no user-defined
+          // page order, then insert it before the data and metrics sections.
           if (
-            isMarkdownSection &&
+            isContentSection &&
             (!view.model.get("pageOrder") ||
               !view.model.get("pageOrder").length)
           ) {
-            // Find the last markdown section in the list of links
+            // Find the last content section in the list of links
             const currentLinks = this.$(this.sectionLinksContainer).find(
               this.sectionLinkContainer,
             );
-            const i = _.map(currentLinks, (li) =>
-              $(li).data("view") ? $(li).data("view").type : "",
-            ).lastIndexOf("PortEditorMdSection");
-            const lastMdSection = currentLinks[i];
-            // Append the new link after the last markdown section, or add it
-            // first.
-            if (lastMdSection) {
-              $(lastMdSection).after(newLink);
+            const lastContentSection = currentLinks
+              .filter((index, link) =>
+                Object.prototype.isPrototypeOf.call(
+                  PortalSection.prototype,
+                  $(link).data("model"),
+                ),
+              )
+              .last();
+            // Append the new link after the last content section, or add it first.
+            if (lastContentSection.length) {
+              lastContentSection.after(newLink);
             } else {
               this.$(this.sectionLinksContainer).prepend(newLink);
             }
@@ -1146,57 +1155,44 @@ define([
       addSection(sectionType) {
         try {
           // Create a new section to the Portal model
-          this.model.addSection(sectionType);
+          const newSection = this.model.addSection(sectionType);
+          if (!sectionType || typeof sectionType !== "string") return;
 
-          if (typeof sectionType === "string") {
-            switch (sectionType.toLowerCase()) {
-              case "data":
-                this.switchSection(this.dataView);
-                break;
-              case "metrics":
-                this.renderMetricsSection();
-                this.switchSection(this.metricsView);
-                break;
-              case "freeform": {
-                // Set up page ordering if it isn't already. This allows us to
-                // add a new freeform page at the end of the list of tabs,
-                // instead of before Data and Metrics (the default before page
-                // ordering was enabled).
-                const freeformPageOrder = this.model.get("pageOrder");
-                if (!freeformPageOrder || !freeformPageOrder.length) {
-                  this.updatePageOrder();
-                }
-                // Get the section model that was just added
-                const newestSection =
-                  this.model.get("sections")[
-                    this.model.get("sections").length - 1
-                  ];
-                // Render the content section view for it
-                this.renderContentSection(newestSection, true);
-                // Switch to that new view
-                this.switchSection(this.getSectionByModel(newestSection));
-                break;
+          switch (sectionType.toLowerCase()) {
+            case "data":
+              this.switchSection(this.dataView);
+              break;
+            case "metrics":
+              this.renderMetricsSection();
+              this.switchSection(this.metricsView);
+              break;
+            case "freeform":
+            case "cesium": {
+              if (!this.model.get("pageOrder")?.length) {
+                this.updatePageOrder();
               }
-              case "members":
-                // TODO this.switchSection(this.getSectionByLabel("Members"));
-                break;
-              default:
-                break;
+              // Render the content section view for it
+              this.renderContentSection(newSection, true);
+              // Switch to that new view
+              this.switchSection(this.getSectionByModel(newSection));
+              break;
             }
-
-            // If the section we just added is now one of two sections,
-            // re-enable the hide/delete button on the other section link.
-            this.toggleRemoveSectionOption();
-
-            this.editorView.showControls();
-
-            // Add the item to the the pageOrder option on the model, if it
-            // exists
-            const pageOrder = this.model.get("pageOrder");
-            if (pageOrder && pageOrder.length) {
-              this.updatePageOrder();
-            }
+            case "members":
+              // TODO this.switchSection(this.getSectionByLabel("Members"));
+              break;
+            default:
+              break;
           }
+
+          // If the section we just added is now one of two sections,
+          // re-enable the hide/delete button on the other section link.
+          this.toggleRemoveSectionOption();
+
+          this.editorView.showControls();
+
+          // Add the item to the the pageOrder option on the model, if it
+          // exists
+          if (this.model.get("pageOrder")?.length) this.updatePageOrder();
         } catch (e) {
           // Preserve the diagnostic when a section cannot be added.
           // eslint-disable-next-line no-console
@@ -1213,6 +1209,8 @@ define([
        */
       removeSection(event, sectionLink) {
         try {
+          if (event && $(event.currentTarget).hasClass("disabled")) return;
+
           let resolvedSectionLink = sectionLink;
           if (!resolvedSectionLink || !resolvedSectionLink.length) {
             const clickedEl = $(event.target);
