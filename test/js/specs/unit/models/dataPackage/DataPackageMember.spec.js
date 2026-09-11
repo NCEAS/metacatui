@@ -246,6 +246,7 @@ define([
       it(`resolves a replacement PNG format with media type "${mediaType}"`, async () => {
         const remoteSysMeta = new SystemMetadata({
           ...SYSTEM_METADATA_DEFAULTS,
+          formatId: "text/csv",
           identifier: "data.1",
           fileName: "original.csv",
         });
@@ -271,6 +272,32 @@ define([
           .serializeSystemMetadata()
           .should.contain("<formatId>image/png</formatId>");
       });
+    });
+
+    it("uses the existing System Metadata format to resolve an ambiguous replacement", async () => {
+      const remoteSysMeta = new SystemMetadata({
+        ...SYSTEM_METADATA_DEFAULTS,
+        identifier: "data.1",
+        formatId: "netCDF-4",
+      });
+      const member = new DataPackageMember({
+        pid: "data.2",
+        formatId: "netCDF-3",
+        remotePid: "data.1",
+        sysMeta: remoteSysMeta,
+        remoteSysMeta,
+      });
+      member.setLocalFile(
+        new File(["replacement"], "replacement.nc", {
+          type: "application/netcdf",
+        }),
+      );
+
+      const sysMeta = await member.buildObjectSystemMetadata(
+        SYSTEM_METADATA_DEFAULTS,
+      );
+
+      sysMeta.formatId.should.equal("netCDF-4");
     });
 
     it("preserves remote sysmeta when replacing existing content", async () => {

@@ -521,6 +521,8 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * @param {object} props Format matching properties.
        * @param {string} [props.formatId] - The formatId to match against the
        * collection
+       * @param {string} [props.existingFormatId] Existing formatId to use
+       * when filename and mediaType are ambiguous
        * @param {string} [props.filename] - The filename to match against the
        * collection
        * @param {string} [props.mediaType] - The mediaType to match against the
@@ -529,7 +531,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * the default formatId if no match is found.
        * @since 0.0.0
        */
-      getFormatId({ formatId, filename, mediaType }) {
+      getFormatId({ formatId, existingFormatId, filename, mediaType }) {
         if (formatId) return formatId;
 
         const file = ValueUtilities.normalizeText(filename);
@@ -546,22 +548,23 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
               this.models.filter((format) => format.get("mediaType") === mt),
             )
           : null;
-        let formatIdExt = null;
-        if (ext) {
-          const preferredFormatId = PREFERRED_EXTENSION_FORMAT_IDS[ext];
-          formatIdExt = preferredFormatId
-            ? this.models
-                .find((format) => format.get("formatId") === preferredFormatId)
-                ?.get("formatId")
-            : singleFormatId(
-                this.models.filter(
-                  (format) =>
-                    ValueUtilities.normalizeText(
-                      format.get("extension"),
-                    )?.toLowerCase() === ext,
-                ),
-              );
-        }
+        const extensionFormats = ext
+          ? this.models.filter(
+              (format) =>
+                ValueUtilities.normalizeText(
+                  format.get("extension"),
+                )?.toLowerCase() === ext,
+            )
+          : [];
+        const defaultFormatId = PREFERRED_EXTENSION_FORMAT_IDS[ext];
+        const formatIdExt = defaultFormatId
+          ? this.models
+              .find((format) => format.get("formatId") === defaultFormatId)
+              ?.get("formatId")
+          : singleFormatId(extensionFormats);
+        const existingFormat = extensionFormats.find(
+          (format) => format.get("formatId") === existingFormatId,
+        );
 
         // A spreadsheet media type can mask a plain CSV file; prefer the
         // extension so ".csv" files are not reported as Excel.
@@ -570,6 +573,17 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
           formatIdExt === "text/csv"
         ) {
           return formatIdExt;
+        }
+
+        // A generic ZIP media type identifies the container, not its contents.
+        if (
+          existingFormat &&
+          (!formatIdMedia ||
+            mt ===
+              ValueUtilities.normalizeText(existingFormat.get("mediaType")) ||
+            mt === "application/zip")
+        ) {
+          return existingFormatId;
         }
 
         return formatIdMedia || formatIdExt || DEFAULT_FORMAT_ID;

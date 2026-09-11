@@ -50,6 +50,26 @@ define(["collections/ObjectFormats"], function (ObjectFormats) {
         .should.equal("application/json");
     });
 
+    [
+      ["netCDF-4", "data.nc", "application/netcdf", "netCDF-4"],
+      ["image/geotiff+zip", "data.zip", "application/zip", "image/geotiff+zip"],
+      [
+        "image/geotiff+zip",
+        "data.zip",
+        "application/vnd.shp+zip",
+        "application/vnd.shp+zip",
+      ],
+      ["image/jp2", "photo.jpg", "image/jpeg", "image/jpeg"],
+    ].forEach(([existingFormatId, filename, mediaType, expectedFormatId]) => {
+      it(`resolves ${filename} with ${mediaType} and existing ${existingFormatId}`, function () {
+        const formats = new ObjectFormats();
+
+        formats
+          .getFormatId({ existingFormatId, filename, mediaType })
+          .should.equal(expectedFormatId);
+      });
+    });
+
     it("matches fallback extensions case-insensitively", function () {
       const formats = new ObjectFormats();
 

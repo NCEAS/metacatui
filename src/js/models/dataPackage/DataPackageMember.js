@@ -601,11 +601,13 @@ define([
         preparedValues && !replacementFileNameChanged
           ? preparedValues.fileName
           : this.fileName || desiredValues.fileName;
-      // Selected files carry new format signals; generated metadata Blobs
-      // retain their explicit DataONE format ID.
+      // Selected files can change format, while the existing format breaks
+      // ties between ambiguous signals. Generated metadata Blobs retain their
+      // explicit DataONE format ID.
       const formatId =
         blob instanceof File
           ? this.objectFormats.getFormatId({
+              existingFormatId: desiredValues.formatId || this.formatId,
               filename: blob.name,
               mediaType: blob.type,
             })
