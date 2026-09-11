@@ -790,11 +790,18 @@ define([
           this.shouldSyncUrlState() &&
           isNonEmptyArray(activeFeatures)
         ) {
-          this.clearFeatureRestoreSession();
-          const removedSelectedFeatures =
-            this.clearSelectedFeaturesForLayer(layer);
-          if (!removedSelectedFeatures) {
-            this.syncSelectedFeaturesToUrl();
+          const removedRestoreFeatures =
+            this.featureRestoreController.clearFeatureRestoreEntriesForLayer(
+              layer,
+            );
+          if (removedRestoreFeatures) {
+            const removedSelectedFeatures =
+              this.clearSelectedFeaturesForLayer(layer);
+            if (!removedSelectedFeatures) {
+              this.syncSelectedFeaturesToUrl();
+            }
+            this.handleLayerLoadingStateChange();
+            return;
           }
         } else if (
           this.shouldSyncUrlState() &&

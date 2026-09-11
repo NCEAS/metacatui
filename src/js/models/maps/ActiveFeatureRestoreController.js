@@ -1,9 +1,10 @@
 "use strict";
 
-define(["backbone", "models/maps/LayerLoadingCoordinator"], (
-  Backbone,
-  LayerLoadingCoordinator,
-) => {
+define([
+  "backbone",
+  "common/SearchParams",
+  "models/maps/LayerLoadingCoordinator",
+], (Backbone, SearchParams, LayerLoadingCoordinator) => {
   /**
    * @param {unknown} value Candidate id.
    * @returns {string|null} Trimmed id string or null.
@@ -301,6 +302,55 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
       session.cancelers.forEach((cancel) => {
         if (typeof cancel === "function") cancel();
       });
+    },
+
+    /**
+     * Remove any feature-restore entries associated with a hidden layer.
+     * @param {MapAsset} layer The layer whose visibility changed.
+     * @returns {boolean} True when matching restore entries were removed.
+     * @since 0.0.0
+     */
+    clearFeatureRestoreEntriesForLayer(layer) {
+      const layerId = layer?.get ? layer.get("layerId") : layer?.layerId;
+      const normalizedLayerId =
+        typeof layerId === "string" ? layerId.trim() : "";
+      const activeFeatures =
+        this.mapModel.get("restoreState")?.activeFeatures || [];
+
+      if (!normalizedLayerId.length || !Array.isArray(activeFeatures)) {
+        return false;
+      }
+
+      const relevantFeatures = activeFeatures.filter((featureState) => {
+        const featureLayerId =
+          typeof featureState?.layerId === "string"
+            ? featureState.layerId.trim()
+            : "";
+        return featureLayerId === normalizedLayerId;
+      });
+
+      if (!relevantFeatures.length) {
+        return false;
+      }
+
+      const remainingFeatures = activeFeatures.filter(
+        (featureState) =>
+          !relevantFeatures.some(
+            (candidate) =>
+              candidate.featureId === featureState.featureId &&
+              candidate.layerId === featureState.layerId,
+          ),
+      );
+
+      const restoreState = this.mapModel.get("restoreState") || {};
+      this.mapModel.set("restoreState", {
+        ...restoreState,
+        activeFeatures: remainingFeatures,
+      });
+      SearchParams.updateActiveFeatures(remainingFeatures);
+      this.clearSession();
+      this.mapModel.applyFeatureRestoreState();
+      return true;
     },
 
     /**

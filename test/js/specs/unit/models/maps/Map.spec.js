@@ -1009,6 +1009,53 @@ define([
         expect(map.get("isLoadingLayers")).to.equal(false);
       });
 
+      it("keeps restore state alive when an unrelated layer is hidden", () => {
+        const map = new Map({ showShareUrl: true });
+
+        const roadsLayer = makeLayer({
+          layerId: "roads",
+          label: "Roads",
+          visible: true,
+          status: "ready",
+          getFeatureById: () => null,
+        });
+        const buildingsLayer = makeLayer({
+          layerId: "buildings",
+          label: "Buildings",
+          visible: true,
+          status: "ready",
+          getFeatureById: () => null,
+          waitForFeatureById: () => () => {},
+        });
+        const hiddenLayer = makeLayer({
+          layerId: "hidden",
+          label: "Hidden",
+          visible: false,
+          status: "ready",
+          getFeatureById: () => null,
+        });
+
+        map.getAllLayers = () => [roadsLayer, buildingsLayer, hiddenLayer];
+        const activeFeatures = [
+          { featureId: "loaded-feature", layerId: "roads" },
+          { featureId: "pending-feature", layerId: "buildings" },
+        ];
+        map.set("restoreState", { activeFeatures });
+        SearchParams.updateActiveFeatures(activeFeatures);
+
+        map.applyFeatureRestoreState();
+        expect(map.featureRestoreSession).to.not.equal(null);
+
+        hiddenLayer.set("visible", false);
+        map.handleLayerVisibilityChange(hiddenLayer, false);
+
+        expect(map.featureRestoreSession).to.not.equal(null);
+        expect(map.get("restoreState")?.activeFeatures).to.deep.equal(activeFeatures);
+        expect(SearchParams.parseStateFromUrl().activeFeatures).to.deep.equal(
+          activeFeatures,
+        );
+      });
+
       it("clears pending feature restore ids from the URL when the restoring layer is hidden before the feature appears", () => {
         const map = new Map({ showShareUrl: true });
         let cancelCount = 0;
@@ -1028,14 +1075,17 @@ define([
 
         map.getAllLayers = () => [roadsLayer];
         map.set("restoreState", {
-          activeFeatures: [{ featureId: "road-feature-1", layerId: null }],
+          activeFeatures: [{ featureId: "road-feature-1", layerId: "roads" }],
         });
+        SearchParams.updateActiveFeatures([
+          { featureId: "road-feature-1", layerId: "roads" },
+        ]);
 
         map.applyFeatureRestoreState();
         expect(map.featureRestoreSession).to.not.equal(null);
-        expect(SearchParams.parseStateFromUrl().activeFeatures).to.deep.equal(
-          [],
-        );
+        expect(SearchParams.parseStateFromUrl().activeFeatures).to.deep.equal([
+          { featureId: "road-feature-1", layerId: "roads" },
+        ]);
 
         roadsLayer.set("visible", false);
         map.handleLayerVisibilityChange(roadsLayer, false);
