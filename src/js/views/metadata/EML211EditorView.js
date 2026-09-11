@@ -2909,6 +2909,15 @@ ${supportDetails}`;
        * @since 0.0.0
        */
       handleEagerUploadSettled(event = {}) {
+        if (event.error?.code === "unauthorized") {
+          MetacatUI.appView.showAlert(
+            Utilities.encodeHTML(event.error.message),
+            CLASS_NAMES.alertError,
+            this.$el,
+            10000,
+            { remove: true },
+          );
+        }
         const settledPids = [
           ...(event.memberPids || []),
           ...(event.members || []).map((member) => member?.pid),

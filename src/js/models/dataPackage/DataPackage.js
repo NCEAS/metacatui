@@ -1097,6 +1097,22 @@ define([
       await this._ensureSystemMetadata([member, ...metadataMembers]);
       this.assertNotNestedResourceMap(member);
 
+      // Reject before changing PIDs or starting expensive file preparation.
+      if (member.remotePid) {
+        const sourcePid = replacementSource || member.remotePid;
+        const authorizationService = this.getAuthorizationService();
+        const permissions = member.accessPolicyDirty
+          ? ["write", "changePermission"]
+          : ["write"];
+        await Promise.all(
+          permissions.map(async (permission) => {
+            if (!(await authorizationService.check(sourcePid, permission))) {
+              throw DataPackageUploader.unauthorizedError([sourcePid]);
+            }
+          }),
+        );
+      }
+
       let replacementSourceSysMeta = null;
       if (replacementSource) {
         replacementSourceSysMeta =

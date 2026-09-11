@@ -1985,29 +1985,54 @@ define([
       );
     });
 
-    it("refreshes controls when eager uploads settle", async function () {
-      const rootDataPackage = new Backbone.Model();
-      rootDataPackage.events = { ...Backbone.Events };
-      globalThis.MetacatUI = {
-        ...(originalMetacatUI || {}),
-        rootDataPackage,
-        eventDispatcher: new Backbone.Model(),
-      };
-      sandbox.stub(Utilities, "awaitMetacatUI").resolves(rootDataPackage);
-      sandbox.stub(view, "refreshFileTable");
-      sandbox.stub(view, "toggleEnableControls");
-      view.fileUploadProgressByPid = { "data.1": 100, "data.2": 50 };
+    [
+      { code: "unauthorized", shouldAlert: true },
+      { code: "aborted", shouldAlert: false },
+      { code: null, shouldAlert: false },
+    ].forEach(({ code, shouldAlert }) => {
+      it(`clears eager progress and only alerts for permission failures (${code || "success"})`, async function () {
+        const rootDataPackage = new Backbone.Model();
+        rootDataPackage.events = { ...Backbone.Events };
+        const showAlert = sandbox.stub();
+        globalThis.MetacatUI = {
+          ...(originalMetacatUI || {}),
+          rootDataPackage,
+          eventDispatcher: new Backbone.Model(),
+          appView: { showAlert },
+        };
+        sandbox.stub(Utilities, "awaitMetacatUI").resolves(rootDataPackage);
+        sandbox.stub(view, "refreshFileTable");
+        sandbox.stub(view, "toggleEnableControls");
+        view.fileUploadProgressByPid = {
+          "data.1": 100,
+          "data.renamed": 100,
+          "data.2": 50,
+        };
 
-      view.setListeners();
-      await Promise.resolve();
-      rootDataPackage.events.trigger("eagerUpload:complete", {
-        memberPids: ["data.1"],
-        members: [{ pid: "data.renamed" }],
+        view.setListeners();
+        await Promise.resolve();
+        rootDataPackage.events.trigger(
+          code ? "eagerUpload:error" : "eagerUpload:complete",
+          {
+            memberPids: ["data.1"],
+            members: [{ pid: "data.renamed" }],
+            error: code
+              ? Object.assign(new Error("Cannot update <file>"), { code })
+              : undefined,
+          },
+        );
+
+        view.fileUploadProgressByPid.should.deep.equal({ "data.2": 50 });
+        sinon.assert.calledOnce(view.refreshFileTable);
+        sinon.assert.calledOnce(view.toggleEnableControls);
+        if (shouldAlert) {
+          sinon.assert.calledOnce(showAlert);
+          showAlert.firstCall.args[0].should.include("&lt;file&gt;");
+          showAlert.firstCall.args[1].should.equal("alert-error");
+        } else {
+          sinon.assert.notCalled(showAlert);
+        }
       });
-
-      view.fileUploadProgressByPid.should.deep.equal({ "data.2": 50 });
-      sinon.assert.calledOnce(view.refreshFileTable);
-      sinon.assert.calledOnce(view.toggleEnableControls);
     });
 
     it("updates controls without re-disabling the file table during upload preparation", async function () {

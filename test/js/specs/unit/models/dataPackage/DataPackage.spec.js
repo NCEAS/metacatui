@@ -108,6 +108,7 @@ define([
         });
       },
     };
+    pkg.authorizationService = { check: sinon.stub().resolves(true) };
     return { pkg, resourceMap };
   }
 
@@ -2551,6 +2552,62 @@ define([
         resourceMap.getMemberPids().should.have.members(["meta.1", "data.1"]);
       });
 
+      [
+        { permission: "write", sourcePid: "data.1" },
+        { permission: "write", sourcePid: "data.2" },
+        { permission: "changePermission", sourcePid: "data.1" },
+      ].forEach(({ permission, sourcePid }) => {
+        it(`rejects replacement before preparation when ${permission} is denied on ${sourcePid}`, async () => {
+          const { pkg, resourceMap } = buildEditablePackage();
+          const member = pkg.requireMember("data.1");
+          member.accessPolicyDirty = permission === "changePermission";
+          pkg.authorizationService.check
+            .withArgs(sourcePid, permission)
+            .resolves(false);
+          const allocatePid = sinon.spy(pkg, "allocatePid");
+          const checksum = sinon.spy(member, "buildObjectSystemMetadata");
+          const upload = sinon
+            .stub(pkg._uploader, "uploadAddedMembers")
+            .resolves([]);
+          const initialPids = resourceMap.getMemberPids();
+          let caught;
+
+          try {
+            await pkg.replaceFile("data.1", new Blob(["replacement"]), {
+              replacementSourcePid:
+                sourcePid === "data.2" ? sourcePid : undefined,
+            });
+          } catch (error) {
+            caught = error;
+          }
+
+          expect(caught?.code).to.equal("unauthorized");
+          caught.pids.should.deep.equal([sourcePid]);
+          member.pid.should.equal("data.1");
+          member.contentDirty.should.equal(false);
+          expect(member.uploadFile).to.equal(undefined);
+          pkg.draftRevision.should.equal(0);
+          resourceMap.getMemberPids().should.deep.equal(initialPids);
+          sinon.assert.notCalled(allocatePid);
+          sinon.assert.notCalled(checksum);
+          sinon.assert.notCalled(upload);
+        });
+      });
+
+      it("replaces an unuploaded file without checking remote permissions", async () => {
+        const { pkg } = buildEditablePackage();
+        const member = pkg.requireMember("data.1");
+        member.initializeEditableState({ remotePid: null });
+        const file = new Blob(["replacement"]);
+        sinon.stub(pkg._uploader, "uploadAddedMembers").resolves([]);
+
+        await pkg.replaceFile("data.1", file);
+
+        member.uploadFile.should.equal(file);
+        member.contentDirty.should.equal(true);
+        sinon.assert.notCalled(pkg.authorizationService.check);
+      });
+
       it("replaces data and updates metadata references without a view", async () => {
         const references = ["data.1"];
         const metadataObjectModel = {
@@ -2592,6 +2649,11 @@ define([
         // progress instead of leaving the member PENDING until the next save.
         uploadAddedMembers.calledOnce.should.equal(true);
         uploadAddedMembers.firstCall.args[0].should.deep.equal([member]);
+        sinon.assert.calledOnceWithExactly(
+          pkg.authorizationService.check,
+          "data.1",
+          "write",
+        );
       });
 
       it("retargets replacement upload source without switching the package row", async () => {
@@ -2639,6 +2701,11 @@ define([
         resourceMap.graphState.hasMember("data.1").should.equal(false);
         resourceMap.graphState.hasMember(member.pid).should.equal(true);
         sinon.assert.calledWith(pkg.sysMetaService.download, "data.2");
+        sinon.assert.calledOnceWithExactly(
+          pkg.authorizationService.check,
+          "data.2",
+          "write",
+        );
       });
 
       it("discards a failed file replacement back to its remote PID", async () => {

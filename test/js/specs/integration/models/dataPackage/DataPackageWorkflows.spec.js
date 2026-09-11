@@ -258,6 +258,7 @@ define([
         ),
       },
       authorizationService: overrides.authorizationService || {
+        check: state.sandbox.stub().resolves(true),
         checkAll: state.sandbox
           .stub()
           .callsFake(async (pids) =>
