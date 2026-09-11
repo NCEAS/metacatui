@@ -5,6 +5,17 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
   LayerLoadingCoordinator,
 ) => {
   /**
+   * @param {unknown} value Candidate id.
+   * @returns {string|null} Trimmed id string or null.
+   * @since 0.0.0
+   */
+  function normalizeId(value) {
+    if (typeof value !== "string") return null;
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
+  }
+
+  /**
    * Extract a feature id from either a Feature model or plain attrs object.
    * @param {Backbone.Model|object} feature Feature model or attrs object.
    * @returns {string|undefined} Stable feature id when present.
@@ -18,6 +29,137 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
   }
 
   /**
+   * Extract map layer id from either a Feature model or plain attrs object.
+   * @param {Backbone.Model|object} feature Feature model or attrs object.
+   * @returns {string|null} Layer id if available.
+   * @since 0.0.0
+   */
+  function getLayerId(feature) {
+    const mapAsset =
+      feature instanceof Backbone.Model
+        ? feature.get("mapAsset")
+        : feature?.mapAsset;
+    if (!mapAsset || typeof mapAsset.get !== "function") return null;
+    return normalizeId(mapAsset.get("layerId"));
+  }
+
+  /**
+   * Build a stable key for a feature selection entry.
+   * @param {{featureId: string, layerId: (string|null)}} featureState Entry.
+   * @returns {string} Stable serialization key.
+   * @since 0.0.0
+   */
+  function getFeatureStateKey(featureState) {
+    return JSON.stringify(featureState);
+  }
+
+  /**
+   * Normalize a single feature entry into feature/layer form.
+   * @param {unknown} entry Candidate feature state entry.
+   * @returns {{featureId: string, layerId: (string|null)}|null} Normalized entry.
+   * @since 0.0.0
+   */
+  function normalizeFeatureStateEntry(entry) {
+    if (typeof entry === "string") {
+      const featureId = normalizeId(entry);
+      if (!featureId) return null;
+      return { featureId, layerId: null };
+    }
+
+    if (!entry || typeof entry !== "object") return null;
+
+    const featureId = normalizeId(entry.featureId || entry.featureID);
+    if (!featureId) return null;
+
+    return {
+      featureId,
+      layerId: normalizeId(entry.layerId) || null,
+    };
+  }
+
+  /**
+   * Normalize and deduplicate feature state entries.
+   * @param {unknown[]} entries Candidate entries.
+   * @returns {{featureId: string, layerId: (string|null)}[]} Normalized entries.
+   * @since 0.0.0
+   */
+  function normalizeFeatureState(entries) {
+    if (!Array.isArray(entries)) return [];
+    const normalized = [];
+    const seen = new Set();
+
+    entries.forEach((entry) => {
+      const normalizedEntry = normalizeFeatureStateEntry(entry);
+      if (!normalizedEntry) return;
+
+      const key = getFeatureStateKey(normalizedEntry);
+      if (seen.has(key)) return;
+
+      seen.add(key);
+      normalized.push(normalizedEntry);
+    });
+
+    return normalized;
+  }
+
+  /**
+   * Create a feature state entry from a selected feature model/attrs object.
+   * @param {Backbone.Model|object} feature Selected feature entry.
+   * @returns {{featureId: string, layerId: (string|null)}|null} Feature state entry.
+   * @since 0.0.0
+   */
+  function getFeatureStateFromSelection(feature) {
+    const featureId = normalizeId(getFeatureId(feature));
+    if (!featureId) return null;
+
+    return {
+      featureId,
+      layerId: getLayerId(feature),
+    };
+  }
+
+  /**
+   * Convert selected features to normalized feature state entries.
+   * @param {Array<Backbone.Model|object>} features Selected features.
+   * @returns {{featureId: string, layerId: (string|null)}[]} Normalized entries.
+   * @since 0.0.0
+   */
+  function getFeatureStateFromSelections(features = []) {
+    return normalizeFeatureState(
+      features
+        .map((feature) => getFeatureStateFromSelection(feature))
+        .filter((featureState) => featureState != null),
+    );
+  }
+
+  /**
+   * Whether a resolved feature satisfies a requested feature state.
+   * @param {{featureId: string, layerId: (string|null)}} requestedFeature Requested entry.
+   * @param {{featureId: string, layerId: (string|null)}} resolvedFeature Resolved entry.
+   * @returns {boolean} True when resolved entry satisfies request.
+   * @since 0.0.0
+   */
+  function matchesRequestedFeature(requestedFeature, resolvedFeature) {
+    if (!requestedFeature || !resolvedFeature) return false;
+    if (requestedFeature.featureId !== resolvedFeature.featureId) return false;
+    if (!requestedFeature.layerId) return true;
+    return requestedFeature.layerId === resolvedFeature.layerId;
+  }
+
+  /**
+   * Check whether a requested feature is resolved by any resolved entry.
+   * @param {{featureId: string, layerId: (string|null)}} requestedFeature Requested entry.
+   * @param {{featureId: string, layerId: (string|null)}[]} resolvedFeatures Resolved entries.
+   * @returns {boolean} True when request is resolved.
+   * @since 0.0.0
+   */
+  function isFeatureResolved(requestedFeature, resolvedFeatures = []) {
+    return resolvedFeatures.some((resolvedFeature) =>
+      matchesRequestedFeature(requestedFeature, resolvedFeature),
+    );
+  }
+
+  /**
    * Merge current and newly found features without duplicating feature ids.
    * @param {Array<Backbone.Model|object>} currentFeatures Currently selected features.
    * @param {Array<Backbone.Model|object>} newFeatures Newly resolved features.
@@ -26,15 +168,16 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
    */
   function mergeFeatureSelections(currentFeatures = [], newFeatures = []) {
     const merged = [];
-    const seenIds = new Set();
+    const seenKeys = new Set();
 
     currentFeatures.concat(newFeatures).forEach((feature) => {
       if (!feature) return;
 
-      const featureId = getFeatureId(feature);
-      if (typeof featureId === "string" && featureId.length) {
-        if (seenIds.has(featureId)) return;
-        seenIds.add(featureId);
+      const featureState = getFeatureStateFromSelection(feature);
+      if (featureState) {
+        const featureKey = getFeatureStateKey(featureState);
+        if (seenKeys.has(featureKey)) return;
+        seenKeys.add(featureKey);
       }
 
       merged.push(feature);
@@ -46,14 +189,14 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
   /**
    * Serialize a feature-restore scope without ambiguity between ids that may
    * contain separator characters.
-   * @param {string[]} featureIds Requested feature ids.
-   * @param {string[]} layerIds Searchable layer ids.
+   * @param {string[]} featureKeys Requested feature scope keys.
+   * @param {string[]} layerIds Searchable visible layer ids.
    * @returns {string} Stable scope key.
    * @since 0.0.0
    */
-  function serializeRestoreScopeKey(featureIds, layerIds) {
+  function serializeRestoreScopeKey(featureKeys, layerIds) {
     return JSON.stringify({
-      featureIds: [...new Set(featureIds)].sort(),
+      featureKeys: [...new Set(featureKeys)].sort(),
       layerIds: [...new Set(layerIds)].sort(),
     });
   }
@@ -103,21 +246,47 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
     },
 
     /**
-     * Merge selected ids with in-flight restore ids for URL sync.
-     * @param {string[]} selectedIds Currently selected feature ids.
-     * @returns {string[]} Feature ids to write to URL.
+     * Merge selected features with in-flight restore entries for URL sync.
+     * @param {{featureId: string, layerId: (string|null)}[]} selectedFeatures
+     * Currently selected feature state entries.
+     * @returns {{featureId: string, layerId: (string|null)}[]}
+     * Feature state entries to write to URL.
      * @since 0.0.0
      */
-    getRequestedIdsForUrlSync(selectedIds = []) {
-      const restoringIds = this.getSession()?.requestedIds;
-      if (!restoringIds?.length) return selectedIds;
+    getRequestedFeaturesForUrlSync(selectedFeatures = []) {
+      const normalizedSelected = normalizeFeatureState(selectedFeatures);
+      const restoringFeatures = normalizeFeatureState(
+        this.getSession()?.requestedFeatures,
+      );
+      if (!restoringFeatures.length) return normalizedSelected;
 
-      const mergedIds = restoringIds.slice();
-      selectedIds.forEach((id) => {
-        if (!mergedIds.includes(id)) mergedIds.push(id);
+      const merged = restoringFeatures.slice();
+      normalizedSelected.forEach((selectedFeature) => {
+        const selectedKey = getFeatureStateKey(selectedFeature);
+        if (
+          merged.some(
+            (featureState) => getFeatureStateKey(featureState) === selectedKey,
+          )
+        ) {
+          return;
+        }
+
+        const replaceIndex =
+          selectedFeature.layerId &&
+          merged.findIndex(
+            (featureState) =>
+              featureState.featureId === selectedFeature.featureId &&
+              featureState.layerId == null,
+          );
+
+        if (replaceIndex >= 0) {
+          merged[replaceIndex] = selectedFeature;
+        } else {
+          merged.push(selectedFeature);
+        }
       });
 
-      return mergedIds;
+      return normalizeFeatureState(merged);
     },
 
     /**
@@ -136,12 +305,18 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
 
     /**
      * Start a new feature restore session, canceling any previous one.
-     * @param {string[]} activeFeatureIds The ids being restored.
-     * @param {string} [sessionKey] Optional key describing restore scope.
+     * @param {{featureId: string, layerId: (string|null)}[]} activeFeatures
+     * The features being restored.
+     * @param {string[]} [searchableLayerIds] Current searchable visible layers.
      * @returns {object} The active restore session.
      * @since 0.0.0
      */
-    beginSession(activeFeatureIds, sessionKey = activeFeatureIds.join(",")) {
+    beginSession(activeFeatures, searchableLayerIds = []) {
+      const normalizedFeatures = normalizeFeatureState(activeFeatures);
+      const sessionKey = serializeRestoreScopeKey(
+        normalizedFeatures.map((feature) => getFeatureStateKey(feature)),
+        searchableLayerIds,
+      );
       if (this.getSession()?.key === sessionKey) {
         return this.getSession();
       }
@@ -150,7 +325,7 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
       const session = this.setSession({
         cancelers: [],
         key: sessionKey,
-        requestedIds: activeFeatureIds.slice(),
+        requestedFeatures: normalizedFeatures.slice(),
       });
 
       // Ensure restores have a bounded lifetime so unresolved waits do not
@@ -193,26 +368,32 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
     },
 
     /**
-     * Search all layers for features matching the given ids and return
+     * Search layers for features matching the given feature state and return
      * feature attribute objects ready to be passed to selectFeatures().
-     * @param {string[]} ids Feature ids to search for.
+     * @param {{featureId: string, layerId: (string|null)}[]} features
+     * Feature state entries to search for.
      * @param {Array<object>} [layers] Layers to search within.
      * @returns {object[]} Matching feature attribute objects.
      * @since 0.0.0
      */
-    findFeatureAttributesByIds(ids, layers = this.mapModel.getAllLayers()) {
-      return ids.reduce((result, id) => {
-        const featureAttrs = layers.reduce((foundAttrs, layer) => {
-          if (
-            foundAttrs ||
-            typeof layer.getFeatureById !== "function" ||
-            layer.get("status") === "error"
-          ) {
+    findFeatureAttributes(features, layers = this.mapModel.getAllLayers()) {
+      const normalizedFeatures = normalizeFeatureState(features);
+
+      return normalizedFeatures.reduce((result, featureState) => {
+        const candidateLayers = layers.filter((layer) => {
+          if (typeof layer.getFeatureById !== "function") return false;
+          if (layer.get("status") === "error") return false;
+          if (!featureState.layerId) return true;
+          return normalizeId(layer.get("layerId")) === featureState.layerId;
+        });
+
+        const featureAttrs = candidateLayers.reduce((foundAttrs, layer) => {
+          if (foundAttrs) return foundAttrs;
+
+          const feature = layer.getFeatureById(featureState.featureId);
+          if (!feature || typeof layer.getFeatureAttributes !== "function") {
             return foundAttrs;
           }
-
-          const feature = layer.getFeatureById(id);
-          if (!feature) return foundAttrs;
 
           return layer.getFeatureAttributes(feature) || foundAttrs;
         }, null);
@@ -220,6 +401,17 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
         if (featureAttrs) result.push(featureAttrs);
         return result;
       }, []);
+    },
+
+    /**
+     * Read normalized feature state from restoreState.
+     * @returns {{featureId: string, layerId: (string|null)}[]} Restore entries.
+     * @since 0.0.0
+     */
+    getRestoreFeatures() {
+      const restoreState = this.mapModel.get("restoreState") || {};
+      const stateFeatures = restoreState.activeFeatures;
+      return normalizeFeatureState(stateFeatures);
     },
 
     /**
@@ -237,46 +429,45 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
         return;
       }
 
-      const restoreState = mapModel.get("restoreState") || {};
-      const { activeFeatureIds = [] } = restoreState;
-      if (!activeFeatureIds.length) {
+      const activeFeatures = this.getRestoreFeatures();
+      if (!activeFeatures.length) {
         this.clearSession();
         return;
       }
 
       const selectedFeatures = mapModel.getSelectedFeatures();
-      const selectedRequestedIds = (selectedFeatures?.models || [])
-        .map((feature) => getFeatureId(feature))
-        .filter((id) => activeFeatureIds.includes(id));
-      const allSearchableLayers = mapModel
-        .getAllLayers()
-        .filter(
-          (layer) =>
-            layer.get("visible") !== false &&
-            typeof layer.getFeatureById === "function" &&
-            layer.get("status") !== "error",
-        );
-      const featureAttrs = this.findFeatureAttributesByIds(
-        activeFeatureIds,
+      const selectedRequestedFeatures = getFeatureStateFromSelections(
+        selectedFeatures?.models || [],
+      ).filter((featureState) =>
+        activeFeatures.some((requestedFeature) =>
+          matchesRequestedFeature(requestedFeature, featureState),
+        ),
+      );
+      const allSearchableLayers = mapModel.getAllLayers().filter(
+        (layer) =>
+          layer.get("visible") !== false &&
+          typeof layer.getFeatureById === "function" &&
+          layer.get("status") !== "error",
+      );
+      const featureAttrs = this.findFeatureAttributes(
+        activeFeatures,
         allSearchableLayers,
       );
-      const resolvedIds = new Set(selectedRequestedIds);
+      const resolvedFeatures = selectedRequestedFeatures.slice();
 
       featureAttrs.forEach((feature) => {
-        const featureId = getFeatureId(feature);
-        if (typeof featureId === "string" && featureId.length) {
-          resolvedIds.add(featureId);
-        }
+        const featureState = getFeatureStateFromSelection(feature);
+        if (featureState) resolvedFeatures.push(featureState);
       });
 
-      const unresolvedIds = activeFeatureIds.filter(
-        (id) => !resolvedIds.has(id),
+      const unresolvedFeatures = activeFeatures.filter(
+        (featureState) => !isFeatureResolved(featureState, resolvedFeatures),
       );
       const searchableLayerIds = allSearchableLayers
-        .map((layer) => layer.get("layerId") || layer.cid || "")
+        .map((layer) => normalizeId(layer.get("layerId")) || normalizeId(layer.cid))
         .filter((layerId) => typeof layerId === "string" && layerId.length);
       const restoreScopeKey = serializeRestoreScopeKey(
-        activeFeatureIds,
+        activeFeatures.map((feature) => getFeatureStateKey(feature)),
         searchableLayerIds,
       );
       const canResolveAsynchronously = allSearchableLayers.some(
@@ -288,11 +479,11 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
       let restoreSession = existingSession;
 
       if (
-        unresolvedIds.length &&
+        unresolvedFeatures.length &&
         canResolveAsynchronously &&
         existingSession?.key !== restoreScopeKey
       ) {
-        restoreSession = this.beginSession(activeFeatureIds, restoreScopeKey);
+        restoreSession = this.beginSession(activeFeatures, searchableLayerIds);
       }
 
       if (featureAttrs.length) {
@@ -301,7 +492,7 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
         );
       }
 
-      if (!unresolvedIds.length) {
+      if (!unresolvedFeatures.length) {
         this.clearSession();
         return;
       }
@@ -327,17 +518,20 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
       const selectIfFound = () => {
         if (!this.isActiveSession(restoreSession)) return;
 
-        const selectedIds = (mapModel.getSelectedFeatures()?.models || [])
-          .map((feature) => getFeatureId(feature))
-          .filter((id) => activeFeatureIds.includes(id));
-        const selectedIdSet = new Set(selectedIds);
-        if (activeFeatureIds.every((id) => selectedIdSet.has(id))) {
+        const selectedFeatureStates = getFeatureStateFromSelections(
+          mapModel.getSelectedFeatures()?.models || [],
+        );
+        if (
+          activeFeatures.every((featureState) =>
+            isFeatureResolved(featureState, selectedFeatureStates),
+          )
+        ) {
           this.clearSession();
           return;
         }
 
-        const attrs = this.findFeatureAttributesByIds(
-          activeFeatureIds,
+        const attrs = this.findFeatureAttributes(
+          activeFeatures,
           allSearchableLayers,
         );
         if (attrs.length) {
@@ -349,12 +543,14 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
           );
         }
 
-        const resolvedAfterRetry = new Set(
-          (mapModel.getSelectedFeatures()?.models || [])
-            .map((feature) => getFeatureId(feature))
-            .filter((id) => activeFeatureIds.includes(id)),
+        const resolvedAfterRetry = getFeatureStateFromSelections(
+          mapModel.getSelectedFeatures()?.models || [],
         );
-        if (activeFeatureIds.every((id) => resolvedAfterRetry.has(id))) {
+        if (
+          activeFeatures.every((featureState) =>
+            isFeatureResolved(featureState, resolvedAfterRetry),
+          )
+        ) {
           this.clearSession();
         }
       };
@@ -364,15 +560,21 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
         if (layer.get("status") === "error") return;
         if (typeof layer.waitForFeatureById !== "function") return;
 
-        const selectedIds = (mapModel.getSelectedFeatures()?.models || []).map(
-          (feature) => getFeatureId(feature),
+        const layerId = normalizeId(layer.get("layerId"));
+        const selectedFeatureStates = getFeatureStateFromSelections(
+          mapModel.getSelectedFeatures()?.models || [],
         );
-        const missingIds = activeFeatureIds.filter(
-          (id) => !selectedIds.includes(id),
-        );
+        const missingFeatures = activeFeatures.filter((featureState) => {
+          if (featureState.layerId && featureState.layerId !== layerId) {
+            return false;
+          }
+          return !isFeatureResolved(featureState, selectedFeatureStates);
+        });
 
-        missingIds.forEach((id) => {
-          const cancel = layer.waitForFeatureById(id, () => selectIfFound());
+        missingFeatures.forEach((featureState) => {
+          const cancel = layer.waitForFeatureById(featureState.featureId, () =>
+            selectIfFound(),
+          );
           this.addWaiter(cancel, restoreSession);
         });
       };
@@ -380,6 +582,13 @@ define(["backbone", "models/maps/LayerLoadingCoordinator"], (
       if (!allSearchableLayers.length) return;
 
       allSearchableLayers.forEach((layer) => {
+        const layerId = normalizeId(layer.get("layerId"));
+        const isRelevantLayer = unresolvedFeatures.some(
+          (featureState) =>
+            !featureState.layerId || featureState.layerId === layerId,
+        );
+        if (!isRelevantLayer) return;
+
         if (layer.get("status") !== "ready") {
           if (!isObservableLayer(layer)) {
             registerTileWaiters(layer);

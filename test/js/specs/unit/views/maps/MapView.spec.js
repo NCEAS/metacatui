@@ -80,7 +80,9 @@ define(["views/maps/MapView", "models/maps/Map", "common/SearchParams"], (
           cancelers: [],
           key: "dismiss-me",
         };
-        map.set("restoreState", { activeFeatureIds: ["dismiss-me"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "dismiss-me", layerId: null }],
+        });
         map.selectFeatures([featureAttrs]);
 
         const view = new MapView({ model: map });
@@ -92,10 +94,10 @@ define(["views/maps/MapView", "models/maps/Map", "common/SearchParams"], (
           view.featureInfo.close();
 
           expect(map.featureRestoreSession).to.equal(null);
-          expect(map.get("restoreState")?.activeFeatureIds).to.deep.equal([]);
-          expect(
-            SearchParams.parseStateFromUrl().activeFeatureIds,
-          ).to.deep.equal([]);
+          expect(map.get("restoreState")?.activeFeatures).to.deep.equal([]);
+          expect(SearchParams.parseStateFromUrl().activeFeatures).to.deep.equal(
+            [],
+          );
         } finally {
           view.remove();
         }

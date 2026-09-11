@@ -11,6 +11,7 @@ define([
   "collections/maps/viewfinder/ViewfinderCardCategories",
   "common/SearchParams",
   "models/maps/LayerLoadingCoordinator",
+  "models/maps/featureIdHelpers",
 ], (
   $,
   _,
@@ -22,6 +23,7 @@ define([
   ViewfinderCardCategories,
   SearchParams,
   LayerLoadingCoordinator,
+  { getIdFromProperties },
 ) => {
   /**
    * Determine if array is empty.
@@ -624,6 +626,54 @@ define([
       },
 
       /**
+       * Find a feature by id, optionally scoped to a single layer id.
+       * @param {string} featureId Feature id to find.
+       * @param {string} [layerId] Optional layer id to constrain search.
+       * @returns {{layer: MapAsset, feature: object, attributes: object}|null}
+       * Matching feature result or null when not found.
+       * @since 0.0.0
+       */
+      findFeature(featureId, layerId) {
+        const normalizedFeatureId =
+          typeof featureId === "string" ? featureId.trim() : "";
+        if (!normalizedFeatureId.length) return null;
+
+        const normalizedLayerId =
+          typeof layerId === "string" && layerId.trim().length
+            ? layerId.trim()
+            : null;
+
+        const searchableLayers = this.getAllLayers().filter(
+          (layer) => typeof layer.getFeatureById === "function",
+        );
+        const candidateLayers = normalizedLayerId
+          ? searchableLayers.filter(
+              (layer) => layer.get("layerId") === normalizedLayerId,
+            )
+          : searchableLayers;
+
+        return (
+          candidateLayers.reduce((match, layer) => {
+            if (match) return match;
+
+            const feature = layer.getFeatureById(normalizedFeatureId);
+            if (!feature || typeof layer.getFeatureAttributes !== "function") {
+              return match;
+            }
+
+            const attributes = layer.getFeatureAttributes(feature);
+            if (!attributes) return match;
+
+            return {
+              layer,
+              feature,
+              attributes,
+            };
+          }, null) || null
+        );
+      },
+
+      /**
        * Returns true when the map should sync URL state.
        * @returns {boolean} Whether URL sync is enabled.
        * @since 0.0.0
@@ -718,8 +768,8 @@ define([
        * @since 0.0.0
        */
       handleLayerLoadingStateChange() {
-        const activeFeatureIds = this.get("restoreState")?.activeFeatureIds;
-        if (this.shouldSyncUrlState() && isNonEmptyArray(activeFeatureIds)) {
+        const activeFeatures = this.get("restoreState")?.activeFeatures;
+        if (this.shouldSyncUrlState() && isNonEmptyArray(activeFeatures)) {
           this.applyFeatureRestoreState();
         }
         LayerLoadingCoordinator.updateLayerLoadingState(this);
@@ -733,12 +783,12 @@ define([
        * @since 0.0.0
        */
       handleLayerVisibilityChange(layer, visible) {
-        const activeFeatureIds = this.get("restoreState")?.activeFeatureIds;
+        const activeFeatures = this.get("restoreState")?.activeFeatures;
 
         if (
           visible === false &&
           this.shouldSyncUrlState() &&
-          isNonEmptyArray(activeFeatureIds)
+          isNonEmptyArray(activeFeatures)
         ) {
           this.clearFeatureRestoreSession();
           const removedSelectedFeatures =
@@ -748,7 +798,7 @@ define([
           }
         } else if (
           this.shouldSyncUrlState() &&
-          isNonEmptyArray(activeFeatureIds)
+          isNonEmptyArray(activeFeatures)
         ) {
           this.applyFeatureRestoreState();
         }
@@ -852,16 +902,43 @@ define([
       },
 
       /**
-       * Get selected feature ids from the current map interaction state for URL
-       * state sync.
-       * @returns {string[]} Feature ids of all currently selected features.
+       * Get selected feature/layer entries from current map interaction state
+       * for URL sync.
+       * @returns {{featureId: string, layerId: (string|null)}[]}
+       * Selected feature state entries.
        * @since 0.0.0
        */
-      getSelectedFeatureIdsForUrlState() {
+      getSelectedFeatureStateForUrlState() {
         const selectedFeatures = this.getSelectedFeatures();
-        return (selectedFeatures?.models || [])
-          .map((f) => f.get("featureID"))
-          .filter((id) => typeof id === "string" && id.length > 0);
+        const seen = new Set();
+        const selected = [];
+
+        (selectedFeatures?.models || []).forEach((feature) => {
+          const featureId = getIdFromProperties(feature?.get("properties"));
+          if (!featureId) {
+            return;
+          }
+
+          const mapAsset = feature.get("mapAsset");
+          const layerId =
+            mapAsset && typeof mapAsset.get === "function"
+              ? mapAsset.get("layerId")
+              : null;
+          const entry = {
+            featureId,
+            layerId:
+              typeof layerId === "string" && layerId.trim().length
+                ? layerId.trim()
+                : null,
+          };
+          const dedupeKey = JSON.stringify(entry);
+          if (seen.has(dedupeKey)) return;
+
+          seen.add(dedupeKey);
+          selected.push(entry);
+        });
+
+        return selected;
       },
 
       /**
@@ -872,15 +949,17 @@ define([
        */
       syncSelectedFeaturesToUrl() {
         if (!this.shouldSyncUrlState()) return;
-        const selectedIds = this.getSelectedFeatureIdsForUrlState();
-        const activeFeatureIds =
-          this.featureRestoreController.getRequestedIdsForUrlSync(selectedIds);
-        SearchParams.updateActiveFeatureIds(activeFeatureIds);
+        const selectedFeatures = this.getSelectedFeatureStateForUrlState();
+        const activeFeatures =
+          this.featureRestoreController.getRequestedFeaturesForUrlSync(
+            selectedFeatures,
+          );
+        SearchParams.updateActiveFeatures(activeFeatures);
 
         const restoreState = this.get("restoreState") || {};
         this.set("restoreState", {
           ...restoreState,
-          activeFeatureIds,
+          activeFeatures,
         });
       },
 

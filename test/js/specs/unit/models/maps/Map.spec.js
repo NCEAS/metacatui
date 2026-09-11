@@ -360,12 +360,11 @@ define([
     describe("setUpUrlStateListeners", () => {
       it("does not duplicate selectedFeatures URL sync listeners on repeated setup", () => {
         const map = new Map({ showShareUrl: true });
-        const originalUpdateActiveFeatureIds =
-          SearchParams.updateActiveFeatureIds;
-        let updateActiveFeatureIdsCallCount = 0;
+        const originalUpdateActiveFeatures = SearchParams.updateActiveFeatures;
+        let updateActiveFeaturesCallCount = 0;
 
-        SearchParams.updateActiveFeatureIds = () => {
-          updateActiveFeatureIdsCallCount += 1;
+        SearchParams.updateActiveFeatures = () => {
+          updateActiveFeaturesCallCount += 1;
         };
 
         try {
@@ -383,9 +382,46 @@ define([
             },
           ]);
 
-          expect(updateActiveFeatureIdsCallCount).to.equal(1);
+          expect(updateActiveFeaturesCallCount).to.equal(1);
         } finally {
-          SearchParams.updateActiveFeatureIds = originalUpdateActiveFeatureIds;
+          SearchParams.updateActiveFeatures = originalUpdateActiveFeatures;
+        }
+      });
+
+      it("syncs only stable property-based feature ids to URL state", () => {
+        const map = new Map({ showShareUrl: true });
+        const originalUpdateActiveFeatures = SearchParams.updateActiveFeatures;
+        let latestFeatures = null;
+
+        SearchParams.updateActiveFeatures = (features) => {
+          latestFeatures = features;
+        };
+
+        try {
+          map.selectFeatures([
+            {
+              featureID: "cesium-generated-uuid",
+              properties: {
+                id: "stable-feature-id",
+              },
+              mapAsset: null,
+              featureObject: {},
+              label: null,
+            },
+            {
+              featureID: "another-unstable-uuid",
+              properties: {},
+              mapAsset: null,
+              featureObject: {},
+              label: null,
+            },
+          ]);
+
+          expect(latestFeatures).to.deep.equal([
+            { featureId: "stable-feature-id", layerId: null },
+          ]);
+        } finally {
+          SearchParams.updateActiveFeatures = originalUpdateActiveFeatures;
         }
       });
     });
@@ -406,16 +442,18 @@ define([
           overrides,
         );
 
-      it("does nothing when activeFeatureIds is empty", () => {
+      it("does nothing when activeFeatures is empty", () => {
         const map = new Map({ showShareUrl: true });
-        map.set("restoreState", { activeFeatureIds: [] });
+        map.set("restoreState", { activeFeatures: [] });
         map.applyFeatureRestoreState();
         expect(map.getSelectedFeatures()?.models).to.have.lengthOf(0);
       });
 
       it("does nothing when showShareUrl is false", () => {
         const map = new Map({ showShareUrl: false });
-        map.set("restoreState", { activeFeatureIds: ["feat-1"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "feat-1", layerId: null }],
+        });
         map.applyFeatureRestoreState();
         expect(map.getSelectedFeatures()?.models).to.have.lengthOf(0);
       });
@@ -423,21 +461,25 @@ define([
       it("selects a feature when a ready layer finds it immediately", () => {
         const map = new Map({ showShareUrl: true });
         const fakeFeature = {};
+        const mapAsset = new Backbone.Model({ layerId: "layer-a" });
         const fakeAttrs = {
           featureID: "feat-1",
           properties: {},
-          mapAsset: null,
+          mapAsset,
           featureObject: fakeFeature,
           label: null,
         };
 
         const layer = makeLayer({
+          layerId: "layer-a",
           getFeatureById: (id) => (id === "feat-1" ? fakeFeature : null),
           getFeatureAttributes: () => fakeAttrs,
         });
 
         map.getAllLayers = () => [layer];
-        map.set("restoreState", { activeFeatureIds: ["feat-1"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "feat-1", layerId: null }],
+        });
         map.applyFeatureRestoreState();
 
         const selected = map.getSelectedFeatures()?.models || [];
@@ -449,10 +491,11 @@ define([
       it("uses waitForFeatureById when a ready tileset layer doesn't find the feature immediately", (done) => {
         const map = new Map({ showShareUrl: true });
         const fakeFeature = {};
+        const mapAsset = new Backbone.Model({ layerId: "buildings" });
         const fakeAttrs = {
           featureID: "building-42",
           properties: {},
-          mapAsset: null,
+          mapAsset,
           featureObject: fakeFeature,
           label: null,
         };
@@ -460,7 +503,7 @@ define([
         let tileAvailable = false;
         let tileCallback = null;
         const layer = makeLayer({
-          label: "Habitat roads",
+          layerId: "buildings",
           // Returns the feature only once the tile is "loaded"
           getFeatureById: () => (tileAvailable ? fakeFeature : null),
           getFeatureAttributes: () => fakeAttrs,
@@ -471,7 +514,9 @@ define([
         });
 
         map.getAllLayers = () => [layer];
-        map.set("restoreState", { activeFeatureIds: ["building-42"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "building-42", layerId: null }],
+        });
         map.applyFeatureRestoreState();
 
         expect(map.get("isLoadingLayers")).to.equal(false);
@@ -519,7 +564,9 @@ define([
         });
 
         map.getAllLayers = () => [layer];
-        map.set("restoreState", { activeFeatureIds: ["road-feature-1"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "road-feature-1", layerId: null }],
+        });
         map.applyFeatureRestoreState();
 
         expect(
@@ -541,22 +588,22 @@ define([
 
       it("keeps the restore session active across partial feature resolution", (done) => {
         const map = new Map({ showShareUrl: true });
-        const originalUpdateActiveFeatureIds =
-          SearchParams.updateActiveFeatureIds;
+        const originalUpdateActiveFeatures = SearchParams.updateActiveFeatures;
         const urlUpdates = [];
         const fakeFeatureA = {};
         const fakeFeatureB = {};
+        const mapAsset = new Backbone.Model({ layerId: "layer-main" });
         const fakeAttrsA = {
           featureID: "feature-a",
-          properties: {},
-          mapAsset: null,
+          properties: { id: "feature-a" },
+          mapAsset,
           featureObject: fakeFeatureA,
           label: null,
         };
         const fakeAttrsB = {
           featureID: "feature-b",
-          properties: {},
-          mapAsset: null,
+          properties: { id: "feature-b" },
+          mapAsset,
           featureObject: fakeFeatureB,
           label: null,
         };
@@ -564,11 +611,12 @@ define([
         let tileAvailable = false;
         let tileCallback = null;
 
-        SearchParams.updateActiveFeatureIds = (ids) => {
-          urlUpdates.push(ids.slice());
+        SearchParams.updateActiveFeatures = (features) => {
+          urlUpdates.push(features.map((feature) => ({ ...feature })));
         };
 
         const layer = makeLayer({
+          layerId: "layer-main",
           getFeatureById: (id) => {
             if (id === "feature-a") return fakeFeatureA;
             if (id === "feature-b" && tileAvailable) return fakeFeatureB;
@@ -587,7 +635,10 @@ define([
 
         map.getAllLayers = () => [layer];
         map.set("restoreState", {
-          activeFeatureIds: ["feature-a", "feature-b"],
+          activeFeatures: [
+            { featureId: "feature-a", layerId: null },
+            { featureId: "feature-b", layerId: null },
+          ],
         });
 
         try {
@@ -603,11 +654,14 @@ define([
               (f) => f.get("featureID") === "feature-b",
             ),
           ).to.equal(false);
-          expect(map.featureRestoreSession?.requestedIds).to.deep.equal([
-            "feature-a",
-            "feature-b",
+          expect(map.featureRestoreSession?.requestedFeatures).to.deep.equal([
+            { featureId: "feature-a", layerId: null },
+            { featureId: "feature-b", layerId: null },
           ]);
-          expect(urlUpdates.at(-1)).to.deep.equal(["feature-a", "feature-b"]);
+          expect(urlUpdates.at(-1)).to.deep.equal([
+            { featureId: "feature-a", layerId: "layer-main" },
+            { featureId: "feature-b", layerId: null },
+          ]);
 
           tileAvailable = true;
           tileCallback();
@@ -623,22 +677,74 @@ define([
               ).to.equal(true);
               expect(map.featureRestoreSession).to.equal(null);
               expect(urlUpdates.at(-1)).to.deep.equal([
-                "feature-a",
-                "feature-b",
+                { featureId: "feature-a", layerId: "layer-main" },
+                { featureId: "feature-b", layerId: "layer-main" },
               ]);
-              SearchParams.updateActiveFeatureIds =
-                originalUpdateActiveFeatureIds;
+              SearchParams.updateActiveFeatures = originalUpdateActiveFeatures;
               done();
             } catch (error) {
-              SearchParams.updateActiveFeatureIds =
-                originalUpdateActiveFeatureIds;
+              SearchParams.updateActiveFeatures = originalUpdateActiveFeatures;
               done(error);
             }
           }, 0);
         } catch (error) {
-          SearchParams.updateActiveFeatureIds = originalUpdateActiveFeatureIds;
+          SearchParams.updateActiveFeatures = originalUpdateActiveFeatures;
           done(error);
         }
+      });
+
+      it("restores the matching layer when feature ids collide", () => {
+        const map = new Map({ showShareUrl: true });
+        const layerAAsset = new Backbone.Model({ layerId: "layer-a" });
+        const layerBAsset = new Backbone.Model({ layerId: "layer-b" });
+        const sharedFeatureId = "row-1";
+        const featureA = { source: "a" };
+        const featureB = { source: "b" };
+
+        const layerA = makeLayer({
+          layerId: "layer-a",
+          getFeatureById: (id) => (id === sharedFeatureId ? featureA : null),
+          getFeatureAttributes: (feature) =>
+            feature === featureA
+              ? {
+                  featureID: sharedFeatureId,
+                  properties: { source: "a" },
+                  mapAsset: layerAAsset,
+                  featureObject: featureA,
+                  label: null,
+                }
+              : null,
+        });
+        const layerB = makeLayer({
+          layerId: "layer-b",
+          getFeatureById: (id) => (id === sharedFeatureId ? featureB : null),
+          getFeatureAttributes: (feature) =>
+            feature === featureB
+              ? {
+                  featureID: sharedFeatureId,
+                  properties: { source: "b" },
+                  mapAsset: layerBAsset,
+                  featureObject: featureB,
+                  label: null,
+                }
+              : null,
+        });
+
+        map.getAllLayers = () => [layerA, layerB];
+        map.set("restoreState", {
+          activeFeatures: [
+            {
+              featureId: sharedFeatureId,
+              layerId: "layer-b",
+            },
+          ],
+        });
+
+        map.applyFeatureRestoreState();
+
+        const selected = map.getSelectedFeatures()?.models || [];
+        expect(selected).to.have.lengthOf(1);
+        expect(selected[0].get("mapAsset").get("layerId")).to.equal("layer-b");
       });
 
       it("cancels pending feature restore waiters when showShareUrl turns off", () => {
@@ -655,7 +761,9 @@ define([
         });
 
         map.getAllLayers = () => [layer];
-        map.set("restoreState", { activeFeatureIds: ["feature-slow"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "feature-slow", layerId: null }],
+        });
         map.applyFeatureRestoreState();
 
         expect(cancelCount).to.equal(0);
@@ -669,7 +777,9 @@ define([
         const map = new Map({ showShareUrl: true });
         const layer = { get: () => "ready" };
         map.getAllLayers = () => [layer];
-        map.set("restoreState", { activeFeatureIds: ["feat-x"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "feat-x", layerId: null }],
+        });
         map.applyFeatureRestoreState();
         expect(map.getSelectedFeatures()?.models).to.have.lengthOf(0);
       });
@@ -690,10 +800,14 @@ define([
         });
 
         map.getAllLayers = () => [layer];
-        map.set("restoreState", { activeFeatureIds: ["feature-a"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "feature-a", layerId: null }],
+        });
         map.applyFeatureRestoreState();
 
-        map.set("restoreState", { activeFeatureIds: ["feature-b"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "feature-b", layerId: null }],
+        });
         map.applyFeatureRestoreState();
 
         expect(waitCallCount).to.equal(2);
@@ -713,7 +827,9 @@ define([
         });
 
         map.getAllLayers = () => [layer];
-        map.set("restoreState", { activeFeatureIds: ["feature-a"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "feature-a", layerId: null }],
+        });
         map.applyFeatureRestoreState();
         map.applyFeatureRestoreState();
         map.applyFeatureRestoreState();
@@ -733,18 +849,29 @@ define([
         map.featureRestoreSession = {
           cancelers: [],
           key: JSON.stringify({
-            featureIds: ["a", "b,c"],
+            featureKeys: [
+              JSON.stringify({ featureId: "a", layerId: null }),
+              JSON.stringify({ featureId: "b,c", layerId: null }),
+            ],
             layerIds: ["layer-1"],
           }),
-          requestedIds: ["a", "b,c"],
+          requestedFeatures: [
+            { featureId: "a", layerId: null },
+            { featureId: "b,c", layerId: null },
+          ],
         };
-        map.set("restoreState", { activeFeatureIds: ["a,b", "c"] });
+        map.set("restoreState", {
+          activeFeatures: [
+            { featureId: "a,b", layerId: null },
+            { featureId: "c", layerId: null },
+          ],
+        });
 
         map.applyFeatureRestoreState();
 
-        expect(map.featureRestoreSession?.requestedIds).to.deep.equal([
-          "a,b",
-          "c",
+        expect(map.featureRestoreSession?.requestedFeatures).to.deep.equal([
+          { featureId: "a,b", layerId: null },
+          { featureId: "c", layerId: null },
         ]);
       });
 
@@ -769,7 +896,9 @@ define([
         });
 
         map.getAllLayers = () => [layer];
-        map.set("restoreState", { activeFeatureIds: ["hidden-feature-1"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "hidden-feature-1", layerId: null }],
+        });
 
         map.applyFeatureRestoreState();
         expect(map.featureRestoreSession).to.equal(null);
@@ -836,7 +965,9 @@ define([
         });
 
         map.getAllLayers = () => [roadsLayer, fallbackLayer];
-        map.set("restoreState", { activeFeatureIds: ["road-feature-1"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "road-feature-1", layerId: null }],
+        });
 
         map.applyFeatureRestoreState();
         expect(roadCancelCount).to.equal(0);
@@ -870,7 +1001,9 @@ define([
         });
 
         map.getAllLayers = () => [layer];
-        map.set("restoreState", { activeFeatureIds: ["missing-feature"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "missing-feature", layerId: null }],
+        });
         map.applyFeatureRestoreState();
 
         expect(map.get("isLoadingLayers")).to.equal(false);
@@ -894,11 +1027,13 @@ define([
         });
 
         map.getAllLayers = () => [roadsLayer];
-        map.set("restoreState", { activeFeatureIds: ["road-feature-1"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "road-feature-1", layerId: null }],
+        });
 
         map.applyFeatureRestoreState();
         expect(map.featureRestoreSession).to.not.equal(null);
-        expect(SearchParams.parseStateFromUrl().activeFeatureIds).to.deep.equal(
+        expect(SearchParams.parseStateFromUrl().activeFeatures).to.deep.equal(
           [],
         );
 
@@ -907,8 +1042,8 @@ define([
 
         expect(cancelCount).to.equal(1);
         expect(map.featureRestoreSession).to.equal(null);
-        expect(map.get("restoreState")?.activeFeatureIds).to.deep.equal([]);
-        expect(SearchParams.parseStateFromUrl().activeFeatureIds).to.deep.equal(
+        expect(map.get("restoreState")?.activeFeatures).to.deep.equal([]);
+        expect(SearchParams.parseStateFromUrl().activeFeatures).to.deep.equal(
           [],
         );
       });
@@ -926,7 +1061,9 @@ define([
         });
 
         map.getAllLayers = () => [layer];
-        map.set("restoreState", { activeFeatureIds: ["road-feature-1"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "road-feature-1", layerId: null }],
+        });
 
         map.applyFeatureRestoreState();
         LayerLoadingCoordinator.updateLayerLoadingState(map);
@@ -953,7 +1090,9 @@ define([
         });
 
         map.getAllLayers = () => [layer];
-        map.set("restoreState", { activeFeatureIds: ["road-feature-1"] });
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "road-feature-1", layerId: null }],
+        });
 
         map.applyFeatureRestoreState();
         LayerLoadingCoordinator.updateLayerLoadingState(map);
