@@ -320,7 +320,6 @@ define([
           this.seriesId = options.seriesId || null;
         }
         this.stopListening();
-        this.closeMetadataView();
         this.closeFileTableView();
 
         MetacatUI.appModel.set("headerType", "default");
@@ -356,6 +355,10 @@ define([
           if (!this.isCurrentRender(renderId)) return;
           this.updateDataPackageLoadProgress(progress);
         });
+        this.listenTo(dataPackage.events, "load:metadata", ({ metadata }) => {
+          if (!this.isCurrentRender(renderId)) return;
+          this.startMetadataRender(metadata, { renderId });
+        });
         // Show the provenance save footer only when the resource map is
         // editable. Provenance editability follows resource map write access
         // (set by checkProvenanceWritePermission), not metadata write access.
@@ -385,6 +388,7 @@ define([
         // 2. Primary-object failures replace the whole page and take precedence
         // over any package handling.
         if (result.notFound) {
+          this.closeMetadataView();
           this.showNotFound();
           return this;
         }
@@ -392,14 +396,17 @@ define([
         const unauthorizedPackage =
           result.unauthorized === true && result.success !== true;
         if (result.isPrivate || (unauthorizedPackage && !resolvedMetadata)) {
+          this.closeMetadataView();
           this.showIsPrivate();
           return this;
         }
         if (result.error) {
+          this.closeMetadataView();
           this.onModelError(result.error.status, result.error.message);
           return this;
         }
         if (result.isIndexing && result.isMetadata) {
+          this.closeMetadataView();
           this.showIndexing();
           return this;
         }
@@ -415,7 +422,7 @@ define([
 
         this.metadata =
           resolvedMetadata || dataPackage.getPrimaryMetadataMember();
-        if (this.metadata) {
+        if (this.metadata && !this.metadataRenderPromise) {
           this.prepareCitationModel();
           this.renderMetadataShell({
             metadataMessage: MESSAGES.loadingDatasetDetails,
@@ -435,6 +442,16 @@ define([
         this.resourceMapEditBlockers = packageLoad.resourceMapEditBlockers;
 
         this.metadata = dataPackage.getPrimaryMetadataMember();
+        if (
+          this.metadataRenderPid &&
+          this.metadata?.pid !== this.metadataRenderPid
+        ) {
+          if (this.metadata) {
+            this.startMetadataRender(this.metadata, { renderId });
+          } else {
+            this.closeMetadataView();
+          }
+        }
         if (result.isResourceMap && this.metadata?.pid) {
           this.pid = this.metadata.pid;
           MetacatUI.uiRouter.navigate(
@@ -709,6 +726,7 @@ define([
           clearTimeout(this.fileTableIndexRefreshTimer);
           this.fileTableIndexRefreshTimer = null;
         }
+        this.closeMetadataView();
         if (!this.renderAbortController) return;
         this.renderAbortController.abort();
         this.renderAbortController = null;
@@ -1343,56 +1361,91 @@ define([
        * breadcrumbs, citation, data source logo, metadata controls, and
        * metadata metrics.
        * @param {object} [options] Render options
+       * @returns {MetadataView} This view
        */
-      async renderMetadata(options = {}) {
+      renderMetadata(options = {}) {
         const renderOptions = this.getRenderOptions(options);
-        const { renderId, signal } = renderOptions;
-        if (
-          !this.metadataContainer ||
-          !this.el.contains(this.metadataContainer)
-        ) {
-          this.renderMetadataShell();
-        } else {
-          this.$(this.tableContainer).html(
-            this.loadingTemplate({
-              msg: MESSAGES.retrievingDatasetDetails,
-            }),
-          );
-          this.metadataContainer.innerHTML = this.loadingTemplate({
-            msg: MESSAGES.retrievingMetadata,
+        const { renderId } = renderOptions;
+        const { pid } = this.metadata;
+        const renderPromise = this.startMetadataRender(
+          this.metadata,
+          renderOptions,
+        );
+
+        if (!renderPromise) return this;
+
+        renderPromise
+          .then((metadataView) => {
+            if (
+              !metadataView ||
+              !this.isCurrentRender(renderId) ||
+              this.metadataRenderPid !== pid ||
+              this.metadataView !== metadataView
+            ) {
+              return this;
+            }
+            return this.modifyMetadataView(renderOptions, metadataView);
+          })
+          .catch((error) => {
+            if (!isAbortError(error) && this.isCurrentRender(renderId)) {
+              console.error("Error finalizing metadata view:", error);
+            }
           });
+        return this;
+      },
+
+      /**
+       * Start rendering the active metadata document without waiting for the
+       * rest of the package to resolve.
+       * @param {DataPackageMember} metadata Metadata member to render
+       * @param {object} options Render options
+       * @param {string} options.renderId Render identifier
+       * @returns {Promise<MetadataDocumentView>|null} In-flight render
+       * @since 0.0.0
+       */
+      startMetadataRender(metadata, { renderId }) {
+        if (!this.isCurrentRender(renderId)) return null;
+        const { pid } = metadata;
+
+        this.metadata = metadata;
+        this.prepareCitationModel();
+        const indexResults = [{ ...metadata.toJSON(), id: pid }];
+
+        if (this.metadataRenderPid === pid && this.metadataRenderPromise) {
+          this.metadataView.indexResults = indexResults;
+          this.insertCitation();
+          return this.metadataRenderPromise;
         }
 
-        // displayState carries resolved, plain values (never unbound methods)
-        // so downstream views can read these directly. isAuthorized is read via
-        // the Backbone getter when available; isPublic is resolved below.
+        this.closeMetadataView();
+        this.metadataRenderPid = pid;
+        this.renderMetadataShell();
+
+        this.metadataAbortController = new AbortController();
+        const { signal } = this.metadataAbortController;
         const displayState = {
           isPublic: null,
           isAuthorized:
-            typeof this.metadata?.get === "function"
-              ? this.metadata.get("isAuthorized") ??
-                this.metadata.get("isAuthorized_read")
-              : null,
+            metadata.isAuthorized ?? metadata.isAuthorized_read ?? null,
         };
-
         const metadataView = new MetadataDocumentView({
-          pid: this.metadata?.pid || this.pid,
+          pid,
           dataPackage: this.dataPackage,
           editModeOn: this.canEditProvenance === true,
           signal,
-          indexResults: this.metadata
-            ? [{ ...this.metadata.toJSON(), id: this.metadata.pid }]
-            : null,
+          indexResults,
           displayState,
         });
+        this.metadataView = metadataView;
+        const isCurrentMetadataView = () =>
+          !signal.aborted &&
+          this.isCurrentRender(renderId) &&
+          this.metadataRenderPid === pid &&
+          this.metadataView === metadataView;
 
-        // isPublic may require a system-metadata fetch (DataPackageMember.
-        // isPublic() is async), so resolve it without blocking the metadata
-        // render. MetadataDocumentView holds displayState by reference, so the
-        // resolved boolean is visible once it arrives.
-        this.getDataMemberIsPublic(this.metadata)
+        this.getDataMemberIsPublic(metadata)
           .then((isPublic) => {
-            if (this.isCurrentRender(renderId)) {
+            if (isCurrentMetadataView()) {
               displayState.isPublic = isPublic;
             }
           })
@@ -1400,36 +1453,46 @@ define([
             /* leave isPublic unresolved (null) on error */
           });
 
-        // Don't block the entire page render on the view service.
-        metadataView
+        const renderPromise = metadataView
           .render()
           .then((view) => {
-            if (!this.isCurrentRender(renderId)) {
-              view.onClose?.();
-              view.remove();
-              return this;
+            const { metadataContainer } = this;
+            if (
+              !isCurrentMetadataView() ||
+              !metadataContainer ||
+              !this.el.contains(metadataContainer)
+            ) {
+              if (!view.isClosed) {
+                view.onClose?.();
+                view.remove();
+              }
+              return null;
             }
-            this.metadataContainer.innerHTML = "";
-            this.metadataContainer.appendChild(view.el);
-            return this.modifyMetadataView(renderOptions, view);
+            metadataContainer.replaceChildren(view.el);
+            this.subviews.push(view);
+            return view;
           })
           .catch((error) => {
-            metadataView.onClose?.();
-            metadataView.remove();
-            if (isAbortError(error) || !this.isCurrentRender(renderId)) {
-              return;
+            if (!metadataView.isClosed) {
+              metadataView.onClose?.();
+              metadataView.remove();
+            }
+            if (isAbortError(error) || !isCurrentMetadataView()) {
+              return null;
             }
             console.error("Error rendering metadata view:", error);
-            // Show error:
             this.metadataContainer.innerHTML = this.alertTemplate({
               classes: CLASS_NAMES.alertError,
               msg: MESSAGES.errorRenderingMetadataView(error),
             });
+            return null;
           });
+        this.metadataRenderPromise = renderPromise;
+        return renderPromise;
       },
 
       /**
-       * Attach the rendered metadata document and finish the landing page
+       * Enhance the rendered metadata document and finish the landing page
        * @param {object} renderOptions Active render options
        * @param {MetadataDocumentView} metadataView Rendered document view
        * @returns {Promise<MetadataView>} This view
@@ -1437,15 +1500,9 @@ define([
        */
       async modifyMetadataView(renderOptions, metadataView) {
         const { renderId } = renderOptions;
-        if (!this.isCurrentRender(renderId)) {
-          metadataView.onClose?.();
-          metadataView.remove();
-          return this;
-        }
-        this.closeMetadataView();
-        this.metadataView = metadataView;
-        this.subviews.push(metadataView);
-        metadataView.checkForProv?.();
+        metadataView.enhanceWithPackage({
+          editModeOn: this.canEditProvenance === true,
+        });
         if (this.fileTableView) {
           await this.mergeCurrentFileTableRows(
             this.dataPackage,
@@ -3220,13 +3277,23 @@ define([
        * @since 0.0.0
        */
       closeMetadataView() {
+        if (this.metadataAbortController) {
+          this.metadataAbortController.abort();
+          this.metadataAbortController = null;
+        }
+        this.metadataRenderPid = null;
+        this.metadataRenderPromise = null;
+
         if (!this.metadataView) return;
-        this.metadataView.onClose?.();
-        this.metadataView.remove?.();
-        this.subviews = (this.subviews || []).filter(
-          (subview) => subview !== this.metadataView,
-        );
+        const { metadataView } = this;
         this.metadataView = null;
+        if (!metadataView.isClosed) {
+          metadataView.onClose?.();
+          metadataView.remove?.();
+        }
+        this.subviews = (this.subviews || []).filter(
+          (subview) => subview !== metadataView,
+        );
       },
 
       /**
@@ -3258,7 +3325,6 @@ define([
         $("meta[name^='citation_']").remove();
 
         this.removeViewAlert();
-        this.closeMetadataView();
         this.closeFileTableView();
 
         _.each(this.subviews, (subview) => {

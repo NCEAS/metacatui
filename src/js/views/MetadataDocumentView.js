@@ -159,13 +159,6 @@ define([
         this.signal = options.signal || null;
         this.isClosed = false;
         this.previewObjectUrls = new Set();
-        if (this.dataPackage) {
-          this.listenTo(
-            this.dataPackage.events,
-            "provenance:changed",
-            this.scheduleProvChartRedraw,
-          );
-        }
         const viewServiceUrl =
           options.viewServiceUrl || MetacatUI.appModel.get("viewServiceUrl");
         this.viewService = new ViewService({ baseUrl: viewServiceUrl });
@@ -231,13 +224,33 @@ define([
         // Modify the markup:
         this.initializeAttributeListTables();
         this.renderAltIdentifierHelpText();
-        this.insertDataDetails();
-        if (this.el.isConnected) this.checkForProv();
         this.insertSpatialCoverageMap();
         this.insertCopiables();
         this.createAnnotationViews();
         this.insertMarkdownViews();
 
+        return this;
+      },
+
+      /**
+       * Add package-dependent details to the rendered metadata document.
+       * @param {object} options Enhancement options
+       * @param {boolean} options.editModeOn Whether provenance is editable
+       * @returns {MetadataDocumentView} This view
+       * @since 0.0.0
+       */
+      enhanceWithPackage({ editModeOn }) {
+        if (this.packageEnhanced) return this;
+        this.editModeOn = editModeOn;
+        this.listenTo(
+          this.dataPackage.events,
+          "provenance:changed",
+          this.scheduleProvChartRedraw,
+        );
+        this.dataPackage.addViewServiceEntities(this.metadataViewDoc.entities);
+        this.insertDataDetails();
+        if (this.el.isConnected) this.checkForProv();
+        this.packageEnhanced = true;
         return this;
       },
 
@@ -322,7 +335,6 @@ define([
       renderMetadataDocument(metadataViewDoc) {
         this.hideMessages();
         this.metadataViewDoc = metadataViewDoc;
-        this.dataPackage?.addViewServiceEntities(metadataViewDoc.entities);
         const renderedContent = this.metadataViewDoc.template?.content;
         if (renderedContent?.childNodes.length) {
           this.metadataContainer.replaceChildren(renderedContent);

@@ -3231,6 +3231,144 @@ define([
         pkg.getPrimaryMetadataMember().pid.should.equal("meta.1");
       });
 
+      it("emits indexed metadata before resource map resolution completes", async () => {
+        const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
+        const resolverEventSent = deferred();
+        const finishResolution = deferred();
+        const indexMatch = {
+          id: "meta.1",
+          formatId: "https://eml.ecoinformatics.org/eml-2.2.0",
+          formatType: "METADATA",
+          title: "Early title",
+        };
+        const meta = {
+          formatType: "METADATA",
+          isMetadata: true,
+          indexMatch,
+        };
+        sandbox
+          .stub(ResourceMapResolver.prototype, "resolve")
+          .callsFake(function resolve() {
+            this.status(
+              "meta.1",
+              ResourceMapResolver.STATUS.indexSearchComplete,
+              null,
+              meta,
+            );
+            resolverEventSent.resolve();
+            return finishResolution.promise;
+          });
+        const metadataEvents = [];
+        pkg.events.on("load:metadata", (event) => metadataEvents.push(event));
+
+        const resolving = pkg.resolveFromPid("meta.1");
+        await resolverEventSent.promise;
+
+        pkg.primaryMetadataPid.should.equal("meta.1");
+        pkg.getPrimaryMetadataMember().title.should.equal("Early title");
+        metadataEvents.should.have.length(1);
+        metadataEvents[0].pid.should.equal("meta.1");
+        metadataEvents[0].metadata.should.equal(pkg.getPrimaryMetadataMember());
+
+        finishResolution.resolve({
+          pid: "meta.1",
+          rm: "resource_map_1",
+          meta,
+        });
+        await resolving;
+      });
+
+      it("emits SID-resolved metadata with its indexed title before resolution completes", async () => {
+        const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
+        const resolverEventsSent = deferred();
+        const finishResolution = deferred();
+        const indexMatch = {
+          id: "meta.2",
+          seriesId: "series.1",
+          formatId: "https://eml.ecoinformatics.org/eml-2.2.0",
+          formatType: "METADATA",
+          title: "Current title",
+        };
+        sandbox
+          .stub(ResourceMapResolver.prototype, "resolve")
+          .callsFake(function resolve() {
+            this.status(
+              "series.1",
+              ResourceMapResolver.STATUS.indexSearchComplete,
+              null,
+              { isSid: true, indexResults: [indexMatch] },
+            );
+            this.status(
+              "series.1",
+              ResourceMapResolver.STATUS.seriesIdResolved,
+              null,
+              {
+                sid: "series.1",
+                resolvedPid: "meta.2",
+                formatId: indexMatch.formatId,
+              },
+            );
+            resolverEventsSent.resolve();
+            return finishResolution.promise;
+          });
+        const metadataEvents = [];
+        pkg.events.on("load:metadata", (event) => metadataEvents.push(event));
+
+        const resolving = pkg.resolveFromPid("series.1");
+        await resolverEventsSent.promise;
+
+        pkg.primaryMetadataPid.should.equal("meta.2");
+        pkg.getPrimaryMetadataMember().title.should.equal("Current title");
+        metadataEvents.should.have.length(1);
+        metadataEvents[0].pid.should.equal("meta.2");
+
+        finishResolution.resolve({
+          pid: "meta.2",
+          rm: "resource_map_1",
+          meta: {
+            formatType: "METADATA",
+            isMetadata: true,
+            indexMatch,
+          },
+        });
+        await resolving;
+      });
+
+      it("does not emit recursive metadata discovered for a data input", async () => {
+        const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
+        sandbox
+          .stub(ResourceMapResolver.prototype, "resolve")
+          .callsFake(function resolve() {
+            this.status(
+              "meta.1",
+              ResourceMapResolver.STATUS.indexSearchComplete,
+              null,
+              {
+                isMetadata: true,
+                indexMatch: {
+                  id: "meta.1",
+                  formatType: "METADATA",
+                },
+              },
+            );
+            return Promise.resolve({
+              pid: "data.1",
+              rm: "resource_map_1",
+              meta: {
+                formatType: "DATA",
+                isData: true,
+                metadataCandidates: ["meta.1"],
+              },
+            });
+          });
+        const metadataEvents = [];
+        pkg.events.on("load:metadata", (event) => metadataEvents.push(event));
+
+        await pkg.resolveFromPid("data.1");
+
+        metadataEvents.should.have.length(0);
+      });
+
       it("retains matched and resolved identities when they differ", async () => {
         const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
         sandbox.stub(ResourceMapResolver.prototype, "resolve").resolves({

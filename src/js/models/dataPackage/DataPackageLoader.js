@@ -132,6 +132,22 @@ define([
   }
 
   /**
+   * Seed and announce metadata that is safe to display during resolution.
+   * @param {DataPackage} dataPackage Package being loaded
+   * @param {object} properties Metadata member properties
+   */
+  function seedProgressiveMetadata(dataPackage, properties) {
+    const pid = properties.id || properties.pid;
+    dataPackage.members.add(
+      { ...properties, pid },
+      { merge: true, sources: ["resourceMapResolver"] },
+    );
+    const metadata = dataPackage.members.get(pid);
+    dataPackage.primaryMetadataPid = pid;
+    dataPackage.events.trigger("load:metadata", { metadata, pid });
+  }
+
+  /**
    * Classify an unresolved object from its system metadata.
    * @param {DataPackage} dataPackage Package being loaded
    * @param {ResourceMapResolver} resolver Resolver used for the initial lookup
@@ -521,10 +537,38 @@ define([
           dataPackage.getSysMetaService().readBaseUrl;
       }
       const resolver = new ResourceMapResolver(resolverOptions);
-      resolver.events.on("update", () => {
+      let sidIndexResults;
+      let eligibleMetadataPid = inputId;
+      resolver.events.on(`update:${inputId}`, ({ status, meta = {} }) => {
         DataPackageLoader.reportLoadProgress(dataPackage, LOAD_PHASES.RESOLVE, {
           inputId,
         });
+
+        if (status === ResourceMapResolver.STATUS.indexSearchComplete) {
+          if (meta.isSid) sidIndexResults = meta.indexResults;
+          if (
+            meta.isMetadata &&
+            !meta.isSid &&
+            meta.indexMatch.id === eligibleMetadataPid
+          ) {
+            seedProgressiveMetadata(dataPackage, meta.indexMatch);
+          }
+        } else if (
+          status === ResourceMapResolver.STATUS.seriesIdResolved &&
+          dataPackage.objectFormats.isMetadata({ formatId: meta.formatId })
+        ) {
+          eligibleMetadataPid = meta.resolvedPid;
+          const indexMatch = sidIndexResults.find(
+            (doc) => doc.id === meta.resolvedPid,
+          );
+          seedProgressiveMetadata(dataPackage, {
+            ...indexMatch,
+            pid: meta.resolvedPid,
+            formatId: indexMatch?.formatId || meta.formatId,
+            formatType: indexMatch?.formatType || FORMAT_TYPES.METADATA,
+            seriesId: indexMatch?.seriesId || meta.sid,
+          });
+        }
       });
       const resolveOptions = { fields: SOLR_MANIFEST_FIELDS };
       if (signal) resolveOptions.signal = signal;

@@ -69,6 +69,7 @@ define([
       isCurrentRender: MetadataView.prototype.isCurrentRender,
       resolveInput: MetadataView.prototype.resolveInput,
       loadPackageMembers: MetadataView.prototype.loadPackageMembers,
+      startMetadataRender: MetadataView.prototype.startMetadataRender,
       closeMetadataView: MetadataView.prototype.closeMetadataView,
       teardownFileTableScrollIndicators:
         MetadataView.prototype.teardownFileTableScrollIndicators,
@@ -110,6 +111,14 @@ define([
           })[key] || "",
         isDOI: () => false,
       };
+    };
+
+    const deferred = () => {
+      let resolve;
+      const promise = new Promise((settle) => {
+        resolve = settle;
+      });
+      return { promise, resolve };
     };
 
     describe("renderInfoIcons()", () => {
@@ -206,6 +215,67 @@ define([
     });
 
     describe("render()", () => {
+      it("starts metadata rendering while PID resolution is still pending", async () => {
+        const resolverEventSent = deferred();
+        const finishResolution = deferred();
+        sandbox
+          .stub(DataPackage.prototype, "resolveFromPid")
+          .callsFake(function resolveFromPid() {
+            this.members.add({
+              pid: "meta.1",
+              formatId: "https://eml.ecoinformatics.org/eml-2.2.0",
+              formatType: "METADATA",
+              title: "Early title",
+            });
+            this.primaryMetadataPid = "meta.1";
+            this.events.trigger("load:metadata", {
+              metadata: this.getPrimaryMetadataMember(),
+              pid: "meta.1",
+            });
+            resolverEventSent.resolve();
+            return finishResolution.promise;
+          });
+        const documentRender = sandbox
+          .stub(MetadataDocumentView.prototype, "render")
+          .callsFake(function render() {
+            return Promise.resolve(this);
+          });
+        globalThis.MetacatUI.appModel = {
+          getDataPackageServiceOptions:
+            AppModel.prototype.getDataPackageServiceOptions,
+          get: (key) =>
+            ({
+              viewServiceUrl: "https://view.test/",
+              resolveServiceUrl: "https://resolve.test/",
+            })[key] || "",
+          set: sandbox.stub(),
+        };
+        globalThis.MetacatUI.appUserModel = { ...Backbone.Events };
+        const view = new MetadataView({ el: document.createElement("div") });
+        sandbox.stub(view, "showLoading");
+        sandbox.stub(view, "prepareCitationModel");
+        sandbox.stub(view, "insertCitation");
+        sandbox.stub(view, "getDataMemberIsPublic").resolves(false);
+        sandbox.stub(view, "renderMetadataShell").callsFake(() => {
+          view.el.innerHTML = '<div id="metadata-container"></div>';
+          view.metadataContainer = view.el.firstElementChild;
+        });
+
+        const rendering = view.render({ pid: "meta.1" });
+        await resolverEventSent.promise;
+        await view.metadataRenderPromise;
+
+        sinon.assert.calledOnce(documentRender);
+        view.metadataContainer.firstElementChild.should.equal(
+          documentRender.thisValues[0].el,
+        );
+
+        view.renderId = "newer-render";
+        finishResolution.resolve({});
+        await rendering;
+        view.closeMetadataView();
+      });
+
       it("uses the route PID passed after onClose clears the view state", async () => {
         const resolveFromPid = sandbox
           .stub(DataPackage.prototype, "resolveFromPid")
@@ -1738,15 +1808,14 @@ define([
         });
         const metadata = dataPackage.getPrimaryMetadataMember();
         const metadataView = {
-          checkForProv: sandbox.stub(),
-          remove: sandbox.stub(),
+          enhanceWithPackage: sandbox.stub(),
         };
         const context = withRenderContext({
           dataPackage,
           metadata,
+          metadataView,
           fileTableView: null,
           subviews: [],
-          closeMetadataView: sandbox.stub(),
           isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
           insertCitation: sandbox.stub(),
           insertDataSource: sandbox.stub(),
@@ -1784,6 +1853,9 @@ define([
 
           jsonld = JSON.parse(jsonldEl.text);
           jsonld.name.should.equal("Enriched dataset title");
+          sinon.assert.calledOnceWithExactly(metadataView.enhanceWithPackage, {
+            editModeOn: false,
+          });
         } finally {
           schemaOrg.removeExistingJsonldEls();
           schemaOrg.stopListening();
@@ -1798,15 +1870,13 @@ define([
         const dataPackage = {};
         const fileTableView = { viewModel: { mergeRows: sandbox.stub() } };
         const metadataView = {
-          subviews: [],
-          checkForProv: sandbox.stub(),
-          remove: sandbox.stub(),
+          enhanceWithPackage: sandbox.stub(),
         };
         const context = withRenderContext({
           dataPackage,
           fileTableView,
+          metadataView,
           subviews: [],
-          closeMetadataView: sandbox.stub(),
           mergeCurrentFileTableRows: sandbox.stub().resolves(true),
           insertCitation: sandbox.stub(),
           insertDataSource: sandbox.stub(),
@@ -1840,14 +1910,13 @@ define([
       it("stops after an awaited step when a newer render starts", async () => {
         let resolveInfoIcons;
         const metadataView = {
-          checkForProv: sandbox.stub(),
-          remove: sandbox.stub(),
+          enhanceWithPackage: sandbox.stub(),
         };
         const context = withRenderContext({
           dataPackage: {},
           fileTableView: null,
+          metadataView,
           subviews: [],
-          closeMetadataView: sandbox.stub(),
           insertCitation: sandbox.stub(),
           insertDataSource: sandbox.stub(),
           showVersionNavigation: sandbox.stub().resolves(),
@@ -1878,13 +1947,74 @@ define([
     });
 
     describe("renderMetadata()", () => {
+      it("reuses one request per PID and ignores a replaced response", async () => {
+        setPackageAppModel({ viewServiceUrl: "https://view.test/" });
+        const dataPackage = createViewerDataPackage({
+          members: [
+            { pid: "meta.1", formatType: "METADATA", title: "First" },
+            { pid: "meta.2", formatType: "METADATA", title: "Second" },
+          ],
+          rootResourceMapPid: null,
+        });
+        const firstRender = deferred();
+        const secondRender = deferred();
+        const documentRender = sandbox.stub(
+          MetadataDocumentView.prototype,
+          "render",
+        );
+        documentRender.onFirstCall().returns(firstRender.promise);
+        documentRender.onSecondCall().returns(secondRender.promise);
+        const view = new MetadataView({ el: document.createElement("div") });
+        view.renderId = "render-test";
+        view.dataPackage = dataPackage;
+        view.subviews = [];
+        sandbox.stub(view, "prepareCitationModel");
+        sandbox.stub(view, "insertCitation");
+        sandbox.stub(view, "getDataMemberIsPublic").resolves(false);
+        sandbox.stub(view, "renderMetadataShell").callsFake(() => {
+          if (!view.metadataContainer) {
+            view.el.innerHTML = '<div id="metadata-container"></div>';
+            view.metadataContainer = view.el.firstElementChild;
+          } else {
+            view.metadataContainer.textContent = "loading";
+          }
+        });
+        const firstMetadata = dataPackage.getMember("meta.1");
+        const secondMetadata = dataPackage.getMember("meta.2");
+
+        const firstPromise = view.startMetadataRender(firstMetadata, {
+          renderId: "render-test",
+        });
+        const firstController = view.metadataAbortController;
+        const repeatedPromise = view.startMetadataRender(firstMetadata, {
+          renderId: "render-test",
+        });
+        repeatedPromise.should.equal(firstPromise);
+        documentRender.calledOnce.should.equal(true);
+
+        const secondPromise = view.startMetadataRender(secondMetadata, {
+          renderId: "render-test",
+        });
+        firstController.signal.aborted.should.equal(true);
+        documentRender.calledTwice.should.equal(true);
+        const firstView = documentRender.thisValues[0];
+        const secondView = documentRender.thisValues[1];
+
+        secondRender.resolve(secondView);
+        await secondPromise;
+        view.metadataContainer.firstElementChild.should.equal(secondView.el);
+
+        firstRender.resolve(firstView);
+        await firstPromise;
+        view.metadataContainer.firstElementChild.should.equal(secondView.el);
+        view.closeMetadataView();
+      });
+
       const renderWithPermissions = async ({ canWrite, canEditProvenance }) => {
         setPackageAppModel({ viewServiceUrl: "https://view.test/" });
         const dataPackage = new DataPackage();
         const metadata = {
           pid: "meta.1",
-          archived: false,
-          get: sandbox.stub().returns(null),
           toJSON: sandbox.stub().returns({}),
         };
         const context = withRenderContext({
@@ -1892,7 +2022,7 @@ define([
           canEditProvenance,
           dataPackage,
           metadata,
-          metadataContainer: null,
+          prepareCitationModel: sandbox.stub(),
           renderMetadataShell: sandbox.stub(),
           getDataMemberIsPublic: sandbox.stub().resolves(false),
         });
@@ -1933,7 +2063,6 @@ define([
         const dataPackage = new DataPackage();
         const metadata = {
           pid: "meta.1",
-          get: sandbox.stub().returns(null),
           toJSON: sandbox.stub().returns({}),
         };
         let rejectRender;
@@ -1948,7 +2077,7 @@ define([
           canEditProvenance: false,
           dataPackage,
           metadata,
-          metadataContainer: null,
+          prepareCitationModel: sandbox.stub(),
           renderMetadataShell: sandbox.stub(),
           getDataMemberIsPublic: sandbox.stub().resolves(false),
         });
@@ -2637,8 +2766,10 @@ define([
 
       it("aborts the active controller when a new render starts", () => {
         const previousController = { abort: sandbox.stub() };
+        const metadataController = { abort: sandbox.stub() };
         const context = withRenderContext({
           renderAbortController: previousController,
+          metadataAbortController: metadataController,
           fileTableIndexRefreshTimer: null,
           abortRender: MetadataView.prototype.abortRender,
         });
@@ -2646,6 +2777,7 @@ define([
         const result = MetadataView.prototype.startRender.call(context);
 
         previousController.abort.calledOnce.should.equal(true);
+        metadataController.abort.calledOnce.should.equal(true);
         result.renderId.should.equal(context.renderId);
         result.signal.should.equal(context.renderAbortController.signal);
       });

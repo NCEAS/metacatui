@@ -412,6 +412,62 @@ define([
     });
 
     describe("resolve() control-flow", () => {
+      it("publishes the initial index result before resolving multiple resource maps", async () => {
+        const { sandbox, rmr } = state;
+        const indexMeta = {
+          isMetadata: true,
+          indexMatch: {
+            id: "meta.1",
+            formatType: "METADATA",
+            title: "Early title",
+          },
+          rms: ["rm.1", "rm.2"],
+        };
+        sandbox
+          .stub(ResourceMapResolver, "searchIndex")
+          .resolves({ rm: null, meta: indexMeta });
+        let finishMultiRMCheck;
+        sandbox.stub(rmr, "multiRMCheck").returns(
+          new Promise((resolve) => {
+            finishMultiRMCheck = resolve;
+          }),
+        );
+        const events = [];
+        rmr.events.on("update:meta.1", (event) => events.push(event));
+
+        const resolving = rmr.resolve("meta.1");
+        await Promise.resolve();
+        await Promise.resolve();
+
+        events.should.have.length(1);
+        events[0].status.should.equal("Index search complete");
+        should.equal(events[0].rm, null);
+        events[0].meta.indexMatch.title.should.equal("Early title");
+        events[0].meta.isMetadata.should.equal(true);
+
+        finishMultiRMCheck({ rm: null, meta: {} });
+        await resolving;
+      });
+
+      it("publishes an index error before continuing resolution", async () => {
+        const { sandbox, rmr } = state;
+        sandbox
+          .stub(ResourceMapResolver, "searchIndex")
+          .rejects(new Error("index unavailable"));
+        sandbox.stub(rmr, "checkStorage").resolves(null);
+        sandbox.stub(rmr, "walkSysmeta").resolves({ rm: null, meta: {} });
+        sandbox.stub(rmr, "guessPid").resolves(null);
+        sandbox.stub(rmr.eventLog, "consoleLog");
+        const events = [];
+        rmr.events.on("update:meta.1", (event) => events.push(event));
+
+        await rmr.resolve("meta.1");
+
+        events[0].status.should.equal("Index search complete");
+        events[0].meta.indexError.should.equal(true);
+        events[0].meta.error.should.equal("index unavailable");
+      });
+
       it("returns immediately on an index match", async () => {
         const { sandbox, rmr } = state;
 
@@ -1062,6 +1118,34 @@ define([
     });
 
     describe("resolveFromSeriesId()", () => {
+      it("publishes the authoritative SID mapping before resolving its PID", async () => {
+        const { sandbox, rmr } = state;
+        const events = [];
+        let eventSeenDuringResolve = null;
+        rmr.events.on("update:series.1", (event) => events.push(event));
+        sandbox.stub(rmr.versionTracker, "getSysMeta").resolves(
+          new SysMeta({
+            identifier: "meta.2",
+            seriesId: "series.1",
+            formatId: "eml://ecoinformatics.org/eml-2.2.0",
+          }),
+        );
+        sandbox.stub(rmr, "resolve").callsFake(async () => {
+          [eventSeenDuringResolve] = events;
+          return { success: false, pid: "meta.2" };
+        });
+
+        await rmr.resolveFromSeriesId("series.1");
+
+        eventSeenDuringResolve.status.should.equal("Series ID resolved");
+        should.equal(eventSeenDuringResolve.rm, null);
+        eventSeenDuringResolve.meta.should.deep.equal({
+          sid: "series.1",
+          resolvedPid: "meta.2",
+          formatId: "eml://ecoinformatics.org/eml-2.2.0",
+        });
+      });
+
       it("delegates to resolve() when sysmeta contains an identifier", async () => {
         const { sandbox, rmr } = state;
 

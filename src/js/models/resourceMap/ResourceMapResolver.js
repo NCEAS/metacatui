@@ -41,6 +41,8 @@ define([
 
   // Status messages for the resolution process
   const STATUS = Object.freeze({
+    indexSearchComplete: "Index search complete",
+    seriesIdResolved: "Series ID resolved",
     // matches
     indexMatch: "Resource map pid found in index",
     multiRMMatch:
@@ -273,6 +275,13 @@ define([
         // (e.g. Solr is down).
         this.warn(`Error searching index for PID ${pid}`, error);
       }
+
+      this.status(
+        pid,
+        STATUS.indexSearchComplete,
+        null,
+        indexResult?.meta || {},
+      );
 
       let resolutionMeta = { ...(indexResult?.meta || {}) };
       if (indexResult?.rm) {
@@ -669,7 +678,15 @@ define([
     async getPidForSid(sid, options = {}) {
       try {
         const sysMeta = await this.getSysMeta(sid, options);
-        return sysMeta?.identifier || null;
+        const resolvedPid = sysMeta?.identifier || null;
+        if (resolvedPid) {
+          this.status(sid, STATUS.seriesIdResolved, null, {
+            sid,
+            resolvedPid,
+            formatId: sysMeta.formatId || null,
+          });
+        }
+        return resolvedPid;
       } catch (error) {
         if (ErrorUtilities.isAbortError(error)) throw error;
         if (error?.status) {
@@ -1056,6 +1073,8 @@ define([
       return result;
     }
   }
+
+  ResourceMapResolver.STATUS = STATUS;
 
   return ResourceMapResolver;
 });

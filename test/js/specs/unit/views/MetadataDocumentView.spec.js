@@ -266,7 +266,6 @@ define([
         });
         view.metadataContainer = document.createElement("div");
         view.messageContainer = document.createElement("div");
-        view.dataPackage = { addViewServiceEntities: sinon.stub() };
         const template = document.createElement("template");
         template.innerHTML = '<section id="Metadata">Parsed metadata</section>';
         const metadataViewDoc = {
@@ -281,10 +280,6 @@ define([
         expect(view.metadataContainer.textContent).to.equal("Parsed metadata");
         expect(template.content.childNodes).to.have.length(0);
         expect(metadataViewDoc.template).to.equal(null);
-        sinon.assert.calledOnceWithExactly(
-          view.dataPackage.addViewServiceEntities,
-          metadataViewDoc.entities,
-        );
       });
 
       it("falls back to HTML when parsed template content is unavailable", () => {
@@ -468,6 +463,52 @@ define([
           metadataViewDoc,
         );
       });
+
+      it("defers package-dependent work until one explicit enhancement", async () => {
+        const dataPackage = {
+          events: { ...Backbone.Events },
+          addViewServiceEntities: sandbox.stub(),
+        };
+        const view = new MetadataDocumentView({
+          el: document.createElement("div"),
+          pid: "metadata.1",
+          dataPackage,
+        });
+        const metadataViewDoc = {
+          entities: [{ pid: "data.1" }],
+          html: '<section id="Metadata">Dataset</section>',
+        };
+        sandbox
+          .stub(view, "renderMetadataFromViewService")
+          .resolves(metadataViewDoc);
+        sandbox.stub(view, "initializeAttributeListTables");
+        sandbox.stub(view, "renderAltIdentifierHelpText");
+        const insertDataDetails = sandbox.stub(view, "insertDataDetails");
+        const checkForProv = sandbox.stub(view, "checkForProv");
+        sandbox.stub(view, "insertSpatialCoverageMap");
+        sandbox.stub(view, "insertCopiables");
+        sandbox.stub(view, "createAnnotationViews");
+        sandbox.stub(view, "insertMarkdownViews");
+
+        await view.render();
+
+        sinon.assert.notCalled(dataPackage.addViewServiceEntities);
+        sinon.assert.notCalled(insertDataDetails);
+        sinon.assert.notCalled(checkForProv);
+
+        document.body.appendChild(view.el);
+        view.enhanceWithPackage({ editModeOn: true });
+        view.enhanceWithPackage({ editModeOn: false });
+        view.el.remove();
+
+        expect(view.editModeOn).to.equal(true);
+        sinon.assert.calledOnceWithExactly(
+          dataPackage.addViewServiceEntities,
+          metadataViewDoc.entities,
+        );
+        sinon.assert.calledOnce(insertDataDetails);
+        sinon.assert.calledOnce(checkForProv);
+      });
     });
 
     describe("provenance redraws", () => {
@@ -492,37 +533,10 @@ define([
         globalThis.MetacatUI = originalMetacatUI;
       });
 
-      it("waits until the view is attached before drawing provenance charts", async () => {
-        const view = new MetadataDocumentView({
-          el: document.createElement("div"),
-          pid: "metadata.1",
-        });
-        sinon.stub(view, "showMessage");
-        sinon.stub(view, "renderMetadataFromViewService").resolves({});
-        sinon.stub(view, "renderMetadataDocument");
-        sinon.stub(view, "initializeAttributeListTables");
-        sinon.stub(view, "renderAltIdentifierHelpText");
-        sinon.stub(view, "insertDataDetails");
-        const checkForProv = sinon.stub(view, "checkForProv");
-        sinon.stub(view, "insertSpatialCoverageMap");
-        sinon.stub(view, "insertCopiables");
-        sinon.stub(view, "createAnnotationViews");
-        sinon.stub(view, "insertMarkdownViews");
-
-        await view.render();
-
-        sinon.assert.notCalled(checkForProv);
-
-        document.body.appendChild(view.el);
-        await view.render();
-        view.el.remove();
-
-        sinon.assert.calledOnce(checkForProv);
-      });
-
       it("coalesces synchronous provenance change redraws", async () => {
         const dataPackage = new Backbone.Model();
         dataPackage.events = { ...Backbone.Events };
+        dataPackage.addViewServiceEntities = sinon.stub();
         dataPackage.getResourceMapModel = () => ({});
         const el = document.createElement("div");
         el.innerHTML = '<div class="metadata-view__metadata"></div>';
@@ -532,7 +546,10 @@ define([
         });
         view.metadataContainer = el.querySelector(".metadata-view__metadata");
         view.metadataViewDoc = {};
+        sinon.stub(view, "insertDataDetails");
+        sinon.stub(view, "checkForProv");
         const redraw = sinon.stub(view, "redrawProvCharts");
+        view.enhanceWithPackage({ editModeOn: false });
 
         dataPackage.events.trigger("provenance:changed");
         dataPackage.events.trigger("provenance:changed");
