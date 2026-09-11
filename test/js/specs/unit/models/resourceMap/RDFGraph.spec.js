@@ -346,5 +346,42 @@ define(["rdflib", "models/resourceMap/RDFGraph"], (rdf, RDFGraph) => {
       graph.hasStatement({ object: objectNode }).should.equal(true);
       graph.hasStatement({ object: subjectNode }).should.equal(false);
     });
+
+    it("round-trips URI-only RDF collection items", () => {
+      const root = rdf.sym("urn:example:root");
+      const predicate = rdf.sym("https://example.org/vocab#related");
+      const xml = [
+        '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"',
+        '  xmlns:ex="https://example.org/vocab#">',
+        '  <rdf:Description rdf:about="urn:example:root">',
+        '    <ex:related rdf:parseType="Collection">',
+        '      <rdf:Description rdf:about="urn:example:one"/>',
+        '      <rdf:Description rdf:about="urn:example:two"/>',
+        "    </ex:related>",
+        "  </rdf:Description>",
+        "</rdf:RDF>",
+      ].join("\n");
+      const graph = new RDFGraph().parseXml(xml, "");
+
+      const serialized = graph.serializeStatementsToXml(
+        graph.getStatements({ copy: true }),
+      );
+      const reparsed = new RDFGraph().parseXml(serialized, "");
+      const collection = reparsed.findStatements({
+        subject: root,
+        predicate,
+      })[0].object;
+
+      collection.termType.should.equal("collection");
+      collection.elements
+        .map(({ termType, value }) => ({ termType, value }))
+        .should.deep.equal([
+          { termType: "NamedNode", value: "urn:example:one" },
+          { termType: "NamedNode", value: "urn:example:two" },
+        ]);
+      collection.elements.forEach((element) => {
+        reparsed.findStatements({ subject: element }).should.have.lengthOf(0);
+      });
+    });
   });
 });

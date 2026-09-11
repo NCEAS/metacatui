@@ -240,6 +240,7 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
       const serializableStatements = statements.slice();
       const blankNodeSubjects = new Set();
       const incomingByBlankNode = new Map();
+      const namedCollectionElementKeys = new Set();
 
       statements.forEach((statement) => {
         if (RDFGraph.isBlankNode(statement.subject)) {
@@ -252,6 +253,13 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
             statement,
           );
         }
+        if (statement.object?.termType === "collection") {
+          statement.object.elements.forEach((element) => {
+            if (RDFGraph.isNamedNode(element)) {
+              namedCollectionElementKeys.add(serializer.toStr(element));
+            }
+          });
+        }
       });
 
       incomingByBlankNode.forEach((incoming, key) => {
@@ -263,6 +271,23 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
           serializableStatements.push(incoming[0]);
         }
       });
+
+      if (namedCollectionElementKeys.size) {
+        const getRootSubjects = serializer.rootSubjects.bind(serializer);
+        serializer.rootSubjects = (currentStatements) => {
+          const rootSubjects = getRootSubjects(currentStatements);
+          namedCollectionElementKeys.forEach((key) => {
+            if (!rootSubjects.subjects[key]) {
+              // rdflib descends into collection items as subjects, but valid
+              // empty URI descriptions have no subject statements. An empty
+              // serializer-only bucket emits rdf:Description without changing
+              // the graph.
+              rootSubjects.subjects[key] = [];
+            }
+          });
+          return rootSubjects;
+        };
+      }
 
       return serializer.statementsToXML(serializableStatements);
     }
