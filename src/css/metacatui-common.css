@@ -8067,6 +8067,18 @@ ul.side-nav-items {
   width: calc(100% - 2px);
   border-collapse: separate;
 }
+
+/* Fill the editor's drop area without stretching the file rows. */
+#data-package-container > #data-package-table {
+  height: 100%;
+}
+
+#data-package-container > #data-package-table > tbody::after {
+  content: "";
+  display: table-row;
+  height: 100%;
+}
+
 /* Editor package table headers */
 #data-package-table-share,
 #data-package-table-guide-status {
@@ -9801,6 +9813,11 @@ body > #extension-is-installed {
 
 .file-table-disabled {
   opacity: 0.65;
+}
+
+.data-package-drop-target {
+  outline: 2px dashed #1f254f;
+  outline-offset: -2px;
 }
 
 .data-package-item .control {

@@ -29,11 +29,9 @@ define([
     collapseControl: "d1package-collapse",
     control: "control",
     data: "data",
-    dropTarget: "data-package-drop-target",
     dropdownMenu: "dropdown-menu",
     dropdownToggle: "dropdown-toggle",
     disabled: "disabled",
-    droppable: "droppable",
     editable: "editable",
     expandControl: "d1package-expand",
     file: "file",
@@ -103,10 +101,6 @@ define([
         "showRemovePreview",
       "mouseleave [data-action-id='remove'], [data-id='remove']":
         "hideRemovePreview",
-      dragenter: "showDropTarget",
-      dragover: "showDropTarget",
-      dragleave: "hideDropTarget",
-      drop: "handleFilesDrop",
     },
 
     /** @inheritdoc */
@@ -673,50 +667,6 @@ define([
         event.currentTarget.blur();
         this.skipRenameBlur = false;
       }
-    },
-
-    /**
-     * Show drag over styling when this row accepts files.
-     * @param {Event} event Drag event
-     */
-    showDropTarget(event) {
-      if (!this.viewModel.get("acceptsFiles")) return;
-      event.preventDefault();
-      event.stopPropagation();
-      this.$el.addClass(`${CLASS_NAMES.droppable} ${CLASS_NAMES.dropTarget}`);
-    },
-
-    /**
-     * Remove drag over styling when the pointer leaves this row.
-     * @param {Event} event Drag event
-     */
-    hideDropTarget(event) {
-      if (!this.viewModel.get("acceptsFiles")) return;
-      const { relatedTarget } = event;
-      if (relatedTarget && this.el.contains(relatedTarget)) return;
-      this.$el.removeClass(
-        `${CLASS_NAMES.droppable} ${CLASS_NAMES.dropTarget}`,
-      );
-    },
-
-    /**
-     * Emit files dropped on this row.
-     * @param {Event} event Drop event
-     */
-    handleFilesDrop(event) {
-      if (!this.viewModel.get("acceptsFiles")) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-      this.$el.removeClass(
-        `${CLASS_NAMES.droppable} ${CLASS_NAMES.dropTarget}`,
-      );
-
-      const files =
-        event.originalEvent?.dataTransfer?.files ||
-        event.dataTransfer?.files ||
-        [];
-      this.trigger("files:drop", this.viewModel, files, event);
     },
 
     /** Close action subviews */

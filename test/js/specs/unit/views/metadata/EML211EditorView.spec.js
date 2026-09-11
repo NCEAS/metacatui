@@ -4001,7 +4001,7 @@ define([
       });
     });
 
-    it("syncs EML entities when files are added from the file table", async function () {
+    it("shows the adding files state and provisional rows before linking files and updating EML", async function () {
       const metadataMember = {
         pid: "metadata.1",
         documents: ["data.1"],
@@ -4037,17 +4037,56 @@ define([
         },
       };
       sandbox.stub(view, "toggleControls");
-      sandbox.stub(view, "toggleEnableControls");
+      sandbox.spy(view, "toggleEnableControls");
       sandbox.stub(view, "refreshFileTable");
       sandbox.stub(view, "syncMetadataEntities");
-      sandbox.stub(view, "waitForNextPaint").resolves();
+      const frames = [];
+      sandbox.stub(window, "requestAnimationFrame").callsFake((callback) => {
+        frames.push(callback);
+        return frames.length;
+      });
+      view.setElement(document.createElement("div"));
+      view.$el.html(
+        '<div class="editor-controls hidden" style="display:none">' +
+          '<button id="save-editor">Save</button></div>',
+      );
+      document.body.appendChild(view.el);
       const rowModel = new Backbone.Model({
         kind: "metadata",
         id: "metadata.1",
       });
       const file = new Blob(["data"], { type: "text/plain" });
 
-      const added = await view.addFilesFromFileTable(rowModel, [file]);
+      let added;
+      try {
+        const adding = view.addFilesFromFileTable(rowModel, [file]);
+        view.$(".editor-controls").hasClass("hidden").should.equal(false);
+        view.$(".editor-controls").is(":visible").should.equal(true);
+        view.$("#save-editor").text().should.equal("Adding files...");
+        sinon.assert.notCalled(rootDataPackage.stageLocalFiles);
+
+        frames.shift()();
+        await Promise.resolve();
+        sinon.assert.notCalled(rootDataPackage.stageLocalFiles);
+
+        frames.shift()();
+        // Resume staging and then the await of its resolved result.
+        await Promise.resolve();
+        await Promise.resolve();
+        sinon.assert.calledOnce(view.refreshFileTable);
+        sinon.assert.notCalled(rootDataPackage.linkStagedFiles);
+        sinon.assert.notCalled(view.syncMetadataEntities);
+        sinon.assert.notCalled(rootDataPackage.markMemberContentDirty);
+
+        frames.shift()();
+        await Promise.resolve();
+        sinon.assert.notCalled(rootDataPackage.linkStagedFiles);
+
+        frames.shift()();
+        added = await adding;
+      } finally {
+        view.remove();
+      }
 
       added.should.deep.equal([addedMember]);
       sinon.assert.calledOnceWithExactly(rootDataPackage.stageLocalFiles, [
@@ -4075,7 +4114,6 @@ define([
       sinon.assert.callOrder(
         rootDataPackage.stageLocalFiles,
         view.refreshFileTable,
-        view.waitForNextPaint,
         rootDataPackage.linkStagedFiles,
         view.syncMetadataEntities,
         rootDataPackage.markMemberContentDirty,
@@ -4244,6 +4282,7 @@ define([
         },
       };
       sandbox.stub(view, "toggleEnableControls");
+      sandbox.stub(view, "toggleControls");
       sandbox.stub(view, "refreshFileTable");
       const rowModel = new Backbone.Model({
         kind: "metadata",
@@ -4260,6 +4299,7 @@ define([
       ]);
       sinon.assert.notCalled(rootDataPackage.linkStagedFiles);
       sinon.assert.notCalled(view.refreshFileTable);
+      sinon.assert.calledOnce(view.toggleControls);
       sinon.assert.calledTwice(view.toggleEnableControls);
       sinon.assert.calledOnce(globalThis.MetacatUI.appView.showAlert);
       globalThis.MetacatUI.appView.showAlert.firstCall.args[0].should.contain(
@@ -4328,7 +4368,6 @@ define([
       sinon.assert.callOrder(
         rootDataPackage.stageLocalFiles,
         view.refreshFileTable,
-        view.waitForNextPaint,
         rootDataPackage.linkStagedFiles,
         globalThis.MetacatUI.appView.showAlert,
       );

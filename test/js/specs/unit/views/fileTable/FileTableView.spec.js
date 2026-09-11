@@ -52,6 +52,166 @@ define([
       sandbox.restore();
     });
 
+    describe("file drops", () => {
+      let transfer, received, root;
+
+      beforeEach(() => {
+        view.viewModel.setRows([
+          {
+            id: "dataset:root",
+            kind: "dataset",
+            className: "root-dataset",
+            acceptsFiles: true,
+            label: "Dataset",
+          },
+          ...view.viewModel.getRows().toJSON(),
+        ]);
+        root = view.viewModel.getRows().get("dataset:root");
+        transfer = new DataTransfer();
+        transfer.items.add(new File(["x"], "added.txt"));
+        received = sandbox.spy();
+        view.on("files:drop", received);
+      });
+
+      function drag(type, target, relatedTarget = null) {
+        const event = new DragEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          dataTransfer: transfer,
+          relatedTarget,
+        });
+        target.dispatchEvent(event);
+        return event;
+      }
+
+      [
+        "thead th",
+        "tr[data-id='dataset:root'] td",
+        "tr[data-id='data.1'] td",
+        "tr[data-id='data.1'] .file-actions button",
+        ".message-row td",
+        "tfoot td",
+      ].forEach((selector) => {
+        it(`accepts a root drop over ${selector} in a folderless table`, () => {
+          view
+            .$("tbody")
+            .append('<tr class="message-row"><td>Add files</td></tr>');
+          view.$el.append("<tfoot><tr><td>Notice</td></tr></tfoot>");
+          const target = view.$(selector)[0];
+
+          drag("dragover", target).defaultPrevented.should.equal(true);
+          view.$el.hasClass("data-package-drop-target").should.equal(true);
+          drag("drop", target).defaultPrevented.should.equal(true);
+
+          sinon.assert.calledOnce(received);
+          chai.expect(received.firstCall.args[0]).to.equal(root);
+          chai.expect(received.firstCall.args[1]).to.equal(transfer.files);
+          view.$el.hasClass("data-package-drop-target").should.equal(false);
+        });
+      });
+
+      it("keeps the table highlighted between cells and clears it on exit", () => {
+        const cells = view.$("tr[data-id='data.1'] td");
+        drag("dragover", cells[0]);
+        drag("dragleave", cells[0], cells[1]);
+        view.$el.hasClass("data-package-drop-target").should.equal(true);
+        drag("dragleave", cells[1], document.body);
+        view.$el.hasClass("data-package-drop-target").should.equal(false);
+      });
+
+      it("uses explicit row destinations while folders exist, even when collapsed", () => {
+        view.viewModel.setRows([
+          ...view.viewModel.getRows().toJSON(),
+          {
+            id: "folder:measurements/qc",
+            kind: "folder",
+            label: "QC",
+            atLocation: "measurements/qc",
+            acceptsFiles: true,
+            isExpanded: false,
+          },
+        ]);
+        const rows = view.viewModel.getRows();
+        const folder = view.$("tr[data-id='folder:measurements/qc']");
+        const rootElement = view.$("tr[data-id='dataset:root']");
+
+        drag("dragover", folder.find("td")[0]);
+        folder.hasClass("data-package-drop-target").should.equal(true);
+        view.$el.hasClass("data-package-drop-target").should.equal(false);
+        drag("drop", folder.find("td")[0]);
+        chai
+          .expect(received.firstCall.args[0])
+          .to.equal(rows.get("folder:measurements/qc"));
+        drag("dragover", folder.find("td")[0]);
+        drag("dragover", rootElement.find("td")[0]);
+        folder.hasClass("data-package-drop-target").should.equal(false);
+        rootElement.hasClass("data-package-drop-target").should.equal(true);
+        drag("drop", rootElement.find("td")[0]);
+        chai
+          .expect(received.secondCall.args[0])
+          .to.equal(rows.get("dataset:root"));
+
+        const fileCell = view.$("tr[data-id='data.1'] td")[0];
+        drag("dragover", fileCell).defaultPrevented.should.equal(false);
+        drag("drop", fileCell).defaultPrevented.should.equal(true);
+        drag("drop", view.$("thead th")[0]);
+        sinon.assert.calledTwice(received);
+
+        view.viewModel.removeRow("folder:measurements/qc");
+        drag("drop", view.$("tr[data-id='data.1'] td")[0]);
+        sinon.assert.calledThrice(received);
+        chai
+          .expect(received.thirdCall.args[0])
+          .to.equal(rows.get("dataset:root"));
+      });
+
+      ["disabled", "loading", "viewer"].forEach((state) => {
+        it(`does not accept drops when ${state}`, () => {
+          drag("dragover", view.$("tr[data-id='dataset:root'] td")[0]);
+          if (state === "disabled") view.setDisabled(true);
+          if (state === "loading") view.viewModel.set("isLoading", true);
+          if (state === "viewer") root.set("acceptsFiles", false);
+          if (state !== "viewer") {
+            view.$el.hasClass("data-package-drop-target").should.equal(false);
+          }
+
+          drag("dragover", view.$("tbody td")[0]);
+          drag("drop", view.$("tbody td")[0]);
+          sinon.assert.notCalled(received);
+          view.$el.hasClass("data-package-drop-target").should.equal(false);
+          view.$(".data-package-drop-target").length.should.equal(0);
+        });
+      });
+
+      it("ignores text drags and empty drops", () => {
+        transfer.items.clear();
+        transfer.setData("text/plain", "text");
+        const cell = view.$("tr[data-id='dataset:root'] td")[0];
+        drag("dragover", cell).defaultPrevented.should.equal(false);
+        view.$el.hasClass("data-package-drop-target").should.equal(false);
+        drag("drop", cell);
+        sinon.assert.notCalled(received);
+      });
+
+      it("recognizes file drags before the FileList is available", () => {
+        view
+          .$("tr[data-id='data.1'] td")
+          .first()
+          .trigger(
+            $.Event("dragover", {
+              dataTransfer: { types: ["Files"], files: [] },
+            }),
+          );
+        view.$el.hasClass("data-package-drop-target").should.equal(true);
+      });
+
+      it("clears the highlight when the rows are rebuilt", () => {
+        drag("dragover", view.$("tr[data-id='data.1'] td")[0]);
+        view.viewModel.setRows(view.viewModel.getRows().toJSON());
+        view.$el.hasClass("data-package-drop-target").should.equal(false);
+      });
+    });
+
     it("disables dropdowns, editable names, and delegated tooltips", () => {
       const dropdown = view.$("[data-toggle='dropdown']");
       const menuItem = view.$(".dropdown-menu a");

@@ -20,6 +20,7 @@ define([
     buttonGroup: "btn-group",
     center: "center",
     disabled: "disabled",
+    dropTarget: "data-package-drop-target",
     dropdown: "dropdown",
     dropdownMenu: "dropdown-menu",
     collapseControl: "d1package-collapse",
@@ -100,6 +101,10 @@ define([
       "mouseleave [data-tt-content], [data-tt-html]": "hideLazyTooltip",
       "focusout [data-tt-content], [data-tt-html]": "hideLazyTooltip",
       [`click .${CLASS_NAMES.noticeAction}`]: "handleNoticeAction",
+      dragenter: "showDropTarget",
+      dragover: "showDropTarget",
+      dragleave: "hideDropTarget",
+      drop: "handleFilesDrop",
     },
 
     /** @inheritdoc */
@@ -333,7 +338,6 @@ define([
         this.subviews[rowModel.cid] = rowView;
         this.listenTo(rowView, "action:click", this.handleActionClick);
         this.listenTo(rowView, "rename:commit", this.handleRenameCommit);
-        this.listenTo(rowView, "files:drop", this.handleFilesDrop);
         body.append(rowView.render().el);
         this.listenTo(rowView, "renderComplete", this.handleRowRender);
       });
@@ -362,6 +366,7 @@ define([
         .attr("aria-disabled", this.isDisabled ? "true" : "false");
 
       if (this.isDisabled) {
+        this.clearDropTarget();
         this.closeDropdowns();
         this.destroyInitializedTooltips();
         this.disableInteractiveElements(this.$el);
@@ -562,14 +567,88 @@ define([
     },
 
     /**
-     * Bubble dropped files.
-     * @param {FileItemViewModel} rowModel Row view model
-     * @param {FileList|Array} files Dropped files
-     * @param {Event} event Drop event
+     * Resolve the destination shared by drop highlighting and file addition.
+     * Folderless editor tables accept files anywhere; folders need an explicit
+     * row destination.
+     * @param {Event} event Drag event
+     * @returns {{rowModel: FileItemViewModel, element: Element}|null} Drop target
+     * @since 0.0.0
      */
-    handleFilesDrop(rowModel, files, event) {
-      if (this.isDisabled) return;
-      this.trigger("files:drop", rowModel, files, event);
+    getFileDropTarget(event) {
+      if (this.isDisabled || this.viewModel.get("isLoading")) return null;
+      const rows = this.viewModel.getRows();
+      const root = rows.findWhere({ className: "root-dataset" });
+      if (root?.get("acceptsFiles") && !rows.findWhere({ kind: "folder" })) {
+        return { rowModel: root, element: this.el };
+      }
+      const rowElement = this.$(event.target).closest("tr[data-id]");
+      const rowModel = rows.get(rowElement.attr("data-id"));
+      return rowModel?.get("acceptsFiles")
+        ? { rowModel, element: rowElement[0] }
+        : null;
+    },
+
+    /**
+     * Highlight the destination during a file drag.
+     * @param {Event} event Drag event
+     * @since 0.0.0
+     */
+    showDropTarget(event) {
+      const transfer = event.originalEvent?.dataTransfer || event.dataTransfer;
+      if (!transfer?.types.includes("Files")) return;
+      const target = this.getFileDropTarget(event);
+      if (target?.element !== this.dropTargetElement) this.clearDropTarget();
+      if (!target) return;
+      event.preventDefault();
+      event.stopPropagation();
+      this.dropTargetElement = target.element;
+      target.element.classList.add(CLASS_NAMES.dropTarget);
+    },
+
+    /**
+     * Keep the highlight while moving between cells of the same destination.
+     * @param {Event} event Drag event
+     * @since 0.0.0
+     */
+    hideDropTarget(event) {
+      if (
+        event.relatedTarget &&
+        this.dropTargetElement?.contains(event.relatedTarget)
+      )
+        return;
+      this.clearDropTarget();
+    },
+
+    /**
+     * Clear drag styling when the destination changes or is removed.
+     * @since 0.0.0
+     */
+    clearDropTarget() {
+      this.dropTargetElement?.classList.remove(CLASS_NAMES.dropTarget);
+      this.dropTargetElement = null;
+    },
+
+    /**
+     * Emit files once for the selected table or row destination.
+     * @param {Event} event Drop event
+     * @since 0.0.0
+     */
+    handleFilesDrop(event) {
+      const transfer = event.originalEvent?.dataTransfer || event.dataTransfer;
+      const files = transfer?.files || [];
+      const target = this.getFileDropTarget(event);
+      this.clearDropTarget();
+      if (!files.length) return;
+      if (!target) {
+        // A rejected editor drop must not navigate to the dropped file.
+        if (this.viewModel.getRows().some((row) => row.get("acceptsFiles"))) {
+          event.preventDefault();
+        }
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      this.trigger("files:drop", target.rowModel, files, event);
     },
 
     /**
@@ -658,6 +737,7 @@ define([
 
     /** Close row subviews */
     closeSubviews() {
+      this.clearDropTarget();
       Object.keys(this.subviews).forEach((id) => {
         const subview = this.subviews[id];
         this.stopListening(subview);

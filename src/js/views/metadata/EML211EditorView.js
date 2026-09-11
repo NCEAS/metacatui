@@ -2562,8 +2562,8 @@ ${supportDetails}`;
       },
 
       /**
-       * Yield until the browser can paint provisional file rows.
-       * @returns {Promise<void>} Resolves on the next animation frame
+       * Leave a rendering opportunity before continuing bulk file work.
+       * @returns {Promise<void>} Resolves after an intervening animation frame
        * @since 0.0.0
        */
       waitForNextPaint() {
@@ -2572,7 +2572,9 @@ ${supportDetails}`;
           typeof window.requestAnimationFrame === "function"
         ) {
           return new Promise((resolve) => {
-            window.requestAnimationFrame(resolve);
+            window.requestAnimationFrame(() => {
+              window.requestAnimationFrame(() => resolve());
+            });
           });
         }
         return Promise.resolve();
@@ -2588,6 +2590,10 @@ ${supportDetails}`;
       async addFilesFromFileTable(rowModel, files) {
         if (!files.length) return [];
         this.fileTableEditInProgress = true;
+        this.$(".editor-controls")
+          .stop(true, true)
+          .removeClass("hidden")
+          .show();
         this.toggleEnableControls();
         let added = [];
         let filesLinked = false;
@@ -2599,11 +2605,11 @@ ${supportDetails}`;
               : MetacatUI.rootDataPackage.getPrimaryMetadataMember()?.pid;
           const atLocation =
             rowKind === "folder" ? rowModel.get("atLocation") : "";
+          await this.waitForNextPaint();
           added = await MetacatUI.rootDataPackage.stageLocalFiles(files);
           // Staging makes provisional rows visible. Paint them before linking
           // adds them to the ResourceMap and starts eager uploads.
           this.refreshFileTable();
-          this.toggleControls();
           this.toggleEnableControls();
           await this.waitForNextPaint();
           await MetacatUI.rootDataPackage.linkStagedFiles(added, {
@@ -2652,6 +2658,7 @@ ${supportDetails}`;
           return [];
         } finally {
           this.fileTableEditInProgress = false;
+          this.toggleControls();
           this.toggleEnableControls();
         }
       },
