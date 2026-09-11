@@ -428,6 +428,17 @@ define([
       }
     });
 
+    it("uses indexed public status without fetching System Metadata", async () => {
+      const member = new DataPackageMember({
+        pid: "public.1",
+        isPublic: true,
+      });
+      member.fetchSysMeta = sinon.stub();
+
+      expect(await member.isPublic()).to.equal(true);
+      sinon.assert.notCalled(member.fetchSysMeta);
+    });
+
     it("does not let indexed public status shadow the live policy method", async () => {
       const privateSysMeta = new SystemMetadata({
         ...SYSTEM_METADATA_DEFAULTS,

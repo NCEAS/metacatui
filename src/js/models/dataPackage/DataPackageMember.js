@@ -115,7 +115,8 @@ define([
           return; // handled above
         }
         if (key === "isPublic") {
-          // Solr's snapshot must not shadow the async isPublic() policy check.
+          // Preserve Solr's snapshot without shadowing the isPublic() method.
+          this.indexedIsPublic = value;
           return;
         }
         this[key] = value;
@@ -1081,6 +1082,7 @@ define([
      * @returns {Promise<boolean|null>} Public state, or null when unknown
      */
     async isPublic(options = {}) {
+      if (!this.sysMeta && this.indexedIsPublic === true) return true;
       if (!this.sysMeta) {
         try {
           await this.fetchSysMeta(options);

@@ -120,14 +120,6 @@ define(["jquery", "backbone", "models/SolrResult", "common/UrlUtilities"], (
           return;
         }
 
-        // If the user isn't logged in, let the browser handle the download
-        // normally
-        if (
-          MetacatUI.appUserModel.get("tokenChecked") &&
-          !MetacatUI.appUserModel.get("loggedIn")
-        ) {
-          return;
-        }
         // If the authentication hasn't been checked yet, wait for it
         if (!MetacatUI.appUserModel.get("tokenChecked")) {
           e.preventDefault();
@@ -136,8 +128,8 @@ define(["jquery", "backbone", "models/SolrResult", "common/UrlUtilities"], (
           );
           return;
         }
-        // If the user is logged in but the object is public, download normally.
-        if (this.model.get("isPublic")) {
+        // Known-public objects can use the browser's normal download path.
+        if (this.model.get("isPublic") === true) {
           return;
         }
 
@@ -164,7 +156,15 @@ define(["jquery", "backbone", "models/SolrResult", "common/UrlUtilities"], (
           }, 2000);
         });
 
-        this.listenToOnce(this.model, "downloadError", () => {
+        this.listenToOnce(this.model, "downloadError", (error) => {
+          if (error?.status === 401 || error?.status === 403) {
+            this.$el.html(buttonHTML).removeClass("in-progress error");
+            this.inactivate(
+              "This file is not publicly accessible. Sign in with an account that has access.",
+            );
+            return;
+          }
+
           // Show that the download failed to complete.
           this.$el
             .html("<i class='icon icon-on-right icon-warning-sign'></i>Error ")

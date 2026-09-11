@@ -262,6 +262,7 @@ define([
        * in the request. The data can then be downloaded or displayed in the
        * browser
        * @returns {Promise} A promise that resolves when the data is fetched
+       * @throws {Error} When the request fails; HTTP errors include `status`
        * @since 2.32.0
        */
       fetchDataObjectWithCredentials() {
@@ -269,22 +270,18 @@ define([
         const token = MetacatUI.appUserModel.get("token") || "";
         const method = "GET";
 
-        return new Promise((resolve, reject) => {
-          const headers = {};
-          if (token) {
-            headers.Authorization = `Bearer ${token}`;
-          }
+        const headers = {};
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
 
-          fetch(url, { method, headers })
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error(`Failed to fetch: ${response.statusText}`);
-              }
-              resolve(response);
-            })
-            .catch((error) => {
-              reject(error);
-            });
+        return fetch(url, { method, headers }).then((response) => {
+          if (!response.ok) {
+            const error = new Error(`Failed to fetch: ${response.statusText}`);
+            error.status = response.status;
+            throw error;
+          }
+          return response;
         });
       },
 
@@ -357,7 +354,7 @@ define([
        */
       handleDownloadError(e) {
         const model = this;
-        model.trigger("downloadError");
+        model.trigger("downloadError", e);
         // Track the error
         MetacatUI.analytics?.trackException(
           `Download DataONEObject error: ${e || ""}`,

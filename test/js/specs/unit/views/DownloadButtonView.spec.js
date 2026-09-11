@@ -91,14 +91,30 @@ define(["jquery", "backbone", "views/DownloadButtonView"], (
         return event;
       }
 
-      it("lets the browser handle downloads for logged-out users", () => {
+      it("lets the browser handle known-public downloads when logged out", () => {
         setUser({ tokenChecked: true, loggedIn: false });
-        makeView({ id: "private.1" });
+        makeView({ id: "public.1", isPublic: true });
 
         const event = click();
 
         sinon.assert.notCalled(event.preventDefault);
         sinon.assert.notCalled(view.model.downloadWithCredentials);
+      });
+
+      it("shows access-denied downloads as unavailable", () => {
+        setUser({ tokenChecked: true, loggedIn: false });
+        makeView({ id: "private.1", isPublic: null });
+        view.model.downloadWithCredentials.callsFake(() => {
+          view.model.trigger("downloadError", { status: 403 });
+        });
+
+        const event = click();
+
+        sinon.assert.calledOnce(event.preventDefault);
+        expect(view.$el.attr("disabled")).to.equal("disabled");
+        expect(view.$el.attr("href")).to.equal(undefined);
+        expect(view.$el.hasClass("error")).to.equal(false);
+        expect(view.$el.text().trim()).to.equal("Download");
       });
 
       it("lets the browser handle public objects for logged-in users", () => {
@@ -142,7 +158,7 @@ define(["jquery", "backbone", "views/DownloadButtonView"], (
 
       it("replays a browser download after confirming the user is logged out", () => {
         setUser({ tokenChecked: false, loggedIn: false });
-        makeView({ id: "public.1" });
+        makeView({ id: "public.1", isPublic: true });
         const preventedStates = [];
         view.el.addEventListener("click", (event) => {
           preventedStates.push(event.defaultPrevented);

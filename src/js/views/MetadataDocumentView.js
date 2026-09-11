@@ -961,21 +961,16 @@ define([
        */
       createDataDetailsModel(member) {
         if (!member) return null;
+        let isPublic = null;
+        if (member.sysMeta) {
+          isPublic = member.sysMeta.accessPolicy?.isPublic() ?? null;
+        } else if (member.indexedIsPublic === true) {
+          isPublic = true;
+        }
         return new SolrResult({
           ...member.toJSON(),
           id: member.pid,
-        });
-      },
-
-      /**
-       * Resolve a package member's public state with the package's shared
-       * SysMeta service.
-       * @param {DataPackageMember} member Package member
-       * @returns {Promise<boolean|null>} Public state, or null when unknown
-       */
-      async getMemberPublicState(member) {
-        return member.isPublic({
-          sysMetaService: this.dataPackage.getSysMetaService(),
+          isPublic,
         });
       },
 
@@ -1011,7 +1006,9 @@ define([
 
         let isPublic;
         try {
-          isPublic = await this.getMemberPublicState(member);
+          isPublic = await member.isPublic({
+            sysMetaService: this.dataPackage.getSysMetaService(),
+          });
         } catch {
           return;
         }
@@ -1046,22 +1043,13 @@ define([
        * createDataDetailsModel()
        * @param {DataPackageMember} member The package member for the object
        * @param {jQuery} container The entity section that describes the object
-       * @returns {Promise<void>} Resolves after public access is checked
+       * @returns {void}
        */
-      async renderDataInteractionButtons(member, container) {
+      renderDataInteractionButtons(member, container) {
         if (!member || !container) return;
-
-        let isPublic = null;
-        try {
-          isPublic = await this.getMemberPublicState(member);
-        } catch {
-          // Unknown access falls back to the credentialed download path.
-        }
-        if (this.isClosed || this.signal?.aborted) return;
 
         const containerEl = $(container);
         const dataModel = this.createDataDetailsModel(member);
-        dataModel.set("isPublic", isPublic ?? null);
         const buttonsContainer = document.createElement("div");
         buttonsContainer.classList.add(
           "control-group",

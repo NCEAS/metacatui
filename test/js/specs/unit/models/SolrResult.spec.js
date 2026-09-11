@@ -81,6 +81,21 @@ define(["jquery", "collections/ObjectFormats", "models/SolrResult"], function (
         // Check if the downloadComplete event was triggered
         sinon.assert.calledWith(triggerSpy, "downloadComplete");
       });
+
+      it("passes the HTTP status to download error listeners", async function () {
+        fetchStub.resolves(
+          new Response(null, { status: 403, statusText: "Forbidden" }),
+        );
+        let downloadError;
+        solrResult.once("downloadError", (error) => {
+          downloadError = error;
+        });
+
+        await solrResult.downloadWithCredentials();
+
+        expect(downloadError).to.be.instanceof(Error);
+        expect(downloadError.status).to.equal(403);
+      });
     });
 
     describe("fetchDataObjectWithCredentials", function () {

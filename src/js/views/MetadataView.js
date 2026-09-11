@@ -2352,6 +2352,21 @@ define([
         const { dataPackage, fileTableView } = this;
         if (!dataPackage) return false;
 
+        const member = dataPackage.getMember(id);
+        const rowDownloadUrl = rowModel.get("downloadUrl");
+        const downloadModel = this.createDataDetailsModel(member);
+        if (downloadModel && !downloadModel.get("url") && rowDownloadUrl) {
+          downloadModel.set("url", rowDownloadUrl);
+        }
+        const downloadUrl = downloadModel?.get("url") || rowDownloadUrl;
+        const isPublic = member?.sysMeta
+          ? member.sysMeta.accessPolicy?.isPublic() === true
+          : member?.indexedIsPublic === true;
+        if (isPublic && downloadUrl) {
+          window.open(downloadUrl, "_blank");
+          return true;
+        }
+
         const downloadStates =
           this.fileTableDownloadStates ||
           (this.fileTableDownloadStates = new Map());
@@ -2367,14 +2382,28 @@ define([
         actionModel.set(downloadState);
 
         try {
-          const member = dataPackage.getMember(id);
-          const downloadUrl = rowModel.get("downloadUrl");
-          const downloadModel = this.createDataDetailsModel(member);
-          if (downloadModel && !downloadModel.get("url") && downloadUrl) {
-            downloadModel.set("url", downloadUrl);
-          }
           if (typeof downloadModel?.downloadWithCredentials === "function") {
+            let downloadError;
+            downloadModel.once("downloadError", (error) => {
+              downloadError = error;
+            });
             await downloadModel.downloadWithCredentials();
+            if (
+              downloadError?.status === 401 ||
+              downloadError?.status === 403
+            ) {
+              const message =
+                "This file is not publicly accessible. Sign in with an account that has access.";
+              const accessDeniedState = {
+                ...actionState,
+                isDisabled: true,
+                title: message,
+                ariaLabel: message,
+              };
+              downloadStates.set(id, accessDeniedState);
+              actionModel.set(accessDeniedState);
+              return false;
+            }
             return true;
           }
 
@@ -2383,8 +2412,8 @@ define([
         } finally {
           if (downloadStates.get(id) === downloadState) {
             downloadStates.delete(id);
+            actionModel.set(actionState);
           }
-          actionModel.set(actionState);
           if (
             this.dataPackage === dataPackage &&
             this.fileTableView === fileTableView &&
@@ -2961,7 +2990,8 @@ define([
           ...memberData,
           id: member.pid,
         });
-        const url = member.url || member.viewServiceEntity?.objectUrl;
+        const url =
+          member.url || model.get("url") || member.viewServiceEntity?.objectUrl;
         if (url) model.set("url", url);
         return model;
       },

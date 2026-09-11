@@ -1221,6 +1221,54 @@ define([
     });
 
     describe("downloadFileTableRow()", () => {
+      it("uses repository URLs for indexed-public files", async () => {
+        setPackageAppModel({ objectServiceUrl: "https://mn.test/object/" });
+        const memberUrl = "https://mn.test/object/public.1";
+        const resolverUrl = "https://cn.test/resolve/public.1";
+        const dataPackage = createViewerDataPackage({
+          members: [
+            {
+              pid: "rm.1",
+              formatType: "RESOURCE",
+              formatId: RESOURCE_MAP_FORMAT_ID,
+            },
+            {
+              pid: "public.1",
+              formatType: "DATA",
+              fileName: "large.csv",
+              isPublic: true,
+              viewServiceEntity: { objectUrl: resolverUrl },
+            },
+          ],
+        });
+        const row = new Backbone.Model({
+          id: "public.1",
+          kind: "data",
+          downloadUrl: resolverUrl,
+        });
+        row.getDisplayLabel = () => "large.csv";
+        const actionModel = {
+          toJSON: () => ({ label: "Download" }),
+          set: sandbox.stub(),
+        };
+        const context = {
+          dataPackage,
+          createDataDetailsModel: MetadataView.prototype.createDataDetailsModel,
+        };
+        const open = sandbox.stub(window, "open");
+
+        const downloaded =
+          await MetadataView.prototype.downloadFileTableRow.call(
+            context,
+            row,
+            actionModel,
+          );
+
+        downloaded.should.equal(true);
+        sinon.assert.calledOnceWithExactly(open, memberUrl, "_blank");
+        sinon.assert.notCalled(actionModel.set);
+      });
+
       it("keeps the attached download action disabled while rows merge", async () => {
         setPackageAppModel();
         const dataPackage = createViewerDataPackage();

@@ -46,6 +46,7 @@ define([
     "rightsHolder",
     "dateUploaded",
     "archived",
+    "isPublic",
     "title",
     "origin",
     "prov_instanceOfClass",
