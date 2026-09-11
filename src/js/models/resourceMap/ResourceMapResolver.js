@@ -285,6 +285,41 @@ define([
 
       let resolutionMeta = { ...(indexResult?.meta || {}) };
       if (indexResult?.rm) {
+        // -- Special case: We already have a stored Resource Map in local
+        // storage that is newer than the index result -- //
+        if (!indexResult.meta?.isResourceMap) {
+          let storedRM = null;
+          try {
+            storedRM = await this.checkStorage(pid);
+          } catch (error) {
+            if (ErrorUtilities.isAbortError(error)) throw error;
+            this.warn(`Error checking local storage for PID ${pid}`, error);
+          }
+
+          if (storedRM && storedRM !== indexResult.rm) {
+            const candidateResult = await this.multiRMCheck(
+              [indexResult.rm, storedRM],
+              options,
+            );
+            if (
+              candidateResult.rm === storedRM &&
+              !candidateResult.meta?.newerResourceMapUnavailable
+            ) {
+              const { isMember } = await this.checkResourceMapMembership(
+                storedRM,
+                pid,
+                options,
+              );
+              if (isMember) {
+                return this.status(pid, STATUS.storageMatch, storedRM, {
+                  ...resolutionMeta,
+                  source: "storage",
+                });
+              }
+            }
+          }
+        }
+        // No suitable stored Resource Map found, use successful index result
         return this.status(pid, STATUS.indexMatch, indexResult.rm, {
           ...resolutionMeta,
           source: "index",
@@ -952,22 +987,45 @@ define([
      * false otherwise
      */
     async verify(rm, pid, options = {}) {
-      const rmFetchResults = await this.fetchResourceMap(rm, options);
-      const rmMembers = rmFetchResults?.model?.getMemberPids?.() || [];
-      const isValid = !!pid && rmMembers.includes(pid);
+      const { isMember, memberPids, fetchStatus } =
+        await this.checkResourceMapMembership(rm, pid, options);
       const meta = {};
 
-      let status = isValid ? STATUS.foundAndValid : STATUS.foundButNotValid;
-      if (rmFetchResults?.status !== 200) {
+      let status = isMember ? STATUS.foundAndValid : STATUS.foundButNotValid;
+      if (fetchStatus !== 200) {
         status = STATUS.rmFetchError;
-        meta.error = rmFetchResults?.status || "Unknown error";
+        meta.error = fetchStatus || "Unknown error";
       } else {
-        meta.rmMembers = rmMembers;
-        meta.matchedPid = isValid ? pid : null;
+        meta.rmMembers = memberPids;
+        meta.matchedPid = isMember ? pid : null;
       }
 
-      this.status(pid, status, isValid ? rm : null, meta);
-      return isValid;
+      this.status(pid, status, isMember ? rm : null, meta);
+      return isMember;
+    }
+
+    /**
+     * Fetches a Resource Map and checks whether it contains a PID.
+     * @param {string} rm The Resource Map PID to fetch
+     * @param {string} pid The member PID to check
+     * @param {object} [options] Fetch options
+     * @param {number} [options.timeoutMs] The maximum time to wait for the fetch
+     * @param {AbortSignal} [options.signal] Signal used to cancel the fetch
+     * @returns {Promise<{isMember: boolean, memberPids: string[],
+     * fetchStatus: number}>} Membership result and fetch details
+     * @since 0.0.0
+     */
+    async checkResourceMapMembership(rm, pid, options = {}) {
+      const { model, status: fetchStatus } = await this.fetchResourceMap(
+        rm,
+        options,
+      );
+      const memberPids = model?.getMemberPids?.() || [];
+      return {
+        isMember: !!pid && memberPids.includes(pid),
+        memberPids,
+        fetchStatus,
+      };
     }
 
     /**

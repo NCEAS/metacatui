@@ -412,6 +412,40 @@ define([
     });
 
     describe("resolve() control-flow", () => {
+      const stubIndexMatch = (sandbox, rm) =>
+        sandbox.stub(ResourceMapResolver, "searchIndex").resolves({
+          pid: "meta.1",
+          rm,
+          meta: { isMetadata: true, rms: [rm] },
+        });
+
+      const stubStorage = (sandbox, rmr, initialRM) => {
+        const storage = { rm: initialRM, writes: [] };
+        sandbox.stub(rmr.storage, "getItem").callsFake(async () => storage.rm);
+        sandbox.stub(rmr.storage, "setItem").callsFake(async (_pid, rm) => {
+          storage.rm = rm;
+          storage.writes.push(rm);
+          return rm;
+        });
+        return storage;
+      };
+
+      const stubRM1ToRM2 = (sandbox, rmr, inaccessiblePid = null) => {
+        sandbox.stub(rmr, "getSysMeta").callsFake(async (pid) => {
+          if (pid === inaccessiblePid) {
+            throw Object.assign(new Error("private"), { status: 401 });
+          }
+          return new SysMeta({ identifier: pid });
+        });
+        sandbox
+          .stub(rmr.versionTracker, "checkPidsInSameVersionChain")
+          .resolves({
+            sameChain: true,
+            chain: ["rm.1", "rm.2"],
+            newestPid: "rm.2",
+          });
+      };
+
       it("publishes the initial index result before resolving multiple resource maps", async () => {
         const { sandbox, rmr } = state;
         const indexMeta = {
@@ -488,6 +522,57 @@ define([
         });
 
         ResourceMapResolver.searchIndex.calledOnce.should.be.true;
+      });
+
+      it("keeps a newer cached Resource Map when the index is stale", async () => {
+        const { sandbox, rmr } = state;
+        const storage = stubStorage(sandbox, rmr, "rm.2");
+        stubIndexMatch(sandbox, "rm.1");
+        stubRM1ToRM2(sandbox, rmr);
+        sandbox.stub(rmr, "fetchResourceMap").resolves({
+          model: { getMemberPids: () => ["meta.1"] },
+          status: 200,
+        });
+
+        const result = await rmr.resolve("meta.1");
+
+        result.rm.should.equal("rm.2");
+        storage.rm.should.equal("rm.2");
+        storage.writes.should.deep.equal(["rm.2"]);
+      });
+
+      it("rejects a newer cached Resource Map that omits the requested PID", async () => {
+        const { sandbox, rmr } = state;
+        const storage = stubStorage(sandbox, rmr, "rm.2");
+        stubIndexMatch(sandbox, "rm.1");
+        stubRM1ToRM2(sandbox, rmr);
+        sandbox.stub(rmr, "fetchResourceMap").resolves({
+          model: { getMemberPids: () => ["meta.2"] },
+          status: 200,
+        });
+
+        const result = await rmr.resolve("meta.1");
+
+        result.rm.should.equal("rm.1");
+        storage.rm.should.equal("rm.1");
+        storage.writes.should.deep.equal(["rm.1"]);
+      });
+
+      it("does not replace a newer indexed Resource Map with an older cache", async () => {
+        const { sandbox, rmr } = state;
+        const storage = stubStorage(sandbox, rmr, "rm.1");
+        stubIndexMatch(sandbox, "rm.2");
+        stubRM1ToRM2(sandbox, rmr, "rm.2");
+        sandbox.stub(rmr, "fetchResourceMap").resolves({
+          model: { getMemberPids: () => ["meta.1"] },
+          status: 200,
+        });
+
+        const result = await rmr.resolve("meta.1");
+
+        result.rm.should.equal("rm.2");
+        storage.rm.should.equal("rm.2");
+        storage.writes.should.deep.equal(["rm.2"]);
       });
 
       it("continues resolution when index search throws", async () => {
@@ -694,11 +779,15 @@ define([
           rm: "rm.old",
           meta: { isResourceMap: true },
         });
+        const checkStorage = sandbox
+          .stub(rmr, "checkStorage")
+          .resolves("rm.new");
         sandbox.stub(rmr, "addToStorage").resolves();
 
         const result = await rmr.resolve("rm.old");
 
         result.rm.should.equal("rm.old");
+        sinon.assert.notCalled(checkStorage);
       });
 
       it("returns unrelated Resource Maps for user selection without falling back", async () => {
@@ -948,6 +1037,27 @@ define([
         result.meta.errors.should.deep.equal([500]);
         should.equal(result.meta.unauthorized, undefined);
         logStub.calledOnce.should.be.true;
+      });
+    });
+
+    describe("checkResourceMapMembership()", () => {
+      it("reports fetched membership without publishing a status", async () => {
+        const { sandbox, rmr } = state;
+        const updates = [];
+        rmr.events.on("update", (event) => updates.push(event));
+        sandbox.stub(rmr, "fetchResourceMap").resolves({
+          model: { getMemberPids: () => ["meta.1", "data.1"] },
+          status: 200,
+        });
+
+        const result = await rmr.checkResourceMapMembership("rm.1", "meta.1");
+
+        result.should.deep.equal({
+          isMember: true,
+          memberPids: ["meta.1", "data.1"],
+          fetchStatus: 200,
+        });
+        updates.should.be.empty;
       });
     });
 
