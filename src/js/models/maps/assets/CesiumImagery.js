@@ -358,26 +358,88 @@ define([
       },
 
       /**
-       * Start watching scene tile events and mark this asset display-ready only
-       * after imagery tiles for this layer are drawable.
+       * Wrap this layer's imagery provider so outstanding tile requests can
+       * be counted directly from the promises Cesium creates, instead of
+       * inferred from Cesium's internal tile cache. The cache can retain
+       * stale/orphaned entries in a transient state indefinitely - for
+       * example, an ancestor tile kept around for level-of-detail fallback
+       * that Cesium stops reprocessing once it's no longer needed for the
+       * current view - which would otherwise look like "still loading" even
+       * though there is no real network/processing activity. Counting
+       * requestImage calls avoids that: a call either returns undefined
+       * synchronously (Cesium declined to make a request - no work done) or
+       * a promise that settles when the real work finishes.
+       * @param {Cesium.ImageryProvider} provider The provider to wrap.
+       * @param {Function} onPendingCountChange Called with the current
+       * pending request count whenever it changes.
+       * @returns {Function} A function that restores the original
+       * requestImage function.
+       * @since 0.0.0
+       */
+      wrapRequestImageForPendingCount: function (provider, onPendingCountChange) {
+        if (!provider || typeof provider.requestImage !== "function") {
+          return function () {};
+        }
+
+        const originalRequestImage = provider.requestImage.bind(provider);
+        let pendingCount = 0;
+        let isUnwrapped = false;
+
+        provider.requestImage = function (x, y, level, request) {
+          const result = originalRequestImage(x, y, level, request);
+          if (result && typeof result.then === "function") {
+            pendingCount += 1;
+            onPendingCountChange(pendingCount);
+            const onSettled = function () {
+              if (isUnwrapped) {
+                return;
+              }
+              pendingCount = Math.max(0, pendingCount - 1);
+              onPendingCountChange(pendingCount);
+            };
+            result.then(onSettled, onSettled);
+          }
+          return result;
+        };
+
+        return function unwrap() {
+          isUnwrapped = true;
+          if (provider.requestImage !== originalRequestImage) {
+            provider.requestImage = originalRequestImage;
+          }
+        };
+      },
+
+      /**
+       * Start watching scene render events to mark this asset display-ready
+       * after its first drawable tile, and wrap the imagery provider to
+       * continuously track whether the layer currently has outstanding tile
+       * requests. Unlike displayReady (a one-time latch), tilesLoading is
+       * kept in sync for as long as the layer is in the scene, so the map
+       * loading indicator does not get stuck when no tiles are ever in view
+       * (or when Cesium abandons stale cache entries), and keeps working
+       * while panning brings new tiles into view after the first one loads.
        * @param {object} context A context object with a Cesium scene.
        * @param {Cesium.Scene} context.scene The scene where imagery is drawn.
        * @since 0.0.0
        */
-      startDisplayReadyTracking: function (context) {
+      startLoadingStateTracking: function (context) {
         const scene = context?.scene;
         const model = this;
-        this.stopDisplayReadyTracking();
+        this.stopLoadingStateTracking();
 
-        if (!scene || !this.get("cesiumModel")) {
+        const imageryLayer = this.get("cesiumModel");
+        if (!scene || !imageryLayer) {
           return;
         }
 
+        model.set("tilesLoading", true);
+
         let isCanceled = false;
         let removePostRenderListener = null;
-        let removeTileLoadListener = null;
+        let unwrapRequestImage = null;
 
-        const cleanup = function () {
+        const cleanupListeners = function () {
           if (isCanceled) {
             return;
           }
@@ -386,50 +448,58 @@ define([
             removePostRenderListener();
             removePostRenderListener = null;
           }
-          if (typeof removeTileLoadListener === "function") {
-            removeTileLoadListener();
-            removeTileLoadListener = null;
+          if (typeof unwrapRequestImage === "function") {
+            unwrapRequestImage();
+            unwrapRequestImage = null;
           }
-          model.displayReadyTrackerCancel = null;
+          model.loadingStateTrackerCancel = null;
         };
 
-        const maybeMarkDisplayed = function () {
+        const checkDisplayReady = function () {
           if (isCanceled) {
             return;
           }
           if (model.get("status") === "error") {
-            cleanup();
+            model.set("tilesLoading", false);
+            cleanupListeners();
             return;
           }
-          if (!model.isDisplayReadyInScene(scene)) {
-            return;
-          }
-          if (model.get("displayReady") !== true) {
+          if (
+            model.get("displayReady") !== true &&
+            model.isDisplayReadyInScene(scene)
+          ) {
             model.set("displayReady", true);
           }
-          cleanup();
         };
 
-        removePostRenderListener =
-          scene.postRender.addEventListener(maybeMarkDisplayed);
-        removeTileLoadListener =
-          scene.globe.tileLoadProgressEvent.addEventListener(
-            maybeMarkDisplayed,
-          );
-        this.displayReadyTrackerCancel = cleanup;
+        unwrapRequestImage = model.wrapRequestImageForPendingCount(
+          imageryLayer.imageryProvider,
+          function (pendingCount) {
+            if (isCanceled) {
+              return;
+            }
+            model.set("tilesLoading", pendingCount > 0);
+          },
+        );
 
-        maybeMarkDisplayed();
+        removePostRenderListener =
+          scene.postRender.addEventListener(checkDisplayReady);
+        this.loadingStateTrackerCancel = cleanupListeners;
+
+        checkDisplayReady();
       },
 
       /**
-       * Stop any pending display-ready watcher for this imagery layer.
+       * Stop any pending display-ready/loading-state watcher for this
+       * imagery layer.
        * @since 0.0.0
        */
-      stopDisplayReadyTracking: function () {
-        if (typeof this.displayReadyTrackerCancel === "function") {
-          this.displayReadyTrackerCancel();
+      stopLoadingStateTracking: function () {
+        if (typeof this.loadingStateTrackerCancel === "function") {
+          this.loadingStateTrackerCancel();
         }
-        this.displayReadyTrackerCancel = null;
+        this.loadingStateTrackerCancel = null;
+        this.set("tilesLoading", null);
       },
 
       /**

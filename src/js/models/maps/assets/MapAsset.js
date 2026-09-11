@@ -123,6 +123,10 @@ define([
           status: null,
           statusDetails: null,
           displayReady: null,
+          // Whether this layer currently has pending tile requests/processing
+          // (network or GPU work in flight). Null for asset types that don't
+          // track this (e.g. vector data), which fall back to displayReady.
+          tilesLoading: null,
           hideInLayerList: false,
           showOpacitySlider: true,
           clickFeatureAction: null,
@@ -751,27 +755,32 @@ define([
        * @since 2.21.0
        */
       resetStatus() {
-        this.stopDisplayReadyTracking();
+        this.stopLoadingStateTracking();
         this.set("status", "loading");
         this.set("statusDetails", null);
         this.set("displayReady", false);
+        this.set("tilesLoading", null);
       },
 
       /**
        * Start tracking when the asset is actually displayed in the active map
-       * scene. Subclasses can override to attach Cesium-type-specific
-       * listeners and set displayReady when visual content is on screen.
+       * scene, and whether it currently has pending tile requests/processing.
+       * Subclasses can override to attach Cesium-type-specific listeners that
+       * set displayReady after the first visual content is on screen, and
+       * keep tilesLoading in sync with real, ongoing loading work so the map
+       * loading indicator doesn't get stuck (e.g. when a visible layer has no
+       * tiles in the current view) or stop tracking after the first tile
+       * (e.g. while panning).
        * @param {object} _context Optional map-view context (e.g. scene).
        * @since 0.0.0
        */
-      startDisplayReadyTracking(_context) {},
+      startLoadingStateTracking(_context) {},
 
       /**
-       * Stop any in-flight display-ready listeners started by
-       * startDisplayReadyTracking.
+       * Stop any in-flight listeners started by startLoadingStateTracking.
        * @since 0.0.0
        */
-      stopDisplayReadyTracking() {},
+      stopLoadingStateTracking() {},
 
       /**
        * Checks if the asset information has been fetched and is ready to use.

@@ -14,6 +14,12 @@ define([], () => {
 
   /**
    * Return true when a tracked layer is enabled but not yet displayed.
+   * Layer types that track ongoing tile work (imagery, 3D tilesets) report
+   * it via `tilesLoading`, a continuously-updated pending-work signal, so
+   * loading isn't stuck when a visible layer has no tiles in view, and
+   * keeps reflecting later loading (e.g. while panning) after the first
+   * tile appears. Layer types that don't track `tilesLoading` (e.g. vector
+   * data) fall back to the one-time `displayReady` latch.
    * @param {Backbone.Model|object} layer The layer model to check.
    * @returns {boolean} Whether the layer is still loading.
    * @since 0.0.0
@@ -22,10 +28,12 @@ define([], () => {
     if (!shouldTrackLayerLoading(layer)) return false;
     if (layer?.get("visible") !== true) return false;
     if (layer.get("status") === "error") return false;
+    if (layer.get("status") === "loading") return true;
 
-    return (
-      layer.get("status") === "loading" || layer.get("displayReady") === false
-    );
+    const tilesLoading = layer.get("tilesLoading");
+    if (tilesLoading != null) return tilesLoading === true;
+
+    return layer.get("displayReady") === false;
   }
 
   /**

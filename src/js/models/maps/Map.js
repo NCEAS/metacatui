@@ -712,7 +712,7 @@ define([
           this.loadingStateLayerGroups.forEach((layers) => {
             this.stopListening(
               layers,
-              "change:status change:displayReady",
+              "change:status change:displayReady change:tilesLoading",
               this.handleLayerLoadingStateChange,
             );
             this.stopListening(
@@ -738,7 +738,7 @@ define([
         this.loadingStateLayerGroups.forEach((layers) => {
           this.listenTo(
             layers,
-            "change:status change:displayReady",
+            "change:status change:displayReady change:tilesLoading",
             this.handleLayerLoadingStateChange,
           );
           this.listenTo(

@@ -1716,8 +1716,8 @@ define([
         this.scene.primitives.add(cesiumModel);
         const mapAsset = cesiumModel?.mapAssetModel;
 
-        if (mapAsset?.startDisplayReadyTracking) {
-          mapAsset.startDisplayReadyTracking({ scene: this.scene });
+        if (mapAsset?.startLoadingStateTracking) {
+          mapAsset.startLoadingStateTracking({ scene: this.scene });
         }
         this.requestRender();
       },
@@ -1730,8 +1730,8 @@ define([
        */
       remove3DTileset(cesiumModel) {
         const mapAsset = cesiumModel?.mapAssetModel;
-        if (mapAsset?.stopDisplayReadyTracking) {
-          mapAsset.stopDisplayReadyTracking();
+        if (mapAsset?.stopLoadingStateTracking) {
+          mapAsset.stopLoadingStateTracking();
         }
         this.scene.primitives.remove(cesiumModel);
       },
@@ -1765,8 +1765,8 @@ define([
         this.sortImagery();
         const mapAsset = cesiumModel?.mapAssetModel;
 
-        if (mapAsset?.startDisplayReadyTracking) {
-          mapAsset.startDisplayReadyTracking({ scene: this.scene });
+        if (mapAsset?.startLoadingStateTracking) {
+          mapAsset.startLoadingStateTracking({ scene: this.scene });
         }
 
         this.requestRender();
@@ -1780,8 +1780,8 @@ define([
        */
       removeImagery(cesiumModel) {
         const mapAsset = cesiumModel?.mapAssetModel;
-        if (mapAsset?.stopDisplayReadyTracking) {
-          mapAsset.stopDisplayReadyTracking();
+        if (mapAsset?.stopLoadingStateTracking) {
+          mapAsset.stopLoadingStateTracking();
         }
         console.log("Removing imagery from map", cesiumModel);
         console.log("Imagery layers", this.scene.imageryLayers);

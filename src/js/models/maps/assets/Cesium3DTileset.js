@@ -448,32 +448,44 @@ define([
       },
 
       /**
-       * Start tracking visible tiles and mark this asset display-ready once a
-       * tile from this tileset is rendered.
+       * Start tracking visible tiles and pending tile work for this
+       * tileset. Marks displayReady after the first tile is rendered (a
+       * one-time latch), and continuously updates tilesLoading from
+       * Cesium's per-tileset loadProgress event so the map loading
+       * indicator reflects real, ongoing work rather than getting stuck
+       * when no tiles are ever in view, or stopping after the first tile
+       * while panning brings new tiles into view.
        * @since 0.0.0
        */
-      startDisplayReadyTracking: function () {
+      startLoadingStateTracking: function () {
         const model = this;
         const cesiumModel = model.get("cesiumModel");
-        this.stopDisplayReadyTracking();
+        this.stopLoadingStateTracking();
 
         if (!cesiumModel) {
           return;
         }
 
-        let removeListener = null;
-        let isCanceled = false;
+        model.set("tilesLoading", true);
 
-        const cleanup = function () {
+        let isCanceled = false;
+        let removeTileVisibleListener = null;
+        let removeLoadProgressListener = null;
+
+        const cleanupListeners = function () {
           if (isCanceled) {
             return;
           }
           isCanceled = true;
-          if (typeof removeListener === "function") {
-            removeListener();
-            removeListener = null;
+          if (typeof removeTileVisibleListener === "function") {
+            removeTileVisibleListener();
+            removeTileVisibleListener = null;
           }
-          model.displayReadyTrackerCancel = null;
+          if (typeof removeLoadProgressListener === "function") {
+            removeLoadProgressListener();
+            removeLoadProgressListener = null;
+          }
+          model.loadingStateTrackerCancel = null;
         };
 
         const markDisplayed = function () {
@@ -481,31 +493,50 @@ define([
             return;
           }
           if (model.get("cesiumModel") !== cesiumModel) {
-            cleanup();
+            cleanupListeners();
             return;
           }
           if (model.get("displayReady") !== true) {
             model.set("displayReady", true);
           }
-          cleanup();
         };
 
-        removeListener = cesiumModel.tileVisible.addEventListener(function () {
-          markDisplayed();
-        });
+        const updateTilesLoading = function (
+          numberOfPendingRequests,
+          numberOfTilesProcessing,
+        ) {
+          if (isCanceled) {
+            return;
+          }
+          if (model.get("cesiumModel") !== cesiumModel) {
+            cleanupListeners();
+            return;
+          }
+          model.set(
+            "tilesLoading",
+            numberOfPendingRequests > 0 || numberOfTilesProcessing > 0,
+          );
+        };
 
-        model.displayReadyTrackerCancel = cleanup;
+        removeTileVisibleListener =
+          cesiumModel.tileVisible.addEventListener(markDisplayed);
+        removeLoadProgressListener =
+          cesiumModel.loadProgress.addEventListener(updateTilesLoading);
+
+        model.loadingStateTrackerCancel = cleanupListeners;
       },
 
       /**
-       * Stop any pending display-ready watcher for this tileset.
+       * Stop any pending display-ready/loading-state watcher for this
+       * tileset.
        * @since 0.0.0
        */
-      stopDisplayReadyTracking: function () {
-        if (typeof this.displayReadyTrackerCancel === "function") {
-          this.displayReadyTrackerCancel();
+      stopLoadingStateTracking: function () {
+        if (typeof this.loadingStateTrackerCancel === "function") {
+          this.loadingStateTrackerCancel();
         }
-        this.displayReadyTrackerCancel = null;
+        this.loadingStateTrackerCancel = null;
+        this.set("tilesLoading", null);
       },
 
       /**
