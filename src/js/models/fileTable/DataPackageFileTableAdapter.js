@@ -946,6 +946,7 @@ define([
    * @param {string} [options.resolveBaseUrl] Base resolve URL for downloads
    * @param {DataPackageMember[]} [options.members] Members to render. Defaults
    * to the package's active members
+   * @param {number} [options.maxMembers] Maximum non-root members to render
    * @param {boolean} [options.showMetrics] Whether to populate metric fields
    * @param {Function} [options.formatName] Friendly format resolver
    * `(formatId, type) => string`
@@ -974,6 +975,7 @@ define([
       getRowMetric = null,
       getMemberStatus = null,
       showShare = true,
+      maxMembers,
       packageTitle = "",
       packageId = "",
       preferredDatasetRootId = "",
@@ -1001,13 +1003,28 @@ define([
     );
     // In dataset mode the root row represents this package's resource map.
     // Other resource maps are nested datasets and remain visible.
-    const rootResourceMap = datasetMode
-      ? allMembers.find((member) => getId(member) === packageId) ||
-        allMembers.find((member) => member?.isResourceMap())
-      : null;
-    const members = datasetMode
+    const rootResourceMapPid =
+      packageId ||
+      dataPackage?.rootResourceMapPid ||
+      dataPackage?.getRootResourceMapMember?.()?.pid;
+    const rootResourceMap = rootResourceMapPid
+      ? allMembers.find((member) => getId(member) === rootResourceMapPid)
+      : allMembers.find((member) => member?.isResourceMap());
+    const packageMembers = datasetMode
       ? allMembers.filter((member) => member !== rootResourceMap)
       : allMembers;
+    const primaryMetadataPid = dataPackage?.getPrimaryMetadataMember?.()?.pid;
+    const primaryMetadata = packageMembers.find(
+      (member) => getId(member) === primaryMetadataPid,
+    );
+    const orderedMembers = primaryMetadata
+      ? [
+          primaryMetadata,
+          ...packageMembers.filter((member) => member !== primaryMetadata),
+        ]
+      : packageMembers;
+    const members =
+      maxMembers == null ? orderedMembers : orderedMembers.slice(0, maxMembers);
 
     const fileRows = [];
     const folderPaths = new Set();

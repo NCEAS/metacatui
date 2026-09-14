@@ -131,6 +131,10 @@ define([
     fileCount(count) {
       return `${count} ${count === 1 ? "file" : "files"}`;
     },
+    fileDetailsMayBeUnavailable: "Some file details may be unavailable.",
+    fileMembersLimited(shown, total) {
+      return `Showing the first ${shown} of ${total} files. ${MESSAGES.fileDetailsMayBeUnavailable}`;
+    },
     filesAndFoldersColumn: "Files and Folders",
     fileListingNotices: {
       [FILE_LISTING_STATES.ambiguous]:
@@ -332,6 +336,8 @@ define([
         this.fileTableMetricsByPid = null;
         this.fileTableMetricsLoading = false;
         this.fileTableDownloadStates = new Map();
+        this.fileTableDetailsLimited = false;
+        this.fileTableMemberCount = 0;
         this.packageDownloadUrl = "";
         this.packageDownloadUnavailableReason = "";
         this.saveProvPending = false;
@@ -440,6 +446,7 @@ define([
         const { packageError } = packageLoad;
         this.resourceMap = packageLoad.resourceMap;
         this.resourceMapEditBlockers = packageLoad.resourceMapEditBlockers;
+        this.fileTableDetailsLimited = packageLoad.fileTableDetailsLimited;
 
         this.metadata = dataPackage.getPrimaryMetadataMember();
         if (
@@ -598,6 +605,7 @@ define([
         const resourceMap = dataPackage.getRootResourceMapMember();
         let resourceMapEditBlockers = [];
         let packageError = null;
+        let indexResult = null;
 
         if (!resourceMap && unauthorizedPackage) {
           packageError = {
@@ -611,9 +619,15 @@ define([
         }
 
         if (!resourceMap) {
-          return { resourceMap, resourceMapEditBlockers, packageError };
+          return {
+            resourceMap,
+            resourceMapEditBlockers,
+            packageError,
+            fileTableDetailsLimited: false,
+          };
         }
 
+        const maxMembers = MetacatUI.appModel.get("maxViewerPackageMembers");
         let useIndexFallback = false;
         try {
           const rmResult = await dataPackage.getManifestFromResourceMap({
@@ -625,9 +639,10 @@ define([
             packageError = rmResult;
             useIndexFallback = rmResult.reason !== "unauthorized";
           } else {
-            await dataPackage.getManifestFromIndex({
+            indexResult = await dataPackage.getManifestFromIndex({
               merge: true,
               onlyExisting: true,
+              rows: maxMembers,
               signal,
             });
             if (!this.isCurrentRender(renderId)) return null;
@@ -650,7 +665,11 @@ define([
 
         if (useIndexFallback) {
           try {
-            await dataPackage.getManifestFromIndex({ merge: true, signal });
+            indexResult = await dataPackage.getManifestFromIndex({
+              merge: true,
+              rows: maxMembers,
+              signal,
+            });
             if (!this.isCurrentRender(renderId)) return null;
           } catch (error) {
             if (isAbortError(error) || !this.isCurrentRender(renderId)) {
@@ -663,7 +682,16 @@ define([
           }
         }
 
-        return { resourceMap, resourceMapEditBlockers, packageError };
+        const indexDetails = indexResult?.details;
+        const fileTableDetailsLimited =
+          indexDetails?.total > indexDetails?.count;
+
+        return {
+          resourceMap,
+          resourceMapEditBlockers,
+          packageError,
+          fileTableDetailsLimited,
+        };
       },
 
       /**
@@ -992,10 +1020,21 @@ define([
        * @since 0.0.0
        */
       getFileListingNotice(state) {
-        const message = MESSAGES.fileListingNotices[state];
-        if (!message) return null;
+        const messages = [MESSAGES.fileListingNotices[state]].filter(Boolean);
+        const maxMembers = MetacatUI.appModel.get("maxViewerPackageMembers");
+        if (
+          this.dataPackage?.resourceManifestIsFetched === true &&
+          this.fileTableMemberCount > maxMembers
+        ) {
+          messages.push(
+            MESSAGES.fileMembersLimited(maxMembers, this.fileTableMemberCount),
+          );
+        } else if (this.fileTableDetailsLimited) {
+          messages.push(MESSAGES.fileDetailsMayBeUnavailable);
+        }
+        if (!messages.length) return null;
 
-        const notice = { noticeMessage: message };
+        const notice = { noticeMessage: messages.join(" ") };
         if (state === FILE_LISTING_STATES.recoverable) {
           notice.noticeActionId = FINISH_INTERRUPTED_SAVE_ACTION;
           notice.noticeActionLabel = MESSAGES.finishInterruptedSave;
@@ -1308,6 +1347,7 @@ define([
       packageNeedsIndexRefresh(dataPackage = this.dataPackage) {
         if (!dataPackage) return false;
         if (this.metadataHeaderNeedsIndexRefresh(dataPackage)) return true;
+        if (this.fileTableDetailsLimited) return false;
 
         return dataPackage.toArray().some((member) => {
           if (!member?.pid || member.isResourceMap?.()) return false;
@@ -1763,10 +1803,19 @@ define([
         const { dataPackage } = this;
         if (!dataPackage) return [];
 
-        const members = dataPackage.toArray();
-        const tableMembers = members.length
-          ? members
+        const activeMembers = dataPackage.members.getActiveMembers();
+        const members = activeMembers.length
+          ? activeMembers
           : [fallbackMember].filter(Boolean);
+        const rootResourceMap = dataPackage.getRootResourceMapMember();
+        const visibleMembers = members.filter(
+          (member) => member !== rootResourceMap,
+        );
+        const maxMembers = MetacatUI.appModel.get("maxViewerPackageMembers");
+        this.fileTableMemberCount = visibleMembers.length;
+        if (this.fileTableMemberCount > maxMembers) {
+          this.fileTableDetailsLimited = true;
+        }
         const resolveBaseUrl =
           MetacatUI.appModel.get("resolveServiceUrl") ||
           MetacatUI.appModel.get("objectServiceUrl") ||
@@ -1781,7 +1830,8 @@ define([
         const rows = DataPackageFileTableAdapter.buildRows(dataPackage, {
           mode: "viewer",
           resolveBaseUrl,
-          members: tableMembers,
+          members,
+          maxMembers,
           packageId,
           packageTitle,
           packageServiceUrl,
@@ -1828,12 +1878,7 @@ define([
         if (renderId && !this.isCurrentRender(renderId)) return this;
         const packageId = dataPackage.rootResourceMapPid || "";
         const notice = this.getFileListingNotice(options.fileListingState);
-        const fileCount = rows.filter(
-          (row) =>
-            row.kind !== "dataset" &&
-            row.kind !== "folder" &&
-            row.kind !== "resource-map",
-        ).length;
+        const fileCount = this.fileTableMemberCount;
         const fileCountLabel = MESSAGES.fileCount(fileCount);
         const title =
           options.title || MESSAGES.filesInDatasetTitle(fileCountLabel);
@@ -2079,6 +2124,14 @@ define([
         const renderOptions = this.getRenderOptions(options);
         const { signal } = renderOptions;
         const { dataPackage, fileTableView } = this;
+        if (this.fileTableDetailsLimited) {
+          this.scheduleFileTableIndexRefresh(
+            dataPackage,
+            fileTableView,
+            renderOptions,
+          );
+          return;
+        }
         try {
           const result = await DataPackageFileTableAdapter.enrichMembers(
             dataPackage,
@@ -2143,15 +2196,11 @@ define([
             return;
           }
           try {
-            await this.refreshMetadataTitleFromIndex(
-              dataPackage,
-              renderOptions,
-            );
-            await dataPackage.getManifestFromIndex({
-              merge: true,
-              onlyExisting: true,
-              signal,
-            });
+            const metadataTitleRefreshed =
+              await this.refreshMetadataTitleFromIndex(
+                dataPackage,
+                renderOptions,
+              );
             if (
               !this.isCurrentFileTable(
                 dataPackage,
@@ -2161,13 +2210,38 @@ define([
             ) {
               return;
             }
-            this.refreshMetadataHeaderFromPackage(dataPackage, renderOptions);
-            this.confirmPackageDownloadAll(dataPackage);
-            await this.mergeCurrentFileTableRows(
-              dataPackage,
-              fileTableView,
-              renderOptions,
-            );
+            if (this.fileTableDetailsLimited) {
+              if (metadataTitleRefreshed) {
+                await this.mergeCurrentFileTableRows(
+                  dataPackage,
+                  fileTableView,
+                  renderOptions,
+                );
+              }
+            } else {
+              await dataPackage.getManifestFromIndex({
+                merge: true,
+                onlyExisting: true,
+                rows: MetacatUI.appModel.get("maxViewerPackageMembers"),
+                signal,
+              });
+              if (
+                !this.isCurrentFileTable(
+                  dataPackage,
+                  fileTableView,
+                  renderOptions,
+                )
+              ) {
+                return;
+              }
+              this.refreshMetadataHeaderFromPackage(dataPackage, renderOptions);
+              this.confirmPackageDownloadAll(dataPackage);
+              await this.mergeCurrentFileTableRows(
+                dataPackage,
+                fileTableView,
+                renderOptions,
+              );
+            }
           } catch (error) {
             if (
               isAbortError(error) ||

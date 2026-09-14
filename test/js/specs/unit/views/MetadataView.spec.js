@@ -107,6 +107,7 @@ define([
           ({
             packageServiceUrl: "https://cn.test/package/",
             resolveServiceUrl: "https://cn.test/resolve/",
+            maxViewerPackageMembers: 3000,
             ...values,
           })[key] || "",
         isDOI: () => false,
@@ -650,7 +651,7 @@ define([
           });
 
         globalThis.MetacatUI.appModel = {
-          get: () => "",
+          get: (key) => (key === "maxViewerPackageMembers" ? 3000 : ""),
           set: sandbox.stub(),
           getDataPackageServiceOptions:
             AppModel.prototype.getDataPackageServiceOptions,
@@ -697,7 +698,50 @@ define([
         sinon.assert.calledOnceWithExactly(getManifestFromIndex, {
           merge: true,
           onlyExisting: true,
+          rows: 3000,
           signal: context.renderAbortController.signal,
+        });
+      });
+
+      [
+        {
+          title: "limits details when the index response is truncated",
+          maxRows: 5,
+          indexDetails: { count: 5, total: 8 },
+          expectedLimited: true,
+        },
+        {
+          title: "keeps details enabled when membership and index results fit",
+          maxRows: 5,
+          indexDetails: { count: 3, total: 3 },
+          expectedLimited: false,
+        },
+      ].forEach(({ title, maxRows, indexDetails, expectedLimited }) => {
+        it(title, async () => {
+          setPackageAppModel({ maxViewerPackageMembers: maxRows });
+          const dataPackage = createViewerDataPackage();
+          sandbox
+            .stub(dataPackage, "getManifestFromResourceMap")
+            .resolves({ ok: true });
+          const getManifestFromIndex = sandbox
+            .stub(dataPackage, "getManifestFromIndex")
+            .resolves({ ok: true, details: indexDetails });
+          const context = withRenderContext({ dataPackage });
+
+          const result = await MetadataView.prototype.loadPackageMembers.call(
+            context,
+            dataPackage,
+            false,
+            { renderId: "render-test" },
+          );
+
+          sinon.assert.calledOnceWithExactly(getManifestFromIndex, {
+            merge: true,
+            onlyExisting: true,
+            rows: maxRows,
+            signal: undefined,
+          });
+          result.fileTableDetailsLimited.should.equal(expectedLimited);
         });
       });
 
@@ -708,6 +752,9 @@ define([
           reason: "notFound",
           loadsIndex: true,
           fileListingState: "serverUnavailable",
+          maxRows: 2,
+          indexDetails: { count: 2, total: 3 },
+          expectedLimited: true,
         },
         {
           title:
@@ -715,8 +762,20 @@ define([
           reason: "unauthorized",
           loadsIndex: false,
           fileListingState: "permissionUnavailable",
+          maxRows: 3000,
+          indexDetails: undefined,
+          expectedLimited: false,
         },
-      ].forEach(({ title, reason, loadsIndex, fileListingState }) => {
+      ].forEach((testCase) => {
+        const {
+          title,
+          reason,
+          loadsIndex,
+          fileListingState,
+          maxRows,
+          indexDetails,
+          expectedLimited,
+        } = testCase;
         it(title, async () => {
           sandbox
             .stub(DataPackage.prototype, "resolveFromPid")
@@ -742,10 +801,10 @@ define([
             .resolves({ ok: false, reason });
           const getManifestFromIndex = sandbox
             .stub(DataPackage.prototype, "getManifestFromIndex")
-            .resolves({ ok: true });
+            .resolves({ ok: true, details: indexDetails });
 
           globalThis.MetacatUI.appModel = {
-            get: () => "",
+            get: (key) => (key === "maxViewerPackageMembers" ? maxRows : ""),
             set: sandbox.stub(),
             getDataPackageServiceOptions:
               AppModel.prototype.getDataPackageServiceOptions,
@@ -781,6 +840,7 @@ define([
           if (loadsIndex) {
             sinon.assert.calledOnceWithExactly(getManifestFromIndex, {
               merge: true,
+              rows: maxRows,
               signal: context.renderAbortController.signal,
             });
           } else {
@@ -789,6 +849,7 @@ define([
           context.insertPackageTable.firstCall.args[1].fileListingState.should.equal(
             fileListingState,
           );
+          context.fileTableDetailsLimited.should.equal(expectedLimited);
         });
       });
 
@@ -898,7 +959,7 @@ define([
           });
 
         globalThis.MetacatUI.appModel = {
-          get: () => "",
+          get: (key) => (key === "maxViewerPackageMembers" ? 3000 : ""),
           set: sandbox.stub(),
           getDataPackageServiceOptions:
             AppModel.prototype.getDataPackageServiceOptions,
@@ -936,6 +997,7 @@ define([
           .sources.should.contain("index");
         sinon.assert.calledOnceWithExactly(getManifestFromIndex, {
           merge: true,
+          rows: 3000,
           signal: context.renderAbortController.signal,
         });
         context.insertPackageTable.calledOnce.should.equal(true);
@@ -1032,6 +1094,78 @@ define([
         });
       });
 
+      it("discloses an authoritative limited subset for a data package without metadata", async () => {
+        const el = document.createElement("div");
+        const dataPackage = createViewerDataPackage({
+          members: [
+            {
+              pid: "data.1",
+              formatType: "DATA",
+              fileName: "first.csv",
+            },
+          ],
+          rootResourceMapPid: null,
+        });
+        const getManifest = sandbox
+          .stub(dataPackage, "getManifest")
+          .callsFake(async function getManifestFromResourceMap() {
+            this.members.add([
+              {
+                pid: "rm.1",
+                formatType: "RESOURCE",
+                formatId: RESOURCE_MAP_FORMAT_ID,
+              },
+              {
+                pid: "data.2",
+                formatType: "DATA",
+                fileName: "second.csv",
+              },
+              {
+                pid: "data.3",
+                formatType: "DATA",
+                fileName: "third.csv",
+              },
+            ]);
+            this.rootResourceMapPid = "rm.1";
+            this.resourceManifestIsFetched = true;
+          });
+        setPackageAppModel({ maxViewerPackageMembers: 2 });
+        const view = new MetadataView({ el });
+        view.pid = "data.1";
+        view.renderId = "render-test";
+        view.dataPackage = dataPackage;
+        view.fileTableDetailsLimited = false;
+        view.fileTableMetricsByPid = null;
+        view.metricsModel = null;
+        view.packageDownloadUrl = "";
+        view.subviews = [];
+        sandbox.stub(view, "hideLoading");
+        sandbox.stub(view, "insertBreadcrumbs");
+        sandbox.stub(view, "showViewAlert");
+        sandbox.stub(view, "confirmPackageDownloadAll");
+        sandbox.stub(view, "setupFileTableScrollIndicators");
+        sandbox.stub(view, "loadNestedPackageTitles");
+        sandbox.stub(view, "enrichFileTableMemberDetails");
+        sandbox.stub(view, "loadFileTableMetrics");
+
+        await view.handleDataInput(
+          { isData: true },
+          { renderId: "render-test" },
+        );
+
+        sinon.assert.calledOnceWithExactly(getManifest, {
+          index: false,
+          signal: undefined,
+        });
+        view.fileTableView.viewModel
+          .get("noticeMessage")
+          .should.equal(
+            "Showing the first 2 of 3 files. Some file details may be unavailable.",
+          );
+        view.fileTableView.remove();
+        view.remove();
+      });
+
       it("reports a retrieval error when the package manifest cannot load", async () => {
         const onModelError = sandbox.stub();
         const error = new Error("boom");
@@ -1055,6 +1189,61 @@ define([
     });
 
     describe("getFileTableRows()", () => {
+      it("passes all active members and the configured cap to the adapter", () => {
+        const dataPackage = createViewerDataPackage({
+          members: [
+            {
+              pid: "rm.1",
+              formatType: "RESOURCE",
+              formatId: RESOURCE_MAP_FORMAT_ID,
+            },
+            {
+              pid: "data.1",
+              formatType: "DATA",
+              fileName: "first.csv",
+            },
+            {
+              pid: "data.2",
+              formatType: "DATA",
+              fileName: "second.csv",
+            },
+            {
+              pid: "nested.rm",
+              formatType: "RESOURCE",
+              formatId: RESOURCE_MAP_FORMAT_ID,
+            },
+            { pid: "meta.1", formatType: "METADATA", title: "EML" },
+          ],
+        });
+        const buildRows = sandbox.spy(DataPackageFileTableAdapter, "buildRows");
+        setPackageAppModel({ maxViewerPackageMembers: 2 });
+        const context = {
+          dataPackage,
+          fileTableDetailsLimited: false,
+          fileTableMetricsByPid: null,
+          metricsModel: null,
+          packageDownloadUrl: "",
+        };
+
+        const rows = MetadataView.prototype.getFileTableRows.call(context);
+
+        buildRows.firstCall.args[1].members
+          .map((member) => member.pid)
+          .should.deep.equal([
+            "rm.1",
+            "data.1",
+            "data.2",
+            "nested.rm",
+            "meta.1",
+          ]);
+        buildRows.firstCall.args[1].maxMembers.should.equal(2);
+        rows
+          .map((row) => row.id)
+          .should.deep.equal(["dataset:rm.1", "meta.1", "data.1"]);
+        context.fileTableMemberCount.should.equal(4);
+        context.fileTableDetailsLimited.should.equal(true);
+      });
+
       it("omits Download All when its URL is unavailable", () => {
         const dataPackage = createViewerDataPackage();
         sandbox.stub(dataPackage, "hasPrivateMembers").returns(false);
@@ -1443,8 +1632,81 @@ define([
       });
     });
 
+    describe("getFileListingNotice()", () => {
+      it("discloses limited details without claiming members were omitted", () => {
+        setPackageAppModel({ maxViewerPackageMembers: 2 });
+        const context = {
+          fileTableDetailsLimited: true,
+          fileTableMemberCount: 2,
+        };
+
+        const notice = MetadataView.prototype.getFileListingNotice.call(
+          context,
+          null,
+        );
+
+        notice.noticeMessage.should.equal(
+          "Some file details may be unavailable.",
+        );
+      });
+
+      it("composes member truncation with the recovery notice and action", () => {
+        setPackageAppModel({ maxViewerPackageMembers: 2 });
+        const context = {
+          dataPackage: { resourceManifestIsFetched: true },
+          fileTableDetailsLimited: true,
+          fileTableMemberCount: 4,
+        };
+
+        const notice = MetadataView.prototype.getFileListingNotice.call(
+          context,
+          "recoverableLimitedListing",
+        );
+
+        notice.noticeMessage.should.equal(
+          "Additional files may appear once processing is complete. Showing the first 2 of 4 files. Some file details may be unavailable.",
+        );
+        notice.noticeActionId.should.equal("finish-interrupted-save");
+        notice.noticeActionLabel.should.equal("Finish interrupted save");
+      });
+
+      it("does not present index-only fallback membership as an exact total", () => {
+        const dataPackage = createViewerDataPackage({
+          members: [
+            {
+              pid: "rm.1",
+              formatType: "RESOURCE",
+              formatId: RESOURCE_MAP_FORMAT_ID,
+            },
+            { pid: "meta.1", formatType: "METADATA", title: "EML" },
+            { pid: "data.1", formatType: "DATA", fileName: "first.csv" },
+            { pid: "data.2", formatType: "DATA", fileName: "second.csv" },
+          ],
+        });
+        setPackageAppModel({ maxViewerPackageMembers: 2 });
+        const context = {
+          dataPackage,
+          fileTableDetailsLimited: true,
+          fileTableMetricsByPid: null,
+          metricsModel: null,
+          packageDownloadUrl: "",
+        };
+
+        MetadataView.prototype.getFileTableRows.call(context);
+        const notice = MetadataView.prototype.getFileListingNotice.call(
+          context,
+          "serverUnavailable",
+        );
+
+        notice.noticeMessage.should.equal(
+          "Some package details could not be loaded. The file list below may be incomplete. Some file details may be unavailable.",
+        );
+        context.fileTableMemberCount.should.equal(3);
+      });
+    });
+
     describe("insertPackageTable()", () => {
-      it("shows the package file count excluding resource maps", async () => {
+      it("shows the authoritative count and exact limited-subset notice", async () => {
         const el = document.createElement("div");
         el.innerHTML = `
           <div id="table-container"></div>
@@ -1471,10 +1733,12 @@ define([
             { pid: "meta.1", formatType: "METADATA", title: "EML" },
           ],
         });
-        setPackageAppModel();
+        dataPackage.resourceManifestIsFetched = true;
+        setPackageAppModel({ maxViewerPackageMembers: 2 });
         const context = withRenderContext({
           el,
           dataPackage,
+          fileTableDetailsLimited: true,
           tableContainer: "#table-container",
           subviews: [],
           model: { get: sandbox.stub().withArgs("title").returns("Dataset") },
@@ -1505,10 +1769,19 @@ define([
 
         context.fileTableView.viewModel
           .get("title")
-          .should.equal("2 files in this dataset");
+          .should.equal("3 files in this dataset");
         context.fileTableView.viewModel
           .get("subtitle")
           .should.equal("Package: rm.1");
+        context.fileTableView.viewModel
+          .get("noticeMessage")
+          .should.equal(
+            "Showing the first 2 of 3 files. Some file details may be unavailable.",
+          );
+        context.fileTableView.viewModel
+          .getRows()
+          .pluck("id")
+          .should.deep.equal(["dataset:rm.1", "meta.1", "nested.rm"]);
         context.teardownFileTableScrollIndicators();
         context.fileTableView.remove();
       });
@@ -2269,6 +2542,39 @@ define([
           .should.equal(true);
       });
 
+      it("does not refresh unresolved members when limited details have a complete header", () => {
+        const dataPackage = createViewerDataPackage({
+          members: [
+            {
+              pid: "rm.1",
+              formatType: "RESOURCE",
+              formatId: RESOURCE_MAP_FORMAT_ID,
+            },
+            {
+              pid: "meta.1",
+              formatType: "METADATA",
+              formatId: "eml://ecoinformatics.org/eml-2.2.0",
+              title: "Dataset",
+            },
+            {
+              pid: "data.1",
+              formatType: "DATA",
+              formatId: "text/csv",
+              isPlaceHolder_b: true,
+            },
+          ],
+        });
+        const context = {
+          fileTableDetailsLimited: true,
+          metadataHeaderNeedsIndexRefresh:
+            MetadataView.prototype.metadataHeaderNeedsIndexRefresh,
+        };
+
+        MetadataView.prototype.packageNeedsIndexRefresh
+          .call(context, dataPackage)
+          .should.equal(false);
+      });
+
       it("ignores resource maps, confirmed missing members, and denied reads", () => {
         const dataPackage = createViewerDataPackage({
           members: [
@@ -2315,6 +2621,32 @@ define([
     });
 
     describe("enrichFileTableMemberDetails()", () => {
+      it("skips bulk enrichment but delegates limited refresh work", async () => {
+        const enrichMembers = sandbox
+          .stub(DataPackageFileTableAdapter, "enrichMembers")
+          .resolves({ changed: false });
+        const context = withRenderContext({
+          dataPackage: {},
+          fileTableView: { viewModel: { mergeRows: sandbox.stub() } },
+          fileTableDetailsLimited: true,
+          isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
+          isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
+          refreshMetadataHeaderFromPackage: sandbox.stub(),
+          confirmPackageDownloadAll: sandbox.stub(),
+          scheduleFileTableIndexRefresh: sandbox.stub(),
+        });
+
+        await MetadataView.prototype.enrichFileTableMemberDetails.call(context);
+
+        sinon.assert.notCalled(enrichMembers);
+        sinon.assert.calledOnceWithExactly(
+          context.scheduleFileTableIndexRefresh,
+          context.dataPackage,
+          context.fileTableView,
+          { renderId: "render-test", signal: undefined },
+        );
+      });
+
       it("merges updated rows and schedules one index refresh after enrichment", async () => {
         const dataPackage = {};
         const enrichMembers = sandbox
@@ -2426,6 +2758,59 @@ define([
     });
 
     describe("scheduleFileTableIndexRefresh()", () => {
+      it("refreshes a limited metadata header without loading the package manifest", async () => {
+        const clock = sandbox.useFakeTimers();
+        const dataPackage = createViewerDataPackage({
+          members: [
+            {
+              pid: "rm.1",
+              formatType: "RESOURCE",
+              formatId: RESOURCE_MAP_FORMAT_ID,
+            },
+            {
+              pid: "meta.1",
+              formatType: "METADATA",
+              formatId: "eml://ecoinformatics.org/eml-2.2.0",
+              title: "",
+            },
+          ],
+        });
+        const refreshMetadataTitleFromIndex = sandbox.stub().callsFake(() => {
+          dataPackage.getMember("meta.1").title = "Dataset";
+          return true;
+        });
+        const context = withRenderContext({
+          dataPackage,
+          fileTableView: { viewModel: { mergeRows: sandbox.stub() } },
+          fileTableDetailsLimited: true,
+          fileTableIndexRefreshTimer: null,
+          isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
+          isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
+          metadataHeaderNeedsIndexRefresh:
+            MetadataView.prototype.metadataHeaderNeedsIndexRefresh,
+          packageNeedsIndexRefresh:
+            MetadataView.prototype.packageNeedsIndexRefresh,
+          refreshMetadataTitleFromIndex,
+          refreshMetadataHeaderFromPackage: sandbox.stub(),
+          confirmPackageDownloadAll: sandbox.stub(),
+          mergeCurrentFileTableRows: sandbox.stub().resolves(true),
+          scheduleFileTableIndexRefresh:
+            MetadataView.prototype.scheduleFileTableIndexRefresh,
+        });
+        dataPackage.getManifestFromIndex = sandbox.stub();
+
+        context.scheduleFileTableIndexRefresh(
+          dataPackage,
+          context.fileTableView,
+        );
+        await clock.runAllAsync();
+
+        sinon.assert.calledOnce(refreshMetadataTitleFromIndex);
+        sinon.assert.notCalled(dataPackage.getManifestFromIndex);
+        sinon.assert.calledOnce(context.mergeCurrentFileTableRows);
+        expect(context.fileTableIndexRefreshTimer).to.equal(null);
+      });
+
       describe("download availability after enrichment", () => {
         let clock;
         let dataPackage;
@@ -2554,7 +2939,7 @@ define([
           }),
           hasPrivateMembers: () => attempts < 2,
         };
-        setPackageAppModel();
+        setPackageAppModel({ maxViewerPackageMembers: 7 });
         const fileTableView = { viewModel: { mergeRows: sandbox.stub() } };
         const context = withRenderContext({
           dataPackage,
@@ -2584,9 +2969,12 @@ define([
         await clock.tickAsync(3000);
 
         dataPackage.getManifestFromIndex.calledTwice.should.equal(true);
-        dataPackage.getManifestFromIndex.firstCall.args[0].should.include({
-          merge: true,
-          onlyExisting: true,
+        dataPackage.getManifestFromIndex.getCalls().forEach((call) => {
+          call.args[0].should.include({
+            merge: true,
+            onlyExisting: true,
+            rows: 7,
+          });
         });
         context.refreshMetadataHeaderFromPackage.calledTwice.should.equal(true);
         context.refreshMetadataHeaderFromPackage.firstCall.args[0].should.equal(

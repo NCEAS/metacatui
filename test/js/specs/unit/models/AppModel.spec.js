@@ -2,6 +2,10 @@ define(["models/AppModel"], (AppModel) => {
   const should = chai.should();
 
   describe("AppModel", () => {
+    it("defaults the viewer package member limit to 3000", () => {
+      AppModel.prototype.defaults.maxViewerPackageMembers.should.equal(3000);
+    });
+
     describe("getDataONEMNAPIs", () => {
       const makeContext = ({
         d1Service = "/d1/mn/v2",

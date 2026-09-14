@@ -499,6 +499,15 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           maxEditorPackageMembers: 700,
 
           /**
+           * Maximum number of package members displayed in the dataset viewer. The
+           * viewer also uses this value to limit package member Solr requests.
+           * @type {number}
+           * @default 3000
+           * @since 0.0.0
+           */
+          maxViewerPackageMembers: 3000,
+
+          /**
            * The text of the Save button in the dataset editor.
            * @type {string}
            * @default "Save dataset"

@@ -761,7 +761,7 @@ define([
 
     describe("dataset framing (packageTitle/packageId)", () => {
       const datasetMembers = () => [
-        member({ pid: "rm.1", formatType: "RESOURCE" }),
+        member({ pid: "resource_map_1", formatType: "RESOURCE" }),
         member({ pid: "data.1", formatType: "DATA", fileName: "a.csv" }),
         member({ pid: "meta.1", formatType: "METADATA", title: "EML doc" }),
       ];
@@ -897,6 +897,102 @@ define([
           .should.deep.equal(["dataset:resource_map_1", "meta.1", "data.1"]);
         // Nested rows are indented one level below the root.
         row(rows, "meta.1").level.should.equal(1);
+      });
+
+      it("places primary metadata before other metadata without a member cap", () => {
+        const dataPackage = new DataPackage({
+          members: [
+            { pid: "root.rm", formatType: "RESOURCE" },
+            { pid: "meta.2", formatType: "METADATA", title: "Other" },
+            { pid: "data.1", formatType: "DATA", fileName: "data.csv" },
+            { pid: "meta.1", formatType: "METADATA", title: "Primary" },
+            { pid: "meta.3", formatType: "METADATA", title: "Other" },
+          ],
+        });
+        dataPackage.rootResourceMapPid = "root.rm";
+        dataPackage.primaryMetadataPid = "meta.1";
+
+        const rows = Adapter.buildRows(dataPackage, {
+          mode: "viewer",
+          packageId: "root.rm",
+          packageTitle: "Root Dataset",
+        });
+
+        rows
+          .map((candidate) => candidate.id)
+          .should.deep.equal([
+            "dataset:root.rm",
+            "meta.1",
+            "meta.2",
+            "meta.3",
+            "data.1",
+          ]);
+      });
+
+      it("applies an optional member cap after prioritizing primary metadata", () => {
+        const dataPackage = new DataPackage({
+          members: [
+            { pid: "root.rm", formatType: "RESOURCE" },
+            { pid: "data.1", formatType: "DATA", fileName: "first.csv" },
+            { pid: "data.2", formatType: "DATA", fileName: "second.csv" },
+            { pid: "meta.1", formatType: "METADATA", title: "EML" },
+          ],
+        });
+        dataPackage.rootResourceMapPid = "root.rm";
+        dataPackage.primaryMetadataPid = "meta.1";
+
+        const rows = Adapter.buildRows(dataPackage, {
+          mode: "viewer",
+          members: dataPackage.members.getActiveMembers(),
+          maxMembers: 2,
+          packageId: "root.rm",
+          packageTitle: "Root Dataset",
+        });
+
+        rows
+          .map((candidate) => candidate.id)
+          .should.deep.equal(["dataset:root.rm", "meta.1", "data.1"]);
+      });
+
+      it("does not hide a nested resource map when a member subset omits the root", () => {
+        const dataPackage = new DataPackage({
+          members: [
+            { pid: "root.rm", formatType: "RESOURCE" },
+            {
+              pid: "nested.rm",
+              formatType: "RESOURCE",
+              title: "Nested Dataset",
+            },
+            { pid: "data.1", formatType: "DATA", fileName: "data.csv" },
+          ],
+        });
+        dataPackage.rootResourceMapPid = "root.rm";
+
+        const rows = Adapter.buildRows(dataPackage, {
+          mode: "viewer",
+          members: [
+            dataPackage.getMember("nested.rm"),
+            dataPackage.getMember("data.1"),
+          ],
+          packageId: "root.rm",
+          packageTitle: "Root Dataset",
+        });
+
+        rows
+          .map((candidate) => candidate.id)
+          .should.deep.equal(["dataset:root.rm", "nested.rm", "data.1"]);
+      });
+
+      it("hides the root resource map when only a package title is provided", () => {
+        const rows = Adapter.buildRows(null, {
+          mode: "viewer",
+          members: datasetMembers(),
+          packageTitle: "My Dataset",
+        });
+
+        rows
+          .some((candidate) => candidate.kind === "resource-map")
+          .should.equal(false);
       });
 
       it("orders root children as metadata, nested packages, folders, then files", () => {
