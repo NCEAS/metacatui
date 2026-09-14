@@ -2345,6 +2345,49 @@ define([
       sinon.assert.calledOnce(rootDataPackage.upload);
     });
 
+    it("waits for background file enrichment before preparing a save", async function () {
+      // Otherwise enrichment can change metadata after upload contents are prepared.
+      let finishEnrichment;
+      const enrichment = new Promise((resolve) => {
+        finishEnrichment = resolve;
+      });
+      const rootDataPackage = createEditorRootDataPackage();
+      sandbox.stub(rootDataPackage, "upload").resolves({ outcome: "success" });
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        appModel: { get: sandbox.stub().returns("") },
+        appUserModel: { get: sandbox.stub().returns([]) },
+        rootDataPackage,
+      };
+      view.setElement($('<div><div id="data-package-container"></div></div>'));
+      sandbox.stub(view, "renderMetadata");
+      sandbox.stub(view, "getEditorFileTableRows").returns([]);
+      sandbox.stub(view, "renderFileTableStartMessage");
+      sandbox.stub(view, "toggleControls");
+      sandbox.stub(view, "toggleEnableControls");
+      sandbox.stub(view, "enrichEditorFileTableMembers").returns(enrichment);
+      view.renderDataPackage();
+      let savingStarted;
+      const savingState = new Promise((resolve) => {
+        savingStarted = resolve;
+      });
+      sandbox.stub(view, "showSaving").callsFake(savingStarted);
+      sandbox.stub(view, "syncMetadataForPackageSave").resolves();
+      sandbox.stub(view, "saveSuccess");
+
+      const saving = view.save({ target: $("<button></button>")[0] });
+      await savingState;
+
+      sinon.assert.notCalled(view.syncMetadataForPackageSave);
+      sinon.assert.notCalled(rootDataPackage.upload);
+
+      finishEnrichment();
+      await saving;
+
+      sinon.assert.calledOnce(view.syncMetadataForPackageSave);
+      sinon.assert.calledOnce(rootDataPackage.upload);
+    });
+
     it("skips entity sync and pre-upload refresh for metadata-only saves", async function () {
       const metadataMember = {
         pid: "metadata.1",

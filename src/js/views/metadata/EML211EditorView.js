@@ -440,6 +440,7 @@ define([
         this.packageSaveReloadMessage = null;
         this.entityByMemberPid = null;
         this.metadataEntitySyncNeeded = true;
+        this.fileTableEnrichmentPromise = null;
         this.renderId = null;
         this.renderAbortController = null;
         return this;
@@ -1488,7 +1489,7 @@ ${supportDetails}`;
         this.subviews.push(this.fileTableView);
         this.toggleControls();
         this.toggleEnableControls();
-        this.enrichEditorFileTableMembers({
+        this.fileTableEnrichmentPromise = this.enrichEditorFileTableMembers({
           renderId: this.renderId,
           signal: this.renderAbortController?.signal,
         });
@@ -3168,6 +3169,10 @@ ${supportDetails}`;
         this.setFileTableDisabled(true);
 
         try {
+          // Make sure the file table enrichment has completed before proceeding
+          // with the save, otherwise it can result in metadata changes being
+          // missed
+          await this.fileTableEnrichmentPromise;
           await this.syncMetadataForPackageSave();
           const changedMembers =
             MetacatUI.rootDataPackage.getChangedMembers?.() || [];
