@@ -2,15 +2,19 @@ define([
   "jquery",
   "backbone",
   "views/MetadataDocumentView",
+  "models/dataPackage/DataPackage",
   "models/dataONEServices/ObjectService",
   "models/resourceMap/RDFGraph",
+  "models/viewService/ViewServiceDoc",
   "common/QueryService",
 ], (
   $,
   Backbone,
   MetadataDocumentView,
+  DataPackage,
   ObjectService,
   RDFGraph,
+  ViewServiceDoc,
   QueryService,
 ) => {
   const expect = chai.expect;
@@ -324,6 +328,40 @@ define([
         globalThis.MetacatUI = originalMetacatUI;
       });
 
+      const renderTestView = async ({
+        dataPackage = new DataPackage(),
+        indexDocuments = [{ id: "metadata.1", title: "Indexed dataset" }],
+        viewServiceHtml,
+      } = {}) => {
+        const view = new MetadataDocumentView({
+          el: document.createElement("div"),
+          pid: "metadata.1",
+          dataPackage,
+        });
+        if (viewServiceHtml) {
+          sandbox
+            .stub(view.viewService, "download")
+            .resolves(
+              ViewServiceDoc.fromHtml(viewServiceHtml, { pid: "metadata.1" }),
+            );
+        } else {
+          sandbox
+            .stub(view.viewService, "download")
+            .rejects(new Error("offline"));
+          sandbox.stub(QueryService, "queryWithFetch").resolves({});
+          sandbox.stub(QueryService, "parseResponse").returns(indexDocuments);
+        }
+        sandbox.stub(view, "initializeAttributeListTables");
+        sandbox.stub(view, "renderAltIdentifierHelpText");
+        sandbox.stub(view, "insertSpatialCoverageMap");
+        sandbox.stub(view, "insertCopiables");
+        sandbox.stub(view, "createAnnotationViews");
+        sandbox.stub(view, "insertMarkdownViews");
+
+        await view.render();
+        return view;
+      };
+
       it("fetches full index metadata when seeded results only have manifest fields", async () => {
         const view = new MetadataDocumentView({
           el: document.createElement("div"),
@@ -508,6 +546,119 @@ define([
         );
         sinon.assert.calledOnce(insertDataDetails);
         sinon.assert.calledOnce(checkForProv);
+      });
+
+      it("adds fallback file sections after package membership loads", async () => {
+        const dataPackage = new DataPackage();
+        const view = await renderTestView({ dataPackage });
+        expect(view.el.querySelectorAll(".entitydetails")).to.have.lengthOf(0);
+
+        dataPackage.members.add({
+          pid: "data.1",
+          fileName: "data.csv",
+          formatType: "DATA",
+        });
+        view.enhanceWithPackage({ editModeOn: false });
+
+        expect(view.el.querySelectorAll(".entitydetails")).to.have.lengthOf(1);
+        expect(
+          view.el.querySelectorAll(".data-interaction-buttons"),
+        ).to.have.lengthOf(1);
+      });
+
+      it("adds fallback file sections without indexed metadata", async () => {
+        const dataPackage = new DataPackage();
+        const view = await renderTestView({
+          dataPackage,
+          indexDocuments: [],
+        });
+        expect(view.el.querySelector("#metadata-index-details")).to.equal(null);
+
+        dataPackage.members.add({
+          pid: "data.1",
+          fileName: "data.csv",
+          formatType: "DATA",
+        });
+        expect(() =>
+          view.enhanceWithPackage({ editModeOn: false }),
+        ).to.not.throw();
+
+        expect(
+          view.el.querySelectorAll("#Metadata .entitydetails"),
+        ).to.have.lengthOf(1);
+      });
+
+      it("does not duplicate fallback file sections", async () => {
+        const dataPackage = new DataPackage({
+          members: [
+            {
+              pid: "data.1",
+              fileName: "data.csv",
+              formatType: "DATA",
+            },
+          ],
+        });
+        const view = await renderTestView({ dataPackage });
+        expect(view.el.querySelectorAll(".entitydetails")).to.have.lengthOf(1);
+
+        view.enhanceWithPackage({ editModeOn: false });
+
+        expect(view.el.querySelectorAll(".entitydetails")).to.have.lengthOf(1);
+      });
+
+      it("keeps fallback sections distinct when file names match", async () => {
+        const dataPackage = new DataPackage({
+          members: [
+            {
+              pid: "data.1",
+              fileName: "shared.csv",
+              formatType: "DATA",
+            },
+          ],
+        });
+        const view = await renderTestView({ dataPackage });
+
+        dataPackage.members.add({
+          pid: "data.2",
+          fileName: "shared.csv",
+          formatType: "DATA",
+        });
+        view.enhanceWithPackage({ editModeOn: false });
+
+        const sections = [...view.el.querySelectorAll(".entitydetails")];
+        const secondContainer = view.findEntityDetailsContainer({
+          pid: "data.2",
+          fileName: "shared.csv",
+        });
+        expect(secondContainer[0]).to.equal(sections[1]);
+        expect(sections.map((section) => section.dataset.id)).to.deep.equal([
+          "data.1",
+          "data.2",
+        ]);
+        sections.forEach((section) => {
+          expect(
+            section.querySelectorAll(".data-interaction-buttons"),
+          ).to.have.lengthOf(1);
+        });
+      });
+
+      it("does not add fallback sections to View Service documents", async () => {
+        const dataPackage = new DataPackage({
+          members: [
+            {
+              pid: "data.1",
+              fileName: "data.csv",
+              formatType: "DATA",
+            },
+          ],
+        });
+        const view = await renderTestView({
+          dataPackage,
+          viewServiceHtml: '<article id="Metadata">Dataset</article>',
+        });
+        view.enhanceWithPackage({ editModeOn: false });
+
+        expect(view.el.querySelectorAll(".entitydetails")).to.have.lengthOf(0);
       });
     });
 

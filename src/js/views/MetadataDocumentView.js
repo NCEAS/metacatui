@@ -248,6 +248,7 @@ define([
           this.scheduleProvChartRedraw,
         );
         this.dataPackage.addViewServiceEntities(this.metadataViewDoc.entities);
+        this.insertMissingFallbackFileSections();
         this.insertDataDetails();
         if (this.el.isConnected) this.checkForProv();
         this.packageEnhanced = true;
@@ -321,6 +322,7 @@ define([
           metadataIndexView.insertDataDetails();
         }
 
+        this.metadataIndexView = metadataIndexView;
         return ViewServiceDoc.fromHtml(metadataIndexView.el.outerHTML, {
           pid: this.pid,
           resolveBaseUrl: this.resolveBaseUrl,
@@ -762,6 +764,14 @@ define([
         if (!lookup.id) return false;
 
         const root = containerEl ? $(containerEl) : this.$el;
+        if (this.metadataIndexView) {
+          const section = ViewServiceDoc.findEntitySectionByDataId(
+            root[0] || this.el,
+            ViewServiceDoc.normalizeIdentifier(lookup.id),
+          );
+          if (section) return $(section);
+        }
+
         const section = this.metadataViewDoc.findAndAnnotateEntitySection({
           pid: lookup.id,
           fileName: lookup.fileName,
@@ -920,6 +930,31 @@ define([
           const entityDetails = this.findEntityDetailsContainer(id);
           if (entityDetails) entityDetails.toggleClass(CLASS_NAMES.active);
         }
+      },
+
+      /**
+       * Add file sections omitted when index fallback rendering finished before
+       * package membership loaded.
+       * @returns {void}
+       */
+      insertMissingFallbackFileSections() {
+        if (!this.metadataIndexView) return;
+
+        const dataMembers = this.dataPackage?.getData?.() || [];
+        const renderedPids = new Set(this.metadataViewDoc.entityPids);
+        const missingMembers = dataMembers.filter(
+          (member) =>
+            !renderedPids.has(ViewServiceDoc.normalizeIdentifier(member.pid)),
+        );
+        if (!missingMembers.length) return;
+
+        const container =
+          this.metadataContainer.querySelector("#metadata-index-details") ||
+          this.metadataContainer.querySelector(`#${VIEW_SERVICE_IDS.metadata}`);
+        this.metadataIndexView.insertDataDetails({
+          dataMembers: missingMembers,
+          container,
+        });
       },
 
       /**

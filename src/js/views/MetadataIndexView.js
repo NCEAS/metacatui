@@ -382,11 +382,15 @@ define([
 
     /**
      * Append one detail section for each data package member.
+     * @param {object} [options] Rendering options
+     * @param {DataPackageMember[]} [options.dataMembers] Members to render
+     * @param {Element} [options.container] Element receiving the sections
      * @returns {void}
      */
-    insertDataDetails() {
-      const dataMembers = this.dataPackage?.getData?.() || [];
-      const container = this.metadataDetailsEl || this.el;
+    insertDataDetails({
+      dataMembers = this.dataPackage?.getData?.() || [],
+      container = this.metadataDetailsEl || this.el,
+    } = {}) {
       dataMembers.forEach((member) => {
         const pid = member?.pid || "";
         const fileName =
