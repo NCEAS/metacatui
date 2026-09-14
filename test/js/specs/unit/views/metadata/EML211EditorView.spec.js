@@ -302,6 +302,7 @@ define([
       model.set("title", "Dataset title");
 
       const firstRows = view.getEditorFileTableRows();
+      rootDataPackage.members.replacePid("resource_map_1", "resource_map_2");
       rootDataPackage.rootResourceMapPid = "resource_map_2";
       const nextRows = view.getEditorFileTableRows();
 
