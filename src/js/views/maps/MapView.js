@@ -29,7 +29,7 @@ define([
   // CSS
   MapCSS,
 ) => {
-  const LOADING_INDICATOR_DELAY_MS = 500;
+  const LOADING_INDICATOR_DELAY_MS = 1000;
 
   const CLASS_NAMES = {
     loadingIndicator: "map-view__loading-indicator",
