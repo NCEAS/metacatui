@@ -443,15 +443,42 @@ define([
     return { pkg, checkAll, error };
   }
 
+  /**
+   * Stub upload preparation and execution for a concurrency wiring test.
+   * @param {DataPackage} pkg Package whose uploader should be stubbed
+   * @param {string} preparationMethod Preparation method name
+   * @returns {{prepare: object, execute: object}} Sinon stubs
+   */
+  function stubUploadExecution(pkg, preparationMethod) {
+    const prepare = state.sandbox
+      .stub(pkg._uploader, preparationMethod)
+      .resolves([]);
+    const execute = state.sandbox
+      .stub(pkg._uploader, "_executeUploadActions")
+      .resolves({ outcome: "done" });
+    return { prepare, execute };
+  }
+
   describe("DataPackage upload preparation", () => {
+    it("uses package full-save concurrency by default", async () => {
+      const pkg = new DataPackage({ uploadMaxConcurrent: 2 });
+      const { prepare, execute } = stubUploadExecution(
+        pkg,
+        "_prepareUploadActions",
+      );
+
+      await pkg.upload();
+
+      prepare.firstCall.args[0].maxConcurrent.should.equal(2);
+      execute.firstCall.args[1].maxConcurrent.should.equal(2);
+    });
+
     it("uses supplied full-save concurrency", async () => {
-      const pkg = new DataPackage();
-      const prepare = state.sandbox
-        .stub(pkg._uploader, "_prepareUploadActions")
-        .resolves([]);
-      const execute = state.sandbox
-        .stub(pkg._uploader, "_executeUploadActions")
-        .resolves({ outcome: "done" });
+      const pkg = new DataPackage({ uploadMaxConcurrent: 5 });
+      const { prepare, execute } = stubUploadExecution(
+        pkg,
+        "_prepareUploadActions",
+      );
 
       await pkg.upload({ maxConcurrent: "2" });
 
@@ -459,18 +486,40 @@ define([
       execute.firstCall.args[1].maxConcurrent.should.equal(2);
     });
 
+    it("uses package eager-upload concurrency by default", async () => {
+      const member = new DataPackageMember({
+        pid: "data.eager",
+        formatType: "DATA",
+      });
+      const pkg = new DataPackage({
+        members: [member],
+        uploadMaxConcurrent: 3,
+      });
+      const { prepare, execute } = stubUploadExecution(
+        pkg,
+        "_prepareEagerUploadActions",
+      );
+
+      const [result] = await pkg._uploader.uploadAddedMembers([member]);
+
+      result.outcome.should.equal("done");
+      prepare.firstCall.args[1].maxConcurrent.should.equal(3);
+      execute.firstCall.args[1].maxConcurrent.should.equal(3);
+    });
+
     it("uses supplied eager-upload concurrency", async () => {
       const member = new DataPackageMember({
         pid: "data.eager",
         formatType: "DATA",
       });
-      const pkg = new DataPackage({ members: [member] });
-      const prepare = state.sandbox
-        .stub(pkg._uploader, "_prepareEagerUploadActions")
-        .resolves([]);
-      const execute = state.sandbox
-        .stub(pkg._uploader, "_executeUploadActions")
-        .resolves({ outcome: "done" });
+      const pkg = new DataPackage({
+        members: [member],
+        uploadMaxConcurrent: 5,
+      });
+      const { prepare, execute } = stubUploadExecution(
+        pkg,
+        "_prepareEagerUploadActions",
+      );
 
       const [result] = await pkg._uploader.uploadAddedMembers([member], {
         maxConcurrent: "3",
@@ -479,6 +528,22 @@ define([
       result.outcome.should.equal("done");
       prepare.firstCall.args[1].maxConcurrent.should.equal(3);
       execute.firstCall.args[1].maxConcurrent.should.equal(3);
+    });
+
+    it("uses package retry concurrency by default", async () => {
+      const pkg = new DataPackage({ uploadMaxConcurrent: 2 });
+      state.sandbox.stub(pkg._uploader, "assertUploadPreconditions");
+      const execute = state.sandbox
+        .stub(pkg._uploader, "_executeUploadActions")
+        .resolves({ outcome: "done" });
+      const previous = new UploadResult([], {
+        dataPackage: pkg,
+        draftRevision: pkg.draftRevision,
+      });
+
+      await pkg.retryUpload(previous);
+
+      execute.firstCall.args[1].maxConcurrent.should.equal(2);
     });
 
     it("saves one private-file System Metadata change without object or ResourceMap writes", async () => {

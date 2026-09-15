@@ -4113,6 +4113,7 @@ define([
                 resolveServiceUrl: "https://resolve.test/",
                 objectServiceUrl: "https://object.test/",
                 metaServiceUrl: "https://meta.test/",
+                batchSizeFetch: 6,
               })[key] || "",
           ),
         };
@@ -4131,7 +4132,9 @@ define([
 
         await MetadataView.prototype.repairDataset.call(context, "meta.1");
 
-        sinon.assert.calledOnceWithExactly(recover, "meta.1");
+        sinon.assert.calledOnceWithExactly(recover, "meta.1", {
+          maxConcurrent: 6,
+        });
       });
 
       it("does not update recovery controls after a newer render starts", async () => {

@@ -3989,7 +3989,10 @@ ${supportDetails}`;
             sysMetaService: new SysMetaService(
               serviceOptions.sysMetaServiceOptions,
             ),
-          }).recover(metadataPid, recoveryOptions);
+          }).recover(metadataPid, {
+            maxConcurrent: serviceOptions.fetchMaxConcurrent,
+            ...recoveryOptions,
+          });
           if (result?.recovered) {
             controls.removeAttr("aria-busy");
             status.text(" Repair complete. Reloading...");

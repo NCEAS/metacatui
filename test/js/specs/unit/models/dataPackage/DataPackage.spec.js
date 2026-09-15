@@ -155,13 +155,17 @@ define([
   /**
    * Build a viewer package whose members resolve SysMeta through a shared
    * concurrency tracker, so a test can assert the fetch honours its limit.
-   * @param {string[]} [pids] Data member PIDs
+   * @param {object} [options] DataPackage options
    * @returns {{ pkg: DataPackage, concurrency: object }} Package and tracker
    */
-  function trackedSysMetaPackage(
-    pids = ["data.1", "data.2", "data.3", "data.4"],
-  ) {
-    const pkg = buildPackage(pids.map((pid) => ({ pid, formatType: "DATA" })));
+  function trackedSysMetaPackage(options = {}) {
+    const pkg = new DataPackage({
+      ...options,
+      members: ["data.1", "data.2", "data.3", "data.4"].map((pid) => ({
+        pid,
+        formatType: "DATA",
+      })),
+    });
     pkg.sysMetaService = {};
     const concurrency = trackConcurrency();
     pkg.members.toArray().forEach((member) => {
@@ -170,6 +174,28 @@ define([
       });
     });
     return { pkg, concurrency };
+  }
+
+  /**
+   * Track System Metadata downloads for an editable package.
+   * @param {DataPackage} pkg Package whose service should be tracked
+   * @returns {object} Concurrency tracker
+   */
+  function trackEditableSysMetaFetches(pkg) {
+    const concurrency = trackConcurrency();
+    pkg.sysMetaService.download = concurrency.track((pid) => {
+      const member = pkg.requireMember(pid);
+      return new SystemMetadata({
+        identifier: pid,
+        formatId: member.formatId,
+        size: 4,
+        checksum: "checksum",
+        checksumAlgorithm: "MD5",
+        submitter: "uid=test",
+        rightsHolder: "uid=test",
+      });
+    });
+    return concurrency;
   }
 
   describe("DataPackage", () => {
@@ -639,8 +665,21 @@ define([
       });
 
       it("uses supplied SysMeta fetch concurrency", async () => {
-        const { pkg, concurrency } = trackedSysMetaPackage();
+        const { pkg, concurrency } = trackedSysMetaPackage({
+          fetchMaxConcurrent: 3,
+        });
         const failures = await pkg.fetchSysMeta(null, { maxConcurrent: "2" });
+
+        failures.should.deep.equal([]);
+        concurrency.max.should.equal(2);
+      });
+
+      it("uses package SysMeta fetch concurrency by default", async () => {
+        const { pkg, concurrency } = trackedSysMetaPackage({
+          fetchMaxConcurrent: 2,
+        });
+
+        const failures = await pkg.fetchSysMeta();
 
         failures.should.deep.equal([]);
         concurrency.max.should.equal(2);
@@ -2043,20 +2082,9 @@ define([
 
       it("uses supplied package access-policy SysMeta fetch concurrency", async () => {
         const { pkg } = buildEditablePackage();
-        const concurrency = trackConcurrency();
+        const concurrency = trackEditableSysMetaFetches(pkg);
         const progress = [];
-        pkg.sysMetaService.download = concurrency.track((pid) => {
-          const member = pkg.requireMember(pid);
-          return new SystemMetadata({
-            identifier: pid,
-            formatId: member.formatId,
-            size: 4,
-            checksum: "checksum",
-            checksumAlgorithm: "MD5",
-            submitter: "uid=test",
-            rightsHolder: "uid=test",
-          });
-        });
+        pkg.fetchMaxConcurrent = 3;
 
         await pkg.setPackageAccessPolicy([], {
           propagate: true,
@@ -2070,6 +2098,16 @@ define([
           .should.deep.equal([0, 1, 2, 3]);
         progress[0].total.should.equal(3);
         progress[progress.length - 1].total.should.equal(3);
+      });
+
+      it("uses package SysMeta fetch concurrency for access-policy changes", async () => {
+        const { pkg } = buildEditablePackage();
+        const concurrency = trackEditableSysMetaFetches(pkg);
+        pkg.fetchMaxConcurrent = 2;
+
+        await pkg.setPackageAccessPolicy([], { propagate: true });
+
+        concurrency.max.should.equal(2);
       });
     });
 
@@ -3137,6 +3175,7 @@ define([
             objectServiceOptions,
             sysMetaService,
             sysMetaServiceOptions,
+            fetchMaxConcurrent: 13,
           });
           const awaitObjectFormats = sandbox
             .stub(Utilities, "awaitObjectFormats")
@@ -3207,6 +3246,7 @@ define([
           followedPackage.sysMetaServiceOptions.should.equal(
             sysMetaServiceOptions,
           );
+          followedPackage.fetchMaxConcurrent.should.equal(13);
         } finally {
           sandbox.restore();
         }

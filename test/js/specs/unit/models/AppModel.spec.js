@@ -78,6 +78,8 @@ define(["models/AppModel"], (AppModel) => {
         context.get
           .withArgs("packageServiceUrl")
           .returns("https://mn.example.org/packages/application%2Fbagit-1.0/");
+        context.get.withArgs("batchSizeFetch").returns(13);
+        context.get.withArgs("batchSizeUpload").returns(7);
 
         AppModel.prototype.getDataPackageServiceOptions
           .call(context)
@@ -99,6 +101,8 @@ define(["models/AppModel"], (AppModel) => {
               resolveServiceUrl: "https://cn.example.org/resolve/",
               objectServiceUrl: "https://mn.example.org/object/",
             },
+            fetchMaxConcurrent: 13,
+            uploadMaxConcurrent: 7,
           });
         sinon.assert.notCalled(context.getActiveAltRepo);
         sinon.assert.notCalled(context.setActiveAltRepoIfRequired);
@@ -123,6 +127,8 @@ define(["models/AppModel"], (AppModel) => {
         context.get
           .withArgs("packageServiceUrl")
           .returns("https://cn.example.org/packages/application%2Fbagit-1.0/");
+        context.get.withArgs("batchSizeFetch").returns(13);
+        context.get.withArgs("batchSizeUpload").returns(7);
 
         AppModel.prototype.getDataPackageServiceOptions
           .call(context)
@@ -144,6 +150,8 @@ define(["models/AppModel"], (AppModel) => {
               resolveServiceUrl: "https://cn.example.org/resolve/",
               objectServiceUrl: null,
             },
+            fetchMaxConcurrent: 13,
+            uploadMaxConcurrent: 7,
           });
         sinon.assert.notCalled(context.getActiveAltRepo);
         sinon.assert.notCalled(context.setActiveAltRepoIfRequired);

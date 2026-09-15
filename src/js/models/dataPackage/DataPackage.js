@@ -46,7 +46,7 @@ define([
   ObjectFormats,
 ) => {
   const { FORMAT_TYPES } = ObjectFormats.prototype;
-  const { DEFAULT_MAX_CONCURRENT, processConcurrently } = Utilities;
+  const { processConcurrently } = Utilities;
   const { throwIfAborted } = ErrorUtilities;
   const LOAD_PROGRESS_MESSAGES = Object.freeze({
     [DataPackageLoader.LoadPhases.RESOLVE]:
@@ -116,6 +116,10 @@ define([
      * recovery record store
      * @param {object} [options.uploadDefaults] Default System Metadata values
      * for newly uploaded objects
+     * @param {number} [options.fetchMaxConcurrent] Default maximum concurrent
+     * read requests
+     * @param {number} [options.uploadMaxConcurrent] Default maximum concurrent
+     * upload requests
      */
     constructor(options = {}) {
       this.type = "DataPackage";
@@ -159,6 +163,8 @@ define([
       // next load.
       this.uploadRecoveryStore = options.uploadRecoveryStore || null;
       this.uploadDefaults = options.uploadDefaults || {};
+      this.fetchMaxConcurrent = options.fetchMaxConcurrent;
+      this.uploadMaxConcurrent = options.uploadMaxConcurrent;
       // Member-keyed records for background uploads started when files are added.
       this.eagerUploads = new Map();
       // Set while a full or ResourceMap-only upload is being prepared or run.
@@ -1065,12 +1071,11 @@ define([
       { propagate = false, maxConcurrent, onProgress, rightsHolder } = {},
     ) {
       this.assertCanEdit();
-      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(maxConcurrent);
       const policy = AccessPolicy.fromValue(accessPolicy);
       const targets = this._getAccessPolicyTargets({ propagate });
       targets.forEach((member) => this.assertCanEdit(member.pid));
       await this._ensureSystemMetadata(targets, {
-        maxConcurrent: resolvedMaxConcurrent,
+        maxConcurrent,
         onProgress,
         refresh: true,
       });
@@ -1306,13 +1311,11 @@ define([
      */
     async _ensureSystemMetadata(
       members,
-      {
-        maxConcurrent = DEFAULT_MAX_CONCURRENT,
-        refresh = false,
-        signal,
-        onProgress,
-      } = {},
+      { maxConcurrent, refresh = false, signal, onProgress } = {},
     ) {
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
+        maxConcurrent ?? this.fetchMaxConcurrent,
+      );
       const membersToFetch = Values.listify(members).filter(
         (member) =>
           (member?.remotePid || member?.aggregatedPid) &&
@@ -1334,7 +1337,7 @@ define([
           });
         },
         {
-          maxConcurrent,
+          maxConcurrent: resolvedMaxConcurrent,
           signal,
           stopOnError: true,
           onItemComplete: () => {
@@ -1825,7 +1828,9 @@ define([
      * @returns {Promise<Array<{pid: string, error: Error}>>} Fetch failures
      */
     async fetchSysMeta(memberPids, { maxConcurrent, ...fetchOptions } = {}) {
-      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(maxConcurrent);
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
+        maxConcurrent ?? this.fetchMaxConcurrent,
+      );
       let members = this.members.toArray();
       let missingFailures = [];
       if (Values.isNonEmptyArray(memberPids)) {
@@ -1907,6 +1912,7 @@ define([
             objectServiceOptions: this.objectServiceOptions,
             sysMetaService: this.sysMetaService,
             sysMetaServiceOptions: this.sysMetaServiceOptions,
+            fetchMaxConcurrent: this.fetchMaxConcurrent,
           });
           await newDataPackage.resolveFromPid(newestRm, { signal });
           return newDataPackage.getLatestVersionPid({

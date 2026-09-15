@@ -1481,13 +1481,15 @@ define([
         appModel: {
           getDataPackageServiceOptions:
             AppModel.prototype.getDataPackageServiceOptions,
-          get: sandbox
-            .stub()
-            .callsFake((key) =>
-              key === "metaServiceUrl"
-                ? "https://meta.test/"
-                : "https://resolve.test/",
-            ),
+          get: sandbox.stub().callsFake(
+            (key) =>
+              ({
+                resolveServiceUrl: "https://resolve.test/",
+                objectServiceUrl: "https://object.test/",
+                metaServiceUrl: "https://meta.test/",
+                batchSizeFetch: 6,
+              })[key] || "",
+          ),
         },
       };
       view.setElement(
@@ -1505,7 +1507,10 @@ define([
 
       await view.repairDataset("meta.1", recoveryOptions);
 
-      sinon.assert.calledOnceWithExactly(recover, "meta.1", recoveryOptions);
+      sinon.assert.calledOnceWithExactly(recover, "meta.1", {
+        maxConcurrent: 6,
+        allowReconstruct: true,
+      });
     });
 
     it("shows whole plural minutes when a recent resource map is missing", function () {

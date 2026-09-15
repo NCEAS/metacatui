@@ -2837,8 +2837,8 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
       /**
        * Return explicit read and write endpoints for DataPackage services with
        * no repository selection side effects.
-       * @returns {object} ObjectService, PackageService, SysMetaService, and
-       * ResourceMapResolver constructor options
+       * @returns {object} Service constructor options and DataPackage request
+       * concurrency defaults
        * @since 0.0.0
        */
       getDataPackageServiceOptions() {
@@ -2864,6 +2864,8 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             resolveServiceUrl,
             objectServiceUrl,
           },
+          fetchMaxConcurrent: this.get("batchSizeFetch"),
+          uploadMaxConcurrent: this.get("batchSizeUpload"),
         };
       },
 

@@ -281,7 +281,9 @@ define([
      * @returns {Promise<UploadResult[]>} One result per eager upload
      */
     async uploadAddedMembers(members, options = {}) {
-      const maxConcurrent = Utilities.getMaxConcurrent(options.maxConcurrent);
+      const maxConcurrent = Utilities.getMaxConcurrent(
+        options.maxConcurrent ?? this.dataPackage.uploadMaxConcurrent,
+      );
       const uploadMembers = Values.listify(members).filter(
         (member) => member && !member.removed,
       );
@@ -1077,7 +1079,9 @@ define([
      * @throws {Error} When another upload is active or upload preparation fails
      */
     async upload({ resourceMapOnly = false, signal, maxConcurrent } = {}) {
-      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(maxConcurrent);
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
+        maxConcurrent ?? this.dataPackage.uploadMaxConcurrent,
+      );
       if (this.dataPackage.activeUpload) {
         throw new Error("An upload is already in progress");
       }
@@ -1247,7 +1251,9 @@ define([
      * @throws {Error} When the result is unrelated, stale, active, or unverifiable
      */
     async retryUpload(previousResult, { signal, maxConcurrent } = {}) {
-      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(maxConcurrent);
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
+        maxConcurrent ?? this.dataPackage.uploadMaxConcurrent,
+      );
       if (previousResult?.dataPackage !== this.dataPackage) {
         throw new Error("Cannot retry an upload from another DataPackage");
       }

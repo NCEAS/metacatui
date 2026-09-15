@@ -1079,7 +1079,9 @@ define([
             sysMetaService: new SysMetaService(
               serviceOptions.sysMetaServiceOptions,
             ),
-          }).recover(metadataPid);
+          }).recover(metadataPid, {
+            maxConcurrent: serviceOptions.fetchMaxConcurrent,
+          });
           if (!this.isCurrentRender(renderId)) return;
           if (result?.recovered) {
             status.text(MESSAGES.fileListingRecoveryFinished);
