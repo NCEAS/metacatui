@@ -174,6 +174,40 @@ define([
 
   describe("DataPackage", () => {
     describe("explicit member getters", () => {
+      it("returns active content including nested maps and staged files, without the root", () => {
+        const pkg = buildPackage(
+          [
+            { pid: "root", formatType: "RESOURCE" },
+            { pid: "metadata", formatType: "METADATA" },
+            { pid: "nested", formatType: "RESOURCE" },
+            { pid: "staged", formatType: "DATA" },
+            { pid: "unclassified", sources: ["index"] },
+            { pid: "removed", formatType: "DATA", removed: true },
+          ],
+          "root",
+        );
+
+        pkg
+          .getContentMembers()
+          .map((member) => member.pid)
+          .should.deep.equal(["metadata", "nested", "staged", "unclassified"]);
+        pkg.getMember("staged").removed = true;
+        pkg
+          .getContentMembers()
+          .map((member) => member.pid)
+          .should.deep.equal(["metadata", "nested", "unclassified"]);
+        pkg.members.toArray().should.have.length(6);
+      });
+
+      it("returns content before a root ResourceMap has been resolved", () => {
+        const pkg = buildPackage([{ pid: "metadata", formatType: "METADATA" }]);
+
+        pkg
+          .getContentMembers()
+          .map((member) => member.pid)
+          .should.deep.equal(["metadata"]);
+      });
+
       it("returns the primary metadata and root resource map members", () => {
         const pkg = buildPackage(
           [
@@ -1183,6 +1217,7 @@ define([
               { pid: "resource_map_1", formatType: "RESOURCE" },
               { pid: "meta.1", formatType: "METADATA" },
               { pid: "data.1", formatType: "DATA" },
+              { pid: "nested_map", formatType: "RESOURCE" },
             ],
             { sources: ["resourceMap"] },
           );
@@ -1206,30 +1241,35 @@ define([
         sinon.assert.notCalled(sysMetaStub);
       });
 
-      it("requests index rows for the configured editable member limit", async () => {
-        const pkg = new DataPackage();
-        stubResolveWithResourceMap(pkg);
-        sandbox.stub(pkg, "getManifestFromResourceMap").callsFake(async () => {
-          pkg.members.add(
-            [
-              { pid: "resource_map_1", formatType: "RESOURCE" },
-              { pid: "meta.1", formatType: "METADATA" },
-            ],
-            { sources: ["resourceMap"] },
-          );
-          return { ok: true };
-        });
-        const indexStub = sandbox
-          .stub(pkg, "getManifestFromIndex")
-          .resolves({ ok: true });
-        stubSuccessfulBaselineFetch(pkg);
+      [2, 3000].forEach((maxMembers) => {
+        it(`loads within a ${maxMembers}-member limit and requests an extra row for the root ResourceMap`, async () => {
+          const pkg = new DataPackage();
+          stubResolveWithResourceMap(pkg);
+          sandbox
+            .stub(pkg, "getManifestFromResourceMap")
+            .callsFake(async () => {
+              pkg.members.add(
+                [
+                  { pid: "resource_map_1", formatType: "RESOURCE" },
+                  { pid: "meta.1", formatType: "METADATA" },
+                  { pid: "nested_map", formatType: "RESOURCE" },
+                ],
+                { sources: ["resourceMap"] },
+              );
+              return { ok: true };
+            });
+          const indexStub = sandbox
+            .stub(pkg, "getManifestFromIndex")
+            .resolves({ ok: true });
+          stubSuccessfulBaselineFetch(pkg);
 
-        await pkg.loadEditablePackage("resource_map_1", { maxMembers: 701 });
+          await pkg.loadEditablePackage("resource_map_1", { maxMembers });
 
-        indexStub.firstCall.args[0].should.deep.include({
-          merge: true,
-          onlyExisting: true,
-          rows: 701,
+          indexStub.firstCall.args[0].should.deep.include({
+            merge: true,
+            onlyExisting: true,
+            rows: maxMembers + 1,
+          });
         });
       });
 

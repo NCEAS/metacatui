@@ -350,7 +350,8 @@ define([
    * @param {DataPackage} dataPackage Package being loaded
    * @param {DataPackageMember} resourceMapMember Root ResourceMap member
    * @param {object} [options] Enrichment options
-   * @param {number|null} [options.maxMembers] Maximum editable member count
+   * @param {number|null} [options.maxMembers] Maximum editable member count,
+   * excluding the root ResourceMap
    * @param {AbortSignal} [options.signal] Abort signal
    * @returns {Promise<DataPackageMember>} Primary metadata member
    * @throws {Error} When the member limit or baseline requirement fails
@@ -360,7 +361,7 @@ define([
     resourceMapMember,
     { maxMembers = null, signal } = {},
   ) {
-    const memberCount = dataPackage.members.getActiveMembers().length;
+    const memberCount = dataPackage.getContentMembers().length;
     if (maxMembers && memberCount > maxMembers) {
       throw DataPackageLoader.memberLimitExceededError({
         inputId: dataPackage.inputId,
@@ -373,7 +374,8 @@ define([
     await dataPackage.getManifestFromIndex({
       merge: true,
       onlyExisting: true,
-      rows: maxMembers || DEFAULT_ROWS,
+      // The index query also returns the root ResourceMap.
+      rows: maxMembers ? maxMembers + 1 : DEFAULT_ROWS,
       signal,
     });
 
@@ -878,13 +880,9 @@ define([
      * @returns {Promise<boolean>} Whether any member title changed
      */
     async loadNestedPackageTitles(dataPackage, { signal } = {}) {
-      const packageId = dataPackage.rootResourceMapPid;
-      const nestedPackages = dataPackage.members
-        .getActiveMembers()
-        .filter(
-          (member) =>
-            member.pid !== packageId && member.isResourceMap() && !member.title,
-        );
+      const nestedPackages = dataPackage
+        .getNestedResourceMapMembers()
+        .filter((member) => !member.title);
       if (!nestedPackages.length) return false;
 
       const nestedPackagesByPid = new Map(

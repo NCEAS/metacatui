@@ -1807,12 +1807,12 @@ define([
         const members = activeMembers.length
           ? activeMembers
           : [fallbackMember].filter(Boolean);
-        const rootResourceMap = dataPackage.getRootResourceMapMember();
-        const visibleMembers = members.filter(
-          (member) => member !== rootResourceMap,
-        );
         const maxMembers = MetacatUI.appModel.get("maxViewerPackageMembers");
-        this.fileTableMemberCount = visibleMembers.length;
+        this.fileTableMemberCount = dataPackage.getContentMembers().length;
+        if (!activeMembers.length && fallbackMember) {
+          this.fileTableMemberCount =
+            fallbackMember === dataPackage.getRootResourceMapMember() ? 0 : 1;
+        }
         if (this.fileTableMemberCount > maxMembers) {
           this.fileTableDetailsLimited = true;
         }

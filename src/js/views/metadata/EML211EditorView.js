@@ -46,8 +46,7 @@ define([
   ValueUtilities,
 ) => {
   const { isAbortError } = ErrorUtilities;
-  const DEFAULT_EDITOR_PACKAGE_MEMBER_LIMIT = 700;
-  const INDEX_MANIFEST_ROW_LIMIT = 1000;
+  const DEFAULT_EDITOR_PACKAGE_MEMBER_LIMIT = 3000;
   const EDITOR_FILE_TABLE_ROOT_ROW_ID = "dataset:editor-root";
   const FALLBACK_OBJECT_FORMATS = new ObjectFormats();
   // A draft re-serializes the entire EML, which blocks the main thread
@@ -100,6 +99,14 @@ define([
   const MESSAGES = {
     addFilesFailed(details) {
       return `Failed to add files to the dataset. Please try again.${details}`;
+    },
+    addFilesInProgress:
+      "Files are still being added. Wait for them to finish, then try again.",
+    addFilesMemberLimitExceeded(memberCount, limit) {
+      return (
+        `Adding these files would bring the dataset to ${memberCount} package members, ` +
+        `exceeding the editor limit of ${limit}. Choose fewer files or remove existing members first.`
+      );
     },
     addFilesMetadataUpdateFailed(details) {
       return `The files were added, but their metadata could not be updated.${details}`;
@@ -942,19 +949,18 @@ define([
       },
 
       /**
-       * Return the configured editor member limit within the manifest ceiling.
-       * @returns {number} Maximum package members the editor will load
+       * Return the configured editor member limit.
+       * @returns {number} Maximum package members, excluding the root ResourceMap
        * @since 0.0.0
        */
       getEditorPackageMemberLimit() {
-        const configuredLimit = MetacatUI.appModel?.get?.(
+        const configuredLimit = Utilities.getMetacatUIProperty(
           "maxEditorPackageMembers",
         );
-        const limit = ValueUtilities.normalizePositiveInteger(
+        return ValueUtilities.normalizePositiveInteger(
           configuredLimit,
           DEFAULT_EDITOR_PACKAGE_MEMBER_LIMIT,
         );
-        return Math.min(limit, INDEX_MANIFEST_ROW_LIMIT);
       },
 
       /**
@@ -964,10 +970,7 @@ define([
        * @since 0.0.0
        */
       showPackageMemberLimitExceeded(details) {
-        const limit =
-          details?.maxMembers ||
-          this.getEditorPackageMemberLimit() ||
-          DEFAULT_EDITOR_PACKAGE_MEMBER_LIMIT;
+        const limit = details?.maxMembers || this.getEditorPackageMemberLimit();
         const memberCount = details?.memberCount ?? 0;
         const metadataPid =
           this.model?.get?.("id") ||
@@ -2590,6 +2593,16 @@ ${supportDetails}`;
        */
       async addFilesFromFileTable(rowModel, files) {
         if (!files.length) return [];
+        if (this.fileTableEditInProgress) {
+          MetacatUI.appView.showAlert(
+            MESSAGES.addFilesInProgress,
+            CLASS_NAMES.alertWarning,
+            this.$el,
+            10000,
+            { remove: true },
+          );
+          return [];
+        }
         this.fileTableEditInProgress = true;
         this.$(".editor-controls")
           .stop(true, true)
@@ -2599,6 +2612,17 @@ ${supportDetails}`;
         let added = [];
         let filesLinked = false;
         try {
+          const dataPackage = MetacatUI.rootDataPackage;
+          const memberCount = dataPackage.getContentMembers().length;
+          const limit = this.getEditorPackageMemberLimit();
+          if (memberCount + files.length > limit) {
+            throw new Error(
+              MESSAGES.addFilesMemberLimitExceeded(
+                memberCount + files.length,
+                limit,
+              ),
+            );
+          }
           const rowKind = rowModel?.get?.("kind");
           const metadataPid =
             rowKind === "metadata"

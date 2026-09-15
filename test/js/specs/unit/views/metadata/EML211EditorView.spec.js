@@ -1177,20 +1177,20 @@ define([
       );
     });
 
-    it("caps the configured editor member limit at the index manifest row limit", function () {
+    it("honors the configured editor member limit above the default", function () {
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: {
           getDataPackageServiceOptions:
             AppModel.prototype.getDataPackageServiceOptions,
           get: sandbox.stub().callsFake((key) => {
-            if (key === "maxEditorPackageMembers") return 2000;
+            if (key === "maxEditorPackageMembers") return 4000;
             return null;
           }),
         },
       };
 
-      view.getEditorPackageMemberLimit().should.equal(1000);
+      view.getEditorPackageMemberLimit().should.equal(4000);
     });
 
     it("defaults the editor member limit when none is configured", function () {
@@ -1199,7 +1199,7 @@ define([
         appModel: { get: sandbox.stub().returns(null) },
       };
 
-      view.getEditorPackageMemberLimit().should.equal(700);
+      view.getEditorPackageMemberLimit().should.equal(3000);
     });
 
     it("redirects to the latest version before editable loading", async function () {
@@ -4045,6 +4045,103 @@ define([
       });
     });
 
+    [1, 2].forEach((fileCount) => {
+      it(`checks the member limit before staging a batch of ${fileCount} files`, async function () {
+        const rootDataPackage = createEditorRootDataPackage();
+        rootDataPackage.members.add({
+          pid: "nested_map",
+          formatType: "RESOURCE",
+        });
+        rootDataPackage.members.add({
+          pid: "removed_data",
+          formatType: "DATA",
+          removed: true,
+        });
+        globalThis.MetacatUI = {
+          ...(originalMetacatUI || {}),
+          rootDataPackage,
+          appModel: new Backbone.Model({ maxEditorPackageMembers: 4 }),
+          appView: { showAlert: sandbox.stub() },
+        };
+        const staged = [{ pid: "new_data" }];
+        const stage = sandbox
+          .stub(rootDataPackage, "stageLocalFiles")
+          .resolves(staged);
+        const link = sandbox
+          .stub(rootDataPackage, "linkStagedFiles")
+          .resolves(staged);
+        sandbox.stub(rootDataPackage, "markMemberContentDirty").resolves();
+        sandbox.stub(view, "toggleControls");
+        sandbox.stub(view, "toggleEnableControls");
+        sandbox.stub(view, "refreshFileTable");
+        sandbox.stub(view, "syncMetadataEntities");
+        sandbox.stub(view, "waitForNextPaint").resolves();
+        const files = Array.from(
+          { length: fileCount },
+          (_, i) => new File(["data"], `data-${i}.csv`, { type: "text/csv" }),
+        );
+
+        const result = await view.addFilesFromFileTable(null, files);
+
+        if (fileCount === 1) {
+          result.should.deep.equal(staged);
+          sinon.assert.calledOnceWithExactly(stage, files);
+          sinon.assert.calledOnce(link);
+          sinon.assert.notCalled(globalThis.MetacatUI.appView.showAlert);
+        } else {
+          result.should.deep.equal([]);
+          sinon.assert.notCalled(stage);
+          sinon.assert.notCalled(link);
+          sinon.assert.notCalled(view.refreshFileTable);
+          sinon.assert.calledOnce(globalThis.MetacatUI.appView.showAlert);
+          const message =
+            globalThis.MetacatUI.appView.showAlert.firstCall.args[0];
+          message.should.contain("5 package members");
+          message.should.contain("limit of 4");
+        }
+        view.fileTableEditInProgress.should.equal(false);
+      });
+    });
+
+    it("rejects another add while a batch is staging so both cannot claim the same capacity", async function () {
+      const rootDataPackage = createEditorRootDataPackage();
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+        appModel: new Backbone.Model({ maxEditorPackageMembers: 3 }),
+        appView: { showAlert: sandbox.stub() },
+      };
+      let finishStaging;
+      const staged = [{ pid: "new_data" }];
+      const stage = sandbox.stub(rootDataPackage, "stageLocalFiles").returns(
+        new Promise((resolve) => {
+          finishStaging = () => resolve(staged);
+        }),
+      );
+      sandbox.stub(rootDataPackage, "linkStagedFiles").resolves(staged);
+      sandbox.stub(rootDataPackage, "markMemberContentDirty").resolves();
+      sandbox.stub(view, "toggleControls");
+      sandbox.stub(view, "toggleEnableControls");
+      sandbox.stub(view, "refreshFileTable");
+      sandbox.stub(view, "syncMetadataEntities");
+      sandbox.stub(view, "waitForNextPaint").resolves();
+      const files = [new File(["data"], "data.csv", { type: "text/csv" })];
+      const first = view.addFilesFromFileTable(null, files);
+      await Promise.resolve();
+      const second = view.addFilesFromFileTable(null, files);
+      finishStaging();
+      const [firstResult, secondResult] = await Promise.all([first, second]);
+
+      firstResult.should.deep.equal(staged);
+      secondResult.should.deep.equal([]);
+      sinon.assert.calledOnce(stage);
+      sinon.assert.calledOnce(globalThis.MetacatUI.appView.showAlert);
+      globalThis.MetacatUI.appView.showAlert.firstCall.args[0].should.contain(
+        "Wait",
+      );
+      view.fileTableEditInProgress.should.equal(false);
+    });
+
     it("shows the adding files state and provisional rows before linking files and updating EML", async function () {
       const metadataMember = {
         pid: "metadata.1",
@@ -4055,7 +4152,7 @@ define([
         formatType: "DATA",
         fileName: "data.txt",
       };
-      const rootDataPackage = {
+      const rootDataPackage = Object.assign(createEditorRootDataPackage(), {
         stageLocalFiles: sandbox.stub().callsFake(() => {
           view.fileTableEditInProgress.should.equal(true);
           return Promise.resolve([addedMember]);
@@ -4067,7 +4164,7 @@ define([
           .returns(metadataMember),
         getPrimaryMetadataMember: sandbox.stub().returns(metadataMember),
         markMemberContentDirty: sandbox.stub().resolves(metadataMember),
-      };
+      });
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         rootDataPackage,
@@ -4176,7 +4273,7 @@ define([
         formatType: "DATA",
         fileName: "data.txt",
       };
-      const rootDataPackage = {
+      const rootDataPackage = Object.assign(createEditorRootDataPackage(), {
         stageLocalFiles: sandbox.stub().resolves([addedMember]),
         linkStagedFiles: sandbox.stub().resolves([addedMember]),
         getMember: sandbox
@@ -4187,7 +4284,7 @@ define([
         markMemberContentDirty: sandbox
           .stub()
           .rejects(new Error("Metadata update failed")),
-      };
+      });
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         rootDataPackage,
@@ -4255,7 +4352,7 @@ define([
         formatType: "DATA",
         fileName: "data.txt",
       };
-      const rootDataPackage = {
+      const rootDataPackage = Object.assign(createEditorRootDataPackage(), {
         stageLocalFiles: sandbox.stub().resolves([addedMember]),
         linkStagedFiles: sandbox.stub().resolves([addedMember]),
         getMember: sandbox
@@ -4264,7 +4361,7 @@ define([
           .returns(metadataMember),
         getPrimaryMetadataMember: sandbox.stub().returns(metadataMember),
         markMemberContentDirty: sandbox.stub().resolves(metadataMember),
-      };
+      });
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         rootDataPackage,
@@ -4312,12 +4409,12 @@ define([
     });
 
     it("shows an alert when adding files from the file table fails", async function () {
-      const rootDataPackage = {
+      const rootDataPackage = Object.assign(createEditorRootDataPackage(), {
         stageLocalFiles: sandbox
           .stub()
           .rejects(new Error("Cannot upload an empty file")),
         linkStagedFiles: sandbox.stub(),
-      };
+      });
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         rootDataPackage,
@@ -4360,13 +4457,13 @@ define([
         formatType: "DATA",
         fileName: "data.txt",
       };
-      const rootDataPackage = {
+      const rootDataPackage = Object.assign(createEditorRootDataPackage(), {
         stageLocalFiles: sandbox.stub().resolves([addedMember]),
         linkStagedFiles: sandbox
           .stub()
           .rejects(new Error("ResourceMap update failed")),
         getPrimaryMetadataMember: sandbox.stub().returns({ pid: "metadata.1" }),
-      };
+      });
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         rootDataPackage,

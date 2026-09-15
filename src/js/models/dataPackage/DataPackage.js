@@ -250,6 +250,19 @@ define([
     }
 
     /**
+     * Return active members excluding the root ResourceMap. Includes metadata,
+     * nested ResourceMaps, and staged files not yet linked to the graph.
+     * @returns {DataPackageMember[]} Active package content
+     * @since 0.0.0
+     */
+    getContentMembers() {
+      const rootResourceMap = this.getRootResourceMapMember();
+      return this.members
+        .getActiveMembers()
+        .filter((member) => member !== rootResourceMap);
+    }
+
+    /**
      * Return ResourceMap members aggregated by the root ResourceMap.
      * @returns {DataPackageMember[]} Nested ResourceMap members
      */
@@ -1368,21 +1381,16 @@ define([
      * @returns {DataPackage} This package
      */
     refreshMemberGraphFields(resourceMap = this.requireResourceMapModel()) {
-      const rootResourceMap = this.getRootResourceMapMember();
       const fields = DataPackageMember.ResourceMapGraphFields;
 
-      this.members
-        .getActiveMembers()
-        .filter((member) => member !== rootResourceMap)
-        .forEach((member) => {
-          const graphMember =
-            resourceMap.graphState.getMember(member.pid) || {};
-          const graphFields = {};
-          fields.forEach((field) => {
-            graphFields[field] = [...(graphMember[field] || [])];
-          });
-          Object.assign(member, graphFields);
+      this.getContentMembers().forEach((member) => {
+        const graphMember = resourceMap.graphState.getMember(member.pid) || {};
+        const graphFields = {};
+        fields.forEach((field) => {
+          graphFields[field] = [...(graphMember[field] || [])];
         });
+        Object.assign(member, graphFields);
+      });
 
       return this;
     }

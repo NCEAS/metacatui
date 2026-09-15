@@ -491,18 +491,19 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             "has been saved which can be accessed by our support team. Please contact us.",
 
           /**
-           * The maximum number of package members that can be edited in the
-           * dataset editor. Packages with more members will show a blocking
-           * error with support contact information.
+           * Maximum number of editable members, excluding the root ResourceMap.
+           * Larger packages show a blocking error with support contact information.
+           * File additions that would exceed this limit are rejected.
            * @type {number}
-           * @default 700
+           * @default 3000
            * @since 0.0.0
            */
-          maxEditorPackageMembers: 700,
+          maxEditorPackageMembers: 3000,
 
           /**
-           * Maximum number of package members displayed in the dataset viewer. The
-           * viewer also uses this value to limit package member Solr requests.
+           * Maximum number of package members, excluding the root ResourceMap,
+           * displayed in the dataset viewer. The viewer also uses this value
+           * to limit package member Solr requests.
            * @type {number}
            * @default 3000
            * @since 0.0.0

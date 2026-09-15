@@ -1248,6 +1248,23 @@ define([
     });
 
     describe("getFileTableRows()", () => {
+      it("counts a fallback member only when the package has no active members", () => {
+        setPackageAppModel();
+        const dataPackage = new DataPackage();
+        const context = { dataPackage };
+        const fallbackMember = new DataPackage({
+          members: [{ pid: "metadata", formatType: "METADATA" }],
+        }).getMember("metadata");
+
+        MetadataView.prototype.getFileTableRows.call(context, fallbackMember);
+        context.fileTableMemberCount.should.equal(1);
+
+        dataPackage.rootResourceMapPid = "root";
+        dataPackage.members.add({ pid: "root", formatType: "RESOURCE" });
+        MetadataView.prototype.getFileTableRows.call(context, fallbackMember);
+        context.fileTableMemberCount.should.equal(0);
+      });
+
       it("passes all active members and the configured cap to the adapter", () => {
         const dataPackage = createViewerDataPackage({
           members: [

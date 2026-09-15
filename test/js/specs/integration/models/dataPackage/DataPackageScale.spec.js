@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Integration test for DataPackage editing at the editor's default ~700-member
+ * Integration test for DataPackage editing at the default editor member
  * limit. Through the public API, the suite checks that:
  *
  * - a metadata only save writes and clears a recovery record containing the
@@ -19,6 +19,7 @@
  * size (they are not performance benchmarks).
  */
 define([
+  "models/AppModel",
   "models/dataPackage/DataPackage",
   "models/resourceMap/ResourceMap",
   "models/resourceMap/ResourceMapResolver",
@@ -27,6 +28,7 @@ define([
   "models/dataONEServices/SysMetaService",
   "common/QueryService",
 ], (
+  AppModel,
   DataPackage,
   ResourceMap,
   ResourceMapResolver,
@@ -37,6 +39,7 @@ define([
 ) => {
   const should = chai.should();
 
+  const MEMBER_LIMIT = AppModel.prototype.defaults.maxEditorPackageMembers;
   const RESOURCE_MAP_FORMAT_ID = "http://www.openarchives.org/ore/terms";
   const EML_FORMAT_ID = "https://eml.ecoinformatics.org/eml-2.2.0";
   const RESOLVE_BASE = "https://cn.test.dataone.org/cn/v2/resolve";
@@ -102,7 +105,7 @@ define([
       },
     });
     sandbox.stub(ResourceMapResolver.prototype, "getSysMeta").resolves(null);
-    sandbox
+    const download = sandbox
       .stub(ObjectService.prototype, "download")
       .callsFake(async (pid) =>
         pid === rmPid
@@ -139,7 +142,13 @@ define([
     const savedRecords = [];
     let idCounter = 0;
     const pkg = new DataPackage({
+      resolverOptions: {
+        metaServiceUrl: "https://cn.test.dataone.org/cn/v2/meta",
+        resolveServiceUrl: RESOLVE_BASE,
+      },
       objectService: {
+        readBaseUrl: RESOLVE_BASE,
+        download,
         create: async ({ pid }) => ({ data: { identifier: pid } }),
         update: async ({ newPid }) => ({ data: { identifier: newPid } }),
       },
@@ -157,6 +166,7 @@ define([
           ),
       },
       versionTracker: {
+        getLatestVersions: async (pids) => pids,
         getSysMeta: async (pid) =>
           systemMetadata(
             pid,
@@ -189,7 +199,7 @@ define([
         },
       },
     });
-    await pkg.loadEditablePackage(metadataPid);
+    await pkg.loadEditablePackage(metadataPid, { maxMembers: MEMBER_LIMIT });
     // The editor attaches a serializable metadata model; keep the tiny fixture
     // shape aligned with the real save path.
     pkg.getMember(metadataPid).objectModel = {
@@ -203,9 +213,9 @@ define([
   }
 
   describe("DataPackage workflows: large-package scale", () => {
-    // One run at the 700-member editor limit; smaller sizes exercise the same
+    // One run at the editor limit; smaller sizes exercise the same
     // code path and add runtime without coverage.
-    const memberCount = 700;
+    const memberCount = MEMBER_LIMIT;
 
     it(`saves a metadata-only edit to a ${memberCount}-member package`, async function scaleTest() {
       this.timeout(20000);
