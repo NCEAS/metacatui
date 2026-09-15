@@ -231,7 +231,16 @@ define([
       this.className += ` ${this.type}`;
 
       // Create a title
-      if (this.context.type === "program" && this.type === "derivations") {
+      if (
+        this.type === "sources" &&
+        this.numSources === 0 &&
+        this.numPrograms > 0
+      ) {
+        this.title = "";
+      } else if (
+        this.context.type === "program" &&
+        this.type === "derivations"
+      ) {
         this.title = `${this.numProvEntities} outputs`;
       } else if (this.context.type === "program" && this.type === "sources") {
         this.title = `${this.numProvEntities} inputs`;
@@ -409,9 +418,11 @@ define([
       } else this.$el.css("height", this.height - this.offsetTop);
 
       //Lastly, add the title
-      this.$el.prepend(
-        $(document.createElement("h3")).addClass("title").text(this.title),
-      );
+      if (this.title) {
+        this.$el.prepend(
+          $(document.createElement("h3")).addClass("title").text(this.title),
+        );
+      }
 
       if (this.canEditContext)
         this.$(".program.editor").click(function (e) {
