@@ -144,33 +144,19 @@ define(["common/ValueUtilities", "common/DateUtilities"], (
         invalidMessage = `${field} must be a non-empty string when present.`,
       } = {},
     ) {
-      const issues = [];
-
-      if (required && !isNonEmptyString(value)) {
-        issues.push(
-          ValidationUtilities.createValidationIssue({
-            field,
-            message: requiredMessage,
-          }),
-        );
-        return issues;
-      }
-
       if (
-        nonEmptyWhenPresent &&
-        value !== null &&
-        value !== undefined &&
-        !isNonEmptyString(value)
+        !required &&
+        (!nonEmptyWhenPresent || value === null || value === undefined)
       ) {
-        issues.push(
-          ValidationUtilities.createValidationIssue({
-            field,
-            message: invalidMessage,
-          }),
-        );
+        return [];
       }
-
-      return issues;
+      if (isNonEmptyString(value)) return [];
+      return [
+        ValidationUtilities.createValidationIssue({
+          field,
+          message: required ? requiredMessage : invalidMessage,
+        }),
+      ];
     },
 
     /**
@@ -192,28 +178,14 @@ define(["common/ValueUtilities", "common/DateUtilities"], (
         invalidMessage = `${field} must be a boolean when present.`,
       } = {},
     ) {
-      const issues = [];
-
-      if (required && typeof value !== "boolean") {
-        issues.push(
-          ValidationUtilities.createValidationIssue({
-            field,
-            message: requiredMessage,
-          }),
-        );
-        return issues;
-      }
-
-      if (value !== null && value !== undefined && typeof value !== "boolean") {
-        issues.push(
-          ValidationUtilities.createValidationIssue({
-            field,
-            message: invalidMessage,
-          }),
-        );
-      }
-
-      return issues;
+      if (!required && (value === null || value === undefined)) return [];
+      if (typeof value === "boolean") return [];
+      return [
+        ValidationUtilities.createValidationIssue({
+          field,
+          message: required ? requiredMessage : invalidMessage,
+        }),
+      ];
     },
 
     /**
@@ -235,32 +207,14 @@ define(["common/ValueUtilities", "common/DateUtilities"], (
         invalidMessage = `${field} must be a non-negative integer when present.`,
       } = {},
     ) {
-      const issues = [];
-
-      if (required && !isNonNegativeInteger(value)) {
-        issues.push(
-          ValidationUtilities.createValidationIssue({
-            field,
-            message: requiredMessage,
-          }),
-        );
-        return issues;
-      }
-
-      if (
-        value !== null &&
-        value !== undefined &&
-        !isNonNegativeInteger(value)
-      ) {
-        issues.push(
-          ValidationUtilities.createValidationIssue({
-            field,
-            message: invalidMessage,
-          }),
-        );
-      }
-
-      return issues;
+      if (!required && (value === null || value === undefined)) return [];
+      if (isNonNegativeInteger(value)) return [];
+      return [
+        ValidationUtilities.createValidationIssue({
+          field,
+          message: required ? requiredMessage : invalidMessage,
+        }),
+      ];
     },
 
     /**
@@ -282,32 +236,14 @@ define(["common/ValueUtilities", "common/DateUtilities"], (
         invalidMessage = `${field} must be a valid date.`,
       } = {},
     ) {
-      const issues = [];
-
-      if (required && !DateUtilities.isValidDate(value)) {
-        issues.push(
-          ValidationUtilities.createValidationIssue({
-            field,
-            message: requiredMessage,
-          }),
-        );
-        return issues;
-      }
-
-      if (
-        value !== null &&
-        value !== undefined &&
-        !DateUtilities.isValidDate(value)
-      ) {
-        issues.push(
-          ValidationUtilities.createValidationIssue({
-            field,
-            message: invalidMessage,
-          }),
-        );
-      }
-
-      return issues;
+      if (!required && (value === null || value === undefined)) return [];
+      if (DateUtilities.isValidDate(value)) return [];
+      return [
+        ValidationUtilities.createValidationIssue({
+          field,
+          message: required ? requiredMessage : invalidMessage,
+        }),
+      ];
     },
 
     /**

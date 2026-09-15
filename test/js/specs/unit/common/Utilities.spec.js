@@ -469,33 +469,6 @@ define(["backbone", "collections/ObjectFormats", "common/Utilities"], function (
       });
     });
 
-    describe("bytesToSize", function () {
-      it("handles undefined bytes", function () {
-        expect(Utilities.bytesToSize(undefined, 2)).to.equal("0 B");
-      });
-
-      it("handles bytes less than 1 KiB", function () {
-        expect(Utilities.bytesToSize(512, 2)).to.equal("512 B");
-      });
-
-      it("converts bytes to larger units with precision", function () {
-        expect(Utilities.bytesToSize(2048, 2)).to.equal("2.00 KiB");
-        expect(Utilities.bytesToSize(2 * 1024 * 1024, 3)).to.equal("2.000 MiB");
-        expect(Utilities.bytesToSize(2 * 1024 * 1024 * 1024, 4)).to.equal(
-          "2.0000 GiB",
-        );
-        expect(
-          Utilities.bytesToSize(2 * 1024 * 1024 * 1024 * 1024, 5),
-        ).to.equal("2.00000 TiB");
-      });
-
-      it("handles very large bytes", function () {
-        expect(
-          Utilities.bytesToSize(2 * 1024 * 1024 * 1024 * 1024 * 1024, 2),
-        ).to.equal("2048.00 TiB");
-      });
-    });
-
     describe("awaitObjectFormats", function () {
       it("waits for the format fetch and allows retry after failure", async function () {
         const formats = new ObjectFormats();

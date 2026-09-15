@@ -318,15 +318,6 @@ define([
               if (el) root.appendChild(el);
             });
             return;
-          case "dateUploaded":
-          case "dateSysMetadataModified":
-          case "archived": {
-            const serializedValue =
-              XMLTypes[SIMPLE_TYPE_BY_FIELD[field]]?.serialize?.(this[field]) ??
-              null;
-            XMLUtilities.appendTextElement(doc, root, field, serializedValue);
-            return;
-          }
           default:
             if (SIMPLE_TYPE_BY_FIELD[field]) {
               XMLUtilities.appendTextElement(
@@ -337,10 +328,7 @@ define([
                   this[field],
                 ) ?? null,
               );
-              return;
             }
-
-            XMLUtilities.appendTextElement(doc, root, field, this[field]);
         }
       });
 

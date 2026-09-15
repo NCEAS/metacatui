@@ -372,7 +372,7 @@ define([
       this.destroyTooltips();
       this.$el
         .attr("class", this.getRowClassName(data))
-        .toggle(Boolean(data.isVisible))
+        .css("display", data.isVisible ? "" : "none")
         .html(this.template(data));
 
       setOptionalAttribute(this.$el, "data-id", data.id);
@@ -413,7 +413,7 @@ define([
      * @returns {FileItemView} This view
      */
     toggleVisibility() {
-      this.$el.toggle(Boolean(this.viewModel.get("isVisible")));
+      this.$el.css("display", this.viewModel.get("isVisible") ? "" : "none");
       return this;
     },
 

@@ -121,7 +121,6 @@
     "./js/specs/unit/common/XMLTypes.spec.js",
     "./js/specs/unit/common/ValidationUtilities.spec.js",
     "./js/specs/unit/common/DateUtilities.spec.js",
-    "./js/specs/unit/common/DateUtility.spec.js",
     "./js/specs/unit/common/IconUtilities.spec.js",
     "./js/specs/unit/common/SearchParams.spec.js",
     "./js/specs/unit/common/EventLog.spec.js",

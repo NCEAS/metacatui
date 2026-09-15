@@ -121,18 +121,7 @@ define([
         }
         this[key] = value;
       });
-      this.initializeEditableState({
-        remotePid: info.remotePid,
-        aggregatedPid: info.aggregatedPid,
-        sysMeta: info.sysMeta,
-        remoteSysMeta: info.remoteSysMeta,
-        contentDirty: info.contentDirty,
-        sysMetaDirty: info.sysMetaDirty,
-        accessPolicyDirty: info.accessPolicyDirty,
-        removed: info.removed,
-        remoteState: info.remoteState,
-        lastUploadError: info.lastUploadError,
-      });
+      this.initializeEditableState(info);
     }
 
     /**

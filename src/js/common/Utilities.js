@@ -6,10 +6,6 @@ define(["collections/ObjectFormats", "common/ValueUtilities", "md5"], (
   md5,
 ) => {
   const DEFAULT_MAX_CONCURRENT = 4;
-  const KIBIBYTE = 1024;
-  const MEBIBYTE = KIBIBYTE * 1024;
-  const GIBIBYTE = MEBIBYTE * 1024;
-  const TEBIBYTE = GIBIBYTE * 1024;
 
   /**
    * @namespace Utilities
@@ -200,7 +196,7 @@ define(["collections/ObjectFormats", "common/ValueUtilities", "md5"], (
         return value.toString();
       }
 
-      const numDecimalPlaces = Utilities.getNumDecimalPlaces(range);
+      const numDecimalPlaces = ValueUtilities.getNumDecimalPlaces(range);
       if (numDecimalPlaces !== null) {
         return value.toFixed(numDecimalPlaces);
       }
@@ -217,34 +213,6 @@ define(["collections/ObjectFormats", "common/ValueUtilities", "md5"], (
      */
     formatFixedNumber(value, digits = 2, fallback = "") {
       return Number.isFinite(value) ? value.toFixed(digits) : fallback;
-    },
-
-    /**
-     * Calculate the number of decimal places we should use based on the range of the data.
-     * @param {number} range The range of data values.
-     * @returns {number} The number of decimal places we should use.
-     * @since 2.30.0
-     */
-    getNumDecimalPlaces(range) {
-      if (range < 0.0001 || range > 100000) {
-        return null;
-      }
-      if (range < 0.001) {
-        return 5;
-      }
-      if (range < 0.01) {
-        return 4;
-      }
-      if (range < 0.1) {
-        return 3;
-      }
-      if (range < 1) {
-        return 2;
-      }
-      if (range <= 100) {
-        return 1;
-      }
-      return 0;
     },
 
     /**
@@ -609,33 +577,6 @@ define(["collections/ObjectFormats", "common/ValueUtilities", "md5"], (
     },
 
     /**
-     * Convert number of bytes into human readable format
-     * @param {number} bytes - The number of bytes
-     * @param {number} [precision] - The number of decimal places to include
-     * @returns {string} The formatted size string
-     */
-    bytesToSize(bytes, precision = 0) {
-      if (typeof bytes === "undefined") return `0 B`;
-
-      if (bytes >= 0 && bytes < KIBIBYTE) {
-        return `${bytes} B`;
-      }
-      if (bytes >= KIBIBYTE && bytes < MEBIBYTE) {
-        return `${(bytes / KIBIBYTE).toFixed(precision)} KiB`;
-      }
-      if (bytes >= MEBIBYTE && bytes < GIBIBYTE) {
-        return `${(bytes / MEBIBYTE).toFixed(precision)} MiB`;
-      }
-      if (bytes >= GIBIBYTE && bytes < TEBIBYTE) {
-        return `${(bytes / GIBIBYTE).toFixed(precision)} GiB`;
-      }
-      if (bytes >= TEBIBYTE) {
-        return `${(bytes / TEBIBYTE).toFixed(precision)} TiB`;
-      }
-      return `${bytes} B`;
-    },
-
-    /**
      * Convert a wildcard pattern to a safe RegExp.
      * @param {string} pattern - A simple wildcard pattern
      * @returns {RegExp} Regex for case-insensitive matching
@@ -644,28 +585,6 @@ define(["collections/ObjectFormats", "common/ValueUtilities", "md5"], (
       const escaped = pattern.replace(/[-/\\^$+?.()|[\]{}]/g, "\\$&");
       const regexString = `^${escaped.replace(/\*/g, ".*")}$`;
       return new RegExp(regexString, "i");
-    },
-
-    /**
-     * Get a value from a plain object using a case-insensitive key.
-     * @param {object} obj Source object
-     * @param {string} keyName Key name to look up
-     * @param {Function} [normalizeValue] Optional value normalizer
-     * @returns {*} The matched value, or undefined if not found
-     * @since 2.37.0
-     */
-    getCaseInsensitive(obj, keyName, normalizeValue) {
-      if (!obj || !keyName) return undefined;
-
-      const target = String(keyName).toLowerCase();
-      const key = Object.keys(obj).find(
-        (k) => String(k).toLowerCase() === target,
-      );
-
-      if (!key) return undefined;
-
-      const value = obj[key];
-      return normalizeValue ? normalizeValue(value) : value;
     },
 
     /**

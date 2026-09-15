@@ -87,10 +87,9 @@ define([
      * @throws {Error} When type is not `preferred` or `blocked`
      */
     add(node, type) {
-      this[ReplicationPolicy.getNodeField(type)].push(node);
-      this[ReplicationPolicy.getNodeField(type)] = normalizeStringArray(
-        this[ReplicationPolicy.getNodeField(type)],
-      );
+      const field = ReplicationPolicy.getNodeField(type);
+      this[field].push(node);
+      this[field] = normalizeStringArray(this[field]);
       return this;
     }
 
