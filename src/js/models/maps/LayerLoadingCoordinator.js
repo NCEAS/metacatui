@@ -69,6 +69,25 @@ define([], () => {
   }
 
   /**
+   * Labels longer than this are truncated with an ellipsis so a single very long
+   * layer name can't dominate the loading message width.
+   * @type {number}
+   */
+  const MAX_LABEL_LENGTH = 50;
+
+  /**
+   * Truncate a label to {@link MAX_LABEL_LENGTH} characters, appending an ellipsis
+   * when truncated.
+   * @param {string} label The label to truncate.
+   * @returns {string} The truncated label.
+   * @since 0.0.0
+   */
+  function truncateLabel(label) {
+    if (label.length <= MAX_LABEL_LENGTH) return label;
+    return `${label.slice(0, MAX_LABEL_LENGTH)}…`;
+  }
+
+  /**
    * Get a user-facing label for a loading layer.
    * @param {Backbone.Model|object} layer The layer model.
    * @returns {string|null} The label to surface in the loading message.
@@ -76,9 +95,8 @@ define([], () => {
    */
   function getLoadingLayerLabel(layer) {
     const label = layer?.get("label");
-    return typeof label === "string" && label.trim().length
-      ? label.trim()
-      : null;
+    if (typeof label !== "string" || !label.trim().length) return null;
+    return truncateLabel(label.trim());
   }
 
   /**
@@ -113,11 +131,11 @@ define([], () => {
       return `Loading ${labels[0]}`;
     }
 
-    if (labels.length === 2) {
-      return `Loading ${labels[0]} and ${labels[1]}`;
-    }
-
-    return `Loading ${labels[0]} and ${labels.length - 1} more layers`;
+    // As soon as more than one layer is loading, switch to a compact "+n other
+    // layers" form so the message doesn't keep growing with every extra label.
+    const otherCount = labels.length - 1;
+    const otherWord = otherCount === 1 ? "layer" : "layers";
+    return `Loading ${labels[0]} and ${otherCount} other ${otherWord}`;
   }
 
   /**

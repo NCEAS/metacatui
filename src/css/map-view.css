@@ -79,7 +79,21 @@
     var(--map-toolbar-link-width) + (2 * var(--map-size-toolbar-link-margin)) +
       var(--map-top-controls-gutter)
   );
-  --map-scale-bar-reserved-width: clamp(16rem, 30.4vw, 24rem);
+  /* Worst-case width of everything in the status bar except the scale bar graphic
+  itself: padding, the signed 5-decimal lat + lng (with their reserved digit widths),
+  and the longest realistic distance label. */
+  --map-scale-bar-base-width: 18rem;
+  /* The scale bar graphic's max drawn length (see `maxBarWidth` in ScaleBarView). */
+  --map-scale-bar-max-bar-width: 6.25rem;
+  /* Live pixel width of the scale bar graphic (`.scale-bar__bar`), mirrored here by
+  ScaleBarView/MapStatusBarView on every update. The status bar's own width tracks
+  this exactly (see `.map-status-bar` below) so it grows/shrinks by the same amount,
+  in sync with the bar, and -- being a plain length rather than content-driven
+  auto-sizing -- animates smoothly with `transition: width` in every browser. */
+  --map-status-bar-bar-width: 0px;
+  --map-scale-bar-reserved-width: calc(
+    var(--map-scale-bar-base-width) + var(--map-scale-bar-max-bar-width)
+  );
   --map-top-controls-right-reserved: calc(
     var(--map-scale-bar-reserved-width) + var(--map-top-controls-gutter)
   );
@@ -341,7 +355,12 @@
   right: 1rem;
   bottom: 1rem;
   min-height: 10rem;
-  overflow: hidden;
+  /* Reserve room at the top for the status bar (its 1rem top offset, plus its own
+  height doubled to cover the loading row's expanded state) plus a gap, so a tall
+  feature-info panel can never grow up far enough to cover the loading indicator. */
+  max-height: calc(100% - 3rem - (2 * var(--map-top-control-height)));
+  overflow-y: auto;
+  overflow-x: hidden;
   /* required to be placed above map widget in firefox: */
   z-index: var(--map-z-index-feature-info);
 
@@ -445,8 +464,14 @@
  */
 
 .map-status-bar {
-  width: max-content;
-  min-width: 12rem;
+  /* Everything except the scale bar graphic is reserved at a fixed (worst-case)
+  width, and the live bar width is added on top -- so the box grows/shrinks by
+  exactly as much as the bar does. Because both are plain lengths (not
+  content-driven auto-sizing), this transitions smoothly with `transition: width`
+  in every browser, unlike animating to/from an auto/max-content size. */
+  width: calc(
+    var(--map-scale-bar-base-width) + var(--map-status-bar-bar-width, 0px)
+  );
   box-shadow: var(--map-shadow-md);
   background: var(--portal-col-neutral-1, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius-small);
@@ -457,6 +482,9 @@
   top: 1rem;
   right: 1rem;
   overflow: hidden;
+  /* Matches `.scale-bar__bar`'s own transition so the box's edge and the bar's
+  edge move in lockstep instead of drifting apart mid-animation. */
+  transition: width 0.3s ease-in-out;
   /* required to be placed above map widget in firefox: */
   z-index: var(--map-z-index-base);
 }
@@ -471,6 +499,14 @@
   gap: 1rem;
   align-items: center;
   box-sizing: border-box;
+  /* Never wrap to a second line at narrow viewport widths -- content that doesn't
+  fit is clipped by the (fixed-width) `.map-status-bar`'s `overflow: hidden` instead. */
+  white-space: nowrap;
+  /* Without this, the fixed-width box's leftover space stretches evenly across both
+  auto columns, so the coordinates column grows/shrinks (moving lat/lng) whenever the
+  scale column's own content changes width. `start` keeps every column sized to its
+  own content and puts the leftover space after the last column instead. */
+  justify-content: start;
 }
 
 /* __coordinates contains __longitude, __latitude, and __elevation */
@@ -481,12 +517,36 @@
   grid-template-columns: auto auto auto;
   gap: 0.5rem;
   align-items: center;
+  /* Keep lat/lng/elevation pinned to their own content width so the elevation column
+  (whose value is added/cleared independently) can never shift lat/lng leftward or
+  rightward -- see the matching comment on `.scale-bar`. */
+  justify-content: start;
 }
 
 /* The elements that contain the current coordinates */
 
 .scale-bar__label {
   font-weight: 600;
+}
+
+/* Tabular numerals (equal-width digits, when the font supports the feature) plus a
+reserved minimum width (long enough for e.g. "-179.12345") keep the coordinate boxes
+from constantly resizing/jittering as the digits change while panning. Left-aligned
+(the default) so the value sits right up against its label, with any reserved-but-
+unused width trailing after the digits instead of showing as a gap before them. */
+
+.scale-bar__coord--latitude {
+  display: inline-block;
+  /* Reserves enough room for the longest possible value, e.g. "-90.12345" (9 chars) */
+  min-width: 9ch;
+  font-variant-numeric: tabular-nums;
+}
+
+.scale-bar__coord--longitude {
+  display: inline-block;
+  /* Reserves enough room for the longest possible value, e.g. "-180.12345" (10 chars) */
+  min-width: 10ch;
+  font-variant-numeric: tabular-nums;
 }
 
 /* The __scale element contains __bar and __distance */
@@ -559,6 +619,9 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
 }
 
 .map-status-bar__loading-text {
+  /* Allows this flex item to shrink below its content size so the ellipsis below
+  can actually kick in once the (now fixed-width) status bar runs out of room. */
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

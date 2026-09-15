@@ -68,7 +68,15 @@ define([
         this.scaleBar = new ScaleBarView({
           scaleModel: this.scaleModel,
           pointModel: this.pointModel,
-        }).render();
+        });
+        // Attach before rendering so the initial update:barWidth (fired during
+        // render) is caught and the CSS variable starts in sync.
+        this.listenTo(
+          this.scaleBar,
+          "update:barWidth",
+          this.handleBarWidthChange,
+        );
+        this.scaleBar.render();
         this.$el.append(this.scaleBar.el);
 
         this.loadingIndicator = new LayerLoadingIndicatorView().render();
@@ -83,6 +91,16 @@ define([
         this.handleLoadingStateChange();
 
         return this;
+      },
+
+      /**
+       * Mirror the scale bar's live pixel width onto this element's own style so
+       * this box's width (see `.map-status-bar` in map-view.css) can track it via a
+       * plain CSS calc(), growing/shrinking by the same amount.
+       * @param {number} barWidth The scale bar graphic's current width, in pixels.
+       */
+      handleBarWidthChange(barWidth) {
+        this.el.style.setProperty("--map-status-bar-bar-width", `${barWidth}px`);
       },
 
       /**

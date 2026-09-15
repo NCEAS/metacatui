@@ -1365,7 +1365,7 @@ define([
         LayerLoadingCoordinator.updateLayerLoadingState(map);
 
         expect(map.get("loadingLayersMessage")).to.equal(
-          "Loading Habitat roads and 2 more layers",
+          "Loading Habitat roads and 2 other layers",
         );
       });
     });

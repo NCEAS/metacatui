@@ -207,20 +207,23 @@ define([
        * coordinates for
        */
       updateCoordinates(latitude, longitude, elevation) {
+        // Labels are hidden with `visibility` (not `display`) so they keep occupying
+        // their layout space -- otherwise the lat/lng columns would resize and shift
+        // relative to each other every time the mouse enters/leaves the map.
         if ((latitude || latitude === 0) && (longitude || longitude === 0)) {
           // Update the displayed coordinates
           this.subElements.latitude.textContent =
             Number.parseFloat(latitude).toFixed(5);
           this.subElements.longitude.textContent =
             Number.parseFloat(longitude).toFixed(5);
-          this.subElements.latitudeLabel.style.display = null;
-          this.subElements.longitudeLabel.style.display = null;
+          this.subElements.latitudeLabel.style.visibility = null;
+          this.subElements.longitudeLabel.style.visibility = null;
         } else {
           // Update the displayed coordinates
           this.subElements.latitude.textContent = "";
           this.subElements.longitude.textContent = "";
-          this.subElements.latitudeLabel.style.display = "none";
-          this.subElements.longitudeLabel.style.display = "none";
+          this.subElements.latitudeLabel.style.visibility = "hidden";
+          this.subElements.longitudeLabel.style.visibility = "hidden";
         }
 
         if (elevation || elevation === 0) {
@@ -259,6 +262,9 @@ define([
 
         this.subElements.distance.textContent = label;
         this.subElements.bar.style.width = `${barWidth}px`;
+        // Let ancestors (e.g. MapStatusBarView) mirror this onto their own layout,
+        // so the containing status bar can grow/shrink by exactly this amount.
+        this.trigger("update:barWidth", barWidth);
       },
 
       /**
