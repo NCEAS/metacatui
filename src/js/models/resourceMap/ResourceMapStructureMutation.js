@@ -96,6 +96,7 @@ define([
    * Require both objects in every documentation link to be package members.
    * @param {ResMapDocLink[]} links Documentation links to inspect
    * @param {Function} isAggregated Member predicate
+   * @throws {Error} When a link endpoint is not a package member
    */
   function assertDocumentationLinksAggregated(links, isAggregated) {
     links.forEach(({ metadataPid, dataPid }) => {
@@ -242,6 +243,7 @@ define([
    */
   class ResourceMapStructureMutation {
     /**
+     * Create a structure mutation helper for one ResourceMap.
      * @param {object} options Mutation options
      * @param {ResourceMap} options.resourceMap Resource map being updated
      */
@@ -309,6 +311,7 @@ define([
      * @param {string} oldPid Existing member PID
      * @param {string} newPid Replacement member PID
      * @returns {ResourceMap} Updated resource map
+     * @throws {Error} When the source is missing or the replacement conflicts
      */
     replaceMember(oldPid, newPid) {
       const { resourceMap } = this;
@@ -356,6 +359,7 @@ define([
      * @param {string[]} pids Desired member PIDs
      * @param {ResMapDocLink[]} links Desired documentation links
      * @returns {ResourceMap} Updated resource map
+     * @throws {Error} When inputs are invalid or reference non-members
      */
     setPackageStructure(pids, links) {
       if (!Array.isArray(pids)) {
@@ -474,6 +478,7 @@ define([
      * Replace all links from metadata to documented data.
      * @param {ResMapDocLink[]} links Desired documentation links
      * @returns {ResourceMap} Updated resource map
+     * @throws {Error} When links is invalid or references non-members
      */
     setDocumentationLinks(links) {
       if (!Array.isArray(links)) {

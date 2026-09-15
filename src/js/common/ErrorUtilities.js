@@ -17,6 +17,7 @@ define([], () => {
    * Generic helpers for creating and identifying error types that are generic
    * enough to be used across different parts of MetacatUI.
    * @namespace ErrorUtilities
+   * @classcategory Common
    * @since 0.0.0
    */
   const ErrorUtilities = {

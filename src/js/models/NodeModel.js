@@ -179,7 +179,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
         thisModel.trigger("change:coordinators");
 
         //If we don't have a current member node yet, find it
-        var appModel = MetacatUI.appModel;
+        const { appModel } = MetacatUI;
         if (
           !thisModel.get("currentMemberNode") &&
           appModel &&

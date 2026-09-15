@@ -115,6 +115,7 @@ define([
      * @param {ResourceMapResolver} [options.resolver] Resolver for the prior
      * resource map and for caching a recovered mapping
      * @param {UploadRecoveryStore} [options.recoveryStore] Durable record store
+     * @throws {Error} When required recovery configuration is missing
      */
     constructor({
       resolveServiceUrl,
@@ -499,7 +500,6 @@ define([
      * @param {AbortSignal} [signal] Abort signal
      * @returns {Promise<object|null>} System metadata, or null
      * @private
-     * @since 0.0.0
      * @throws {Error} When receiver system metadata cannot be downloaded
      */
     async _getWriteTargetSysMeta(pid, signal) {

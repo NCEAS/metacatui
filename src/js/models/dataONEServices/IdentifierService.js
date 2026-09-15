@@ -8,6 +8,7 @@ define([
    * Service for DataONE identifier generation and reservation.
    * @class IdentifierService
    * @augments DataONEService
+   * @classcategory Models/DataONEServices
    * @since 0.0.0
    */
   class IdentifierService extends DataONEService {
@@ -61,6 +62,7 @@ define([
      * @param {string} [params.scheme] Identifier scheme.
      * @param {string} [params.fragment] Optional identifier fragment.
      * @returns {FormData} FormData payload.
+     * @throws {Error} When params is not an object or has unsupported keys
      */
     static buildGenerateFormData(params = {}) {
       if (!params || Array.isArray(params) || typeof params !== "object") {

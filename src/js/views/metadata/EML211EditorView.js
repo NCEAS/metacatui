@@ -1045,7 +1045,7 @@ define([
             null,
             2,
           );
-        } catch (_serializationError) {
+        } catch {
           supportDetails = [
             inputId ? `Input PID: ${inputId}` : null,
             resourceMapPid ? `Resource Map PID: ${resourceMapPid}` : null,
@@ -1501,6 +1501,7 @@ ${supportDetails}`;
       /**
        * Fill incomplete editor rows from system metadata after the first paint.
        * @param {object} [options] Fetch options owned by the active render
+       * @returns {Promise<void>} Resolves after row enrichment finishes
        * @since 0.0.0
        */
       async enrichEditorFileTableMembers(options = {}) {
@@ -4161,6 +4162,7 @@ ${supportDetails}`;
        * repository. Closing mid save can commit the metadata document without
        * its resource map, leaving an orphaned EML that is hard to recover.
        * @returns {boolean} True when the editor can close
+       * @since 0.0.0
        */
       canClose() {
         if (MetacatUI.rootDataPackage?.isEditLocked?.()) return false;

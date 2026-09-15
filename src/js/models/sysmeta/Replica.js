@@ -23,6 +23,7 @@ define([
   /**
    * Replica entry value object for System Metadata.
    * @class Replica
+   * @classcategory Models/SysMeta
    * @since 0.0.0
    */
   class Replica {

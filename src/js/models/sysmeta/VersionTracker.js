@@ -500,6 +500,8 @@ define([
      * @param {string[]} pids PIDs to compare
      * @param {object} [options] options to pass to SysMetaService.download
      * @returns {Promise<object>} Chain membership details
+     * @throws {Error} When the version chain cannot be loaded
+     * @since 0.0.0
      */
     async checkPidsInSameVersionChain(pids = [], options = {}) {
       const uniquePids = ValueUtilities.normalizeStringList(pids);
@@ -604,6 +606,8 @@ define([
      * @param {object} [options] Version lookup options
      * @param {number} [options.maxConcurrent] Maximum concurrent lookups
      * @returns {Promise<string[]>} Latest-version PIDs
+     * @throws {Error} When any latest-version lookup fails
+     * @since 0.0.0
      */
     async getLatestVersions(pids, options = {}) {
       const { maxConcurrent, ...lookupOptions } = options;

@@ -205,6 +205,7 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
     /**
      * Create an RDF graph wrapper
      * @param {object} [store] An rdflib graph store
+     * @throws {Error} When store does not implement the required graph methods
      */
     constructor(store = rdf.graph()) {
       if (

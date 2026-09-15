@@ -253,7 +253,6 @@ define([
      * Return active members excluding the root ResourceMap. Includes metadata,
      * nested ResourceMaps, and staged files not yet linked to the graph.
      * @returns {DataPackageMember[]} Active package content
-     * @since 0.0.0
      */
     getContentMembers() {
       const rootResourceMap = this.getRootResourceMapMember();
@@ -1100,6 +1099,7 @@ define([
      * @param {string} [options.requestedPid] Optional custom replacement PID
      * @param {string} [options.replacementSourcePid] Remote PID to obsolete
      * @returns {Promise<object>} Prepared replacement details
+     * @throws {Error} When the member cannot be replaced safely
      * @private
      */
     async _prepareFileReplacement(
@@ -1194,6 +1194,7 @@ define([
      * @param {ResourceMap} resourceMap Root ResourceMap model
      * @param {object} replacement Prepared replacement details
      * @returns {void}
+     * @throws {Error} When the prepared replacement cannot be applied
      * @private
      */
     _applyFileReplacement(memberToReplace, file, resourceMap, replacement) {
@@ -2003,13 +2004,13 @@ define([
                   this.resolverOptions,
                 ).resolve(candidatePid);
                 resourceMapPending = !resolution.rm;
-              } catch (_resolverError) {
+              } catch {
                 // The DOI is committed; unresolved package details remain pending.
               }
               return { pid: candidatePid, resourceMapPending };
             }
           }
-        } catch (_recoveryError) {
+        } catch {
           // Recovery is useful only when the version chain proves publication.
         }
         throw error;

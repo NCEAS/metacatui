@@ -126,9 +126,6 @@ define(
           // Get the titles of all the custom method steps from the App Config
           const customMethodOptions =
             MetacatUI.appModel.get("customEMLMethods");
-          const customMethodTitles = _.flatten(
-            _.pluck(customMethodOptions, "titleOptions"),
-          );
           let isCustom = false;
 
           try {
@@ -271,14 +268,15 @@ define(
         },
 
         /**
-         *  function isEmpty() - Will check if there are any values set on this model
-         *  that are different than the default values and would be serialized to the EML.
-         * @returns {boolean} - Returns true is this model is empty, false if not
+         * Check whether this model has values that would be serialized to EML.
+         * @returns {boolean|undefined} True when the model is empty; otherwise
+         * undefined
          */
         isEmpty() {
           if (!this.get("description") || this.get("description").isEmpty()) {
             return true;
           }
+          return undefined;
         },
 
         /**
@@ -292,9 +290,10 @@ define(
         },
 
         /**
-         * Overloads Backbone.Model.validate() to check if this model has valid values set on it
+         * Check whether this method step has valid values.
          * @augments Backbone.Model.validate
-         * @returns {object}
+         * @returns {object|false|undefined} Validation errors, false when
+         * validation itself fails, or undefined when valid
          */
         validate() {
           try {
@@ -322,6 +321,7 @@ define(
             console.error("Error while validating the Methods: ", e);
             return false;
           }
+          return undefined;
         },
 
         trickleUpChange() {

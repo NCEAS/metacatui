@@ -492,7 +492,9 @@ define([
      * Normalize a transport option to a supported value.
      * @param {string} transport Transport value.
      * @returns {"fetch"|"xhr"} Normalized transport.
+     * @throws {Error} When transport is not `fetch` or `xhr`
      * @private
+     * @since 0.0.0
      */
     static normalizeTransport(transport) {
       if (typeof transport !== "string") {
@@ -643,6 +645,7 @@ define([
      * @returns {Promise<DataONEHttpResponse>} A promise that resolves to a
      * normalized response object.
      * @private
+     * @since 0.0.0
      */
     async performRequest(options = {}) {
       if (options.transport === "xhr") {
@@ -739,6 +742,7 @@ define([
      * @returns {Promise<DataONEHttpResponse>} A promise that resolves to a
      * normalized response object.
      * @private
+     * @since 0.0.0
      */
     async performXhr(options = {}) {
       const {
@@ -770,7 +774,7 @@ define([
             ? (event) => {
                 try {
                   onUploadProgress(event);
-                } catch (_error) {
+                } catch {
                   // Ignore upload progress callback errors.
                 }
               }
@@ -934,7 +938,7 @@ define([
           const text = await response.text();
           try {
             return JSON.parse(text);
-          } catch (_error) {
+          } catch {
             return text;
           }
         }
@@ -954,7 +958,9 @@ define([
      * @param {"text"|"json"|"arrayBuffer"|"blob"|"document"} responseType Expected body
      * type
      * @returns {*} Parsed response data
+     * @throws {Error} When a text response cannot be read
      * @private
+     * @since 0.0.0
      */
     static readXhrBody(xhr, responseType) {
       const type = String(responseType || "text").toLowerCase();
@@ -962,7 +968,7 @@ define([
       const readResponseText = () => {
         try {
           return typeof xhr.responseText === "string" ? xhr.responseText : "";
-        } catch (_error) {
+        } catch {
           return "";
         }
       };
@@ -1015,6 +1021,7 @@ define([
      * @param {string} rawHeaders Raw header string
      * @returns {Headers} Parsed headers
      * @private
+     * @since 0.0.0
      */
     static parseRawHeaders(rawHeaders = "") {
       const headers = new Headers();

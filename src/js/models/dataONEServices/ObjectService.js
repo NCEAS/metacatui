@@ -43,6 +43,7 @@ define([
    * Service for DataONE object read/download/create/update operations.
    * @class ObjectService
    * @augments DataONEService
+   * @classcategory Models/DataONEServices
    * @since 0.0.0
    */
   class ObjectService extends DataONEService {
@@ -54,6 +55,7 @@ define([
      * DataONEHttpClient configuration.
      * @param {boolean} [options.defaultAuth] Default auth behavior.
      * @param {Function} [options.getToken] Override token resolver function.
+     * @throws {Error} When readBaseUrl is missing
      */
     constructor({
       readBaseUrl = "",
@@ -94,7 +96,6 @@ define([
      * Build the exact request URL used to read an object.
      * @param {string} pid PID to read.
      * @returns {string} Full object request URL.
-     * @since 0.0.0
      */
     getReadUrl(pid) {
       return UrlUtilities.buildUrl(
@@ -176,6 +177,7 @@ define([
      * Get the write client for create/update requests.
      * @param {string} operation Operation name for error reporting.
      * @returns {DataONEHttpClient} Write client instance.
+     * @throws {Error} When writeBaseUrl is missing
      */
     getWriteClient(operation) {
       if (!this.writeBaseUrl) {
@@ -249,7 +251,6 @@ define([
      * @param {string} pid PID to download
      * @param {object} [options] Request options
      * @returns {Promise<*>} Response payload
-     * @since 0.0.0
      */
     async downloadFromWriteTarget(pid, options = {}) {
       const normalizedPid = this.constructor.normalizePid(pid);
@@ -275,6 +276,7 @@ define([
      * @param {string} [params.fileName] Optional filename.
      * @param {object} [options] Transfer options.
      * @returns {Promise<DataONEHttpResponse>} Upload response.
+     * @throws {Error} When required params are missing or the request fails
      */
     async create(params = {}, options = {}) {
       const { pid, object, sysMetaXml, fileName } = params;
@@ -312,6 +314,7 @@ define([
      * @param {string} [params.fileName] Optional filename.
      * @param {object} [options] Transfer options.
      * @returns {Promise<DataONEHttpResponse>} Update response.
+     * @throws {Error} When required params are missing or the request fails
      */
     async update(params = {}, options = {}) {
       const { pid, newPid, object, sysMetaXml, fileName } = params;

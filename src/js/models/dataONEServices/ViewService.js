@@ -10,6 +10,7 @@ define([
    * Service for fetching rendered views from the DataONE MNView API.
    * @class ViewService
    * @augments DataONEService
+   * @classcategory Models/DataONEServices
    * @since 0.0.0
    */
   class ViewService extends DataONEService {

@@ -11,6 +11,7 @@ define([
   /**
    * Media type property value object for System Metadata.
    * @class MediaTypeProperty
+   * @classcategory Models/SysMeta
    * @since 0.0.0
    */
   class MediaTypeProperty {

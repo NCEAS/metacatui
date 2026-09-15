@@ -14,6 +14,7 @@ define([
    * Collection of access rules used by System Metadata.
    * @class AccessPolicy
    * @augments Array
+   * @classcategory Models/SysMeta
    * @since 0.0.0
    */
   class AccessPolicy extends Array {
@@ -61,6 +62,7 @@ define([
      * @param {number} index Rule index to replace.
      * @param {AccessRule|object} rule Replacement rule.
      * @returns {AccessPolicy} The same policy instance.
+     * @throws {Error} When index is invalid or does not identify a rule
      */
     replace(index, rule) {
       const normalizedIndex = requireNonNegativeInteger(index);
@@ -78,6 +80,7 @@ define([
      * Remove one access rule.
      * @param {number} index Rule index to remove.
      * @returns {AccessPolicy} The same policy instance.
+     * @throws {Error} When index is invalid or does not identify a rule
      */
     remove(index) {
       const normalizedIndex = requireNonNegativeInteger(index);

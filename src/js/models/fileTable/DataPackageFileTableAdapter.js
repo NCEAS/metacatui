@@ -1037,13 +1037,13 @@ define([
     const folderPathByRow = new Map();
 
     members.forEach((member) => {
+      const memberId = getId(member);
       const display = getFailedReplacementDisplay(member);
       const row = buildRow(member, {
         ...rowOptions,
         display,
-        downloadReadDenied: downloadReadDeniedPids?.has(getId(member)) === true,
-        isEagerUploading:
-          dataPackage?.eagerUploads?.has(getId(member)) === true,
+        downloadReadDenied: downloadReadDeniedPids?.has(memberId) === true,
+        isEagerUploading: dataPackage?.eagerUploads?.has(memberId) === true,
       });
       if (!row) return;
       const folderPath = deriveFolderPath(member, display);

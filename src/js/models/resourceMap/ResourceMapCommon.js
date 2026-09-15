@@ -24,6 +24,7 @@ define([
    */
   class ResourceMapConflictError extends Error {
     /**
+     * Create a conflict error with stable machine-readable details.
      * @param {string} message Human readable conflict message
      * @param {object} [options] Conflict details
      * @param {string} [options.code] Stable conflict code
@@ -106,6 +107,7 @@ define([
   /**
    * @namespace ResourceMapCommon
    * @description Shared Resource Map vocabulary, PID, URI, and error helpers
+   * @classcategory Models/ResourceMap
    * @type {object}
    * @since 0.0.0
    */
@@ -121,7 +123,6 @@ define([
      * @example
      * ResourceMapCommon.describeTerm(RDFGraph.createNamedNode("urn:data:1"));
      * // => { termType: "NamedNode", value: "urn:data:1", ... }
-     * @since 0.0.0
      */
     describeTerm(term) {
       if (!term) return null;
@@ -143,7 +144,6 @@ define([
      * ResourceMapCommon.isAbsoluteNamedNode(
      *   RDFGraph.createNamedNode("urn:data:1"),
      * ); // => true
-     * @since 0.0.0
      */
     isAbsoluteNamedNode(term) {
       return (
@@ -161,7 +161,6 @@ define([
      * ResourceMapCommon.identifierLiteralPid(
      *   RDFGraph.createLiteral("https://cn.example/resolve/data.1"),
      * ); // => "data.1"
-     * @since 0.0.0
      */
     identifierLiteralPid(literal) {
       return ResourceMapCommon.managedIdentifierValuePid(

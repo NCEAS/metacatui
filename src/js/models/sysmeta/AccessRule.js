@@ -19,6 +19,7 @@ define([
    * Access control rule that binds one or more subjects to one or more
    * permissions.
    * @class AccessRule
+   * @classcategory Models/SysMeta
    * @since 0.0.0
    */
   class AccessRule {

@@ -176,6 +176,7 @@ define([
 
     /**
      * Reset all fields to default values.
+     * @since 0.0.0
      */
     reset() {
       Object.assign(this, SystemMetadata.getDefaults());
@@ -186,6 +187,7 @@ define([
      * Reset a single field to its default in-place.
      * @param {object} values Values object to reset a field on.
      * @param {string} field Field name to reset to default.
+     * @since 0.0.0
      */
     static resetFieldToDefault(values, field) {
       const defaults = SystemMetadata.getDefaults();
@@ -196,6 +198,7 @@ define([
     /**
      * Get default values for all sysMeta fields.
      * @returns {object} Default values object.
+     * @since 0.0.0
      */
     static getDefaults() {
       return {
@@ -211,6 +214,7 @@ define([
     /**
      * Validate the current System Metadata state.
      * @returns {Array<object>} Validation issues for invalid fields.
+     * @since 0.0.0
      */
     validate() {
       return SystemMetadata.validateValues(this);
@@ -220,6 +224,7 @@ define([
      * Validate values without requiring mutation of a caller-owned object.
      * @param {object} values Candidate System Metadata values.
      * @returns {Array<object>} Validation issues.
+     * @since 0.0.0
      */
     static validateValues(values) {
       const normalized = SystemMetadata.normalizeValues(values);
@@ -266,6 +271,7 @@ define([
      * @returns {string} Canonical v2 XML serialization.
      * @throws {Error} Throws when validation is enabled and the model is
      * invalid.
+     * @since 0.0.0
      */
     serialize({ validate = true } = {}) {
       if (validate) {
@@ -344,6 +350,7 @@ define([
     /**
      * Return values for all sysMeta fields in a plain object.
      * @returns {object} Plain snapshot of the current state.
+     * @since 0.0.0
      */
     toObject() {
       return Object.fromEntries(
@@ -390,6 +397,7 @@ define([
      * Create a new SystemMetadata instance from XML.
      * @param {string} xmlString System Metadata XML string.
      * @returns {SystemMetadata} Parsed System Metadata instance.
+     * @since 0.0.0
      */
     static fromXml(xmlString) {
       return new SystemMetadata().parse(xmlString);
@@ -398,6 +406,7 @@ define([
     /**
      * Normalize this instance's values in-place
      * @returns {SystemMetadata} This instance with normalized values.
+     * @since 0.0.0
      */
     normalize() {
       const normalizedValues = SystemMetadata.normalizeValues(this.toObject());
@@ -410,6 +419,7 @@ define([
      * necessary.
      * @param {object} values An object with sysMeta fields to normalize.
      * @returns {object} Normalized values object.
+     * @since 0.0.0
      */
     static normalizeValues(values) {
       const source = isPlainObject(values) ? values : {};
@@ -458,6 +468,7 @@ define([
      * @param {object} values Normalized values object.
      * @returns {Array<object>} Validation issues for simple fields.
      * @private
+     * @since 0.0.0
      */
     static validateSimpleFields(values) {
       const issues = [];
@@ -492,6 +503,7 @@ define([
      * @returns {{normalizedValues: object, fatalIssues: Array<object>}}
      * Normalized values plus any fatal issues.
      * @private
+     * @since 0.0.0
      */
     static repairParsedValues(parsedValues, parseWarnings) {
       const normalizedValues = SystemMetadata.normalizeValues(parsedValues);

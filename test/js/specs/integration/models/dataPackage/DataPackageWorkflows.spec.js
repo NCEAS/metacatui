@@ -1981,7 +1981,7 @@ define([
 
   describe("DataPackage workflows: nested member preservation", () => {
     it("keeps a nested ResourceMap aggregated through an edit and save", async () => {
-      const { pkg, rm, services } = await loadExistingPackage({
+      const { pkg, rm } = await loadExistingPackage({
         memberPids: ["meta.1", "data.1", "nested.package.1"],
         links: [{ metadataPid: "meta.1", dataPid: "data.1" }],
         extraIndexDocs: [

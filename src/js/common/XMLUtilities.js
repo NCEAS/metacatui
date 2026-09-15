@@ -5,8 +5,19 @@ define([], () => {
   const isString = (value) =>
     typeof value === "string" || value instanceof String;
 
-  // Custom error class for XML parsing errors
+  /**
+   * Error raised when XML input cannot be parsed.
+   * @class ParseError
+   * @augments Error
+   * @memberof XMLUtilities
+   * @classcategory Common
+   * @since 0.0.0
+   */
   const ParseError = class extends Error {
+    /**
+     * Create an XML parse error.
+     * @param {string} message Error message
+     */
     constructor(message) {
       super(message);
       this.name = "ParseError";
@@ -87,6 +98,8 @@ define([], () => {
      * @param {string} [context] Context label for parse errors.
      * @returns {Document|null} Parsed XML Document, or null for empty,
      * whitespace-only, or nullish input.
+     * @throws {ParseError} When input is not a string or cannot be parsed
+     * @since 0.0.0
      */
     parseXmlString(xmlString, context = "XML response") {
       if (xmlString === null || xmlString === undefined) {
@@ -337,6 +350,13 @@ define([], () => {
       );
     },
 
+    /**
+     * Extract trimmed text from the first matching direct child element.
+     * @param {Node} node Parent XML node
+     * @param {string} name Local child element name to match
+     * @returns {string|null} Matching child text, or null
+     * @since 0.0.0
+     */
     getDirectChildText(node, name) {
       const element = this.findDirectChildElement(node, name);
       return element?.textContent?.trim() || null;
@@ -572,6 +592,7 @@ define([], () => {
      * @param {string} [context] Context label for error
      * messages.
      * @returns {string} The extracted non-empty text value.
+     * @throws {Error} When the document or required text is missing
      * @since 0.0.0
      */
     getRequiredElementText(
@@ -678,6 +699,7 @@ define([], () => {
      * @param {string} xmlString XML text to search.
      * @param {string[]} selectors Selectors to try in order.
      * @returns {string} The extracted text, or an empty string.
+     * @throws {Error} When XML parsing fails unexpectedly
      * @since 0.0.0
      */
     extractTextBySelectors(xmlString, selectors) {
@@ -703,7 +725,7 @@ define([], () => {
 
         try {
           element = xmlDoc.querySelector(selector);
-        } catch (_error) {
+        } catch {
           element = null;
         }
 
@@ -722,13 +744,7 @@ define([], () => {
     },
   };
 
-  /**
-   * Custom error type for XML parsing errors.
-   * @class ParseError
-   * @augments Error
-   * @memberof XMLUtilities
-   * @since 0.0.0
-   */
+  /** Expose the XML parse error type. @type {typeof ParseError} */
   XMLUtilities.ParseError = ParseError;
 
   return XMLUtilities;

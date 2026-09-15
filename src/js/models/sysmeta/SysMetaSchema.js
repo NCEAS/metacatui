@@ -298,6 +298,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
   /**
    * Shared schema constants and helpers for DataONE System Metadata.
    * @namespace SysMetaSchema
+   * @classcategory Models/SysMeta
    * @since 0.0.0
    */
   const SysMetaSchema = {

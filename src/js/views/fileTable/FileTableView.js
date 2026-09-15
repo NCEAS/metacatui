@@ -572,7 +572,6 @@ define([
      * row destination.
      * @param {Event} event Drag event
      * @returns {{rowModel: FileItemViewModel, element: Element}|null} Drop target
-     * @since 0.0.0
      */
     getFileDropTarget(event) {
       if (this.isDisabled || this.viewModel.get("isLoading")) return null;
@@ -591,7 +590,6 @@ define([
     /**
      * Highlight the destination during a file drag.
      * @param {Event} event Drag event
-     * @since 0.0.0
      */
     showDropTarget(event) {
       const transfer = event.originalEvent?.dataTransfer || event.dataTransfer;
@@ -608,7 +606,6 @@ define([
     /**
      * Keep the highlight while moving between cells of the same destination.
      * @param {Event} event Drag event
-     * @since 0.0.0
      */
     hideDropTarget(event) {
       if (
@@ -621,7 +618,6 @@ define([
 
     /**
      * Clear drag styling when the destination changes or is removed.
-     * @since 0.0.0
      */
     clearDropTarget() {
       this.dropTargetElement?.classList.remove(CLASS_NAMES.dropTarget);
@@ -631,7 +627,6 @@ define([
     /**
      * Emit files once for the selected table or row destination.
      * @param {Event} event Drop event
-     * @since 0.0.0
      */
     handleFilesDrop(event) {
       const transfer = event.originalEvent?.dataTransfer || event.dataTransfer;

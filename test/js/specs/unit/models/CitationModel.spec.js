@@ -1,4 +1,4 @@
-require([
+define([
   "models/CitationModel",
   "collections/Citations",
   "models/metadata/eml211/EML211",

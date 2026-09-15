@@ -352,7 +352,7 @@ define([
        * @returns {Promise<void>} Resolves when reservation finishes
        */
 
-      reserveSeriesId: async function () {
+      async reserveSeriesId() {
         // Create a new series ID
         let seriesId = ValueUtilities.makeUUID();
 

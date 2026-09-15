@@ -39,6 +39,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
   /**
    * Generic helpers for normalizing and composing URLs.
    * @namespace UrlUtilities
+   * @classcategory Common
    * @since 0.0.0
    */
   const UrlUtilities = {
@@ -283,6 +284,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
      * Encode each segment of a URL path while preserving slash separators.
      * @param {string} path URL path.
      * @returns {string} Encoded path.
+     * @throws {Error} When the path includes a query string or fragment
      */
     encodePathSegments(path = "") {
       const normalizedPath = normalizeText(path);
@@ -409,6 +411,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
      * @param {string} [options.fallbackOrigin] Fallback origin when baseUrl is
      * empty.
      * @returns {string} Full URL.
+     * @throws {Error} When a path is provided without a base URL
      */
     buildUrl(
       baseUrl = "",
@@ -463,7 +466,6 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
      * @param {string} [options.baseUrl] Explicit object/resolve service base
      * URL. Defaults to resolveServiceUrl, then objectServiceUrl.
      * @returns {string} Object download URL, or "" when unavailable.
-     * @since 0.0.0
      */
     getObjectDownloadUrl(pid, options = {}) {
       const { baseUrl } = options;

@@ -237,7 +237,6 @@ define([
        * @param {object} options Enhancement options
        * @param {boolean} options.editModeOn Whether provenance is editable
        * @returns {MetadataDocumentView} This view
-       * @since 0.0.0
        */
       enhanceWithPackage({ editModeOn }) {
         if (this.packageEnhanced) return this;

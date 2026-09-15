@@ -303,6 +303,7 @@ define([
      * @param {string} [options.objectServiceUrl] Current object service base used
      * only to recognize exact managed URLs
      * @returns {ResourceMap} Parsed resource map instance.
+     * @throws {Error} When required input is missing or the RDF/XML is invalid
      */
     static fromXml(resourceMapPid, resourceMapXml, options = {}) {
       requireNonEmptyString(resourceMapPid, "resourceMapPid required");
@@ -770,6 +771,7 @@ define([
      * @param {boolean} [options.validate] Throw when validation errors remain
      * in the current graph.
      * @returns {string} RDF/XML serialization of the current graph.
+     * @throws {Error} When validation is requested and the graph is invalid
      */
     serialize({ validate = true } = {}) {
       if (validate) {
@@ -901,6 +903,7 @@ define([
      * @param {boolean} [options.rollbackOnError] Restore the graph if the
      * outermost mutation throws.
      * @returns {ResourceMap} Updated resource map instance.
+     * @throws {Error} When the mutation callback fails
      */
     mutateGraph(mutator, { markDirty = true, rollbackOnError = false } = {}) {
       // Only the outer mutation copies state, rolls back failures, and records

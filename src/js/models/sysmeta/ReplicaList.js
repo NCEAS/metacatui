@@ -9,6 +9,7 @@ define([
    * Collection of replica entries used by System Metadata.
    * @class ReplicaList
    * @augments Array
+   * @classcategory Models/SysMeta
    * @since 0.0.0
    */
   class ReplicaList extends Array {
@@ -56,6 +57,7 @@ define([
      * @param {number} index Replica index to replace.
      * @param {Replica|object} replica Replacement replica.
      * @returns {ReplicaList} The same list instance.
+     * @throws {Error} When index is invalid or does not identify a replica
      */
     replace(index, replica) {
       const normalizedIndex = requireNonNegativeInteger(index);
@@ -73,6 +75,7 @@ define([
      * Remove one replica entry.
      * @param {number} index Replica index to remove.
      * @returns {ReplicaList} The same list instance.
+     * @throws {Error} When index is invalid or does not identify a replica
      */
     remove(index) {
       const normalizedIndex = requireNonNegativeInteger(index);

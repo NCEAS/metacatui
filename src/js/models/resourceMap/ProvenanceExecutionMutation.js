@@ -52,6 +52,7 @@ define([
    * @param {{pid: string, node: NamedNode}} programMember Exact program package
    * member
    * @returns {NamedNode|BlankNode|null} Pending execution node when found
+   * @throws {Error} When multiple pending executions make editing unsafe
    */
   function resolvePendingExecution(provenance, programMember) {
     const { graph } = provenance.resourceMap;
@@ -118,6 +119,8 @@ define([
    * @param {NamedNode|BlankNode} executionNode Execution node to update.
    * @param {{pid: string, node: NamedNode}} programMember Exact program package
    * member that should be linked
+   * @throws {Error} When existing associations make program provenance unsafe
+   * to edit
    */
   function ensureAssociationForExecution(
     provenance,
@@ -179,6 +182,7 @@ define([
    */
   class ProvenanceExecutionMutation {
     /**
+     * Create a mutation helper for one provenance model.
      * @param {object} options Mutation options
      * @param {Provenance} options.provenance Provenance instance being updated
      */
@@ -193,6 +197,8 @@ define([
      * package member whose run is needed
      * @returns {NamedNode|BlankNode} Existing or newly created execution node
      * Intended to be called inside `Provenance.mutateGraph()`
+     * @throws {ResourceMapConflictError} When the program's execution graph is
+     * not safely editable
      */
     ensureExecutionForProgram(programMember) {
       const { provenance } = this;
@@ -245,6 +251,8 @@ define([
      * @param {boolean} [options.dataFromObject] Whether the data is on the
      * object side of the RDF statement
      * @returns {Provenance} Updated provenance instance
+     * @throws {ResourceMapConflictError} When the program's execution graph is
+     * not safely editable
      */
     addExecutionProgramRelationship(options) {
       const { provenance } = this;
@@ -279,6 +287,8 @@ define([
      * @param {boolean} [options.dataFromObject] Whether the data is on the
      * object side of the RDF statement
      * @returns {Provenance} Updated provenance instance
+     * @throws {Error} When identifiers are invalid, member resolution fails,
+     * or the program provenance is read-only
      */
     removeExecutionProgramRelationship({
       dataPid,

@@ -14,6 +14,7 @@ define([
   /**
    * Media type value object for System Metadata.
    * @class MediaType
+   * @classcategory Models/SysMeta
    * @since 0.0.0
    */
   class MediaType {
@@ -58,6 +59,7 @@ define([
      * @param {number} index Property index to replace.
      * @param {MediaTypeProperty|object} property Replacement property.
      * @returns {MediaType} The same media type instance.
+     * @throws {Error} When index is invalid or does not identify a property
      */
     replace(index, property) {
       const normalizedIndex = requireNonNegativeInteger(index);
@@ -77,6 +79,7 @@ define([
      * Remove one media-type property.
      * @param {number} index Property index to remove.
      * @returns {MediaType} The same media type instance.
+     * @throws {Error} When index is invalid or does not identify a property
      */
     remove(index) {
       const normalizedIndex = requireNonNegativeInteger(index);
@@ -93,6 +96,7 @@ define([
      * Clear the full media type or only the properties list.
      * @param {"properties"} [scope] Optional scope to clear.
      * @returns {MediaType} The same media type instance.
+     * @throws {Error} When scope is not `properties`
      */
     clear(scope) {
       if (scope === undefined) {

@@ -11,6 +11,7 @@ define([
    * Service for DataONE MNAuthorization.isAuthorized checks.
    * @class AuthorizationService
    * @augments DataONEService
+   * @classcategory Models/DataONEServices
    * @since 0.0.0
    */
   class AuthorizationService extends DataONEService {
@@ -29,6 +30,7 @@ define([
      * @param {string} [action] Permission action
      * @param {object} [options] Request options
      * @returns {Promise<boolean>} Authorization result
+     * @throws {Error} When the PID or action is invalid, or the request fails
      */
     async check(pid, action = "write", options = {}) {
       const normalizedPid = this.constructor.normalizePid(
@@ -100,6 +102,7 @@ define([
      * @param {object} [options] Request options
      * @param {Function} [options.onProgress] Progress callback
      * @returns {Promise<object>} Object keyed by PID
+     * @throws {Error} When concurrency is invalid or a permission check fails
      */
     async checkAll(pids = [], action = "write", options = {}) {
       const normalizedPids = ValueUtilities.normalizeStringList(pids);

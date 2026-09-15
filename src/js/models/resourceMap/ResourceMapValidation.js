@@ -602,6 +602,7 @@ define([
    * package structure, documentation links, dates, and provenance.
    * @param {ResourceMap} resourceMap Resource Map to validate
    * @returns {object[]} Validation issues
+   * @throws {Error} When Resource Map ownership validation fails unexpectedly
    */
   function validateResourceMap(resourceMap) {
     try {

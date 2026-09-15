@@ -3,6 +3,7 @@ define(["models/dataONEServices/DataONEService"], (DataONEService) => {
    * Service for downloading packages from the DataONE Package API.
    * @class PackageService
    * @augments DataONEService
+   * @classcategory Models/DataONEServices
    * @since 0.0.0
    */
   class PackageService extends DataONEService {

@@ -6,7 +6,6 @@ define([
   "models/dataPackage/DataPackage",
   "models/SolrResult",
   "models/CitationModel",
-  "models/dataONEServices/PublishService",
   "models/dataONEServices/ObjectService",
   "models/dataONEServices/SysMetaService",
   "models/dataPackage/DataPackageRecovery",
@@ -39,7 +38,6 @@ define([
   DataPackage,
   SolrResult,
   CitationModel,
-  PublishService,
   ObjectService,
   SysMetaService,
   DataPackageRecovery,
@@ -1008,7 +1006,7 @@ define([
               (!loadedResourceMapPid ||
                 record.obsoletesRmPid === loadedResourceMapPid),
           );
-        } catch (_error) {
+        } catch {
           return false;
         }
       },

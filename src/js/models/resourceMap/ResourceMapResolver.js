@@ -522,6 +522,7 @@ define([
      * @param {object} [options] Version-chain lookup options
      * @param {AbortSignal} [options.signal] Signal used to cancel resolver work
      * @returns {Promise<string[]>} Latest PID from each discovered chain
+     * @throws {Error} When resolution is aborted
      * @since 0.0.0
      */
     async reducePidsToLatest(pids = [], options = {}) {

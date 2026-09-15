@@ -301,9 +301,10 @@ define([
      * @returns {FileItemViewModel|null} Removed row, if found
      */
     removeRow(id, options = {}) {
-      const row = this.getRows().get(id);
+      const rows = this.getRows();
+      const row = rows.get(id);
       if (!row) return null;
-      this.getRows().remove(row, options);
+      rows.remove(row, options);
       return row;
     },
 

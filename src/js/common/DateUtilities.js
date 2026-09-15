@@ -41,6 +41,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
   /**
    * Utility helpers for parsing, grouping, and formatting dates.
    * @namespace DateUtilities
+   * @classcategory Common
    * @since 0.0.0
    */
   const DateUtilities = {
@@ -65,7 +66,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
 
       try {
         return formatter(date);
-      } catch (_error) {
+      } catch {
         return "";
       }
     },

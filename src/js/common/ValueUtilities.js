@@ -14,6 +14,7 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
   /**
    * Generic helpers for normalizing, comparing, and serializing values.
    * @namespace ValueUtilities
+   * @classcategory Common
    * @since 0.0.0
    */
   const ValueUtilities = {
@@ -814,7 +815,7 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
       const normalized = String(value);
       try {
         return decodeURIComponent(normalized);
-      } catch (_error) {
+      } catch {
         return normalized;
       }
     },
@@ -827,6 +828,7 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
      * @param {string} [separator] Separator between key parts.
      * @param {boolean} [encode] Whether to md5-hash the result.
      * @returns {string} Generated key.
+     * @throws {Error} When keys is not a non-empty array
      */
     buildInstanceKey(
       options = {},
@@ -865,6 +867,8 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
      * @param {object} [options] Options passed to the constructor.
      * @param {Function} buildInstanceKey Function that builds a unique key.
      * @returns {object} Singleton instance.
+     * @throws {Error} When the class or key builder is invalid, or when the
+     * class has an invalid instance cache
      */
     getSingleton(ClassRef, options, buildInstanceKey) {
       if (!ClassRef) {
@@ -950,7 +954,8 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
      * @param {AbortSignal} [options.signal] Abort signal.
      * @param {Function} [options.onProgress] Progress callback.
      * @returns {Promise<{value: string, algorithm: string}>} Checksum result.
-     * @since 0.0.0
+     * @throws {Error} When the input, algorithm, or checksum operation is
+     * invalid, fails, or is aborted
      */
     async calculateBlobChecksum(
       blob,
@@ -1000,7 +1005,6 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
      * @param {string} options.nid Namespace identifier (default: "uuid").
      * @param {string} options.sep Separator between components (default: ":").
      * @returns {string} Generated UUID string.
-     * @since 0.0.0
      */
     makeUUID({ prefix = "", scheme = "urn", nid = "uuid", sep = ":" } = {}) {
       return `${prefix}${scheme}${sep}${nid}${sep}${uuid.v4()}`;
@@ -1011,7 +1015,6 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
      * @param {string} filename Filename string.
      * @returns {string} File extension in lowercase, or empty string if none
      * found.
-     * @since 0.0.0
      */
     extractFileExtension(filename) {
       if (!filename) return "";
@@ -1027,7 +1030,6 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
      * character.
      * @returns {boolean} True if the value matches the pattern, false
      * otherwise.
-     * @since 0.0.0
      */
     matchWildcard(value, pattern) {
       if (typeof value !== "string" || typeof pattern !== "string") {

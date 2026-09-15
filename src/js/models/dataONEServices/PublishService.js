@@ -8,6 +8,7 @@ define([
    * around the DataONE Publish API.
    * @class PublishService
    * @augments DataONEService
+   * @classcategory Models/DataONEServices
    * @since 0.0.0
    */
   class PublishService extends DataONEService {
@@ -25,6 +26,7 @@ define([
      * @param {string} pid Package PID
      * @param {object} [options] Request options
      * @returns {Promise<string>} Published identifier
+     * @throws {Error} When the PID is invalid or the publish request fails
      */
     async publish(pid, options = {}) {
       const normalizedPid = this.constructor.normalizePid(

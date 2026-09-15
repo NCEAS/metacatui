@@ -988,6 +988,7 @@ define([
    */
   class ResourceMapState {
     /**
+     * Create derived state for one ResourceMap.
      * @param {object} options State options
      * @param {ResourceMap} options.resourceMap Resource Map to index
      */

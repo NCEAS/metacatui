@@ -1091,9 +1091,10 @@ define([
           cancelled: false,
           controller: linked.controller,
         };
-        if (this.getPendingEagerUploads().length) {
+        const pendingEagerUploads = this.getPendingEagerUploads();
+        if (pendingEagerUploads.length) {
           this.dataPackage.events.trigger("upload:queued", {
-            pendingEagerUploads: this.getPendingEagerUploads(),
+            pendingEagerUploads,
           });
 
           let rejectOnAbort;
@@ -1725,7 +1726,7 @@ define([
             "upload source",
           );
         }
-      } catch (_verificationError) {
+      } catch {
         // If the recheck itself fails, keep the original upload failure.
       }
       return null;
@@ -1927,7 +1928,7 @@ define([
         await this.dataPackage
           .getUploadRecoveryStore()
           .save(record.metadataPid, record);
-      } catch (_error) {
+      } catch {
         // Recovery is best-effort; never block the upload on it.
       }
     }

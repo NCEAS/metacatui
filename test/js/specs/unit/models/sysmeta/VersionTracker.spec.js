@@ -2,8 +2,7 @@ define([
   "/test/js/specs/shared/clean-state.js",
   "/test/js/specs/shared/concurrency-tracker.js",
   "models/sysmeta/VersionTracker",
-  "models/dataONEServices/SysMetaService",
-], (cleanState, trackConcurrency, VersionTracker, SysMetaService) => {
+], (cleanState, trackConcurrency, VersionTracker) => {
   const should = chai.should();
   const expect = chai.expect;
 

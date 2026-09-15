@@ -46,7 +46,7 @@ define([
         try {
           const objectFormats = await Utilities.awaitObjectFormats();
           formats = objectFormats?.toJSON() || [];
-        } catch (error) {
+        } catch {
           // Use the built-in formats when the remote request fails.
           const objectFormats = new ObjectFormats();
           formats = objectFormats?.toJSON() || [];

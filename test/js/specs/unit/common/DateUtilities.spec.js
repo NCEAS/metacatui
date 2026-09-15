@@ -6,12 +6,14 @@ define(["common/DateUtilities"], function (DateUtilities) {
   describe("DateUtilities", function () {
     describe("isValidDate", function () {
       it("returns true for valid Date instances", function () {
-        DateUtilities.isValidDate(new Date()).should.equal(true);
+        expect(DateUtilities.isValidDate(new Date())).to.equal(true);
       });
 
       it("returns false for invalid dates and non-date values", function () {
-        DateUtilities.isValidDate(new Date("not-a-date")).should.equal(false);
-        DateUtilities.isValidDate("2024-01-01").should.equal(false);
+        expect(DateUtilities.isValidDate(new Date("not-a-date"))).to.equal(
+          false,
+        );
+        expect(DateUtilities.isValidDate("2024-01-01")).to.equal(false);
       });
     });
 

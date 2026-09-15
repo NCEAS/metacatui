@@ -9,6 +9,7 @@ define(["common/XMLUtilities", "common/ValidationUtilities"], (
   /**
    * Helpers for DataONE XML response conventions.
    * @namespace DataONEXmlUtilities
+   * @classcategory Common
    * @since 0.0.0
    */
   const DataONEXmlUtilities = {
@@ -23,6 +24,7 @@ define(["common/XMLUtilities", "common/ValidationUtilities"], (
      * @returns {{name:string, message:string, status:string,
      * detailCode:(string|null)}|null} Structured error data, or null when no
      * DataONE error is present.
+     * @throws {Error} When XML parsing fails with an unexpected error type
      */
     parseErrorXml(xmlInput, context = "DataONE XML response") {
       if (xmlInput === null || xmlInput === undefined) return null;
@@ -113,6 +115,7 @@ define(["common/XMLUtilities", "common/ValidationUtilities"], (
      * @param {string} [context="DataONE XML response"] Context label for parse
      * errors.
      * @returns {Document} Parsed XML document.
+     * @throws {Error} When XML is invalid or contains a DataONE error
      */
     parseRequiredDocument(xmlInput, context = "DataONE XML response") {
       const xml = xmlInput?.documentElement

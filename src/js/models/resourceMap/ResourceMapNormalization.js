@@ -360,6 +360,7 @@ define([
     }
 
     /**
+     * Create a normalization helper for one ResourceMap.
      * @param {object} options Normalization options
      * @param {ResourceMap} options.resourceMap Resource Map being normalized
      */

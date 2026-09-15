@@ -25,6 +25,7 @@ define([
   /**
    * Replication policy value object for System Metadata.
    * @class ReplicationPolicy
+   * @classcategory Models/SysMeta
    * @since 0.0.0
    */
   class ReplicationPolicy {
@@ -49,6 +50,7 @@ define([
      * Normalize and validate a replication-node type.
      * @param {string} type Node-list type.
      * @returns {"preferred"|"blocked"} Canonical node-list type.
+     * @throws {Error} When type is not `preferred` or `blocked`
      * @private
      */
     static requireNodeType(type) {
@@ -70,6 +72,7 @@ define([
      * Resolve the array field for a replication-node type.
      * @param {"preferred"|"blocked"} type Node-list type.
      * @returns {"preferredNodes"|"blockedNodes"} Backing array field.
+     * @throws {Error} When type is not `preferred` or `blocked`
      * @private
      */
     static getNodeField(type) {
@@ -81,6 +84,7 @@ define([
      * @param {string} node Member node identifier.
      * @param {"preferred"|"blocked"} type Node-list type.
      * @returns {ReplicationPolicy} The same policy instance.
+     * @throws {Error} When type is not `preferred` or `blocked`
      */
     add(node, type) {
       this[ReplicationPolicy.getNodeField(type)].push(node);
@@ -96,6 +100,7 @@ define([
      * @param {string} node Replacement member node.
      * @param {"preferred"|"blocked"} type Node-list type.
      * @returns {ReplicationPolicy} The same policy instance.
+     * @throws {Error} When type or index is invalid
      */
     replace(index, node, type) {
       const normalizedIndex = requireNonNegativeInteger(index);
@@ -115,6 +120,7 @@ define([
      * @param {number} index Node index to remove.
      * @param {"preferred"|"blocked"} type Node-list type.
      * @returns {ReplicationPolicy} The same policy instance.
+     * @throws {Error} When type or index is invalid
      */
     remove(index, type) {
       const normalizedIndex = requireNonNegativeInteger(index);
@@ -133,6 +139,7 @@ define([
      * scalar policy values.
      * @param {"preferred"|"blocked"} [type] Node-list type to clear.
      * @returns {ReplicationPolicy} The same policy instance.
+     * @throws {Error} When type is not `preferred` or `blocked`
      */
     clear(type) {
       if (type === undefined) {

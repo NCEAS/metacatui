@@ -1064,7 +1064,6 @@ define([
     /**
      * Check whether the member has a previewable image format.
      * @returns {boolean} Whether the member can use an image preview
-     * @since 0.0.0
      */
     isImage() {
       return this.objectFormats.isImage(this.getFormatProperties());
@@ -1141,7 +1140,7 @@ define([
         }
         try {
           json[key] = JSON.parse(JSON.stringify(serializable));
-        } catch (_error) {
+        } catch {
           // Complex runtime-only values are intentionally omitted.
         }
       });
@@ -1225,7 +1224,10 @@ define([
       return this.checkPermission("write", options, authorizationService);
     }
 
-    // See XMLUtilities.getXMLSafeID().
+    /**
+     * Convert this member's PID to the legacy XML-safe identifier form.
+     * @returns {string|null} XML-safe identifier, or null for an empty PID
+     */
     getXMLSafeID() {
       return XMLUtilities.getXMLSafeID(this.pid);
     }

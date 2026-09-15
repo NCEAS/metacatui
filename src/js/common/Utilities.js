@@ -516,6 +516,7 @@ define(["collections/ObjectFormats", "common/ValueUtilities", "md5"], (
      * @param {string} property Property name to retrieve.
      * @param {object} [app] MetacatUI object.
      * @returns {*} Property value, or `undefined` when not present.
+     * @since 0.0.0
      */
     getMetacatUIProperty(property, app) {
       const normalizedApp = app || globalThis.MetacatUI?.appModel;

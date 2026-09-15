@@ -69,6 +69,7 @@ define([
    * entity summaries from the HTML, including PIDs, file names, and object
    * URLs.
    * @class ViewServiceDoc
+   * @classcategory Models/ViewService
    * @since 0.0.0
    */
   class ViewServiceDoc {

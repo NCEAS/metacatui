@@ -156,6 +156,7 @@ define([
    * @param {object} [options] Fallback options
    * @param {AbortSignal} [options.signal] Abort signal
    * @returns {Promise<void>} Resolves after the fallback attempt
+   * @throws {Error} When loading is aborted
    */
   async function applySystemMetadataFallback(
     dataPackage,

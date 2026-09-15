@@ -253,6 +253,7 @@ define([
      * descriptor and caller options. Subclasses pass the result to `super()`.
      * @param {object} [options] Caller-provided service options
      * @returns {object} Normalized constructor options
+     * @throws {Error} When no base URL can be resolved
      */
     static optionsFromDescriptor(options = {}) {
       const source = options && typeof options === "object" ? options : {};
@@ -338,6 +339,7 @@ define([
      * @param {string} [label] Field label for error reporting
      * @param {string} [message] Error message override
      * @returns {string} Trimmed PID
+     * @throws {Error} When pid is empty
      */
     static normalizePid(
       pid,
@@ -353,6 +355,7 @@ define([
      * @param {string} [label] Field label for error reporting
      * @param {string} [message] Error message override
      * @returns {string} Encoded PID path segment
+     * @throws {Error} When pid is empty
      */
     static encodePidPath(pid, label = "pid", message = undefined) {
       return UrlUtilities.encodeDataONEPidForPath(
@@ -367,6 +370,7 @@ define([
      * @param {object} [options] Path options
      * @param {string} [options.query] Query string appended after `?`
      * @returns {string} Encoded PID path
+     * @throws {Error} When pid is empty
      */
     static buildPidPath(pid, { query } = {}) {
       const encoded = this.encodePidPath(pid);
@@ -473,6 +477,7 @@ define([
      * @param {object} [options] Request options
      * @returns {Promise<DataONEHttpResponse>} Promise resolving to the
      * response.
+     * @throws {Error} When client is invalid or the request fails
      */
     async requestWithClient(client, options = {}) {
       if (!client || typeof client.request !== "function") {
@@ -499,6 +504,7 @@ define([
      * @param {string} params.context Error/parse context label
      * @returns {Promise<DataONEHttpResponse>} Response with parsed identifier
      * data.
+     * @throws {Error} When the request or identifier parsing fails
      */
     async sendParsedIdentifierRequest({
       client,
