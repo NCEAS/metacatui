@@ -5738,7 +5738,7 @@ table.download-contents.nested {
   line-height: 0.8em;
   border-top: 0px;
 }
-.table .table-header {
+.table:not(#data-package-table) .table-header {
   border-bottom: 1px solid #8da2aa;
 }
 .download-contents .table-header-title {

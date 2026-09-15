@@ -1429,15 +1429,15 @@ svg .no-activity,
   font-weight: bold;
 }
 .table .table-header {
-  background-color: #a3b4bb;
+  background-color: #cee0e4;
   text-align: center;
-  color: #fff;
+  color: #273f49;
   font-weight: normal;
   padding: 8px;
   font-size: 0.95em;
 }
 .table-header .subtle {
-  color: #ffffff;
+  color: #273f49;
   font-weight: lighter;
   font-size: 0.9em;
   margin-left: 10px;
