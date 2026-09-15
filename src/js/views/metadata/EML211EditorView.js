@@ -613,7 +613,7 @@ define([
         const { renderId, signal } = this.getRenderOptions(options);
         this.updateLoadingText(MESSAGES.lookingForMetadata);
         const sysMetaService = new SysMetaService({
-          readBaseUrl: MetacatUI.appModel.get("metaServiceUrl"),
+          readBaseUrl: Utilities.getMetacatUIProperty("metaServiceUrl"),
         });
 
         try {
@@ -1538,8 +1538,8 @@ ${supportDetails}`;
        */
       getEditorFileTableRows() {
         const resolveBaseUrl =
-          MetacatUI.appModel.get("resolveServiceUrl") ||
-          MetacatUI.appModel.get("objectServiceUrl") ||
+          Utilities.getMetacatUIProperty("resolveServiceUrl") ||
+          Utilities.getMetacatUIProperty("objectServiceUrl") ||
           "";
         const members =
           MetacatUI.rootDataPackage?.members
@@ -3920,8 +3920,8 @@ ${supportDetails}`;
           const serviceOptions =
             MetacatUI.appModel.getDataPackageServiceOptions();
           const result = await new DataPackageRecovery({
-            resolveServiceUrl: MetacatUI.appModel.get("resolveServiceUrl"),
-            objectServiceUrl: MetacatUI.appModel.get("objectServiceUrl"),
+            resolveServiceUrl: serviceOptions.resolverOptions.resolveServiceUrl,
+            objectServiceUrl: serviceOptions.resolverOptions.objectServiceUrl,
             objectService: new ObjectService(
               serviceOptions.objectServiceOptions,
             ),

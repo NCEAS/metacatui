@@ -32,6 +32,8 @@ define([
       "Download All is unavailable because one or more dataset files are missing.",
     packageDownloadReadDenied:
       "Download All is unavailable because you do not have permission to read the entire package.",
+    packageDownloadTooLarge:
+      "This dataset is too large to download all at once. Please download files individually.",
   };
 
   /**

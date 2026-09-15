@@ -1469,7 +1469,7 @@ define([
         context.packageDownloadUrl.should.equal("");
       });
 
-      it("does not add Download All when the package exceeds maxDownloadSize", () => {
+      it("explains why Download All is disabled when the package is too large", () => {
         const dataPackage = createViewerDataPackage({
           members: [
             {
@@ -1495,41 +1495,60 @@ define([
           dataPackage,
         );
 
-        context.packageDownloadUrl.should.equal("");
+        expect(context.packageDownloadUrl).to.equal("");
+        const rows = MetadataView.prototype.getFileTableRows.call({
+          ...context,
+          dataPackage,
+        });
+        const root = rows.find((row) => row.id === "dataset:rm.1");
+        root.actions.should.have.length(1);
+        root.actions[0].should.include({
+          id: "download",
+          isDisabled: true,
+          title: FILE_TABLE_MESSAGES.packageDownloadTooLarge,
+        });
       });
 
-      it("does not add Download All when a member size is missing", () => {
-        const dataPackage = createViewerDataPackage({
-          members: [
-            {
-              pid: "rm.1",
-              formatType: "RESOURCE",
-              formatId: RESOURCE_MAP_FORMAT_ID,
-            },
-            {
-              pid: "data.1",
-              formatType: "DATA",
-              fileName: "known.csv",
-              size: 60,
-            },
-            {
-              pid: "data.2",
-              formatType: "DATA",
-              fileName: "unknown.csv",
-            },
-          ],
+      [
+        { size: undefined, allowed: true },
+        { size: 60, allowed: true },
+        { size: 101, allowed: false },
+      ].forEach(({ size, allowed }) => {
+        it(`${allowed ? "allows" : "blocks"} Download All with ${size ?? "no"} known bytes and another file of unknown size`, () => {
+          const dataPackage = createViewerDataPackage({
+            members: [
+              {
+                pid: "rm.1",
+                formatType: "RESOURCE",
+                formatId: RESOURCE_MAP_FORMAT_ID,
+              },
+              { pid: "data.1", formatType: "DATA", fileName: "data.csv", size },
+              { pid: "data.2", formatType: "DATA", fileName: "unknown.csv" },
+            ],
+          });
+          setPackageAppModel({
+            maxDownloadSize: 100,
+            maxViewerPackageMembers: 1,
+          });
+          const context = { dataPackage };
+
+          MetadataView.prototype.confirmPackageDownloadAll.call(
+            context,
+            dataPackage,
+          );
+          const root = MetadataView.prototype.getFileTableRows
+            .call(context)
+            .find((row) => row.id === "dataset:rm.1");
+
+          root.actions.should.have.length(1);
+          root.actions[0].isDisabled.should.equal(!allowed);
+          context.packageDownloadUrl.should.equal(
+            allowed ? "https://cn.test/package/rm.1" : "",
+          );
+          context.packageDownloadUnavailableReason.should.equal(
+            allowed ? "" : FILE_TABLE_MESSAGES.packageDownloadTooLarge,
+          );
         });
-        setPackageAppModel({ maxDownloadSize: 100 });
-        const context = {
-          packageDownloadUrl: "",
-        };
-
-        MetadataView.prototype.confirmPackageDownloadAll.call(
-          context,
-          dataPackage,
-        );
-
-        context.packageDownloadUrl.should.equal("");
       });
     });
 

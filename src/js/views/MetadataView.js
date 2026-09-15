@@ -2044,6 +2044,8 @@ define([
             member.sysMetaReadDenied === true ||
             this.memberDownloadReadDenied?.has(member.pid),
         );
+        // Metacat cannot download a partial package when some members are private:
+        // https://github.com/NCEAS/metacat/issues/1169
         if (this.packageDownloadReadDenied || memberReadDenied) {
           this.packageDownloadUnavailableReason =
             FILE_TABLE_MESSAGES.packageDownloadReadDenied;
@@ -2059,12 +2061,10 @@ define([
           MetacatUI.appModel.get("maxDownloadSize"),
         );
         if (Number.isFinite(maxDownloadSize) && maxDownloadSize > 0) {
-          try {
-            const totalSize = dataPackage.getTotalSize();
-            if (!Number.isFinite(totalSize) || totalSize > maxDownloadSize) {
-              return;
-            }
-          } catch {
+          // This download safeguard uses known sizes; missing sizes count as zero.
+          if (dataPackage.getTotalSize() > maxDownloadSize) {
+            this.packageDownloadUnavailableReason =
+              FILE_TABLE_MESSAGES.packageDownloadTooLarge;
             return;
           }
         }

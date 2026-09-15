@@ -1783,28 +1783,14 @@ define([
     }
 
     /**
-     * Sum the reported sizes of the package's data members.
-     * @returns {number|null} Total bytes, or null when the package has no data
-     * @throws {Error} When any size is missing or nonnumeric
+     * Sum the known sizes of the package's data members.
+     * @returns {number} Known total bytes
      */
     getTotalSize() {
-      const dataMembers = this.members.getData();
-      if (!dataMembers?.length) return null;
-      const sizes = dataMembers
-        .map((member) => {
-          const size = member.size ?? member.sysMeta?.size;
-          if (size === null || size === undefined || size === "") return null;
-          const sizeNum = Number(size);
-          return Number.isFinite(sizeNum) ? sizeNum : null;
-        })
-        .filter((size) => size !== null);
-
-      if (sizes.length !== dataMembers.length) {
-        throw new Error(
-          "Cannot calculate total size of data package because some data members are missing size information",
-        );
-      }
-      return sizes.reduce((total, size) => total + size, 0);
+      return this.members.getData().reduce((total, member) => {
+        const size = Number(member.size ?? member.sysMeta?.size);
+        return total + (Number.isFinite(size) ? size : 0);
+      }, 0);
     }
 
     // See DataPackageLoader.getManifestFromResourceMap().

@@ -389,13 +389,20 @@ define([
         pkg.getTotalSize().should.equal(15);
       });
 
-      it("rejects totals with missing or nonnumeric sizes", () => {
+      it("ignores missing and nonnumeric sizes", () => {
         const pkg = buildPackage([
           { pid: "data.1", formatType: "DATA", size: "10" },
           { pid: "data.2", formatType: "DATA", size: "unknown" },
+          { pid: "data.3", formatType: "DATA" },
         ]);
 
-        expect(() => pkg.getTotalSize()).to.throw("missing size information");
+        pkg.getTotalSize().should.equal(10);
+      });
+
+      it("returns zero when the package has no data members", () => {
+        const pkg = buildPackage([]);
+
+        pkg.getTotalSize().should.equal(0);
       });
     });
 
