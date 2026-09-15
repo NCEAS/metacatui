@@ -87,9 +87,10 @@ define([
        * @property {MapConfig#Notification} [notification] A custom badge and message to
        * display about the layer in the Layer list. For example, this could highlight
        * the layer if it is new, give a warning if they layer is under development, etc.
-       * @property {'ready'|'error'|null} [status = null] Set to 'ready' when the
-       * resource is loaded and ready to be rendered in a map view. Set to 'error' when
-       * the asset is not supported, or there was a problem requesting the resource.
+       * @property {'loading'|'ready'|'error'|null} [status = null] Set to
+       * 'loading' while the resource is being requested, 'ready' when it can
+       * be rendered in a map view, and 'error' when the asset is not
+       * supported or there was a problem requesting the resource.
        * @property {string} [statusDetails = null] Any further details about the status,
        * especially when there was an error.
        * @property {boolean} [hideInLayerList = false] Set to true to hide this asset
@@ -121,6 +122,11 @@ define([
           notification: {},
           status: null,
           statusDetails: null,
+          displayReady: null,
+          // Whether this layer currently has pending tile requests/processing
+          // (network or GPU work in flight). Null for asset types that don't
+          // track this (e.g. vector data), which fall back to displayReady.
+          tilesLoading: null,
           hideInLayerList: false,
           showOpacitySlider: true,
           clickFeatureAction: null,
@@ -437,8 +443,6 @@ define([
        * @since 2.27.0
        */
       setListeners() {
-        const model = this;
-
         // Listen for changes to the status
         this.stopListening(this, "change:status");
         this.listenTo(this, "change:status", () => {
@@ -751,10 +755,32 @@ define([
        * @since 2.21.0
        */
       resetStatus() {
-        const defaults = this.defaults();
-        this.set("status", defaults.status);
-        this.set("statusDetails", defaults.statusDetails);
+        this.stopLoadingStateTracking();
+        this.set("status", "loading");
+        this.set("statusDetails", null);
+        this.set("displayReady", false);
+        this.set("tilesLoading", null);
       },
+
+      /**
+       * Start tracking when the asset is actually displayed in the active map
+       * scene, and whether it currently has pending tile requests/processing.
+       * Subclasses can override to attach Cesium-type-specific listeners that
+       * set displayReady after the first visual content is on screen, and
+       * keep tilesLoading in sync with real, ongoing loading work so the map
+       * loading indicator doesn't get stuck (e.g. when a visible layer has no
+       * tiles in the current view) or stop tracking after the first tile
+       * (e.g. while panning).
+       * @param {object} _context Optional map-view context (e.g. scene).
+       * @since 0.0.0
+       */
+      startLoadingStateTracking(_context) {},
+
+      /**
+       * Stop any in-flight listeners started by startLoadingStateTracking.
+       * @since 0.0.0
+       */
+      stopLoadingStateTracking() {},
 
       /**
        * Checks if the asset information has been fetched and is ready to use.

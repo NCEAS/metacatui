@@ -383,6 +383,7 @@ define([
           label: "Your Polygon",
           description: "The polygon that you are drawing on the map",
           hideInLayerList: true,
+          excludeFromLoadingState: true,
           outlineColor: this.color,
           highlightColor: this.color,
           opacity: this.opacity,

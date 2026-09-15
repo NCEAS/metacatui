@@ -1714,6 +1714,12 @@ define([
        */
       add3DTileset(cesiumModel) {
         this.scene.primitives.add(cesiumModel);
+        const mapAsset = cesiumModel?.mapAssetModel;
+
+        if (mapAsset?.startLoadingStateTracking) {
+          mapAsset.startLoadingStateTracking({ scene: this.scene });
+        }
+        this.requestRender();
       },
 
       /**
@@ -1723,6 +1729,10 @@ define([
        * @since 2.27.0
        */
       remove3DTileset(cesiumModel) {
+        const mapAsset = cesiumModel?.mapAssetModel;
+        if (mapAsset?.stopLoadingStateTracking) {
+          mapAsset.stopLoadingStateTracking();
+        }
         this.scene.primitives.remove(cesiumModel);
       },
 
@@ -1753,6 +1763,13 @@ define([
       addImagery(cesiumModel) {
         this.scene.imageryLayers.add(cesiumModel);
         this.sortImagery();
+        const mapAsset = cesiumModel?.mapAssetModel;
+
+        if (mapAsset?.startLoadingStateTracking) {
+          mapAsset.startLoadingStateTracking({ scene: this.scene });
+        }
+
+        this.requestRender();
       },
 
       /**
@@ -1762,6 +1779,10 @@ define([
        * @since 2.27.0
        */
       removeImagery(cesiumModel) {
+        const mapAsset = cesiumModel?.mapAssetModel;
+        if (mapAsset?.stopLoadingStateTracking) {
+          mapAsset.stopLoadingStateTracking();
+        }
         console.log("Removing imagery from map", cesiumModel);
         console.log("Imagery layers", this.scene.imageryLayers);
         this.scene.imageryLayers.remove(cesiumModel);
