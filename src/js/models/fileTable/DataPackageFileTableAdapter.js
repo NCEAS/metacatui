@@ -534,14 +534,12 @@ define([
    * @param {DataPackageMember} member Package member
    * @param {string} type Uppercase format type
    * @param {Function|null} formatName Resolver `(formatId, type) => string`
-   * @param {string} mode Table mode
    * @returns {string} Friendly type label
    */
-  function getTypeLabel(member, type, formatName, mode) {
+  function getTypeLabel(member, type, formatName) {
     const formatId = member?.getFormatId?.() || member?.formatId || "";
     const mediaType =
       member?.getFormatProperties?.().mediaType || member?.mediaType || "";
-    if (mode === "editor" && type === "DATA") return "Data";
     const shortFormatId = ObjectFormats.getFriendlyFormat(formatId);
     if (shortFormatId && shortFormatId !== formatId) return shortFormatId;
     const shortMediaType = ObjectFormats.getFriendlyFormat(mediaType);
@@ -661,7 +659,7 @@ define([
     if (isNestedPackage) kind = "dataset";
     const typeLabel = isNestedPackage
       ? "Nested package"
-      : getTypeLabel(typeMember, type, formatName, mode);
+      : getTypeLabel(typeMember, type, formatName);
     let typeTooltip = "";
     if (isNestedPackage) {
       typeTooltip = "A different dataset nested under this one";
