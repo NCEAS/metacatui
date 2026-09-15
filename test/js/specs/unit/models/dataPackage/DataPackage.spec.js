@@ -872,6 +872,23 @@ define([
         result.error.should.equal(missingError);
         sinon.assert.notCalled(warn);
       });
+
+      it("keeps location failures distinct from authorization failures", async () => {
+        const pkg = packageWithResourceMapModel(null);
+        const locationError = Object.assign(new Error("location unavailable"), {
+          code: "OBJECT_LOCATION_UNAVAILABLE",
+        });
+        sandbox
+          .stub(pkg.getRootResourceMapMember(), "fetchObject")
+          .rejects(locationError);
+
+        const result = await pkg.getManifestFromResourceMap();
+
+        result.ok.should.equal(false);
+        result.reason.should.equal("error");
+        expect(result.httpStatus).to.equal(null);
+        result.error.should.equal(locationError);
+      });
     });
 
     describe("loadEditablePackage()", () => {

@@ -649,6 +649,20 @@ define([
         FakeXMLHttpRequest.instances.length.should.equal(1);
       });
 
+      it("does not dedupe when redirect modes differ", async () => {
+        const fetchStub = state.sandbox.stub(window, "fetch");
+
+        await expectNoDedupe(
+          state.client,
+          fetchStub,
+          { path: "/object/5" },
+          { path: "/object/5", redirect: "error" },
+        );
+
+        fetchStub.firstCall.args[1].redirect.should.equal("follow");
+        fetchStub.secondCall.args[1].redirect.should.equal("error");
+      });
+
       it("does not dedupe when headers differ", async () => {
         const fetchStub = state.sandbox.stub(window, "fetch");
 

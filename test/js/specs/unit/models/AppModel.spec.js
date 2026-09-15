@@ -87,6 +87,8 @@ define(["models/AppModel"], (AppModel) => {
             objectServiceOptions: {
               readBaseUrl: "https://mn.example.org/object/",
               writeBaseUrl: "https://mn.example.org/object/",
+              resolveServiceUrl: "https://cn.example.org/resolve/",
+              metaServiceUrl: "https://mn.example.org/meta/",
             },
             packageServiceOptions: {
               baseUrl:
@@ -136,6 +138,8 @@ define(["models/AppModel"], (AppModel) => {
             objectServiceOptions: {
               readBaseUrl: "https://cn.example.org/resolve/",
               writeBaseUrl: undefined,
+              resolveServiceUrl: "https://cn.example.org/resolve/",
+              metaServiceUrl: "https://cn.example.org/meta/",
             },
             packageServiceOptions: {
               baseUrl:

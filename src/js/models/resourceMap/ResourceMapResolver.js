@@ -1065,6 +1065,8 @@ define([
           this.objectService ||
           new ObjectService({
             readBaseUrl: this.objectServiceUrl || this.resolveServiceUrl,
+            resolveServiceUrl: this.resolveServiceUrl,
+            metaServiceUrl: this.metaServiceUrl,
           });
         const xml = await objectService.download(rm, {
           responseType: "text",

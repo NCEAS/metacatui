@@ -195,6 +195,33 @@ define([
     });
 
     describe("fetchResourceMap()", () => {
+      it("constructs a routable fallback ObjectService for CN reads", async () => {
+        const resolver = new ResourceMapResolver({
+          metaServiceUrl: "https://cn.example.org/meta",
+          resolveServiceUrl: "https://cn.example.org/resolve",
+        });
+        const download = state.sandbox
+          .stub(ObjectService.prototype, "download")
+          .resolves("<rdf:RDF></rdf:RDF>");
+        state.sandbox.stub(ResourceMap, "fromXml").returns({
+          getMemberPids: () => [],
+        });
+
+        await resolver.fetchResourceMap("resource_map_1");
+
+        sinon.assert.calledOnceWithExactly(download, "resource_map_1", {
+          responseType: "text",
+          timeoutMs: 45000,
+          signal: undefined,
+        });
+        const service = download.firstCall.thisValue;
+        service.readBaseUrl.should.equal("https://cn.example.org/resolve");
+        service.resolveServiceUrl.should.equal(
+          "https://cn.example.org/resolve",
+        );
+        service.locationResolver.should.exist;
+      });
+
       it("passes configured services when parsing a downloaded Resource Map", async () => {
         const originalMetacatUI = globalThis.MetacatUI;
         const resolveServiceUrl = "https://cn.example.org/cn/v2/resolve";

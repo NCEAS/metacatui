@@ -103,6 +103,7 @@ define([
    * instance).
    * @property {*} [body] Request body.
    * @property {string|null} [token] Optional auth token (Bearer).
+   * @property {"follow"|"error"|"manual"} [redirect] Fetch redirect handling.
    * @property {AbortSignal} [signal] AbortSignal to cancel the request.
    * @property {number|null} [timeoutMs] Override timeout in milliseconds.
    * @property {object} [retry] Override retry configuration for this request.
@@ -126,6 +127,7 @@ define([
    * auth).
    * @property {*} [body] Request body.
    * @property {string|null} [token] Optional auth token (Bearer).
+   * @property {"follow"|"error"|"manual"} [redirect] Fetch redirect handling.
    * @property {AbortSignal} [signal] AbortSignal to cancel the request.
    * @property {number|null} timeoutMs Effective timeout in milliseconds.
    * @property {object} retry Retry overrides for this request.
@@ -325,6 +327,7 @@ define([
         headers,
         body,
         token = null,
+        redirect = "follow",
         signal,
         timeoutMs: requestTimeoutMs,
         retry: retryOverrides = {},
@@ -393,6 +396,7 @@ define([
         headers: mergedHeaders,
         body,
         token,
+        redirect,
         signal,
         timeoutMs: normalizedTimeoutMs,
         retry,
@@ -663,8 +667,16 @@ define([
      * @private
      */
     async performFetch(options = {}) {
-      const { url, method, headers, body, responseType, signal, timeoutMs } =
-        options;
+      const {
+        url,
+        method,
+        headers,
+        body,
+        responseType,
+        redirect,
+        signal,
+        timeoutMs,
+      } = options;
       // Enable fetch to be aborted via AbortController. We track whether an
       // abort came from the caller's signal vs an internal timeout, so we can
       // reliably convert timeouts into TimeoutError.
@@ -705,6 +717,7 @@ define([
           method,
           headers,
           body,
+          redirect,
           signal: controller.signal,
         });
 
@@ -887,6 +900,7 @@ define([
       retry,
       signal,
       transport,
+      redirect,
     }) {
       // Generate scope based on token or Authorization header
       let scope = token ? `auth:${md5(String(token))}` : null;
@@ -913,6 +927,7 @@ define([
         String(method).toUpperCase(),
         url,
         transport,
+        redirect,
         responseType,
         headerRepresentation,
         `timeout:${timeoutKey}`,

@@ -2850,6 +2850,8 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           objectServiceOptions: {
             readBaseUrl: objectServiceUrl || resolveServiceUrl,
             writeBaseUrl: objectServiceUrl || undefined,
+            resolveServiceUrl,
+            metaServiceUrl,
           },
           packageServiceOptions: {
             baseUrl: packageServiceUrl || undefined,

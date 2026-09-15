@@ -1,6 +1,7 @@
 define([
   "/test/js/specs/shared/clean-state.js",
   "models/dataONEServices/ObjectService",
+  "models/dataONEServices/ObjectLocationResolver",
 ], (cleanState, ObjectService) => {
   const should = chai.should();
   const expect = chai.expect;
@@ -100,6 +101,250 @@ define([
     });
 
     describe("fetch/download", () => {
+      it("uses a new MN request for an authenticated resolve read", async () => {
+        const locationResolver = {
+          locate: state.sandbox.stub().resolves({
+            objectServiceUrls: ["https://mn.example.org/object"],
+            isPublic: false,
+          }),
+        };
+        const service = new ObjectService({
+          readBaseUrl: "https://cn.example.org/resolve",
+          resolveServiceUrl: "https://cn.example.org/resolve",
+          locationResolver,
+          getToken: async () => "token-1",
+        });
+        const fetchStub = state.sandbox
+          .stub(globalThis, "fetch")
+          .resolves(makeResponse(new Blob(["private"])));
+
+        await service.fetch("private.1");
+
+        sinon.assert.calledOnceWithExactly(
+          locationResolver.locate,
+          "private.1",
+          {
+            signal: undefined,
+          },
+        );
+        fetchStub.firstCall.args[0].should.equal(
+          "https://mn.example.org/object/private.1",
+        );
+        fetchStub.firstCall.args[1].headers.Authorization.should.equal(
+          "Bearer token-1",
+        );
+      });
+
+      it("rejects redirects for auth'ed resolver reads", async () => {
+        const service = new ObjectService({
+          readBaseUrl: "https://cn.example.org/resolve",
+          resolveServiceUrl: "https://cn.example.org/resolve",
+          locationResolver: {
+            locate: state.sandbox.stub().resolves({
+              objectServiceUrls: ["https://mn.example.org/object"],
+              isPublic: false,
+            }),
+          },
+          getToken: async () => "token-1",
+        });
+        const fetchStub = state.sandbox
+          .stub(globalThis, "fetch")
+          .resolves(makeResponse(new Blob(["private"])));
+
+        await service.fetch("private.1");
+
+        fetchStub.firstCall.args[1].redirect.should.equal("error");
+      });
+
+      it("tries a completed replica after an auth'ed 503", async () => {
+        const service = new ObjectService({
+          readBaseUrl: "https://cn.example.org/resolve",
+          resolveServiceUrl: "https://cn.example.org/resolve",
+          locationResolver: {
+            locate: state.sandbox.stub().resolves({
+              objectServiceUrls: [
+                "https://auth.example.org/object",
+                "https://replica.example.org/object",
+              ],
+              isPublic: false,
+            }),
+          },
+          getToken: async () => "token-1",
+        });
+        const unavailable = Object.assign(new Error("unavailable"), {
+          status: 503,
+        });
+        const authClient = {
+          request: state.sandbox.stub().rejects(unavailable),
+        };
+        const replicaResponse = { status: 200, data: new Blob(["object"]) };
+        const replicaClient = {
+          request: state.sandbox.stub().resolves(replicaResponse),
+        };
+        state.sandbox
+          .stub(service, "getReadClient")
+          .callsFake((baseUrl) =>
+            baseUrl.includes("auth.example.org") ? authClient : replicaClient,
+          );
+
+        const response = await service.fetch("private.1");
+
+        response.should.equal(replicaResponse);
+        sinon.assert.calledOnce(authClient.request);
+        sinon.assert.calledOnce(replicaClient.request);
+        authClient.request.firstCall.args[0].redirect.should.equal("error");
+        replicaClient.request.firstCall.args[0].redirect.should.equal("error");
+      });
+
+      it("keeps auth false reads on the resolve service", async () => {
+        const locationResolver = { locate: state.sandbox.stub() };
+        const service = new ObjectService({
+          readBaseUrl: "https://cn.example.org/resolve",
+          resolveServiceUrl: "https://cn.example.org/resolve",
+          locationResolver,
+          getToken: async () => "token-1",
+        });
+        const fetchStub = state.sandbox
+          .stub(globalThis, "fetch")
+          .resolves(makeResponse(new Blob(["public"])));
+
+        await service.fetch("public.1", { auth: false });
+
+        sinon.assert.notCalled(locationResolver.locate);
+        fetchStub.firstCall.args[0].should.equal(
+          "https://cn.example.org/resolve/public.1",
+        );
+        expect(fetchStub.firstCall.args[1].headers.Authorization).to.equal(
+          undefined,
+        );
+      });
+
+      it("keeps missing token reads on the resolve service", async () => {
+        const locationResolver = { locate: state.sandbox.stub() };
+        const getToken = state.sandbox.stub().resolves(null);
+        const service = new ObjectService({
+          readBaseUrl: "https://cn.example.org/resolve",
+          resolveServiceUrl: "https://cn.example.org/resolve",
+          locationResolver,
+          getToken,
+        });
+        const fetchStub = state.sandbox
+          .stub(globalThis, "fetch")
+          .resolves(makeResponse(new Blob(["public"])));
+
+        await service.fetch("public.1");
+
+        sinon.assert.calledOnce(getToken);
+        sinon.assert.notCalled(locationResolver.locate);
+        fetchStub.firstCall.args[0].should.equal(
+          "https://cn.example.org/resolve/public.1",
+        );
+        expect(fetchStub.firstCall.args[1].headers.Authorization).to.equal(
+          undefined,
+        );
+      });
+
+      it("does not locate reads whose base is already an MN object service", async () => {
+        const locationResolver = { locate: state.sandbox.stub() };
+        const service = new ObjectService({
+          readBaseUrl: "https://mn.example.org/object",
+          resolveServiceUrl: "https://cn.example.org/resolve",
+          locationResolver,
+          getToken: async () => "token-1",
+        });
+        const fetchStub = state.sandbox
+          .stub(globalThis, "fetch")
+          .resolves(makeResponse(new Blob(["private"])));
+
+        await service.fetch("private.1");
+
+        sinon.assert.notCalled(locationResolver.locate);
+        fetchStub.firstCall.args[0].should.equal(
+          "https://mn.example.org/object/private.1",
+        );
+      });
+
+      it("uses anonymous resolve when a located object is explicitly public", async () => {
+        const locationResolver = {
+          locate: state.sandbox.stub().resolves({
+            objectServiceUrls: [],
+            isPublic: true,
+          }),
+        };
+        const service = new ObjectService({
+          readBaseUrl: "https://cn.example.org/resolve",
+          resolveServiceUrl: "https://cn.example.org/resolve",
+          locationResolver,
+          getToken: async () => "token-1",
+        });
+        const fetchStub = state.sandbox
+          .stub(globalThis, "fetch")
+          .resolves(makeResponse(new Blob(["public"])));
+
+        await service.fetch("public.1");
+
+        fetchStub.firstCall.args[0].should.equal(
+          "https://cn.example.org/resolve/public.1",
+        );
+        expect(fetchStub.firstCall.args[1].headers.Authorization).to.equal(
+          undefined,
+        );
+      });
+
+      [401, 403].forEach((status) => {
+        it(`does not treat public fallback ${status} as authorization evidence`, async () => {
+          const service = new ObjectService({
+            readBaseUrl: "https://cn.example.org/resolve",
+            resolveServiceUrl: "https://cn.example.org/resolve",
+            locationResolver: {
+              locate: state.sandbox.stub().resolves({
+                objectServiceUrls: [],
+                isPublic: true,
+              }),
+            },
+            getToken: async () => "token-1",
+          });
+          state.sandbox.stub(globalThis, "fetch").resolves(
+            makeResponse(new Blob(["denied"]), {
+              status,
+              url: "https://cn.example.org/resolve/public.1",
+            }),
+          );
+
+          const error = await service.fetch("public.1").then(
+            () => new Error("expected rejection"),
+            (reason) => reason,
+          );
+
+          error.name.should.equal("ObjectTransportError");
+          error.code.should.equal("OBJECT_TRANSPORT_UNAVAILABLE");
+          expect(error.status).to.equal(null);
+        });
+      });
+
+      it("reports unavailable location instead of retrying private resolve", async () => {
+        const service = new ObjectService({
+          readBaseUrl: "https://cn.example.org/resolve",
+          resolveServiceUrl: "https://cn.example.org/resolve",
+          locationResolver: {
+            locate: state.sandbox.stub().resolves({
+              objectServiceUrls: [],
+              isPublic: false,
+            }),
+          },
+          getToken: async () => "token-1",
+        });
+        const fetchStub = state.sandbox.stub(globalThis, "fetch");
+
+        const error = await service.fetch("private.1").then(
+          () => new Error("expected rejection"),
+          (reason) => reason,
+        );
+
+        error.code.should.equal("OBJECT_LOCATION_UNAVAILABLE");
+        sinon.assert.notCalled(fetchStub);
+      });
+
       it("fetches object data using the PID as a single encoded path segment", async () => {
         const dataBlob = new Blob(["hello"], { type: "text/plain" });
         const fetchStub = state.sandbox
@@ -186,7 +431,7 @@ define([
         });
         const getCachedStub = state.sandbox.stub(service, "getCached");
         const setCachedStub = state.sandbox.stub(service, "setCached");
-        state.sandbox.stub(service, "request").resolves({ data: "fresh" });
+        state.sandbox.stub(globalThis, "fetch").resolves(makeResponse("fresh"));
 
         const payload = await service.download("pid.1", {
           auth: false,

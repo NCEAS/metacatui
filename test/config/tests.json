@@ -87,6 +87,7 @@
     "./js/specs/unit/models/dataONEServices/DataONEService.spec.js",
     "./js/specs/unit/models/dataONEServices/IdentifierService.spec.js",
     "./js/specs/unit/models/dataONEServices/ObjectService.spec.js",
+    "./js/specs/unit/models/dataONEServices/ObjectLocationResolver.spec.js",
     "./js/specs/unit/models/dataONEServices/PackageService.spec.js",
     "./js/specs/unit/models/dataONEServices/SysMetaService.spec.js",
     "./js/specs/unit/models/dataONEServices/UrlUtilities.spec.js",

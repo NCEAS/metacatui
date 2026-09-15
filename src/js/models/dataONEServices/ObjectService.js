@@ -1,9 +1,18 @@
 define([
   "models/dataONEServices/DataONEService",
   "models/dataONEServices/DataONEHttpClient",
+  "models/dataONEServices/ObjectLocationResolver",
+  "common/ErrorUtilities",
   "common/UrlUtilities",
   "common/ValueUtilities",
-], (DataONEService, DataONEHttpClient, UrlUtilities, ValueUtilities) => {
+], (
+  DataONEService,
+  DataONEHttpClient,
+  ObjectLocationResolver,
+  ErrorUtilities,
+  UrlUtilities,
+  ValueUtilities,
+) => {
   /**
    * Default DataONEHttpClient options for ObjectService reads.
    * @type {DataONEHttpClient#DataONEHttpClientOptions}
@@ -48,18 +57,25 @@ define([
    */
   class ObjectService extends DataONEService {
     /**
-     * @param {object} [options] Options for the ObjectService.
-     * @param {string} [options.readBaseUrl] Base URL for object reads.
-     * @param {string} [options.writeBaseUrl] Base URL for object writes.
+     * @param {object} [options] Options for the ObjectService
+     * @param {string} [options.readBaseUrl] Base URL for object reads
+     * @param {string} [options.writeBaseUrl] Base URL for object writes
+     * @param {string} [options.resolveServiceUrl] CN resolve service URL
+     * @param {string} [options.metaServiceUrl] System Metadata service URL
+     * @param {ObjectLocationResolver} [options.locationResolver] Object
+     * location resolver
      * @param {DataONEHttpClient#DataONEHttpClientOptions} [options.clientConfig]
-     * DataONEHttpClient configuration.
-     * @param {boolean} [options.defaultAuth] Default auth behavior.
-     * @param {Function} [options.getToken] Override token resolver function.
+     * DataONEHttpClient configuration
+     * @param {boolean} [options.defaultAuth] Default auth behavior
+     * @param {Function} [options.getToken] Override token resolver function
      * @throws {Error} When readBaseUrl is missing
      */
     constructor({
       readBaseUrl = "",
       writeBaseUrl = "",
+      resolveServiceUrl = "",
+      metaServiceUrl = "",
+      locationResolver,
       clientConfig = {},
       defaultAuth,
       getToken,
@@ -71,20 +87,28 @@ define([
 
       const resolvedDefaultAuth =
         typeof defaultAuth === "boolean" ? defaultAuth : true;
+      const readClientConfig = ObjectService.buildClientConfig({
+        defaults: DEFAULT_READ_CLIENT_OPTIONS,
+        overrides: clientConfig,
+        baseUrl: normalizedReadBaseUrl,
+      });
 
       super({
         baseUrl: normalizedReadBaseUrl,
-        clientConfig: ObjectService.buildClientConfig({
-          defaults: DEFAULT_READ_CLIENT_OPTIONS,
-          overrides: clientConfig,
-          baseUrl: normalizedReadBaseUrl,
-        }),
+        clientConfig: readClientConfig,
         defaultAuth: resolvedDefaultAuth,
         getToken,
       });
 
       this.readBaseUrl = normalizedReadBaseUrl;
+      this.readClientConfig = { ...readClientConfig, baseUrl: "" };
       this.writeBaseUrl = UrlUtilities.normalizeUrl(writeBaseUrl);
+      this.resolveServiceUrl = UrlUtilities.normalizeUrl(resolveServiceUrl);
+      this.locationResolver =
+        normalizedReadBaseUrl === this.resolveServiceUrl
+          ? locationResolver ||
+            new ObjectLocationResolver({ metaServiceUrl, getToken })
+          : null;
       this.writeClientConfig = ObjectService.buildClientConfig({
         defaults: DEFAULT_WRITE_CLIENT_OPTIONS,
         overrides: clientConfig,
@@ -174,6 +198,19 @@ define([
     }
 
     /**
+     * Get a read client for a selected object service URL.
+     * @param {string} baseUrl Object service base URL
+     * @returns {DataONEHttpClient} Read client instance
+     * @since 0.0.0
+     */
+    getReadClient(baseUrl) {
+      return DataONEHttpClient.get({
+        ...this.readClientConfig,
+        baseUrl,
+      });
+    }
+
+    /**
      * Get the write client for create/update requests.
      * @param {string} operation Operation name for error reporting.
      * @returns {DataONEHttpClient} Write client instance.
@@ -225,14 +262,112 @@ define([
      */
     async fetch(pid, options = {}) {
       const normalizedPid = this.constructor.normalizePid(pid);
-      const { responseType = "blob", ...requestOptions } = options;
-      return this.request({
-        ...requestOptions,
+      const { responseType = "blob", auth, ...requestOptions } = options;
+      const builtRequest = this.constructor.buildRequestOptions({
+        options: requestOptions,
         path: this.constructor.buildPidPath(normalizedPid),
-        encodePath: false,
         method: "GET",
         responseType,
       });
+      const token = await this.resolveToken(auth);
+
+      if (!token || !this.locationResolver) {
+        return this.client.request({ ...builtRequest, token });
+      }
+
+      const location = await this.locationResolver.locate(normalizedPid, {
+        signal: requestOptions.signal,
+      });
+      if (!location.objectServiceUrls.length) {
+        if (location.isPublic) {
+          try {
+            return await this.client.request({ ...builtRequest, token: null });
+          } catch (error) {
+            const status = Number(error?.status) || null;
+            if (status !== 401 && status !== 403) throw error;
+            throw ErrorUtilities.createNamedError(
+              "ObjectTransportError",
+              `The public object could not be read through the resolve service: ${normalizedPid}.`,
+              { code: "OBJECT_TRANSPORT_UNAVAILABLE", status: null },
+            );
+          }
+        }
+        throw ErrorUtilities.createNamedError(
+          "ObjectLocationError",
+          `No registered readable Member Node was found for ${normalizedPid}.`,
+          { code: ObjectLocationResolver.LOCATION_ERROR_CODE },
+        );
+      }
+
+      return this.fetchFromLocations(
+        location.objectServiceUrls,
+        builtRequest,
+        token,
+      );
+    }
+
+    /**
+     * Fetch an object from its registered locations.
+     * @param {string[]} objectServiceUrls Registered object service URLs
+     * @param {object} request Built request options
+     * @param {string} token Bearer token
+     * @returns {Promise<DataONEHttpResponse>} Full response object
+     * @since 0.0.0
+     */
+    fetchFromLocations(objectServiceUrls, request, token) {
+      const attempts = [];
+
+      const tryLocation = (index) => {
+        if (index >= objectServiceUrls.length) {
+          const allMissing = attempts.every(
+            ({ status }) => status === 404 || status === 410,
+          );
+          return Promise.reject(
+            ErrorUtilities.createNamedError(
+              allMissing ? "ObjectNotFoundError" : "ObjectTransportError",
+              allMissing
+                ? "The object was not found at any registered location."
+                : "No registered object location could be contacted.",
+              {
+                code: allMissing
+                  ? "OBJECT_NOT_FOUND"
+                  : "OBJECT_TRANSPORT_UNAVAILABLE",
+                status: allMissing ? 404 : null,
+                attempts,
+              },
+            ),
+          );
+        }
+
+        const objectServiceUrl = objectServiceUrls[index];
+        return this.getReadClient(objectServiceUrl)
+          .request({
+            ...request,
+            token,
+            redirect: "error",
+            transport: "fetch",
+          })
+          .catch((error) => {
+            if (ErrorUtilities.isAbortError(error)) throw error;
+            const status = Number(error?.status) || null;
+            attempts.push({
+              objectServiceUrl,
+              status,
+              code: error?.code || null,
+            });
+            if (status === 401 || status === 403) throw error;
+            const retryAtNextLocation =
+              error?.networkError === true ||
+              ErrorUtilities.isTimeoutError(error) ||
+              status === 404 ||
+              status === 410 ||
+              status >= 500;
+            if (!retryAtNextLocation) throw error;
+            return tryLocation(index + 1);
+          });
+      };
+
+      return tryLocation(0);
     }
 
     /**
