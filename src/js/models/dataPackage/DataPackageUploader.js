@@ -1472,17 +1472,31 @@ define([
         action.operation === UPLOAD_OPERATIONS.UPDATE_SYSTEM_METADATA
           ? 1
           : OBJECT_WRITE_ATTEMPTS;
+      // A 404 immediately after an ambiguous write does not prove it failed
+      // because the first write may have committed but is not visible at the
+      // receiving Member Node yet. Keep that uncertainty if retrying the
+      // target conflicts.
+      let writeMayHaveCommitted = false;
       for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
         try {
           await this._invokeWrite(action, writeOptions, member);
           return;
         } catch (error) {
           const rateLimited = Number(error?.status) === 429;
+          const obsoletingPid =
+            DataPackageUploader._getObsoletingPidFromError(error);
+          const targetConflict =
+            (error?.dataONEErrorName === "IdentifierNotUnique" &&
+              !obsoletingPid) ||
+            obsoletingPid === action.targetPid;
+          if (writeMayHaveCommitted && targetConflict) {
+            error.writeMayHaveCommitted = true;
+          }
           const canRetry =
             attempt < maxAttempts &&
             !signal?.aborted &&
             (rateLimited || DataONEService.isAmbiguousWriteError(error)) &&
-            !DataPackageUploader._getObsoletingPidFromError(error);
+            !obsoletingPid;
           if (!canRetry) throw error;
           // A 429 is a rejected write; ambiguous failures still need verification.
           if (!rateLimited) {
@@ -1500,6 +1514,7 @@ define([
             }
             // Only a missing target permits another write.
             if (!verification.notFound) throw error;
+            writeMayHaveCommitted = true;
           }
           // Do not shorten the server's requested delay with the policy's cap.
           const retryAfterMs = retryPolicy.parseRetryAfter(error.headers, null);
@@ -1605,7 +1620,15 @@ define([
         return false;
       }
 
-      if (!DataONEService.isAmbiguousWriteError(error)) {
+      // An earlier write had an ambiguous response, its immediate verification
+      // returned 404, the uploader replayed it, and that replay then conflicted
+      // with the target. Verify the target before treating it as failed.
+      const retriedWriteMayHaveCommitted =
+        error?.writeMayHaveCommitted === true;
+      const shouldVerifyWrite =
+        retriedWriteMayHaveCommitted ||
+        DataONEService.isAmbiguousWriteError(error);
+      if (!shouldVerifyWrite) {
         member.markRemoteFailure(error);
         result.markFailed(action.id, error);
         return false;
@@ -1622,8 +1645,12 @@ define([
         return true;
       }
 
-      // A cancelled request can still commit after a missing-target lookup.
-      const ambiguous = signal?.aborted || !verification.notFound;
+      // A cancelled or replayed request can still commit after a missing
+      // lookup
+      const ambiguous =
+        retriedWriteMayHaveCommitted ||
+        signal?.aborted ||
+        !verification.notFound;
       member.markRemoteFailure(error, { ambiguous });
       if (ambiguous) {
         result.markAmbiguous(action.id, error);

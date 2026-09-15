@@ -124,6 +124,7 @@ define([
     backToSearch: " Back to search",
     chooseOneToView: " Choose one to view:",
     chooseFileListToView: " Choose a file list to view:",
+    downloadFailed: "The download failed. Please try again.",
     errorRenderingMetadataView(error) {
       return `Error rendering metadata view. ${error?.message || String(error)}`;
     },
@@ -2440,16 +2441,24 @@ define([
           try {
             blob = await dataPackage.getPackageService().download(packageId);
           } catch (error) {
-            if (error?.status === 401 || error?.status === 403) {
-              if (
-                this.dataPackage === dataPackage &&
-                this.fileTableView === fileTableView
-              ) {
+            if (
+              this.dataPackage === dataPackage &&
+              this.fileTableView === fileTableView
+            ) {
+              if (error?.status === 401 || error?.status === 403) {
                 if (packageId === dataPackage.rootResourceMapPid) {
                   this.packageDownloadReadDenied = true;
                 } else {
                   this.memberDownloadReadDenied.add(packageId);
                 }
+              } else {
+                this.showViewAlert(
+                  MESSAGES.downloadFailed,
+                  CLASS_NAMES.alertError,
+                  "body",
+                  null,
+                  { remove: true },
+                );
               }
             }
             return false;
@@ -2529,20 +2538,37 @@ define([
 
         try {
           if (typeof downloadModel?.downloadWithCredentials === "function") {
+            let downloadFailed = false;
             let downloadError;
             downloadModel.once("downloadError", (error) => {
+              downloadFailed = true;
               downloadError = error;
             });
-            await downloadModel.downloadWithCredentials();
-            if (
-              downloadError?.status === 401 ||
-              downloadError?.status === 403
-            ) {
+            try {
+              await downloadModel.downloadWithCredentials();
+            } catch (error) {
+              downloadFailed = true;
+              downloadError = error;
+            }
+            if (downloadFailed) {
               if (
                 this.dataPackage === dataPackage &&
                 this.fileTableView === fileTableView
               ) {
-                this.memberDownloadReadDenied.add(id);
+                if (
+                  downloadError?.status === 401 ||
+                  downloadError?.status === 403
+                ) {
+                  this.memberDownloadReadDenied.add(id);
+                } else {
+                  this.showViewAlert(
+                    MESSAGES.downloadFailed,
+                    CLASS_NAMES.alertError,
+                    "body",
+                    null,
+                    { remove: true },
+                  );
+                }
               }
               return false;
             }

@@ -164,6 +164,7 @@ define([
         confirmPackageDownloadAll:
           MetadataView.prototype.confirmPackageDownloadAll,
         scheduleFileTableScrollIndicatorUpdate: sandbox.stub(),
+        showViewAlert: sandbox.stub(),
         packageDownloadUrl: "https://cn.test/package/rm.1",
         downloadPackageFileTableRow:
           MetadataView.prototype.downloadPackageFileTableRow,
@@ -179,6 +180,13 @@ define([
         reject = fail;
       });
       return { promise, reject, resolve };
+    };
+
+    const assertDownloadFailureAlert = (showViewAlert) => {
+      sinon.assert.calledOnce(showViewAlert);
+      const [message, classes] = showViewAlert.firstCall.args;
+      message.should.match(/download failed.*try again/i);
+      classes.should.equal("alert-error");
     };
 
     describe("renderInfoIcons()", () => {
@@ -1689,6 +1697,7 @@ define([
           refreshedAction.title.should.equal(
             FILE_TABLE_MESSAGES.packageDownloadReadDenied,
           );
+          sinon.assert.notCalled(context.showViewAlert);
         });
       });
 
@@ -1827,7 +1836,7 @@ define([
         context.packageDownloadUnavailableReason.should.equal("");
       });
 
-      it("restores package downloads after a retryable failure", async () => {
+      it("shows retryable package failures and restores Download All", async () => {
         const error = Object.assign(new Error("service unavailable"), {
           status: 503,
         });
@@ -1845,6 +1854,7 @@ define([
         downloaded.should.equal(false);
         actionModel.toRenderData().isDisabled.should.equal(false);
         actionModel.toRenderData().label.should.equal("Download All");
+        assertDownloadFailureAlert(context.showViewAlert);
       });
 
       it("uses repository URLs for indexed-public files", async () => {
@@ -1966,10 +1976,12 @@ define([
         }
       });
 
-      it("restores the current download action when a merged request rejects", async () => {
+      it("shows rejected member downloads and restores the action", async () => {
         setPackageAppModel();
         const dataPackage = createViewerDataPackage();
-        const downloadError = new Error("download failed");
+        const downloadError = Object.assign(new Error("download failed"), {
+          status: 503,
+        });
         let rejectDownload;
         const downloadModel = new Backbone.Model();
         downloadModel.downloadWithCredentials = sandbox.stub().callsFake(
@@ -1989,6 +2001,7 @@ define([
           isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
           createDataDetailsModel: sandbox.stub().returns(downloadModel),
           scheduleFileTableScrollIndicatorUpdate: sandbox.stub(),
+          showViewAlert: sandbox.stub(),
         });
         const fileTableView = {
           viewModel: new FileTableViewModel({
@@ -2007,11 +2020,6 @@ define([
           fileTableView.viewModel.getRows().get("data.1"),
           getDownloadAction(),
         );
-        const observedDownload = download.then(
-          () => new Error("expected download to reject"),
-          (error) => error,
-        );
-
         try {
           await MetadataView.prototype.mergeCurrentFileTableRows.call(
             context,
@@ -2022,13 +2030,14 @@ define([
 
           getDownloadAction().toRenderData().isDisabled.should.equal(true);
           rejectDownload(downloadError);
-          const receivedError = await observedDownload;
+          const downloaded = await download;
 
-          receivedError.should.equal(downloadError);
+          downloaded.should.equal(false);
           getDownloadAction().toRenderData().isDisabled.should.equal(false);
+          assertDownloadFailureAlert(context.showViewAlert);
         } finally {
           rejectDownload?.(downloadError);
-          await observedDownload;
+          await Promise.allSettled([download]);
         }
       });
 
