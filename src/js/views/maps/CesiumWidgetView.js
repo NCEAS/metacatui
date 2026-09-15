@@ -753,7 +753,7 @@ define([
 
       /**
        * Push the current Cesium camera position into shared interaction state.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       updateCameraPosition() {
         if (!this.interactions) return;
@@ -1867,7 +1867,7 @@ define([
         }
       },
 
-      /** Remove nav and mouse listeners when the view is closed */
+      /** Remove listeners and destroy the widget when the view is closed */
       onClose() {
         this.destroy3DTilesInspector();
         this.removeMouseListeners();
@@ -1878,6 +1878,10 @@ define([
           this.removePreRenderLightListener = null;
         }
         this.stopListening();
+        if (this.widget && !this.widget.isDestroyed()) {
+          this.widget.destroy();
+          this.widget = null;
+        }
       },
     },
   );

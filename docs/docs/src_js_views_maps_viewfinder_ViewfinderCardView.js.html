@@ -88,11 +88,11 @@ define([
     /**
      * Opens the URL in the full-screen visualization overlay.
      * @param {ViewfinderCardAction} action Action object with a `url` property.
-     * @param {ViewfinderCardView} view The card view that was clicked, which has a `ctaCallback` to open the overlay.
+     * @param {ViewfinderCardView} view The card view that was clicked, which has a `onIframeAction` to open the overlay.
      * @since 2.37.0
      */
     iframe(action, view) {
-      view.ctaCallback(action.url);
+      view.onIframeAction(action);
     },
     /**
      * Opens the URL in a new browser tab.
@@ -106,13 +106,13 @@ define([
     },
     /**
      * Zooms the map and enables layers. Delegates to the view's
-     * selectCallback so the model handles the navigation logic.
+     * onMapAction so the model handles the navigation logic.
      * @param {ViewfinderCardAction} action Action object with `latitude`, `longitude`, and `layerIds` properties.
-     * @param {ViewfinderCardView} view The card view that was clicked, which has a `selectCallback` to zoom and toggle layers.
+     * @param {ViewfinderCardView} view The card view that was clicked, which has a `onMapAction` to zoom and toggle layers.
      * @since 2.37.0
      */
     map(action, view) {
-      view.selectCallback(action);
+      view.onMapAction(action);
     },
   };
 
@@ -125,9 +125,9 @@ define([
    * title. Action buttons have two styles determined by their ordinality
    * and are driven by `buttons` on the model with configurable text and icons.
    * 'map' type actions (secondary ordinality) render as a plain-text
-   * secondary link, while 'iframe'/'tab' type actions (primary ordinality)
-   * render as bordered buttons. The card body itself is no longer interactive —
-   * all interactions are explicit buttons.
+   * secondary link by default, while 'iframe'/'tab' type actions (primary
+   * ordinality) render as bordered buttons by default. The card body itself
+   * is no longer interactive — all interactions are explicit buttons.
    * @classcategory Views/Maps/Viewfinder
    * @name ViewfinderCardView
    * @augments Backbone.View
@@ -161,7 +161,7 @@ define([
        * Zoom to the card's location and toggle the relevant layers. Closes
        * any open visualization overlay first. When the clicked button carries
        * a `data-button-index` attribute it is a 'map'-type button; the
-       * corresponding action object is forwarded to `selectCallback` so the
+       * corresponding action object is forwarded to `onMapAction` so the
        * model can use its specific coordinates and layerIds.
        * @param {MouseEvent} [e] The click event, if triggered from the DOM.
        */
@@ -175,12 +175,12 @@ define([
             ? this.preset.get("buttons")[Number(buttonIndex)]
             : undefined;
         this.onActivate(this);
-        this.closeVisualizationCallback();
-        this.setActive(btn);
+        this.onRequestCloseVisualization();
+        this.setActive(btn, action);
         if (action?.type &amp;&amp; BUTTON_ACTION_HANDLERS[action.type]) {
           BUTTON_ACTION_HANDLERS[action.type](action, this);
         } else {
-          this.selectCallback(action);
+          this.onMapAction(action);
         }
       },
 
@@ -195,16 +195,20 @@ define([
         const action = this.preset.get("buttons")[index];
         if (!action) return;
         this.onActivate(this);
-        this.closeVisualizationCallback();
-        this.setActive(btn);
+        this.onRequestCloseVisualization();
+        this.setActive(btn, action);
         BUTTON_ACTION_HANDLERS[action.type]?.(action, this);
       },
 
       /**
        * Mark this card as active and highlight the specific clicked button.
        * @param {HTMLElement} buttonEl The button element that was activated.
+       * @param {ViewfinderCardAction} action The action object associated with the button.
+       * @param {object} [options] Additional activation options.
+       * @param {boolean} [options.notifyActionActivated] Whether to notify listeners.
+       * @since 2.38.0
        */
-      setActive(buttonEl) {
+      setActive(buttonEl, action, { notifyActionActivated = true } = {}) {
         this.el.classList.add(CLASS_NAMES.active);
         const isSecondary =
           buttonEl?.classList.contains(CLASS_NAMES.buttonSecondary) ?? false;
@@ -225,6 +229,34 @@ define([
               btn === buttonEl,
             );
           });
+
+        if (notifyActionActivated) {
+          this.onActionUiActivated(action, buttonEl);
+        }
+      },
+
+      /**
+       * Restore an action from URL state without replaying click side effects.
+       * @param {ViewfinderCardAction} action The action object to restore.
+       * @returns {boolean} True when restoration succeeded.
+       * @since 2.38.0
+       */
+      restoreAction(action) {
+        const buttons = this.preset.get("buttons") || [];
+        const index = buttons.indexOf(action);
+        if (index &lt; 0) return false;
+
+        const btn = this.el.querySelector(`[data-button-index="${index}"]`);
+        if (!btn) return false;
+
+        this.onActivate(this);
+        this.setActive(btn, action, { notifyActionActivated: false });
+
+        if (action.type === "iframe" &amp;&amp; action.url) {
+          this.onIframeAction(action);
+        }
+
+        return true;
       },
 
       /**
@@ -244,6 +276,35 @@ define([
           });
       },
 
+      /**
+       * Replace a broken hero image with its configured fallback source.
+       * @param {HTMLImageElement} img The image element that failed loading.
+       * @since 2.38.0
+       */
+      applyImageFallback(img) {
+        const fallbackSrc = img?.dataset?.fallbackSrc;
+        if (!fallbackSrc) return;
+        // Prevent repeated error loops if fallback also fails.
+        img.removeAttribute("data-fallback-src");
+        if (img.getAttribute("src") !== fallbackSrc) {
+          img.setAttribute("src", fallbackSrc);
+        }
+      },
+
+      /**
+       * Wire one-time error handlers for hero images with fallback sources.
+       * @since 2.38.0
+       */
+      wireImageFallbacks() {
+        this.el
+          .querySelectorAll(`.${CLASS_NAMES.image}[data-fallback-src]`)
+          .forEach((img) => {
+            img.addEventListener("error", () => this.applyImageFallback(img), {
+              once: true,
+            });
+          });
+      },
+
       /** Values meant to be used by the rendered HTML template. */
       templateVars: {
         classNames: CLASS_NAMES,
@@ -251,36 +312,37 @@ define([
       },
 
       /**
-       * Initialize the view with the given options.
-       * @param {object} options - The view options.
-       * @param {ViewfinderCardModel} options.preset - The metadata associated
-       * with this viewfinder card.
-       * @param {Function} [options.selectCallback] Called when "View Layers" is
-       * clicked. Should zoom to the card location and toggle layers.
-       * @param {Function} [options.ctaCallback] Called with (url) when
-       * "Explore in App" is clicked. Should open the visualization overlay.
-       * @param {Function} [options.closeVisualizationCallback] Called before
-       * any button action to dismiss any currently open overlay.
-       * @param {Function} [options.onActivate] Called when this card is
-       * activated, so sibling cards can reset their active state.
+       * Initialize with card metadata and action callbacks.
+       * @param {object} root0 - Initialize options.
+       * @param {ViewfinderCardModel} root0.preset - Card metadata.
+       * @param {Function} [root0.onMapAction] - Handles map actions.
+       * @param {Function} [root0.onIframeAction] - Handles iframe actions.
+       * @param {Function} [root0.onRequestCloseVisualization] - Closes overlays before actions.
+       * @param {Function} [root0.onActivate] - Marks this card as active.
+       * @param {Function} [root0.onActionUiActivated] - Notifies UI action activation.
        */
       initialize({
         preset,
-        selectCallback,
-        ctaCallback,
-        closeVisualizationCallback,
+        onMapAction,
+        onIframeAction,
+        onRequestCloseVisualization,
         onActivate,
+        onActionUiActivated,
       }) {
         this.preset = preset;
-        this.selectCallback =
-          typeof selectCallback === "function" ? selectCallback : noop;
-        this.ctaCallback =
-          typeof ctaCallback === "function" ? ctaCallback : noop;
-        this.closeVisualizationCallback =
-          typeof closeVisualizationCallback === "function"
-            ? closeVisualizationCallback
+        this.onMapAction =
+          typeof onMapAction === "function" ? onMapAction : noop;
+        this.onIframeAction =
+          typeof onIframeAction === "function" ? onIframeAction : noop;
+        this.onRequestCloseVisualization =
+          typeof onRequestCloseVisualization === "function"
+            ? onRequestCloseVisualization
             : noop;
         this.onActivate = typeof onActivate === "function" ? onActivate : noop;
+        this.onActionUiActivated =
+          typeof onActionUiActivated === "function"
+            ? onActionUiActivated
+            : noop;
       },
 
       /**
@@ -291,6 +353,7 @@ define([
       render() {
         this.templateVars.preset = this.preset.toJSON();
         this.el.innerHTML = _.template(Template)(this.templateVars);
+        this.wireImageFallbacks();
       },
     },
   );

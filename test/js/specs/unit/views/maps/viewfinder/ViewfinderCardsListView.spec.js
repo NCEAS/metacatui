@@ -50,10 +50,10 @@ define([
           { parse: true },
         ),
       ]);
-      const selectViewfinderCardSpy = sandbox.spy();
+      const onMapActionSpy = sandbox.spy();
       const view = new ViewfinderCardsListView({
         viewfinderCards,
-        selectViewfinderCard: selectViewfinderCardSpy,
+        onMapAction: onMapActionSpy,
       });
       view.render();
       const harness = new ViewfinderCardsListViewHarness(view);
@@ -66,7 +66,7 @@ define([
       return {
         harness,
         sandbox,
-        selectViewfinderCardSpy,
+        onMapActionSpy,
         testContainer,
         view,
       };
@@ -86,13 +86,13 @@ define([
     });
 
     it("does not select a card before clicking", () => {
-      expect(state.selectViewfinderCardSpy.callCount).to.equal(0);
+      expect(state.onMapActionSpy.callCount).to.equal(0);
     });
 
     it("selects a card when it is clicked", () => {
       state.harness.clickCardAt(0);
 
-      expect(state.selectViewfinderCardSpy.callCount).to.equal(1);
+      expect(state.onMapActionSpy.callCount).to.equal(1);
     });
 
     it("marks a card as selected after clicking it", () => {

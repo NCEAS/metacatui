@@ -653,8 +653,8 @@
         }
 
         // Show or hide ORCID logo
-        if (this.model.isOrcid()) this.$(".show-orcid").show();
-        else this.$(".show-orcid").hide();
+        if (this.model.isOrcid()) this.$(".show-orcid").removeClass("hidden");
+        else this.$(".show-orcid").addClass("hidden");
 
         // Show the email
         if (this.model.get("email")) {

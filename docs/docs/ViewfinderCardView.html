@@ -55,9 +55,9 @@ within a MapView. Cards can also contain an image hero banner behind the
 title. Action buttons have two styles determined by their ordinality
 and are driven by `buttons` on the model with configurable text and icons.
 'map' type actions (secondary ordinality) render as a plain-text
-secondary link, while 'iframe'/'tab' type actions (primary ordinality)
-render as bordered buttons. The card body itself is no longer interactive —
-all interactions are explicit buttons.</div>
+secondary link by default, while 'iframe'/'tab' type actions (primary
+ordinality) render as bordered buttons by default. The card body itself
+is no longer interactive — all interactions are explicit buttons.</div>
         
 
         
@@ -317,7 +317,7 @@ all interactions are explicit buttons.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line202">line 202</a>
+        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line263">line 263</a>
     </li></ul></dd>
     
 
@@ -416,6 +416,152 @@ all interactions are explicit buttons.</div>
 
     
         <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="applyImageFallback">
+      <a href="#applyImageFallback" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>applyImageFallback<span class="signature">(img)</span><span class="type-signature"></span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    Replace a broken hero image with its configured fallback source.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>img</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLImageElement</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The image element that failed loading.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.38.0</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line238">line 238</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         
             
@@ -666,7 +812,7 @@ action type. Closes any open visualization overlay first.
         <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
 
       </a>
-      <span class="type-signature"></span>initialize<span class="signature">(options)</span><span class="type-signature"></span>
+      <span class="type-signature"></span>initialize<span class="signature">(root0)</span><span class="type-signature"></span>
     </h4>
     
 
@@ -675,7 +821,7 @@ action type. Closes any open visualization overlay first.
 
 
 <div class="description">
-    Initialize the view with the given options.
+    Initialize with card metadata and action callbacks.
 </div>
 
 
@@ -711,7 +857,7 @@ action type. Closes any open visualization overlay first.
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>root0</code></td>
             
 
             <td class="type">
@@ -727,7 +873,7 @@ action type. Closes any open visualization overlay first.
 
             
 
-            <td class="description last">The view options.
+            <td class="description last">Initialize options.
                 <h6>Properties</h6>
                 
 
@@ -779,15 +925,14 @@ action type. Closes any open visualization overlay first.
 
             
 
-            <td class="description last">The metadata associated
-with this viewfinder card.</td>
+            <td class="description last">Card metadata.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>selectCallback</code></td>
+                <td class="name"><code>onMapAction</code></td>
             
 
             <td class="type">
@@ -813,15 +958,14 @@ with this viewfinder card.</td>
 
             
 
-            <td class="description last">Called when "View Layers" is
-clicked. Should zoom to the card location and toggle layers.</td>
+            <td class="description last">Handles map actions.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>ctaCallback</code></td>
+                <td class="name"><code>onIframeAction</code></td>
             
 
             <td class="type">
@@ -847,15 +991,14 @@ clicked. Should zoom to the card location and toggle layers.</td>
 
             
 
-            <td class="description last">Called with (url) when
-"Explore in App" is clicked. Should open the visualization overlay.</td>
+            <td class="description last">Handles iframe actions.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>closeVisualizationCallback</code></td>
+                <td class="name"><code>onRequestCloseVisualization</code></td>
             
 
             <td class="type">
@@ -881,8 +1024,7 @@ clicked. Should zoom to the card location and toggle layers.</td>
 
             
 
-            <td class="description last">Called before
-any button action to dismiss any currently open overlay.</td>
+            <td class="description last">Closes overlays before actions.</td>
         </tr>
 
     
@@ -915,8 +1057,40 @@ any button action to dismiss any currently open overlay.</td>
 
             
 
-            <td class="description last">Called when this card is
-activated, so sibling cards can reset their active state.</td>
+            <td class="description last">Marks this card as active.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onActionUiActivated</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Notifies UI action activation.</td>
         </tr>
 
     
@@ -964,7 +1138,7 @@ activated, so sibling cards can reset their active state.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line221">line 221</a>
+        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line278">line 278</a>
     </li></ul></dd>
     
 
@@ -1060,7 +1234,7 @@ is passed an object with relevant view state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line245">line 245</a>
+        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line307">line 307</a>
     </li></ul></dd>
     
 
@@ -1154,7 +1328,7 @@ is passed an object with relevant view state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line187">line 187</a>
+        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line219">line 219</a>
     </li></ul></dd>
     
 
@@ -1190,6 +1364,174 @@ is passed an object with relevant view state.
     
 
     
+    <h4 class="name" id="restoreAction">
+      <a href="#restoreAction" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>restoreAction<span class="signature">(action)</span><span class="type-signature"> &rarr; {boolean}</span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    Restore an action from URL state without replaying click side effects.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>action</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#ViewfinderCardAction">ViewfinderCardAction</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The action object to restore.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.38.0</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line198">line 198</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    True when restoration succeeded.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="selectLayers">
       <a href="#selectLayers" class="link-icon">
         <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
@@ -1207,7 +1549,7 @@ is passed an object with relevant view state.
     Zoom to the card's location and toggle the relevant layers. Closes
 any open visualization overlay first. When the clicked button carries
 a `data-button-index` attribute it is a 'map'-type button; the
-corresponding action object is forwarded to `selectCallback` so the
+corresponding action object is forwarded to `onMapAction` so the
 model can use its specific coordinates and layerIds.
 </div>
 
@@ -1354,7 +1696,7 @@ model can use its specific coordinates and layerIds.
         <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
 
       </a>
-      <span class="type-signature"></span>setActive<span class="signature">(buttonEl)</span><span class="type-signature"></span>
+      <span class="type-signature"></span>setActive<span class="signature">(buttonEl, action, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span>
     </h4>
     
 
@@ -1387,6 +1729,8 @@ model can use its specific coordinates and layerIds.
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -1412,10 +1756,143 @@ model can use its specific coordinates and layerIds.
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last">The button element that was activated.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>action</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#ViewfinderCardAction">ViewfinderCardAction</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The action object associated with the button.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Additional activation options.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>notifyActionActivated</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Whether to notify listeners.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -1431,6 +1908,9 @@ model can use its specific coordinates and layerIds.
 
     
 
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.38.0</li></ul></dd>
     
 
     
@@ -1456,7 +1936,104 @@ model can use its specific coordinates and layerIds.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line161">line 161</a>
+        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line165">line 165</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="wireImageFallbacks">
+      <a href="#wireImageFallbacks" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>wireImageFallbacks<span class="signature">()</span><span class="type-signature"></span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    Wire one-time error handlers for hero images with fallback sources.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.38.0</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html">src/js/views/maps/viewfinder/ViewfinderCardView.js</a>, <a href="src_js_views_maps_viewfinder_ViewfinderCardView.js.html#line252">line 252</a>
     </li></ul></dd>
     
 

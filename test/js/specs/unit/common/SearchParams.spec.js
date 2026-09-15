@@ -269,5 +269,194 @@ define(["common/SearchParams"], (SearchParams) => {
         expect(url.searchParams.get("el")).to.be.null;
       });
     });
+
+    describe("resolveActionUrl", () => {
+      it("returns a base URL when no namespaced params exist", () => {
+        const resolved = SearchParams.resolveActionUrl({
+          id: "wt",
+          url: "https://lostlakes.arcticdata.io/{+path}{?selected_lake,lat,lon,zoom}{#section_id}",
+        });
+
+        expect(resolved).to.equal("https://lostlakes.arcticdata.io/");
+      });
+
+      it("applies namespaced params to a URI template", () => {
+        window.history.replaceState(
+          null,
+          "",
+          "?a=wt&wt-selected_lake=b7g1zd63mmt8&wt-lat=64.123&wt-lon=-148.456&wt-zoom=8&wt-section_id=time-series-header",
+        );
+
+        const resolved = SearchParams.resolveActionUrl({
+          id: "wt",
+          url: "https://lostlakes.arcticdata.io/{+path}{?selected_lake,lat,lon,zoom}{#section_id}",
+        });
+
+        expect(resolved).to.equal(
+          "https://lostlakes.arcticdata.io/?selected_lake=b7g1zd63mmt8&lat=64.123&lon=-148.456&zoom=8#time-series-header",
+        );
+      });
+
+      it("ignores namespaced params when share-url syncing is disabled", () => {
+        window.history.replaceState(
+          null,
+          "",
+          "?a=wt&wt-selected_lake=b7g1zd63mmt8&wt-zoom=8",
+        );
+
+        const resolved = SearchParams.resolveActionUrl(
+          {
+            id: "wt",
+            url: "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom}",
+            initialQueryParams: {
+              theme: "light",
+            },
+          },
+          false,
+        );
+
+        expect(resolved).to.equal(
+          "https://lostlakes.arcticdata.io/?theme=light",
+        );
+      });
+
+      it("appends initial query params after template expansion", () => {
+        window.history.replaceState(
+          null,
+          "",
+          "?a=wt&wt-selected_lake=b7g1zd63mmt8&wt-zoom=8",
+        );
+
+        const resolved = SearchParams.resolveActionUrl({
+          id: "wt",
+          url: "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom}{#section_id}",
+          initialQueryParams: {
+            theme: "light",
+            show_share: "false",
+          },
+        });
+
+        expect(resolved).to.equal(
+          "https://lostlakes.arcticdata.io/?selected_lake=b7g1zd63mmt8&zoom=8&theme=light&show_share=false",
+        );
+      });
+    });
+
+    describe("syncActionStateFromVisualizationUrl", () => {
+      it("writes allow-listed values and clears omitted keys", () => {
+        window.history.replaceState(
+          null,
+          "",
+          "?foo=bar&wt-selected_lake=old-lake&wt-lat=65&wt-lon=-149&wt-theme=dark",
+        );
+
+        const synced = SearchParams.syncActionStateFromVisualizationUrl({
+          actionId: "wt",
+          actionUrlTemplate:
+            "https://lostlakes.arcticdata.io/{+path}{?selected_lake,lat,lon,zoom,theme}{#section_id}",
+          visualizationUrl:
+            "https://lostlakes.arcticdata.io/?selected_lake=b7g1zd63mmt8&lat=64.123&zoom=8",
+        });
+
+        expect(synced).to.equal(true);
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.get("foo")).to.equal("bar");
+        expect(url.searchParams.get("wt-selected_lake")).to.equal(
+          "b7g1zd63mmt8",
+        );
+        expect(url.searchParams.get("wt-lat")).to.equal("64.123");
+        expect(url.searchParams.get("wt-zoom")).to.equal("8");
+        expect(url.searchParams.get("wt-lon")).to.be.null;
+        expect(url.searchParams.get("wt-theme")).to.be.null;
+      });
+
+      it("writes values when the visualization URL omits the trailing slash after the host", () => {
+        window.history.replaceState(null, "", "?foo=bar");
+
+        const synced = SearchParams.syncActionStateFromVisualizationUrl({
+          actionId: "wt",
+          actionUrlTemplate:
+            "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom,theme}{#section_id}",
+          visualizationUrl:
+            "https://lostlakes.arcticdata.io?selected_lake=b7fce5fz7s55&lat=66.37929&lon=-164.74705&zoom=12#time-series-header",
+        });
+
+        expect(synced).to.equal(true);
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.get("wt-selected_lake")).to.equal(
+          "b7fce5fz7s55",
+        );
+        expect(url.searchParams.get("wt-lat")).to.equal("66.37929");
+        expect(url.searchParams.get("wt-lon")).to.equal("-164.74705");
+        expect(url.searchParams.get("wt-zoom")).to.equal("12");
+      });
+
+      it("writes allow-listed values when the visualization URL contains extra query or hash state", () => {
+        window.history.replaceState(null, "", "?foo=bar");
+
+        const synced = SearchParams.syncActionStateFromVisualizationUrl({
+          actionId: "wt",
+          actionUrlTemplate:
+            "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom}",
+          visualizationUrl:
+            "https://lostlakes.arcticdata.io/?selected_lake=b7g6k2stc04z&lat=66.49299&lon=-163.98669&zoom=12&hide_stable=1#time-series-header",
+        });
+
+        expect(synced).to.equal(true);
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.get("wt-selected_lake")).to.equal(
+          "b7g6k2stc04z",
+        );
+        expect(url.searchParams.get("wt-lat")).to.equal("66.49299");
+        expect(url.searchParams.get("wt-lon")).to.equal("-163.98669");
+        expect(url.searchParams.get("wt-zoom")).to.equal("12");
+      });
+
+      it("keeps previous namespaced params when the visualization URL does not match the template", () => {
+        window.history.replaceState(
+          null,
+          "",
+          "?foo=bar&wt-selected_lake=old-lake&wt-lat=65&wt-lon=-149&wt-zoom=7",
+        );
+
+        const synced = SearchParams.syncActionStateFromVisualizationUrl({
+          actionId: "wt",
+          actionUrlTemplate:
+            "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom}",
+          visualizationUrl:
+            "https://example.org/?selected_lake=b7g6k2stc04z&lat=66.49299&zoom=12",
+        });
+
+        expect(synced).to.equal(false);
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.get("foo")).to.equal("bar");
+        expect(url.searchParams.get("wt-selected_lake")).to.equal("old-lake");
+        expect(url.searchParams.get("wt-lat")).to.equal("65");
+        expect(url.searchParams.get("wt-lon")).to.equal("-149");
+        expect(url.searchParams.get("wt-zoom")).to.equal("7");
+      });
+    });
+
+    describe("clearActionStateInUrl", () => {
+      it("removes only namespaced params for the given action", () => {
+        window.history.replaceState(
+          null,
+          "",
+          "?foo=bar&wt-selected_lake=abc&wt-lat=65&xy-lat=11",
+        );
+
+        SearchParams.clearActionStateInUrl("wt");
+
+        const url = new URL(window.location.href);
+        expect(url.searchParams.get("foo")).to.equal("bar");
+        expect(url.searchParams.get("xy-lat")).to.equal("11");
+        expect(url.searchParams.get("wt-selected_lake")).to.be.null;
+        expect(url.searchParams.get("wt-lat")).to.be.null;
+      });
+    });
   });
 });

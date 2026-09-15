@@ -868,7 +868,12 @@ define([
         //  - fullDownloadLink - download link for the entire dataset
         let selectedLayersList = [];
 
-        this.mapModel.get("allLayers").forEach((value) => {
+        const allLayers =
+          typeof this.mapModel.getAllLayers === "function"
+            ? this.mapModel.getAllLayers()
+            : this.mapModel.get("allLayers")?.models || [];
+
+        allLayers.forEach((value) => {
           // value is the map layer
 
           // Re-generate the preview panel when the layer visibility changes.

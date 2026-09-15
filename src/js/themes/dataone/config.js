@@ -6,7 +6,7 @@ MetacatUI.AppConfig = Object.assign(
     title: "DataONE Data Catalog",
     theme: "dataone",
     baseUrl: "https://search.dataone.org",
-    mapKey: "AIzaSyB61wRRIFZngUXO81ipq3ljUjsClKcT9mk",
+    mapKey: "",
     repositoryName: "DataONE Data Catalog",
     emailContact: "support@dataone.org",
     nodeId: "urn:node:CN",
@@ -70,7 +70,7 @@ MetacatUI.AppConfig = Object.assign(
     enableCreatePortals: true,
     enableBookkeeperServices: true,
     dataonePlusPreviewMode: true,
-    portalLimit: 5,
+    portalLimit: 1000,
     portalInfoURL: "https://dataone.org/plus",
     portalSearchFiltersInfoURL: "https://dataone.org/custom-search",
     portalDefaults: {

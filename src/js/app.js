@@ -50,6 +50,7 @@ require.config({
     dataoneNotifications:
       MetacatUI.root + "/components/dataone-notifications.bundle.umd",
     citation: MetacatUI.root + "/components/citation.min",
+    uriTemplatesEs: MetacatUI.root + "/components/uri-templates-es",
     promise: MetacatUI.root + "/components/es6-promise.min",
     metacatuiConnectors: MetacatUI.root + "/js/connectors/Filters-Search",
     // showdown + extensions (used in the MarkdownView to convert markdown to html)

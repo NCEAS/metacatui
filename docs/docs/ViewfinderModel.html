@@ -124,7 +124,7 @@ interfaces with location searching services.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line19">line 19</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line20">line 20</a>
     </li></ul></dd>
     
 
@@ -397,7 +397,7 @@ viewfinder cards.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line29">line 29</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line30">line 30</a>
     </li></ul></dd>
     
 
@@ -418,6 +418,196 @@ viewfinder cards.</td>
 
     
         <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="applyMapAction">
+      <a href="#applyMapAction" class="link-icon">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
+
+      </a>
+      <span class="type-signature"></span>applyMapAction<span class="signature">(card, action<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span>
+    </h4>
+    
+
+    
+
+
+
+<div class="description">
+    Apply a map action from a viewfinder card by toggling layers and
+optionally navigating to coordinates.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>card</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ViewfinderCardModel.html">ViewfinderCardModel</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The source card model.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>action</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#ViewfinderCardAction">ViewfinderCardAction</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The map action from the card.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.38.0</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line223">line 223</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         
             
@@ -532,7 +722,7 @@ viewfinder cards.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line70">line 70</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line71">line 71</a>
     </li></ul></dd>
     
 
@@ -630,7 +820,7 @@ the map model.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line180">line 180</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line208">line 208</a>
     </li></ul></dd>
     
 
@@ -727,7 +917,7 @@ result in highlighting the first element in the list.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line121">line 121</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line122">line 122</a>
     </li></ul></dd>
     
 
@@ -871,7 +1061,7 @@ to the the selected prediction.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line151">line 151</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line152">line 152</a>
     </li></ul></dd>
     
 
@@ -966,7 +1156,7 @@ the list. This corresponds to an ArrowDown key down event.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line130">line 130</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line131">line 131</a>
     </li></ul></dd>
     
 
@@ -1106,7 +1296,7 @@ managing for the corresponding ViewfinderView.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line59">line 59</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line60">line 60</a>
     </li></ul></dd>
     
 
@@ -1147,7 +1337,7 @@ managing for the corresponding ViewfinderView.</td>
         <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
 
       </a>
-      <span class="type-signature"></span>openVisualization<span class="signature">(url)</span><span class="type-signature"></span>
+      <span class="type-signature"></span>openVisualization<span class="signature">(actionOrUrl)</span><span class="type-signature"></span>
     </h4>
     
 
@@ -1193,12 +1383,15 @@ the activeVisualizationUrl attribute on the map model.
 
         <tr>
             
-                <td class="name"><code>url</code></td>
+                <td class="name"><code>actionOrUrl</code></td>
             
 
             <td class="type">
             
                 
+<span class="param-type">object</span>
+|
+
 <span class="param-type">string</span>
 
 
@@ -1209,7 +1402,8 @@ the activeVisualizationUrl attribute on the map model.
 
             
 
-            <td class="description last">The URL to load in the iframe overlay.</td>
+            <td class="description last">A configured iframe action object,
+or a raw URL string for backward compatibility.</td>
         </tr>
 
     
@@ -1227,7 +1421,7 @@ the activeVisualizationUrl attribute on the map model.
 
     
     <dt class="tag-since">Since:</dt>
-    <dd class="tag-since"><ul class="dummy"><li>2.37.0</li></ul></dd>
+    <dd class="tag-since"><ul class="dummy"><li>2.38.0</li></ul></dd>
     
 
     
@@ -1253,7 +1447,7 @@ the activeVisualizationUrl attribute on the map model.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line171">line 171</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line173">line 173</a>
     </li></ul></dd>
     
 
@@ -1348,7 +1542,7 @@ in the UI is highlighted.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line142">line 142</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line143">line 143</a>
     </li></ul></dd>
     
 
@@ -1492,7 +1686,7 @@ the user clicks the search button or hits the Enter key.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line292">line 292</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line337">line 337</a>
     </li></ul></dd>
     
 
@@ -1636,7 +1830,7 @@ needs to be geocoded and navigated to.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line255">line 255</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line300">line 300</a>
     </li></ul></dd>
     
 
@@ -1677,7 +1871,7 @@ needs to be geocoded and navigated to.</td>
         <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="link" class="svg-inline--fa fa-link fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M326.612 185.391c59.747 59.809 58.927 155.698.36 214.59-.11.12-.24.25-.36.37l-67.2 67.2c-59.27 59.27-155.699 59.262-214.96 0-59.27-59.26-59.27-155.7 0-214.96l37.106-37.106c9.84-9.84 26.786-3.3 27.294 10.606.648 17.722 3.826 35.527 9.69 52.721 1.986 5.822.567 12.262-3.783 16.612l-13.087 13.087c-28.026 28.026-28.905 73.66-1.155 101.96 28.024 28.579 74.086 28.749 102.325.51l67.2-67.19c28.191-28.191 28.073-73.757 0-101.83-3.701-3.694-7.429-6.564-10.341-8.569a16.037 16.037 0 0 1-6.947-12.606c-.396-10.567 3.348-21.456 11.698-29.806l21.054-21.055c5.521-5.521 14.182-6.199 20.584-1.731a152.482 152.482 0 0 1 20.522 17.197zM467.547 44.449c-59.261-59.262-155.69-59.27-214.96 0l-67.2 67.2c-.12.12-.25.25-.36.37-58.566 58.892-59.387 154.781.36 214.59a152.454 152.454 0 0 0 20.521 17.196c6.402 4.468 15.064 3.789 20.584-1.731l21.054-21.055c8.35-8.35 12.094-19.239 11.698-29.806a16.037 16.037 0 0 0-6.947-12.606c-2.912-2.005-6.64-4.875-10.341-8.569-28.073-28.073-28.191-73.639 0-101.83l67.2-67.19c28.239-28.239 74.3-28.069 102.325.51 27.75 28.3 26.872 73.934-1.155 101.96l-13.087 13.087c-4.35 4.35-5.769 10.79-3.783 16.612 5.864 17.194 9.042 34.999 9.69 52.721.509 13.906 17.454 20.446 27.294 10.606l37.106-37.106c59.271-59.259 59.271-155.699.001-214.959z"></path></svg>
 
       </a>
-      <span class="type-signature"></span>selectViewfinderCard<span class="signature">(preset, action<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span>
+      <span class="type-signature"></span>selectViewfinderCard<span class="signature">(card, action<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {void}</span>
     </h4>
     
 
@@ -1686,12 +1880,7 @@ needs to be geocoded and navigated to.</td>
 
 
 <div class="description">
-    Extended from ZoomPresetModel's selectZoomPreset() when zoom presets
-were deprecated in favor of generalized viewfinder cards. Select a
-ViewfinderCardModel from the list of cards and navigate there.
-When `action` is a 'map' type ctaAction, its `layerIds` and coordinates
-are used directly. Otherwise falls back to the preset's `enabledLayerIds`
-and `geoPoint` for backward compatibility.
+    Backward-compatibility alias for applyMapAction.
 </div>
 
 
@@ -1729,7 +1918,7 @@ and `geoPoint` for backward compatibility.
 
         <tr>
             
-                <td class="name"><code>preset</code></td>
+                <td class="name"><code>card</code></td>
             
 
             <td class="type">
@@ -1753,7 +1942,7 @@ and `geoPoint` for backward compatibility.
 
             
 
-            <td class="description last">A user selected card.</td>
+            <td class="description last">The card to apply.</td>
         </tr>
 
     
@@ -1786,8 +1975,7 @@ and `geoPoint` for backward compatibility.
 
             
 
-            <td class="description last">The specific 'map' ctaAction
-that was activated. When omitted, the preset's own fields are used.</td>
+            <td class="description last">The card action.</td>
         </tr>
 
     
@@ -1804,7 +1992,8 @@ that was activated. When omitted, the preset's own fields are used.</td>
     
 
     
-
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>2.38.0</li></ul></dd>
     
 
     
@@ -1815,6 +2004,10 @@ that was activated. When omitted, the preset's own fields are used.</td>
 
     
 
+    
+
+    
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>Use applyMapAction instead.</li></ul></dd>
     
 
     
@@ -1828,7 +2021,7 @@ that was activated. When omitted, the preset's own fields are used.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line195">line 195</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line281">line 281</a>
     </li></ul></dd>
     
 
@@ -1853,6 +2046,24 @@ that was activated. When omitted, the preset's own fields are used.</td>
 
 
 
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">void</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -1878,7 +2089,7 @@ that was activated. When omitted, the preset's own fields are used.</td>
 
 
 <div class="description">
-    Backward-compatibility alias for selectViewfinderCard.
+    Backward-compatibility alias for applyMapAction.
 </div>
 
 
@@ -1959,7 +2170,7 @@ that was activated. When omitted, the preset's own fields are used.</td>
     
 
     
-        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>Use selectViewfinderCard instead.</li></ul></dd>
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>Use applyMapAction instead.</li></ul></dd>
     
 
     
@@ -1973,7 +2184,7 @@ that was activated. When omitted, the preset's own fields are used.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line246">line 246</a>
+        <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html">src/js/models/maps/viewfinder/ViewfinderModel.js</a>, <a href="src_js_models_maps_viewfinder_ViewfinderModel.js.html#line291">line 291</a>
     </li></ul></dd>
     
 

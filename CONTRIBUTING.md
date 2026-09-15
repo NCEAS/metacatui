@@ -9,6 +9,7 @@
   - [✍️ Making Changes and Submitting Contributions](#️-making-changes-and-submitting-contributions)
   - [📤 Submitting a Pull Request](#-submitting-a-pull-request)
 - [🎨 Code Style](#-code-style)
+  - [🧩 Modernization](#-modernization)
   - [🖋 Formatting](#-formatting)
   - [🔍 Linting](#-linting)
 - [🔬 Testing](#-testing)
@@ -122,12 +123,39 @@ _💡 You may wish to automate steps 9 to 12 in your IDE_
 
 While there has been significant variability in the coding styles applied
 historically in MetacatUI, we are committed to standardizing our codebase to
-
 improve readability, maintainability, and consistency and to facilitate
 contributions from the community. With this goal in mind, we have adopted a
 defined set of coding conventions and tools to enforce these standards. All new
 or modified code should adhere to these conventions such that the codebase can
-gradually be brought into alignment with these standards.
+gradually be modernized and brought into alignment with these standards.
+
+### 🧩 Modernization
+
+- Prefer `const` and `let`, template literals, destructuring, optional chaining,
+  and `async`/`await` when they make the code clearer.
+- Unless Backbone functionality is required, prefer classes, modules, or
+  plain objects over Backbone models and collections. Backbone events can be
+  added to any object using `Backbone.Events` if needed for compatibility with
+  existing code.
+- In Views, prefer inline template literals over using standalone Underscore
+  templates.
+- Define constants like class names, defaults, and user facing messages in a
+  single location (like at the top of a file) instead of hardcoding them in
+  multiple places. For example, instead of `this.el.querySelector('.my-class')`
+  and `someEl.classList.add('my-class')`, define a constant like 
+  `const MY_CLASS = 'my-class'` and use it in both places.
+- Avoid use of Underscore and jQuery in favour of native JavaScript and DOM
+  APIs. Use methods such as `map`, `filter`, `find`, `querySelector`, and
+  `addEventListener`, and use `fetch` or existing HTTP modules instead of adding
+  new `$.ajax` calls.
+- Keep clean ownership boundaries. Prefer smaller classes, modules, or Backbone
+  objects that have a single responsibility and are easy to test. Avoid creating
+  large, monolithic classes that manage multiple responsibilities or tightly
+  couple functionality that should be independent.
+- Avoid relying on the global `MetacatUI` object, and instead pass
+  configuration, services, and state from the module that owns them.
+- We must continue using the existing AMD/RequireJS module pattern for now as
+  it's necessary for Backbone and the current MetacatUI architecture.
 
 ### 🖋 Formatting
 

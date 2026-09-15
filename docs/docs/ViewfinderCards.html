@@ -127,7 +127,7 @@ of more generalized viewfinder cards in 2.37.0.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html">src/js/collections/maps/viewfinder/ViewfinderCards.js</a>, <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html#line71">line 71</a>
+        <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html">src/js/collections/maps/viewfinder/ViewfinderCards.js</a>, <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html#line95">line 95</a>
     </li></ul></dd>
     
 
@@ -234,7 +234,7 @@ of more generalized viewfinder cards in 2.37.0.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html">src/js/collections/maps/viewfinder/ViewfinderCards.js</a>, <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html#line85">line 85</a>
+        <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html">src/js/collections/maps/viewfinder/ViewfinderCards.js</a>, <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html#line109">line 109</a>
     </li></ul></dd>
     
 
@@ -463,7 +463,7 @@ is associated with.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html">src/js/collections/maps/viewfinder/ViewfinderCards.js</a>, <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html#line95">line 95</a>
+        <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html">src/js/collections/maps/viewfinder/ViewfinderCards.js</a>, <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html#line119">line 119</a>
     </li></ul></dd>
     
 
@@ -557,7 +557,7 @@ is associated with.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html">src/js/collections/maps/viewfinder/ViewfinderCards.js</a>, <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html#line104">line 104</a>
+        <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html">src/js/collections/maps/viewfinder/ViewfinderCards.js</a>, <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html#line128">line 128</a>
     </li></ul></dd>
     
 
@@ -822,7 +822,7 @@ collection is associated with, used to get all layers.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html">src/js/collections/maps/viewfinder/ViewfinderCards.js</a>, <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html#line128">line 128</a>
+        <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html">src/js/collections/maps/viewfinder/ViewfinderCards.js</a>, <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html#line152">line 152</a>
     </li></ul></dd>
     
 
@@ -896,9 +896,12 @@ instances representing the parsed viewfinder cards.
 
 <div class="description">
     Parse the GeoJSON response from the LEO Network to extract viewfinder
-card data. Functionality remains unchanged but this was updated to
-return ViewfinderCards instead of the legacy ZoomPresets format when
-zoom presets were deprecated in 2.37.0.
+card data. This was updated to return ViewfinderCards instead of the
+legacy ZoomPresets format when zoom presets were deprecated in 2.37.0,
+and in 2.38.0 it was updated to use the new viewfinder card format
+which attempts to use the resized higher res images when available and
+synthesizes a buttons array specifying actions which get their ID from
+the leonetwork id property.
 </div>
 
 
@@ -994,7 +997,7 @@ zoom presets were deprecated in 2.37.0.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html">src/js/collections/maps/viewfinder/ViewfinderCards.js</a>, <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html#line245">line 245</a>
+        <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html">src/js/collections/maps/viewfinder/ViewfinderCards.js</a>, <a href="src_js_collections_maps_viewfinder_ViewfinderCards.js.html#line234">line 234</a>
     </li></ul></dd>
     
 

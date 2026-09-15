@@ -26,7 +26,7 @@ define([
    * Prefer the higher resolution LEO image path when available.
    * @param {string|null|undefined} thumbnailUrl LEO thumbnail path.
    * @returns {string|null} Upgraded image path, or null when unavailable.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function getLeoImagePath(thumbnailUrl) {
     if (typeof thumbnailUrl !== "string" || !thumbnailUrl.length) return null;
@@ -80,6 +80,15 @@ define([
    * @property {number} [longitude] Camera longitude for the "View Layers" button.
    * @property {number} [height] Camera altitude (metres) for the "View Layers" button.
    * @property {string[]} [layerIds] Layer IDs toggled by the "View Layers" button.
+   * Example configs:
+   * Legacy preset:
+   *   { title: "Lost Lakes", description: "Show a location", latitude: 64.1, longitude: -149.586, height: 3749999.999999828, layerIds: ["iwp"] }
+   * Equivalent map action:
+   *   { type: "map", label: "View Layers", latitude: 64.1, longitude: -149.586, height: 3749999.999999828, layerIds: ["iwp"] }
+   * New tab action:
+   *   { type: "tab", label: "Open in tab", url: "https://lostlakes.arcticdata.io/" }
+   * New iframe action with url encoding and initial query params:
+   *   { type: "iframe", label: "Open dashboard", url: "https://lostlakes.arcticdata.io/{?selected_lake,lat,lon,zoom}{#section_id}", initialQueryParams: { theme: "light", show_share: "false" } }
    * @since 2.37.0
    */
 
@@ -214,10 +223,10 @@ define([
        * Parse the GeoJSON response from the LEO Network to extract viewfinder
        * card data. This was updated to return ViewfinderCards instead of the
        * legacy ZoomPresets format when zoom presets were deprecated in 2.37.0,
-       * and in 0.0.0 it was updated to use the new viewfinder card format which
-       * attempts to use the resized higher res images when available and synthesizes
-       * a buttons array specifying actions which get their ID from the leonetwork
-       * id property.
+       * and in 2.38.0 it was updated to use the new viewfinder card format
+       * which attempts to use the resized higher res images when available and
+       * synthesizes a buttons array specifying actions which get their ID from
+       * the leonetwork id property.
        * @param {GeoJSON} response The GeoJSON response from the LEO Network.
        * @returns {object[]} An array of objects representing viewfinder cards.
        * @since 2.35.0

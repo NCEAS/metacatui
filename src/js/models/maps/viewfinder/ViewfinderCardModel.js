@@ -5,7 +5,7 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
    * Normalize a configured action id.
    * @param {unknown} actionId Candidate action id.
    * @returns {string|null} Trimmed id string, or null when invalid.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const normalizeActionId = (actionId) => {
     if (typeof actionId !== "string") return null;
@@ -19,7 +19,7 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
    * excluded from URL restore-state (`a=`).
    * @param {object[]} actions The action list for a card.
    * @returns {object[]} Actions with normalized explicit ids.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const normalizeConfiguredActionIds = (actions) =>
     actions.map((action = {}) => {
@@ -39,7 +39,7 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
    * Apply default presentation for map actions.
    * @param {object} action A card action.
    * @returns {object} The normalized action.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const normalizeMapAction = (action) => {
     if (action?.type !== "map") return action;
@@ -59,7 +59,7 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
    * @param {number} [attrs.longitude] Top-level longitude.
    * @param {number} [attrs.height] Top-level height.
    * @returns {{ latitude: number|null, longitude: number|null, height: number|null }} Location values.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const normalizeLocation = ({
     position,
@@ -82,7 +82,7 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
    * @param {string[]} [attrs.layerIds] Top-level layer ids.
    * @param {object[]} [attrs.buttons] Card actions.
    * @returns {object} Normalized model attributes.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const normalizeCardAttributes = ({
     position,
@@ -173,6 +173,12 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
        * @property {string} label The button label.
        * @property {string} [icon] FontAwesome icon name for the button.
        * @property {string} [url] The URL to open (required for 'iframe'/'tab').
+       * For iframes that require syncing state to the parent portal's url, this
+       * parameter should be an RFC6570 uri template that describes the expected
+       * structure.
+       * @property {object} [initialQueryParams] Optional and only used for
+       * 'iframe' actions. An object of query parameters to expand into the
+       * URL when the iframe is first loaded.
        * @property {number} [latitude] Latitude to zoom to (for 'map').
        * @property {number} [longitude] Longitude to zoom to (for 'map').
        * @property {number} [height] Camera altitude in meters (for 'map').
@@ -223,7 +229,7 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
        * Normalize configured action ids on construction so direct model
        * instantiation and collection parsing both preserve explicit URL
        * restore-state ids.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       initialize() {
         const buttons = this.get("buttons") || [];
