@@ -4667,6 +4667,55 @@ define([
       sinon.assert.calledTwice(view.toggleEnableControls);
     });
 
+    it("does not replace a file after its editor closes during version lookup", async function () {
+      const file = new Blob(["replacement"], { type: "text/plain" });
+      const member = { pid: "shared.data", remotePid: "shared.data" };
+      let finishVersionLookup;
+      let versionLookupStarted;
+      const didStartVersionLookup = new Promise((resolve) => {
+        versionLookupStarted = resolve;
+      });
+      const getLatestVersion = sandbox.stub().callsFake(() => {
+        versionLookupStarted();
+        return new Promise((resolve) => {
+          finishVersionLookup = resolve;
+        });
+      });
+      const originalPackage = {
+        cancelEagerUpload: sandbox.stub(),
+        getMember: sandbox.stub().withArgs("shared.data").returns(member),
+        getVersionTracker: sandbox.stub().returns({ getLatestVersion }),
+        replaceFile: sandbox.stub(),
+      };
+      const replacementPackage = {
+        cancelEagerUpload: sandbox.stub(),
+        getMember: sandbox.stub().withArgs("shared.data").returns(member),
+        replaceFile: sandbox.stub(),
+      };
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage: originalPackage,
+        appView: { showAlert: sandbox.stub() },
+      };
+      sandbox.stub(view, "choosePackageFiles").resolves([file]);
+      sandbox.stub(view, "toggleEnableControls");
+      sandbox.stub(view, "startFileReplacementPreview");
+      sandbox.stub(view, "finishFileReplacementPreview");
+
+      const replacement = view.handleFileTableReplaceAction(
+        new Backbone.Model({ id: "shared.data" }),
+      );
+      await didStartVersionLookup;
+      view.onClose();
+      globalThis.MetacatUI.rootDataPackage = replacementPackage;
+      finishVersionLookup("shared.data");
+
+      (await replacement).should.equal(true);
+      sinon.assert.notCalled(originalPackage.replaceFile);
+      sinon.assert.notCalled(replacementPackage.cancelEagerUpload);
+      sinon.assert.notCalled(replacementPackage.replaceFile);
+    });
+
     it("does not stage a replacement when the obsolete-file modal is cancelled", async function () {
       const file = new Blob(["replacement"], { type: "text/plain" });
       const member = {

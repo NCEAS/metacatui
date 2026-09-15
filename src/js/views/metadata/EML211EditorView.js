@@ -2297,10 +2297,15 @@ ${supportDetails}`;
        */
       async handleFileTableReplaceAction(rowModel) {
         const rowId = rowModel.get("id");
+        const dataPackage = MetacatUI.rootDataPackage;
+        const renderId = this.renderId;
+        const isCurrentAction = () =>
+          this.isCurrentRender(renderId) &&
+          MetacatUI.rootDataPackage === dataPackage;
         const [file] = await this.choosePackageFiles();
-        if (!file) return false;
+        if (!file || !isCurrentAction()) return false;
 
-        const member = MetacatUI.rootDataPackage.getMember?.(rowId);
+        const member = dataPackage.getMember?.(rowId);
         const sourcePid = member?.remotePid || rowId;
         this.fileTableEditInProgress = true;
         this.toggleEnableControls();
@@ -2310,11 +2315,12 @@ ${supportDetails}`;
           let versionTracker = null;
           let latestPid = sourcePid;
           if (member?.remotePid) {
-            versionTracker = MetacatUI.rootDataPackage.getVersionTracker();
+            versionTracker = dataPackage.getVersionTracker();
             latestPid = await versionTracker.getLatestVersion(sourcePid, {
               useCache: false,
               requireComplete: true,
             });
+            if (!isCurrentAction()) return true;
           }
 
           if (latestPid && latestPid !== sourcePid) {
@@ -2326,6 +2332,7 @@ ${supportDetails}`;
             } catch {
               // The modal can still ask for confirmation with partial details.
             }
+            if (!isCurrentAction()) return true;
 
             await this.showReplaceNewestVersionModal({
               rowId,
