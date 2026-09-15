@@ -800,6 +800,7 @@ define([
         });
       sandbox.stub(view, "updateLoadingText");
       sandbox.stub(view, "setListeners");
+      sandbox.spy(view, "setDataPackageListeners");
       sandbox.stub(view, "getEditorPackageMemberLimit").returns(123);
 
       const loaded = await view.getDataPackage();
@@ -835,6 +836,7 @@ define([
       model.get("isAuthorized_write").should.equal(true);
       sinon.assert.calledOnceWithExactly(getRecoveryRecord, "metadata.1");
       sinon.assert.calledOnce(view.setListeners);
+      sinon.assert.calledOnceWithExactly(view.setDataPackageListeners, loaded);
     });
 
     ["loaded", "stale", "newer metadata"].forEach((outcome) => {
@@ -1283,6 +1285,7 @@ define([
         globalThis.MetacatUI.rootDataPackage = rootDataPackage;
       });
       sandbox.stub(view, "setListeners");
+      sandbox.spy(view, "setDataPackageListeners");
 
       await view.getDataPackage();
 
@@ -1291,6 +1294,10 @@ define([
       resourceMapMember.isAuthorized_write.should.equal(true);
       metadataMember.isAuthorized_write.should.equal(true);
       model.get("isAuthorized_write").should.equal(true);
+      sinon.assert.calledOnceWithExactly(
+        view.setDataPackageListeners,
+        globalThis.MetacatUI.rootDataPackage,
+      );
     });
 
     [
@@ -2003,7 +2010,7 @@ define([
       { code: "aborted", shouldAlert: false },
       { code: null, shouldAlert: false },
     ].forEach(({ code, shouldAlert }) => {
-      it(`clears eager progress and only alerts for permission failures (${code || "success"})`, async function () {
+      it(`clears eager progress and only alerts for permission failures (${code || "success"})`, function () {
         const rootDataPackage = new Backbone.Model();
         rootDataPackage.events = { ...Backbone.Events };
         const showAlert = sandbox.stub();
@@ -2013,7 +2020,6 @@ define([
           eventDispatcher: new Backbone.Model(),
           appView: { showAlert },
         };
-        sandbox.stub(Utilities, "awaitMetacatUI").resolves(rootDataPackage);
         sandbox.stub(view, "refreshFileTable");
         sandbox.stub(view, "toggleEnableControls");
         view.fileUploadProgressByPid = {
@@ -2022,8 +2028,7 @@ define([
           "data.2": 50,
         };
 
-        view.setListeners();
-        await Promise.resolve();
+        view.setDataPackageListeners(rootDataPackage);
         rootDataPackage.events.trigger(
           code ? "eagerUpload:error" : "eagerUpload:complete",
           {
@@ -2048,7 +2053,7 @@ define([
       });
     });
 
-    it("updates controls without re-disabling the file table during upload preparation", async function () {
+    it("updates controls without re-disabling the file table during upload preparation", function () {
       const rootDataPackage = new Backbone.Model();
       rootDataPackage.events = { ...Backbone.Events };
       globalThis.MetacatUI = {
@@ -2056,15 +2061,13 @@ define([
         rootDataPackage,
         eventDispatcher: new Backbone.Model(),
       };
-      sandbox.stub(Utilities, "awaitMetacatUI").resolves(rootDataPackage);
       sandbox.stub(view, "disableControls");
       sandbox.stub(view, "setFileTableDisabled");
       sandbox.stub(view, "toggleEnableControls");
       view.packageSaveUploadCount = 2;
       view.fileUploadProgressByPid = { "data.1": 0 };
 
-      view.setListeners();
-      await Promise.resolve();
+      view.setDataPackageListeners(rootDataPackage);
       rootDataPackage.events.trigger("upload:prepare:progress", {
         message: "Checking permissions 0/2...",
       });
@@ -2079,63 +2082,26 @@ define([
       sinon.assert.notCalled(view.toggleEnableControls);
     });
 
-    it("does not attach package listeners after the render changes", async function () {
+    it("stops package listeners after close", function () {
       const rootDataPackage = new Backbone.Model();
       rootDataPackage.events = { ...Backbone.Events };
-      let resolveRootPackage;
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         rootDataPackage,
         eventDispatcher: new Backbone.Model(),
       };
-      sandbox.stub(Utilities, "awaitMetacatUI").returns(
-        new Promise((resolve) => {
-          resolveRootPackage = resolve;
-        }),
-      );
       sandbox.stub(view, "refreshFileTable");
       sandbox.stub(view, "toggleEnableControls");
-      view.renderId = "render-current";
 
-      view.setListeners();
-      view.renderId = "render-next";
-      resolveRootPackage(rootDataPackage);
-      await Promise.resolve();
-      rootDataPackage.events.trigger("eagerUpload:complete");
-
-      sinon.assert.notCalled(view.refreshFileTable);
-      sinon.assert.notCalled(view.toggleEnableControls);
-    });
-
-    it("does not attach package listeners after close", async function () {
-      const rootDataPackage = new Backbone.Model();
-      rootDataPackage.events = { ...Backbone.Events };
-      let resolveRootPackage;
-      globalThis.MetacatUI = {
-        ...(originalMetacatUI || {}),
-        rootDataPackage,
-        eventDispatcher: new Backbone.Model(),
-      };
-      sandbox.stub(Utilities, "awaitMetacatUI").returns(
-        new Promise((resolve) => {
-          resolveRootPackage = resolve;
-        }),
-      );
-      sandbox.stub(view, "refreshFileTable");
-      sandbox.stub(view, "toggleEnableControls");
-      view.renderId = "render-current";
-
-      view.setListeners();
+      view.setDataPackageListeners(rootDataPackage);
       view.onClose();
-      resolveRootPackage(rootDataPackage);
-      await Promise.resolve();
       rootDataPackage.events.trigger("eagerUpload:complete");
 
       sinon.assert.notCalled(view.refreshFileTable);
       sinon.assert.notCalled(view.toggleEnableControls);
     });
 
-    it("clears package upload progress without refreshing the full table", async function () {
+    it("clears package upload progress without refreshing the full table", function () {
       const rootDataPackage = new Backbone.Model();
       rootDataPackage.events = { ...Backbone.Events };
       globalThis.MetacatUI = {
@@ -2143,13 +2109,11 @@ define([
         rootDataPackage,
         eventDispatcher: new Backbone.Model(),
       };
-      sandbox.stub(Utilities, "awaitMetacatUI").resolves(rootDataPackage);
       sandbox.stub(view, "refreshFileTable");
       sandbox.stub(view, "toggleEnableControls");
       view.fileUploadProgressByPid = { "data.1": 100 };
 
-      view.setListeners();
-      await Promise.resolve();
+      view.setDataPackageListeners(rootDataPackage);
       rootDataPackage.events.trigger("upload:success");
 
       view.fileUploadProgressByPid.should.deep.equal({});
@@ -2238,7 +2202,7 @@ define([
       warningArgs[1].should.equal("alert-warning");
     });
 
-    it("registers model change listeners only once", async function () {
+    it("registers model change listeners only once", function () {
       const listenerModel = new Backbone.Model();
       listenerModel.handleChange = sandbox.spy();
       listenerModel.saveDraft = sandbox.spy();
@@ -2248,11 +2212,8 @@ define([
         rootDataPackage: new Backbone.Model(),
         eventDispatcher: new Backbone.Model(),
       };
-      sandbox.stub(Utilities, "awaitMetacatUI").resolves();
-
       view.setListeners();
       view.setListeners();
-      await Promise.resolve();
       listenerModel.trigger("change", listenerModel);
 
       sinon.assert.calledOnce(listenerModel.handleChange);
@@ -2306,7 +2267,6 @@ define([
         },
         eventDispatcher: new Backbone.Model(),
       };
-      sandbox.stub(Utilities, "awaitMetacatUI").resolves();
       sandbox.stub(view, "showControls");
       sandbox.stub(view, "hideControls");
 

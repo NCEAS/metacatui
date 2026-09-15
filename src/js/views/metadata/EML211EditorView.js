@@ -841,6 +841,7 @@ define([
           metaModel.set("isAuthorized_write", true);
           this.trigger("dataPackageFound");
           this.setListeners();
+          this.setDataPackageListeners(MetacatUI.rootDataPackage);
           return MetacatUI.rootDataPackage;
         }
 
@@ -960,7 +961,10 @@ define([
           );
         }
         this.trigger("dataPackageFound");
-        if (resourceMapPermission && metadataPermission) this.setListeners();
+        if (resourceMapPermission && metadataPermission) {
+          this.setListeners();
+          this.setDataPackageListeners(dataPackage);
+        }
         return dataPackage;
       },
 
@@ -2870,13 +2874,38 @@ ${supportDetails}`;
       },
 
       /**
-       * Set listeners on the view's model for various reasons. This function
-       * centralizes all the listeners so that when/if the view's model is
-       * replaced, the listeners would be reset.
+       * Listen for changes and upload events from a data package.
+       * @param {DataPackage} dataPackage Data package for the active render
+       * @returns {void}
+       * @since 0.0.0
+       */
+      setDataPackageListeners(dataPackage) {
+        const dataPackageEvents = dataPackage.events;
+        const listeners = [
+          ["change", this.toggleControls],
+          ["change", this.queueMetadataUploadAfterPackageChange],
+          ["upload:cancelled", this.handleSaveCancel],
+          ["upload:prepare:progress", this.handlePackageUploadPrepareProgress],
+          ["upload:progress", this.handlePackageUploadProgress],
+          ["upload:success", this.handlePackageUploadSuccess],
+          [
+            "eagerUpload:complete eagerUpload:error",
+            this.handleEagerUploadSettled,
+          ],
+        ];
+
+        listeners.forEach(([event, handler]) => {
+          this.stopListening(dataPackageEvents, event, handler);
+          this.listenTo(dataPackageEvents, event, handler);
+        });
+      },
+
+      /**
+       * Set listeners on the metadata model and application event dispatcher.
+       * Reset these listeners when the metadata model is replaced.
        */
       setListeners() {
         const view = this;
-        const { renderId } = this;
         this.stopListening(
           this.model,
           "change:uploadStatus",
@@ -2898,38 +2927,6 @@ ${supportDetails}`;
         this.stopListening(this.model, "change:errorMessage");
         this.listenTo(this.model, "change:errorMessage", () => {
           view.loadError(this.model.get("errorMessage"));
-        });
-
-        Utilities.awaitMetacatUI({ appName: "rootDataPackage" }).then(() => {
-          const { rootDataPackage } = MetacatUI;
-          const rootDataPackageEvents = rootDataPackage?.events;
-          if (
-            !this.isCurrentRender(renderId) ||
-            typeof rootDataPackageEvents?.on !== "function" ||
-            typeof rootDataPackageEvents?.off !== "function"
-          ) {
-            return;
-          }
-          const rootDataPackageListeners = [
-            ["change", this.toggleControls],
-            ["change", this.queueMetadataUploadAfterPackageChange],
-            ["upload:cancelled", this.handleSaveCancel],
-            [
-              "upload:prepare:progress",
-              this.handlePackageUploadPrepareProgress,
-            ],
-            ["upload:progress", this.handlePackageUploadProgress],
-            ["upload:success", this.handlePackageUploadSuccess],
-            [
-              "eagerUpload:complete eagerUpload:error",
-              this.handleEagerUploadSettled,
-            ],
-          ];
-
-          rootDataPackageListeners.forEach(([event, handler]) => {
-            this.stopListening(rootDataPackageEvents, event, handler);
-            this.listenTo(rootDataPackageEvents, event, handler);
-          });
         });
 
         // When the model is invalid, show the required fields
