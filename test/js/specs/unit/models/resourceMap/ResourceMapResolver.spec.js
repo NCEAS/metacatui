@@ -755,22 +755,147 @@ define([
         rmr.walkSysmeta.calledOnceWith("objPid").should.be.true;
       });
 
-      it("handles multiple resource maps from index", async () => {
+      it("accepts a multi-map winner that contains the requested PID", async () => {
         const { sandbox, rmr } = state;
+        const options = { timeoutMs: 1234 };
+        const events = [];
 
         sandbox.stub(ResourceMapResolver, "searchIndex").resolves({
           rm: null,
-          meta: { isSid: false, rms: ["rm1", "rm2"] },
+          meta: { isData: true, rms: ["rm.1", "rm.2"] },
         });
         sandbox.stub(rmr, "multiRMCheck").resolves({
-          rm: "rm2",
-          meta: {},
+          rm: "rm.2",
+          meta: {
+            resourceMapDates: {
+              "rm.1": "2021-02-09T18:15:00.000Z",
+              "rm.2": "2021-02-09T18:20:00.000Z",
+            },
+          },
         });
-        sandbox.stub(rmr, "status").returns({ success: true, rm: "rm2" });
+        const checkResourceMapMembership = sandbox
+          .stub(rmr, "checkResourceMapMembership")
+          .resolves({
+            isMember: true,
+            memberPids: ["data.1"],
+            fetchStatus: 200,
+          });
+        const addToStorage = sandbox.stub(rmr, "addToStorage").resolves();
+        rmr.events.on("update:data.1", (event) => events.push(event));
 
-        const result = await rmr.resolve("objPid");
-        result.rm.should.equal("rm2");
-        rmr.multiRMCheck.calledOnce.should.be.true;
+        const result = await rmr.resolve("data.1", options);
+
+        result.success.should.equal(true);
+        result.rm.should.equal("rm.2");
+        result.meta.multipleRMsResolvedToSingleRoot.should.equal(true);
+        sinon.assert.calledOnceWithExactly(
+          checkResourceMapMembership,
+          "rm.2",
+          "data.1",
+          options,
+        );
+        events[events.length - 1].status.should.equal(
+          ResourceMapResolver.STATUS.multiRMMatch,
+        );
+        sinon.assert.calledOnceWithExactly(addToStorage, "data.1", "rm.2");
+      });
+
+      it("rejects a multi-map winner that omits the requested PID", async () => {
+        const { sandbox, rmr } = state;
+        const events = [];
+
+        sandbox.stub(ResourceMapResolver, "searchIndex").resolves({
+          rm: null,
+          meta: { isData: true, rms: ["rm.1", "rm.2"] },
+        });
+        sandbox.stub(rmr, "multiRMCheck").resolves({
+          rm: "rm.2",
+          meta: {
+            resourceMapDates: {
+              "rm.1": "2021-02-09T18:15:00.000Z",
+              "rm.2": "2021-02-09T18:20:00.000Z",
+            },
+          },
+        });
+        sandbox.stub(rmr, "checkResourceMapMembership").resolves({
+          isMember: false,
+          memberPids: ["data.2"],
+          fetchStatus: 200,
+        });
+        const addToStorage = sandbox.stub(rmr, "addToStorage").resolves();
+        const checkStorage = sandbox.stub(rmr, "checkStorage").resolves(null);
+        const walkSysmeta = sandbox
+          .stub(rmr, "walkSysmeta")
+          .resolves({ rm: null, meta: {} });
+        const guessPid = sandbox.stub(rmr, "guessPid").resolves(null);
+        rmr.events.on("update:data.1", (event) => events.push(event));
+
+        const result = await rmr.resolve("data.1");
+
+        result.success.should.equal(false);
+        result.should.not.have.property("rm");
+        result.multipleRMs.should.equal(true);
+        result.meta.rms.should.deep.equal(["rm.1", "rm.2"]);
+        result.meta.resourceMapDates.should.deep.equal({
+          "rm.1": "2021-02-09T18:15:00.000Z",
+          "rm.2": "2021-02-09T18:20:00.000Z",
+        });
+        result.meta.should.not.have.property("multipleRMsResolvedToSingleRoot");
+        events[events.length - 1].status.should.equal(
+          ResourceMapResolver.STATUS.multiRMMiss,
+        );
+        sinon.assert.notCalled(addToStorage);
+        sinon.assert.notCalled(checkStorage);
+        sinon.assert.notCalled(walkSysmeta);
+        sinon.assert.notCalled(guessPid);
+      });
+
+      it("reuses a failed isDocumentedBy verification for the multi-map winner", async () => {
+        const { sandbox, rmr } = state;
+        const options = { timeoutMs: 1234 };
+        const events = [];
+
+        sandbox.stub(ResourceMapResolver, "searchIndex").resolves({
+          rm: null,
+          meta: {
+            isData: true,
+            rms: ["rm.1"],
+            isDocumentedBy: ["meta.1"],
+          },
+        });
+        sandbox.stub(rmr, "resolveFromMetadataPids").resolves({
+          rm: "rm.2",
+          meta: { rms: ["rm.2"] },
+        });
+        const verify = sandbox.stub(rmr, "verify").resolves(false);
+        sandbox.stub(rmr, "multiRMCheck").resolves({
+          rm: "rm.2",
+          meta: {
+            resourceMapDates: {
+              "rm.1": "2021-02-09T18:15:00.000Z",
+              "rm.2": "2021-02-09T18:20:00.000Z",
+            },
+          },
+        });
+        const checkResourceMapMembership = sandbox.stub(
+          rmr,
+          "checkResourceMapMembership",
+        );
+        const addToStorage = sandbox.stub(rmr, "addToStorage").resolves();
+        rmr.events.on("update:data.1", (event) => events.push(event));
+
+        const result = await rmr.resolve("data.1", options);
+
+        result.success.should.equal(false);
+        result.should.not.have.property("rm");
+        result.multipleRMs.should.equal(true);
+        result.meta.rms.should.deep.equal(["rm.1", "rm.2"]);
+        sinon.assert.calledOnceWithExactly(verify, "rm.2", "data.1", options);
+        sinon.assert.notCalled(checkResourceMapMembership);
+        events[events.length - 1].status.should.equal(
+          ResourceMapResolver.STATUS.multiRMMiss,
+        );
+        sinon.assert.notCalled(addToStorage);
       });
 
       it("keeps a directly requested Resource Map exact for viewing", async () => {
@@ -890,6 +1015,11 @@ define([
           rm: "rm.2",
           meta: {},
         });
+        sandbox.stub(rmr, "checkResourceMapMembership").resolves({
+          isMember: true,
+          memberPids: ["data.1"],
+          fetchStatus: 200,
+        });
         sandbox.stub(rmr, "status").returns({ success: true, rm: "rm.2" });
 
         const result = await rmr.resolve("data.1");
@@ -915,6 +1045,11 @@ define([
         sandbox.stub(rmr, "multiRMCheck").resolves({
           rm: "rm.2",
           meta: {},
+        });
+        sandbox.stub(rmr, "checkResourceMapMembership").resolves({
+          isMember: true,
+          memberPids: ["data.1"],
+          fetchStatus: 200,
         });
         sandbox.stub(rmr, "addToStorage").resolves();
 
@@ -1154,7 +1289,15 @@ define([
 
           const result = await rmr.multiRMCheck(["rm1", "rm2"]);
 
-          result.should.deep.equal({ rm: "rm2", meta: {} });
+          result.should.deep.equal({
+            rm: "rm2",
+            meta: {
+              resourceMapDates: {
+                rm1: null,
+                rm2: null,
+              },
+            },
+          });
         });
       });
 
@@ -1181,7 +1324,7 @@ define([
         });
       });
 
-      it("resolves the latest candidate when a newer RM no longer contains the EML", async () => {
+      it("resolves the newest accessible candidate in one version chain", async () => {
         const { sandbox, rmr } = state;
         stubCandidateSysMeta(sandbox, rmr);
         sandbox
@@ -1196,7 +1339,15 @@ define([
 
         const result = await rmr.multiRMCheck(["r1", "r2"]);
 
-        result.should.deep.equal({ rm: "r2", meta: {} });
+        result.should.deep.equal({
+          rm: "r2",
+          meta: {
+            resourceMapDates: {
+              r1: null,
+              r2: null,
+            },
+          },
+        });
       });
 
       [401, 403].forEach((status) => {
@@ -1221,7 +1372,13 @@ define([
 
           result.should.deep.equal({
             rm: "rm.public",
-            meta: { newerResourceMapUnavailable: true },
+            meta: {
+              resourceMapDates: {
+                "rm.private": null,
+                "rm.public": "2021-02-09T18:15:00.000Z",
+              },
+              newerResourceMapUnavailable: true,
+            },
           });
         });
       });

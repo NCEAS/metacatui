@@ -132,6 +132,35 @@ define(["models/viewService/ViewServiceDoc"], (ViewServiceDoc) => {
         ).to.not.equal(null);
       });
 
+      it("selects the exact data ID before duplicate rendered filenames", () => {
+        const doc = new ViewServiceDoc({ pid: "metadata.1" });
+        const template = document.createElement("template");
+        template.innerHTML = `
+          <div class="entitydetails" data-id="data.1">
+            <span data-filename="shared.csv"></span>
+            <span data-object-name="shared.csv"></span>
+          </div>
+          <div class="entitydetails" data-id="data.2">
+            <span data-filename="shared.csv"></span>
+            <span data-object-name="shared.csv"></span>
+          </div>
+        `;
+        const sections = template.content.querySelectorAll(".entitydetails");
+
+        const section = doc.findAndAnnotateEntitySection({
+          pid: "data.2",
+          fileName: "shared.csv",
+          root: template.content,
+        });
+
+        section.should.equal(sections[1]);
+        sections[0].getAttribute("data-id").should.equal("data.1");
+        sections[1].getAttribute("data-id").should.equal("data.2");
+        template.content
+          .querySelectorAll('.entitydetails[data-id="data.2"]')
+          .length.should.equal(1);
+      });
+
       it("matches object and resolve href PIDs exactly", () => {
         expect(
           ViewServiceDoc.hrefMatchesPid(

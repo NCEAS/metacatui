@@ -320,6 +320,30 @@ define([
         response.data.identifier.should.equal("urn:uuid:generated.1");
       });
 
+      it("does not retry a failed identifier reservation", async () => {
+        const fetchStub = state.sandbox.stub(globalThis, "fetch").resolves(
+          new Response("temporarily unavailable", {
+            status: 503,
+            statusText: "Service Unavailable",
+          }),
+        );
+        const service = new IdentifierService({
+          baseUrl: "https://example.org/cn/v2",
+          getToken: async () => null,
+        });
+
+        let caught;
+        try {
+          await service.reserveIdentifier("urn:uuid:pid.1");
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceof(Error);
+        caught.status.should.equal(503);
+        sinon.assert.calledOnce(fetchStub);
+      });
+
       it("preserves explicit Accept headers", async () => {
         const service = new IdentifierService({
           baseUrl: "https://example.org/cn/v2",

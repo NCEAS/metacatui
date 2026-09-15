@@ -334,6 +334,8 @@ define([
         return this.resolveFromSeriesId(pid, options, nextVisitedPids);
       }
 
+      let failedVerificationResourceMapPid = null;
+
       // -- Special case: PID a data object and has isDocumentedBy metadata PIDs --
       if (
         indexResult?.meta?.isData &&
@@ -353,14 +355,19 @@ define([
           ...metadataSearchResult.meta,
           rms,
         };
-        if (
-          metadataSearchResult.rm &&
-          (await this.verify(metadataSearchResult.rm, pid, options))
-        ) {
-          return this.status(pid, STATUS.indexMatch, metadataSearchResult.rm, {
-            ...resolutionMeta,
-            source: "isDocumentedBy",
-          });
+        if (metadataSearchResult.rm) {
+          if (await this.verify(metadataSearchResult.rm, pid, options)) {
+            return this.status(
+              pid,
+              STATUS.indexMatch,
+              metadataSearchResult.rm,
+              {
+                ...resolutionMeta,
+                source: "isDocumentedBy",
+              },
+            );
+          }
+          failedVerificationResourceMapPid = metadataSearchResult.rm;
         }
       }
 
@@ -369,8 +376,8 @@ define([
         resolutionMeta.rms || [],
       );
       if (rmCandidates.length > 1) {
-        // Prefer the newest accessible candidate when all matches belong to
-        // one Resource Map version chain.
+        // Choose the newest accessible candidate from one Resource Map version
+        // chain, then confirm it contains the requested object.
         const multiResult = await this.multiRMCheck(rmCandidates, options);
         const multiMeta = {
           ...resolutionMeta,
@@ -378,11 +385,25 @@ define([
           rms: rmCandidates,
         };
         if (multiResult.rm) {
-          return this.status(pid, STATUS.multiRMMatch, multiResult.rm, {
-            ...multiMeta,
-            source: "index",
-            multipleRMsResolvedToSingleRoot: true,
-          });
+          let winnerContainsPid =
+            multiResult.rm !== failedVerificationResourceMapPid;
+
+          if (winnerContainsPid) {
+            const membership = await this.checkResourceMapMembership(
+              multiResult.rm,
+              pid,
+              options,
+            );
+            winnerContainsPid = membership.isMember;
+          }
+
+          if (winnerContainsPid) {
+            return this.status(pid, STATUS.multiRMMatch, multiResult.rm, {
+              ...multiMeta,
+              source: "index",
+              multipleRMsResolvedToSingleRoot: true,
+            });
+          }
         }
         // Do not let a later strategy silently pick one of several packages.
         return this.status(pid, STATUS.multiRMMiss, null, multiMeta);
@@ -604,8 +625,8 @@ define([
     /**
      * When 2 or more resource maps are found in the index for a PID, then this
      * method is called to check if they are all versions of each other. If so,
-     * it returns the newest accessible candidate. A newer Resource Map that no
-     * longer contains the requested object is not a candidate.
+     * it returns the newest accessible candidate in that version chain.
+     * Membership in the requested object's package is checked by `resolve()`.
      * @param {Array<string>} rms An array of resource map PIDs to check
      * @param {object} [options] Version-chain lookup options
      * @param {AbortSignal} [options.signal] Signal used to cancel resolver work
@@ -651,9 +672,9 @@ define([
           sysMeta?.dateUploaded || null,
         ]),
       );
+      result.meta.resourceMapDates = resourceMapDates;
 
       if (!accessibleRms.length) {
-        result.meta.resourceMapDates = resourceMapDates;
         result.meta.chainIncomplete = true;
         if (
           candidateDetails.some(({ status }) => [401, 403].includes(status))
@@ -675,7 +696,6 @@ define([
       } catch (e) {
         if (ErrorUtilities.isAbortError(e)) throw e;
         result.meta.error = this.constructor.errorValue(e);
-        result.meta.resourceMapDates = resourceMapDates;
         this.warn(`Error fetching version chain for PID ${rms[0]}`, e);
         return result;
       }
@@ -685,7 +705,6 @@ define([
       // are all versions of each other. If not, we cannot resolve to a single RM.
       if (!sameChain) {
         result.meta.multipleRMsNotVersions = true;
-        result.meta.resourceMapDates = resourceMapDates;
         return result;
       }
 

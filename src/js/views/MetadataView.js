@@ -774,10 +774,14 @@ define([
         const { renderId, signal } = renderOptions;
         const dataPid = this.pid;
 
-        // Multiple independent metadata version chains document this data
-        // object: do not pick one arbitrarily, let the user choose.
+        // Multiple independent metadata candidates need a metadata choice;
+        // Resource Map ambiguity for one candidate needs a Resource Map choice.
         if (result.multipleRMs) {
-          this.showMultipleDocumentingDatasets(result);
+          if ((result.candidateMetadataPids || []).length > 1) {
+            this.showMultipleDocumentingDatasets(result);
+          } else {
+            this.showMultipleResourceMaps(result, { scoped: false });
+          }
           return this;
         }
 

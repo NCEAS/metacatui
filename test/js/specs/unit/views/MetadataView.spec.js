@@ -1119,11 +1119,13 @@ define([
       it("offers candidate datasets without navigating when multiple chains document the data", async () => {
         const navigateWithFragment = sandbox.stub();
         const showMultipleDocumentingDatasets = sandbox.stub();
+        const showMultipleResourceMaps = sandbox.stub();
         const context = withRenderContext({
           pid: "data.1",
           dataPackage: { getManifest: sandbox.stub().resolves() },
           navigateWithFragment,
           showMultipleDocumentingDatasets,
+          showMultipleResourceMaps,
         });
 
         await MetadataView.prototype.handleDataInput.call(context, {
@@ -1133,7 +1135,41 @@ define([
         });
 
         showMultipleDocumentingDatasets.calledOnce.should.equal(true);
+        showMultipleResourceMaps.called.should.equal(false);
         navigateWithFragment.called.should.equal(false);
+      });
+
+      it("shows Resource Map choices when one metadata candidate has multiple maps", async () => {
+        const showMultipleResourceMaps = sandbox.stub();
+        const showMultipleDocumentingDatasets = sandbox.stub();
+        const navigateWithFragment = sandbox.stub();
+        const getManifest = sandbox.stub().resolves();
+        const result = {
+          isData: true,
+          multipleRMs: true,
+          candidateMetadataPids: ["meta.2"],
+          candidateResourceMapPids: ["rm.1", "rm.2"],
+          candidateResourceMapDates: {
+            "rm.1": "2021-02-09T18:15:00.000Z",
+            "rm.2": "2021-02-09T18:20:00.000Z",
+          },
+        };
+        const context = withRenderContext({
+          pid: "data.1",
+          dataPackage: { getManifest },
+          showMultipleResourceMaps,
+          showMultipleDocumentingDatasets,
+          navigateWithFragment,
+        });
+
+        await MetadataView.prototype.handleDataInput.call(context, result);
+
+        sinon.assert.calledOnceWithExactly(showMultipleResourceMaps, result, {
+          scoped: false,
+        });
+        showMultipleDocumentingDatasets.called.should.equal(false);
+        navigateWithFragment.called.should.equal(false);
+        getManifest.called.should.equal(false);
       });
 
       it("renders a no-metadata view when no documenting metadata exists", async () => {

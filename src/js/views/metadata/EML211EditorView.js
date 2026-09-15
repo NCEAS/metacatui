@@ -2300,7 +2300,7 @@ ${supportDetails}`;
       async handleFileTableReplaceAction(rowModel) {
         const rowId = rowModel.get("id");
         const dataPackage = MetacatUI.rootDataPackage;
-        const renderId = this.renderId;
+        const { renderId } = this;
         const isCurrentAction = () =>
           this.isCurrentRender(renderId) &&
           MetacatUI.rootDataPackage === dataPackage;
