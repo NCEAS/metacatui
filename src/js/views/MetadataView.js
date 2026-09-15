@@ -410,12 +410,6 @@ define([
           this.onModelError(result.error.status, result.error.message);
           return this;
         }
-        if (result.isIndexing && result.isMetadata) {
-          this.closeMetadataView();
-          this.showIndexing();
-          return this;
-        }
-
         // 3. A data PID routes to the metadata that documents it (preserving
         // the data PID in the URL fragment), or to a limited view.
         if (result.isData) {

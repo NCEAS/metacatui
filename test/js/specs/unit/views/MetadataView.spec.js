@@ -286,7 +286,7 @@ define([
     });
 
     describe("render()", () => {
-      it("starts metadata rendering while PID resolution is still pending", async () => {
+      it("keeps metadata rendered when pending resolution reports indexing", async () => {
         const resolverEventSent = deferred();
         const finishResolution = deferred();
         sandbox
@@ -324,6 +324,7 @@ define([
         globalThis.MetacatUI.appUserModel = { ...Backbone.Events };
         const view = new MetadataView({ el: document.createElement("div") });
         sandbox.stub(view, "showLoading");
+        sandbox.stub(view, "showIndexing");
         sandbox.stub(view, "prepareCitationModel");
         sandbox.stub(view, "insertCitation");
         sandbox.stub(view, "getDataMemberIsPublic").resolves(false);
@@ -331,19 +332,35 @@ define([
           view.el.innerHTML = '<div id="metadata-container"></div>';
           view.metadataContainer = view.el.firstElementChild;
         });
+        sandbox.stub(view, "checkWritePermissions").resolves(false);
+        sandbox.stub(view, "checkProvenanceWritePermission").resolves(false);
+        sandbox.stub(view, "renderMetadata").returns(view);
+        sandbox.stub(view, "hasRecoverablePackageRecord").resolves(false);
+        sandbox.stub(view, "insertPackageTable").resolves();
+        sandbox.stub(view, "insertBreadcrumbs");
+        sandbox.stub(view, "insertParentLink").resolves();
 
         const rendering = view.render({ pid: "meta.1" });
         await resolverEventSent.promise;
         await view.metadataRenderPromise;
 
         sinon.assert.calledOnce(documentRender);
-        view.metadataContainer.firstElementChild.should.equal(
-          documentRender.thisValues[0].el,
-        );
+        const metadataElement = documentRender.thisValues[0].el;
+        view.metadataContainer.firstElementChild.should.equal(metadataElement);
 
-        view.renderId = "newer-render";
-        finishResolution.resolve({});
+        finishResolution.resolve({
+          success: false,
+          isIndexing: true,
+          isMetadata: true,
+          resolvedPid: "meta.1",
+        });
         await rendering;
+
+        sinon.assert.notCalled(view.showIndexing);
+        view.el.contains(metadataElement).should.equal(true);
+        view.insertPackageTable.firstCall.args[1].fileListingState.should.equal(
+          "limitedListing",
+        );
         view.closeMetadataView();
       });
 
@@ -385,7 +402,7 @@ define([
         context.showNotFound.calledOnce.should.equal(true);
       });
 
-      it("shows indexing instead of rendering a sysmeta-only metadata member", async () => {
+      it("renders a sysmeta-only metadata member while indexing is pending", async () => {
         sandbox
           .stub(DataPackage.prototype, "resolveFromPid")
           .callsFake(async function resolveFromPid() {
@@ -425,7 +442,9 @@ define([
           checkWritePermissions: sandbox.stub().resolves(false),
           checkProvenanceWritePermission: sandbox.stub().resolves(false),
           renderMetadata: sandbox.stub().resolves(),
-          resolveFileListingState: sandbox.stub().resolves(null),
+          resolveFileListingState:
+            MetadataView.prototype.resolveFileListingState,
+          hasRecoverablePackageRecord: sandbox.stub().resolves(false),
           insertPackageTable: sandbox.stub().resolves(),
           insertBreadcrumbs: sandbox.stub(),
           insertParentLink: sandbox.stub().resolves(),
@@ -436,8 +455,12 @@ define([
 
         await MetadataView.prototype.render.call(context, { pid: "meta.1" });
 
-        sinon.assert.calledOnce(context.showIndexing);
-        sinon.assert.notCalled(context.renderMetadata);
+        sinon.assert.notCalled(context.showIndexing);
+        sinon.assert.calledOnce(context.renderMetadata);
+        sinon.assert.calledOnce(context.insertPackageTable);
+        context.insertPackageTable.firstCall.args[1].fileListingState.should.equal(
+          "limitedListing",
+        );
       });
 
       it("preserves DataONE identifiers that contain query strings", async () => {
