@@ -227,12 +227,16 @@ define(["backbone", "collections/ontologies/BioontologyResults"], (
       const ontologies = this.get("ontologies");
       const responses = [];
 
-      ontologies.forEach(async (ontology) => {
+      for (let index = 0; index < ontologies.length; index += 1) {
+        const ontology = ontologies[index];
         const classesToFetch = this.get("classesToFetch");
         if (!classesToFetch.length) {
-          return;
+          break;
         }
 
+        // Ontologies are checked in priority order so each request only
+        // includes classes that earlier ontologies did not find.
+        // eslint-disable-next-line no-await-in-loop
         const response = await this.fetchClassesFromOntology(
           classesToFetch,
           ontology,
@@ -242,6 +246,7 @@ define(["backbone", "collections/ontologies/BioontologyResults"], (
         });
         if (response) {
           responses.push(response);
+          // eslint-disable-next-line no-await-in-loop
           await this.addClassesFromResponse(
             response,
             ontology.label || ontology,
@@ -249,7 +254,7 @@ define(["backbone", "collections/ontologies/BioontologyResults"], (
           // Update the list of classes to fetch based on what was found
           this.filterClassesToFetch();
         }
-      });
+      }
 
       return responses;
     },
