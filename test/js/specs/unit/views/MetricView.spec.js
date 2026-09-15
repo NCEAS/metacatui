@@ -3,14 +3,18 @@ define(["backbone", "views/MetricView"], (Backbone, MetricView) => {
 
   describe("MetricView", () => {
     let originalMetacatUI;
+    let sandbox;
     let view;
 
     beforeEach(() => {
+      sandbox = sinon.createSandbox();
       originalMetacatUI = globalThis.MetacatUI;
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         appModel: new Backbone.Model({
           displayDatasetMetricsTooltip: false,
+          metricsForwardCollectionQuery: false,
+          metricsUrl: "https://example.test/metrics",
         }),
         appView: {
           numberAbbreviator: (value) => String(value),
@@ -22,6 +26,7 @@ define(["backbone", "views/MetricView"], (Backbone, MetricView) => {
       view?.onClose();
       view?.remove();
       view = null;
+      sandbox.restore();
       globalThis.MetacatUI = originalMetacatUI;
     });
 

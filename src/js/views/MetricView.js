@@ -201,6 +201,11 @@ define(["backbone", "views/MetricModalView", "semantic"], (
 
         if (this.model.get("synced")) {
           this.renderResults();
+        } else if (
+          this.model.get("synced") === false &&
+          this.model.get("fetching") === false
+        ) {
+          this.renderError();
         }
 
         return this;
