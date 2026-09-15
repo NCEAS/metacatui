@@ -338,11 +338,30 @@ define([
       });
     }
 
-    dataPackage.members.retain(
-      dataPackage.members
-        .getFromSource("resourceMap")
-        .map((member) => member.pid),
-    );
+    const resourceMapPids = dataPackage.members
+      .getFromSource("resourceMap")
+      .map((member) => member.pid);
+    // Metadata and ResourceMap histories can diverge: EML A may be most recent
+    // while its ResMap R1 has newer version R2. R2 contains EML B, not A. So if
+    // the user has navigated to submit/A, we must reject R2. Since we cannot
+    // edit an older ResMap, this package can't be edited. Can happen when A and
+    // B are actually versions of eachother but their obsolesnce chain is
+    // broken, for example.
+    const requestedMetadataPid = dataPackage.resolutionResult?.isMetadata
+      ? dataPackage.resolutionResult.resolvedPid
+      : null;
+    if (
+      requestedMetadataPid &&
+      !resourceMapPids.includes(requestedMetadataPid)
+    ) {
+      throw DataPackageLoader.resourceMapUnavailableError({
+        inputId: dataPackage.inputId,
+        rootResourceMapPid: resourceMapMember.pid,
+        reason: "metadata_not_aggregated",
+      });
+    }
+
+    dataPackage.members.retain(resourceMapPids);
     return resourceMapMember;
   }
 

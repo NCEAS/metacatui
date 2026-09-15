@@ -932,6 +932,67 @@ define([
         });
       });
 
+      it("rejects when the current resource map omits the resolved metadata", async () => {
+        const pkg = new DataPackage();
+        sandbox.stub(pkg, "resolveFromPid").callsFake(async () => {
+          pkg.inputId = "metadata.A";
+          pkg.rootResourceMapPid = "resource_map_1";
+          pkg.members.add(
+            [
+              { pid: "resource_map_1", formatType: "RESOURCE" },
+              { pid: "metadata.A", formatType: "METADATA" },
+            ],
+            { sources: ["resourceMapResolver"] },
+          );
+          pkg.resolutionResult = {
+            isMetadata: true,
+            resolvedPid: "metadata.A",
+          };
+          return pkg.resolutionResult;
+        });
+        pkg.versionTracker = {
+          getLatestVersions: sandbox.stub().resolves(["resource_map_2"]),
+        };
+        sandbox.stub(pkg, "getManifestFromResourceMap").callsFake(async () => {
+          pkg.members.add(
+            [
+              { pid: "resource_map_2", formatType: "RESOURCE" },
+              { pid: "metadata.B", formatType: "METADATA" },
+            ],
+            { sources: ["resourceMap"] },
+          );
+          pkg.primaryMetadataPid = "metadata.B";
+          return { ok: true };
+        });
+        const indexStub = sandbox
+          .stub(pkg, "getManifestFromIndex")
+          .resolves({ ok: true });
+        const sysMetaStub = sandbox
+          .stub(pkg, "fetchSysMeta")
+          .callsFake(async (pids) => {
+            pids.forEach((memberPid) => {
+              pkg.getMember(memberPid).sysMeta = new SystemMetadata({
+                identifier: memberPid,
+              });
+            });
+            return [];
+          });
+
+        let caught = null;
+        try {
+          await pkg.loadEditablePackage("metadata.A");
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceOf(Error);
+        caught.code.should.equal("resource_map_unavailable");
+        caught.reason.should.equal("metadata_not_aggregated");
+        caught.rootResourceMapPid.should.equal("resource_map_2");
+        sinon.assert.notCalled(indexStub);
+        sinon.assert.notCalled(sysMetaStub);
+      });
+
       it("blocks an unindexed Resource Map when currentness cannot be confirmed", async () => {
         const pkg = new DataPackage({ resolverOptions: RESOLVER_OPTIONS });
         sandbox.stub(ResourceMapResolver, "searchIndex").resolves({

@@ -155,6 +155,8 @@ define([
         metadataPid ? ` (PID: ${metadataPid})` : ""
       }`;
     },
+    metadataNotAggregated:
+      "This metadata document belongs to an earlier version of the dataset. The current dataset version uses a different metadata document, so we cannot safely open this one for editing. No changes have been made. Please contact the support team for help.",
     missingAttributes: "This file needs to be described. Click Describe.",
     missingAttributeInfo:
       "There is missing information about this file. Click Describe.",
@@ -942,7 +944,19 @@ define([
         metadataMember.isAuthorized_write = metadataPermission;
         metaModel.set("isAuthorized_write", metadataPermission);
         MetacatUI.rootDataPackage = dataPackage;
-        this.attachMetadataModelToPackage(metaModel);
+        // Require the package member to match the loaded metadata PID. Falling
+        // back from requested metadata A to primary metadata B would save A's
+        // content as a new version of B.
+        if (!this.attachMetadataModelToPackage(metaModel)) {
+          MetacatUI.rootDataPackage = null;
+          const metadataPid =
+            metaModel.get("id") ||
+            metaModel.get("identifier") ||
+            metaModel.get("seriesId");
+          throw new Error(
+            `Loaded data package does not contain metadata "${metadataPid}"`,
+          );
+        }
         this.trigger("dataPackageFound");
         if (resourceMapPermission && metadataPermission) this.setListeners();
         return dataPackage;
@@ -1006,7 +1020,9 @@ define([
         }
         if (error?.code === "resource_map_unavailable") {
           // Reconstruction is safe only after a definitive missing-map result.
-          if (error.multipleRMs === true || error.reason === "missing") {
+          if (error.reason === "metadata_not_aggregated") {
+            this.showMetadataNotAggregated(error);
+          } else if (error.multipleRMs === true || error.reason === "missing") {
             this.showResourceMapNotFound(error);
           } else if (error.reason === "unauthorized") {
             this.notAuthorized();
@@ -1020,6 +1036,42 @@ define([
           return;
         }
         this.loadError(error?.message || String(error));
+      },
+
+      /**
+       * Explain why metadata from an earlier dataset version cannot be edited.
+       * @param {Error} error Structured ResourceMap loading error
+       * @returns {void}
+       * @since 0.0.0
+       */
+      showMetadataNotAggregated(error = {}) {
+        const metadataPid =
+          error.inputId ||
+          this.model?.get?.("id") ||
+          this.model?.get?.("identifier") ||
+          this.model?.get?.("seriesId") ||
+          null;
+        const resourceMapPid = error.rootResourceMapPid || null;
+        let emailBody =
+          "I'm trying to edit a metadata document, but the current dataset version no longer contains it. ";
+        if (metadataPid) {
+          emailBody += `The metadata document PID is ${metadataPid}. `;
+        }
+        if (resourceMapPid) {
+          emailBody += `The current Resource Map PID is ${resourceMapPid}. `;
+        }
+        emailBody +=
+          "MetacatUI stopped loading the editor to avoid changing a different metadata document. Please help me determine how this metadata should be edited.";
+        const emailSubject = `Metadata document is not in current dataset${
+          metadataPid ? ` (PID: ${metadataPid})` : ""
+        }`;
+
+        this.showFullPageAlert(
+          MESSAGES.metadataNotAggregated,
+          "error",
+          emailBody,
+          emailSubject,
+        );
       },
 
       /**
@@ -1212,7 +1264,7 @@ ${supportDetails}`;
       /**
        * Attach the current metadata model to its package member.
        * @param {ScienceMetadata|EML211} [metadataModel] Metadata model to attach
-       * @returns {DataPackageMember|null} Updated primary metadata member
+       * @returns {DataPackageMember|null} Updated matching metadata member
        * @since 0.0.0
        */
       attachMetadataModelToPackage(metadataModel = this.model) {
@@ -1220,9 +1272,7 @@ ${supportDetails}`;
           metadataModel.get("id") ||
           metadataModel.get("identifier") ||
           metadataModel.get("seriesId");
-        const member =
-          MetacatUI.rootDataPackage.getMember(metadataPid) ||
-          MetacatUI.rootDataPackage.getPrimaryMetadataMember();
+        const member = MetacatUI.rootDataPackage.getMember(metadataPid);
         if (!member) return null;
         member.objectModel = metadataModel;
         member.type = "EML";
