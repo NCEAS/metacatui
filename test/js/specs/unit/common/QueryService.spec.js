@@ -488,6 +488,29 @@ define([
         // headers should be empty object (no merge)
         Object.keys(opts.headers).length.should.equal(0);
       });
+
+      it("passes an AbortSignal to fetch", async () => {
+        const { sandbox } = state;
+        const controller = new AbortController();
+        sandbox
+          .stub(QueryService, "queryServiceUrl")
+          .returns("https://api.test");
+        sandbox.stub(QueryService, "buildQueryObject").returns({ q: "x" });
+        sandbox.stub(QueryService, "decidePost").returns(false);
+
+        const fetchStub = sandbox.stub(window, "fetch").resolves({
+          ok: true,
+          json: sandbox.stub().resolves({ ok: 1 }),
+        });
+        sandbox
+          .stub(MetacatUI, "appUserModel")
+          .value({ createFetchSettings: sandbox.stub().returns({}) });
+
+        await QueryService.queryWithFetch({ signal: controller.signal });
+
+        const [, opts] = fetchStub.firstCall.args;
+        opts.signal.should.equal(controller.signal);
+      });
     });
 
     describe("parseResponse()", () => {
@@ -571,11 +594,6 @@ define([
       it("escapes Lucene metacharacters", () => {
         const input = '(title:(a+b) AND path:"/tmp")?';
         const out = QueryService.escapeLucene(input);
-        console.log({
-          out,
-          exp: '\\(title\\:\\(a\\+b\\) AND path\\:\\"/tmp\\"\\)\\?',
-          // inputttt: input,
-        });
         out.should.equal(
           '\\(title\\:\\(a\\+b\\) AND path\\:\\"\\/tmp\\"\\)\\?',
         );

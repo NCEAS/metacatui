@@ -32,7 +32,7 @@ define([], () => {
   /**
    * @class HttpRetryPolicy
    * @classdesc Configuration and logic for HTTP request retry policies.
-   * @since 2.37.0
+   * @since 0.0.0
    * @example
    * const retryPolicy = new HttpRetryPolicy({
    *   maxRetries: 3,

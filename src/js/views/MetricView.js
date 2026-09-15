@@ -199,6 +199,15 @@ define(["backbone", "views/MetricModalView", "semantic"], (
         // in case when there is an error for the fetch call.
         this.listenTo(this.model, "error", this.renderError);
 
+        if (this.model.get("synced")) {
+          this.renderResults();
+        } else if (
+          this.model.get("synced") === false &&
+          this.model.get("fetching") === false
+        ) {
+          this.renderError();
+        }
+
         return this;
       },
 
@@ -215,7 +224,6 @@ define(["backbone", "views/MetricModalView", "semantic"], (
             pid: this.pid,
           });
           modalView.render();
-          this.modalView = modalView;
 
           if (Array.isArray(this.subviews)) {
             this.subviews.push(modalView);
@@ -245,7 +253,6 @@ define(["backbone", "views/MetricModalView", "semantic"], (
         this.$(`.${CLASS_NAMES.metricValue}`).text(
           MetacatUI.appView.numberAbbreviator(total, 1),
         );
-        this.$(`.${CLASS_NAMES.metricValue}`);
       },
 
       /**

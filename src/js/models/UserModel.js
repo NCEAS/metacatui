@@ -536,6 +536,7 @@ define([
             error(data, textStatus, xhr) {
               // User is not logged in
               model.reset();
+              model.set("checked", true);
 
               if (onError) onError();
             },

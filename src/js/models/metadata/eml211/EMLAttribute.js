@@ -140,15 +140,16 @@ define([
 
         this.listenToMissingValueCodes();
         const attrsToListenTo = [
-          "xmlID ",
-          "attributeLabel ",
-          "attributeDefinition ",
-          "storageType ",
-          "measurementScale ",
-          "accuracy ",
-          "coverage ",
-          "methods ",
-          "references ",
+          "xmlID",
+          "attributeName",
+          "attributeLabel",
+          "attributeDefinition",
+          "storageType",
+          "measurementScale",
+          "accuracy",
+          "coverage",
+          "methods",
+          "references",
           "annotation",
         ];
         const listenStr = attrsToListenTo
@@ -167,11 +168,6 @@ define([
         this.stopListening(missingValueCodes, "update change");
         this.listenTo(missingValueCodes, "update change", () => {
           this.trigger("change", this, this.get("missingValueCodes"));
-          this.collection.trigger(
-            "update",
-            this,
-            this.get("missingValueCodes"),
-          );
           this.trickleUpChange();
         });
         this.stopListening(this, "change:missingValueCodes");
@@ -671,7 +667,7 @@ define([
 
       /** Let the top level package know of attribute changes from this object */
       trickleUpChange() {
-        MetacatUI.rootDataPackage.packageModel?.set("changed", true);
+        EMLUtilities.markRootDataPackageChanged();
       },
 
       /** Set a new UUID on the xmlID property */

@@ -108,6 +108,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
 
         try {
           var fetchOptions = {};
+          var model = this;
           this.metricRequest.filterBy[0].filterType = this.get("filterType");
           this.metricRequest.filterBy[0].values = this.get("pid_list");
 
@@ -157,7 +158,6 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
                   }
 
                   // set the fetch options for
-                  var model = this;
                   fetchOptions = _.extend({
                     data:
                       "metricsRequest=" + JSON.stringify(this.metricRequest),
@@ -187,6 +187,11 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
                 timeout: 300000,
               });
             }
+          }
+          if (!fetchOptions.error) {
+            fetchOptions.error = function () {
+              model.set("fetching", false);
+            };
           }
           this.listenToOnce(this, "sync", function () {
             this.set("synced", true);

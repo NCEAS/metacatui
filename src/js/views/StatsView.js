@@ -8,7 +8,7 @@ define([
   "DonutChart",
   "CircleBadge",
   "collections/Citations",
-  "common/Utilities",
+  "common/ValueUtilities",
   "models/MetricsModel",
   "models/Stats",
   "MetricsChart",
@@ -28,7 +28,7 @@ define([
   DonutChart,
   CircleBadge,
   Citations,
-  Utilities,
+  ValueUtilities,
   MetricsModel,
   StatsModel,
   MetricsChart,
@@ -931,7 +931,7 @@ define([
           count = "0 bytes";
           className += " no-activity";
         } else {
-          count = Utilities.bytesToSize(view.model.get("totalSize"));
+          count = ValueUtilities.bytesToSize(view.model.get("totalSize"));
         }
 
         var countEl = $(document.createElement("p"))

@@ -4,7 +4,7 @@ define([
   "underscore",
   "backbone",
   "jszip",
-  "common/Utilities",
+  "common/ValueUtilities",
   "models/connectors/GeoPoints-CesiumPolygon",
   "models/connectors/GeoPoints-CesiumPoints",
   "collections/maps/GeoPoints",
@@ -13,7 +13,7 @@ define([
   _,
   Backbone,
   JSZip,
-  Utilities,
+  ValueUtilities,
   GeoPointsVectorData,
   GeoPointsCesiumPoints,
   GeoPoints,
@@ -1085,7 +1085,7 @@ define([
           infoEl.replaceChildren(wmtsTextEl, copyIconEl);
           infoEl.classList.add(CLASS_NAMES.informationWmts);
         } else {
-          const maxSize = Utilities.bytesToSize(this.downloadSizeLimit, 2);
+          const maxSize = ValueUtilities.bytesToSize(this.downloadSizeLimit, 2);
           if (fileSizeBytes > this.downloadSizeLimit) {
             infoEl.textContent = MESSAGES.downloadSizeTooLarge(
               maxSize,
@@ -1094,7 +1094,7 @@ define([
             infoEl.classList.add(CLASS_NAMES.error);
           } else {
             infoEl.textContent = MESSAGES.estimatedFileSize(
-              Utilities.bytesToSize(fileSizeBytes, 2),
+              ValueUtilities.bytesToSize(fileSizeBytes, 2),
             );
           }
         }
@@ -1389,7 +1389,10 @@ define([
 
             // If file size is approximately over a GB then do not download
             if (data.fileSize >= view.downloadSizeLimit) {
-              const maxSize = Utilities.bytesToSize(view.downloadSizeLimit, 2);
+              const maxSize = ValueUtilities.bytesToSize(
+                view.downloadSizeLimit,
+                2,
+              );
               view.updateStatusBar({
                 error: true,
                 message: MESSAGES.fileSizeExceedsLimit(data.layerName, maxSize),

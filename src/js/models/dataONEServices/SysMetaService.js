@@ -1,156 +1,236 @@
 define([
   "models/dataONEServices/DataONEService",
-  "models/sysmeta/SysMeta",
-  "common/Utilities",
-], (DataONEService, SysMeta, Utilities) => {
-  /**
-   * Default DataONEHttpClient options for SysMetaService
-   * @type {DataONEHttpClient#DataONEHttpClientOptions}
-   */
-  const DEFAULT_CLIENT_OPTIONS = {
-    // baseUrl added at runtime
-    timeoutMs: 2 * 60 * 1000, // 2 minutes
-    allowedHttpMethods: ["GET", "POST", "PUT"],
-    headerNamesForDedup: ["Authorization"],
-    responseTypes: ["text"],
-  };
-
-  /**
-   * Default PersistentStorage options for SysMetaService
-   * @type {PersistentStorage#PersistentStorageOptions}
-   */
-  const DEFAULT_STORAGE_OPTIONS = {
-    ttlMs: 60 * 60 * 1000, // 1 hour
-    schemaVersion: 1,
-  };
-
+  "models/dataONEServices/DataONEHttpClient",
+  "models/sysmeta/SystemMetadata",
+  "common/UrlUtilities",
+  "common/ValueUtilities",
+], (
+  DataONEService,
+  DataONEHttpClient,
+  SystemMetadata,
+  UrlUtilities,
+  ValueUtilities,
+) => {
   /**
    * Service for fetching and caching DataONE system metadata.
    * @class SysMetaService
+   * @since 2.37.0
+   * @classcategory Models/DataONEServices
    * @augments DataONEService
    */
   class SysMetaService extends DataONEService {
     /**
-     * @param {object} [options] Options for the SysMetaService
-     * @param {string} options.baseUrl Base URL for the DataONE endpoint
-     * @param {DataONEHttpClient#DataONEHttpClientOptions} [options.clientConfig]
-     * DataONEHttpClient configuration
-     * @param {PersistentStorage#PersistentStorageOptions} [options.storageConfig]
-     * Storage configuration
-     * @param {boolean} [options.persistPrivate] Allow caching private datas
-     * @param {boolean} [options.defaultAuth] Default auth behavior
-     * @param {Function} [options.getToken] Override token resolver function
-     * @param {Function} [options.getUserName] Optional function to get the
-     * current user name, used for caching keys.
+     * @param {object} [options] Options for the SysMetaService. See
+     * {@link DataONEService.optionsFromDescriptor} for the shared option shape.
+     * @param {string} [options.readBaseUrl] Base URL for System Metadata reads
+     * @param {string} [options.writeBaseUrl] Base URL for System Metadata
+     * writes and reads after a write
      */
-    constructor({
-      baseUrl = "",
-      clientConfig = {},
-      storageConfig = {},
-      persistPrivate = true,
-      defaultAuth = true,
-      getToken,
-      getUserName,
-    } = {}) {
-      const url =
-        baseUrl || globalThis.MetacatUI?.appModel?.get("metaServiceUrl");
-      const urlNormalized = Utilities.normalizeUrl(url);
-
-      const instanceKeys = storageConfig.instanceKeys
-        ? [...storageConfig.instanceKeys]
-        : [];
-      instanceKeys.push("SysMetaService", urlNormalized);
-
-      const storageConfigWithDefaults = {
-        ...DEFAULT_STORAGE_OPTIONS,
-        ...storageConfig,
-        instanceKeys,
+    constructor(options = {}) {
+      const readBaseUrl = UrlUtilities.normalizeUrl(options.readBaseUrl);
+      if (!readBaseUrl) {
+        throw new Error("SysMetaService: readBaseUrl is required");
+      }
+      const serviceOptions = SysMetaService.optionsFromDescriptor({
+        ...options,
+        baseUrl: readBaseUrl,
+      });
+      super(serviceOptions);
+      this.readBaseUrl = readBaseUrl;
+      this.writeBaseUrl = UrlUtilities.normalizeUrl(options.writeBaseUrl);
+      this.writeClientConfig = {
+        ...serviceOptions.clientConfig,
+        baseUrl: "",
       };
+    }
 
-      const clientConfigWithDefaults = {
-        ...DEFAULT_CLIENT_OPTIONS,
-        ...clientConfig,
-        baseUrl: urlNormalized,
-      };
-
-      super({
-        baseUrl: urlNormalized,
-        clientConfig: clientConfigWithDefaults,
-        storageConfig: storageConfigWithDefaults,
-        persistPrivate,
-        defaultAuth,
-        getToken,
-        getUserName,
+    /**
+     * Return the client for System Metadata writes and subsequent reads.
+     * @param {string} operation Operation name for error reporting
+     * @returns {DataONEHttpClient} Client for the write endpoint
+     * @private
+     * @since 0.0.0
+     * @throws {Error} When writeBaseUrl is missing
+     */
+    getWriteClient(operation) {
+      if (!this.writeBaseUrl) {
+        throw new Error(
+          `SysMetaService: writeBaseUrl is required for ${operation}`,
+        );
+      }
+      return DataONEHttpClient.get({
+        ...this.writeClientConfig,
+        baseUrl: this.writeBaseUrl,
       });
     }
 
     /**
-     * Fetch SysMeta for a PID. Returns the raw sysmeta response text.
-     * @param {string} pid The PID of the object to fetch SysMeta for.
+     * Fetch System Metadata for a PID. Returns the raw sysmeta response text.
+     * @param {string} pid The PID of the object to fetch System Metadata for.
      * @param {object} [options] Options passed to
      * {@link DataONEService#download}
-     * @returns {Promise<SysMeta>} The SysMeta object for the requested PID. Raw
-     * XML can be found in the `fetchedXmlString` property.
+     * @returns {Promise<SystemMetadata>} Parsed System Metadata model.
      */
     async download(pid, options = {}) {
+      const normalizedPid = this.constructor.normalizePid(
+        pid,
+        "pid",
+        "SysMetaService.download requires a PID",
+      );
       const { cacheKey } = options;
-      const resolvedCacheKey = this.constructor.resolveCacheKey(pid, cacheKey);
+      const resolvedCacheKey = this.constructor.resolveCacheKey(
+        normalizedPid,
+        cacheKey,
+      );
 
-      const xmlString = await super.download(pid, {
-        ...options,
-        cacheKey: resolvedCacheKey,
-      });
+      const xmlString = await super.download(
+        this.constructor.encodePidPath(normalizedPid),
+        {
+          ...options,
+          cacheKey: resolvedCacheKey,
+          encodePath: false,
+        },
+      );
 
       let sysMeta;
       try {
-        sysMeta = SysMeta.fromXml(xmlString);
+        sysMeta = SystemMetadata.fromXml(xmlString);
       } catch (error) {
         // Remove from cache if parsing fails
         await this.removeCached(resolvedCacheKey);
-        error.message = `Failed to parse SysMeta XML for PID ${pid}: ${error.message}`;
+        error.message = `Failed to parse SystemMetadata XML for PID ${normalizedPid}: ${error.message}`;
         throw error;
-      }
-
-      // If the PID doesn't match, then this is the latest version in a series
-      if (sysMeta.data.identifier !== pid) {
-        sysMeta.seriesId = pid;
       }
 
       return sysMeta;
     }
 
     /**
-     * Remove a cached SysMeta record for a PID.
+     * Fetch uncached System Metadata from the repository that accepts writes.
+     * @param {string} pid PID of the object to fetch System Metadata for
+     * @param {object} [options] Request options
+     * @returns {Promise<SystemMetadata>} Parsed System Metadata model
+     * @since 0.0.0
+     * @throws {Error} When the request or XML parsing fails
+     */
+    async downloadFromWriteTarget(pid, options = {}) {
+      const normalizedPid = this.constructor.normalizePid(pid, "pid");
+      const response = await this.requestWithClient(
+        this.getWriteClient("downloadFromWriteTarget"),
+        this.constructor.buildRequestOptions({
+          options,
+          path: this.constructor.encodePidPath(normalizedPid),
+          method: "GET",
+        }),
+      );
+
+      try {
+        return SystemMetadata.fromXml(response.data);
+      } catch (error) {
+        error.message = `Failed to parse SystemMetadata XML for PID ${normalizedPid}: ${error.message}`;
+        throw error;
+      }
+    }
+
+    /**
+     * Remove a cached System Metadata record for a PID.
      * @param {string} pid PID to invalidate.
      * @returns {Promise<void>} Promise resolving when invalidation completes.
      */
     async invalidate(pid) {
-      if (!pid) return;
-      await this.removeCached(pid);
+      const normalizedPid = ValueUtilities.normalizeText(pid);
+      if (!normalizedPid) return;
+      await this.removeCached(normalizedPid);
     }
 
     /**
-     * Upload SysMeta XML to the service.
-     * @param {string} sysMetaXml SysMeta XML string.
+     * Upload System Metadata XML to the service.
+     * @param {string} sysMetaXml System Metadata XML string.
      * @param {object} [options] Options passed to {@link DataONEService#upload}.
      * @returns {Promise<DataONEHttpResponse>} Promise resolving to the upload response.
      */
     async upload(sysMetaXml, options = {}) {
+      const normalizedSysMetaXml = ValueUtilities.requireNonEmptyString(
+        sysMetaXml,
+        "SysMetaService.upload requires sysMetaXml",
+      );
       // TODO: accept pid?
-      return super.upload("", {
-        ...options,
-        method: "POST",
-        headers: {
-          ...(options.headers || {}),
-          "Content-Type": "application/xml",
-        },
-        body: sysMetaXml,
+      return this.requestWithClient(
+        this.getWriteClient("upload"),
+        this.constructor.buildRequestOptions({
+          options: {
+            ...options,
+            headers: {
+              ...(options.headers || {}),
+              "Content-Type": "application/xml",
+            },
+          },
+          path: "",
+          method: "POST",
+          body: normalizedSysMetaXml,
+        }),
+      );
+    }
+
+    /**
+     * Update System Metadata XML for an existing object.
+     * @param {string} pid PID to update system metadata for.
+     * @param {string} sysMetaXml System Metadata XML string.
+     * @param {object} [options] Options passed to {@link DataONEService#upload}.
+     * @returns {Promise<DataONEHttpResponse>} Promise resolving to the update response.
+     * @throws {Error} When required input is missing or the request fails
+     * @since 0.0.0
+     */
+    async update(pid, sysMetaXml, options = {}) {
+      const normalizedPid = this.constructor.normalizePid(
+        pid,
+        "pid",
+        "SysMetaService.update requires a PID",
+      );
+      const normalizedSysMetaXml = ValueUtilities.requireNonEmptyString(
+        sysMetaXml,
+        "SysMetaService.update requires sysMetaXml",
+      );
+
+      const formData = new FormData();
+      formData.append("pid", normalizedPid);
+      const xmlBlob = new Blob([normalizedSysMetaXml], {
+        type: "application/xml",
       });
+      formData.append("sysmeta", xmlBlob, "sysmeta.xml");
+
+      return this.requestWithClient(
+        this.getWriteClient("update"),
+        this.constructor.buildRequestOptions({
+          options,
+          path: this.constructor.encodePidPath(normalizedPid),
+          method: "PUT",
+          dedupe: false,
+          responseType: "text",
+          body: formData,
+          extra: { transport: "xhr", useCache: false },
+        }),
+      );
     }
   }
 
-  SysMetaService.endpoint = "sysmeta";
-  SysMetaService.SysMeta = SysMeta;
+  /** @type {DataONEService#DataONEServiceConfig} */
+  SysMetaService.config = {
+    endpoint: "sysmeta",
+    client: {
+      timeoutMs: 2 * 60 * 1000, // 2 minutes
+      methods: ["GET", "POST", "PUT"],
+      responseTypes: ["text"],
+      dedupeHeaders: ["Authorization"],
+    },
+    storage: {
+      ttlMs: 60 * 60 * 1000, // 1 hour
+      schemaVersion: 1,
+    },
+    persistPrivate: true,
+    defaultAuth: true,
+  };
+  SysMetaService.SystemMetadata = SystemMetadata;
 
   return SysMetaService;
 });

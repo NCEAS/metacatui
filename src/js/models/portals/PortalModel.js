@@ -6,7 +6,7 @@ define([
   "underscore",
   "backbone",
   "gmaps",
-  "uuid",
+  "common/ValueUtilities",
   "models/filters/Filter",
   "models/portals/PortalSectionModel",
   "models/portals/PortalVizSectionModel",
@@ -22,7 +22,7 @@ define([
   _,
   Backbone,
   gmaps,
-  uuid,
+  ValueUtilities,
   FilterModel,
   PortalSectionModel,
   PortalVizSectionModel,
@@ -1394,7 +1394,7 @@ define([
                   //And if it is not a unit node, which we don't want to change,
                   if (!$(el).is("unit"))
                     //Then change the id attribute to a random uuid
-                    $(el).attr("id", "urn-uuid-" + uuid.v4());
+                    $(el).attr("id", ValueUtilities.makeUUID({ sep: "-" }));
                 }
               });
             }

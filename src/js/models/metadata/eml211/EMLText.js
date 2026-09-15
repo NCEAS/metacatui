@@ -4,14 +4,14 @@ define([
   "backbone",
   "models/DataONEObject",
   "common/EMLUtilities",
-], function ($, _, Backbone, DataONEObject, EMLUtilities) {
+], ($, _, Backbone, DataONEObject, EMLUtilities) => {
   /**
    * @class EMLText211
    * @classdesc A model that represents the EML 2.1.1 Text module
    * @classcategory Models/Metadata/EML211
    * @extends Backbone.Model
    */
-  var EMLText = Backbone.Model.extend(
+  const EMLText = Backbone.Model.extend(
     /** @lends EMLText211.prototype */ {
       type: "EMLText",
 
@@ -198,13 +198,8 @@ define([
         return EMLUtilities.getParentEML(this);
       },
 
-      trickleUpChange: function () {
-        if (
-          MetacatUI.rootDataPackage &&
-          MetacatUI.rootDataPackage.packageModel
-        ) {
-          MetacatUI.rootDataPackage.packageModel.set("changed", true);
-        }
+      trickleUpChange() {
+        EMLUtilities.markRootDataPackageChanged();
       },
 
       formatXML: function (xmlString) {

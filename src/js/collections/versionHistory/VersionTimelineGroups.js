@@ -1,4 +1,4 @@
-define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
+define(["backbone", "common/DateUtilities"], (Backbone, DateUtilities) => {
   "use strict";
 
   const NO_DATE_LABEL = "Unknown Date";
@@ -12,7 +12,7 @@ define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
    */
   const toSegmentDateInfo = (model, groupingTimeZone = "local") => {
     const rawDate = model.get("dateUploaded");
-    const parsedDate = DateUtility.toDate(rawDate);
+    const parsedDate = DateUtilities.toDate(rawDate);
     if (!parsedDate) {
       return {
         key: "unknown",
@@ -21,12 +21,12 @@ define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
       };
     }
 
-    const normalizedDate = DateUtility.toMidnightDate(
+    const normalizedDate = DateUtilities.toMidnightDate(
       parsedDate,
       groupingTimeZone,
     );
     return {
-      key: DateUtility.toDayId(normalizedDate, groupingTimeZone, "date"),
+      key: DateUtilities.toDayId(normalizedDate, groupingTimeZone, "date"),
       date: normalizedDate,
       label: null,
     };
@@ -36,7 +36,7 @@ define(["backbone", "common/DateUtility"], (Backbone, DateUtility) => {
    * Backbone collection representing grouped timeline entries for the version
    * history view. Each group is a contiguous segment of versions in chain order
    * that share the same calendar day (or "Unknown Date" label).
-   * @since 2.37.0
+   * @since 0.0.0
    * @class VersionTimelineGroups
    * @classdesc A collection of Backbone models, each representing a contiguous
    * segment of versions for a specific date label/date.

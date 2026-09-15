@@ -4,7 +4,7 @@ define([
   "backbone",
   "models/DataONEObject",
   "common/EMLUtilities",
-], function ($, _, Backbone, DataONEObject, EMLUtilities) {
+], ($, _, Backbone, DataONEObject, EMLUtilities) => {
   /**
    * @class EMLNonNumericDomain
    * @classdesc EMLNonNumericDomain represents the measurement scale of a nominal
@@ -15,7 +15,7 @@ define([
    * @extends Backbone.Model
    * @constructor
    */
-  var EMLNonNumericDomain = Backbone.Model.extend(
+  const EMLNonNumericDomain = Backbone.Model.extend(
     /** @lends EMLNonNumericDomain.prototype */ {
       type: "EMLNonNumericDomain",
 
@@ -833,8 +833,8 @@ define([
       },
 
       /* Let the top level package know of attribute changes from this object */
-      trickleUpChange: function () {
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+      trickleUpChange() {
+        EMLUtilities.markRootDataPackageChanged();
       },
 
       validate: function () {

@@ -1,19 +1,20 @@
 define([
+  "require",
   "underscore",
   "jquery",
   "backbone",
   "views/SignInView",
   "text!templates/editorSubmitMessage.html",
-], function (_, $, Backbone, SignInView, EditorSubmitMessageTemplate) {
+], (localRequire, _, $, Backbone, SignInView, EditorSubmitMessageTemplate) => {
   /**
    * @class EditorView
    * @classdesc A basic shell of a view, primarily meant to be extended for views that allow editing capabilities.
    * @classcategory Views
    * @name EditorView
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @constructs
    */
-  var EditorView = Backbone.View.extend(
+  const EditorView = Backbone.View.extend(
     /** @lends EditorView.prototype */ {
       /**
        * References to templates for this view. HTML files are converted to Underscore.js templates
@@ -56,7 +57,7 @@ define([
       accessPolicyViewContainer: ".access-policy-view-container",
       /**
        * The events this view will listen to and the associated function to call
-       * @type {Object}
+       * @type {object}
        */
       events: {
         "click #save-editor": "save",
@@ -72,13 +73,13 @@ define([
       /**
        * Renders this view
        */
-      render: function () {
-        //Style the body as an Editor
+      render() {
+        // Style the body as an Editor
         $("body").addClass("Editor rendering");
 
         this.delegateEvents();
 
-        //If there is no active alternate repository, set one
+        // If there is no active alternate repository, set one
         if (
           !MetacatUI.appModel.getActiveAltRepo() &&
           MetacatUI.appModel.get("alternateRepositories").length
@@ -92,13 +93,13 @@ define([
        * This function centralizes all the listeners so that when/if the view's
        * model is replaced, the listeners can be reset.
        */
-      setListeners: function () {
-        //Stop listening first
+      setListeners() {
+        // Stop listening first
         this.stopListening(this.model, "errorSaving", this.saveError);
         this.stopListening(this.model, "successSaving", this.saveSuccess);
         this.stopListening(this.model, "invalid", this.showValidation);
 
-        //Set listeners
+        // Set listeners
         this.listenTo(this.model, "errorSaving", this.saveError);
         this.listenTo(this.model, "successSaving", this.saveSuccess);
         this.listenTo(this.model, "invalid", this.showValidation);
@@ -123,19 +124,19 @@ define([
       /**
        * Show Sign In buttons
        */
-      showSignIn: function () {
-        var container = $(document.createElement("div")).addClass(
+      showSignIn() {
+        const container = $(document.createElement("div")).addClass(
           "container center",
         );
         this.$el.html(container);
-        var signInButtons = new SignInView().render().el;
+        const signInButtons = new SignInView().render().el;
         $(container).append("<h1>Sign in to submit data</h1>", signInButtons);
       },
 
       /**
        * Saves the model
        */
-      save: function () {
+      save() {
         this.showSaving();
         this.model.save();
       },
@@ -143,15 +144,15 @@ define([
       /**
        * Cancel all edits in the editor by simply re-rendering the view
        */
-      cancel: function () {
+      cancel() {
         this.render();
       },
 
       /**
        * Trigger a save error with a message that the save was cancelled
        */
-      handleSaveCancel: function () {
-        if (this.model.get("uploadStatus") == "e") {
+      handleSaveCancel() {
+        if (this.model.get("uploadStatus") === "e") {
           this.saveError("Your submission was cancelled due to an error.");
         }
       },
@@ -159,8 +160,8 @@ define([
       /**
        * Adds top-level control elements to this editor.
        */
-      renderEditorControls: function () {
-        //If the AccessPolicy editor is enabled, add a button for opening it
+      renderEditorControls() {
+        // If the AccessPolicy editor is enabled, add a button for opening it
         if (MetacatUI.appModel.get("allowAccessPolicyChanges")) {
           this.renderAccessPolicyControl();
         }
@@ -169,16 +170,16 @@ define([
       /**
        * Adds a Share button for editing the access policy
        */
-      renderAccessPolicyControl: function () {
-        //If the AccessPolicy editor is enabled, add a button for opening it
+      renderAccessPolicyControl() {
+        // If the AccessPolicy editor is enabled, add a button for opening it
         if (this.isAccessPolicyEditEnabled()) {
-          var isHiddenBehindControl =
+          const isHiddenBehindControl =
             this.$(this.accessPolicyControlContainer).length > 0;
 
-          //Render the AccessPolicy control, if the container element is on the page
+          // Render the AccessPolicy control, if the container element is on the page
           if (isHiddenBehindControl) {
-            //If it isn't, then add it to the page.
-            //Create an anchor tag with an icon and the text "Share" and add it to the editor controls container
+            // If it isn't, then add it to the page.
+            // Create an anchor tag with an icon and the text "Share" and add it to the editor controls container
             this.$(this.accessPolicyControlContainer).prepend(
               $(document.createElement("a"))
                 .attr("href", "#")
@@ -192,40 +193,41 @@ define([
             );
           }
 
-          //If the authorization has already been checked
+          // If the authorization has already been checked
           if (this.model.get("isAuthorized_changePermission") === true) {
-            //Render the AccessPolicyView
+            // Render the AccessPolicyView
             this.renderAccessPolicy();
           } else {
-            //When the user's changePermission authority has been checked, edit their
+            // When the user's changePermission authority has been checked, edit their
             //  access to the AccessPolicyView
             this.listenToOnce(
               this.model,
               "change:isAuthorized_changePermission",
-              function () {
-                //If there is an AccessPolicy control, disable it
+              () => {
+                // If there is an AccessPolicy control, disable it
                 if (isHiddenBehindControl) {
                   if (
                     this.model.get("isAuthorized_changePermission") === false
                   ) {
-                    //Disable the button for the AccessPolicyView if the user is not authorized
+                    // Disable the button for the AccessPolicyView if the user is not authorized
                     this.$(".access-policy-control")
                       .attr("disabled", "disabled")
                       .attr(
                         "title",
-                        "You do not have access to change the " +
-                          MetacatUI.appModel.get("accessPolicyName"),
+                        `You do not have access to change the ${MetacatUI.appModel.get(
+                          "accessPolicyName",
+                        )}`,
                       )
                       .addClass("disabled");
                   }
                 } else {
-                  //Render the AccessPolicyView
+                  // Render the AccessPolicyView
                   this.renderAccessPolicy();
                 }
               },
             );
 
-            //Check the user's authority to change permissions on this object
+            // Check the user's authority to change permissions on this object
             this.model.checkAuthority("changePermission");
           }
         }
@@ -233,74 +235,181 @@ define([
 
       /**
        * Shows the AccessPolicyView for the object being edited.
-       *
-       * @param {Event} e - The click event
-       * @param {Backbone.Model | null} model - The model to show the view for. If
-       *   null, defaults to the model set for the view.
+       * @param {Event} e Click event
+       * @param {Backbone.Model|null} [model] Model to show the view for
+       * @param {object} [options] Access policy view options
+       * @param {boolean} [options.packageLevel] Whether this edits package
+       * level sharing
        */
-      showAccessPolicyModal: function (e, model) {
+      showAccessPolicyModal(e, model, options = {}) {
         try {
-          // If the AccessPolicy editor is disabled in this app, or the specific
-          // .access-policy-control has theh class diasbled, then exit now
+          // Exit if the AccessPolicy editor is disabled in this app, or if the
+          // clicked control is disabled. Check the clicked control specifically,
+          // not the first one in the view, so one disabled row does not block
+          // sharing on other rows.
+          const control = $(e.currentTarget);
           if (
             !MetacatUI.appModel.get("allowAccessPolicyChanges") ||
-            this.$(".access-policy-control").attr("disabled") == "disabled" ||
-            (e.currentTarget && $(e.currentTarget).hasClass("disabled"))
+            control.attr("disabled") === "disabled" ||
+            control.hasClass("disabled")
           ) {
             return;
           }
 
-          this.renderAccessPolicy(model);
-
-          this.on("accessPolicyViewRendered", function () {
-            //Add modal classes to the access policy view
+          this.once("accessPolicyViewRendered", () => {
+            // Add modal classes to the access policy view
             this.$(".access-policy-view")
               .addClass("access-policy-view-modal modal")
               .css("height", window.outerHeight * 0.7)
               .modal()
               .modal("show");
           });
-        } catch (e) {
-          console.error("Error trying to show the AccessPolicyView: ", e);
+
+          this.renderAccessPolicy(model, options);
+        } catch (error) {
+          console.error("Error trying to show the AccessPolicyView: ", error);
         }
       },
 
       /**
-       * Renders the AccessPolicyView
-       * @param {Backbone.Model} model - Optional. The Model to render the
-       *   AccessPolicy of. If not passed, method uses the Editor's model
+       * Shows a loading state in the AccessPolicy modal.
+       * @param {Event} e Click event
+       * @param {string} [message] Loading message
+       * @returns {boolean} Whether the loading modal was shown
+       * @since 0.0.0
        */
-      renderAccessPolicy: function (model) {
-        // Use specified model or default to the editor's model
-        model = model || this.model;
+      showAccessPolicyLoadingModal(e, message = "Loading sharing settings...") {
+        try {
+          const control = $(e.currentTarget);
+          if (
+            !MetacatUI.appModel.get("allowAccessPolicyChanges") ||
+            control.attr("disabled") === "disabled" ||
+            control.hasClass("disabled")
+          ) {
+            return false;
+          }
+
+          const modal = $(document.createElement("div"))
+            .addClass("access-policy-view access-policy-view-modal modal")
+            .css("height", window.outerHeight * 0.7)
+            .html(
+              `<div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4><i class="icon icon-group icon-on-left"></i>${_.escape(
+                  MetacatUI.appModel.get("accessPolicyName"),
+                )}</h4>
+              </div>
+              <div class="modal-body">
+                <p class="subtle">
+                  <i class="icon icon-spinner icon-spin icon-on-left"></i>${_.escape(message)}
+                </p>
+              </div>
+              <div class="modal-footer">
+                <a class="btn cancel" href="#" data-dismiss="modal">Cancel</a>
+              </div>`,
+            );
+
+          this.removeAccessPolicyView();
+          this.$(this.accessPolicyViewContainer).html(modal);
+          modal.modal().modal("show");
+          return true;
+        } catch (error) {
+          console.error(
+            "Error trying to show the AccessPolicyView loading modal: ",
+            error,
+          );
+          return false;
+        }
+      },
+
+      /**
+       * Shows an error in the AccessPolicy modal body.
+       * @param {string} message Error message
+       * @since 0.0.0
+       */
+      showAccessPolicyLoadError(message) {
+        const modal = this.$(
+          `${this.accessPolicyViewContainer} .access-policy-view-modal`,
+        );
+        if (!modal.length) {
+          return;
+        }
+
+        modal
+          .find(".modal-body")
+          .html(
+            `<div class="alert alert-error">${_.escape(
+              message || "Sharing settings could not be loaded.",
+            )}</div>`,
+          );
+        modal
+          .find(".modal-footer")
+          .html(
+            '<a class="btn cancel" href="#" data-dismiss="modal">Close</a>',
+          );
+      },
+
+      /**
+       * Renders the AccessPolicyView
+       * @param {Backbone.Model} [model] Model to render
+       * @param {object} [options] Access policy view options
+       * @param {Array<object>} [options.policy] System Metadata access policy
+       * @param {object} [options.policyContext] Policy display/editor context
+       * @param {Function} [options.onApply] Async apply callback
+       * @param {boolean} [options.packageLevel] Whether this edits package
+       * level sharing
+       */
+      renderAccessPolicy(model, options = {}) {
+        const hasExplicitPolicy = Object.prototype.hasOwnProperty.call(
+          options,
+          "policy",
+        );
+        const accessPolicyModel = model || this.model;
 
         try {
-          //If the AccessPolicy editor is disabled in this app, then exit now
+          // If the AccessPolicy editor is disabled in this app, then exit now
           if (!MetacatUI.appModel.get("allowAccessPolicyChanges")) {
             return;
           }
 
-          var thisView = this;
-          require(["views/AccessPolicyView"], function (AccessPolicyView) {
+          const thisView = this;
+          localRequire(["views/AccessPolicyView"], (AccessPolicyView) => {
             // Create a new AccessPolicyView using the AccessPolicy collection
-            var accessPolicyView = new AccessPolicyView({
-              collection: model.get("accessPolicy"),
-            });
+            const viewOptions = hasExplicitPolicy
+              ? {
+                  policy: options.policy,
+                  policyContext: options.policyContext,
+                  onApply: options.onApply,
+                }
+              : { collection: accessPolicyModel.get("accessPolicy") };
+            const accessPolicyView = new AccessPolicyView(viewOptions);
 
-            // Turn on accessPolicy broadcasting for metadata models
-            if (model.get("type") === "Metadata") {
-              accessPolicyView.broadcast = true;
-            }
+            // Explicit callers identify package-level sharing directly. Legacy
+            // metadata models retain their existing broadcast behavior.
+            accessPolicyView.broadcast =
+              options.packageLevel === true ||
+              (!hasExplicitPolicy &&
+                accessPolicyModel.get("type") === "Metadata");
 
-            //Store a reference to the AccessPolicyView on this view
+            thisView.removeAccessPolicyView();
+
+            // Store a reference to the AccessPolicyView on this view
             thisView.accessPolicyView = accessPolicyView;
 
-            //Add the view to the page
-            thisView
-              .$(thisView.accessPolicyViewContainer)
-              .html(accessPolicyView.el);
+            const existingModal = thisView.$(
+              `${thisView.accessPolicyViewContainer} .access-policy-view-modal`,
+            );
 
-            //Render the AccessPolicyView
+            if (existingModal.length) {
+              accessPolicyView.setElement(existingModal.first());
+            } else {
+              // Add the view to the page
+              thisView
+                .$(thisView.accessPolicyViewContainer)
+                .html(accessPolicyView.el);
+            }
+
+            // Render the AccessPolicyView
             accessPolicyView.render();
 
             thisView.trigger("accessPolicyViewRendered");
@@ -317,25 +426,42 @@ define([
       },
 
       /**
-       * Checks if the Access Policy editor is enabled in this instance of MetacatUI for
-       * the type of object being edited.
-       * @returns {boolean}
+       * Remove the current AccessPolicyView and its editor listener.
+       * @since 0.0.0
+       */
+      removeAccessPolicyView() {
+        const { accessPolicyView } = this;
+        if (!accessPolicyView) {
+          return;
+        }
+
+        this.stopListening(
+          accessPolicyView.collection,
+          "add remove",
+          this.showControls,
+        );
+        accessPolicyView.remove();
+        this.accessPolicyView = null;
+      },
+
+      /**
+       * Returns false in the base editor. Subclasses override this method to
+       * enable access policy editing for supported model types.
+       * @returns {boolean} Whether access policy editing is enabled
        * @since 2.15.0
        */
-      isAccessPolicyEditEnabled: function () {
-        if (!MetacatUI.appModel.get("allowAccessPolicyChanges")) {
-          return false;
-        }
+      isAccessPolicyEditEnabled() {
+        return false;
       },
 
       /**
        * Show the editor footer controls (Save bar)
        */
-      showControls: function () {
-        var view = this;
+      showControls() {
+        const view = this;
         this.$(".editor-controls")
           .removeClass("hidden")
-          .slideDown(300, function () {
+          .slideDown(300, () => {
             if (typeof view.handleScroll === "function") {
               view.handleScroll();
             }
@@ -345,10 +471,10 @@ define([
       /**
        * Hide the editor footer controls (Save bar)
        */
-      hideControls: function () {
-        var view = this;
+      hideControls() {
+        const view = this;
         this.hideSaving();
-        this.$(".editor-controls").slideUp(300, function () {
+        this.$(".editor-controls").slideUp(300, () => {
           if (typeof view.handleScroll === "function") {
             view.handleScroll();
           }
@@ -358,35 +484,35 @@ define([
       /**
        * Change the styling of this view to show that the object is in the process of saving
        */
-      showSaving: function () {
-        //Change the style of the save button
+      showSaving() {
+        // Change the style of the save button
         this.$("#save-editor")
           .html('<i class="icon icon-spinner icon-spin"></i> Submitting ...')
           .addClass("btn-disabled");
 
-        //Remove all the validation messaging
+        // Remove all the validation messaging
         this.removeValidation();
 
-        //Get all the inputs in the Editor
-        var allInputs = this.$("input, textarea, select, button");
+        // Get all the inputs in the Editor
+        const allInputs = this.$("input, textarea, select, button");
 
-        //Mark the disabled inputs so we can re-disable them later
+        // Mark the disabled inputs so we can re-disable them later
         allInputs
           .filter(":disabled")
           .not(".label-container .label-input-text")
           .addClass("disabled-saving");
 
-        //Remove the latest success or error alert
+        // Remove the latest success or error alert
         this.$el.children(".alert-container").remove();
 
-        //Disable all the inputs
+        // Disable all the inputs
         allInputs.prop("disabled", true);
       },
 
       /**
        *  Remove the styles set in showSaving()
        */
-      hideSaving: function () {
+      hideSaving() {
         this.$("input, textarea, select, button")
           .not(".label-container .label-input-text")
           .prop("disabled", false);
@@ -396,7 +522,7 @@ define([
           .prop("disabled", true)
           .removeClass("disabled-saving");
 
-        //When the package is saved, revert the Save button back to normal
+        // When the package is saved, revert the Save button back to normal
         this.$("#save-editor")
           .html(this.submitButtonText)
           .removeClass("btn-disabled");
@@ -406,8 +532,8 @@ define([
        * Enable the Save button. Resets any changes made in {@link EditorView#disableControls}
        * @since 2.17.1
        */
-      enableControls: function () {
-        //When the package is saved, revert the Save button back to normal
+      enableControls() {
+        // When the package is saved, revert the Save button back to normal
         this.$("#save-editor")
           .html(this.submitButtonText)
           .removeClass("btn-disabled")
@@ -425,15 +551,12 @@ define([
        * @param {string} tooltipMessage -- A message that is the reason for buttons being disabled. This message will be displayed in a tooltip.
        * @since 2.17.1
        */
-      disableControls: function (
-        message,
-        tooltipMessage = "Files are uploading.",
-      ) {
-        //When the package is saved, revert the Save button back to normal
+      disableControls(message, tooltipMessage = "Files are uploading.") {
+        // When the package is saved, revert the Save button back to normal
         this.$("#save-editor")
           .html(message || "Waiting for files to finish uploading...")
           .addClass("btn-disabled")
-          .parent() //Add a tooltip to the parent element since tooltips won't work on a disabled button
+          .parent() // Add a tooltip to the parent element since tooltips won't work on a disabled button
           .tooltip({
             placement: "top",
             trigger: "hover focus click",
@@ -462,29 +585,27 @@ define([
        * @param {string|DOMElement} container - The element to put the loading styling in. Either a jQuery selector or the element itself.
        * @param {string|DOMElement} message - The message to display next to the loading icon. Either a jQuery selector or the element itself.
        */
-      showLoading: function (container, message) {
-        if (typeof container == "undefined" || !container)
-          var container = this.$el;
+      showLoading(container, message) {
+        const target = container || this.$el;
 
-        $(container).html(MetacatUI.appView.loadingTemplate({ msg: message }));
+        $(target).html(MetacatUI.appView.loadingTemplate({ msg: message }));
       },
 
       /**
        * Remove the styles set in showLoading()
        * @param {string|DOMElement} container - The element the loading message is conttained in. Either a jQuery selector or the element itself.
        */
-      hideLoading: function (container) {
-        if (typeof container == "undefined" || !container)
-          var container = this.$el;
+      hideLoading(container) {
+        const target = container || this.$el;
 
-        $(container).find(".loading").remove();
+        $(target).find(".loading").remove();
       },
 
       /**
        * Called when there is no object found with this ID
        */
-      showNotFound: function () {
-        //If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
+      showNotFound() {
+        // If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
         if (!MetacatUI.appUserModel.get("checked")) {
           this.listenToOnce(
             MetacatUI.appUserModel,
@@ -493,15 +614,15 @@ define([
           );
           return;
         }
-        //If the user is not logged in
-        else if (!MetacatUI.appUserModel.get("loggedIn")) {
+        // If the user is not logged in
+        if (!MetacatUI.appUserModel.get("loggedIn")) {
           this.showSignIn();
           return;
         }
 
         if (!this.model.get("notFound")) return;
 
-        var msg =
+        const msg =
           "<h4>Nothing was found for one of the following reasons:</h4>" +
           "<ul class='indent'>" +
           `<li>The ID <span id='editor-view-not-found-pid'>${this.pid}</span> does not exist.</li>` +
@@ -519,14 +640,14 @@ define([
       /**
        * Check the validity of this view's model
        */
-      checkValidity: function () {
+      checkValidity() {
         if (this.model.isValid()) this.model.trigger("valid");
       },
 
       /**
        * Show validation errors, if there are any
        */
-      showValidation: function () {
+      showValidation() {
         this.saveError(
           "Unable to save. Either required information is missing or isn't filled out correctly.",
         );
@@ -535,17 +656,16 @@ define([
       /**
        * Removes all the validation error styling and messaging from this view
        */
-      removeValidation: function () {
+      removeValidation() {
         this.$(".notification.error").removeClass("error").empty();
         this.$(".validation-error-icon").hide();
       },
 
       /**
        * When the object is saved successfully, tell the user
-       * @param {object} savedObject - the object that was successfully saved
        */
-      saveSuccess: function (savedObject) {
-        var message = this.editorSubmitMessageTemplate({
+      saveSuccess() {
+        const message = this.editorSubmitMessageTemplate({
           messageText: "Your changes have been submitted.",
           viewURL: MetacatUI.appModel.get("baseUrl"),
           buttonText: "Return home",
@@ -562,24 +682,24 @@ define([
        * When the object fails to save, tell the user
        * @param {string} errorMsg - The error message resulting from a failed attempt to save
        */
-      saveError: function (errorMsg) {
-        var messageContainer = $(document.createElement("div")).append(
-            document.createElement("p"),
-          ),
-          messageParagraph = messageContainer.find("p"),
-          messageClasses = "alert-error";
+      saveError(errorMsg) {
+        const messageContainer = $(document.createElement("div")).append(
+          document.createElement("p"),
+        );
+        const messageParagraph = messageContainer.find("p");
+        const messageClasses = "alert-error";
 
         messageParagraph.append(errorMsg);
 
-        //If the model has an error message set on it, show it in a collapseable technical details section
+        // If the model has an error message set on it, show it in a collapseable technical details section
         if (this.model.get("errorMessage")) {
-          var errorId = "error" + Math.round(Math.random() * 100);
+          const errorId = `error${Math.round(Math.random() * 100)}`;
           messageParagraph.after(
             $(document.createElement("p")).append(
               $(document.createElement("a"))
                 .text("See technical details")
                 .attr("data-toggle", "collapse")
-                .attr("data-target", "#" + errorId)
+                .attr("data-target", `#${errorId}`)
                 .addClass("pointer"),
             ),
             $(document.createElement("div"))
@@ -649,53 +769,41 @@ define([
        * @param {object} requiredFields - A literal object that specified which fields should be required.
        *  The keys on the object map to model attributes, and the value is true if required, false if optional.
        */
-      renderRequiredIcons: function (requiredFields) {
-        //If no required fields are given, exit now
-        if (typeof requiredFields == "undefined") {
+      renderRequiredIcons(requiredFields) {
+        // If no required fields are given, exit now
+        if (typeof requiredFields === "undefined") {
           return;
         }
 
-        _.each(
-          Object.keys(requiredFields),
-          function (field) {
-            if (requiredFields[field]) {
-              var reqEl = this.$(
-                ".required-icon[data-category='" + field + "']",
-              );
+        _.each(Object.keys(requiredFields), (field) => {
+          if (requiredFields[field]) {
+            const reqEl = this.$(`.required-icon[data-category='${field}']`);
 
-              //Show the required icon for this category/field
-              reqEl.show();
+            // Show the required icon for this category/field
+            reqEl.show();
 
-              //Show the required icon for the section
-              var sectionName = reqEl
-                .parents(".section[data-section]")
-                .attr("data-section");
-              this.$(
-                ".required-icon[data-section='" + sectionName + "']",
-              ).show();
-            }
-          },
-          this,
-        );
+            // Show the required icon for the section
+            const sectionName = reqEl
+              .parents(".section[data-section]")
+              .attr("data-section");
+            this.$(`.required-icon[data-section='${sectionName}']`).show();
+          }
+        });
 
-        //When new inputs have been added to this Editor, re-render these required icons.
+        // When new inputs have been added to this Editor, re-render these required icons.
         // This is helpful when new questions are added to the editor after the intial rendering.
         this.off("editorInputsAdded");
-        this.on(
-          "editorInputsAdded",
-          function () {
-            this.renderRequiredIcons(requiredFields);
-          },
-          this,
-        );
+        this.on("editorInputsAdded", () => {
+          this.renderRequiredIcons(requiredFields);
+        });
       },
 
       /**
        * Gets a list of required fields for this editor, or an empty object if there are none.
-       * @returns {object}
+       * @returns {object} Required fields keyed by model attribute
        * @since 2.19.0
        */
-      getRequiredFields: function () {
+      getRequiredFields() {
         return {};
       },
 
@@ -704,11 +812,11 @@ define([
        * This function is also executed by the AppView, which controls the top-level navigation.
        * @returns {boolean} Returns true if this view should be closed. False if it should remain opened and active.
        */
-      canClose: function () {
-        //If the user isn't logged in, we can leave this view without confirmation
+      canClose() {
+        // If the user isn't logged in, we can leave this view without confirmation
         if (!MetacatUI.appUserModel.get("loggedIn")) return true;
 
-        //If there are no unsaved changes, we can leave this view without confirmation
+        // If there are no unsaved changes, we can leave this view without confirmation
         if (!this.hasUnsavedChanges()) {
           return true;
         }
@@ -720,17 +828,17 @@ define([
        * This function is called whenever the user is about to leave this view.
        * @returns {string} The message that asks the user if they are sure they want to close this view
        */
-      getConfirmCloseMessage: function () {
-        //Return a confirmation message
+      getConfirmCloseMessage() {
+        // Return a confirmation message
         return "Leave this page? All of your unsaved changes will be lost.";
       },
 
       /**
        * Returns true if there are unsaved changes in this Editor
        * This function should be extended by each subclass of EditorView to check for unsaved changes for that model type
-       * @returns {boolean}
+       * @returns {boolean} Whether this editor has unsaved changes
        */
-      hasUnsavedChanges: function () {
+      hasUnsavedChanges() {
         return true;
       },
 
@@ -741,40 +849,31 @@ define([
        * @returns {string} The error message HTML
        * @since 2.18.0
        */
-      getErrorListItem: function (error) {
+      getErrorListItem(error) {
         try {
           let errorMessage = "";
 
-          //Strings get added to a list item HTML element
-          if (typeof error == "string" && error.trim().length) {
+          // Strings get added to a list item HTML element
+          if (typeof error === "string" && error.trim().length) {
             return `<li>${error}</li>`;
           }
-          //If the error is an array, iterate over each error in the array
-          else if (Array.isArray(error)) {
-            _.each(
-              error,
-              function (subError) {
-                errorMessage += this.getErrorListItem(subError);
-              },
-              this,
-            );
+          // If the error is an array, iterate over each error in the array
+          if (Array.isArray(error)) {
+            _.each(error, (subError) => {
+              errorMessage += this.getErrorListItem(subError);
+            });
             return errorMessage;
           }
-          //If the error is a literal object, iterate over each key in the object
-          else if (typeof error == "object") {
-            _.each(
-              Object.keys(error),
-              function (errorKey) {
-                errorMessage += this.getErrorListItem(error[errorKey]);
-              },
-              this,
-            );
+          // If the error is a literal object, iterate over each key in the object
+          if (typeof error === "object") {
+            _.each(Object.keys(error), (errorKey) => {
+              errorMessage += this.getErrorListItem(error[errorKey]);
+            });
             return errorMessage;
           }
-          //Default to returning an empty string
-          else {
-            return "";
-          }
+          // Default to returning an empty string
+
+          return "";
         } catch (e) {
           console.error(
             "Failed to create the error message to show in the editor: ",
@@ -787,20 +886,20 @@ define([
       /**
        *  Perform clean-up functions when this view is about to be removed from the page or navigated away from.
        */
-      onClose: function () {
-        //Remove the listener on the Window
+      onClose() {
+        // Remove the listener on the Window
         if (this.beforeunloadCallback) {
           window.removeEventListener("beforeunload", this.beforeunloadCallback);
           delete this.beforeunloadCallback;
         }
 
-        //Reset the active alternate repository
+        // Reset the active alternate repository
         MetacatUI.appModel.set("activeAlternateRepositoryId", null);
 
-        //Remove the class from the body element
+        // Remove the class from the body element
         $("body").removeClass("Editor rendering");
 
-        //Remove listeners
+        // Remove listeners
         this.stopListening();
         this.undelegateEvents();
       },

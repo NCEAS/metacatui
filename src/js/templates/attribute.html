@@ -1,13 +1,19 @@
 <%
 if(!formattedAttribute || (formattedAttribute === undefined)) var formattedAttribute = attribute;
+if(typeof controlGroupClass === "undefined") var controlGroupClass = "control-group";
+if(typeof controlLabelClass === "undefined") var controlLabelClass = "control-label";
+if(typeof controlsClass === "undefined") var controlsClass = "controls";
+if(typeof controlsWellClass === "undefined") var controlsWellClass = "controls-well";
+if(typeof attributeClass === "undefined") var attributeClass = attribute;
+if(typeof dataValue === "undefined") var dataValue = null;
 %>
 
-	<div class="control-group <%=attribute%>" id="<%=id%>" type="<%=type%>" resource="<%=resource%>">
-		<label class="control-label <%=attribute%>"><%=formattedAttribute%></label>
+	<div class="<%=controlGroupClass%> <%=attributeClass%>" id="<%=id%>" type="<%=type%>" resource="<%=resource%>"<% if(dataValue !== null){ %> data-value="<%=dataValue%>"<% } %>>
+		<label class="<%=controlLabelClass%> <%=attributeClass%>"><%=formattedAttribute%></label>
 
     <% if( value.startsWith("http") ){
       value = '<a href="' + value + '" target="_blank">' + value + '</a>';
     } %>
     
-		<div class="controls controls-well"><%=value%></div>
+		<div class="<%=controlsClass%> <%=controlsWellClass%>"><%=value%></div>
 	</div>

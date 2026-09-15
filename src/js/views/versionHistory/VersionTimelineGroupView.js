@@ -5,9 +5,9 @@
 define([
   "backbone",
   "collections/DataONEObjects",
-  "common/DateUtility",
+  "common/DateUtilities",
   "views/versionHistory/ObjectVersionsView",
-], (Backbone, DataONEObjects, DateUtility, ObjectVersionsView) => {
+], (Backbone, DataONEObjects, DateUtilities, ObjectVersionsView) => {
   "use strict";
 
   const DATE_NOTE_ICON_LABEL =
@@ -41,7 +41,7 @@ define([
    * @classcategory Views/VersionHistory
    * @augments Backbone.View
    * @screenshot views/versionHistory/VersionTimelineGroupView.png
-   * @since 2.37.0
+   * @since 0.0.0
    */
   const VersionTimelineGroupView = Backbone.View.extend(
     /** @lends VersionTimelineGroupView.prototype */ {
@@ -95,7 +95,7 @@ define([
       template({ date, label }) {
         let displayDate =
           label ||
-          DateUtility.toLocaleDateString(date, {
+          DateUtilities.toLocaleDateString(date, {
             formatOptions: {
               year: "numeric",
               month: "long",
@@ -103,8 +103,8 @@ define([
             },
           });
         // If it's a date and not e.g. "unknown" label, wrap it in <time>
-        if (DateUtility.isValidDate(date)) {
-          const dateAttr = DateUtility.toISODateOnly(date);
+        if (DateUtilities.isValidDate(date)) {
+          const dateAttr = DateUtilities.toISODateOnly(date);
           displayDate = `<time datetime="${dateAttr}">${displayDate}</time>`;
         }
 
@@ -150,7 +150,7 @@ define([
        * this group.
        */
       getDateKey() {
-        const dateKey = DateUtility.isValidDate(this.date)
+        const dateKey = DateUtilities.isValidDate(this.date)
           ? this.date.getTime()
           : "nodate";
         return `${dateKey}|${this.label || ""}`;
@@ -222,13 +222,14 @@ define([
       /**
        * Replace the models backing this group while keeping the same collection
        * reference.
-       * @param {object[]} models - Plain model attributes grouped for the date.
+       * @param {Array.<(object|Backbone.Model)>} models Models or attributes
+       * grouped for the date
        */
       setModels(models) {
         const newModels = Array.isArray(models) ? models : [];
         const hasChanges =
           this.collection.length !== newModels.length ||
-          this.collection.every((model, index) => model === newModels[index]);
+          !this.collection.every((model, index) => model === newModels[index]);
         if (hasChanges) {
           this.collection.set(newModels, {
             parse: true,

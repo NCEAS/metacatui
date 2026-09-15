@@ -4,9 +4,9 @@ define([
   "jquery",
   "backbone",
   "common/Utilities",
-  "common/DateUtility",
+  "common/DateUtilities",
   "semantic",
-], ($, Backbone, Utilities, DateUtility, Semantic) => {
+], ($, Backbone, Utilities, DateUtilities, Semantic) => {
   // SVG for the star icon used in the DOI badge
   const starIcon = `<i class="icon-star"></i>`;
 
@@ -123,7 +123,7 @@ define([
    * @classcategory Views/VersionHistory
    * @augments Backbone.View
    * @screenshot views/VersionHistory/ObjectVersionView.png
-   * @since 2.37.0
+   * @since 0.0.0
    */
   const ObjectVersionView = Backbone.View.extend(
     /** @lends ObjectVersionView.prototype */ {
@@ -238,8 +238,8 @@ define([
       template(model) {
         const { identifier, dateUploaded } = model.toJSON();
 
-        let friendlyDate = DateUtility.toLocalTimestampWithZone(dateUploaded);
-        let isoDate = DateUtility.toISOString(dateUploaded);
+        let friendlyDate = DateUtilities.toLocalTimestampWithZone(dateUploaded);
+        let isoDate = DateUtilities.toISOString(dateUploaded);
         if (!friendlyDate) {
           friendlyDate = "Unknown Date";
           isoDate = "";
@@ -323,9 +323,9 @@ define([
         if (!referenceDate || !thisDate) {
           return "";
         }
-        const thisDateObj = DateUtility.toDate(thisDate);
-        const referenceDateObj = DateUtility.toDate(referenceDate);
-        const relativeDateString = DateUtility.getRelativeDateString(
+        const thisDateObj = DateUtilities.toDate(thisDate);
+        const referenceDateObj = DateUtilities.toDate(referenceDate);
+        const relativeDateString = DateUtilities.getRelativeDateString(
           thisDateObj,
           referenceDateObj,
           {
@@ -417,7 +417,7 @@ define([
         if (!dateNote) return "";
 
         const { timeDiffMs } = dateNote;
-        const timeDiff = DateUtility.getRelativeDateString(timeDiffMs, 0, {
+        const timeDiff = DateUtilities.getRelativeDateString(timeDiffMs, 0, {
           newerWord: "",
           olderWord: "",
         });

@@ -1,8 +1,9 @@
 define([
   "backbone",
   "views/versionHistory/VersionHistoryView",
+  "models/sysmeta/VersionTracker",
   "/test/js/specs/shared/clean-state.js",
-], (Backbone, VersionHistoryView, cleanState) => {
+], (Backbone, VersionHistoryView, VersionTracker, cleanState) => {
   const expect = chai.expect;
 
   describe("VersionHistoryView", () => {
@@ -119,7 +120,13 @@ define([
       );
     });
 
-    it("batches DOI filter visibility changes and refreshes the timeline once", () => {
+    it("batches DOI filter visibility changes and keeps the reference visible", () => {
+      const referenceModel = new Backbone.Model({
+        id: "ref.1",
+        identifier: "ref.1",
+        hiddenByUI: false,
+      });
+      referenceModel.isDOI = () => false;
       const doiModel = new Backbone.Model({
         id: "doi.1",
         identifier: "doi.1",
@@ -133,7 +140,11 @@ define([
       });
       nonDoiModel.isDOI = () => false;
 
-      state.view.collection = new Backbone.Collection([doiModel, nonDoiModel]);
+      state.view.collection = new Backbone.Collection([
+        referenceModel,
+        doiModel,
+        nonDoiModel,
+      ]);
       state.view.timelineGroupsView = {
         updateVisualState: state.sandbox.stub(),
         remove: state.sandbox.stub(),
@@ -144,12 +155,109 @@ define([
 
       state.view.onToggle("doi");
 
+      expect(referenceModel.get("hiddenByUI")).to.equal(false);
       expect(doiModel.get("hiddenByUI")).to.equal(false);
       expect(nonDoiModel.get("hiddenByUI")).to.equal(true);
       expect(hiddenChangeSpy.called).to.equal(false);
       expect(
         state.view.timelineGroupsView.updateVisualState.calledOnce,
       ).to.equal(true);
+    });
+
+    it("preserves VersionTracker fields when adding SystemMetadata rows", () => {
+      const sysMeta = new VersionTracker.SystemMetadata({
+        identifier: "newer.1",
+        dateUploaded: "2024-01-02T00:00:00Z",
+      });
+      sysMeta.versionHistory = { "ref.1": 1 };
+      sysMeta.errors = [404];
+
+      state.view.onVersionFound(sysMeta);
+
+      const model = state.view.collection.get("newer.1");
+      expect(model.get("versionHistory")).to.deep.equal({ "ref.1": 1 });
+      expect(model.get("errors")).to.deep.equal([404]);
+    });
+
+    it("places unknown-date end versions by chain order", () => {
+      const addSysMeta = (identifier, index, dateUploaded = null) => {
+        const sysMeta = new VersionTracker.SystemMetadata({
+          identifier,
+          dateUploaded,
+        });
+        sysMeta.versionHistory = { "ref.1": index };
+        state.view.onVersionFound(sysMeta);
+      };
+
+      addSysMeta("z-newest", 1);
+      addSysMeta("ref.1", 0, "2024-01-02T00:00:00Z");
+      addSysMeta("a-oldest", -1);
+
+      state.view.timelineGroups.fromDataONEObjects(state.view.collection, {
+        referencePid: "ref.1",
+      });
+
+      expect(
+        state.view.timelineGroups.map((group) =>
+          group.get("models")[0].get("identifier"),
+        ),
+      ).to.deep.equal(["z-newest", "ref.1", "a-oldest"]);
+    });
+
+    it("switches from a requested SID to the returned PID when schema seriesId matches the current pid", () => {
+      state.view.collection = new Backbone.Collection([
+        {
+          id: "ref.1",
+          identifier: "ref.1",
+        },
+      ]);
+      state.sandbox.stub(state.view, "render");
+
+      state.view.onVersionFound({
+        identifier: "pid.2",
+        seriesId: "ref.1",
+        toJSON() {
+          return {
+            identifier: "pid.2",
+            seriesId: "ref.1",
+            versionHistory: { "ref.1": 0 },
+            errors: [],
+          };
+        },
+      });
+
+      expect(state.view.collection.get("ref.1")).to.equal(undefined);
+      expect(state.view.pid).to.equal("pid.2");
+      expect(state.view.render.calledOnce).to.equal(true);
+    });
+
+    it("does not switch views when the current pid is not the returned schema seriesId", () => {
+      state.view.collection = new Backbone.Collection([
+        {
+          id: "ref.1",
+          identifier: "ref.1",
+        },
+      ]);
+      state.sandbox.stub(state.view, "render");
+
+      state.view.onVersionFound({
+        identifier: "pid.2",
+        seriesId: "ref.2",
+        versionHistory: { "ref.1": 1 },
+        toJSON() {
+          return {
+            identifier: "pid.2",
+            seriesId: "ref.2",
+            versionHistory: { "ref.1": 1 },
+            errors: [],
+          };
+        },
+      });
+
+      expect(state.view.collection.get("ref.1")).to.not.equal(undefined);
+      expect(state.view.collection.get("pid.2")).to.not.equal(undefined);
+      expect(state.view.pid).to.equal("ref.1");
+      expect(state.view.render.called).to.equal(false);
     });
   });
 });
