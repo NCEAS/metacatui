@@ -3898,7 +3898,7 @@ ${supportDetails}`;
         // Build the message
         let msg = `We couldn't find the dataset that includes ${thisDoc}. `;
 
-        if (durHrs) {
+        if (durHrs && !canRepair) {
           if (durHrs < durLimitHrs && !multipleRMs) {
             let timeSinceEdit = `This document was last updated ${durHrsFixed} ${hoursNoun} ago.`;
             if (durHrsFixed < 1) {
@@ -3915,7 +3915,7 @@ ${supportDetails}`;
             }
             msg += `.`;
           }
-        } else {
+        } else if (!canRepair) {
           msg += defaultAdvice;
         }
 
@@ -3944,7 +3944,7 @@ ${supportDetails}`;
             </div>`;
         }
 
-        this.showFullPageAlert(msg, "error", body, subject);
+        this.showFullPageAlert(msg, "warning", body, subject);
 
         // Wire the repair button with a plain DOM handler: showFullPageAlert has
         // already torn down the view's Backbone listeners, and showAlert
