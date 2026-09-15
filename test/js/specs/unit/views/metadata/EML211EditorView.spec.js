@@ -438,6 +438,11 @@ define([
     });
 
     it("renames the root dataset row by updating the metadata title", async function () {
+      const rootDataPackage = createEditorRootDataPackage();
+      globalThis.MetacatUI = {
+        ...(originalMetacatUI || {}),
+        rootDataPackage,
+      };
       const rowModel = new Backbone.Model({
         id: "dataset:resource_map_1",
         className: "root-dataset",
@@ -450,6 +455,8 @@ define([
       await view.handleFileTableRename(rowModel, "Renamed dataset");
 
       model.get("title").should.deep.equal(["Renamed dataset"]);
+      rootDataPackage.hasUnsavedChanges().should.equal(true);
+      rootDataPackage.hasMetadataContentEdits().should.equal(true);
       sinon.assert.calledOnceWithExactly(view.renderCitationHeader, model);
       sinon.assert.calledOnce(view.refreshFileTable);
     });

@@ -191,6 +191,9 @@ define([
       methods: ["POST"],
       responseTypes: ["text"],
       dedupeHeaders: ["Authorization", "Content-Type", "Accept"],
+      retry: {
+        maxRetries: 0,
+      },
     },
     persistPrivate: false,
     defaultAuth: true,

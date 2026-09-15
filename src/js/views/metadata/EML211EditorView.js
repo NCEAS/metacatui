@@ -17,6 +17,7 @@ define([
   "views/metadata/EML211View",
   "views/metadata/EMLEntityView",
   "common/DateUtilities",
+  "common/EMLUtilities",
   "common/ErrorUtilities",
   "common/Utilities",
   "common/UrlUtilities",
@@ -40,6 +41,7 @@ define([
   EMLView,
   EMLEntityView,
   DateUtilities,
+  EMLUtilities,
   ErrorUtilities,
   Utilities,
   UrlUtilities,
@@ -2763,6 +2765,7 @@ ${supportDetails}`;
             return;
           }
           this.model.set("title", [title]);
+          EMLUtilities.markRootDataPackageChanged();
           this.renderCitationHeader(this.model);
           this.refreshFileTable();
           return;

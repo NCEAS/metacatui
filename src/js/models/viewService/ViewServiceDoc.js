@@ -422,12 +422,6 @@ define([
       const normalizedFileName = ValueUtilities.normalizeText(fileName);
       if (!normalizedPid && !normalizedFileName) return null;
 
-      const selected = this.constructor.findEntitySectionBySelector(root, {
-        pid: normalizedPid,
-        fileName: normalizedFileName,
-      });
-      if (selected) return selected;
-
       if (!normalizedPid) {
         return this.findEntitySectionByFileName(root, normalizedFileName);
       }
