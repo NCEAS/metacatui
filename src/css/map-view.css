@@ -298,95 +298,6 @@
   height: 100%;
 }
 
-.map-view__loading-indicator {
-  position: absolute;
-  top: 1rem;
-  left: var(--map-top-controls-left-reserved);
-  right: var(--map-top-controls-right-reserved);
-  transform: none;
-  width: min(
-    26rem,
-    calc(
-      100% - var(--map-top-controls-left-reserved) -
-        var(--map-top-controls-right-reserved)
-    )
-  );
-  height: var(--map-top-control-height);
-  min-height: var(--map-top-control-height);
-  margin-inline: auto;
-  z-index: var(--map-z-index-base);
-  pointer-events: none;
-  border-radius: var(--map-border-radius-small);
-  background: var(--portal-col-neutral-1, var(--map-col-bkg__deprecate));
-  border: 1px solid var(--portal-col-primary-2);
-  box-shadow: var(--map-shadow-md);
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.map-view__loading-indicator[hidden] {
-  display: none;
-}
-
-.map-view__loading-bar {
-  position: relative;
-  height: 0.2rem;
-  width: 100%;
-  overflow: hidden;
-  background: var(
-    --portal-col-primary-2,
-    var(--map-col-bkg-lighter__deprecate)
-  );
-}
-
-.map-view__loading-bar::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  width: 35%;
-  background: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
-  animation: map-view-loading-bar 1.5s ease-in-out infinite;
-}
-
-.map-view__loading-message {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(var(--map-top-control-height) - 0.2rem - 2px);
-  padding: 0 0.8rem;
-  color: var(--portal-col-neutral-5, var(--map-col-text__deprecate));
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
-
-.map-view__loading-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-@keyframes map-view-loading-bar {
-  0% {
-    transform: translateX(-120%);
-  }
-
-  100% {
-    transform: translateX(320%);
-  }
-}
-
-@media only screen and (max-width: 768px) {
-  .map-view__loading-indicator {
-    top: 4.25rem;
-    left: 1rem;
-    right: 1rem;
-    transform: none;
-    width: auto;
-    max-width: none;
-  }
-}
-
 /* So the map widget is underneath the links/tabs on larger screens (the toolbar should 'squish' the map, not overlap it) */
 @media only screen and (min-width: 768px) {
   .map-view__map-widget-container {
@@ -525,22 +436,34 @@
 
 /*****************************************************************************************
  *
- * Scale Bar
+ * Scale Bar & Layer Loading Indicator
  *
- * The legend that shows both the coordinates of the mouse and a scale bar
+ * The map-status-bar is the box in the top-right of the map that contains the scale
+ * bar (mouse coordinates + distance scale) plus a loading row that smoothly expands
+ * beneath it while layers are loading.
  *
  */
 
-.scale-bar {
+.map-status-bar {
   width: max-content;
   min-width: 12rem;
-  height: var(--map-top-control-height);
-  min-height: var(--map-top-control-height);
   box-shadow: var(--map-shadow-md);
   background: var(--portal-col-neutral-1, var(--map-col-bkg__deprecate));
   border-radius: var(--map-border-radius-small);
   color: var(--portal-col-neutral-5, var(--map-col-text__deprecate));
   font-size: 0.8rem;
+  box-sizing: border-box;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  overflow: hidden;
+  /* required to be placed above map widget in firefox: */
+  z-index: var(--map-z-index-base);
+}
+
+.scale-bar {
+  height: var(--map-top-control-height);
+  min-height: var(--map-top-control-height);
   padding: 0.18rem 0.8rem;
   display: grid;
   grid-template-rows: 100%;
@@ -548,11 +471,6 @@
   gap: 1rem;
   align-items: center;
   box-sizing: border-box;
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  /* required to be placed above map widget in firefox: */
-  z-index: var(--map-z-index-base);
 }
 
 /* __coordinates contains __longitude, __latitude, and __elevation */
@@ -588,6 +506,72 @@ represents 1 unit of the given distance measurement. */
   height: 0.25rem;
   transition: width 0.3s ease-in-out;
   background-color: var(--portal-col-neutral-4, var(--map-col-text__deprecate));
+}
+
+/* The loading row is collapsed (zero height) by default and smoothly expands open
+when a layer takes longer than a second to load. The 0fr/1fr grid-row trick animates
+to/from an intrinsic content height without needing to measure pixels in JS. */
+
+.map-status-bar__loading-row {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+
+.map-status-bar--loading-expanded .map-status-bar__loading-row {
+  grid-template-rows: 1fr;
+}
+
+.map-status-bar__loading-row-inner {
+  min-height: 0;
+  overflow: hidden;
+  border-top: 1px solid var(--portal-col-primary-2);
+}
+
+.map-status-bar__loading-bar {
+  position: relative;
+  height: 0.2rem;
+  width: 100%;
+  overflow: hidden;
+  background: var(
+    --portal-col-primary-2,
+    var(--map-col-bkg-lighter__deprecate)
+  );
+}
+
+.map-status-bar__loading-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 35%;
+  background: var(--portal-col-primary-6, var(--map-col-highlight__deprecate));
+  animation: map-status-bar-loading-bar 1.5s ease-in-out infinite;
+}
+
+.map-status-bar__loading-message {
+  display: flex;
+  align-items: center;
+  min-height: calc(var(--map-top-control-height) - 0.2rem - 1px);
+  padding: 0 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.map-status-bar__loading-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes map-status-bar-loading-bar {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(320%);
+  }
 }
 
 /*****************************************************************************************
