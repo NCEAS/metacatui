@@ -56,6 +56,7 @@ define([
       return `alert-${type}`;
     },
     container: "container",
+    limitedMetadata: "limited-metadata",
     messageContainer: `${BASE_CLASS}__message`,
     metadataContainer: `${BASE_CLASS}__metadata`,
     gutters: "gutters",
@@ -218,7 +219,12 @@ define([
         }
         this.renderMetadataDocument(metadataViewDoc);
         if (usedIndexFallback) {
-          this.showMessage(MESSAGES.limitedMetadata, { type: "warning" });
+          const messageContainer = this.showMessage(MESSAGES.limitedMetadata, {
+            type: "info",
+          });
+          messageContainer
+            .querySelector(".alert")
+            .classList.add(CLASS_NAMES.limitedMetadata);
         }
 
         // Modify the markup:

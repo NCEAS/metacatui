@@ -1943,6 +1943,11 @@ body > .alert-container {
   font-size: 1.2em;
   line-height: 1.5em;
 }
+.metadata-view .alert.limited-metadata {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  font-size: 0.9em;
+}
 .citation-container + .data-source {
   max-width: 125px;
   float: right;
