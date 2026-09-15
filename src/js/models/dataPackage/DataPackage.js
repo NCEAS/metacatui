@@ -9,6 +9,7 @@ define([
   "models/dataONEServices/AuthorizationService",
   "models/dataONEServices/IdentifierService",
   "models/dataONEServices/ObjectService",
+  "models/dataONEServices/PackageService",
   "models/dataONEServices/PublishService",
   "models/dataONEServices/SysMetaService",
   "models/sysmeta/AccessPolicy",
@@ -30,6 +31,7 @@ define([
   AuthorizationService,
   IdentifierService,
   ObjectService,
+  PackageService,
   PublishService,
   SysMetaService,
   AccessPolicy,
@@ -94,6 +96,9 @@ define([
      * service
      * @param {object} [options.objectServiceOptions] Options used to create the
      * object service when one is not provided
+     * @param {PackageService} [options.packageService] Package download service
+     * @param {object} [options.packageServiceOptions] Options used to create the
+     * package service when one is not provided
      * @param {SysMetaService} [options.sysMetaService] System metadata service
      * @param {object} [options.sysMetaServiceOptions] Options used to create the
      * system metadata service when one is not provided
@@ -139,6 +144,8 @@ define([
       this.identifierServiceOptions = options.identifierServiceOptions || {};
       this.objectService = options.objectService || null;
       this.objectServiceOptions = options.objectServiceOptions || {};
+      this.packageService = options.packageService || null;
+      this.packageServiceOptions = options.packageServiceOptions || {};
       this.sysMetaService = options.sysMetaService || null;
       this.sysMetaServiceOptions = options.sysMetaServiceOptions || {};
       this.versionTracker = options.versionTracker || null;
@@ -1693,6 +1700,18 @@ define([
     }
 
     /**
+     * Return the service used to download packages.
+     * @returns {PackageService} Package download service
+     * @private
+     */
+    getPackageService() {
+      if (!this.packageService) {
+        this.packageService = new PackageService(this.packageServiceOptions);
+      }
+      return this.packageService;
+    }
+
+    /**
      * Return the system metadata service used for sysmeta only updates and
      * cache invalidation.
      * @returns {SysMetaService} System metadata service
@@ -1801,25 +1820,6 @@ define([
         const member = this.members.get(entity.pid);
         if (member) member.addViewInfo(entity);
       });
-    }
-
-    /**
-     * Check whether any ResourceMap member lacks evidence that the current user
-     * can read it. Downloaded system metadata or an index result
-     * confirms access even when package indexing is incomplete. The loaded root
-     * ResourceMap already confirms its own accessibility.
-     * @returns {boolean} Whether package membership or member access is unknown
-     */
-    hasPrivateMembers() {
-      if (!this.resourceManifestIsFetched) return true;
-      return this.members
-        .getFromSource("resourceMap")
-        .some(
-          (member) =>
-            member.pid !== this.rootResourceMapPid &&
-            !member.sysMeta &&
-            !member.sources.includes("index"),
-        );
     }
 
     /**

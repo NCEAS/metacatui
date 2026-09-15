@@ -2,6 +2,54 @@ define(["models/fileTable/FileTableViewModel"], (FileTableViewModel) => {
   const should = chai.should();
 
   describe("FileTableViewModel", () => {
+    it("preserves pending actions through refresh and finishes with current action data", () => {
+      const viewModel = new FileTableViewModel({
+        rows: [
+          { id: "data.1", actions: [{ id: "download", label: "Download" }] },
+        ],
+      });
+      const action = viewModel
+        .getRows()
+        .get("data.1")
+        .getActions()
+        .get("download");
+      action.startPending("Downloading...", "Downloading data.csv");
+
+      viewModel.mergeRows([
+        {
+          id: "data.1",
+          actions: [
+            {
+              id: "download",
+              label: "Unavailable",
+              title: "Access denied",
+              isDisabled: true,
+            },
+          ],
+        },
+      ]);
+
+      const attachedAction = viewModel
+        .getRows()
+        .get("data.1")
+        .getActions()
+        .get("download");
+      attachedAction.isEnabled().should.equal(false);
+      attachedAction.toRenderData().should.include({
+        label: "Downloading...",
+        title: "Downloading data.csv",
+        ariaLabel: "Downloading data.csv",
+        isDisabled: true,
+        iconClass: "icon icon-spinner icon-spin",
+      });
+      action.finishPending();
+      attachedAction.toRenderData().should.include({
+        label: "Unavailable",
+        title: "Access denied",
+        isDisabled: true,
+      });
+    });
+
     it("merges changed row data without replacing existing row models", () => {
       const viewModel = new FileTableViewModel({
         rows: [

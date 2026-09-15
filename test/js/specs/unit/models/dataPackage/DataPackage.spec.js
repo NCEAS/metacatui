@@ -5,6 +5,7 @@ define([
   "models/dataPackage/DataPackageMember",
   "models/dataPackage/DataPackageMembers",
   "collections/ObjectFormats",
+  "models/dataONEServices/PackageService",
   "models/dataONEServices/PublishService",
   "models/dataONEServices/SysMetaService",
   "models/resourceMap/ResourceMap",
@@ -19,6 +20,7 @@ define([
   DataPackageMember,
   DataPackageMembers,
   ObjectFormats,
+  PackageService,
   PublishService,
   SysMetaService,
   ResourceMap,
@@ -253,6 +255,24 @@ define([
       });
     });
 
+    describe("getPackageService()", () => {
+      it("creates and reuses a package service from configured options", () => {
+        const pkg = new DataPackage({
+          packageServiceOptions: {
+            baseUrl: "https://example.org/packages/application%2Fbagit-1.0/",
+          },
+        });
+
+        const packageService = pkg.getPackageService();
+
+        packageService.should.be.instanceof(PackageService);
+        packageService.client.baseUrl.should.equal(
+          "https://example.org/packages/application%2Fbagit-1.0",
+        );
+        pkg.getPackageService().should.equal(packageService);
+      });
+    });
+
     describe("DataPackageLoader load progress", () => {
       it("publishes typed phases without view text", async () => {
         const pkg = new DataPackage();
@@ -342,84 +362,6 @@ define([
         ]);
 
         expect(() => pkg.getTotalSize()).to.throw("missing size information");
-      });
-    });
-
-    describe("hasPrivateMembers()", () => {
-      let pkg;
-
-      beforeEach(() => {
-        pkg = buildPackage(
-          [
-            { pid: "data.1" },
-            { pid: "data.2" },
-            {
-              pid: "rm.1",
-              formatType: "RESOURCE",
-              formatId: RESOURCE_MAP_FORMAT_ID,
-            },
-          ],
-          "rm.1",
-        );
-        pkg.members.add(pkg.toArray(), {
-          merge: true,
-          sources: ["resourceMap"],
-        });
-        pkg.resourceManifestIsFetched = true;
-      });
-
-      it("treats member access as unknown until ResourceMap membership is loaded", () => {
-        pkg.members.add(pkg.toArray(), { merge: true, sources: ["index"] });
-        pkg.resourceManifestIsFetched = false;
-
-        pkg.hasPrivateMembers().should.equal(true);
-      });
-
-      it("accepts indexed members without an index count or root index result", () => {
-        pkg.members.add([{ pid: "data.1" }, { pid: "data.2" }], {
-          merge: true,
-          sources: ["index"],
-        });
-
-        pkg.hasPrivateMembers().should.equal(false);
-      });
-
-      it("accepts mixed system metadata and index evidence despite a lagging count", () => {
-        pkg.getMember("data.1").sysMeta = new SystemMetadata({
-          identifier: "data.1",
-        });
-        pkg.members.add({ pid: "data.2" }, { merge: true, sources: ["index"] });
-        pkg.indexManifestTotal = 1;
-
-        pkg.hasPrivateMembers().should.equal(false);
-      });
-
-      it("requires evidence for every member even when the index count is complete", () => {
-        pkg.members.add({ pid: "data.1" }, { merge: true, sources: ["index"] });
-        pkg.indexManifestTotal = 3;
-
-        pkg.hasPrivateMembers().should.equal(true);
-      });
-
-      it("accepts an index placeholder as evidence of access", () => {
-        pkg.members.add(
-          [{ pid: "data.1", isPlaceHolder_b: true }, { pid: "data.2" }],
-          { merge: true, sources: ["index"] },
-        );
-
-        pkg.hasPrivateMembers().should.equal(false);
-      });
-
-      ["sysMetaMissing", "sysMetaReadDenied"].forEach((failureFlag) => {
-        it(`keeps downloads unavailable for ${failureFlag} without readable evidence`, () => {
-          pkg.getMember("data.1")[failureFlag] = true;
-          pkg.members.add(
-            { pid: "data.2" },
-            { merge: true, sources: ["index"] },
-          );
-
-          pkg.hasPrivateMembers().should.equal(true);
-        });
       });
     });
 

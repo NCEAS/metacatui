@@ -68,6 +68,7 @@ define([
   "use strict";
 
   const { isAbortError } = ErrorUtilities;
+  const { MESSAGES: FILE_TABLE_MESSAGES } = DataPackageFileTableAdapter;
 
   const CLASS_NAMES = {
     alertError: "alert-error",
@@ -203,8 +204,6 @@ define([
     packageSubtitle(packageId) {
       return packageId ? `Package: ${packageId}` : "";
     },
-    packageDownloadMayContainPrivateData:
-      "This dataset may contain private data, so each data file should be downloaded individually.",
     parentDataset(label) {
       return `Parent dataset: ${label}`;
     },
@@ -335,7 +334,8 @@ define([
         this.fileTableMetricsModel = null;
         this.fileTableMetricsByPid = null;
         this.fileTableMetricsLoading = false;
-        this.fileTableDownloadStates = new Map();
+        this.memberDownloadReadDenied = new Set();
+        this.packageDownloadReadDenied = false;
         this.fileTableDetailsLimited = false;
         this.fileTableMemberCount = 0;
         this.packageDownloadUrl = "";
@@ -1827,7 +1827,7 @@ define([
           MetacatUI.appModel.get("packageServiceUrl") || "";
         const metricsByPid = this.fileTableMetricsByPid || null;
 
-        const rows = DataPackageFileTableAdapter.buildRows(dataPackage, {
+        return DataPackageFileTableAdapter.buildRows(dataPackage, {
           mode: "viewer",
           resolveBaseUrl,
           members,
@@ -1838,6 +1838,7 @@ define([
           packageDownloadUrl: this.packageDownloadUrl,
           packageDownloadUnavailableReason:
             this.packageDownloadUnavailableReason,
+          downloadReadDeniedPids: this.memberDownloadReadDenied,
           formatName: (formatId) => {
             const formatName =
               dataPackage.objectFormats?.getFriendlyFormat?.(formatId);
@@ -1848,16 +1849,6 @@ define([
             ? FileTableMetrics.getRowMetric(metricsByPid)
             : null,
         });
-        rows.forEach((row) => {
-          const downloadState = this.fileTableDownloadStates?.get(row.id);
-          const downloadAction = row.actions?.find(
-            (action) => action.id === "download",
-          );
-          if (downloadState && downloadAction) {
-            Object.assign(downloadAction, downloadState);
-          }
-        });
-        return rows;
       },
 
       /**
@@ -2034,24 +2025,36 @@ define([
       /**
        * Set whole package download state before file table rows are built
        * @param {DataPackage} dataPackage Package to inspect
-       * @returns {boolean} Whether whole package download was enabled
        * @since 0.0.0
        */
       confirmPackageDownloadAll(dataPackage) {
         this.packageDownloadUrl = "";
         this.packageDownloadUnavailableReason = "";
-        if (!dataPackage) return false;
+        if (!dataPackage) return;
         const packageId = dataPackage.rootResourceMapPid || "";
         const packageServiceUrl =
           MetacatUI.appModel.get("packageServiceUrl") || "";
         if (!packageId || !packageServiceUrl) {
-          return false;
+          return;
         }
-        if (dataPackage.hasPrivateMembers()) {
+
+        const members = dataPackage.members.getActiveMembers();
+        const memberReadDenied = members.some(
+          (member) =>
+            member.sysMetaReadDenied === true ||
+            this.memberDownloadReadDenied?.has(member.pid),
+        );
+        if (this.packageDownloadReadDenied || memberReadDenied) {
           this.packageDownloadUnavailableReason =
-            MESSAGES.packageDownloadMayContainPrivateData;
-          return false;
+            FILE_TABLE_MESSAGES.packageDownloadReadDenied;
+          return;
         }
+        if (members.some((member) => member.sysMetaMissing === true)) {
+          this.packageDownloadUnavailableReason =
+            FILE_TABLE_MESSAGES.packageDownloadMissing;
+          return;
+        }
+
         const maxDownloadSize = Number(
           MetacatUI.appModel.get("maxDownloadSize"),
         );
@@ -2059,16 +2062,15 @@ define([
           try {
             const totalSize = dataPackage.getTotalSize();
             if (!Number.isFinite(totalSize) || totalSize > maxDownloadSize) {
-              return false;
+              return;
             }
           } catch {
-            return false;
+            return;
           }
         }
 
         this.packageDownloadUrl =
           packageServiceUrl + encodeURIComponent(packageId);
-        return true;
       },
 
       /**
@@ -2405,7 +2407,90 @@ define([
       },
 
       /**
-       * Download the package member represented by a file table row.
+       * Download the package represented by the dataset row.
+       * @param {FileItemViewModel} rowModel Dataset row model
+       * @param {FileItemActionViewModel} actionModel Download action model
+       * @returns {Promise<boolean>} Whether the package could be downloaded
+       * @since 0.0.0
+       */
+      async downloadPackageFileTableRow(rowModel, actionModel) {
+        const { dataPackage, fileTableView } = this;
+        const { appUserModel } = MetacatUI;
+        if (appUserModel.get("checked") && !appUserModel.get("loggedIn")) {
+          window.open(rowModel.get("downloadUrl"), "_blank");
+          return true;
+        }
+
+        actionModel.startPending(
+          "Downloading...",
+          `Downloading ${rowModel.getDisplayLabel()}`,
+        );
+
+        try {
+          if (!appUserModel.get("checked")) {
+            await new Promise((resolve) => {
+              appUserModel.once("change:checked", resolve);
+            });
+          }
+          if (!appUserModel.get("loggedIn")) {
+            window.open(rowModel.get("downloadUrl"), "_blank");
+            return true;
+          }
+
+          const packageId = rowModel.get("pid");
+          let blob;
+          try {
+            blob = await dataPackage.getPackageService().download(packageId);
+          } catch (error) {
+            if (error?.status === 401 || error?.status === 403) {
+              if (
+                this.dataPackage === dataPackage &&
+                this.fileTableView === fileTableView
+              ) {
+                if (packageId === dataPackage.rootResourceMapPid) {
+                  this.packageDownloadReadDenied = true;
+                } else {
+                  this.memberDownloadReadDenied.add(packageId);
+                }
+              }
+            }
+            return false;
+          }
+          const filename = rowModel.get("title") || packageId;
+          const downloadFilename = /\.zip$/i.test(filename)
+            ? filename
+            : `${filename}.zip`;
+
+          if (navigator.msSaveOrOpenBlob) {
+            navigator.msSaveOrOpenBlob(blob, downloadFilename);
+          } else {
+            const link = document.createElement("a");
+            const objectUrl = window.URL.createObjectURL(blob);
+            try {
+              link.href = objectUrl;
+              link.download = downloadFilename;
+              link.click();
+            } finally {
+              window.URL.revokeObjectURL(objectUrl);
+            }
+          }
+          return true;
+        } finally {
+          actionModel.finishPending();
+          if (
+            this.dataPackage === dataPackage &&
+            this.fileTableView === fileTableView &&
+            fileTableView?.viewModel
+          ) {
+            this.confirmPackageDownloadAll(dataPackage);
+            fileTableView.viewModel.mergeRows(this.getFileTableRows());
+            this.scheduleFileTableScrollIndicatorUpdate();
+          }
+        }
+      },
+
+      /**
+       * Download the package or member represented by a file table row.
        * @param {FileItemViewModel} rowModel File table row model
        * @param {FileItemActionViewModel} actionModel Download action model
        * @param {Event} event Click event
@@ -2417,14 +2502,12 @@ define([
         if (!id) return false;
 
         event?.preventDefault?.();
-        const actionState = actionModel.toJSON();
-        if (rowModel.get("kind") === "dataset" && rowModel.get("downloadUrl")) {
-          window.open(rowModel.get("downloadUrl"), "_blank");
-          return true;
-        }
-
         const { dataPackage, fileTableView } = this;
-        if (!dataPackage) return false;
+        if (!dataPackage || !actionModel.isEnabled()) return false;
+
+        if (rowModel.get("kind") === "dataset" && rowModel.get("downloadUrl")) {
+          return this.downloadPackageFileTableRow(rowModel, actionModel);
+        }
 
         const member = dataPackage.getMember(id);
         const rowDownloadUrl = rowModel.get("downloadUrl");
@@ -2441,19 +2524,10 @@ define([
           return true;
         }
 
-        const downloadStates =
-          this.fileTableDownloadStates ||
-          (this.fileTableDownloadStates = new Map());
-        if (downloadStates.has(id)) return false;
-        const downloadState = {
-          isDisabled: true,
-          label: "Downloading...",
-          title: `Downloading ${rowModel.getDisplayLabel()}`,
-          ariaLabel: `Downloading ${rowModel.getDisplayLabel()}`,
-          iconClass: "icon icon-spinner icon-spin",
-        };
-        downloadStates.set(id, downloadState);
-        actionModel.set(downloadState);
+        actionModel.startPending(
+          "Downloading...",
+          `Downloading ${rowModel.getDisplayLabel()}`,
+        );
 
         try {
           if (typeof downloadModel?.downloadWithCredentials === "function") {
@@ -2466,16 +2540,12 @@ define([
               downloadError?.status === 401 ||
               downloadError?.status === 403
             ) {
-              const message =
-                "This file is not publicly accessible. Sign in with an account that has access.";
-              const accessDeniedState = {
-                ...actionState,
-                isDisabled: true,
-                title: message,
-                ariaLabel: message,
-              };
-              downloadStates.set(id, accessDeniedState);
-              actionModel.set(accessDeniedState);
+              if (
+                this.dataPackage === dataPackage &&
+                this.fileTableView === fileTableView
+              ) {
+                this.memberDownloadReadDenied.add(id);
+              }
               return false;
             }
             return true;
@@ -2484,15 +2554,13 @@ define([
           if (!downloadUrl) return false;
           window.open(downloadUrl, "_blank");
         } finally {
-          if (downloadStates.get(id) === downloadState) {
-            downloadStates.delete(id);
-            actionModel.set(actionState);
-          }
+          actionModel.finishPending();
           if (
             this.dataPackage === dataPackage &&
             this.fileTableView === fileTableView &&
             fileTableView?.viewModel
           ) {
+            this.confirmPackageDownloadAll(dataPackage);
             fileTableView.viewModel.mergeRows(this.getFileTableRows());
             this.scheduleFileTableScrollIndicatorUpdate();
           }

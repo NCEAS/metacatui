@@ -19,6 +19,21 @@ define([
    * @since 0.0.0
    */
 
+  const CLASS_NAMES = {
+    downloadAction: "btn download btn-rounded action downloadAction",
+    downloadIcon: "icon icon-large icon-cloud-download",
+  };
+
+  /** Download availability messages shared with the metadata viewer */
+  const MESSAGES = {
+    fileDownloadReadDenied:
+      "This file is not publicly accessible. Sign in with an account that has access.",
+    packageDownloadMissing:
+      "Download All is unavailable because one or more dataset files are missing.",
+    packageDownloadReadDenied:
+      "Download All is unavailable because you do not have permission to read the entire package.",
+  };
+
   /**
    * Per member remote upload state mapped to a row status descriptor. The
    * `title` summarizes what the status icon means and is shown as the cell
@@ -332,21 +347,6 @@ define([
   }
 
   /**
-   * Build a download action for a labelled target.
-   * @param {string} label Target label
-   * @returns {object} Download action descriptor
-   */
-  function downloadAction(label) {
-    return action(
-      "download",
-      "",
-      `Download ${label} to your computer`,
-      "icon icon-large icon-cloud-download",
-      { className: "btn download btn-rounded action downloadAction" },
-    );
-  }
-
-  /**
    * Build the editor share action for one row.
    * @param {string} label Target label
    * @param {boolean} readDenied Whether system metadata access was denied
@@ -403,6 +403,7 @@ define([
    * @param {boolean} context.isUnavailable Whether object metadata is missing
    * @param {boolean} context.sysMetaReadDenied Whether system metadata access
    * was denied
+   * @param {boolean} context.downloadReadDenied Whether a download was denied
    * @returns {object[]} Action descriptors
    */
   function buildActions({
@@ -414,6 +415,7 @@ define([
     isNestedPackage,
     isUnavailable,
     sysMetaReadDenied,
+    downloadReadDenied,
   }) {
     const actions = [];
 
@@ -507,7 +509,18 @@ define([
       );
     }
     if (downloadUrl) {
-      actions.push(downloadAction(label));
+      let title = `Download ${label} to your computer`;
+      if (downloadReadDenied) {
+        title = isNestedPackage
+          ? MESSAGES.packageDownloadReadDenied
+          : MESSAGES.fileDownloadReadDenied;
+      }
+      actions.push(
+        action("download", "", title, CLASS_NAMES.downloadIcon, {
+          className: CLASS_NAMES.downloadAction,
+          isDisabled: downloadReadDenied,
+        }),
+      );
     }
     return actions;
   }
@@ -553,6 +566,7 @@ define([
    * @param {object|null} [options.display] Optional confirmed remote display
    * values for unresolved failed replacements
    * @param {boolean} [options.isEagerUploading] Whether member editing is locked
+   * @param {boolean} [options.downloadReadDenied] Whether a download was denied
    * @returns {object|null} Row object, or null when the member has no PID
    */
   function buildRow(
@@ -569,6 +583,7 @@ define([
       showShare = true,
       display = null,
       isEagerUploading = false,
+      downloadReadDenied = false,
     },
   ) {
     const id = getId(member);
@@ -702,6 +717,7 @@ define([
             isNestedPackage,
             isUnavailable,
             sysMetaReadDenied: member.sysMetaReadDenied === true,
+            downloadReadDenied,
           }),
     };
   }
@@ -873,28 +889,16 @@ define([
           },
         ),
       );
-    } else if (packageDownloadUrl) {
+    } else if (packageDownloadUrl || packageDownloadUnavailableReason) {
       actions.push(
         action(
           "download",
           "Download All",
-          `Download all files in ${label}`,
+          packageDownloadUnavailableReason || `Download all files in ${label}`,
           "",
           {
             className: "btn btn-primary downloadAction",
-          },
-        ),
-      );
-    } else if (packageDownloadUnavailableReason) {
-      actions.push(
-        action(
-          "download",
-          "Download All",
-          packageDownloadUnavailableReason,
-          "",
-          {
-            className: "btn btn-primary downloadAction",
-            isDisabled: true,
+            isDisabled: Boolean(packageDownloadUnavailableReason),
           },
         ),
       );
@@ -917,7 +921,9 @@ define([
       className: "root-dataset",
       sizeLabel: "",
       typeTooltip: "The primary dataset shown on this page",
-      downloadUrl: packageDownloadUrl || "",
+      downloadUrl: packageDownloadUnavailableReason
+        ? ""
+        : packageDownloadUrl || "",
       level: 0,
       isContainer: true,
       isExpandable: true,
@@ -964,6 +970,8 @@ define([
    * @param {string} [options.packageDownloadUrl] Whole package download URL
    * @param {string} [options.packageDownloadUnavailableReason] Explanation
    * shown when whole package download is unavailable
+   * @param {Set<string>} [options.downloadReadDeniedPids] Member PIDs whose
+   * download requests were denied
    * @returns {object[]} Render ready rows for `FileTableViewModel#setRows`
    */
   function buildRows(dataPackage, options = {}) {
@@ -982,6 +990,7 @@ define([
       packageServiceUrl = "",
       packageDownloadUrl = "",
       packageDownloadUnavailableReason = "",
+      downloadReadDeniedPids,
     } = options;
     const rowOptions = {
       mode,
@@ -998,9 +1007,6 @@ define([
     const allMembers =
       options.members || dataPackage?.members?.getActiveMembers?.() || [];
     const occupiedIds = new Set(allMembers.map(getId).filter(Boolean));
-    const hasMissingMember = allMembers.some(
-      (member) => member?.sysMetaMissing === true,
-    );
     // In dataset mode the root row represents this package's resource map.
     // Other resource maps are nested datasets and remain visible.
     const rootResourceMapPid =
@@ -1035,6 +1041,7 @@ define([
       const row = buildRow(member, {
         ...rowOptions,
         display,
+        downloadReadDenied: downloadReadDeniedPids?.has(getId(member)) === true,
         isEagerUploading:
           dataPackage?.eagerUploads?.has(getId(member)) === true,
       });
@@ -1061,10 +1068,8 @@ define([
       const rootRow = buildDatasetRootRow({
         packageTitle,
         packageId,
-        packageDownloadUrl: hasMissingMember ? "" : packageDownloadUrl,
-        packageDownloadUnavailableReason: hasMissingMember
-          ? ""
-          : packageDownloadUnavailableReason,
+        packageDownloadUrl,
+        packageDownloadUnavailableReason,
         mode,
         showMetrics,
         showShare,
@@ -1085,6 +1090,7 @@ define([
   }
 
   return {
+    MESSAGES,
     enrichMembers,
     buildRows,
   };

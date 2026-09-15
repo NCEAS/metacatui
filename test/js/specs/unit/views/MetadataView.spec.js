@@ -7,6 +7,7 @@ define([
   "models/dataPackage/UploadRecoveryStore",
   "models/fileTable/DataPackageFileTableAdapter",
   "models/fileTable/FileTableViewModel",
+  "models/fileTable/FileItemActionViewModel",
   "views/schemaOrg/SchemaOrgView",
   "common/DateUtilities",
 ], (
@@ -18,12 +19,14 @@ define([
   UploadRecoveryStore,
   DataPackageFileTableAdapter,
   FileTableViewModel,
+  FileItemActionViewModel,
   SchemaOrgView,
   DateUtilities,
 ) => {
   const should = chai.should();
   const expect = chai.expect;
   const RESOURCE_MAP_FORMAT_ID = "http://www.openarchives.org/ore/terms";
+  const { MESSAGES: FILE_TABLE_MESSAGES } = DataPackageFileTableAdapter;
 
   /**
    * These tests exercise the MetadataView resolution dispatch in isolation by
@@ -93,8 +96,9 @@ define([
         { pid: "meta.1", formatType: "METADATA", title: "EML" },
       ],
       rootResourceMapPid = "rm.1",
+      packageService = null,
     } = {}) => {
-      const dataPackage = new DataPackage({ members });
+      const dataPackage = new DataPackage({ members, packageService });
       dataPackage.rootResourceMapPid = rootResourceMapPid;
       return dataPackage;
     };
@@ -114,12 +118,67 @@ define([
       };
     };
 
+    const createPackageDownloadContext = ({
+      checked = true,
+      loggedIn = true,
+      result = new Blob(["package"]),
+      title = "Dataset title",
+    } = {}) => {
+      setPackageAppModel();
+      const packageService = {
+        download: sandbox.stub().resolves(result),
+      };
+      const dataPackage = createViewerDataPackage({ packageService });
+      const userModel = new Backbone.Model({
+        checked,
+        loggedIn,
+      });
+      globalThis.MetacatUI.appUserModel = userModel;
+      const fileTableView = {
+        viewModel: new FileTableViewModel({
+          rows: [
+            {
+              id: "dataset:rm.1",
+              pid: "rm.1",
+              title,
+              kind: "dataset",
+              downloadUrl: "https://cn.test/package/rm.1",
+              actions: [
+                {
+                  id: "download",
+                  label: "Download All",
+                  title: "Download all files in Dataset",
+                },
+              ],
+            },
+          ],
+        }),
+      };
+      const row = fileTableView.viewModel.getRows().get("dataset:rm.1");
+      const actionModel = row.getActions().get("download");
+      const context = {
+        dataPackage,
+        fileTableView,
+        memberDownloadReadDenied: new Set(),
+        getFileTableRows: MetadataView.prototype.getFileTableRows,
+        confirmPackageDownloadAll:
+          MetadataView.prototype.confirmPackageDownloadAll,
+        scheduleFileTableScrollIndicatorUpdate: sandbox.stub(),
+        packageDownloadUrl: "https://cn.test/package/rm.1",
+        downloadPackageFileTableRow:
+          MetadataView.prototype.downloadPackageFileTableRow,
+      };
+      return { actionModel, context, packageService, row, userModel };
+    };
+
     const deferred = () => {
       let resolve;
-      const promise = new Promise((settle) => {
+      let reject;
+      const promise = new Promise((settle, fail) => {
         resolve = settle;
+        reject = fail;
       });
-      return { promise, resolve };
+      return { promise, reject, resolve };
     };
 
     describe("renderInfoIcons()", () => {
@@ -1246,13 +1305,9 @@ define([
 
       it("omits Download All when its URL is unavailable", () => {
         const dataPackage = createViewerDataPackage();
-        sandbox.stub(dataPackage, "hasPrivateMembers").returns(false);
         setPackageAppModel();
         const context = {
           dataPackage,
-          model: { get: sandbox.stub().withArgs("title").returns("Dataset") },
-          fileTableMetricsByPid: null,
-          metricsModel: null,
           packageDownloadUrl: "",
         };
 
@@ -1260,30 +1315,23 @@ define([
         const rootRow = rows.find((row) => row.id === "dataset:rm.1");
 
         rootRow.actions.should.deep.equal([]);
-        dataPackage.hasPrivateMembers.called.should.equal(false);
       });
 
-      it("adds Download All synchronously when there are no private members", () => {
+      it("adds Download All when member access is unknown", () => {
         const dataPackage = createViewerDataPackage();
-        sandbox.stub(dataPackage, "hasPrivateMembers").returns(false);
         setPackageAppModel();
         const context = {
           dataPackage,
-          model: { get: sandbox.stub().withArgs("title").returns("Dataset") },
-          fileTableMetricsByPid: null,
-          metricsModel: null,
           packageDownloadUrl: "",
-          packageDownloadUnavailableReason: "stale reason",
+          packageDownloadUnavailableReason: "",
           getFileTableRows: MetadataView.prototype.getFileTableRows,
         };
 
-        const confirmed = MetadataView.prototype.confirmPackageDownloadAll.call(
+        MetadataView.prototype.confirmPackageDownloadAll.call(
           context,
           dataPackage,
         );
-        confirmed.should.equal(true);
         context.packageDownloadUrl.should.equal("https://cn.test/package/rm.1");
-        context.packageDownloadUnavailableReason.should.equal("");
         const rows = context.getFileTableRows();
         const rootRow = rows.find((row) => row.id === "dataset:rm.1");
 
@@ -1293,50 +1341,115 @@ define([
         rootRow.downloadUrl.should.equal("https://cn.test/package/rm.1");
       });
 
-      it("explains private members before checking package size", () => {
-        const dataPackage = createViewerDataPackage();
-        dataPackage.getData()[0].size = null;
-        const getTotalSize = sandbox.spy(dataPackage, "getTotalSize");
-        setPackageAppModel({ maxDownloadSize: 100 });
-        const context = {
-          packageDownloadUrl: "stale URL",
-          packageDownloadUnavailableReason: "",
-        };
+      [
+        {
+          flag: "sysMetaReadDenied",
+          reason: FILE_TABLE_MESSAGES.packageDownloadReadDenied,
+        },
+        {
+          flag: "sysMetaMissing",
+          reason: FILE_TABLE_MESSAGES.packageDownloadMissing,
+        },
+      ].forEach(({ flag, reason }) => {
+        it(`disables Download All for ${flag} even without package size`, () => {
+          const dataPackage = createViewerDataPackage();
+          dataPackage.getMember("data.1")[flag] = true;
+          dataPackage.getMember("data.1").size = null;
+          setPackageAppModel({ maxDownloadSize: 100 });
+          const context = {
+            dataPackage,
+            packageDownloadUrl: "",
+            packageDownloadUnavailableReason: "",
+            getFileTableRows: MetadataView.prototype.getFileTableRows,
+          };
 
-        const confirmed = MetadataView.prototype.confirmPackageDownloadAll.call(
-          context,
-          dataPackage,
-        );
+          MetadataView.prototype.confirmPackageDownloadAll.call(
+            context,
+            dataPackage,
+          );
+          const rootRow = context
+            .getFileTableRows()
+            .find((row) => row.id === "dataset:rm.1");
 
-        confirmed.should.equal(false);
-        context.packageDownloadUrl.should.equal("");
-        context.packageDownloadUnavailableReason.should.equal(
-          "This dataset may contain private data, so each data file should be downloaded individually.",
-        );
-        sinon.assert.notCalled(getTotalSize);
+          context.packageDownloadUrl.should.equal("");
+          context.packageDownloadUnavailableReason.should.equal(reason);
+          rootRow.actions.should.have.length(1);
+          rootRow.actions[0].should.include({
+            id: "download",
+            title: reason,
+            isDisabled: true,
+          });
+        });
       });
 
-      it("does not give a private-data reason when package downloads are unconfigured", () => {
+      it("clears a stale URL when package downloads are unconfigured", () => {
         const dataPackage = createViewerDataPackage();
-        const hasPrivateMembers = sandbox.stub(
-          dataPackage,
-          "hasPrivateMembers",
-        );
         setPackageAppModel({ packageServiceUrl: "" });
         const context = {
           packageDownloadUrl: "stale URL",
-          packageDownloadUnavailableReason: "stale reason",
         };
 
-        const confirmed = MetadataView.prototype.confirmPackageDownloadAll.call(
+        MetadataView.prototype.confirmPackageDownloadAll.call(
           context,
           dataPackage,
         );
 
-        confirmed.should.equal(false);
         context.packageDownloadUrl.should.equal("");
+      });
+
+      [
+        ["the package", { packageDownloadReadDenied: true }],
+        [
+          "a file in the package",
+          { memberDownloadReadDenied: new Set(["data.1"]) },
+        ],
+      ].forEach(([target, permissionState]) => {
+        it(`disables Download All when the user cannot read ${target}`, () => {
+          setPackageAppModel();
+          const dataPackage = createViewerDataPackage();
+          const context = { ...permissionState };
+
+          MetadataView.prototype.confirmPackageDownloadAll.call(
+            context,
+            dataPackage,
+          );
+
+          context.packageDownloadUrl.should.equal("");
+          context.packageDownloadUnavailableReason.should.equal(
+            FILE_TABLE_MESSAGES.packageDownloadReadDenied,
+          );
+        });
+      });
+
+      it("allows Download All when the inaccessible file is no longer in the package", () => {
+        setPackageAppModel();
+        const dataPackage = createViewerDataPackage();
+        const context = { memberDownloadReadDenied: new Set(["removed.1"]) };
+
+        MetadataView.prototype.confirmPackageDownloadAll.call(
+          context,
+          dataPackage,
+        );
+
+        context.packageDownloadUrl.should.equal("https://cn.test/package/rm.1");
         context.packageDownloadUnavailableReason.should.equal("");
-        sinon.assert.notCalled(hasPrivateMembers);
+      });
+
+      it("clears a stale URL without a Resource Map PID", () => {
+        const dataPackage = createViewerDataPackage({
+          rootResourceMapPid: null,
+        });
+        setPackageAppModel();
+        const context = {
+          packageDownloadUrl: "stale URL",
+        };
+
+        MetadataView.prototype.confirmPackageDownloadAll.call(
+          context,
+          dataPackage,
+        );
+
+        context.packageDownloadUrl.should.equal("");
       });
 
       it("does not add Download All when the package exceeds maxDownloadSize", () => {
@@ -1355,20 +1468,17 @@ define([
             },
           ],
         });
-        sandbox.stub(dataPackage, "hasPrivateMembers").returns(false);
         setPackageAppModel({ maxDownloadSize: 100 });
         const context = {
           packageDownloadUrl: "",
-          packageDownloadUnavailableReason: "",
         };
 
-        const confirmed = MetadataView.prototype.confirmPackageDownloadAll.call(
+        MetadataView.prototype.confirmPackageDownloadAll.call(
           context,
           dataPackage,
         );
 
-        confirmed.should.equal(false);
-        dataPackage.hasPrivateMembers.calledOnce.should.equal(true);
+        context.packageDownloadUrl.should.equal("");
       });
 
       it("does not add Download All when a member size is missing", () => {
@@ -1392,24 +1502,315 @@ define([
             },
           ],
         });
-        sandbox.stub(dataPackage, "hasPrivateMembers").returns(false);
         setPackageAppModel({ maxDownloadSize: 100 });
         const context = {
           packageDownloadUrl: "",
-          packageDownloadUnavailableReason: "",
         };
 
-        const confirmed = MetadataView.prototype.confirmPackageDownloadAll.call(
+        MetadataView.prototype.confirmPackageDownloadAll.call(
           context,
           dataPackage,
         );
 
-        confirmed.should.equal(false);
-        dataPackage.hasPrivateMembers.calledOnce.should.equal(true);
+        context.packageDownloadUrl.should.equal("");
       });
     });
 
     describe("downloadFileTableRow()", () => {
+      it("downloads signed-in packages through PackageService", async () => {
+        const blob = new Blob(["package"]);
+        const { actionModel, context, packageService, row } =
+          createPackageDownloadContext({
+            result: blob,
+          });
+        const open = sandbox.stub(window, "open");
+        const createObjectURL = sandbox
+          .stub(window.URL, "createObjectURL")
+          .returns("blob:package");
+        const revokeObjectURL = sandbox.stub(window.URL, "revokeObjectURL");
+        const click = sandbox.stub(HTMLAnchorElement.prototype, "click");
+
+        const downloaded =
+          await MetadataView.prototype.downloadFileTableRow.call(
+            context,
+            row,
+            actionModel,
+          );
+
+        downloaded.should.equal(true);
+        sinon.assert.calledOnceWithExactly(packageService.download, "rm.1");
+        sinon.assert.notCalled(open);
+        sinon.assert.calledOnceWithExactly(createObjectURL, blob);
+        click.firstCall.thisValue.download.should.equal("Dataset title.zip");
+        sinon.assert.calledOnceWithExactly(revokeObjectURL, "blob:package");
+      });
+
+      it("waits for pending authentication before choosing a package path", async () => {
+        const { actionModel, context, packageService, row, userModel } =
+          createPackageDownloadContext({
+            checked: false,
+            loggedIn: false,
+          });
+        const open = sandbox.stub(window, "open");
+        sandbox.stub(window.URL, "createObjectURL").returns("blob:package");
+        sandbox.stub(window.URL, "revokeObjectURL");
+        sandbox.stub(HTMLAnchorElement.prototype, "click");
+
+        const download = MetadataView.prototype.downloadFileTableRow.call(
+          context,
+          row,
+          actionModel,
+        );
+
+        sinon.assert.notCalled(open);
+        sinon.assert.notCalled(packageService.download);
+
+        userModel.set({ checked: true, loggedIn: true });
+        (await download).should.equal(true);
+
+        sinon.assert.calledOnceWithExactly(packageService.download, "rm.1");
+        sinon.assert.notCalled(open);
+      });
+
+      it("keeps one authenticated package generation in flight", async () => {
+        const response = deferred();
+        const { actionModel, context, packageService, row } =
+          createPackageDownloadContext();
+        packageService.download.resetBehavior();
+        packageService.download.returns(response.promise);
+        sandbox.stub(window.URL, "createObjectURL").returns("blob:package");
+        sandbox.stub(window.URL, "revokeObjectURL");
+        sandbox.stub(HTMLAnchorElement.prototype, "click");
+
+        const firstDownload = MetadataView.prototype.downloadFileTableRow.call(
+          context,
+          row,
+          actionModel,
+        );
+        const duplicate = MetadataView.prototype.downloadFileTableRow.call(
+          context,
+          row,
+          actionModel,
+        );
+
+        try {
+          actionModel.toRenderData().isDisabled.should.equal(true);
+          actionModel.toRenderData().label.should.equal("Downloading...");
+          sinon.assert.calledOnce(packageService.download);
+          context.fileTableView.viewModel.mergeRows(context.getFileTableRows());
+          const refreshedAction = context.fileTableView.viewModel
+            .getRows()
+            .get("dataset:rm.1")
+            .getActions()
+            .get("download")
+            .toRenderData();
+          refreshedAction.isDisabled.should.equal(true);
+          refreshedAction.label.should.equal("Downloading...");
+
+          response.resolve(new Blob(["package"]));
+          (await firstDownload).should.equal(true);
+          (await duplicate).should.equal(false);
+
+          actionModel.toRenderData().isDisabled.should.equal(false);
+          actionModel.toRenderData().label.should.equal("Download All");
+        } finally {
+          response.resolve(new Blob(["package"]));
+          await Promise.allSettled([firstDownload, duplicate]);
+        }
+      });
+
+      [401, 403].forEach((status) => {
+        it(`disables package downloads after a ${status} response`, async () => {
+          const error = Object.assign(new Error("access denied"), { status });
+          const { actionModel, context, packageService, row } =
+            createPackageDownloadContext();
+          packageService.download.rejects(error);
+
+          const downloaded =
+            await MetadataView.prototype.downloadFileTableRow.call(
+              context,
+              row,
+              actionModel,
+            );
+
+          downloaded.should.equal(false);
+          actionModel.toRenderData().isDisabled.should.equal(true);
+          actionModel.toRenderData().label.should.equal("Download All");
+          actionModel
+            .get("title")
+            .should.equal(FILE_TABLE_MESSAGES.packageDownloadReadDenied);
+          context.packageDownloadUnavailableReason.should.equal(
+            FILE_TABLE_MESSAGES.packageDownloadReadDenied,
+          );
+          context.fileTableView.viewModel.mergeRows(context.getFileTableRows());
+          const refreshedAction = context.fileTableView.viewModel
+            .getRows()
+            .get("dataset:rm.1")
+            .getActions()
+            .get("download")
+            .toRenderData();
+          refreshedAction.isDisabled.should.equal(true);
+          refreshedAction.title.should.equal(
+            FILE_TABLE_MESSAGES.packageDownloadReadDenied,
+          );
+        });
+      });
+
+      it("opens the BagIt URL directly for signed-out users", async () => {
+        const { actionModel, context, packageService, row } =
+          createPackageDownloadContext({ loggedIn: false });
+        const open = sandbox.stub(window, "open");
+
+        const downloaded =
+          await MetadataView.prototype.downloadFileTableRow.call(
+            context,
+            row,
+            actionModel,
+          );
+
+        downloaded.should.equal(true);
+        sinon.assert.calledOnceWithExactly(
+          open,
+          "https://cn.test/package/rm.1",
+          "_blank",
+        );
+        sinon.assert.notCalled(packageService.download);
+        actionModel.toRenderData().isDisabled.should.equal(false);
+      });
+
+      it("keeps a denied nested package download disabled across refreshes", async () => {
+        const { context, packageService } = createPackageDownloadContext();
+        context.dataPackage.members.add({
+          pid: "nested.rm",
+          formatType: "RESOURCE",
+          formatId: RESOURCE_MAP_FORMAT_ID,
+        });
+        context.fileTableView.viewModel.mergeRows(context.getFileTableRows());
+        const rows = context.fileTableView.viewModel.getRows();
+        const nestedRow = rows.get("nested.rm");
+        const nestedAction = nestedRow.getActions().get("download");
+        packageService.download.rejects(
+          Object.assign(new Error("denied"), { status: 403 }),
+        );
+
+        const downloaded =
+          await MetadataView.prototype.downloadFileTableRow.call(
+            context,
+            nestedRow,
+            nestedAction,
+          );
+
+        downloaded.should.equal(false);
+        nestedAction.isEnabled().should.equal(false);
+        nestedAction
+          .get("title")
+          .should.equal(FILE_TABLE_MESSAGES.packageDownloadReadDenied);
+        nestedAction.set("title", "Changed tooltip");
+        context.confirmPackageDownloadAll(context.dataPackage);
+        context.fileTableView.viewModel.mergeRows(context.getFileTableRows());
+        nestedAction.isEnabled().should.equal(false);
+        rows
+          .get("dataset:rm.1")
+          .getActions()
+          .get("download")
+          .isEnabled()
+          .should.equal(false);
+        (
+          await MetadataView.prototype.downloadFileTableRow.call(
+            context,
+            nestedRow,
+            nestedAction,
+          )
+        ).should.equal(false);
+        sinon.assert.calledOnceWithExactly(
+          packageService.download,
+          "nested.rm",
+        );
+      });
+
+      [
+        ["", "rm.1.zip"],
+        ["Dataset title.zip", "Dataset title.zip"],
+      ].forEach(([title, filename]) => {
+        it(`saves title ${JSON.stringify(title)} as ${filename}`, async () => {
+          const { actionModel, context, row } = createPackageDownloadContext({
+            title,
+          });
+          sandbox.stub(window.URL, "createObjectURL").returns("blob:package");
+          sandbox.stub(window.URL, "revokeObjectURL");
+          const click = sandbox.stub(HTMLAnchorElement.prototype, "click");
+
+          await MetadataView.prototype.downloadFileTableRow.call(
+            context,
+            row,
+            actionModel,
+          );
+
+          click.firstCall.thisValue.download.should.equal(filename);
+        });
+      });
+
+      it("revokes the object URL when saving the Blob fails", async () => {
+        const { actionModel, context, row } = createPackageDownloadContext();
+        sandbox.stub(window.URL, "createObjectURL").returns("blob:package");
+        const revokeObjectURL = sandbox.stub(window.URL, "revokeObjectURL");
+        const saveError = new Error("save failed");
+        sandbox.stub(HTMLAnchorElement.prototype, "click").throws(saveError);
+
+        const receivedError = await MetadataView.prototype.downloadFileTableRow
+          .call(context, row, actionModel)
+          .then(
+            () => new Error("expected download to reject"),
+            (error) => error,
+          );
+
+        receivedError.should.equal(saveError);
+        sinon.assert.calledOnceWithExactly(revokeObjectURL, "blob:package");
+      });
+
+      it("does not apply a late access denial to a replacement view", async () => {
+        const response = deferred();
+        const { actionModel, context, packageService, row } =
+          createPackageDownloadContext();
+        packageService.download.resetBehavior();
+        packageService.download.returns(response.promise);
+        const download = MetadataView.prototype.downloadFileTableRow.call(
+          context,
+          row,
+          actionModel,
+        );
+        context.dataPackage = createViewerDataPackage();
+        context.fileTableView = {};
+        context.memberDownloadReadDenied = new Set();
+        context.packageDownloadReadDenied = false;
+        context.packageDownloadUnavailableReason = "";
+
+        response.reject(Object.assign(new Error("denied"), { status: 403 }));
+        (await download).should.equal(false);
+
+        context.packageDownloadUnavailableReason.should.equal("");
+      });
+
+      it("restores package downloads after a retryable failure", async () => {
+        const error = Object.assign(new Error("service unavailable"), {
+          status: 503,
+        });
+        const { actionModel, context, packageService, row } =
+          createPackageDownloadContext();
+        packageService.download.rejects(error);
+
+        const downloaded =
+          await MetadataView.prototype.downloadFileTableRow.call(
+            context,
+            row,
+            actionModel,
+          );
+
+        downloaded.should.equal(false);
+        actionModel.toRenderData().isDisabled.should.equal(false);
+        actionModel.toRenderData().label.should.equal("Download All");
+      });
+
       it("uses repository URLs for indexed-public files", async () => {
         setPackageAppModel({ objectServiceUrl: "https://mn.test/object/" });
         const memberUrl = "https://mn.test/object/public.1";
@@ -1436,10 +1837,7 @@ define([
           downloadUrl: resolverUrl,
         });
         row.getDisplayLabel = () => "large.csv";
-        const actionModel = {
-          toJSON: () => ({ label: "Download" }),
-          set: sandbox.stub(),
-        };
+        const actionModel = new FileItemActionViewModel({ label: "Download" });
         const context = {
           dataPackage,
           createDataDetailsModel: MetadataView.prototype.createDataDetailsModel,
@@ -1455,7 +1853,7 @@ define([
 
         downloaded.should.equal(true);
         sinon.assert.calledOnceWithExactly(open, memberUrl, "_blank");
-        sinon.assert.notCalled(actionModel.set);
+        actionModel.isEnabled().should.equal(true);
       });
 
       it("keeps the attached download action disabled while rows merge", async () => {
@@ -1472,8 +1870,10 @@ define([
         const context = withRenderContext({
           dataPackage,
           packageDownloadUrl: "",
-          fileTableDownloadStates: new Map(),
+          memberDownloadReadDenied: new Set(),
           getFileTableRows: MetadataView.prototype.getFileTableRows,
+          confirmPackageDownloadAll:
+            MetadataView.prototype.confirmPackageDownloadAll,
           isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
           isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
           createDataDetailsModel: sandbox.stub().returns(downloadModel),
@@ -1507,8 +1907,10 @@ define([
           );
 
           const attachedRow = fileTableView.viewModel.getRows().get("data.1");
-          getDownloadAction().get("isDisabled").should.equal(true);
-          getDownloadAction().get("label").should.equal("Downloading...");
+          getDownloadAction().toRenderData().isDisabled.should.equal(true);
+          getDownloadAction()
+            .toRenderData()
+            .label.should.equal("Downloading...");
 
           const duplicate =
             await MetadataView.prototype.downloadFileTableRow.call(
@@ -1521,8 +1923,7 @@ define([
           resolveDownload();
           (await firstDownload).should.equal(true);
           downloadModel.downloadWithCredentials.calledOnce.should.equal(true);
-          getDownloadAction().get("isDisabled").should.equal(false);
-          context.fileTableDownloadStates.size.should.equal(0);
+          getDownloadAction().toRenderData().isDisabled.should.equal(false);
         } finally {
           resolveDownload?.();
           await firstDownload;
@@ -1544,8 +1945,10 @@ define([
         const context = withRenderContext({
           dataPackage,
           packageDownloadUrl: "",
-          fileTableDownloadStates: new Map(),
+          memberDownloadReadDenied: new Set(),
           getFileTableRows: MetadataView.prototype.getFileTableRows,
+          confirmPackageDownloadAll:
+            MetadataView.prototype.confirmPackageDownloadAll,
           isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
           isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
           createDataDetailsModel: sandbox.stub().returns(downloadModel),
@@ -1581,17 +1984,128 @@ define([
             { renderId: "render-test" },
           );
 
-          getDownloadAction().get("isDisabled").should.equal(true);
+          getDownloadAction().toRenderData().isDisabled.should.equal(true);
           rejectDownload(downloadError);
           const receivedError = await observedDownload;
 
           receivedError.should.equal(downloadError);
-          context.fileTableDownloadStates.size.should.equal(0);
-          getDownloadAction().get("isDisabled").should.equal(false);
+          getDownloadAction().toRenderData().isDisabled.should.equal(false);
         } finally {
           rejectDownload?.(downloadError);
           await observedDownload;
         }
+      });
+
+      it("disables Download All after an active member download is denied", async () => {
+        setPackageAppModel();
+        const dataPackage = createViewerDataPackage();
+        const member = dataPackage.getMember("data.1");
+        const downloadModel = new Backbone.Model({
+          url: "https://cn.test/resolve/data.1",
+        });
+        downloadModel.downloadWithCredentials = sandbox.stub().callsFake(() => {
+          downloadModel.trigger(
+            "downloadError",
+            Object.assign(new Error("denied"), { status: 403 }),
+          );
+        });
+        const context = withRenderContext({
+          dataPackage,
+          packageDownloadUrl: "",
+          packageDownloadUnavailableReason: "",
+          memberDownloadReadDenied: new Set(),
+          getFileTableRows: MetadataView.prototype.getFileTableRows,
+          confirmPackageDownloadAll:
+            MetadataView.prototype.confirmPackageDownloadAll,
+          isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
+          isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
+          createDataDetailsModel: sandbox.stub().returns(downloadModel),
+          scheduleFileTableScrollIndicatorUpdate: sandbox.stub(),
+        });
+        context.confirmPackageDownloadAll(dataPackage);
+        context.fileTableView = {
+          viewModel: new FileTableViewModel({
+            rows: context.getFileTableRows(),
+          }),
+        };
+        const rows = context.fileTableView.viewModel.getRows();
+        const memberRow = rows.get("data.1");
+        const memberAction = memberRow
+          .getActions()
+          .findWhere({ id: "download" });
+
+        const downloaded =
+          await MetadataView.prototype.downloadFileTableRow.call(
+            context,
+            memberRow,
+            memberAction,
+          );
+
+        downloaded.should.equal(false);
+        expect(member.sysMetaReadDenied).to.not.equal(true);
+        const rootAction = rows
+          .get("dataset:rm.1")
+          .getActions()
+          .findWhere({ id: "download" });
+        rootAction.get("isDisabled").should.equal(true);
+        rootAction
+          .get("title")
+          .should.equal(FILE_TABLE_MESSAGES.packageDownloadReadDenied);
+      });
+
+      it("does not apply a late member denial to a replacement view", async () => {
+        setPackageAppModel();
+        const response = deferred();
+        const dataPackage = createViewerDataPackage();
+        const downloadModel = new Backbone.Model({
+          url: "https://cn.test/resolve/data.1",
+        });
+        downloadModel.downloadWithCredentials = sandbox
+          .stub()
+          .callsFake(() => response.promise);
+        const oldFileTableView = {
+          viewModel: { mergeRows: sandbox.stub() },
+        };
+        const context = withRenderContext({
+          dataPackage,
+          fileTableView: oldFileTableView,
+          packageDownloadUrl: "https://cn.test/package/rm.1",
+          packageDownloadUnavailableReason: "",
+          memberDownloadReadDenied: new Set(),
+          getFileTableRows: MetadataView.prototype.getFileTableRows,
+          confirmPackageDownloadAll:
+            MetadataView.prototype.confirmPackageDownloadAll,
+          isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
+          isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
+          createDataDetailsModel: sandbox.stub().returns(downloadModel),
+          scheduleFileTableScrollIndicatorUpdate: sandbox.stub(),
+        });
+        const row = new Backbone.Model({
+          id: "data.1",
+          kind: "data",
+          downloadUrl: "https://cn.test/resolve/data.1",
+        });
+        row.getDisplayLabel = () => "data.csv";
+        const actionModel = new FileItemActionViewModel({ label: "Download" });
+        const download = MetadataView.prototype.downloadFileTableRow.call(
+          context,
+          row,
+          actionModel,
+        );
+        context.dataPackage = createViewerDataPackage();
+        context.fileTableView = { viewModel: { mergeRows: sandbox.stub() } };
+        context.memberDownloadReadDenied = new Set();
+        context.packageDownloadReadDenied = false;
+
+        downloadModel.trigger(
+          "downloadError",
+          Object.assign(new Error("denied"), { status: 403 }),
+        );
+        response.resolve();
+        (await download).should.equal(false);
+
+        context.packageDownloadUnavailableReason.should.equal("");
+        sinon.assert.notCalled(oldFileTableView.viewModel.mergeRows);
       });
 
       it("uses the file table download URL when the member model has none", async () => {
@@ -1601,11 +2115,7 @@ define([
           downloadUrl: "https://cn.test/resolve/data.1",
         });
         row.getDisplayLabel = () => "data.csv";
-        const actionState = { label: "Download" };
-        const actionModel = {
-          toJSON: () => actionState,
-          set: sandbox.stub(),
-        };
+        const actionModel = new FileItemActionViewModel({ label: "Download" });
         const downloadModel = new Backbone.Model();
         downloadModel.downloadWithCredentials = sandbox.stub().callsFake(() => {
           expect(downloadModel.get("url")).to.equal(
@@ -1628,7 +2138,7 @@ define([
           actionModel,
         );
 
-        actionModel.set.lastCall.args[0].should.deep.equal(actionState);
+        actionModel.isEnabled().should.equal(true);
       });
     });
 
@@ -1741,9 +2251,6 @@ define([
           fileTableDetailsLimited: true,
           tableContainer: "#table-container",
           subviews: [],
-          model: { get: sandbox.stub().withArgs("title").returns("Dataset") },
-          fileTableMetricsByPid: null,
-          metricsModel: null,
           packageDownloadUrl: "",
           getFileTableRows: MetadataView.prototype.getFileTableRows,
           stopListening: sandbox.stub(),
@@ -1786,18 +2293,13 @@ define([
         context.fileTableView.remove();
       });
 
-      it("explains mixed-access Download All in the initial rows", async () => {
-        const reason =
-          "This dataset may contain private data, so each data file should be downloaded individually.";
+      it("offers Download All without member access evidence", async () => {
         const el = document.createElement("div");
         el.innerHTML = `
           <div id="table-container"></div>
           <div id="data-package-container"><div class="loading"></div></div>
         `;
         const dataPackage = createViewerDataPackage();
-        const hasPrivateMembers = sandbox
-          .stub(dataPackage, "hasPrivateMembers")
-          .returns(true);
         const mergeRows = sandbox.spy(
           FileTableViewModel.prototype,
           "mergeRows",
@@ -1823,11 +2325,9 @@ define([
         const downloadAction = rootRow.getActions().get("download");
         downloadAction.toJSON().should.include({
           label: "Download All",
-          title: reason,
-          ariaLabel: reason,
-          isDisabled: true,
+          title: "Download all files in EML",
+          ariaLabel: "Download all files in EML",
         });
-        sinon.assert.calledOnce(hasPrivateMembers);
         sinon.assert.notCalled(mergeRows);
 
         view.fileTableView.remove();
@@ -2687,6 +3187,53 @@ define([
         context.scheduleFileTableIndexRefresh.calledOnce.should.equal(true);
       });
 
+      it("disables Download All when enrichment discovers denied access", async () => {
+        const dataPackage = createViewerDataPackage();
+        dataPackage
+          .toArray()
+          .forEach((member) => member.addSources(["resourceMap"]));
+        sandbox.stub(dataPackage, "fetchSysMeta").resolves([
+          {
+            pid: "data.1",
+            error: Object.assign(new Error("denied"), { status: 403 }),
+          },
+        ]);
+        setPackageAppModel();
+        const fileTableView = { viewModel: { mergeRows: sandbox.stub() } };
+        const context = withRenderContext({
+          dataPackage,
+          fileTableView,
+          fileTableDetailsLimited: false,
+          fileTableMetricsByPid: null,
+          metricsModel: null,
+          packageDownloadUrl: "",
+          packageDownloadUnavailableReason: "",
+          memberDownloadReadDenied: new Set(),
+          getFileTableRows: MetadataView.prototype.getFileTableRows,
+          isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
+          isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
+          refreshMetadataHeaderFromPackage: sandbox.stub(),
+          confirmPackageDownloadAll:
+            MetadataView.prototype.confirmPackageDownloadAll,
+          mergeCurrentFileTableRows: sandbox.stub().callsFake(async () => {
+            fileTableView.viewModel.mergeRows(context.getFileTableRows());
+            return true;
+          }),
+          scheduleFileTableIndexRefresh: sandbox.stub(),
+        });
+        context.confirmPackageDownloadAll(dataPackage);
+
+        await MetadataView.prototype.enrichFileTableMemberDetails.call(context);
+
+        const rootAction = fileTableView.viewModel.mergeRows.firstCall.args[0]
+          .find((row) => row.id === "dataset:rm.1")
+          .actions.find((action) => action.id === "download");
+        rootAction.isDisabled.should.equal(true);
+        rootAction.title.should.equal(
+          FILE_TABLE_MESSAGES.packageDownloadReadDenied,
+        );
+      });
+
       it("does not merge rows after the table becomes stale", async () => {
         const oldFileTableView = { viewModel: { mergeRows: sandbox.stub() } };
         const dataPackage = {};
@@ -2811,7 +3358,7 @@ define([
         expect(context.fileTableIndexRefreshTimer).to.equal(null);
       });
 
-      describe("download availability after enrichment", () => {
+      describe("file table updates after enrichment", () => {
         let clock;
         let dataPackage;
         let fileTableView;
@@ -2850,7 +3397,7 @@ define([
           context.confirmPackageDownloadAll(dataPackage);
         });
 
-        it("enables Download All after System Metadata arrives without waiting for the index", async () => {
+        it("merges System Metadata without waiting for the index", async () => {
           sandbox
             .stub(dataPackage, "fetchSysMeta")
             .callsFake(async (memberPids) => {
@@ -2872,7 +3419,6 @@ define([
           );
           await clock.runAllAsync();
 
-          context.packageDownloadUnavailableReason.should.equal("");
           sinon.assert.calledOnce(context.mergeCurrentFileTableRows);
           sinon.assert.notCalled(dataPackage.getManifestFromIndex);
           dataPackage.indexManifestTotal.should.equal(2);
@@ -2884,7 +3430,9 @@ define([
           await clock.runAllAsync();
 
           sinon.assert.notCalled(dataPackage.getManifestFromIndex);
-          context.packageDownloadUrl.should.equal("");
+          context.packageDownloadUrl.should.equal(
+            "https://cn.test/package/rm.1",
+          );
         });
 
         it("stops after the regular retries without a final count check", async () => {
@@ -2894,7 +3442,9 @@ define([
           await clock.runAllAsync();
 
           dataPackage.getManifestFromIndex.callCount.should.equal(6);
-          context.packageDownloadUrl.should.equal("");
+          context.packageDownloadUrl.should.equal(
+            "https://cn.test/package/rm.1",
+          );
         });
 
         it("cancels pending polling when the render is aborted", async () => {
@@ -2924,20 +3474,22 @@ define([
           finishQuery();
           await clock.tickAsync(0);
 
-          context.packageDownloadUrl.should.equal("");
+          context.packageDownloadUrl.should.equal(
+            "https://cn.test/package/rm.1",
+          );
           sinon.assert.notCalled(context.mergeCurrentFileTableRows);
         });
       });
 
-      it("polls until the index catches up and re-enables Download All", async () => {
+      it("polls until the index catches up", async () => {
         const clock = sandbox.useFakeTimers();
         let attempts = 0;
         const dataPackage = {
           rootResourceMapPid: "rm.1",
+          members: { getActiveMembers: () => [] },
           getManifestFromIndex: sandbox.stub().callsFake(async () => {
             attempts += 1;
           }),
-          hasPrivateMembers: () => attempts < 2,
         };
         setPackageAppModel({ maxViewerPackageMembers: 7 });
         const fileTableView = { viewModel: { mergeRows: sandbox.stub() } };
@@ -2946,7 +3498,6 @@ define([
           fileTableView,
           fileTableIndexRefreshTimer: null,
           packageDownloadUrl: "",
-          packageDownloadUnavailableReason: "",
           isCurrentDataPackage: MetadataView.prototype.isCurrentDataPackage,
           isCurrentFileTable: MetadataView.prototype.isCurrentFileTable,
           refreshMetadataTitleFromIndex: sandbox.stub().resolves(),

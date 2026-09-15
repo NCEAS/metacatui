@@ -159,6 +159,8 @@ define([
      * the update are removed, new rows are added, and the incoming order is
      * reimposed. Derived UI state (`hasChildren`, `isExpanded`, `isVisible`) is
      * preserved on surviving rows, so a refresh does not collapse open folders.
+     * Surviving actions keep their models and pending feedback while accepting
+     * updated labels and availability.
      *
      * An attribute only merge (same rows, same order) mutates only the changed
      * rows and does not trigger a `rows:update`, so the table is not rebuilt.
@@ -183,6 +185,17 @@ define([
         const changes = {};
         Object.entries(nextRow.toJSON()).forEach(([key, value]) => {
           if (preservedKeys.includes(key)) return;
+          if (key === "actions") {
+            const actions = currentRow.getActions();
+            const nextActions = value.map((action) => ({
+              ...action.toJSON(),
+              pending: actions.get(action.id)?.get("pending") || null,
+            }));
+            if (!_.isEqual(actions.toJSON(), nextActions)) {
+              actions.set(nextActions, options);
+            }
+            return;
+          }
           if (!_.isEqual(comparable(currentRow.get(key)), comparable(value))) {
             changes[key] = value;
           }

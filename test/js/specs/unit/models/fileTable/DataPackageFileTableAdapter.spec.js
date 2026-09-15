@@ -4,6 +4,7 @@ define([
   "models/dataPackage/DataPackageMember",
 ], (Adapter, DataPackage, DataPackageMember) => {
   const { expect } = chai;
+  const { MESSAGES } = Adapter;
   chai.should();
 
   /**
@@ -279,6 +280,27 @@ define([
           (a) => a.id === "preview",
         );
         preview.iconClass.should.match(/icon/);
+      });
+
+      it("disables only downloads whose member requests were denied", () => {
+        const rows = Adapter.buildRows(null, {
+          resolveBaseUrl: "https://cn.test/resolve/",
+          members: [
+            member({ pid: "data.1", formatType: "DATA", fileName: "a.csv" }),
+            member({ pid: "data.2", formatType: "DATA", fileName: "b.csv" }),
+          ],
+          downloadReadDeniedPids: new Set(["data.1"]),
+        });
+
+        const denied = row(rows, "data.1").actions.find(
+          (action) => action.id === "download",
+        );
+        expect(denied.isDisabled).to.equal(true);
+        denied.title.should.equal(MESSAGES.fileDownloadReadDenied);
+        const allowed = row(rows, "data.2").actions.find(
+          (action) => action.id === "download",
+        );
+        expect(allowed.isDisabled).to.not.equal(true);
       });
 
       it("builds a download URL from the resolve base when the member has none", () => {
@@ -792,28 +814,26 @@ define([
           .should.equal(true);
       });
 
-      it("explains why Download All is unavailable", () => {
-        const reason =
-          "This dataset may contain private data, so each data file should be downloaded individually.";
+      it("renders a disabled Download All action for a known unavailable package", () => {
+        const reason = MESSAGES.packageDownloadMissing;
         const rows = Adapter.buildRows(null, {
           mode: "viewer",
           members: datasetMembers(),
           packageId: "resource_map_1",
           packageTitle: "My Dataset",
+          packageDownloadUrl: "https://cn.test/packages/resource_map_1",
           packageDownloadUnavailableReason: reason,
         });
 
-        row(rows, "dataset:resource_map_1").actions.should.deep.equal([
-          {
-            id: "download",
-            label: "Download All",
-            title: reason,
-            ariaLabel: reason,
-            iconClass: "",
-            className: "btn btn-primary downloadAction",
-            isDisabled: true,
-          },
-        ]);
+        const root = rows[0];
+        root.actions.should.have.length(1);
+        root.actions[0].should.include({
+          id: "download",
+          label: "Download All",
+          title: reason,
+          isDisabled: true,
+        });
+        root.downloadUrl.should.equal("");
       });
 
       it("keeps a member distinct from a colliding dataset root", () => {
@@ -840,46 +860,6 @@ define([
         root.id.should.equal("dataset:root.rm:1");
         memberRow.id.should.equal(memberPid);
         memberRow.parentId.should.equal(root.id);
-      });
-
-      it("hides Download All when any package member is confirmed missing", () => {
-        const rows = Adapter.buildRows(null, {
-          mode: "viewer",
-          members: [
-            member({ pid: "resource_map_1", formatType: "RESOURCE" }),
-            member({
-              pid: "data.1",
-              formatType: "DATA",
-              sysMetaMissing: true,
-            }),
-          ],
-          packageId: "resource_map_1",
-          packageTitle: "My Dataset",
-          packageDownloadUrl: "https://cn.test/packages/resource_map_1",
-        });
-
-        row(rows, "dataset:resource_map_1").actions.should.deep.equal([]);
-      });
-
-      it("keeps Download All for unresolved placeholders", () => {
-        const rows = Adapter.buildRows(null, {
-          mode: "viewer",
-          members: [
-            member({ pid: "resource_map_1", formatType: "RESOURCE" }),
-            member({
-              pid: "data.1",
-              formatType: "DATA",
-              isPlaceHolder_b: true,
-            }),
-          ],
-          packageId: "resource_map_1",
-          packageTitle: "My Dataset",
-          packageDownloadUrl: "https://cn.test/packages/resource_map_1",
-        });
-
-        row(rows, "dataset:resource_map_1")
-          .actions.map((action) => action.id)
-          .should.deep.equal(["download"]);
       });
 
       it("hides the resource map and groups metadata first", () => {

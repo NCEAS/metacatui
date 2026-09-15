@@ -52,6 +52,42 @@ define([
       sandbox.restore();
     });
 
+    it("keeps a pending action disabled through refresh and renders its latest label on completion", () => {
+      view.viewModel.setRows([
+        { id: "data.1", actions: [{ id: "download", label: "Download" }] },
+      ]);
+      const action = view.viewModel
+        .getRows()
+        .get("data.1")
+        .getActions()
+        .get("download");
+      const actionClick = sandbox.spy();
+      view.on("action:click", actionClick);
+      action.startPending("Downloading...", "Downloading data.csv");
+
+      view.viewModel.mergeRows([
+        {
+          id: "data.1",
+          actions: [{ id: "download", label: "Download updated file" }],
+        },
+      ]);
+
+      const pendingButton = view.$(".file-actions button");
+      pendingButton.prop("disabled").should.equal(true);
+      pendingButton.text().should.equal("Downloading...");
+      pendingButton.attr("aria-label").should.equal("Downloading data.csv");
+      pendingButton[0].click();
+      sinon.assert.notCalled(actionClick);
+
+      action.finishPending();
+
+      const readyButton = view.$(".file-actions button");
+      readyButton.prop("disabled").should.equal(false);
+      readyButton.text().should.equal("Download updated file");
+      readyButton[0].click();
+      sinon.assert.calledOnce(actionClick);
+    });
+
     describe("file drops", () => {
       let transfer, received, root;
 

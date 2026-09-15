@@ -660,7 +660,6 @@ define([
 
       pkg.members.getFromSource("index").should.have.length(1000);
       pkg.indexManifestTotal.should.equal(memberPids.length + 1);
-      pkg.hasPrivateMembers().should.equal(false);
       network.indexStub.calledOnce.should.equal(true);
     });
   });

@@ -75,6 +75,9 @@ define(["models/AppModel"], (AppModel) => {
         context.get
           .withArgs("resolveServiceUrl")
           .returns("https://cn.example.org/resolve/");
+        context.get
+          .withArgs("packageServiceUrl")
+          .returns("https://mn.example.org/packages/application%2Fbagit-1.0/");
 
         AppModel.prototype.getDataPackageServiceOptions
           .call(context)
@@ -82,6 +85,10 @@ define(["models/AppModel"], (AppModel) => {
             objectServiceOptions: {
               readBaseUrl: "https://mn.example.org/object/",
               writeBaseUrl: "https://mn.example.org/object/",
+            },
+            packageServiceOptions: {
+              baseUrl:
+                "https://mn.example.org/packages/application%2Fbagit-1.0/",
             },
             sysMetaServiceOptions: {
               readBaseUrl: "https://mn.example.org/meta/",
@@ -113,6 +120,9 @@ define(["models/AppModel"], (AppModel) => {
         context.get
           .withArgs("resolveServiceUrl")
           .returns("https://cn.example.org/resolve/");
+        context.get
+          .withArgs("packageServiceUrl")
+          .returns("https://cn.example.org/packages/application%2Fbagit-1.0/");
 
         AppModel.prototype.getDataPackageServiceOptions
           .call(context)
@@ -120,6 +130,10 @@ define(["models/AppModel"], (AppModel) => {
             objectServiceOptions: {
               readBaseUrl: "https://cn.example.org/resolve/",
               writeBaseUrl: undefined,
+            },
+            packageServiceOptions: {
+              baseUrl:
+                "https://cn.example.org/packages/application%2Fbagit-1.0/",
             },
             sysMetaServiceOptions: {
               readBaseUrl: "https://cn.example.org/meta/",

@@ -248,7 +248,9 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            */
           displayRepoLogosInSearchResults: false,
           /**
-           * Show or hide the Download button in the search result rows
+           * Show or hide the Download button in search result rows. This
+           * control has not yet been updated to use the current package
+           * download flow. Prefer the Download All action on the dataset page.
            * @type {boolean}
            * @default false
            */
@@ -2834,18 +2836,22 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
       /**
        * Return explicit read and write endpoints for DataPackage services with
        * no repository selection side effects.
-       * @returns {object} ObjectService, SysMetaService, and ResourceMapResolver
-       * constructor options
+       * @returns {object} ObjectService, PackageService, SysMetaService, and
+       * ResourceMapResolver constructor options
        * @since 0.0.0
        */
       getDataPackageServiceOptions() {
         const objectServiceUrl = this.get("objectServiceUrl");
         const metaServiceUrl = this.get("metaServiceUrl");
+        const packageServiceUrl = this.get("packageServiceUrl");
         const resolveServiceUrl = this.get("resolveServiceUrl");
         return {
           objectServiceOptions: {
             readBaseUrl: objectServiceUrl || resolveServiceUrl,
             writeBaseUrl: objectServiceUrl || undefined,
+          },
+          packageServiceOptions: {
+            baseUrl: packageServiceUrl || undefined,
           },
           sysMetaServiceOptions: {
             readBaseUrl: metaServiceUrl || undefined,
