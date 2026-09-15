@@ -1895,6 +1895,22 @@ define([
           ),
           ...(notice || {}),
         });
+        const { appModel, nodeModel } = MetacatUI;
+        if (appModel.get("isCN") && !nodeModel.get("members").length) {
+          const { fileTableView } = this;
+          this.listenToOnce(nodeModel, "change:members", () => {
+            if (
+              this.isCurrentFileTable(dataPackage, fileTableView, renderOptions)
+            ) {
+              this.confirmPackageDownloadAll(dataPackage);
+              this.mergeCurrentFileTableRows(
+                dataPackage,
+                fileTableView,
+                renderOptions,
+              );
+            }
+          });
+        }
         this.listenTo(
           this.fileTableView,
           "action:click",
@@ -2032,9 +2048,17 @@ define([
         this.packageDownloadUrl = "";
         this.packageDownloadUnavailableReason = "";
         if (!dataPackage) return;
+        const { appModel, nodeModel } = MetacatUI;
         const packageId = dataPackage.rootResourceMapPid || "";
-        const packageServiceUrl =
-          MetacatUI.appModel.get("packageServiceUrl") || "";
+        let packageServiceUrl = appModel.get("packageServiceUrl") || "";
+        if (appModel.get("isCN")) {
+          const datasource = dataPackage.getRootResourceMapMember()?.datasource;
+          const node = nodeModel.getMember(datasource);
+          packageServiceUrl =
+            node?.readv2 && node.baseURL
+              ? appModel.getDataONEMNAPIs(node.baseURL).packageServiceUrl
+              : "";
+        }
         if (!packageId || !packageServiceUrl) {
           return;
         }
@@ -2070,6 +2094,9 @@ define([
           }
         }
 
+        Object.assign(dataPackage.packageServiceOptions, {
+          baseUrl: packageServiceUrl,
+        });
         this.packageDownloadUrl =
           packageServiceUrl + encodeURIComponent(packageId);
       },

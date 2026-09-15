@@ -86,6 +86,7 @@ define([
           pid: "rm.1",
           formatType: "RESOURCE",
           formatId: RESOURCE_MAP_FORMAT_ID,
+          datasource: "urn:node:ARCTIC",
         },
         {
           pid: "data.1",
@@ -107,9 +108,11 @@ define([
       globalThis.MetacatUI.appModel = {
         getDataPackageServiceOptions:
           AppModel.prototype.getDataPackageServiceOptions,
+        getDataONEMNAPIs: AppModel.prototype.getDataONEMNAPIs,
         get: (key) =>
           ({
             packageServiceUrl: "https://cn.test/package/",
+            packageFormat: "application%2Fbagit-1.0",
             resolveServiceUrl: "https://cn.test/resolve/",
             maxViewerPackageMembers: 3000,
             ...values,
@@ -1366,6 +1369,30 @@ define([
         rootRow.downloadUrl.should.equal("https://cn.test/package/rm.1");
       });
 
+      it("uses the Resource Map source MN for Download All on a CN", () => {
+        const dataPackage = createViewerDataPackage();
+        setPackageAppModel({ isCN: true });
+        sandbox.replace(globalThis.MetacatUI, "nodeModel", {
+          getMember: sandbox.stub().withArgs("urn:node:ARCTIC").returns({
+            baseURL: "https://arctic.test/d1/mn",
+            readv2: 1,
+          }),
+        });
+        const context = {};
+
+        MetadataView.prototype.confirmPackageDownloadAll.call(
+          context,
+          dataPackage,
+        );
+
+        context.packageDownloadUrl.should.equal(
+          "https://arctic.test/d1/mn/v2/packages/application%2Fbagit-1.0/rm.1",
+        );
+        expect(dataPackage.packageServiceOptions.baseUrl).to.equal(
+          "https://arctic.test/d1/mn/v2/packages/application%2Fbagit-1.0/",
+        );
+      });
+
       [
         {
           flag: "sysMetaReadDenied",
@@ -2374,6 +2401,58 @@ define([
           ariaLabel: "Download all files in EML",
         });
         sinon.assert.notCalled(mergeRows);
+
+        view.fileTableView.remove();
+        view.remove();
+      });
+
+      it("adds Download All when the source node registry finishes loading", async () => {
+        const el = document.createElement("div");
+        el.innerHTML = `
+          <div id="table-container"></div>
+          <div id="data-package-container"><div class="loading"></div></div>
+        `;
+        const dataPackage = createViewerDataPackage();
+        const nodeModel = new Backbone.Model({ members: [] });
+        nodeModel.getMember = (identifier) =>
+          nodeModel
+            .get("members")
+            .find((node) => node.identifier === identifier) || false;
+        sandbox.replace(globalThis.MetacatUI, "nodeModel", nodeModel);
+        setPackageAppModel({ isCN: true });
+        const view = new MetadataView({ el });
+        view.renderId = "render-test";
+        view.dataPackage = dataPackage;
+        view.subviews = [];
+        sandbox.stub(view, "setupFileTableScrollIndicators");
+        sandbox.stub(view, "loadNestedPackageTitles");
+        sandbox.stub(view, "enrichFileTableMemberDetails");
+        sandbox.stub(view, "loadFileTableMetrics");
+
+        await view.insertPackageTable(null, { renderId: "render-test" });
+        view.fileTableView.viewModel
+          .getRows()
+          .get("dataset:rm.1")
+          .getActions()
+          .should.have.length(0);
+
+        nodeModel.set("members", [
+          {
+            identifier: "urn:node:ARCTIC",
+            baseURL: "https://arctic.test/d1/mn",
+            readv2: 1,
+          },
+        ]);
+
+        const rootRow = view.fileTableView.viewModel
+          .getRows()
+          .get("dataset:rm.1");
+        rootRow
+          .get("downloadUrl")
+          .should.equal(
+            "https://arctic.test/d1/mn/v2/packages/application%2Fbagit-1.0/rm.1",
+          );
+        rootRow.getActions().pluck("id").should.deep.equal(["download"]);
 
         view.fileTableView.remove();
         view.remove();
@@ -3531,6 +3610,7 @@ define([
         let attempts = 0;
         const dataPackage = {
           rootResourceMapPid: "rm.1",
+          packageServiceOptions: {},
           members: { getActiveMembers: () => [] },
           getManifestFromIndex: sandbox.stub().callsFake(async () => {
             attempts += 1;
