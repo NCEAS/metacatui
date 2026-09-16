@@ -1,0 +1,2106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/models/dataPackage/DataPackage.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="/metacatui/assets/css/styles.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+<nav id="nav">
+    <a href="/">
+      <div class="logo">
+<svg class="cat" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="cat" class="svg-inline--fa fa-cat fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M290.59 192c-20.18 0-106.82 1.98-162.59 85.95V192c0-52.94-43.06-96-96-96-17.67 0-32 14.33-32 32s14.33 32 32 32c17.64 0 32 14.36 32 32v256c0 35.3 28.7 64 64 64h176c8.84 0 16-7.16 16-16v-16c0-17.67-14.33-32-32-32h-32l128-96v144c0 8.84 7.16 16 16 16h32c8.84 0 16-7.16 16-16V289.86c-10.29 2.67-20.89 4.54-32 4.54-61.81 0-113.52-44.05-125.41-102.4zM448 96h-64l-64-64v134.4c0 53.02 42.98 96 96 96s96-42.98 96-96V32l-64 64zm-72 80c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16zm80 0c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16z"></path></svg>
+
+<svg width="459px" height="53px" viewBox="0 0 459 53" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="metacatui" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M16.492,52 C17.212,52 17.812,51.748 18.292,51.244 C18.772,50.74 19.012,50.128 19.012,49.408 L19.012,49.408 L18.94,22.912 L30.82,37.816 C31.204,38.344 31.72,38.764 32.368,39.076 C33.016,39.388 33.7,39.544 34.42,39.544 C35.908,39.544 37.132,38.896 38.092,37.6 L38.092,37.6 L49.684,22.912 L49.684,49.408 C49.684,50.128 49.96,50.74 50.512,51.244 C51.064,51.748 51.7,52 52.42,52 L52.42,52 L62.068,52 C62.788,52 63.388,51.748 63.868,51.244 C64.348,50.74 64.588,50.128 64.588,49.408 L64.588,49.408 L64.588,4.12 C64.588,3.448 64.336,2.86 63.832,2.356 C63.328,1.852 62.74,1.6 62.068,1.6 L62.068,1.6 L52.348,1.6 C51.388,1.6 50.56,1.648 49.864,1.744 C49.168,1.84 48.532,2.152 47.956,2.68 L47.956,2.68 L33.916,17.296 L20.524,2.608 C20.332,2.368 19.972,2.14 19.444,1.924 C18.916,1.708 18.412,1.6 17.932,1.6 L17.932,1.6 L6.772,1.6 C6.052,1.6 5.44,1.852 4.936,2.356 C4.432,2.86 4.18,3.448 4.18,4.12 L4.18,4.12 L4.18,49.408 C4.18,50.08 4.432,50.68 4.936,51.208 C5.44,51.736 6.052,52 6.772,52 L6.772,52 L16.492,52 Z M110.74,52 C111.556,52 112.264,51.676 112.864,51.028 C113.464,50.38 113.764,49.624 113.764,48.76 L113.764,48.76 L113.764,42.568 C113.764,41.608 113.464,40.828 112.864,40.228 C112.264,39.628 111.556,39.328 110.74,39.328 L110.74,39.328 L89.428,39.328 L89.428,32.92 L109.732,32.92 C110.5,32.92 111.184,32.596 111.784,31.948 C112.384,31.3 112.684,30.568 112.684,29.752 L112.684,29.752 L112.684,23.488 C112.684,22.576 112.384,21.82 111.784,21.22 C111.184,20.62 110.5,20.32 109.732,20.32 L109.732,20.32 L89.428,20.32 L89.428,14.488 L110.74,14.488 C111.508,14.488 112.204,14.164 112.828,13.516 C113.452,12.868 113.764,12.136 113.764,11.32 L113.764,11.32 L113.764,5.056 C113.764,4.144 113.464,3.388 112.864,2.788 C112.264,2.188 111.556,1.888 110.74,1.888 L110.74,1.888 L76.756,1.888 C75.94,1.888 75.232,2.188 74.632,2.788 C74.032,3.388 73.732,4.144 73.732,5.056 L73.732,5.056 L73.732,48.76 C73.732,49.624 74.032,50.38 74.632,51.028 C75.232,51.676 75.94,52 76.756,52 L76.756,52 L110.74,52 Z M147.604,52 C148.42,52 149.104,51.688 149.656,51.064 C150.208,50.44 150.484,49.672 150.484,48.76 L150.484,48.76 L150.484,16.216 L161.86,16.216 C162.676,16.216 163.396,15.904 164.02,15.28 C164.644,14.656 164.956,13.936 164.956,13.12 L164.956,13.12 L164.956,4.768 C164.956,4 164.644,3.316 164.02,2.716 C163.396,2.116 162.676,1.816 161.86,1.816 L161.86,1.816 L124.132,1.816 C123.22,1.816 122.464,2.104 121.864,2.68 C121.264,3.256 120.964,3.952 120.964,4.768 L120.964,4.768 L120.964,13.12 C120.964,13.936 121.264,14.656 121.864,15.28 C122.464,15.904 123.22,16.216 124.132,16.216 L124.132,16.216 L135.652,16.216 L135.148,48.832 C135.148,49.744 135.424,50.5 135.976,51.1 C136.528,51.7 137.212,52 138.028,52 L138.028,52 L147.604,52 Z M175.828,52 C176.836,52 177.676,51.82 178.348,51.46 C179.02,51.1 179.452,50.584 179.644,49.912 L179.644,49.912 L181.876,42.712 L197.932,42.712 L200.164,49.912 C200.356,50.584 200.8,51.1 201.496,51.46 C202.192,51.82 203.044,52 204.052,52 L204.052,52 L213.916,52 C215.836,51.712 216.796,50.704 216.796,48.976 C216.796,48.304 216.676,47.596 216.436,46.852 C216.196,46.108 216.052,45.616 216.004,45.376 L216.004,45.376 L199.876,4.84 C199.588,3.976 199.036,3.232 198.22,2.608 C197.404,1.984 196.372,1.648 195.124,1.6 L195.124,1.6 L184.756,1.6 C183.604,1.648 182.608,1.948 181.768,2.5 C180.928,3.052 180.292,3.832 179.86,4.84 L179.86,4.84 L163.876,45.376 C163.828,45.472 163.672,45.916 163.408,46.708 C163.144,47.5 163.012,48.304 163.012,49.12 C163.012,50.752 163.948,51.712 165.82,52 L165.82,52 L175.828,52 Z M195.34,30.544 L184.036,30.544 L189.652,13.624 L195.34,30.544 Z M245.38,53.08 C250.612,53.08 255.652,51.544 260.5,48.472 C261.22,47.944 261.58,47.296 261.58,46.528 C261.58,45.808 261.292,45.16 260.716,44.584 L260.716,44.584 L252.796,36.808 C252.364,36.376 251.836,36.16 251.212,36.16 C250.78,36.16 250.372,36.256 249.988,36.448 C248.356,37.12 246.796,37.456 245.308,37.456 C243.244,37.456 241.348,36.952 239.62,35.944 C237.892,34.936 236.512,33.58 235.48,31.876 C234.448,30.172 233.932,28.336 233.932,26.368 C233.932,24.352 234.436,22.504 235.444,20.824 C236.452,19.144 237.832,17.812 239.584,16.828 C241.336,15.844 243.244,15.352 245.308,15.352 C246.892,15.352 248.332,15.64 249.628,16.216 C250.012,16.408 250.444,16.504 250.924,16.504 C251.548,16.504 252.1,16.264 252.58,15.784 L252.58,15.784 L259.636,8.008 C260.164,7.384 260.428,6.76 260.428,6.136 C260.428,5.224 259.996,4.528 259.132,4.048 C254.86,1.552 250.276,0.304 245.38,0.304 C240.532,0.304 236.032,1.492 231.88,3.868 C227.728,6.244 224.44,9.448 222.016,13.48 C219.592,17.512 218.38,21.904 218.38,26.656 C218.38,31.408 219.592,35.812 222.016,39.868 C224.44,43.924 227.728,47.14 231.88,49.516 C236.032,51.892 240.532,53.08 245.38,53.08 Z M279.796,52 C280.804,52 281.644,51.82 282.316,51.46 C282.988,51.1 283.42,50.584 283.612,49.912 L283.612,49.912 L285.844,42.712 L301.9,42.712 L304.132,49.912 C304.324,50.584 304.768,51.1 305.464,51.46 C306.16,51.82 307.012,52 308.02,52 L308.02,52 L317.884,52 C319.804,51.712 320.764,50.704 320.764,48.976 C320.764,48.304 320.644,47.596 320.404,46.852 C320.164,46.108 320.02,45.616 319.972,45.376 L319.972,45.376 L303.844,4.84 C303.556,3.976 303.004,3.232 302.188,2.608 C301.372,1.984 300.34,1.648 299.092,1.6 L299.092,1.6 L288.724,1.6 C287.572,1.648 286.576,1.948 285.736,2.5 C284.896,3.052 284.26,3.832 283.828,4.84 L283.828,4.84 L267.844,45.376 C267.796,45.472 267.64,45.916 267.376,46.708 C267.112,47.5 266.98,48.304 266.98,49.12 C266.98,50.752 267.916,51.712 269.788,52 L269.788,52 L279.796,52 Z M299.308,30.544 L288.004,30.544 L293.62,13.624 L299.308,30.544 Z M352.588,52 C353.404,52 354.088,51.688 354.64,51.064 C355.192,50.44 355.468,49.672 355.468,48.76 L355.468,48.76 L355.468,16.216 L366.844,16.216 C367.66,16.216 368.38,15.904 369.004,15.28 C369.628,14.656 369.94,13.936 369.94,13.12 L369.94,13.12 L369.94,4.768 C369.94,4 369.628,3.316 369.004,2.716 C368.38,2.116 367.66,1.816 366.844,1.816 L366.844,1.816 L329.116,1.816 C328.204,1.816 327.448,2.104 326.848,2.68 C326.248,3.256 325.948,3.952 325.948,4.768 L325.948,4.768 L325.948,13.12 C325.948,13.936 326.248,14.656 326.848,15.28 C327.448,15.904 328.204,16.216 329.116,16.216 L329.116,16.216 L340.636,16.216 L340.132,48.832 C340.132,49.744 340.408,50.5 340.96,51.1 C341.512,51.7 342.196,52 343.012,52 L343.012,52 L352.588,52 Z M402.052,52.792 C408.1,52.792 412.912,51.628 416.488,49.3 C420.064,46.972 422.536,44.068 423.904,40.588 C425.272,37.108 425.932,33.424 425.884,29.536 C425.884,29.5309474 425.883967,29.5237673 425.8839,29.5144598 L425.883102,29.4330859 C425.879911,29.1480111 425.868211,28.3183158 425.848,26.944 C425.8294,25.6792 425.818008,22.91524 425.813823,18.65212 L425.813103,17.80828 C425.812997,17.66452 425.8129,17.5192 425.81281,17.37232 L425.812,3.904 C425.86,3.184 425.632,2.62 425.128,2.212 C424.624,1.804 423.916,1.6 423.004,1.6 L423.004,1.6 L413.428,1.6 C412.612,1.6 411.904,1.828 411.304,2.284 C410.704,2.74 410.404,3.28 410.404,3.904 L410.404,3.904 L410.26,27.808 C410.26,34.144 407.476,37.312 401.908,37.312 C399.076,37.312 396.832,36.412 395.176,34.612 C393.52,32.812 392.668,30.352 392.62,27.232 L392.62,27.232 L392.332,3.76 C392.332,3.088 392.068,2.56 391.54,2.176 C391.012,1.792 390.268,1.6 389.308,1.6 L389.308,1.6 L379.876,1.6 C378.244,1.6 377.428,2.32 377.428,3.76 L377.428,3.76 L377.5,28.816 C377.5,33.04 378.376,36.964 380.128,40.588 C381.88,44.212 384.592,47.152 388.264,49.408 C391.936,51.664 396.532,52.792 402.052,52.792 Z M449.284,52.144 C450.148,52.144 450.88,51.844 451.48,51.244 C452.08,50.644 452.38,49.84 452.38,48.832 L452.38,48.832 L452.38,4.912 C452.38,4 452.08,3.22 451.48,2.572 C450.88,1.924 450.148,1.6 449.284,1.6 L449.284,1.6 L439.42,1.6 C438.46,1.6 437.692,1.924 437.116,2.572 C436.54,3.22 436.252,4 436.252,4.912 L436.252,4.912 L436.252,48.832 C436.252,49.84 436.54,50.644 437.116,51.244 C437.692,51.844 438.46,52.144 439.42,52.144 L439.42,52.144 L449.284,52.144 Z" id="metacatui" fill="#FCBF49" fill-rule="nonzero"></path>
+    </g>
+</svg>
+</logo>
+
+    </a>
+    <h3>Modules</h3><ul><li><a href="module-ProvenanceValidation.html">ProvenanceValidation</a></li><li><a href="module-ResourceMapValidation.html">ResourceMapValidation</a></li></ul><h3>Externals</h3><ul><li><a href="external-TaxonomicClassification.html">TaxonomicClassification</a></li></ul><h3>Namespaces</h3><ul><li class='category-heading' data-category='Common'>Common</li><li><a href="DataONEXmlUtilities.html">DataONEXmlUtilities</a></li><li><a href="DateUtilities.html">DateUtilities</a></li><li><a href="ErrorUtilities.html">ErrorUtilities</a></li><li><a href="UrlUtilities.html">UrlUtilities</a></li><li><a href="ValidationUtilities.html">ValidationUtilities</a></li><li><a href="ValueUtilities.html">ValueUtilities</a></li><li><a href="XMLTypes.html">XMLTypes</a></li><li class='category-heading' data-category='Models/DataPackage'>Models/DataPackage</li><li><a href="DataPackageLoader.html">DataPackageLoader</a></li><li class='category-heading' data-category='Models/FileTable'>Models/FileTable</li><li><a href="DataPackageFileTableAdapter.html">DataPackageFileTableAdapter</a></li><li><a href="FileTableMetrics.html">FileTableMetrics</a></li><li class='category-heading' data-category='Models/ResourceMap'>Models/ResourceMap</li><li><a href="ResourceMapCommon.html">ResourceMapCommon</a></li><li class='category-heading' data-category='Models/SysMeta'>Models/SysMeta</li><li><a href="SysMetaSchema.html">SysMetaSchema</a></li><li class='category-heading' data-category='Views/FileTable'>Views/FileTable</li><li><a href="FileTableViewUtilities.html">FileTableViewUtilities</a></li><li><a href="AppConfig.html">AppConfig</a></li><li><a href="EMLUtilities.html">EMLUtilities</a></li><li><a href="IconUtilities.html">IconUtilities</a></li><li><a href="MapConfig.html">MapConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="SearchParams.html">SearchParams</a></li><li><a href="TrustedContentUtilities.html">TrustedContentUtilities</a></li><li><a href="Utilities.html">Utilities</a></li><li><a href="XMLUtilities.html">XMLUtilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="ProjectList.html">ProjectList</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/Geohashes'>Collections/Geohashes</li><li><a href="Geohashes.html">Geohashes</a></li><li class='category-heading' data-category='Collections/Maps'>Collections/Maps</li><li><a href="AssetCategories.html">AssetCategories</a></li><li><a href="AssetColors.html">AssetColors</a></li><li><a href="Features.html">Features</a></li><li><a href="GeoPoints.html">GeoPoints</a></li><li><a href="MapAssets.html">MapAssets</a></li><li><a href="VectorFilters.html">VectorFilters</a></li><li><a href="ViewfinderCardCategories.html">ViewfinderCardCategories</a></li><li><a href="ViewfinderCards.html">ViewfinderCards</a></li><li class='category-heading' data-category='Collections/Metadata/EML'>Collections/Metadata/EML</li><li><a href="EMLAnnotations.html">EMLAnnotations</a></li><li><a href="EMLAttributes.html">EMLAttributes</a></li><li><a href="EMLEntities.html">EMLEntities</a></li><li><a href="EMLMissingValueCodes.html">EMLMissingValueCodes</a></li><li class='category-heading' data-category='Collections/Ontologies'>Collections/Ontologies</li><li><a href="BioontologyResults.html">BioontologyResults</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Collections/SearchSelect'>Collections/SearchSelect</li><li><a href="DataONEObjects.html">DataONEObjects</a></li><li><a href="SearchSelectOptions.html">SearchSelectOptions</a></li><li class='category-heading' data-category='Collections/VersionHistory'>Collections/VersionHistory</li><li><a href="VersionTimelineGroups.html">VersionTimelineGroups</a></li><li class='category-heading' data-category='Common'>Common</li><li><a href="ResourceMapResolver.html">ResourceMapResolver</a></li><li><a href="XMLUtilities.ParseError.html">ParseError</a></li><li class='category-heading' data-category='Errors'>Errors</li><li><a href="EmptyAttributeListError.html">EmptyAttributeListError</a></li><li><a href="InvalidAttributeListError.html">InvalidAttributeListError</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="Accordion.html">Accordion</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="CitationModel.html">CitationModel</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="CrossRef.html">CrossRef</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="Metrics.html">Metrics</a></li><li><a href="ObjectNotification.html">ObjectNotification</a></li><li><a href="PackageModel.html">PackageModel</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li><a href="UserModel.html">UserModel</a></li><li class='category-heading' data-category='Models/Accordion'>Models/Accordion</li><li><a href="AccordionItem.html">AccordionItem</a></li><li class='category-heading' data-category='Models/Analytics'>Models/Analytics</li><li><a href="Analytics.html">Analytics</a></li><li><a href="GoogleAnalytics.html">GoogleAnalytics</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Connectors'>Models/Connectors</li><li><a href="BioontologyAccordionSearchSelect.html">BioontologyAccordionSearchSelect</a></li><li><a href="FiltersMapConnector.html">FiltersMapConnector</a></li><li><a href="FiltersSearchConnector.html">FiltersSearchConnector</a></li><li><a href="GeoPointsCesiumConnector.html">GeoPointsCesiumConnector</a></li><li><a href="GeoPointsCesiumPointsConnector.html">GeoPointsCesiumPointsConnector</a></li><li><a href="GeoPointsCesiumPolygonConnector.html">GeoPointsCesiumPolygonConnector</a></li><li><a href="MapSearchConnector.html">MapSearchConnector</a></li><li><a href="MapSearchFiltersConnector.html">MapSearchFiltersConnector</a></li><li class='category-heading' data-category='Models/DataONEServices'>Models/DataONEServices</li><li><a href="AuthorizationService.html">AuthorizationService</a></li><li><a href="DataONEHttpClient.html">DataONEHttpClient</a></li><li><a href="DataONEService.html">DataONEService</a></li><li><a href="IdentifierService.html">IdentifierService</a></li><li><a href="ObjectLocationResolver.html">ObjectLocationResolver</a></li><li><a href="ObjectService.html">ObjectService</a></li><li><a href="PackageService.html">PackageService</a></li><li><a href="PublishService.html">PublishService</a></li><li><a href="SysMetaService.html">SysMetaService</a></li><li><a href="ViewService.html">ViewService</a></li><li class='category-heading' data-category='Models/DataPackage'>Models/DataPackage</li><li><a href="DataPackageMember.html">DataPackageMember</a></li><li><a href="DataPackageMembers.html">DataPackageMembers</a></li><li><a href="DataPackageRecovery.html">DataPackageRecovery</a></li><li><a href="DataPackageUploader.html">DataPackageUploader</a></li><li><a href="UploadRecoveryStore.html">UploadRecoveryStore</a></li><li><a href="UploadResult.html">UploadResult</a></li><li class='category-heading' data-category='Models/FileTable'>Models/FileTable</li><li><a href="FileItemActionCollection.html">FileItemActionCollection</a></li><li><a href="FileItemActionViewModel.html">FileItemActionViewModel</a></li><li><a href="FileItemCollection.html">FileItemCollection</a></li><li><a href="FileItemViewModel.html">FileItemViewModel</a></li><li><a href="FileTableViewModel.html">FileTableViewModel</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Geocoder'>Models/Geocoder</li><li><a href="GeocodedLocation.html">GeocodedLocation</a></li><li><a href="GeocoderSearch.html">GeocoderSearch</a></li><li><a href="GoogleMapsAutocompleter.html">GoogleMapsAutocompleter</a></li><li><a href="GoogleMapsGeocoder.html">GoogleMapsGeocoder</a></li><li><a href="Prediction.html">Prediction</a></li><li class='category-heading' data-category='Models/Geohashes'>Models/Geohashes</li><li><a href="Geohash.html">Geohash</a></li><li class='category-heading' data-category='Models/Maps'>Models/Maps</li><li><a href="AssetCategory.html">AssetCategory</a></li><li><a href="AssetColor.html">AssetColor</a></li><li><a href="AssetColorPalette.html">AssetColorPalette</a></li><li><a href="ExpansionPanelsModel.html">ExpansionPanelsModel</a></li><li><a href="Feature.html">Feature</a></li><li><a href="GeoBoundingBox.html">GeoBoundingBox</a></li><li><a href="GeoPoint.html">GeoPoint</a></li><li><a href="GeoScale.html">GeoScale</a></li><li><a href="GeoUtilities.html">GeoUtilities</a></li><li><a href="MapInteraction.html">MapInteraction</a></li><li><a href="MapModel.html">MapModel</a></li><li><a href="VectorFilter.html">VectorFilter</a></li><li><a href="ViewfinderCardCategory.html">ViewfinderCardCategory</a></li><li><a href="ViewfinderCardModel.html">ViewfinderCardModel</a></li><li><a href="ViewfinderModel.html">ViewfinderModel</a></li><li class='category-heading' data-category='Models/Maps/Assets'>Models/Maps/Assets</li><li><a href="Cesium3DTileset.html">Cesium3DTileset</a></li><li><a href="CesiumGeohash.html">CesiumGeohash</a></li><li><a href="CesiumImagery.html">CesiumImagery</a></li><li><a href="CesiumTerrain.html">CesiumTerrain</a></li><li><a href="CesiumVectorData.html">CesiumVectorData</a></li><li><a href="MapAsset.html">MapAsset</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML'>Models/Metadata/EML</li><li><a href="EMLMethodStep.html">EMLMethodStep</a></li><li><a href="EMLSpecializedText.html">EMLSpecializedText</a></li><li><a href="EMLTaxonCoverage.html">EMLTaxonCoverage</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAnnotation.html">EMLAnnotation</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLAttributeList.html">EMLAttributeList</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLDistribution.html">EMLDistribution</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLMethods.html">EMLMethods</a></li><li><a href="EMLMissingValueCode.html">EMLMissingValueCode</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLParty.html">EMLParty</a></li><li><a href="EMLReferences.html">EMLReferences</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLText211.html">EMLText211</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Ontologies'>Models/Ontologies</li><li><a href="BioOntology.html">BioOntology</a></li><li><a href="Bioontology_.html">Bioontology</a></li><li><a href="BioontologyBatch.html">BioontologyBatch</a></li><li><a href="BioontologyClass.html">BioontologyClass</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/Projects'>Models/Projects</li><li><a href="Project.html">Project</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Models/ResourceMap'>Models/ResourceMap</li><li><a href="Provenance.html">Provenance</a></li><li><a href="ProvenanceChartAdapter.html">ProvenanceChartAdapter</a></li><li><a href="ProvenanceExecutionMutation.html">ProvenanceExecutionMutation</a></li><li><a href="RDFGraph.html">RDFGraph</a></li><li><a href="ResourceMap.html">ResourceMap</a></li><li><a href="ResourceMapConflictError.html">ResourceMapConflictError</a></li><li><a href="ResourceMapNormalization.html">ResourceMapNormalization</a></li><li><a href="ResourceMapState.html">ResourceMapState</a></li><li><a href="ResourceMapStructureMutation.html">ResourceMapStructureMutation</a></li><li class='category-heading' data-category='Models/SearchSelect'>Models/SearchSelect</li><li><a href="AccountSearchSelect.html">AccountSearchSelect</a></li><li><a href="QueryFieldSearchSelect.html">QueryFieldSearchSelect</a></li><li><a href="SearchSelect.html">SearchSelect</a></li><li><a href="SelectOptionModel.html">SelectOptionModel</a></li><li><a href="SolrAutocomplete.html">SolrAutocomplete</a></li><li class='category-heading' data-category='Models/SysMeta'>Models/SysMeta</li><li><a href="Checksum.html">Checksum</a></li><li><a href="MediaType.html">MediaType</a></li><li><a href="MediaTypeProperty.html">MediaTypeProperty</a></li><li><a href="Replica.html">Replica</a></li><li><a href="ReplicaList.html">ReplicaList</a></li><li><a href="ReplicationPolicy.html">ReplicationPolicy</a></li><li><a href="VersionTracker.html">VersionTracker</a></li><li class='category-heading' data-category='Models/ViewService'>Models/ViewService</li><li><a href="ViewServiceDoc.html">ViewServiceDoc</a></li><li class='category-heading' data-category='Models/schemaOrg'>Models/schemaOrg</li><li><a href="SchemaOrgModel.html">SchemaOrgModel</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AnnotationView.html">AnnotationView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="CanonicalDatasetHandlerView.html">CanonicalDatasetHandlerView</a></li><li><a href="CatalogSearchView.html">CatalogSearchView</a></li><li><a href="CitationHeaderView.html">CitationHeaderView</a></li><li><a href="CitationListView.html">CitationListView</a></li><li><a href="CitationModalView.html">CitationModalView</a></li><li><a href="CitationView.html">CitationView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView.html">DataCatalogView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataObjectView.html">DataObjectView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DownloadButtonView.html">DownloadButtonView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="FooterView.html">FooterView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MdqRunView.html">MdqRunView</a></li><li><a href="MetadataDocumentView.html">MetadataDocumentView</a></li><li><a href="MetadataIndexView.html">MetadataIndexView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NotificationModalView.html">NotificationModalView</a></li><li><a href="ProvChartView.html">ProvChartView</a></li><li><a href="ProvEntitySelectView.html">ProvEntitySelectView</a></li><li><a href="ProvStatementView.html">ProvStatementView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SearchResultView.html">SearchResultView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="UserGroupView.html">UserGroupView</a></li><li><a href="UserView.html">UserView</a></li><li><a href="VersionNavigationView.html">VersionNavigationView</a></li><li><a href="ViewDataButtonView.html">ViewDataButtonView</a></li><li class='category-heading' data-category='Views/Accordion'>Views/Accordion</li><li><a href="AccordionItemView.html">AccordionItemView</a></li><li><a href="AccordionView.html">AccordionView</a></li><li class='category-heading' data-category='Views/FileTable'>Views/FileTable</li><li><a href="FileItemActionView.html">FileItemActionView</a></li><li><a href="FileItemView.html">FileItemView</a></li><li><a href="FileTableView.html">FileTableView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterEditorView.html">FilterEditorView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="SemanticFilterView.html">SemanticFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Maps'>Views/Maps</li><li><a href="CesiumWidgetView.html">CesiumWidgetView</a></li><li><a href="DownloadPanelView.html">DownloadPanelView</a></li><li><a href="FeatureInfoView.html">FeatureInfoView</a></li><li><a href="LayerCategoryListView.html">LayerCategoryListView</a></li><li><a href="LayerDetailView.html">LayerDetailView</a></li><li><a href="LayerDetailsView.html">LayerDetailsView</a></li><li><a href="LayerDownloadView.html">LayerDownloadView</a></li><li><a href="LayerInfoView.html">LayerInfoView</a></li><li><a href="LayerItemView.html">LayerItemView</a></li><li><a href="LayerListView.html">LayerListView</a></li><li><a href="LayerNavigationView.html">LayerNavigationView</a></li><li><a href="LayerOpacityView.html">LayerOpacityView</a></li><li><a href="LayersPanelView.html">LayersPanelView</a></li><li><a href="MapHelpPanel.html">MapHelpPanel</a></li><li><a href="MapView.html">MapView</a></li><li><a href="MapWidgetContainerView.html">MapWidgetContainerView</a></li><li><a href="PredictionView.html">PredictionView</a></li><li><a href="PredictionsListView.html">PredictionsListView</a></li><li><a href="ScaleBarView.html">ScaleBarView</a></li><li><a href="SchemaOrgView.html">SchemaOrgView</a></li><li><a href="SearchInputView.html">SearchInputView</a></li><li><a href="SearchView.html">SearchView</a></li><li><a href="ShareUrlView.html">ShareUrlView</a></li><li><a href="ToolbarView.html">ToolbarView</a></li><li><a href="VectorFilterView.html">VectorFilterView</a></li><li><a href="ViewfinderView.html">ViewfinderView</a></li><li><a href="VisualizationPanelView.html">VisualizationPanelView</a></li><li class='category-heading' data-category='Views/Maps/Legend'>Views/Maps/Legend</li><li><a href="CategoricalSwatchView.html">CategoricalSwatchView</a></li><li><a href="ContinuousSwatchView.html">ContinuousSwatchView</a></li><li><a href="LayerLegendView.html">LayerLegendView</a></li><li><a href="LegendContainerView.html">LegendContainerView</a></li><li class='category-heading' data-category='Views/Maps/Viewfinder'>Views/Maps/Viewfinder</li><li><a href="ExpansionPanelView.html">ExpansionPanelView</a></li><li><a href="ViewfinderCardView.html">ViewfinderCardView</a></li><li><a href="ViewfinderCardsListView.html">ViewfinderCardsListView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="AutofillAttributesView.html">AutofillAttributesView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLAttributesView.html">EMLAttributesView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMeasurementTypeView.html">EMLMeasurementTypeView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLMissingValueCodeView.html">EMLMissingValueCodeView</a></li><li><a href="EMLMissingValueCodesView.html">EMLMissingValueCodesView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="EMlGeoCoverageView_.html">EMlGeoCoverageView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/MetadataView'>Views/MetadataView</li><li><a href="DatasetControls.html">DatasetControls</a></li><li class='category-heading' data-category='Views/Ontologies'>Views/Ontologies</li><li><a href="BioontologyBrowser.html">BioontologyBrowser</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li><a href="PortalsSearchView.html">PortalsSearchView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li class='category-heading' data-category='Views/Projects'>Views/Projects</li><li><a href="ProjectView.html">ProjectView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilderView.html">QueryBuilderView</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/Search'>Views/Search</li><li><a href="SearchResultsPagerView.html">SearchResultsPagerView</a></li><li><a href="SearchResultsView.html">SearchResultsView</a></li><li><a href="SorterView.html">SorterView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AccountSelectView.html">AccountSelectView</a></li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="BioontologySelectView.html">BioontologySelectView</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="ObjectFormatSelect.html">ObjectFormatSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchSelectView.html">SearchSelectView</a></li><li><a href="SeparatorView.html">SeparatorView</a></li><li class='category-heading' data-category='Views/UIElements'>Views/UIElements</li><li><a href="ToggleView.html">ToggleView</a></li><li class='category-heading' data-category='Views/VersionHistory'>Views/VersionHistory</li><li><a href="ObjectVersionView.html">ObjectVersionView</a></li><li><a href="ObjectVersionsView.html">ObjectVersionsView</a></li><li><a href="VersionHistoryView.html">VersionHistoryView</a></li><li><a href="VersionTimelineGroupView.html">VersionTimelineGroupView</a></li><li><a href="VersionTimelineGroupsView.html">VersionTimelineGroupsView</a></li><li><a href="DataONEHttpError.html">DataONEHttpError</a></li><li><a href="EMLTaxonView.html">EMLTaxonView</a></li><li><a href="EventLog.html">EventLog</a></li><li><a href="HttpRetryPolicy.html">HttpRetryPolicy</a></li><li><a href="PersistentStorage.html">PersistentStorage</a></li><li><a href="QueryService.html">QueryService</a></li><li><a href="SystemMetadata.html">SystemMetadata</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="AnnotatorView.html">AnnotatorView</a></li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li><li><a href="ZoomPresetCategories.html">ZoomPresetCategories</a></li><li><a href="ZoomPresetCategory.html">ZoomPresetCategory</a></li><li><a href="ZoomPresetModel.html">ZoomPresetModel</a></li><li><a href="ZoomPresetView.html">ZoomPresetView</a></li><li><a href="ZoomPresets.html">ZoomPresets</a></li><li><a href="ZoomPresetsListView.html">ZoomPresetsListView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DEFAULT_MAX_CHAIN_HOPS">DEFAULT_MAX_CHAIN_HOPS</a></li><li><a href="global.html#DEFAULT_TTL_MS">DEFAULT_TTL_MS</a></li><li><a href="global.html#actionMenuTemplate">actionMenuTemplate</a></li><li><a href="global.html#actionsTemplate">actionsTemplate</a></li><li><a href="global.html#addClassesFromResponse">addClassesFromResponse</a></li><li><a href="global.html#addFields">addFields</a></li><li><a href="global.html#addProv">addProv</a></li><li><a href="global.html#addRow">addRow</a></li><li><a href="global.html#addSection">addSection</a></li><li><a href="global.html#addSelected">addSelected</a></li><li><a href="global.html#adjustDescriptionLength">adjustDescriptionLength</a></li><li><a href="global.html#alertTemplate">alertTemplate</a></li><li><a href="global.html#allHidden">allHidden</a></li><li><a href="global.html#appConfigPath">appConfigPath</a></li><li><a href="global.html#applyDisabledState">applyDisabledState</a></li><li><a href="global.html#applyTableStateToRow">applyTableStateToRow</a></li><li><a href="global.html#attributeTemplate">attributeTemplate</a></li><li><a href="global.html#attributes">attributes</a></li><li><a href="global.html#blockDisabledInteraction">blockDisabledInteraction</a></li><li><a href="global.html#buildChildrenUrl">buildChildrenUrl</a></li><li><a href="global.html#buildSearchUrl">buildSearchUrl</a></li><li><a href="global.html#canChangeSeparator">canChangeSeparator</a></li><li><a href="global.html#changeProv">changeProv</a></li><li><a href="global.html#changeSubmenuOnSearch">changeSubmenuOnSearch</a></li><li><a href="global.html#className">className</a></li><li><a href="global.html#clearDropTarget">clearDropTarget</a></li><li><a href="global.html#closeActionViews">closeActionViews</a></li><li><a href="global.html#closeDropdowns">closeDropdowns</a></li><li><a href="global.html#closeEmptyAction">closeEmptyAction</a></li><li><a href="global.html#closeProvEntitySelect">closeProvEntitySelect</a></li><li><a href="global.html#closeShareActionView">closeShareActionView</a></li><li><a href="global.html#closeSubviews">closeSubviews</a></li><li><a href="global.html#collapseAll">collapseAll</a></li><li><a href="global.html#collapseNodes">collapseNodes</a></li><li><a href="global.html#collapseRow">collapseRow</a></li><li><a href="global.html#commitRename">commitRename</a></li><li><a href="global.html#comparator">comparator</a></li><li><a href="global.html#couldBeLatLong">couldBeLatLong</a></li><li><a href="global.html#createBatchPayload">createBatchPayload</a></li><li><a href="global.html#createConnecter">createConnecter</a></li><li><a href="global.html#createEditTooltip">createEditTooltip</a></li><li><a href="global.html#createEditorNode">createEditorNode</a></li><li><a href="global.html#createHeaders">createHeaders</a></li><li><a href="global.html#createNode">createNode</a></li><li><a href="global.html#createPointer">createPointer</a></li><li><a href="global.html#createRelatedElement">createRelatedElement</a></li><li><a href="global.html#createSection">createSection</a></li><li><a href="global.html#defaults">defaults</a></li><li><a href="global.html#destroyInitializedTooltips">destroyInitializedTooltips</a></li><li><a href="global.html#destroyTooltip">destroyTooltip</a></li><li><a href="global.html#destroyTooltips">destroyTooltips</a></li><li><a href="global.html#disableInteractiveElements">disableInteractiveElements</a></li><li><a href="global.html#encodeIfPresent">encodeIfPresent</a></li><li><a href="global.html#events">events</a></li><li><a href="global.html#excludeFields">excludeFields</a></li><li><a href="global.html#expandAll">expandAll</a></li><li><a href="global.html#expandControlTemplate">expandControlTemplate</a></li><li><a href="global.html#expandNodes">expandNodes</a></li><li><a href="global.html#expandRow">expandRow</a></li><li><a href="global.html#fetchClasses">fetchClasses</a></li><li><a href="global.html#fetchClassesFromOntology">fetchClassesFromOntology</a></li><li><a href="global.html#fetchFromOntologies">fetchFromOntologies</a></li><li><a href="global.html#fetchQueryFields">fetchQueryFields</a></li><li><a href="global.html#fieldToOption">fieldToOption</a></li><li><a href="global.html#filterClassesToFetch">filterClassesToFetch</a></li><li><a href="global.html#finalizeFetch">finalizeFetch</a></li><li><a href="global.html#finishPending">finishPending</a></li><li><a href="global.html#formatAttribute">formatAttribute</a></li><li><a href="global.html#formatResult">formatResult</a></li><li><a href="global.html#formatResults">formatResults</a></li><li><a href="global.html#generateGeoJSONPoint">generateGeoJSONPoint</a></li><li><a href="global.html#generateGeoJSONPolygon">generateGeoJSONPolygon</a></li><li><a href="global.html#generateGeoJSONString">generateGeoJSONString</a></li><li><a href="global.html#generateIdentifier">generateIdentifier</a></li><li><a href="global.html#generateSpatialCoverage">generateSpatialCoverage</a></li><li><a href="global.html#getAccountDetails">getAccountDetails</a></li><li><a href="global.html#getActions">getActions</a></li><li><a href="global.html#getCachedClasses">getCachedClasses</a></li><li><a href="global.html#getCategoryNames">getCategoryNames</a></li><li><a href="global.html#getChainOrdered">getChainOrdered</a></li><li><a href="global.html#getChildren">getChildren</a></li><li><a href="global.html#getCitationModel">getCitationModel</a></li><li><a href="global.html#getClasses">getClasses</a></li><li><a href="global.html#getColumnCount">getColumnCount</a></li><li><a href="global.html#getDOIURL">getDOIURL</a></li><li><a href="global.html#getDateRange">getDateRange</a></li><li><a href="global.html#getDisplayLabel">getDisplayLabel</a></li><li><a href="global.html#getEmptyAction">getEmptyAction</a></li><li><a href="global.html#getEventRowId">getEventRowId</a></li><li><a href="global.html#getEventRowModel">getEventRowModel</a></li><li><a href="global.html#getFileDropTarget">getFileDropTarget</a></li><li><a href="global.html#getIconType">getIconType</a></li><li><a href="global.html#getIncludeParam">getIncludeParam</a></li><li><a href="global.html#getIndexMetadata">getIndexMetadata</a></li><li><a href="global.html#getMenuActionData">getMenuActionData</a></li><li><a href="global.html#getNextPage">getNextPage</a></li><li><a href="global.html#getNextSeparator">getNextSeparator</a></li><li><a href="global.html#getOptionByLabelOrValue">getOptionByLabelOrValue</a></li><li><a href="global.html#getOptionsByCategory">getOptionsByCategory</a></li><li><a href="global.html#getQueryFieldOptions">getQueryFieldOptions</a></li><li><a href="global.html#getRandomInt">getRandomInt</a></li><li><a href="global.html#getRowClassName">getRowClassName</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSelectedModels">getSelectedModels</a></li><li><a href="global.html#getSelectedProvEntities">getSelectedProvEntities</a></li><li><a href="global.html#getShareAction">getShareAction</a></li><li><a href="global.html#getTitleTooltip">getTitleTooltip</a></li><li><a href="global.html#groupByDate">groupByDate</a></li><li><a href="global.html#handleActionClick">handleActionClick</a></li><li><a href="global.html#handleClick">handleClick</a></li><li><a href="global.html#handleEmptyActionClick">handleEmptyActionClick</a></li><li><a href="global.html#handleFilesDrop">handleFilesDrop</a></li><li><a href="global.html#handleMenuActionClick">handleMenuActionClick</a></li><li><a href="global.html#handleModelChange">handleModelChange</a></li><li><a href="global.html#handleNoticeAction">handleNoticeAction</a></li><li><a href="global.html#handleRenameCommit">handleRenameCommit</a></li><li><a href="global.html#handleRenameKeydown">handleRenameKeydown</a></li><li><a href="global.html#handleRowRender">handleRowRender</a></li><li><a href="global.html#hasInvalidSelections">hasInvalidSelections</a></li><li><a href="global.html#headerTemplate">headerTemplate</a></li><li><a href="global.html#hideDropTarget">hideDropTarget</a></li><li><a href="global.html#hideLazyTooltip">hideLazyTooltip</a></li><li><a href="global.html#hideRemovePreview">hideRemovePreview</a></li><li><a href="global.html#id">id</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initializeFetch">initializeFetch</a></li><li><a href="global.html#insertDataDetails">insertDataDetails</a></li><li><a href="global.html#isEnabled">isEnabled</a></li><li><a href="global.html#isNewest">isNewest</a></li><li><a href="global.html#isOldest">isOldest</a></li><li><a href="global.html#isValidValue">isValidValue</a></li><li><a href="global.html#listenToActions">listenToActions</a></li><li><a href="global.html#listenToRows">listenToRows</a></li><li><a href="global.html#loadingTemplate">loadingTemplate</a></li><li><a href="global.html#mergeRows">mergeRows</a></li><li><a href="global.html#messageRowTemplate">messageRowTemplate</a></li><li><a href="global.html#metricsTemplate">metricsTemplate</a></li><li><a href="global.html#model">model</a></li><li><a href="global.html#moveClassesToNotFound">moveClassesToNotFound</a></li><li><a href="global.html#nameTemplate">nameTemplate</a></li><li><a href="global.html#nameTooltipHtml">nameTooltipHtml</a></li><li><a href="global.html#noticeTemplate">noticeTemplate</a></li><li><a href="global.html#onClose">onClose</a></li><li><a href="global.html#optionsAsJSON">optionsAsJSON</a></li><li><a href="global.html#orderRows">orderRows</a></li><li><a href="global.html#padDescription">padDescription</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#previewData">previewData</a></li><li><a href="global.html#readSelected">readSelected</a></li><li><a href="global.html#recordError">recordError</a></li><li><a href="global.html#refreshHierarchyState">refreshHierarchyState</a></li><li><a href="global.html#refreshHierarchyVisibility">refreshHierarchyVisibility</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#removeProv">removeProv</a></li><li><a href="global.html#removeRow">removeRow</a></li><li><a href="global.html#removeSelected">removeSelected</a></li><li><a href="global.html#renameCategory">renameCategory</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#renderActions">renderActions</a></li><li><a href="global.html#renderEmptyAction">renderEmptyAction</a></li><li><a href="global.html#renderRows">renderRows</a></li><li><a href="global.html#renderShareAction">renderShareAction</a></li><li><a href="global.html#reset">reset</a></li><li><a href="global.html#resetPageInfo">resetPageInfo</a></li><li><a href="global.html#responseAsync">responseAsync</a></li><li><a href="global.html#restoreTypes">restoreTypes</a></li><li><a href="global.html#selectProvEntities">selectProvEntities</a></li><li><a href="global.html#semanticFields">semanticFields</a></li><li><a href="global.html#separatorRequired">separatorRequired</a></li><li><a href="global.html#serialize">serialize</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#setAddedFieldDetails">setAddedFieldDetails</a></li><li><a href="global.html#setDataCatalogSchema">setDataCatalogSchema</a></li><li><a href="global.html#setDatasetSchema">setDatasetSchema</a></li><li><a href="global.html#setDisabled">setDisabled</a></li><li><a href="global.html#setNextSeparator">setNextSeparator</a></li><li><a href="global.html#setOptionsForPreselected">setOptionsForPreselected</a></li><li><a href="global.html#setRowExpanded">setRowExpanded</a></li><li><a href="global.html#setRows">setRows</a></li><li><a href="global.html#setSchema">setSchema</a></li><li><a href="global.html#setSchemaFromTemplate">setSchemaFromTemplate</a></li><li><a href="global.html#setSelected">setSelected</a></li><li><a href="global.html#shareTemplate">shareTemplate</a></li><li><a href="global.html#showDropTarget">showDropTarget</a></li><li><a href="global.html#showLazyTooltip">showLazyTooltip</a></li><li><a href="global.html#showNotIndexed">showNotIndexed</a></li><li><a href="global.html#showProvenanceError">showProvenanceError</a></li><li><a href="global.html#showRemovePreview">showRemovePreview</a></li><li><a href="global.html#sortByProp">sortByProp</a></li><li><a href="global.html#sortFields">sortFields</a></li><li><a href="global.html#startPending">startPending</a></li><li><a href="global.html#statusTemplate">statusTemplate</a></li><li><a href="global.html#switchNodes">switchNodes</a></li><li><a href="global.html#syncColumnState">syncColumnState</a></li><li><a href="global.html#tagName">tagName</a></li><li><a href="global.html#template">template</a></li><li><a href="global.html#toAccordionItem">toAccordionItem</a></li><li><a href="global.html#toJSON">toJSON</a></li><li><a href="global.html#toRenderData">toRenderData</a></li><li><a href="global.html#toSearchSelectOption">toSearchSelectOption</a></li><li><a href="global.html#toggleVisibility">toggleVisibility</a></li><li><a href="global.html#transformCamelCase">transformCamelCase</a></li><li><a href="global.html#triggerActionsUpdate">triggerActionsUpdate</a></li><li><a href="global.html#truncateDescription">truncateDescription</a></li><li><a href="global.html#type">type</a></li><li><a href="global.html#typeIconTemplate">typeIconTemplate</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#updateOptions">updateOptions</a></li><li><a href="global.html#updateRow">updateRow</a></li><li><a href="global.html#url">url</a></li><li><a href="global.html#waitForFetchComplete">waitForFetchComplete</a></li></ul>
+</nav>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/models/dataPackage/DataPackage.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+
+define([
+  "backbone",
+  "common/ErrorUtilities",
+  "common/Utilities",
+  "common/ValueUtilities",
+  "models/dataONEServices/DataONEService",
+  "models/dataONEServices/AuthorizationService",
+  "models/dataONEServices/IdentifierService",
+  "models/dataONEServices/ObjectService",
+  "models/dataONEServices/PackageService",
+  "models/dataONEServices/PublishService",
+  "models/dataONEServices/SysMetaService",
+  "models/sysmeta/AccessPolicy",
+  "models/sysmeta/VersionTracker",
+  "models/resourceMap/ResourceMap",
+  "models/resourceMap/ResourceMapResolver",
+  "models/dataPackage/DataPackageMember",
+  "models/dataPackage/DataPackageMembers",
+  "models/dataPackage/DataPackageLoader",
+  "models/dataPackage/DataPackageUploader",
+  "models/dataPackage/UploadRecoveryStore",
+  "collections/ObjectFormats",
+], (
+  Backbone,
+  ErrorUtilities,
+  Utilities,
+  Values,
+  DataONEService,
+  AuthorizationService,
+  IdentifierService,
+  ObjectService,
+  PackageService,
+  PublishService,
+  SysMetaService,
+  AccessPolicy,
+  VersionTracker,
+  ResourceMap,
+  ResourceMapResolver,
+  DataPackageMember,
+  DataPackageMembers,
+  DataPackageLoader,
+  DataPackageUploader,
+  UploadRecoveryStore,
+  ObjectFormats,
+) => {
+  const { FORMAT_TYPES } = ObjectFormats.prototype;
+  const { processConcurrently } = Utilities;
+  const { throwIfAborted } = ErrorUtilities;
+  const LOAD_PROGRESS_MESSAGES = Object.freeze({
+    [DataPackageLoader.LoadPhases.RESOLVE]:
+      "Finding the files that belong to this package...",
+    [DataPackageLoader.LoadPhases.RESOURCE_MAP_MEMBERSHIP]:
+      "Loading the file list...",
+    [DataPackageLoader.LoadPhases.RESOURCE_MAP_DOWNLOAD]:
+      "Downloading the file list...",
+    [DataPackageLoader.LoadPhases.RESOURCE_MAP_SUMMARY]:
+      "Reading the file list summary...",
+    [DataPackageLoader.LoadPhases.INDEX_MANIFEST]:
+      "Searching for information about the files in this package...",
+    [DataPackageLoader.LoadPhases.MISSING_SYSTEM_METADATA]:
+      "Loading extra information about the files in this package...",
+    [DataPackageLoader.LoadPhases.EDITABLE_BASELINE]:
+      "Preparing the package for editing...",
+    [DataPackageLoader.LoadPhases.EDITABLE_METADATA]:
+      "Loading metadata for editing...",
+  });
+
+  /**
+   * Manage the members, resource map, edits, and uploads for a DataONE data
+   * package.
+   * @class DataPackage
+   * @classcategory Models/DataPackage
+   * @since 2.39.0
+   */
+  class DataPackage {
+    /**
+     * Create a data package.
+     * @param {object} [options] Initial package state and service overrides
+     * @param {ObjectFormats} [options.objectFormats] Loaded object format
+     * collection used to classify members
+     * @param {DataPackageMember|object|Array&lt;DataPackageMember|object>} [options.members]
+     * Members used to seed the package
+     * @param {string[]} [options.sources] Source tags applied to the initial
+     * members
+     * @param {string} [options.primaryMetadataPid] PID of the package's primary
+     * metadata member
+     * @param {string} [options.rootResourceMapPid] PID of the package's root
+     * ResourceMap
+     * @param {IdentifierService} [options.identifierService] Identifier
+     * allocation service
+     * @param {object} [options.identifierServiceOptions] Options used to create
+     * the identifier service when one is not provided
+     * @param {ObjectService} [options.objectService] Object read and write
+     * service
+     * @param {object} [options.objectServiceOptions] Options used to create the
+     * object service when one is not provided
+     * @param {PackageService} [options.packageService] Package download service
+     * @param {object} [options.packageServiceOptions] Options used to create the
+     * package service when one is not provided
+     * @param {SysMetaService} [options.sysMetaService] System metadata service
+     * @param {object} [options.sysMetaServiceOptions] Options used to create the
+     * system metadata service when one is not provided
+     * @param {VersionTracker} [options.versionTracker] Version tracker used for
+     * stale source checks
+     * @param {object} [options.versionTrackerOptions] Options used to create the
+     * version tracker when one is not provided
+     * @param {object} [options.resolverOptions] Options used to create the
+     * ResourceMap resolver during package loading
+     * @param {AuthorizationService} [options.authorizationService] Service used
+     * for write permission checks
+     * @param {object} [options.authorizationServiceOptions] Options used to
+     * create the authorization service when one is not provided
+     * @param {UploadRecoveryStore} [options.uploadRecoveryStore] Durable upload
+     * recovery record store
+     * @param {object} [options.uploadDefaults] Default System Metadata values
+     * for newly uploaded objects
+     * @param {number} [options.fetchMaxConcurrent] Default maximum concurrent
+     * read requests
+     * @param {number} [options.uploadMaxConcurrent] Default maximum concurrent
+     * upload requests
+     */
+    constructor(options = {}) {
+      this.type = "DataPackage";
+      this.events = { ...Backbone.Events };
+      // Loaded ObjectFormats collection, injected into members so they can
+      // classify their format type synchronously.
+      this.objectFormats = options.objectFormats || new ObjectFormats();
+      this.members = new DataPackageMembers(this.objectFormats, this.events);
+      // For storing the PID or SID originally passed to resolveFromPid()
+      this.inputId = null;
+      this.primaryMetadataPid =
+        Values.normalizeText(options.primaryMetadataPid) || null;
+      this.rootResourceMapPid =
+        Values.normalizeText(options.rootResourceMapPid) || null;
+      this.resolutionResult = null;
+      this.indexManifestTotal = null;
+      this.draftRevision = 0;
+      this.savedRevision = 0;
+      // True when EML/metadata content has been edited since the last save. Set
+      // by recordUserEdit("metadata:changed"), read via
+      // hasMetadataContentEdits(), and cleared on a successful save. Legacy EML
+      // editor views/models flag edits through
+      // EMLUtilities.markRootDataPackageChanged().
+      this.metadataContentEdited = false;
+      this.identifierService = options.identifierService || null;
+      this.identifierServiceOptions = options.identifierServiceOptions || {};
+      this.objectService = options.objectService || null;
+      this.objectServiceOptions = options.objectServiceOptions || {};
+      this.packageService = options.packageService || null;
+      this.packageServiceOptions = options.packageServiceOptions || {};
+      this.sysMetaService = options.sysMetaService || null;
+      this.sysMetaServiceOptions = options.sysMetaServiceOptions || {};
+      this.versionTracker = options.versionTracker || null;
+      this.versionTrackerOptions = options.versionTrackerOptions || {};
+      this.resolverOptions = options.resolverOptions || {};
+      this.authorizationService = options.authorizationService || null;
+      this.authorizationServiceOptions =
+        options.authorizationServiceOptions || {};
+      // Browser storage for upload recovery records, so a crash between
+      // "metadata committed" and "ResourceMap committed" can be repaired on the
+      // next load.
+      this.uploadRecoveryStore = options.uploadRecoveryStore || null;
+      this.uploadDefaults = options.uploadDefaults || {};
+      this.fetchMaxConcurrent = options.fetchMaxConcurrent;
+      this.uploadMaxConcurrent = options.uploadMaxConcurrent;
+      // Member-keyed records for background uploads started when files are added.
+      this.eagerUploads = new Map();
+      // Set while a full or ResourceMap-only upload is being prepared or run.
+      this.activeUpload = null;
+      this._uploader = new DataPackageUploader({ dataPackage: this });
+      const addOptions = {};
+      if (options.sources) {
+        addOptions.sources = options.sources;
+      }
+      if (options.members) {
+        this.members.add(options.members, addOptions);
+      }
+    }
+
+    // See DataPackageLoader.resolveFromPid().
+    async resolveFromPid(pid, options = {}) {
+      const resolverOptions = options.resolverOptions || this.resolverOptions;
+      this.resolverOptions = resolverOptions;
+      return DataPackageLoader.resolveFromPid(this, pid, {
+        ...options,
+        resolverOptions,
+      });
+    }
+
+    // See DataPackageLoader.loadEditablePackage().
+    async loadEditablePackage(pid, options = {}) {
+      return DataPackageLoader.loadEditablePackage(this, pid, options);
+    }
+
+    /**
+     * Initialize existing package members for editing after a read-only load.
+     * Members without editable state are marked as already stored and aggregated
+     * under their current PIDs. Existing editable state is preserved.
+     * @returns {DataPackage} This package
+     */
+    initializeLoadedMembersForEditing() {
+      this.members.toArray().forEach((member) => {
+        if (member.remotePid) return;
+        member.initializeEditableState({
+          remotePid: member.pid,
+          aggregatedPid: member.pid,
+          sysMeta: member.sysMeta,
+          remoteSysMeta: member.sysMeta,
+        });
+      });
+      return this;
+    }
+
+    // See DataPackageLoader.getManifest().
+    async getManifest(options = {}) {
+      return DataPackageLoader.getManifest(this, options);
+    }
+
+    // See DataPackageLoader.getManifestFromIndex().
+    async getManifestFromIndex(options = {}) {
+      return DataPackageLoader.getManifestFromIndex(this, options);
+    }
+
+    // See DataPackageLoader.loadNestedPackageTitles().
+    async loadNestedPackageTitles(options = {}) {
+      return DataPackageLoader.loadNestedPackageTitles(this, options);
+    }
+
+    // See DataPackageMembers.getMetadata().
+    getMetadataMembers() {
+      return this.members.getMetadata();
+    }
+
+    /**
+     * Return the primary metadata member for the package.
+     * @returns {DataPackageMember|null} Primary metadata member, or null
+     * when the package aggregates no metadata
+     */
+    getPrimaryMetadataMember() {
+      const metadataMembers = this.members.getMetadata();
+      if (!metadataMembers.length) return null;
+      if (this.primaryMetadataPid) {
+        const primaryMetadata = metadataMembers.find(
+          (member) => member.pid === this.primaryMetadataPid,
+        );
+        if (primaryMetadata) return primaryMetadata;
+      }
+      return metadataMembers.length === 1 ? metadataMembers[0] : null;
+    }
+
+    // See DataPackageMembers.getData().
+    getData() {
+      return this.members.getData();
+    }
+
+    /**
+     * Return active members excluding the root ResourceMap. Includes metadata,
+     * nested ResourceMaps, and staged files not yet linked to the graph.
+     * @returns {DataPackageMember[]} Active package content
+     */
+    getContentMembers() {
+      const rootResourceMap = this.getRootResourceMapMember();
+      return this.members
+        .getActiveMembers()
+        .filter((member) => member !== rootResourceMap);
+    }
+
+    /**
+     * Return ResourceMap members aggregated by the root ResourceMap.
+     * @returns {DataPackageMember[]} Nested ResourceMap members
+     */
+    getNestedResourceMapMembers() {
+      const rootResourceMap = this.getRootResourceMapMember();
+      return this.members
+        .getResourceMaps()
+        .filter((member) => member !== rootResourceMap &amp;&amp; !member.removed);
+    }
+
+    /**
+     * Return the resource map member for the package. Returns only the root
+     * resource map in case there are nested resource maps.
+     * @returns {DataPackageMember|null} Root resource map member, or null when
+     * the package does not aggregate any resource maps
+     */
+    getRootResourceMapMember() {
+      const resourceMapMembers = this.members.getResourceMaps();
+      if (!resourceMapMembers.length) return null;
+      if (this.rootResourceMapPid) {
+        const rootResourceMap = resourceMapMembers.find(
+          (member) => member.pid === this.rootResourceMapPid,
+        );
+        if (rootResourceMap) return rootResourceMap;
+      }
+      return resourceMapMembers.length === 1 ? resourceMapMembers[0] : null;
+    }
+
+    /**
+     * Return the parsed {@link ResourceMap} model for a resource map member,
+     * when that member's object has been fetched and parsed.
+     * @param {string} [resourceMapPid] Resource map PID. Defaults to the root
+     * resource map
+     * @returns {ResourceMap|null} Parsed ResourceMap model, or null
+     */
+    getResourceMapModel(resourceMapPid = this.rootResourceMapPid) {
+      const member = resourceMapPid
+        ? this.getMember(resourceMapPid)
+        : this.getRootResourceMapMember();
+      return member?.objectModel || null;
+    }
+
+    // See DataPackageMembers.get().
+    getMember(pid) {
+      return this.members.get(pid);
+    }
+
+    // See DataPackageMembers.toArray().
+    toArray() {
+      return this.members.toArray();
+    }
+
+    /**
+     * Return whether the package has edits newer than its last successful save.
+     * @returns {boolean} Whether the package has unsaved changes
+     */
+    hasUnsavedChanges() {
+      return (
+        this.draftRevision !== this.savedRevision ||
+        this.getChangedMembers().length > 0 ||
+        this.getResourceMapModel()?.hasUnsavedChanges?.() === true ||
+        this.metadataContentEdited === true
+      );
+    }
+
+    /**
+     * Return whether EML/metadata content has been edited since the last save.
+     * Legacy EML editor views/models flag these edits via
+     * EMLUtilities.markRootDataPackageChanged().
+     * @returns {boolean} Whether metadata content has unsaved edits
+     */
+    hasMetadataContentEdits() {
+      return this.metadataContentEdited === true;
+    }
+
+    /**
+     * Return whether a full package save is queued, preparing, or executing.
+     * Background eager uploads do not lock editing.
+     * @returns {boolean} Whether package edits are locked
+     */
+    isEditLocked() {
+      return this.activeUpload !== null;
+    }
+
+    /**
+     * Reject a package edit while a full save is queued or active, or a member
+     * edit while that member is uploading eagerly.
+     * @param {string} [memberPid] Member being edited
+     * @returns {true} True when editing is allowed
+     * @throws {Error} With `code === "upload_in_progress"` while locked
+     */
+    assertCanEdit(memberPid) {
+      const memberUploadPending = this.eagerUploads.has(memberPid);
+      if (!this.isEditLocked() &amp;&amp; !memberUploadPending) return true;
+      const error = new Error(
+        memberUploadPending
+          ? "Cannot edit a file while it is uploading"
+          : "Cannot edit a package while an upload is in progress",
+      );
+      error.code = "upload_in_progress";
+      throw error;
+    }
+
+    /**
+     * Reserve a new PID for a package member, or confirm a requested PID is
+     * available.
+     * @param {object} [options] Allocation options
+     * @param {string} [options.requestedPid] Custom PID to reserve
+     * @param {boolean} [options.resourceMap] Allocate a ResourceMap PID
+     * @returns {Promise&lt;string>} Allocated PID
+     * @throws {Error} When allocation fails or the reserved PID does not match
+     */
+    async allocatePid({ requestedPid, resourceMap = false } = {}) {
+      const customPid = Values.normalizeText(requestedPid);
+      if (customPid) {
+        if (!this.identifierService) {
+          this.identifierService = new IdentifierService(
+            this.identifierServiceOptions,
+          );
+        }
+        const response =
+          await this.identifierService.reserveIdentifier(customPid);
+        if (response?.data?.identifier !== customPid) {
+          throw new Error("Reserved identifier does not match requested PID");
+        }
+        return customPid;
+      }
+
+      const prefix = resourceMap ? ResourceMap.RESOURCE_MAP_PID_PREFIX : "";
+      return Values.makeUUID({ prefix });
+    }
+
+    /**
+     * Assign a PID to a new member when it does not already have one.
+     * @param {DataPackageMember} member Member to assign
+     * @param {object} [options] Allocation options
+     * @returns {Promise&lt;string>} Desired PID
+     */
+    async assignNewMemberPid(member, options = {}) {
+      if (member.pid) return member.pid;
+      const pid = await this.allocatePid(options);
+      member.setDesiredPid(pid);
+      return pid;
+    }
+
+    /**
+     * Assign one stable replacement PID to an existing member.
+     * @param {DataPackageMember} member Member being replaced
+     * @param {object} [options] Allocation options
+     * @returns {Promise&lt;string>} Desired replacement PID
+     */
+    async assignReplacementPid(member, options = {}) {
+      if (member.remotePid &amp;&amp; member.pid !== member.remotePid)
+        return member.pid;
+      const oldPid = member.pid;
+      const wasPrimaryMetadata =
+        member.isMetadata() &amp;&amp; this.getPrimaryMetadataMember() === member;
+      const wasRootResourceMap =
+        member.isResourceMap() &amp;&amp; this.getRootResourceMapMember() === member;
+      const pid = await this.allocatePid(options);
+      if (this.members.get(oldPid) === member) {
+        this.members.replacePid(oldPid, pid);
+      } else {
+        member.setDesiredPid(pid);
+      }
+      if (wasPrimaryMetadata) this.primaryMetadataPid = pid;
+      if (wasRootResourceMap) this.rootResourceMapPid = pid;
+      return pid;
+    }
+
+    /**
+     * Ensure changed metadata has its final desired upload PID.
+     * @param {DataPackageMember} member Metadata member
+     * @returns {Promise&lt;string>} Desired PID
+     * @throws {Error} When changed metadata has no replacement PID
+     */
+    async ensureMetadataUploadPid(member) {
+      if (
+        member.contentDirty &amp;&amp;
+        member.remotePid &amp;&amp;
+        member.pid === member.remotePid
+      ) {
+        throw new Error(
+          "Metadata replacement PID must be assigned when content changes",
+        );
+      }
+      return member.pid || this.assignNewMemberPid(member);
+    }
+
+    /**
+     * Ensure the ResourceMap has its final desired upload PID.
+     * @param {DataPackageMember} member ResourceMap member
+     * @returns {Promise&lt;string>} Desired PID
+     */
+    async ensureResourceMapUploadPid(member) {
+      this.assertNotNestedResourceMap(member);
+      const wasRootResourceMap = this.getRootResourceMapMember() === member;
+      const pid = member.remotePid
+        ? this.assignReplacementPid(member, { resourceMap: true })
+        : this.assignNewMemberPid(member, { resourceMap: true });
+      const desiredPid = await pid;
+      if (wasRootResourceMap) this.rootResourceMapPid = desiredPid;
+      member.objectModel?.setResourceMapPid?.(desiredPid);
+      return desiredPid;
+    }
+
+    /**
+     * Stage local files in the in-memory member collection and assign their
+     * PIDs. Staged members can be rendered by the editor, but are not yet
+     * aggregated by the ResourceMap, recorded as `members:add`, or uploaded.
+     * @param {File[]|Blob[]} files Files to add
+     * @param {object} [options] Edit options
+     * @param {string[]} [options.requestedPids] Optional custom PIDs by index
+     * @returns {Promise&lt;DataPackageMember[]>} In-memory members awaiting
+     * ResourceMap linking
+     */
+    async stageLocalFiles(files, { requestedPids = [] } = {}) {
+      this.assertCanEdit();
+
+      const fileList = Values.listify(files);
+      if (!fileList.length) return [];
+      const addedMembers = fileList.map((file) => {
+        const member = new DataPackageMember({
+          formatType: FORMAT_TYPES.DATA,
+          formatId: file.type || "application/octet-stream",
+          fileName: file.name,
+        });
+        member.setLocalFile(file);
+        return member;
+      });
+      const pids = await Promise.all(
+        fileList.map((file, index) =>
+          this.allocatePid({ requestedPid: requestedPids[index] }),
+        ),
+      );
+      this.assertCanEdit();
+      // Make provisional rows available before linking starts eager uploads.
+      addedMembers.forEach((member, index) => {
+        member.setDesiredPid(pids[index]);
+        this.members.add(member, { merge: false });
+      });
+      return addedMembers;
+    }
+
+    /**
+     * Add staged members to the editable package by aggregating them in the
+     * ResourceMap. This records the package edit and starts eager object
+     * uploads. Membership becomes durable when the ResourceMap is saved.
+     * @param {DataPackageMember[]} addedMembers Staged members to link
+     * @param {object} [options] Edit options
+     * @param {string} [options.metadataPid] Metadata member documenting files
+     * @param {string} [options.atLocation] Folder path to store in the
+     * ResourceMap `prov:atLocation` value
+     * @param {boolean} [options.inheritAccessPolicy] Whether new members inherit
+     * the documenting metadata member's access policy
+     * @returns {Promise&lt;DataPackageMember[]>} Locally added package members
+     * @throws {Error} When the requested links cannot be applied atomically
+     */
+    async linkStagedFiles(
+      addedMembers,
+      { metadataPid, atLocation, inheritAccessPolicy = true } = {},
+    ) {
+      this.assertCanEdit();
+
+      const resourceMap = this.requireResourceMapModel();
+      const stagedMembers = Values.listify(addedMembers).filter(
+        (member) => member &amp;&amp; !member.removed,
+      );
+      if (!stagedMembers.length) return [];
+      const folderPath = (Values.normalizeText(atLocation) || "").replace(
+        /\/+$/,
+        "",
+      );
+      const previousPids = resourceMap.getMemberPids();
+      const previousLinks = resourceMap.getDocumentationLinks();
+      const previousResourceMapUnsavedChanges = resourceMap.hasUnsavedChanges();
+
+      try {
+        const documentingPid =
+          metadataPid || this.getPrimaryMetadataMember()?.pid;
+        if (documentingPid) {
+          const metadata = this.requireMember(documentingPid);
+          const inheritedAccessPolicy = inheritAccessPolicy
+            ? (metadata.sysMeta || metadata.remoteSysMeta)?.accessPolicy
+            : null;
+          if (inheritedAccessPolicy) {
+            const accessPolicy = AccessPolicy.fromValue(
+              inheritedAccessPolicy,
+            ).toJSON();
+            stagedMembers.forEach((addedMember) => {
+              const values = addedMember.sysMeta?.toJSON?.() || {};
+              values.accessPolicy = accessPolicy;
+              addedMember.setSystemMetadata(values, { markDirty: true });
+              Object.assign(addedMember, { accessPolicyDirty: true });
+            });
+          }
+        }
+        const nextPids = Values.dedupeStrings([
+          ...previousPids,
+          ...stagedMembers.map((member) => member.pid),
+        ]);
+        const nextLinks = [
+          ...previousLinks,
+          ...(documentingPid
+            ? stagedMembers.map((member) => ({
+                metadataPid: documentingPid,
+                dataPid: member.pid,
+              }))
+            : []),
+        ];
+        // ResourceMap aggregation is the local package-membership boundary.
+        resourceMap.setPackageStructure(nextPids, nextLinks);
+        if (folderPath) {
+          resourceMap.setMemberLocations(
+            stagedMembers.map((member) => {
+              const fileName = member.fileName || member.pid;
+              return {
+                pid: member.pid,
+                atLocations: [`${folderPath}/${fileName}`],
+              };
+            }),
+          );
+        }
+        this.refreshMemberGraphFields(resourceMap);
+      } catch (error) {
+        stagedMembers.forEach((member) => this.members.remove(member.pid));
+        try {
+          resourceMap.setPackageStructure(previousPids, previousLinks);
+          // setPackageStructure marks successful mutations dirty; restore the
+          // pre-add state after rolling back this failed add.
+          resourceMap.unsavedChanges = previousResourceMapUnsavedChanges;
+        } catch (restoreError) {
+          error.rollbackError = restoreError;
+        }
+        this.refreshMemberGraphFields(resourceMap);
+        throw error;
+      }
+
+      // Objects may upload eagerly, but membership is not durable until the
+      // ResourceMap is saved.
+      this.recordUserEdit("members:add", { members: stagedMembers });
+      this._uploader.uploadAddedMembers(stagedMembers).catch(() => {});
+      return stagedMembers;
+    }
+
+    /**
+     * Replace a member's content and desired PID as one transaction.
+     * @param {string} pid Current member PID
+     * @param {Blob|File} file Replacement content
+     * @param {object} [options] Edit options
+     * @param {string} [options.requestedPid] Optional custom replacement PID
+     * @param {string} [options.replacementSourcePid] Remote PID to obsolete
+     * @returns {Promise&lt;DataPackageMember>} Replaced member
+     * @throws {Error} When the replacement is invalid or cannot be applied atomically
+     */
+    async replaceFile(pid, file, { requestedPid, replacementSourcePid } = {}) {
+      this.assertCanEdit(pid);
+      const member = this.requireMember(pid);
+      const resourceMap = this.requireResourceMapModel();
+      DataPackageMember.validateLocalFile(file);
+      const replacement = await this._prepareFileReplacement(pid, member, {
+        requestedPid,
+        replacementSourcePid,
+      });
+      this._applyFileReplacement(member, file, resourceMap, replacement);
+
+      this.refreshMemberGraphFields(resourceMap);
+      this.recordUserEdit("member:replace", {
+        member,
+        oldPid: pid,
+        newPid: replacement.newPid,
+      });
+      // Eagerly upload the replaced content so the file table can show progress
+      // and settle the row instead of leaving the member PENDING until the next
+      // full package save. The eager path builds an UPDATE action when the
+      // member has a remotePid, obsoleting the old version.
+      this._uploader.uploadAddedMembers([member]).catch(() => {});
+      return member;
+    }
+
+    /**
+     * Discard a failed file replacement and restore the current remote file.
+     * @param {string} pid Replacement PID currently assigned to the member
+     * @returns {DataPackageMember} Restored member
+     * @throws {Error} When the original member state cannot be restored
+     */
+    discardFileReplacement(pid) {
+      this.assertCanEdit(pid);
+      const member = this.requireMember(pid);
+      if (
+        !member.isData() ||
+        !member.remotePid ||
+        member.pid === member.remotePid
+      ) {
+        return member;
+      }
+
+      const replacementPid = member.pid;
+      const { remotePid } = member;
+      const resourceMap = this.requireResourceMapModel();
+      const metadataMembers = this.getMetadataMembers().filter(
+        (metadataMember) =>
+          metadataMember.objectModel?.replaceMemberPid &amp;&amp;
+          metadataMember.pid !== member.pid,
+      );
+      const memberSnapshots = this.constructor._snapshotMembers(
+        [member, ...metadataMembers],
+        [
+          "uploadFile",
+          "contentDirty",
+          "sysMetaDirty",
+          "accessPolicyDirty",
+          "remoteState",
+          "lastUploadError",
+          "sysMeta",
+          "fileName",
+          "size",
+          "checksum",
+          "checksumAlgorithm",
+          "_replacementDisplay",
+          "_replacementSourcePid",
+          "_replacementSourceSysMeta",
+        ],
+      );
+      const updatedMetadataModels = [];
+
+      try {
+        this.constructor._mutateResourceMap(resourceMap, () => {
+          this._changeMemberPid(member, remotePid);
+          metadataMembers.forEach((metadataMember) => {
+            const replacements = this._updateMetadataMemberReferences(
+              metadataMember,
+              replacementPid,
+              remotePid,
+            );
+            if (replacements) {
+              updatedMetadataModels.push(metadataMember.objectModel);
+              Object.assign(metadataMember, {
+                contentDirty: true,
+                remoteState: DataPackageMember.RemoteState.PENDING,
+              });
+            }
+          });
+          const remoteSysMeta = member.remoteSysMeta?.toJSON?.() || null;
+          member.uploadFile = null;
+          member.contentDirty = false;
+          member.sysMeta = member.remoteSysMeta?.clone?.() || null;
+          member.sysMetaDirty = false;
+          member.accessPolicyDirty = false;
+          if (remoteSysMeta) {
+            member.fileName = remoteSysMeta.fileName || null;
+            member.size = remoteSysMeta.size;
+            member.checksum = remoteSysMeta.checksum || null;
+            member.checksumAlgorithm = remoteSysMeta.checksumAlgorithm || null;
+          }
+          member.remoteState = DataPackageMember.RemoteState.UPLOADED;
+          member.lastUploadError = null;
+          member._replacementDisplay = null;
+          member._replacementSourcePid = null;
+          member._replacementSourceSysMeta = null;
+        });
+      } catch (error) {
+        updatedMetadataModels.reverse().forEach((model) => {
+          model.replaceMemberPid(remotePid, replacementPid);
+        });
+        this._restoreMemberSnapshots(memberSnapshots);
+        this.refreshMemberGraphFields(resourceMap);
+        throw error;
+      }
+
+      this.refreshMemberGraphFields(resourceMap);
+      this.recordUserEdit("member:discard-replacement", {
+        member,
+        oldPid: replacementPid,
+        restoredPid: remotePid,
+      });
+      return member;
+    }
+
+    /**
+     * Mark members removed from the desired package.
+     * @param {string|string[]} pids Member PIDs
+     * @returns {DataPackageMember[]} Removed members
+     * @throws {Error} When removal would invalidate the package or graph
+     */
+    async removeMembers(pids) {
+      this.assertCanEdit();
+      const memberPids = Values.listify(pids);
+      memberPids.forEach((pid) => this.assertCanEdit(pid));
+      const removed = memberPids.map((pid) => this.requireMember(pid));
+      if (!removed.length) return [];
+      const rootResourceMap = this.getRootResourceMapMember();
+      // Do not allow removal of the root ResourceMap or primary metadata
+      if (rootResourceMap &amp;&amp; removed.includes(rootResourceMap)) {
+        const error = new Error(
+          "The root ResourceMap cannot be removed from its package",
+        );
+        error.code = "root_resource_map_removal_unsupported";
+        throw error;
+      }
+      const primaryMetadata = this.getPrimaryMetadataMember();
+      if (primaryMetadata &amp;&amp; removed.includes(primaryMetadata)) {
+        const error = new Error(
+          "The primary metadata cannot be removed from its package",
+        );
+        error.code = "primary_metadata_removal_unsupported";
+        throw error;
+      }
+      const resourceMap = this.requireResourceMapModel();
+      const metadataChanges = await Promise.all(
+        this.getMetadataMembers().map(async (metadataMember) => {
+          const entities = removed
+            .map((member) => metadataMember.objectModel?.getEntity?.(member))
+            .filter(Boolean);
+          if (!entities.length) return null;
+          return {
+            member: metadataMember,
+            oldPid: metadataMember.pid,
+            newPid:
+              metadataMember.remotePid &amp;&amp;
+              metadataMember.pid === metadataMember.remotePid
+                ? await this.allocatePid()
+                : metadataMember.pid,
+            entities,
+          };
+        }),
+      );
+      const affectedMetadata = metadataChanges.filter(Boolean);
+      this.assertCanEdit();
+      [...removed, ...affectedMetadata.map(({ member }) => member)].forEach(
+        (affectedMember) => this.assertCanEdit(affectedMember.pid),
+      );
+      const memberSnapshots = this.constructor._snapshotMembers(
+        [...removed, ...affectedMetadata.map((p) => p.member)],
+        ["contentDirty", "removed", "remoteState"],
+      );
+      const previousPrimaryMetadataPid = this.primaryMetadataPid;
+      const previousRootResourceMapPid = this.rootResourceMapPid;
+      try {
+        this.constructor._mutateResourceMap(resourceMap, () => {
+          removed.forEach((member) => member.markRemoved());
+          affectedMetadata.forEach(({ member, oldPid, newPid, entities }) => {
+            if (oldPid !== newPid) this._changeMemberPid(member, newPid);
+            entities.forEach((entity) =>
+              member.objectModel.removeEntity(entity),
+            );
+            Object.assign(member, {
+              contentDirty: true,
+              remoteState: DataPackageMember.RemoteState.PENDING,
+            });
+          });
+          resourceMap.removeMembers(removed.map((member) => member.pid));
+        });
+      } catch (error) {
+        affectedMetadata.forEach(({ member, oldPid, entities }) => {
+          entities.forEach((entity) => member.objectModel.addEntity(entity));
+          if (
+            member.pid !== oldPid &amp;&amp;
+            this.members.get(member.pid) === member
+          ) {
+            this.members.replacePid(member.pid, oldPid);
+          }
+        });
+        this.primaryMetadataPid = previousPrimaryMetadataPid;
+        this.rootResourceMapPid = previousRootResourceMapPid;
+        this._restoreMemberSnapshots(memberSnapshots);
+        this.refreshMemberGraphFields(resourceMap);
+        throw error;
+      }
+      this.refreshMemberGraphFields(resourceMap);
+      this.recordUserEdit("members:remove", { members: removed });
+      return removed;
+    }
+
+    /**
+     * Replace the ResourceMap location for a package member.
+     * @param {string} pid Member PID
+     * @param {string} path Raw location path
+     * @returns {DataPackageMember} Updated member
+     */
+    setMemberLocation(pid, path) {
+      this.assertCanEdit(pid);
+      const member = this.requireMember(pid);
+      const resourceMap = this.requireResourceMapModel();
+      const location = Values.normalizeText(path);
+
+      resourceMap.setMemberLocations([
+        { pid: member.pid, atLocations: location ? [location] : [] },
+      ]);
+
+      this.refreshMemberGraphFields(resourceMap);
+      this.recordUserEdit("member:location", { member, path: location });
+      return member;
+    }
+
+    /**
+     * Rename a member's display file name and matching ResourceMap locations.
+     * @param {string} pid Member PID
+     * @param {string} fileName New file name
+     * @returns {Promise&lt;DataPackageMember>} Updated member
+     * @throws {Error} When the requested file name is empty
+     */
+    async renameMemberFile(pid, fileName) {
+      this.assertCanEdit(pid);
+      const member = this.requireMember(pid);
+      const nextFileName = Values.normalizeText(fileName);
+      if (!nextFileName) {
+        throw new Error("File name is required");
+      }
+
+      await this._ensureSystemMetadata([member]);
+      this.assertNotNestedResourceMap(member);
+      this.assertCanEdit(member.pid);
+
+      const previousFileName = Values.normalizeText(member.getFileName()) || "";
+      const locations = member.atLocations || [];
+      // Locations are arbitrary RDF values, not normalized filesystem paths.
+      // Rewrite only a matching filename suffix and preserve every prefix/value.
+      const nextLocations = previousFileName
+        ? locations.map((location) => {
+            if (
+              location !== previousFileName &amp;&amp;
+              !location.endsWith(`/${previousFileName}`)
+            ) {
+              return location;
+            }
+            return `${location.slice(0, -previousFileName.length)}${nextFileName}`;
+          })
+        : locations;
+      const locationsChanged = nextLocations.some(
+        (location, index) => location !== locations[index],
+      );
+
+      member.fileName = nextFileName;
+      if (member.sysMeta) {
+        const sysMeta = member.sysMeta.clone();
+        sysMeta.fileName = nextFileName;
+        member.setSystemMetadata(sysMeta, { markDirty: true });
+      }
+      if (locationsChanged) {
+        const resourceMap = this.requireResourceMapModel();
+        resourceMap.setMemberLocations([
+          { pid: member.pid, atLocations: nextLocations },
+        ]);
+        this.refreshMemberGraphFields(resourceMap);
+        this.recordUserEdit("member:location", {
+          member,
+          path: nextLocations.find(
+            (location, index) => location !== locations[index],
+          ),
+        });
+      } else {
+        this.recordUserEdit("member:rename", { member });
+      }
+
+      member.trigger?.("change:fileName", member, nextFileName);
+      return member;
+    }
+
+    /**
+     * Mark a member's object content dirty, assigning a replacement PID when
+     * needed.
+     * @param {string} pid Member PID
+     * @returns {Promise&lt;DataPackageMember>} Changed member
+     * @throws {Error} When PID reassignment cannot be applied atomically
+     */
+    async markMemberContentDirty(pid) {
+      this.assertCanEdit(pid);
+      const member = this.requireMember(pid);
+      await this._ensureSystemMetadata([member]);
+      this.assertNotNestedResourceMap(member);
+      if (member.remotePid &amp;&amp; member.pid === member.remotePid) {
+        const newPid = await this.allocatePid({
+          resourceMap: member.isResourceMap(),
+        });
+        this.assertCanEdit(member.pid);
+        const resourceMap = member.isResourceMap()
+          ? member.objectModel
+          : this.requireResourceMapModel();
+        const previousRootResourceMapPid = this.rootResourceMapPid;
+        const previousPrimaryMetadataPid = this.primaryMetadataPid;
+        const previousObjectModelPid =
+          member.objectModel?.get?.("id") ?? member.objectModel?.id;
+        const previousMemberState = {
+          contentDirty: member.contentDirty,
+          removed: member.removed,
+          remoteState: member.remoteState,
+        };
+        try {
+          this.constructor._mutateResourceMap(resourceMap, () =>
+            this._changeMemberPid(member, newPid),
+          );
+        } catch (error) {
+          if (this.members.get(newPid) === member) {
+            this.members.replacePid(newPid, pid);
+          }
+          Object.assign(member, previousMemberState);
+          this.primaryMetadataPid = previousPrimaryMetadataPid;
+          this.rootResourceMapPid = previousRootResourceMapPid;
+          if (member.isMetadata() &amp;&amp; previousObjectModelPid) {
+            this._setMetadataObjectPid(member, previousObjectModelPid);
+          }
+          this.refreshMemberGraphFields(resourceMap);
+          throw error;
+        }
+        this.refreshMemberGraphFields(resourceMap);
+      } else {
+        this.assertCanEdit(member.pid);
+      }
+      member.contentDirty = true;
+      member.remoteState = DataPackageMember.RemoteState.PENDING;
+      this.recordUserEdit("member:dirty", { member });
+      return member;
+    }
+
+    /**
+     * Link a metadata member to the data member it documents.
+     * @param {string} metadataPid Documenting metadata PID
+     * @param {string} dataPid Documented data PID
+     * @returns {DataPackage} This package
+     * @throws {Error} When the package cannot be edited or either member is missing
+     */
+    linkDocumentation(metadataPid, dataPid) {
+      this.assertCanEdit();
+      this.requireMember(metadataPid);
+      this.requireMember(dataPid);
+      const resourceMap = this.requireResourceMapModel();
+      resourceMap.linkDocumentation(metadataPid, dataPid);
+      this.refreshMemberGraphFields(resourceMap);
+      this.recordUserEdit("documentation:link", { metadataPid, dataPid });
+      return this;
+    }
+
+    /**
+     * Remove a documentation link between two package members.
+     * @param {string} metadataPid Documenting metadata PID
+     * @param {string} dataPid Documented data PID
+     * @returns {DataPackage} This package
+     * @throws {Error} When the package cannot be edited or either member is missing
+     */
+    unlinkDocumentation(metadataPid, dataPid) {
+      this.assertCanEdit();
+      this.requireMember(metadataPid);
+      this.requireMember(dataPid);
+      const resourceMap = this.requireResourceMapModel();
+      resourceMap.unlinkDocumentation(metadataPid, dataPid);
+      this.refreshMemberGraphFields(resourceMap);
+      this.recordUserEdit("documentation:unlink", { metadataPid, dataPid });
+      return this;
+    }
+
+    /**
+     * Replace the package's documentation links.
+     * @param {ResMapDocLink[]} links Desired documentation links
+     * @returns {DataPackage} This package
+     * @throws {Error} When the package cannot be edited
+     */
+    setDocumentationLinks(links) {
+      this.assertCanEdit();
+      const resourceMap = this.requireResourceMapModel();
+      resourceMap.setDocumentationLinks(links);
+      this.refreshMemberGraphFields(resourceMap);
+      this.recordUserEdit("documentation:set", { links });
+      return this;
+    }
+
+    /**
+     * Set one member's desired access policy.
+     * @param {string} pid Member PID
+     * @param {AccessPolicy|object[]|object|null} accessPolicy Desired policy
+     * @param {object} [options] Options
+     * @param {string} [options.rightsHolder] Desired rights holder
+     * @returns {Promise&lt;DataPackageMember>} Updated member
+     */
+    async setMemberAccessPolicy(pid, accessPolicy, { rightsHolder } = {}) {
+      this.assertCanEdit(pid);
+      const member = this.requireMember(pid);
+      const policy = AccessPolicy.fromValue(accessPolicy);
+      await this._ensureSystemMetadata([member]);
+      this.assertNotNestedResourceMap(member);
+      this.assertCanEdit(member.pid);
+      this.constructor._applyAccessPolicy(member, policy, { rightsHolder });
+      this.recordUserEdit("accessPolicy:setMember", { member });
+      return member;
+    }
+
+    /**
+     * Stage a package access policy change.
+     * @param {AccessPolicy|object[]|object|null} accessPolicy Desired policy
+     * @param {object} [options] Options
+     * @param {boolean} [options.propagate] Whether to target every active
+     * package member. Otherwise target the root ResourceMap and primary
+     * metadata only
+     * @param {number} [options.maxConcurrent] Fetch concurrency
+     * @param {Function} [options.onProgress] SysMeta fetch progress callback
+     * @param {string} [options.rightsHolder] Desired rights holder
+     * @returns {Promise&lt;DataPackageMember[]>} Updated members
+     */
+    async setPackageAccessPolicy(
+      accessPolicy,
+      { propagate = false, maxConcurrent, onProgress, rightsHolder } = {},
+    ) {
+      this.assertCanEdit();
+      const policy = AccessPolicy.fromValue(accessPolicy);
+      const targets = this._getAccessPolicyTargets({ propagate });
+      targets.forEach((member) => this.assertCanEdit(member.pid));
+      await this._ensureSystemMetadata(targets, {
+        maxConcurrent,
+        onProgress,
+        refresh: true,
+      });
+      const rootResourceMap = this.getRootResourceMapMember();
+      targets.forEach((member) =>
+        this.assertNotNestedResourceMap(member, rootResourceMap),
+      );
+      this.assertCanEdit();
+      targets.forEach((member) => this.assertCanEdit(member.pid));
+
+      targets.forEach((member) =>
+        this.constructor._applyAccessPolicy(member, policy, { rightsHolder }),
+      );
+      this.recordUserEdit("accessPolicy:setPackage", {
+        members: targets,
+        propagate,
+      });
+      return targets;
+    }
+
+    /**
+     * Resolve the remote state and PIDs needed to replace a file.
+     * @param {string} pid Current member PID
+     * @param {DataPackageMember} member Member being replaced
+     * @param {object} [options] Replacement options
+     * @param {string} [options.requestedPid] Optional custom replacement PID
+     * @param {string} [options.replacementSourcePid] Remote PID to obsolete
+     * @returns {Promise&lt;object>} Prepared replacement details
+     * @throws {Error} When the member cannot be replaced safely
+     * @private
+     */
+    async _prepareFileReplacement(
+      pid,
+      member,
+      { requestedPid, replacementSourcePid } = {},
+    ) {
+      const replacementSource =
+        Values.normalizeText(replacementSourcePid) || null;
+      const metadataMembers = this.getMetadataMembers().filter(
+        (metadataMember) =>
+          metadataMember.objectModel?.replaceMemberPid &amp;&amp;
+          metadataMember.pid !== member.pid,
+      );
+      await this._ensureSystemMetadata([member, ...metadataMembers]);
+      this.assertNotNestedResourceMap(member);
+
+      // Reject before changing PIDs or starting expensive file preparation.
+      if (member.remotePid) {
+        const sourcePid = replacementSource || member.remotePid;
+        const authorizationService = this.getAuthorizationService();
+        const permissions = member.accessPolicyDirty
+          ? ["write", "changePermission"]
+          : ["write"];
+        await Promise.all(
+          permissions.map(async (permission) => {
+            if (!(await authorizationService.check(sourcePid, permission))) {
+              throw DataPackageUploader.unauthorizedError([sourcePid]);
+            }
+          }),
+        );
+      }
+
+      let replacementSourceSysMeta = null;
+      if (replacementSource) {
+        replacementSourceSysMeta =
+          replacementSource === member.remotePid &amp;&amp; member.remoteSysMeta
+            ? member.remoteSysMeta.clone()
+            : await this.getSysMetaService().download(replacementSource, {
+                useCache: false,
+              });
+      }
+
+      const newPid = await this.allocatePid({ requestedPid });
+      if (newPid === pid) {
+        throw new Error("Replacement PID must differ from the current PID");
+      }
+      const metadataPidChanges = await Promise.all(
+        metadataMembers.map(async (metadataMember) => ({
+          member: metadataMember,
+          oldPid: metadataMember.pid,
+          newPid:
+            metadataMember.remotePid &amp;&amp;
+            metadataMember.pid === metadataMember.remotePid
+              ? await this.allocatePid()
+              : metadataMember.pid,
+        })),
+      );
+
+      this.assertCanEdit();
+      [member, ...metadataMembers].forEach((affectedMember) =>
+        this.assertCanEdit(affectedMember.pid),
+      );
+      const formatProperties = member.getFormatProperties?.() || {};
+
+      return {
+        pid,
+        newPid,
+        metadataPidChanges,
+        replacementSource,
+        replacementSourceSysMeta,
+        replacementDisplay: {
+          pid,
+          fileName: member.getFileName?.() || member.fileName || null,
+          title: member.title || "",
+          size: member.size,
+          formatType: member.getFormatType?.() || member.formatType || null,
+          formatId: member.getFormatId?.() || member.formatId || null,
+          mediaType: formatProperties.mediaType || member.mediaType || null,
+          atLocations: Array.isArray(member.atLocations)
+            ? [...member.atLocations]
+            : member.atLocations,
+        },
+      };
+    }
+
+    /**
+     * Apply a prepared file replacement and roll back every local mutation if
+     * it fails.
+     * @param {DataPackageMember} memberToReplace Member being replaced
+     * @param {Blob|File} file Replacement content
+     * @param {ResourceMap} resourceMap Root ResourceMap model
+     * @param {object} replacement Prepared replacement details
+     * @returns {void}
+     * @throws {Error} When the prepared replacement cannot be applied
+     * @private
+     */
+    _applyFileReplacement(memberToReplace, file, resourceMap, replacement) {
+      const member = memberToReplace;
+      const {
+        pid,
+        newPid,
+        metadataPidChanges,
+        replacementDisplay,
+        replacementSource,
+        replacementSourceSysMeta,
+      } = replacement;
+      const metadataMembers = metadataPidChanges.map(
+        ({ member: metadataMember }) => metadataMember,
+      );
+      // Snapshot only fields changed by the replacement so rollback does not
+      // overwrite unrelated edits made in the meantime.
+      const memberSnapshots = this.constructor._snapshotMembers(
+        [member, ...metadataMembers],
+        [
+          "uploadFile",
+          "contentDirty",
+          "removed",
+          "remoteState",
+          "remotePid",
+          "aggregatedPid",
+          "size",
+          "fileName",
+          "_replacementDisplay",
+          "_replacementSourcePid",
+          "_replacementSourceSysMeta",
+        ],
+      );
+      const updatedMetadataModels = [];
+      const previousPrimaryMetadataPid = this.primaryMetadataPid;
+      const previousRootResourceMapPid = this.rootResourceMapPid;
+
+      try {
+        this.constructor._mutateResourceMap(resourceMap, () => {
+          this._changeMemberPid(member, newPid);
+          metadataPidChanges.forEach((metadataPidChange) => {
+            const replacements = this._updateMetadataMemberReferences(
+              metadataPidChange.member,
+              pid,
+              newPid,
+            );
+            if (replacements) {
+              const metadataMember = metadataPidChange.member;
+              updatedMetadataModels.push(metadataMember.objectModel);
+              metadataMember.contentDirty = true;
+              metadataMember.remoteState =
+                DataPackageMember.RemoteState.PENDING;
+              if (metadataPidChange.oldPid !== metadataPidChange.newPid) {
+                this._changeMemberPid(metadataMember, metadataPidChange.newPid);
+              }
+            }
+          });
+          member._replacementDisplay = replacementDisplay;
+          member._replacementSourcePid = replacementSource;
+          member._replacementSourceSysMeta =
+            replacementSourceSysMeta?.clone?.() ||
+            replacementSourceSysMeta ||
+            null;
+          member.setLocalFile(file);
+        });
+      } catch (error) {
+        updatedMetadataModels.reverse().forEach((model) => {
+          model.replaceMemberPid(newPid, pid);
+        });
+        this.primaryMetadataPid = previousPrimaryMetadataPid;
+        this.rootResourceMapPid = previousRootResourceMapPid;
+        this._restoreMemberSnapshots(memberSnapshots);
+        this.refreshMemberGraphFields(resourceMap);
+        throw error;
+      }
+    }
+
+    /**
+     * Return members targeted by a package access policy edit.
+     * @param {object} [options] Options
+     * @param {boolean} [options.propagate] Whether to target all active
+     * members
+     * @returns {DataPackageMember[]} Target members
+     * @private
+     */
+    _getAccessPolicyTargets({ propagate = false } = {}) {
+      const targets = propagate
+        ? this.members.getActiveMembers()
+        : [this.getRootResourceMapMember(), this.getPrimaryMetadataMember()];
+      const seen = new Set();
+      return targets.filter((member) => {
+        if (!member || member.removed || seen.has(member.pid)) return false;
+        seen.add(member.pid);
+        return true;
+      });
+    }
+
+    /**
+     * Fetch sysmeta baselines needed for access policy edits.
+     * @param {DataPackageMember[]} members Target members
+     * @param {object} [options] Options
+     * @param {number} [options.maxConcurrent] Fetch concurrency
+     * @param {boolean} [options.refresh] Refresh existing baselines too
+     * @param {AbortSignal} [options.signal] Abort signal
+     * @param {Function} [options.onProgress] Progress callback
+     * @returns {Promise&lt;void>}
+     * @private
+     * @throws {Error} When any system metadata fetch fails
+     */
+    async _ensureSystemMetadata(
+      members,
+      { maxConcurrent, refresh = false, signal, onProgress } = {},
+    ) {
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
+        maxConcurrent ?? this.fetchMaxConcurrent,
+      );
+      const membersToFetch = Values.listify(members).filter(
+        (member) =>
+          (member?.remotePid || member?.aggregatedPid) &amp;&amp;
+          (refresh || !member.remoteSysMeta),
+      );
+      if (!membersToFetch.length) return;
+
+      let completed = 0;
+      if (typeof onProgress === "function") {
+        onProgress({ completed, total: membersToFetch.length });
+      }
+      const { errors } = await processConcurrently(
+        membersToFetch,
+        async (member) => {
+          await member.fetchSysMeta({
+            sysMetaService: this.getSysMetaService(),
+            useCache: false,
+            signal,
+          });
+        },
+        {
+          maxConcurrent: resolvedMaxConcurrent,
+          signal,
+          stopOnError: true,
+          onItemComplete: () => {
+            completed += 1;
+            if (typeof onProgress === "function") {
+              onProgress({ completed, total: membersToFetch.length });
+            }
+          },
+        },
+      );
+      if (errors.length) throw errors[0].error;
+      throwIfAborted(signal, "Upload cancelled");
+    }
+
+    /**
+     * Apply a desired access policy to one member.
+     * @param {DataPackageMember} member Member to update
+     * @param {AccessPolicy} policy Desired policy
+     * @param {object} [options] Options
+     * @param {string} [options.rightsHolder] Desired rights holder
+     * @returns {DataPackageMember} Updated member
+     * @private
+     */
+    static _applyAccessPolicy(member, policy, { rightsHolder } = {}) {
+      const base = member.sysMeta || member.remoteSysMeta;
+      const values = base?.toJSON?.() || {
+        identifier: member.pid,
+        formatId: member.formatId,
+      };
+      values.accessPolicy = policy.toJSON();
+      if (rightsHolder) {
+        values.rightsHolder = rightsHolder;
+      }
+      member.setSystemMetadata(values, { markDirty: true });
+      Object.assign(member, { accessPolicyDirty: true });
+      return member;
+    }
+
+    /**
+     * Copy relationships and locations from the ResourceMap graph to each
+     * active package member. Call this after changing the ResourceMap to keep
+     * those member fields in sync.
+     * @param {ResourceMap} [resourceMap] ResourceMap to read; defaults to the
+     * package's root ResourceMap
+     * @returns {DataPackage} This package
+     */
+    refreshMemberGraphFields(resourceMap = this.requireResourceMapModel()) {
+      const fields = DataPackageMember.ResourceMapGraphFields;
+
+      this.getContentMembers().forEach((member) => {
+        const graphMember = resourceMap.graphState.getMember(member.pid) || {};
+        const graphFields = {};
+        fields.forEach((field) => {
+          graphFields[field] = [...(graphMember[field] || [])];
+        });
+        Object.assign(member, graphFields);
+      });
+
+      return this;
+    }
+
+    /**
+     * Record that one data object was derived from another.
+     * @param {...string} args Derived PID followed by source PID
+     * @returns {DataPackage} This package
+     */
+    addWasDerivedFrom(...args) {
+      return this.mutateProvenance("addWasDerivedFrom", args);
+    }
+
+    /**
+     * Remove a derivation relationship between two data objects.
+     * @param {...string} args Derived PID followed by source PID
+     * @returns {DataPackage} This package
+     */
+    removeWasDerivedFrom(...args) {
+      return this.mutateProvenance("removeWasDerivedFrom", args);
+    }
+
+    /**
+     * Record that a program produced a data object.
+     * @param {string} dataPid Generated data PID
+     * @param {string} programPid Program PID
+     * @returns {DataPackage} This package
+     */
+    addGeneratedByProgram(dataPid, programPid) {
+      return this.mutateProvenance("addGeneratedByProgram", [
+        dataPid,
+        programPid,
+      ]);
+    }
+
+    /**
+     * Remove the record that a program produced a data object.
+     * @param {string} dataPid Generated data PID
+     * @param {string} programPid Program PID
+     * @returns {DataPackage} This package
+     */
+    removeGeneratedByProgram(dataPid, programPid) {
+      return this.mutateProvenance("removeGeneratedByProgram", [
+        dataPid,
+        programPid,
+      ]);
+    }
+
+    /**
+     * Record that a program used a data object.
+     * @param {string} dataPid Used data PID
+     * @param {string} programPid Program PID
+     * @returns {DataPackage} This package
+     */
+    addUsedByProgram(dataPid, programPid) {
+      return this.mutateProvenance("addUsedByProgram", [dataPid, programPid]);
+    }
+
+    /**
+     * Remove the record that a program used a data object.
+     * @param {string} dataPid Used data PID
+     * @param {string} programPid Program PID
+     * @returns {DataPackage} This package
+     */
+    removeUsedByProgram(dataPid, programPid) {
+      return this.mutateProvenance("removeUsedByProgram", [
+        dataPid,
+        programPid,
+      ]);
+    }
+
+    /**
+     * Run a provenance mutation and record the package edit.
+     * @param {string} method Provenance method name
+     * @param {Array&lt;*>} args Arguments passed to the provenance method
+     * @returns {DataPackage} This package
+     * @throws {Error} When the package cannot be edited or the method is invalid
+     */
+    mutateProvenance(method, args) {
+      this.assertCanEdit();
+      this.requireResourceMapModel().provenance[method](...args);
+      this.recordUserEdit("provenance:changed", { operation: method, args });
+      return this;
+    }
+
+    /**
+     * Capture member state that may need to be restored after a failed edit.
+     * @param {DataPackageMember[]} members Members to snapshot
+     * @param {string[]} extraFields Additional member fields to capture
+     * @returns {object[]} Member snapshots
+     * @private
+     */
+    static _snapshotMembers(members, extraFields) {
+      return members.map((member) => {
+        const snapshot = {
+          member,
+          pid: member.pid,
+          objectModelPid:
+            member.objectModel?.get?.("id") ?? member.objectModel?.id,
+        };
+        extraFields.forEach((field) => {
+          snapshot[field] = member[field];
+        });
+        return snapshot;
+      });
+    }
+
+    /**
+     * Restore previously captured member state.
+     * @param {object[]} snapshots Member snapshots
+     * @returns {void}
+     * @private
+     */
+    _restoreMemberSnapshots(snapshots) {
+      snapshots.forEach((snapshot) => {
+        const { member: snapshotMember, objectModelPid, ...state } = snapshot;
+        if (
+          snapshotMember.pid !== snapshot.pid &amp;&amp;
+          this.members.get(snapshotMember.pid) === snapshotMember
+        ) {
+          this.members.replacePid(snapshotMember.pid, snapshot.pid);
+        }
+        Object.assign(snapshotMember, state);
+        if (objectModelPid) {
+          this._setMetadataObjectPid(snapshotMember, objectModelPid);
+        }
+      });
+    }
+
+    /**
+     * Group ResourceMap edits against one stable pre mutation graph projection.
+     * @param {ResourceMap} resourceMap Resource map being edited
+     * @param {Function} mutator Grouped edit callback
+     * @returns {ResourceMap} Updated resource map
+     * @private
+     */
+    static _mutateResourceMap(resourceMap, mutator) {
+      resourceMap.graphState.getIndex();
+      return resourceMap.mutateGraph(mutator, { rollbackOnError: true });
+    }
+
+    /**
+     * Replace a member PID in package state and the resource map.
+     * @param {DataPackageMember} member Member to update
+     * @param {string} newPid Replacement PID
+     * @returns {DataPackageMember} Updated member
+     * @private
+     */
+    _changeMemberPid(member, newPid) {
+      const oldPid = member.pid;
+      const wasPrimaryMetadata =
+        member.isMetadata() &amp;&amp; this.getPrimaryMetadataMember() === member;
+      const wasRootResourceMap =
+        member.isResourceMap() &amp;&amp; this.getRootResourceMapMember() === member;
+      this.members.replacePid(oldPid, newPid);
+      if (member.isResourceMap()) {
+        if (wasRootResourceMap) this.rootResourceMapPid = newPid;
+        member.objectModel?.setResourceMapPid(newPid);
+      } else {
+        this.requireResourceMapModel().replaceMember(oldPid, newPid);
+        if (member.isMetadata()) {
+          if (wasPrimaryMetadata) this.primaryMetadataPid = newPid;
+          this._setMetadataObjectPid(member, newPid);
+        }
+      }
+      return member;
+    }
+
+    /**
+     * Replace member references in a metadata model.
+     * @param {DataPackageMember} metadataMember Metadata member to update
+     * @param {string} oldPid Current referenced PID
+     * @param {string} newPid Replacement PID
+     * @returns {number} Number of replaced references
+     * @throws {Error} When the metadata member is not in this package
+     * @private
+     */
+    _updateMetadataMemberReferences(metadataMember, oldPid, newPid) {
+      if (this.getMember(metadataMember.pid) !== metadataMember) {
+        throw new Error("Metadata member does not belong to this package");
+      }
+      return (
+        metadataMember.objectModel?.replaceMemberPid?.(oldPid, newPid) || 0
+      );
+    }
+
+    /**
+     * Set the identifier stored in a metadata member's object model.
+     * @param {DataPackageMember} metadataMember Metadata member to update
+     * @param {string} pid Identifier to store
+     * @returns {DataPackageMember} Updated metadata member
+     * @throws {Error} When the metadata member is not in this package
+     * @private
+     */
+    _setMetadataObjectPid(metadataMember, pid) {
+      if (this.getMember(metadataMember.pid) !== metadataMember) {
+        throw new Error("Metadata member does not belong to this package");
+      }
+      const { objectModel } = metadataMember;
+      objectModel.set("id", pid);
+      return metadataMember;
+    }
+
+    /**
+     * Return a package member or throw when it is missing.
+     * @param {string} pid Member PID
+     * @returns {DataPackageMember} Matching member
+     * @throws {Error} When no package member has the PID
+     */
+    requireMember(pid) {
+      const member = this.getMember(pid);
+      if (!member) throw new Error(`Member with PID ${pid} does not exist`);
+      return member;
+    }
+
+    /**
+     * Reject direct edits to ResourceMaps aggregated by the root package.
+     * @param {DataPackageMember} member Package member
+     * @param {DataPackageMember} [rootResourceMap] Root ResourceMap member
+     * @returns {DataPackageMember} The accepted member
+     * @throws {Error} When the member is a nested resource map
+     */
+    assertNotNestedResourceMap(
+      member,
+      rootResourceMap = this.getRootResourceMapMember(),
+    ) {
+      if (member?.isResourceMap() &amp;&amp; member !== rootResourceMap) {
+        const error = new Error(
+          "Nested ResourceMap members are read-only in the editor",
+        );
+        error.code = "nested_resource_map_edit_unsupported";
+        error.pid = member.pid;
+        throw error;
+      }
+      return member;
+    }
+
+    /**
+     * Return a loaded resource map model or throw when it is unavailable.
+     * @param {string} [resourceMapPid] Resource map PID
+     * @returns {ResourceMap} Loaded resource map
+     * @throws {Error} When the resource map is not loaded
+     */
+    requireResourceMapModel(resourceMapPid = this.rootResourceMapPid) {
+      const resourceMap = this.getResourceMapModel(resourceMapPid);
+      if (!resourceMap) throw new Error("Editable ResourceMap is not loaded");
+      return resourceMap;
+    }
+
+    /**
+     * Advance the draft revision and publish a package edit event.
+     * @param {string} event Edit event name
+     * @param {object} details Event details
+     * @returns {DataPackage} This package
+     * @throws {Error} When the package is locked for editing
+     */
+    recordUserEdit(event, details) {
+      // This is only the final synchronous guard. Async edit methods must also
+      // recheck immediately after their last await and before their first mutation.
+      this.assertCanEdit();
+      const metadataChanged = event === "metadata:changed";
+      if (metadataChanged) {
+        this.metadataContentEdited = true;
+      }
+      const metadataMember = this.getPrimaryMetadataMember();
+      if (
+        metadataMember?.objectModel?.serialize &amp;&amp;
+        (metadataChanged || metadataMember.contentDirty)
+      ) {
+        // Prepared model bytes belong to the draft that produced them.
+        metadataMember.uploadFile = null;
+      }
+      this.draftRevision += 1;
+      this.events.trigger(event, details);
+      this.events.trigger("change", { event, ...details });
+      return this;
+    }
+
+    /**
+     * Return the version tracker used for stale source checks.
+     * @returns {VersionTracker} Version tracker
+     * @private
+     */
+    getVersionTracker() {
+      if (!this.versionTracker) {
+        this.versionTracker = new VersionTracker(this.versionTrackerOptions);
+      }
+      return this.versionTracker;
+    }
+
+    /**
+     * Return the authorization service used for write permission checks.
+     * @returns {AuthorizationService} Authorization service
+     * @private
+     */
+    getAuthorizationService() {
+      if (!this.authorizationService) {
+        this.authorizationService = new AuthorizationService(
+          this.authorizationServiceOptions,
+        );
+      }
+      return this.authorizationService;
+    }
+
+    /**
+     * Return the object service used for create/update writes.
+     * @returns {ObjectService} Object service
+     * @private
+     */
+    getObjectService() {
+      if (!this.objectService) {
+        this.objectService = new ObjectService(this.objectServiceOptions);
+      }
+      return this.objectService;
+    }
+
+    /**
+     * Return the service used to download packages.
+     * @returns {PackageService} Package download service
+     * @private
+     */
+    getPackageService() {
+      if (!this.packageService) {
+        this.packageService = new PackageService(this.packageServiceOptions);
+      }
+      return this.packageService;
+    }
+
+    /**
+     * Return the system metadata service used for sysmeta only updates and
+     * cache invalidation.
+     * @returns {SysMetaService} System metadata service
+     * @private
+     */
+    getSysMetaService() {
+      if (!this.sysMetaService) {
+        this.sysMetaService = new SysMetaService(this.sysMetaServiceOptions);
+      }
+      return this.sysMetaService;
+    }
+
+    /**
+     * Return the durable store for upload recovery records.
+     * @returns {UploadRecoveryStore} Upload recovery store
+     * @private
+     */
+    getUploadRecoveryStore() {
+      if (!this.uploadRecoveryStore) {
+        this.uploadRecoveryStore = new UploadRecoveryStore();
+      }
+      return this.uploadRecoveryStore;
+    }
+
+    /**
+     * Return active members that require an object write or system metadata
+     * update. Removed members are deaggregated by the ResourceMap, not
+     * uploaded, so they are excluded.
+     * @returns {DataPackageMember[]} Changed members
+     */
+    getChangedMembers() {
+      const { NONE } = DataPackageMember.RequiredOperation;
+      return this.members
+        .getActiveMembers()
+        .filter((member) => member.getRequiredOperation() !== NONE);
+    }
+
+    // See DataPackageUploader.getPendingEagerUploads().
+    getPendingEagerUploads() {
+      return this._uploader.getPendingEagerUploads();
+    }
+
+    // See DataPackageUploader.cancelEagerUpload().
+    cancelEagerUpload(pid) {
+      return this._uploader.cancelEagerUpload(pid);
+    }
+
+    // See DataPackageUploader.upload().
+    upload(options) {
+      return this._uploader.upload(options);
+    }
+
+    // See DataPackageUploader.cancelUpload().
+    cancelUpload() {
+      return this._uploader.cancelUpload();
+    }
+
+    // See DataPackageUploader.retryUpload().
+    retryUpload(previousResult, options) {
+      return this._uploader.retryUpload(previousResult, options);
+    }
+
+    /**
+     * Sum the known sizes of the package's data members.
+     * @returns {number} Known total bytes
+     */
+    getTotalSize() {
+      return this.members.getData().reduce((total, member) => {
+        const size = Number(member.size ?? member.sysMeta?.size);
+        return total + (Number.isFinite(size) ? size : 0);
+      }, 0);
+    }
+
+    // See DataPackageLoader.getManifestFromResourceMap().
+    async getManifestFromResourceMap(options = {}) {
+      return DataPackageLoader.getManifestFromResourceMap(this, options);
+    }
+
+    /**
+     * Merge entity summaries from a rendered metadata document into matching
+     * package members.
+     * @param {object[]} entities Plain entity summaries from
+     * ViewServiceDoc
+     * @returns {void}
+     */
+    addViewServiceEntities(entities = []) {
+      const normalizedEntities = Values.listify(entities)
+        .map((entity) => DataPackageMember.normalizeViewInfo(entity))
+        .filter((entity) => entity.pid);
+
+      normalizedEntities.forEach((entity) => {
+        const member = this.members.get(entity.pid);
+        if (member) member.addViewInfo(entity);
+      });
+    }
+
+    /**
+     * Fetch missing system metadata for selected package members.
+     * @param {string[]|null} memberPids PIDs to fetch, or null for all members
+     * @param {object} [options] Fetch options
+     * @param {number} [options.maxConcurrent] Fetch concurrency
+     * @returns {Promise&lt;Array&lt;{pid: string, error: Error}>>} Fetch failures
+     */
+    async fetchSysMeta(memberPids, { maxConcurrent, ...fetchOptions } = {}) {
+      const resolvedMaxConcurrent = Utilities.getMaxConcurrent(
+        maxConcurrent ?? this.fetchMaxConcurrent,
+      );
+      let members = this.members.toArray();
+      let missingFailures = [];
+      if (Values.isNonEmptyArray(memberPids)) {
+        const requestedPids = [...new Set(memberPids)];
+        members = this.members.getMembers(requestedPids);
+        const foundPids = new Set(members.map((member) => member.pid));
+        missingFailures = requestedPids
+          .filter((pid) => !foundPids.has(pid))
+          .map((pid) => {
+            const error = new Error(
+              `Cannot fetch System Metadata for unknown member PID ${pid}`,
+            );
+            error.code = "member_not_found";
+            return { pid, error };
+          });
+      }
+      const pendingMembers = members.filter((member) => !member.sysMeta);
+      const sysMetaService =
+        fetchOptions.sysMetaService ?? this.getSysMetaService();
+      const { errors } = await processConcurrently(
+        pendingMembers,
+        (member) => member.fetchSysMeta({ ...fetchOptions, sysMetaService }),
+        {
+          maxConcurrent: resolvedMaxConcurrent,
+          stopOnError: false,
+          signal: fetchOptions.signal,
+        },
+      );
+      return [
+        ...missingFailures,
+        ...errors.map(({ item: member, error }) => ({
+          pid: member.pid,
+          error,
+        })),
+      ];
+    }
+
+    /**
+     * Find the latest PID for the package's primary object.
+     * @param {object} [options] Lookup options
+     * @param {AbortSignal} [options.signal] Abort signal
+     * @param {boolean} [options.requireComplete] Require proof that each
+     * version walk reached the end of its chain
+     * @returns {Promise&lt;string|null>} Latest primary PID, or null
+     * @throws {Error} When the version lookup fails
+     */
+    async getLatestVersionPid(options = {}) {
+      const { signal, requireComplete = false } = options;
+      let metadata = this.getPrimaryMetadataMember();
+      if (!metadata) {
+        await this.getManifestFromResourceMap({ merge: true, signal });
+        metadata = this.getPrimaryMetadataMember();
+      }
+      const versionTracker = this.getVersionTracker();
+      if (metadata) {
+        const newest = await versionTracker.getLatestVersion(metadata.pid, {
+          signal,
+          requireComplete,
+        });
+        return newest || metadata.pid;
+      }
+      // Otherwise see if there's a newer version of the resource map, and if so
+      // get the manifest from that resource map and check for metadata there.
+      const resourceMap = this.getRootResourceMapMember();
+      if (resourceMap) {
+        const newestRm = await versionTracker.getLatestVersion(
+          resourceMap.pid,
+          {
+            signal,
+            requireComplete,
+          },
+        );
+        if (newestRm &amp;&amp; newestRm !== resourceMap.pid) {
+          const newDataPackage = new DataPackage({
+            objectFormats: this.objectFormats,
+            versionTracker,
+            resolverOptions: this.resolverOptions,
+            objectService: this.objectService,
+            objectServiceOptions: this.objectServiceOptions,
+            sysMetaService: this.sysMetaService,
+            sysMetaServiceOptions: this.sysMetaServiceOptions,
+            fetchMaxConcurrent: this.fetchMaxConcurrent,
+          });
+          await newDataPackage.resolveFromPid(newestRm, { signal });
+          return newDataPackage.getLatestVersionPid({
+            signal,
+            requireComplete,
+          });
+        }
+        return resourceMap.pid;
+      }
+      return null;
+    }
+
+    /**
+     * Check if the user has write permission on the resource map and metadata
+     * if they both exist, or just the one that exists if only one exists. If
+     * neither exists, then return false.
+     * @param {object|boolean} [options] Options or refresh boolean
+     * @returns {Promise&lt;boolean>} Whether every checked member is writable
+     */
+    async checkWritePermissions(options = false) {
+      const metadata = this.getPrimaryMetadataMember();
+      const resourceMap = this.getRootResourceMapMember();
+      const toCheck = [metadata, resourceMap].filter(Boolean);
+      if (!toCheck.length) return false;
+      const authorizationService = this.getAuthorizationService();
+      const results = await Promise.all(
+        toCheck.map((member) =>
+          member.checkWritePermission(options, authorizationService),
+        ),
+      );
+      return results.every((result) => result === true);
+    }
+
+    /**
+     * Check whether the user can write to the root resource map specifically.
+     * Provenance editing depends on resource map writability rather than
+     * metadata write permission, so this is intentionally separate from
+     * {@link DataPackage#checkWritePermissions}, which requires write access to
+     * every member.
+     * @param {object|boolean} [options] Options or refresh boolean
+     * @returns {Promise&lt;boolean>} Whether the root resource map is writable
+     * Returns false when no resource map has been resolved
+     */
+    async checkResourceMapWritePermission(options = false) {
+      const resourceMap = this.getRootResourceMapMember();
+      if (!resourceMap) return false;
+      return (
+        (await resourceMap.checkWritePermission(
+          options,
+          this.getAuthorizationService(),
+        )) === true
+      );
+    }
+
+    /**
+     * Publish the package and verify ambiguous publication responses.
+     * @returns {Promise&lt;{pid: string, resourceMapPending: boolean}>} Publication result
+     * @throws {Error} When publication fails or cannot be verified
+     */
+    async publish() {
+      const sourcePid =
+        this.getPrimaryMetadataMember()?.pid ||
+        this.getRootResourceMapMember()?.pid ||
+        null;
+      const pubService = new PublishService();
+      try {
+        const pid = await pubService.publish(sourcePid);
+        return { pid, resourceMapPending: false };
+      } catch (error) {
+        if (!DataONEService.isAmbiguousWriteError(error)) throw error;
+
+        // If we are not sure whether the publication succeeded, check for a
+        // newer version of the source PID. If the source PID was obsoleted by a
+        // newer version, and that newer version obsoletes the source PID, then
+        // we can assume that the publication succeeded and return the newer
+        // PID.
+        try {
+          const sysMetaService = this.getSysMetaService();
+          const sourceSysMeta = await sysMetaService.download(sourcePid, {
+            useCache: false,
+          });
+          const source = sourceSysMeta?.toJSON?.() || sourceSysMeta || {};
+          const candidatePid = Values.normalizeText(source.obsoletedBy);
+          if (candidatePid) {
+            const candidateSysMeta = await sysMetaService.download(
+              candidatePid,
+              { useCache: false },
+            );
+            const candidate =
+              candidateSysMeta?.toJSON?.() || candidateSysMeta || {};
+            if (Values.normalizeText(candidate.obsoletes) === sourcePid) {
+              let resourceMapPending = true;
+              try {
+                const resolution = await new ResourceMapResolver(
+                  this.resolverOptions,
+                ).resolve(candidatePid);
+                resourceMapPending = !resolution.rm;
+              } catch {
+                // The DOI is committed; unresolved package details remain pending.
+              }
+              return { pid: candidatePid, resourceMapPending };
+            }
+          }
+        } catch {
+          // Recovery is useful only when the version chain proves publication.
+        }
+        throw error;
+      }
+    }
+
+    /**
+     * Serialize package state.
+     * @returns {object} Serializable package state
+     */
+    toJSON() {
+      return {
+        inputId: this.inputId,
+        primaryMetadataPid: this.primaryMetadataPid,
+        rootResourceMapPid: this.rootResourceMapPid,
+        draftRevision: this.draftRevision,
+        savedRevision: this.savedRevision,
+        members: this.members.toArray().map((member) => member.toJSON()),
+      };
+    }
+  }
+
+  DataPackage.LoadPhases = DataPackageLoader.LoadPhases;
+  DataPackage.LoadProgressMessages = LOAD_PROGRESS_MESSAGES;
+  return DataPackage;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
