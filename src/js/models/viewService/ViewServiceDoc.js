@@ -70,7 +70,7 @@ define([
    * URLs.
    * @class ViewServiceDoc
    * @classcategory Models/ViewService
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class ViewServiceDoc {
     /**

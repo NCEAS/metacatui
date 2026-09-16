@@ -193,7 +193,7 @@ define([
      * @param {Error|object|string} error The error to extract the message from
      * @returns {string|number} The extracted error message or status code, or
      * the original error if no message or status code could be extracted
-     * @since 0.0.0
+     * @since 2.39.0
      * @private
      */
     static errorValue(error) {
@@ -205,7 +205,7 @@ define([
      * is enabled).
      * @param {string} message The warning message to log
      * @param {Error|object|string} [error] An optional error object
-     * @since 0.0.0
+     * @since 2.39.0
      */
     warn(message, error) {
       this.eventLog.consoleLog(
@@ -472,7 +472,7 @@ define([
      * @param {Set<string>} [visitedPids] PIDs already visited in this path
      * @returns {Promise<{rm: (string|null), meta: object}>} The resolved RM PID
      * if found, and metadata about the resolution attempt
-     * @since 0.0.0
+     * @since 2.39.0
      */
     async resolveFromMetadataPids(
       metadataPids = [],
@@ -544,7 +544,7 @@ define([
      * @param {AbortSignal} [options.signal] Signal used to cancel resolver work
      * @returns {Promise<string[]>} Latest PID from each discovered chain
      * @throws {Error} When resolution is aborted
-     * @since 0.0.0
+     * @since 2.39.0
      */
     async reducePidsToLatest(pids = [], options = {}) {
       let remainingPids = ValueUtilities.normalizeStringList(pids);
@@ -756,7 +756,7 @@ define([
      * @param {string} pid The PID to get the system metadata for
      * @param {object} [options] Options to SysMeta service
      * @returns {Promise<SystemMetadata>} The sysMeta for the PID
-     * @since 0.0.0
+     * @since 2.39.0
      */
     async getSysMeta(pid, options = {}) {
       return this.versionTracker.getSysMeta(pid, options);
@@ -1033,7 +1033,7 @@ define([
      * @param {AbortSignal} [options.signal] Signal used to cancel the fetch
      * @returns {Promise<{isMember: boolean, memberPids: string[],
      * fetchStatus: number}>} Membership result and fetch details
-     * @since 0.0.0
+     * @since 2.39.0
      */
     async checkResourceMapMembership(rm, pid, options = {}) {
       const { model, status: fetchStatus } = await this.fetchResourceMap(

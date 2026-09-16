@@ -984,7 +984,7 @@ define([
    * avoids repeating the same graph scans during reads and validation.
    * @class ResourceMapState
    * @classcategory Models/ResourceMap
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class ResourceMapState {
     /**

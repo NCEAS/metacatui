@@ -224,7 +224,7 @@ define([
        * member.
        * @param {object} [change] Package change details
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       handleDataPackageChange(change = {}) {
         if (change.member) this.model.getEntity(change.member);

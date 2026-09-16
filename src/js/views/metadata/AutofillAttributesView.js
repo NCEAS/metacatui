@@ -475,7 +475,7 @@ define([
        * Builds a cheap signature for the sibling entities rendered in the
        * copy from and copy to panels.
        * @returns {string} The current entity list signature
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getEntityPanelSignature() {
         const currentAttributes = this.model.get("emlAttributes");
@@ -995,7 +995,7 @@ define([
       /**
        * Resolve the data object described by the current EML entity.
        * @returns {DataONEObject|DataPackageMember|null} Data object or member
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getDataObject() {
         const pid = this.parentModel.getDataPid();
@@ -1012,7 +1012,7 @@ define([
        * @param {DataONEObject|DataPackageMember} obj The data object
        * @param {string} key The DataONEObject attribute name to read
        * @returns {*} The field value, or undefined when unavailable
-       * @since 0.0.0
+       * @since 2.39.0
        */
       readDataObjectField(obj, key) {
         if (!obj) return undefined;

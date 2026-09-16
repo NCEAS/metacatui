@@ -41,7 +41,7 @@ define([
    * @classcategory Views/VersionHistory
    * @augments Backbone.View
    * @screenshot views/versionHistory/VersionTimelineGroupView.png
-   * @since 0.0.0
+   * @since 2.39.0
    */
   const VersionTimelineGroupView = Backbone.View.extend(
     /** @lends VersionTimelineGroupView.prototype */ {

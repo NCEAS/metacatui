@@ -9,7 +9,7 @@ define(["common/ValueUtilities", "common/DateUtilities"], (
    * Shared helpers for working with simple validation error objects.
    * @namespace ValidationUtilities
    * @classcategory Common
-   * @since 0.0.0
+   * @since 2.39.0
    */
   const ValidationUtilities = {
     /**

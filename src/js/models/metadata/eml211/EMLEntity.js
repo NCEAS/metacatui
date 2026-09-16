@@ -519,7 +519,7 @@ define([
        * Update the recognized DataONE download URL in an entity DOM.
        * @param {Element} objectDOM EML entity DOM
        * @returns {Element} The supplied entity DOM
-       * @since 0.0.0
+       * @since 2.39.0
        */
       updateDownloadUrl(objectDOM) {
         const dataPid = this.getDataPid();
@@ -580,7 +580,7 @@ define([
        * @param {string} [descriptor.previousFileName] Previous filename
        * @param {string} [descriptor.previousFormatId] Previous format
        * @returns {EMLEntity} This entity
-       * @since 0.0.0
+       * @since 2.39.0
        */
       setMemberDescriptor(descriptor = {}) {
         const values = {};
@@ -638,7 +638,7 @@ define([
       /**
        * Get the data PID described by this entity's own EML.
        * @returns {string|null} The described data PID, if available
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getDataPid() {
         return this.get("downloadID") || null;

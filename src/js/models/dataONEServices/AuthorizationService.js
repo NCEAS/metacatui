@@ -12,7 +12,7 @@ define([
    * @class AuthorizationService
    * @augments DataONEService
    * @classcategory Models/DataONEServices
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class AuthorizationService extends DataONEService {
     /**

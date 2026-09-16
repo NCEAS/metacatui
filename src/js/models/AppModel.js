@@ -496,7 +496,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * File additions that would exceed this limit are rejected.
            * @type {number}
            * @default 3000
-           * @since 0.0.0
+           * @since 2.39.0
            */
           maxEditorPackageMembers: 3000,
 
@@ -506,7 +506,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * to limit package member Solr requests.
            * @type {number}
            * @default 3000
-           * @since 0.0.0
+           * @since 2.39.0
            */
           maxViewerPackageMembers: 3000,
 
@@ -2839,7 +2839,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
        * no repository selection side effects.
        * @returns {object} Service constructor options and DataPackage request
        * concurrency defaults
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getDataPackageServiceOptions() {
         const objectServiceUrl = this.get("objectServiceUrl");

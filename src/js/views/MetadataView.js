@@ -562,7 +562,7 @@ define([
        * @param {object} [options] Render options
        * @returns {Promise<object|null>} Resolution result, or null when a newer
        * render starts
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async resolveInput(dataPackage, options = {}) {
         const { renderId, signal } = this.getRenderOptions(options);
@@ -591,7 +591,7 @@ define([
        * @param {object} [options] Render options
        * @returns {Promise<object|null>} Package load state, or null when a newer
        * render starts
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async loadPackageMembers(dataPackage, unauthorizedPackage, options = {}) {
         const { renderId, signal } = this.getRenderOptions(options);
@@ -691,7 +691,7 @@ define([
        * Check whether table specific async work still targets this package.
        * @param {DataPackage} dataPackage DataPackage captured before an await
        * @returns {boolean} True when the package is still active
-       * @since 0.0.0
+       * @since 2.39.0
        */
       isCurrentDataPackage(dataPackage) {
         return dataPackage === this.dataPackage;
@@ -700,7 +700,7 @@ define([
       /**
        * Start a render and cancel work from the previous render
        * @returns {{renderId:string, signal:AbortSignal}} Render identity
-       * @since 0.0.0
+       * @since 2.39.0
        */
       startRender() {
         this.abortRender();
@@ -716,7 +716,7 @@ define([
        * Check whether asynchronous work belongs to the active render
        * @param {string} renderId Render identifier
        * @returns {boolean} Whether the render is active
-       * @since 0.0.0
+       * @since 2.39.0
        */
       isCurrentRender(renderId) {
         return Boolean(renderId && renderId === this.renderId && this.el);
@@ -728,7 +728,7 @@ define([
        * @param {string} [options.renderId] Render identifier
        * @param {AbortSignal} [options.signal] Cancellation signal
        * @returns {object} Render options
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getRenderOptions(options = {}) {
         return {
@@ -740,7 +740,7 @@ define([
       /**
        * Cancel the active render and its scheduled index refresh
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       abortRender() {
         if (this.fileTableIndexRefreshTimer) {
@@ -761,7 +761,7 @@ define([
        * @param {object} result Resolution result from resolveFromPid
        * @param {object} [options] Render options
        * @returns {Promise<MetadataView>} This view
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async handleDataInput(result, options = {}) {
         const renderOptions = this.getRenderOptions(options);
@@ -823,7 +823,7 @@ define([
        * @param {string} [options.renderId] Active render identifier
        * @param {AbortSignal} [options.signal] Active render signal
        * @returns {MetadataView} This view
-       * @since 0.0.0
+       * @since 2.39.0
        */
       renderNoMetadata({ id, renderId, signal } = {}) {
         if (renderId && !this.isCurrentRender(renderId)) return this;
@@ -877,7 +877,7 @@ define([
        * screen and the warning stays in the file/package area; when false the
        * warning replaces the page
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showMultipleResourceMaps(result, { scoped = true } = {}) {
         const candidates = result?.candidateResourceMapPids || [];
@@ -924,7 +924,7 @@ define([
        * the fragment) rather than selecting one arbitrarily.
        * @param {object} result Resolution result from resolveFromPid
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showMultipleDocumentingDatasets(result) {
         const dataPid = this.pid;
@@ -951,7 +951,7 @@ define([
        * @param {object|null} packageError Resource map / manifest load error
        * @param {object} [options] Render options
        * @returns {Promise<string|null>} File listing state, or null
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async resolveFileListingState(
         result = {},
@@ -982,7 +982,7 @@ define([
        * Check whether this viewer has a local interrupted save record.
        * @param {object} [options] Render options
        * @returns {Promise<boolean>} Whether recovery is available
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async hasRecoverablePackageRecord(options = {}) {
         const metadataPid = this.metadata?.pid || this.pid;
@@ -1014,7 +1014,7 @@ define([
        * Build the FileTableView notice attributes for a listing state.
        * @param {string|null} state File listing state
        * @returns {object|null} File table notice attributes
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getFileListingNotice(state) {
         const messages = [MESSAGES.fileListingNotices[state]].filter(Boolean);
@@ -1044,7 +1044,7 @@ define([
        * Handle a table level file listing action.
        * @param {string} actionId Action id
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       handleFileTableNoticeAction(actionId) {
         if (actionId !== FINISH_INTERRUPTED_SAVE_ACTION) return;
@@ -1057,7 +1057,7 @@ define([
        * record, then reload so the recovered package resolves.
        * @param {string} metadataPid Metadata PID with an interrupted save
        * @returns {Promise<void>} Resolves once recovery has been attempted
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async repairDataset(metadataPid) {
         const { renderId } = this;
@@ -1102,7 +1102,7 @@ define([
       /**
        * Remove the loading indicator from the file and package area
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       stopPackageLoading() {
         this.$(this.tableContainer).find(`.${CLASS_NAMES.loading}`).remove();
@@ -1117,7 +1117,7 @@ define([
        * inferred from metadata write permission.
        * @param {object} [options] Render options
        * @returns {Promise<boolean>} Whether provenance editing is allowed
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async checkProvenanceWritePermission(options = {}) {
         const renderOptions = this.getRenderOptions(options);
@@ -1180,7 +1180,7 @@ define([
        * status code and message if they exist.
        * @param {string|number} status The status code of the error
        * @param {string} message The error message
-       * @since 0.0.0
+       * @since 2.39.0
        */
       onModelError(status, message) {
         // coerce status to a string for easier comparison
@@ -1207,7 +1207,7 @@ define([
       /**
        * Prepare the citation/header model from the current metadata member.
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       prepareCitationModel() {
         if (!this.metadata) return;
@@ -1224,7 +1224,7 @@ define([
        * @param {DataPackage} [dataPackage] Package to read
        * @param {object} [options] Render options
        * @returns {boolean} Whether the header was refreshed
-       * @since 0.0.0
+       * @since 2.39.0
        */
       refreshMetadataHeaderFromPackage(
         dataPackage = this.dataPackage,
@@ -1286,7 +1286,7 @@ define([
        * Check whether the metadata header lacks indexed display fields
        * @param {DataPackage} [dataPackage] Package to inspect
        * @returns {boolean} Whether index metadata is needed
-       * @since 0.0.0
+       * @since 2.39.0
        */
       metadataHeaderNeedsIndexRefresh(dataPackage = this.dataPackage) {
         if (!dataPackage) return false;
@@ -1305,7 +1305,7 @@ define([
        * @param {DataPackage} dataPackage Package to update
        * @param {object} [options] Render options
        * @returns {Promise<boolean>} Whether the header was refreshed
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async refreshMetadataTitleFromIndex(dataPackage, options = {}) {
         if (!dataPackage) return false;
@@ -1341,7 +1341,7 @@ define([
        * Check whether the package still needs index enrichment
        * @param {DataPackage} [dataPackage] Package to inspect
        * @returns {boolean} Whether index data is still needed
-       * @since 0.0.0
+       * @since 2.39.0
        */
       packageNeedsIndexRefresh(dataPackage = this.dataPackage) {
         if (!dataPackage) return false;
@@ -1369,7 +1369,7 @@ define([
        * @param {object} [options] Shell options
        * @param {string} [options.metadataMessage] Metadata loading message
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       renderMetadataShell({
         metadataMessage = MESSAGES.retrievingMetadata,
@@ -1440,7 +1440,7 @@ define([
        * @param {object} options Render options
        * @param {string} options.renderId Render identifier
        * @returns {Promise<MetadataDocumentView>|null} In-flight render
-       * @since 0.0.0
+       * @since 2.39.0
        */
       startMetadataRender(metadata, { renderId }) {
         if (!this.isCurrentRender(renderId)) return null;
@@ -1535,7 +1535,7 @@ define([
        * @param {object} renderOptions Active render options
        * @param {MetadataDocumentView} metadataView Rendered document view
        * @returns {Promise<MetadataView>} This view
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async modifyMetadataView(renderOptions, metadataView) {
         const { renderId } = renderOptions;
@@ -1613,7 +1613,7 @@ define([
       /**
        * Render controls for the current metadata object
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       renderControls() {
         if (!this.metadataSolrResult) return;
@@ -1729,7 +1729,7 @@ define([
 
       /**
        * Render the authoritative resolver state when Solr returns a 404.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async showIndexingOrNotFound() {
         const result = this.dataPackage?.resolutionResult || {};
@@ -1750,7 +1750,7 @@ define([
       /**
        * Show that the object exists but is not indexed yet
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showIndexing() {
         this.hideLoading();
@@ -1796,7 +1796,7 @@ define([
        * @param {object|null} fallbackMember Member to display when the package
        * has no rows yet
        * @returns {object[]} File table rows
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getFileTableRows(fallbackMember = null) {
         const { dataPackage } = this;
@@ -1945,7 +1945,7 @@ define([
        * Observe a file table scroll container and update its overflow cue
        * @param {HTMLElement} container Scroll container
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       setupFileTableScrollIndicators(container) {
         this.teardownFileTableScrollIndicators();
@@ -1975,7 +1975,7 @@ define([
       /**
        * Schedule one overflow cue update for the file table
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       scheduleFileTableScrollIndicatorUpdate() {
         if (!this.fileTableScrollContainer) return;
@@ -1995,7 +1995,7 @@ define([
       /**
        * Update whether the file table has more content below
        * @returns {boolean} Whether more rows are below the viewport
-       * @since 0.0.0
+       * @since 2.39.0
        */
       updateFileTableScrollIndicators() {
         const container = this.fileTableScrollContainer;
@@ -2011,7 +2011,7 @@ define([
       /**
        * Remove file table scroll and resize observers
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       teardownFileTableScrollIndicators() {
         if (
@@ -2040,7 +2040,7 @@ define([
       /**
        * Set whole package download state before file table rows are built
        * @param {DataPackage} dataPackage Package to inspect
-       * @since 0.0.0
+       * @since 2.39.0
        */
       confirmPackageDownloadAll(dataPackage) {
         this.packageDownloadUrl = "";
@@ -2105,7 +2105,7 @@ define([
        * @param {FileTableView} fileTableView Captured file table
        * @param {object} [options] Render options
        * @returns {boolean} Whether the file table is current
-       * @since 0.0.0
+       * @since 2.39.0
        */
       isCurrentFileTable(dataPackage, fileTableView, options = {}) {
         const { renderId, signal } = this.getRenderOptions(options);
@@ -2123,7 +2123,7 @@ define([
        * @param {FileTableView} fileTableView Captured file table
        * @param {object} [options] Render options
        * @returns {Promise<boolean>} Whether rows were merged
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async mergeCurrentFileTableRows(
         dataPackage,
@@ -2146,7 +2146,7 @@ define([
        * Load missing System Metadata used by file table rows
        * @param {object} [options] Render options
        * @returns {Promise<void>} Resolves after enrichment
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async enrichFileTableMemberDetails(options = {}) {
         const renderOptions = this.getRenderOptions(options);
@@ -2201,7 +2201,7 @@ define([
        * @param {FileTableView} fileTableView Captured file table
        * @param {object} [options] Render options
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       scheduleFileTableIndexRefresh(dataPackage, fileTableView, options = {}) {
         const renderOptions = this.getRenderOptions(options);
@@ -2300,7 +2300,7 @@ define([
        * Load dataset titles for nested resource maps from their metadata docs.
        * @param {object} [options] Render options
        * @returns {Promise<void>}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async loadNestedPackageTitles(options = {}) {
         const renderOptions = this.getRenderOptions(options);
@@ -2329,7 +2329,7 @@ define([
        * and merge the values into existing rows. Best effort: failures leave
        * metric cells empty.
        * @returns {Promise<void>}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async loadFileTableMetrics() {
         const { dataPackage, fileTableView, metricsModel } = this;
@@ -2390,7 +2390,7 @@ define([
        * @param {FileItemActionViewModel} actionModel Action view model
        * @param {Event} event Click event
        * @returns {boolean|Promise<boolean>} Whether the action was handled
-       * @since 0.0.0
+       * @since 2.39.0
        */
       handleFileTableAction(rowModel, actionModel, event) {
         const actionId = actionModel?.get?.("id");
@@ -2419,7 +2419,7 @@ define([
        * @param {FileItemViewModel} rowModel File table row model
        * @param {Event} event Click event
        * @returns {boolean} True when a row was handled
-       * @since 0.0.0
+       * @since 2.39.0
        */
       previewFileTableRow(rowModel, event) {
         const id = rowModel?.get?.("id");
@@ -2437,7 +2437,7 @@ define([
        * @param {FileItemViewModel} rowModel Dataset row model
        * @param {FileItemActionViewModel} actionModel Download action model
        * @returns {Promise<boolean>} Whether the package could be downloaded
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async downloadPackageFileTableRow(rowModel, actionModel) {
         const { dataPackage, fileTableView } = this;
@@ -2529,7 +2529,7 @@ define([
        * @param {FileItemActionViewModel} actionModel Download action model
        * @param {Event} event Click event
        * @returns {Promise<boolean>} Whether the row could be downloaded
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async downloadFileTableRow(rowModel, actionModel, event) {
         const id = rowModel?.get?.("id");
@@ -2678,7 +2678,7 @@ define([
        * @param {AbortSignal} [options.signal] Active render signal
        * @returns {Promise<string[]>} Parent resource map PIDs, excluding this
        * package's own resource map
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async getParentResourceMapPids(rmMember, options = {}) {
         const { signal } = options;
@@ -2717,7 +2717,7 @@ define([
        * @param {string|string[]} raw The raw resourceMap value
        * @param {string} selfPid The package's own resource map PID to exclude
        * @returns {string[]} Parent resource map PIDs
-       * @since 0.0.0
+       * @since 2.39.0
        */
       normalizeResourceMapList(raw, selfPid) {
         let list = [];
@@ -2733,7 +2733,7 @@ define([
        * @param {object} [options] Options
        * @param {AbortSignal} [options.signal] Active render signal
        * @returns {Promise<object[]>} Latest parent metadata index docs
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async fetchParentPackageMetadata(parentResourceMapPids, options = {}) {
         const { signal } = options;
@@ -3138,7 +3138,7 @@ define([
        * @param {Element|jQuery} [containerEl] Container to search within
        * @returns {jQuery|boolean} The entity section or false if it cannot be
        * found
-       * @since 0.0.0
+       * @since 2.39.0
        */
       findEntityDetailsContainer(model, containerEl) {
         return (
@@ -3151,7 +3151,7 @@ define([
        * Get the public read flag for a data member.
        * @param {DataPackageMember} member Package member
        * @returns {boolean|null} Public read state
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async getDataMemberIsPublic(member) {
         if (!member) return null;
@@ -3173,7 +3173,7 @@ define([
        * Adapt a package member for legacy data detail and download views.
        * @param {DataPackageMember} member Package member
        * @returns {object|null} Backbone style data model
-       * @since 0.0.0
+       * @since 2.39.0
        */
       createDataDetailsModel(member) {
         if (!member) return null;
@@ -3340,7 +3340,7 @@ define([
        * Update the visible loading message, if one is currently rendered.
        * @param {string} message Loading message
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       updateLoadingText(message) {
         if (!message || typeof message !== "string") return;
@@ -3354,7 +3354,7 @@ define([
        * Update the loading message for a typed DataPackage load phase.
        * @param {object} [progress] DataPackage load progress payload
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       updateDataPackageLoadProgress(progress = {}) {
         const message = DataPackage.LoadProgressMessages[progress.phase];
@@ -3373,7 +3373,7 @@ define([
        * @param {...*} args Arguments forwarded to AppView.showAlert()
        * @returns {Element[]|Element|null} The alert element returned by
        * AppView.showAlert()
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showViewAlert(...args) {
         this.removeViewAlert();
@@ -3384,7 +3384,7 @@ define([
       /**
        * Remove the current app alert owned by MetadataView, if any.
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       removeViewAlert() {
         if (!this.activeAlert) return;
@@ -3497,7 +3497,7 @@ define([
       /**
        * Close and remove the rendered metadata child view.
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       closeMetadataView() {
         if (this.metadataAbortController) {
@@ -3522,7 +3522,7 @@ define([
       /**
        * Close and remove the package file table child view.
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       closeFileTableView() {
         this.teardownFileTableScrollIndicators();

@@ -10,7 +10,7 @@ define(["common/XMLUtilities", "common/ValidationUtilities"], (
    * Helpers for DataONE XML response conventions.
    * @namespace DataONEXmlUtilities
    * @classcategory Common
-   * @since 0.0.0
+   * @since 2.39.0
    */
   const DataONEXmlUtilities = {
     /**

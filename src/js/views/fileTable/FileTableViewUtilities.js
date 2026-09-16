@@ -5,7 +5,7 @@ define(["underscore", "semantic"], (_, Semantic) => {
    * @namespace FileTableViewUtilities
    * @description Shared render helpers for generic file table views
    * @classcategory Views/FileTable
-   * @since 0.0.0
+   * @since 2.39.0
    */
 
   /**

@@ -496,7 +496,7 @@ define([
    * Load and enrich data packages from resource maps and the Solr index.
    * @namespace DataPackageLoader
    * @classcategory Models/DataPackage
-   * @since 0.0.0
+   * @since 2.39.0
    */
   DataPackageLoader = {
     LoadPhases: LOAD_PHASES,

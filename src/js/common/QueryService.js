@@ -43,7 +43,7 @@ define(["jquery"], ($) => {
    * handles query parameters, and can include facets, filter queries, and
    * statistics fields.
    * @class QueryService
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class QueryService {
     /**
@@ -599,7 +599,7 @@ define(["jquery"], ($) => {
      * the same key.
      * @param {object} obj The object to convert.
      * @returns {FormData} The FormData payload.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     static toFormData(obj) {
       const fd = new FormData();

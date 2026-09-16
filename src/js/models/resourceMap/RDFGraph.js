@@ -44,7 +44,7 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
    * change RDF statements through one small API. Direct rdflib access stays in
    * this class.
    * @classcategory Models/ResourceMap
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class RDFGraph {
     /**

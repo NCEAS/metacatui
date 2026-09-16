@@ -42,7 +42,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
    * Utility helpers for parsing, grouping, and formatting dates.
    * @namespace DateUtilities
    * @classcategory Common
-   * @since 0.0.0
+   * @since 2.39.0
    */
   const DateUtilities = {
     /**

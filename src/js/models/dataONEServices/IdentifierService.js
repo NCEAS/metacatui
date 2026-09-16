@@ -9,7 +9,7 @@ define([
    * @class IdentifierService
    * @augments DataONEService
    * @classcategory Models/DataONEServices
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class IdentifierService extends DataONEService {
     /**

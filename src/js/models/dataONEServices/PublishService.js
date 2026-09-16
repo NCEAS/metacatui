@@ -9,7 +9,7 @@ define([
    * @class PublishService
    * @augments DataONEService
    * @classcategory Models/DataONEServices
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class PublishService extends DataONEService {
     /**

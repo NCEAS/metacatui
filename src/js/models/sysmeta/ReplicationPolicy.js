@@ -26,7 +26,7 @@ define([
    * Replication policy value object for System Metadata.
    * @class ReplicationPolicy
    * @classcategory Models/SysMeta
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class ReplicationPolicy {
     /**

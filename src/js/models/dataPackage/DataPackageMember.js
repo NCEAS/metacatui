@@ -84,7 +84,7 @@ define([
    * Store one data package member's manifest, editable, and upload state.
    * @class DataPackageMember
    * @classcategory Models/DataPackage
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class DataPackageMember {
     /**

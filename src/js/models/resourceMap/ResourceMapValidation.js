@@ -3,7 +3,7 @@
 /**
  * Check Resource Map identity, structure, documentation, dates, and provenance.
  * @module ResourceMapValidation
- * @since 0.0.0
+ * @since 2.39.0
  */
 
 define([

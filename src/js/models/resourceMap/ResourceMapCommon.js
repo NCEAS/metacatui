@@ -20,7 +20,7 @@ define([
    * RDF statements are missing or ambiguous.
    * @class ResourceMapConflictError
    * @classcategory Models/ResourceMap
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class ResourceMapConflictError extends Error {
     /**
@@ -109,7 +109,7 @@ define([
    * @description Shared Resource Map vocabulary, PID, URI, and error helpers
    * @classcategory Models/ResourceMap
    * @type {object}
-   * @since 0.0.0
+   * @since 2.39.0
    */
   const ResourceMapCommon = {
     NAMESPACES,

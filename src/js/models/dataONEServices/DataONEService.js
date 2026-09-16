@@ -32,7 +32,7 @@ define([
    * {@link DataONEService.optionsFromDescriptor}, so most subclasses only need
    * a one-line constructor plus their domain methods.
    * @class DataONEService
-   * @since 0.0.0
+   * @since 2.39.0
    * @classcategory Models/DataONEServices
    */
   class DataONEService {

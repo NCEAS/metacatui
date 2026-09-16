@@ -232,7 +232,7 @@ define([
    * RDF graph.
    * @class ProvenanceChartAdapter
    * @classcategory Models/ResourceMap
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class ProvenanceChartAdapter {
     /**

@@ -8,7 +8,7 @@ define([], () => {
    * into a `pid -> counts` map, and {@link FileTableMetrics.getRowMetric}
    * adapts that map to the file table's metric resolver
    * @classcategory Models/FileTable
-   * @since 0.0.0
+   * @since 2.39.0
    */
 
   /**

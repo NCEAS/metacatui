@@ -227,7 +227,7 @@ define([
     /**
      * Load the full index record for this object
      * @returns {Promise<object[]>} Matching index records
-     * @since 0.0.0
+     * @since 2.39.0
      */
     async getIndexMetadata() {
       if (this.indexResult) {
@@ -252,7 +252,7 @@ define([
      * @param {string} title Section title
      * @param {string} [className] Section class name
      * @returns {HTMLElement|null} Populated section or null
-     * @since 0.0.0
+     * @since 2.39.0
      */
     createSection(doc, keys, title, className) {
       if (keys.length === 0) return null;
@@ -295,7 +295,7 @@ define([
      * @param {string} title Section title
      * @param {string} [className] Section class name
      * @returns {void}
-     * @since 0.0.0
+     * @since 2.39.0
      */
     addSection(doc, keys, title, className) {
       const section = this.createSection(doc, keys, title, className);

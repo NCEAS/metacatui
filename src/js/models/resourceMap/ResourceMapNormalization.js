@@ -337,7 +337,7 @@ define([
    * These repairs never choose between RDF nodes or replace an imported URI.
    * @class ResourceMapNormalization
    * @classcategory Models/ResourceMap
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class ResourceMapNormalization {
     /**

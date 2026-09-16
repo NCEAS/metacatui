@@ -10,7 +10,7 @@ define([
    * @class FileItemCollection
    * @classdesc Collection of file table row view models
    * @classcategory Models/FileTable
-   * @since 0.0.0
+   * @since 2.39.0
    * @augments Backbone.Collection
    */
   const FileItemCollection = Backbone.Collection.extend({
@@ -36,7 +36,7 @@ define([
    * This model owns display only table state; it does not fetch, upload,
    * download, or search for files
    * @classcategory Models/FileTable
-   * @since 0.0.0
+   * @since 2.39.0
    * @augments Backbone.Model
    */
   const FileTableViewModel = Backbone.Model.extend({

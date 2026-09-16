@@ -11,7 +11,7 @@ define([], () => {
    * @augments Error
    * @memberof XMLUtilities
    * @classcategory Common
-   * @since 0.0.0
+   * @since 2.39.0
    */
   const ParseError = class extends Error {
     /**
@@ -40,7 +40,7 @@ define([], () => {
      * @param {number} codePoint The Unicode code point to check
      * @returns {boolean} True if the code point is valid in XML, false
      * otherwise
-     * @since 0.0.0
+     * @since 2.39.0
      */
     isValidXmlCodePoint(codePoint) {
       return (
@@ -61,7 +61,7 @@ define([], () => {
      * @param {*} textString Value to normalize. Non-null values are coerced to
      * a string before invalid XML characters are removed.
      * @returns {string|null} The normalized string, or null for nullish values.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     removeInvalidXmlCharacters(textString) {
       if (textString === undefined || textString === null) {
@@ -80,7 +80,7 @@ define([], () => {
      * metadata annotations.
      * @param {*} id Identifier.
      * @returns {string|null} XML-safe ID, or null for empty input.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     getXMLSafeID(id) {
       if (id === undefined || id === null) return null;
@@ -99,7 +99,7 @@ define([], () => {
      * @returns {Document|null} Parsed XML Document, or null for empty,
      * whitespace-only, or nullish input.
      * @throws {ParseError} When input is not a string or cannot be parsed
-     * @since 0.0.0
+     * @since 2.39.0
      */
     parseXmlString(xmlString, context = "XML response") {
       if (xmlString === null || xmlString === undefined) {
@@ -144,7 +144,7 @@ define([], () => {
      * @param {string} [context] Context label for parse errors.
      * @returns {Document} Parsed XML document.
      * @throws {ParseError} Throws when the XML is empty or invalid.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     parseRequiredXmlString(xmlString, context = "XML response") {
       const xml = this.parseXmlString(xmlString, context);
@@ -161,7 +161,7 @@ define([], () => {
      * removed.
      * @param {Node} node The XML node to inspect.
      * @returns {string} The normalized local name, or an empty string.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     getNormalizedElementName(node) {
       const name = node?.localName || node?.nodeName || "";
@@ -180,7 +180,7 @@ define([], () => {
      * invalid, e.g. [{ combinator: "descendant", name: "identifier" }] for
      * "d1:identifier", or [{ combinator: "descendant", name: "parent" }, {
      * combinator: "child", name: "child" }] for "parent > child"
-     * @since 0.0.0
+     * @since 2.39.0
      */
     parseSimpleElementSelector(selector) {
       if (!isString(selector)) return null;
@@ -239,7 +239,7 @@ define([], () => {
      * @param {string} selector Simple selector such as `d1:identifier` or
      * `parent > child`.
      * @returns {Element[]} Matching elements, or an empty array.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     findElementsBySimpleSelector(root, selector) {
       const parts = this.parseSimpleElementSelector(selector);
@@ -283,7 +283,7 @@ define([], () => {
      * @param {Node} node The parent XML node.
      * @param {string} name Local child element name to match.
      * @returns {Element|null} The first matching child element, or null.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     findDirectChildElement(node, name) {
       const nodes = this.findDirectChildElements(node, name);
@@ -296,7 +296,7 @@ define([], () => {
      * @param {Node} node The parent XML node.
      * @param {string} name Local child element name to match.
      * @returns {Element|null} The last matching child element, or null.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     findLastDirectChildElement(node, name) {
       const nodes = this.findDirectChildElements(node, name);
@@ -309,7 +309,7 @@ define([], () => {
      * @param {Node} node The parent XML node.
      * @param {string} name Local child element name to match.
      * @returns {Element[]} Matching child elements.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     findDirectChildElements(node, name) {
       const normalized = String(name || "").toLowerCase();
@@ -324,7 +324,7 @@ define([], () => {
      * @param {Document|Node} documentOrNode Parsed XML document or node.
      * @param {string} name Local element name to match.
      * @returns {Element|null} The first matching element, or null.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     findFirstElement(documentOrNode, name) {
       const normalized = String(name || "").toLowerCase();
@@ -355,7 +355,7 @@ define([], () => {
      * @param {Node} node Parent XML node
      * @param {string} name Local child element name to match
      * @returns {string|null} Matching child text, or null
-     * @since 0.0.0
+     * @since 2.39.0
      */
     getDirectChildText(node, name) {
       const element = this.findDirectChildElement(node, name);
@@ -367,7 +367,7 @@ define([], () => {
      * @param {Node} node The parent XML node.
      * @param {string} name Local child element name to match.
      * @returns {Array<string|null>} Matching child text values.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     getDirectChildTexts(node, name) {
       return this.findDirectChildElements(node, name).map(
@@ -382,7 +382,7 @@ define([], () => {
      * @param {string} [context] Context label for errors.
      * @returns {string} The matched namespace URI.
      * @throws {Error} Throws when the namespace URI is missing or unsupported.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     requireNamespaceUri(
       element,
@@ -415,7 +415,7 @@ define([], () => {
      * attributes are ignored during validation.
      * @returns {string[]} Present non-namespace attribute names.
      * @throws {Error} Throws when an unexpected attribute is present.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     requireAllowedAttributeNames(
       element,
@@ -453,7 +453,7 @@ define([], () => {
      * @param {string} [context] Context label for errors.
      * @returns {string} Trimmed attribute value.
      * @throws {Error} Throws when the attribute is missing or empty.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     getRequiredAttribute(element, attributeName, context = "XML response") {
       const value = element?.getAttribute?.(attributeName)?.trim() || "";
@@ -477,7 +477,7 @@ define([], () => {
      * @returns {Map<string, Element[]>} Matching child elements by local name
      * @throws {Error} Throws on unexpected, out-of-order, duplicate, or missing
      * child elements.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     requireDirectChildSequence(node, definitions, context = "XML response") {
       const childElements = Array.from(node?.children || []);
@@ -551,7 +551,7 @@ define([], () => {
      * messages.
      * @returns {Element} The validated root element.
      * @throws {Error} Throws when the root is missing or has the wrong name.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     requireDocumentElement(
       documentOrElement,
@@ -593,7 +593,7 @@ define([], () => {
      * messages.
      * @returns {string} The extracted non-empty text value.
      * @throws {Error} When the document or required text is missing
-     * @since 0.0.0
+     * @since 2.39.0
      */
     getRequiredElementText(
       documentOrNode,
@@ -627,7 +627,7 @@ define([], () => {
      * @param {string} [context] Context label for error
      * messages.
      * @returns {{value:string, xml:Document}} Parsed XML and extracted value.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     parseXmlStringForRequiredElementText(
       xmlString,
@@ -650,7 +650,7 @@ define([], () => {
      * @param {*} value Text value to append.
      * @returns {Element|null} The appended child element, or null for nullish
      * values.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     appendTextElement(doc, parent, name, value) {
       if (value === null || value === undefined) return null;
@@ -665,7 +665,7 @@ define([], () => {
      * Extract the XML declaration from raw XML text, if present.
      * @param {string|null|undefined} xmlString XML text to inspect.
      * @returns {string|null} XML declaration text.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     extractXmlDeclaration(xmlString) {
       if (!isString(xmlString) || !String(xmlString).trim()) return null;
@@ -677,7 +677,7 @@ define([], () => {
      * Capture namespace declarations from an XML element in source order.
      * @param {Element|null} element XML element to inspect.
      * @returns {Array<{name:string, value:string}>} Namespace attributes.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     getNamespaceAttributes(element) {
       return Array.from(element?.attributes || [])
@@ -700,7 +700,7 @@ define([], () => {
      * @param {string[]} selectors Selectors to try in order.
      * @returns {string} The extracted text, or an empty string.
      * @throws {Error} When XML parsing fails unexpectedly
-     * @since 0.0.0
+     * @since 2.39.0
      */
     extractTextBySelectors(xmlString, selectors) {
       let xmlDoc = null;

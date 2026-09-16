@@ -15,7 +15,7 @@ define([
    * @class AccessPolicy
    * @augments Array
    * @classcategory Models/SysMeta
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class AccessPolicy extends Array {
     /**

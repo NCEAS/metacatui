@@ -16,7 +16,7 @@
  *
  * During a grouped edit, reads use the state captured before editing began and
  * writes go directly to `resourceMap.graph`.
- * @since 0.0.0
+ * @since 2.39.0
  */
 
 define([
@@ -178,7 +178,7 @@ define([
    * Update the program runs belonging to one provenance graph.
    * @class ProvenanceExecutionMutation
    * @classcategory Models/ResourceMap
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class ProvenanceExecutionMutation {
     /**

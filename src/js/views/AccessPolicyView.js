@@ -190,7 +190,7 @@ define([
        * consumed by the existing `AccessRuleView` editing UI.
        * @param {Array<object>} policy System Metadata access policy
        * @returns {AccessPolicy} Legacy access policy collection
-       * @since 0.0.0
+       * @since 2.39.0
        */
       normalizeAccessPolicy(policy) {
         const collection = new AccessPolicy();
@@ -212,7 +212,7 @@ define([
       /**
        * Get the rightsHolder for the policy target.
        * @returns {string|null|undefined} Current rightsHolder subject
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getRightsHolder() {
         return this.policyContext.rightsHolder;
@@ -221,7 +221,7 @@ define([
       /**
        * Update the current rightsHolder and the legacy model when present.
        * @param {string|null|undefined} subject New rightsHolder subject
-       * @since 0.0.0
+       * @since 2.39.0
        */
       setRightsHolder(subject) {
         this.policyContext.rightsHolder = subject || null;
@@ -233,7 +233,7 @@ define([
       /**
        * Get the resource label used in modal copy.
        * @returns {string} Display resource type
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getResourceType() {
         switch (this.policyContext?.type) {
@@ -255,7 +255,7 @@ define([
 
       /**
        * Promote another owner access rule into the rightsHolder slot.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       replaceRightsHolder() {
         const owner = this.collection.findWhere({ changePermission: true });
@@ -829,7 +829,7 @@ define([
       /**
        * Sync the public/private toggle state into the access policy collection.
        * @param {HTMLElement|jQuery} [input] Public toggle input
-       * @since 0.0.0
+       * @since 2.39.0
        */
       syncPublicToggle(input) {
         const publicToggle = input
@@ -849,7 +849,7 @@ define([
       /**
        * Apply the edited policy through the explicit callback or legacy target.
        * @returns {Promise<void>} Resolves when the apply operation completes
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async apply() {
         if (this.isApplying) {
@@ -912,7 +912,7 @@ define([
       /**
        * Enable or disable the permission modal while changes are applied.
        * @param {boolean} isApplying Whether apply work is in progress
-       * @since 0.0.0
+       * @since 2.39.0
        */
       setApplying(isApplying) {
         this.isApplying = isApplying;
@@ -962,7 +962,7 @@ define([
        * @param {Backbone.Model} dataONEObject Object whose policy is being
        * edited
        * @returns {Promise<void>} Resolves when the save completes
-       * @since 0.0.0
+       * @since 2.39.0
        */
       applyDataONEObjectPolicy(dataONEObject) {
         if (this.broadcast) {
@@ -1033,7 +1033,7 @@ define([
       /**
        * Show an apply failure message and restore the modal controls.
        * @param {string} message Error message to display
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showApplyError(message) {
         this.setApplying(false);
@@ -1051,7 +1051,7 @@ define([
        * Reset edits when the modal closes, unless an apply operation is active.
        * @param {Event} event Bootstrap modal hide event
        * @returns {boolean} Whether the hide can continue
-       * @since 0.0.0
+       * @since 2.39.0
        */
       handleHide(event) {
         if (event.target !== this.el) {

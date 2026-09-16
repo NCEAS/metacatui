@@ -459,7 +459,7 @@ define([
      * Adapt a projected chart record for CitationView
      * @param {object} record Projected chart record
      * @returns {Backbone.Model|null} Cached citation source model
-     * @since 0.0.0
+     * @since 2.39.0
      */
     getCitationModel(record) {
       if (!record) return null;
@@ -1238,7 +1238,7 @@ define([
     /**
      * Close and forget the active provenance picker
      * @returns {void}
-     * @since 0.0.0
+     * @since 2.39.0
      */
     closeProvEntitySelect() {
       if (!this.selectProvEntityView) return;
@@ -1298,7 +1298,7 @@ define([
      * Show a rejected provenance change
      * @param {Error} error Provenance error
      * @returns {void}
-     * @since 0.0.0
+     * @since 2.39.0
      */
     showProvenanceError(error) {
       const message = error?.message || MESSAGES.provenanceRejected;
@@ -1363,7 +1363,7 @@ define([
      * @param {string} entityType Either data or program
      * @returns {void}
      * @throws {Error} When DataPackage rejects the change
-     * @since 0.0.0
+     * @since 2.39.0
      */
     changeProv(action, pid, entityType) {
       const generatedByProgram =

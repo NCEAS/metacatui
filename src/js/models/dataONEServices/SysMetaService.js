@@ -49,7 +49,7 @@ define([
      * @param {string} operation Operation name for error reporting
      * @returns {DataONEHttpClient} Client for the write endpoint
      * @private
-     * @since 0.0.0
+     * @since 2.39.0
      * @throws {Error} When writeBaseUrl is missing
      */
     getWriteClient(operation) {
@@ -110,7 +110,7 @@ define([
      * @param {string} pid PID of the object to fetch System Metadata for
      * @param {object} [options] Request options
      * @returns {Promise<SystemMetadata>} Parsed System Metadata model
-     * @since 0.0.0
+     * @since 2.39.0
      * @throws {Error} When the request or XML parsing fails
      */
     async downloadFromWriteTarget(pid, options = {}) {
@@ -179,7 +179,7 @@ define([
      * @param {object} [options] Options passed to {@link DataONEService#upload}.
      * @returns {Promise<DataONEHttpResponse>} Promise resolving to the update response.
      * @throws {Error} When required input is missing or the request fails
-     * @since 0.0.0
+     * @since 2.39.0
      */
     async update(pid, sysMetaXml, options = {}) {
       const normalizedPid = this.constructor.normalizePid(
