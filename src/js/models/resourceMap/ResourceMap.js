@@ -111,7 +111,7 @@ define([
    * change the graph.
    * @class
    * @classcategory Models/ResourceMap
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class ResourceMap {
     /**

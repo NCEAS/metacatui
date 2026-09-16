@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/models/dataPackage/DataPackageMember.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="/metacatui/assets/css/styles.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+<nav id="nav">
+    <a href="/">
+      <div class="logo">
+<svg class="cat" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="cat" class="svg-inline--fa fa-cat fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M290.59 192c-20.18 0-106.82 1.98-162.59 85.95V192c0-52.94-43.06-96-96-96-17.67 0-32 14.33-32 32s14.33 32 32 32c17.64 0 32 14.36 32 32v256c0 35.3 28.7 64 64 64h176c8.84 0 16-7.16 16-16v-16c0-17.67-14.33-32-32-32h-32l128-96v144c0 8.84 7.16 16 16 16h32c8.84 0 16-7.16 16-16V289.86c-10.29 2.67-20.89 4.54-32 4.54-61.81 0-113.52-44.05-125.41-102.4zM448 96h-64l-64-64v134.4c0 53.02 42.98 96 96 96s96-42.98 96-96V32l-64 64zm-72 80c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16zm80 0c-8.84 0-16-7.16-16-16s7.16-16 16-16 16 7.16 16 16-7.16 16-16 16z"></path></svg>
+
+<svg width="459px" height="53px" viewBox="0 0 459 53" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="metacatui" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M16.492,52 C17.212,52 17.812,51.748 18.292,51.244 C18.772,50.74 19.012,50.128 19.012,49.408 L19.012,49.408 L18.94,22.912 L30.82,37.816 C31.204,38.344 31.72,38.764 32.368,39.076 C33.016,39.388 33.7,39.544 34.42,39.544 C35.908,39.544 37.132,38.896 38.092,37.6 L38.092,37.6 L49.684,22.912 L49.684,49.408 C49.684,50.128 49.96,50.74 50.512,51.244 C51.064,51.748 51.7,52 52.42,52 L52.42,52 L62.068,52 C62.788,52 63.388,51.748 63.868,51.244 C64.348,50.74 64.588,50.128 64.588,49.408 L64.588,49.408 L64.588,4.12 C64.588,3.448 64.336,2.86 63.832,2.356 C63.328,1.852 62.74,1.6 62.068,1.6 L62.068,1.6 L52.348,1.6 C51.388,1.6 50.56,1.648 49.864,1.744 C49.168,1.84 48.532,2.152 47.956,2.68 L47.956,2.68 L33.916,17.296 L20.524,2.608 C20.332,2.368 19.972,2.14 19.444,1.924 C18.916,1.708 18.412,1.6 17.932,1.6 L17.932,1.6 L6.772,1.6 C6.052,1.6 5.44,1.852 4.936,2.356 C4.432,2.86 4.18,3.448 4.18,4.12 L4.18,4.12 L4.18,49.408 C4.18,50.08 4.432,50.68 4.936,51.208 C5.44,51.736 6.052,52 6.772,52 L6.772,52 L16.492,52 Z M110.74,52 C111.556,52 112.264,51.676 112.864,51.028 C113.464,50.38 113.764,49.624 113.764,48.76 L113.764,48.76 L113.764,42.568 C113.764,41.608 113.464,40.828 112.864,40.228 C112.264,39.628 111.556,39.328 110.74,39.328 L110.74,39.328 L89.428,39.328 L89.428,32.92 L109.732,32.92 C110.5,32.92 111.184,32.596 111.784,31.948 C112.384,31.3 112.684,30.568 112.684,29.752 L112.684,29.752 L112.684,23.488 C112.684,22.576 112.384,21.82 111.784,21.22 C111.184,20.62 110.5,20.32 109.732,20.32 L109.732,20.32 L89.428,20.32 L89.428,14.488 L110.74,14.488 C111.508,14.488 112.204,14.164 112.828,13.516 C113.452,12.868 113.764,12.136 113.764,11.32 L113.764,11.32 L113.764,5.056 C113.764,4.144 113.464,3.388 112.864,2.788 C112.264,2.188 111.556,1.888 110.74,1.888 L110.74,1.888 L76.756,1.888 C75.94,1.888 75.232,2.188 74.632,2.788 C74.032,3.388 73.732,4.144 73.732,5.056 L73.732,5.056 L73.732,48.76 C73.732,49.624 74.032,50.38 74.632,51.028 C75.232,51.676 75.94,52 76.756,52 L76.756,52 L110.74,52 Z M147.604,52 C148.42,52 149.104,51.688 149.656,51.064 C150.208,50.44 150.484,49.672 150.484,48.76 L150.484,48.76 L150.484,16.216 L161.86,16.216 C162.676,16.216 163.396,15.904 164.02,15.28 C164.644,14.656 164.956,13.936 164.956,13.12 L164.956,13.12 L164.956,4.768 C164.956,4 164.644,3.316 164.02,2.716 C163.396,2.116 162.676,1.816 161.86,1.816 L161.86,1.816 L124.132,1.816 C123.22,1.816 122.464,2.104 121.864,2.68 C121.264,3.256 120.964,3.952 120.964,4.768 L120.964,4.768 L120.964,13.12 C120.964,13.936 121.264,14.656 121.864,15.28 C122.464,15.904 123.22,16.216 124.132,16.216 L124.132,16.216 L135.652,16.216 L135.148,48.832 C135.148,49.744 135.424,50.5 135.976,51.1 C136.528,51.7 137.212,52 138.028,52 L138.028,52 L147.604,52 Z M175.828,52 C176.836,52 177.676,51.82 178.348,51.46 C179.02,51.1 179.452,50.584 179.644,49.912 L179.644,49.912 L181.876,42.712 L197.932,42.712 L200.164,49.912 C200.356,50.584 200.8,51.1 201.496,51.46 C202.192,51.82 203.044,52 204.052,52 L204.052,52 L213.916,52 C215.836,51.712 216.796,50.704 216.796,48.976 C216.796,48.304 216.676,47.596 216.436,46.852 C216.196,46.108 216.052,45.616 216.004,45.376 L216.004,45.376 L199.876,4.84 C199.588,3.976 199.036,3.232 198.22,2.608 C197.404,1.984 196.372,1.648 195.124,1.6 L195.124,1.6 L184.756,1.6 C183.604,1.648 182.608,1.948 181.768,2.5 C180.928,3.052 180.292,3.832 179.86,4.84 L179.86,4.84 L163.876,45.376 C163.828,45.472 163.672,45.916 163.408,46.708 C163.144,47.5 163.012,48.304 163.012,49.12 C163.012,50.752 163.948,51.712 165.82,52 L165.82,52 L175.828,52 Z M195.34,30.544 L184.036,30.544 L189.652,13.624 L195.34,30.544 Z M245.38,53.08 C250.612,53.08 255.652,51.544 260.5,48.472 C261.22,47.944 261.58,47.296 261.58,46.528 C261.58,45.808 261.292,45.16 260.716,44.584 L260.716,44.584 L252.796,36.808 C252.364,36.376 251.836,36.16 251.212,36.16 C250.78,36.16 250.372,36.256 249.988,36.448 C248.356,37.12 246.796,37.456 245.308,37.456 C243.244,37.456 241.348,36.952 239.62,35.944 C237.892,34.936 236.512,33.58 235.48,31.876 C234.448,30.172 233.932,28.336 233.932,26.368 C233.932,24.352 234.436,22.504 235.444,20.824 C236.452,19.144 237.832,17.812 239.584,16.828 C241.336,15.844 243.244,15.352 245.308,15.352 C246.892,15.352 248.332,15.64 249.628,16.216 C250.012,16.408 250.444,16.504 250.924,16.504 C251.548,16.504 252.1,16.264 252.58,15.784 L252.58,15.784 L259.636,8.008 C260.164,7.384 260.428,6.76 260.428,6.136 C260.428,5.224 259.996,4.528 259.132,4.048 C254.86,1.552 250.276,0.304 245.38,0.304 C240.532,0.304 236.032,1.492 231.88,3.868 C227.728,6.244 224.44,9.448 222.016,13.48 C219.592,17.512 218.38,21.904 218.38,26.656 C218.38,31.408 219.592,35.812 222.016,39.868 C224.44,43.924 227.728,47.14 231.88,49.516 C236.032,51.892 240.532,53.08 245.38,53.08 Z M279.796,52 C280.804,52 281.644,51.82 282.316,51.46 C282.988,51.1 283.42,50.584 283.612,49.912 L283.612,49.912 L285.844,42.712 L301.9,42.712 L304.132,49.912 C304.324,50.584 304.768,51.1 305.464,51.46 C306.16,51.82 307.012,52 308.02,52 L308.02,52 L317.884,52 C319.804,51.712 320.764,50.704 320.764,48.976 C320.764,48.304 320.644,47.596 320.404,46.852 C320.164,46.108 320.02,45.616 319.972,45.376 L319.972,45.376 L303.844,4.84 C303.556,3.976 303.004,3.232 302.188,2.608 C301.372,1.984 300.34,1.648 299.092,1.6 L299.092,1.6 L288.724,1.6 C287.572,1.648 286.576,1.948 285.736,2.5 C284.896,3.052 284.26,3.832 283.828,4.84 L283.828,4.84 L267.844,45.376 C267.796,45.472 267.64,45.916 267.376,46.708 C267.112,47.5 266.98,48.304 266.98,49.12 C266.98,50.752 267.916,51.712 269.788,52 L269.788,52 L279.796,52 Z M299.308,30.544 L288.004,30.544 L293.62,13.624 L299.308,30.544 Z M352.588,52 C353.404,52 354.088,51.688 354.64,51.064 C355.192,50.44 355.468,49.672 355.468,48.76 L355.468,48.76 L355.468,16.216 L366.844,16.216 C367.66,16.216 368.38,15.904 369.004,15.28 C369.628,14.656 369.94,13.936 369.94,13.12 L369.94,13.12 L369.94,4.768 C369.94,4 369.628,3.316 369.004,2.716 C368.38,2.116 367.66,1.816 366.844,1.816 L366.844,1.816 L329.116,1.816 C328.204,1.816 327.448,2.104 326.848,2.68 C326.248,3.256 325.948,3.952 325.948,4.768 L325.948,4.768 L325.948,13.12 C325.948,13.936 326.248,14.656 326.848,15.28 C327.448,15.904 328.204,16.216 329.116,16.216 L329.116,16.216 L340.636,16.216 L340.132,48.832 C340.132,49.744 340.408,50.5 340.96,51.1 C341.512,51.7 342.196,52 343.012,52 L343.012,52 L352.588,52 Z M402.052,52.792 C408.1,52.792 412.912,51.628 416.488,49.3 C420.064,46.972 422.536,44.068 423.904,40.588 C425.272,37.108 425.932,33.424 425.884,29.536 C425.884,29.5309474 425.883967,29.5237673 425.8839,29.5144598 L425.883102,29.4330859 C425.879911,29.1480111 425.868211,28.3183158 425.848,26.944 C425.8294,25.6792 425.818008,22.91524 425.813823,18.65212 L425.813103,17.80828 C425.812997,17.66452 425.8129,17.5192 425.81281,17.37232 L425.812,3.904 C425.86,3.184 425.632,2.62 425.128,2.212 C424.624,1.804 423.916,1.6 423.004,1.6 L423.004,1.6 L413.428,1.6 C412.612,1.6 411.904,1.828 411.304,2.284 C410.704,2.74 410.404,3.28 410.404,3.904 L410.404,3.904 L410.26,27.808 C410.26,34.144 407.476,37.312 401.908,37.312 C399.076,37.312 396.832,36.412 395.176,34.612 C393.52,32.812 392.668,30.352 392.62,27.232 L392.62,27.232 L392.332,3.76 C392.332,3.088 392.068,2.56 391.54,2.176 C391.012,1.792 390.268,1.6 389.308,1.6 L389.308,1.6 L379.876,1.6 C378.244,1.6 377.428,2.32 377.428,3.76 L377.428,3.76 L377.5,28.816 C377.5,33.04 378.376,36.964 380.128,40.588 C381.88,44.212 384.592,47.152 388.264,49.408 C391.936,51.664 396.532,52.792 402.052,52.792 Z M449.284,52.144 C450.148,52.144 450.88,51.844 451.48,51.244 C452.08,50.644 452.38,49.84 452.38,48.832 L452.38,48.832 L452.38,4.912 C452.38,4 452.08,3.22 451.48,2.572 C450.88,1.924 450.148,1.6 449.284,1.6 L449.284,1.6 L439.42,1.6 C438.46,1.6 437.692,1.924 437.116,2.572 C436.54,3.22 436.252,4 436.252,4.912 L436.252,4.912 L436.252,48.832 C436.252,49.84 436.54,50.644 437.116,51.244 C437.692,51.844 438.46,52.144 439.42,52.144 L439.42,52.144 L449.284,52.144 Z" id="metacatui" fill="#FCBF49" fill-rule="nonzero"></path>
+    </g>
+</svg>
+</logo>
+
+    </a>
+    <h3>Modules</h3><ul><li><a href="module-ProvenanceValidation.html">ProvenanceValidation</a></li><li><a href="module-ResourceMapValidation.html">ResourceMapValidation</a></li></ul><h3>Externals</h3><ul><li><a href="external-TaxonomicClassification.html">TaxonomicClassification</a></li></ul><h3>Namespaces</h3><ul><li class='category-heading' data-category='Common'>Common</li><li><a href="DataONEXmlUtilities.html">DataONEXmlUtilities</a></li><li><a href="DateUtilities.html">DateUtilities</a></li><li><a href="ErrorUtilities.html">ErrorUtilities</a></li><li><a href="UrlUtilities.html">UrlUtilities</a></li><li><a href="ValidationUtilities.html">ValidationUtilities</a></li><li><a href="ValueUtilities.html">ValueUtilities</a></li><li><a href="XMLTypes.html">XMLTypes</a></li><li class='category-heading' data-category='Models/DataPackage'>Models/DataPackage</li><li><a href="DataPackageLoader.html">DataPackageLoader</a></li><li class='category-heading' data-category='Models/FileTable'>Models/FileTable</li><li><a href="DataPackageFileTableAdapter.html">DataPackageFileTableAdapter</a></li><li><a href="FileTableMetrics.html">FileTableMetrics</a></li><li class='category-heading' data-category='Models/ResourceMap'>Models/ResourceMap</li><li><a href="ResourceMapCommon.html">ResourceMapCommon</a></li><li class='category-heading' data-category='Models/SysMeta'>Models/SysMeta</li><li><a href="SysMetaSchema.html">SysMetaSchema</a></li><li class='category-heading' data-category='Views/FileTable'>Views/FileTable</li><li><a href="FileTableViewUtilities.html">FileTableViewUtilities</a></li><li><a href="AppConfig.html">AppConfig</a></li><li><a href="EMLUtilities.html">EMLUtilities</a></li><li><a href="IconUtilities.html">IconUtilities</a></li><li><a href="MapConfig.html">MapConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="SearchParams.html">SearchParams</a></li><li><a href="TrustedContentUtilities.html">TrustedContentUtilities</a></li><li><a href="Utilities.html">Utilities</a></li><li><a href="XMLUtilities.html">XMLUtilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="ProjectList.html">ProjectList</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/Geohashes'>Collections/Geohashes</li><li><a href="Geohashes.html">Geohashes</a></li><li class='category-heading' data-category='Collections/Maps'>Collections/Maps</li><li><a href="AssetCategories.html">AssetCategories</a></li><li><a href="AssetColors.html">AssetColors</a></li><li><a href="Features.html">Features</a></li><li><a href="GeoPoints.html">GeoPoints</a></li><li><a href="MapAssets.html">MapAssets</a></li><li><a href="VectorFilters.html">VectorFilters</a></li><li><a href="ViewfinderCardCategories.html">ViewfinderCardCategories</a></li><li><a href="ViewfinderCards.html">ViewfinderCards</a></li><li class='category-heading' data-category='Collections/Metadata/EML'>Collections/Metadata/EML</li><li><a href="EMLAnnotations.html">EMLAnnotations</a></li><li><a href="EMLAttributes.html">EMLAttributes</a></li><li><a href="EMLEntities.html">EMLEntities</a></li><li><a href="EMLMissingValueCodes.html">EMLMissingValueCodes</a></li><li class='category-heading' data-category='Collections/Ontologies'>Collections/Ontologies</li><li><a href="BioontologyResults.html">BioontologyResults</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Collections/SearchSelect'>Collections/SearchSelect</li><li><a href="DataONEObjects.html">DataONEObjects</a></li><li><a href="SearchSelectOptions.html">SearchSelectOptions</a></li><li class='category-heading' data-category='Collections/VersionHistory'>Collections/VersionHistory</li><li><a href="VersionTimelineGroups.html">VersionTimelineGroups</a></li><li class='category-heading' data-category='Common'>Common</li><li><a href="ResourceMapResolver.html">ResourceMapResolver</a></li><li><a href="XMLUtilities.ParseError.html">ParseError</a></li><li class='category-heading' data-category='Errors'>Errors</li><li><a href="EmptyAttributeListError.html">EmptyAttributeListError</a></li><li><a href="InvalidAttributeListError.html">InvalidAttributeListError</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="Accordion.html">Accordion</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="CitationModel.html">CitationModel</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="CrossRef.html">CrossRef</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="Metrics.html">Metrics</a></li><li><a href="ObjectNotification.html">ObjectNotification</a></li><li><a href="PackageModel.html">PackageModel</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li><a href="UserModel.html">UserModel</a></li><li class='category-heading' data-category='Models/Accordion'>Models/Accordion</li><li><a href="AccordionItem.html">AccordionItem</a></li><li class='category-heading' data-category='Models/Analytics'>Models/Analytics</li><li><a href="Analytics.html">Analytics</a></li><li><a href="GoogleAnalytics.html">GoogleAnalytics</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Connectors'>Models/Connectors</li><li><a href="BioontologyAccordionSearchSelect.html">BioontologyAccordionSearchSelect</a></li><li><a href="FiltersMapConnector.html">FiltersMapConnector</a></li><li><a href="FiltersSearchConnector.html">FiltersSearchConnector</a></li><li><a href="GeoPointsCesiumConnector.html">GeoPointsCesiumConnector</a></li><li><a href="GeoPointsCesiumPointsConnector.html">GeoPointsCesiumPointsConnector</a></li><li><a href="GeoPointsCesiumPolygonConnector.html">GeoPointsCesiumPolygonConnector</a></li><li><a href="MapSearchConnector.html">MapSearchConnector</a></li><li><a href="MapSearchFiltersConnector.html">MapSearchFiltersConnector</a></li><li class='category-heading' data-category='Models/DataONEServices'>Models/DataONEServices</li><li><a href="AuthorizationService.html">AuthorizationService</a></li><li><a href="DataONEHttpClient.html">DataONEHttpClient</a></li><li><a href="DataONEService.html">DataONEService</a></li><li><a href="IdentifierService.html">IdentifierService</a></li><li><a href="ObjectLocationResolver.html">ObjectLocationResolver</a></li><li><a href="ObjectService.html">ObjectService</a></li><li><a href="PackageService.html">PackageService</a></li><li><a href="PublishService.html">PublishService</a></li><li><a href="SysMetaService.html">SysMetaService</a></li><li><a href="ViewService.html">ViewService</a></li><li class='category-heading' data-category='Models/DataPackage'>Models/DataPackage</li><li><a href="DataPackageMember.html">DataPackageMember</a></li><li><a href="DataPackageMembers.html">DataPackageMembers</a></li><li><a href="DataPackageRecovery.html">DataPackageRecovery</a></li><li><a href="DataPackageUploader.html">DataPackageUploader</a></li><li><a href="UploadRecoveryStore.html">UploadRecoveryStore</a></li><li><a href="UploadResult.html">UploadResult</a></li><li class='category-heading' data-category='Models/FileTable'>Models/FileTable</li><li><a href="FileItemActionCollection.html">FileItemActionCollection</a></li><li><a href="FileItemActionViewModel.html">FileItemActionViewModel</a></li><li><a href="FileItemCollection.html">FileItemCollection</a></li><li><a href="FileItemViewModel.html">FileItemViewModel</a></li><li><a href="FileTableViewModel.html">FileTableViewModel</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Geocoder'>Models/Geocoder</li><li><a href="GeocodedLocation.html">GeocodedLocation</a></li><li><a href="GeocoderSearch.html">GeocoderSearch</a></li><li><a href="GoogleMapsAutocompleter.html">GoogleMapsAutocompleter</a></li><li><a href="GoogleMapsGeocoder.html">GoogleMapsGeocoder</a></li><li><a href="Prediction.html">Prediction</a></li><li class='category-heading' data-category='Models/Geohashes'>Models/Geohashes</li><li><a href="Geohash.html">Geohash</a></li><li class='category-heading' data-category='Models/Maps'>Models/Maps</li><li><a href="AssetCategory.html">AssetCategory</a></li><li><a href="AssetColor.html">AssetColor</a></li><li><a href="AssetColorPalette.html">AssetColorPalette</a></li><li><a href="ExpansionPanelsModel.html">ExpansionPanelsModel</a></li><li><a href="Feature.html">Feature</a></li><li><a href="GeoBoundingBox.html">GeoBoundingBox</a></li><li><a href="GeoPoint.html">GeoPoint</a></li><li><a href="GeoScale.html">GeoScale</a></li><li><a href="GeoUtilities.html">GeoUtilities</a></li><li><a href="MapInteraction.html">MapInteraction</a></li><li><a href="MapModel.html">MapModel</a></li><li><a href="VectorFilter.html">VectorFilter</a></li><li><a href="ViewfinderCardCategory.html">ViewfinderCardCategory</a></li><li><a href="ViewfinderCardModel.html">ViewfinderCardModel</a></li><li><a href="ViewfinderModel.html">ViewfinderModel</a></li><li class='category-heading' data-category='Models/Maps/Assets'>Models/Maps/Assets</li><li><a href="Cesium3DTileset.html">Cesium3DTileset</a></li><li><a href="CesiumGeohash.html">CesiumGeohash</a></li><li><a href="CesiumImagery.html">CesiumImagery</a></li><li><a href="CesiumTerrain.html">CesiumTerrain</a></li><li><a href="CesiumVectorData.html">CesiumVectorData</a></li><li><a href="MapAsset.html">MapAsset</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML'>Models/Metadata/EML</li><li><a href="EMLMethodStep.html">EMLMethodStep</a></li><li><a href="EMLSpecializedText.html">EMLSpecializedText</a></li><li><a href="EMLTaxonCoverage.html">EMLTaxonCoverage</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAnnotation.html">EMLAnnotation</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLAttributeList.html">EMLAttributeList</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLDistribution.html">EMLDistribution</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLMethods.html">EMLMethods</a></li><li><a href="EMLMissingValueCode.html">EMLMissingValueCode</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLParty.html">EMLParty</a></li><li><a href="EMLReferences.html">EMLReferences</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLText211.html">EMLText211</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Ontologies'>Models/Ontologies</li><li><a href="BioOntology.html">BioOntology</a></li><li><a href="Bioontology_.html">Bioontology</a></li><li><a href="BioontologyBatch.html">BioontologyBatch</a></li><li><a href="BioontologyClass.html">BioontologyClass</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/Projects'>Models/Projects</li><li><a href="Project.html">Project</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Models/ResourceMap'>Models/ResourceMap</li><li><a href="Provenance.html">Provenance</a></li><li><a href="ProvenanceChartAdapter.html">ProvenanceChartAdapter</a></li><li><a href="ProvenanceExecutionMutation.html">ProvenanceExecutionMutation</a></li><li><a href="RDFGraph.html">RDFGraph</a></li><li><a href="ResourceMap.html">ResourceMap</a></li><li><a href="ResourceMapConflictError.html">ResourceMapConflictError</a></li><li><a href="ResourceMapNormalization.html">ResourceMapNormalization</a></li><li><a href="ResourceMapState.html">ResourceMapState</a></li><li><a href="ResourceMapStructureMutation.html">ResourceMapStructureMutation</a></li><li class='category-heading' data-category='Models/SearchSelect'>Models/SearchSelect</li><li><a href="AccountSearchSelect.html">AccountSearchSelect</a></li><li><a href="QueryFieldSearchSelect.html">QueryFieldSearchSelect</a></li><li><a href="SearchSelect.html">SearchSelect</a></li><li><a href="SelectOptionModel.html">SelectOptionModel</a></li><li><a href="SolrAutocomplete.html">SolrAutocomplete</a></li><li class='category-heading' data-category='Models/SysMeta'>Models/SysMeta</li><li><a href="Checksum.html">Checksum</a></li><li><a href="MediaType.html">MediaType</a></li><li><a href="MediaTypeProperty.html">MediaTypeProperty</a></li><li><a href="Replica.html">Replica</a></li><li><a href="ReplicaList.html">ReplicaList</a></li><li><a href="ReplicationPolicy.html">ReplicationPolicy</a></li><li><a href="VersionTracker.html">VersionTracker</a></li><li class='category-heading' data-category='Models/ViewService'>Models/ViewService</li><li><a href="ViewServiceDoc.html">ViewServiceDoc</a></li><li class='category-heading' data-category='Models/schemaOrg'>Models/schemaOrg</li><li><a href="SchemaOrgModel.html">SchemaOrgModel</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AnnotationView.html">AnnotationView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="CanonicalDatasetHandlerView.html">CanonicalDatasetHandlerView</a></li><li><a href="CatalogSearchView.html">CatalogSearchView</a></li><li><a href="CitationHeaderView.html">CitationHeaderView</a></li><li><a href="CitationListView.html">CitationListView</a></li><li><a href="CitationModalView.html">CitationModalView</a></li><li><a href="CitationView.html">CitationView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView.html">DataCatalogView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataObjectView.html">DataObjectView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DownloadButtonView.html">DownloadButtonView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="FooterView.html">FooterView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MdqRunView.html">MdqRunView</a></li><li><a href="MetadataDocumentView.html">MetadataDocumentView</a></li><li><a href="MetadataIndexView.html">MetadataIndexView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricView.html">MetricView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NotificationModalView.html">NotificationModalView</a></li><li><a href="ProvChartView.html">ProvChartView</a></li><li><a href="ProvEntitySelectView.html">ProvEntitySelectView</a></li><li><a href="ProvStatementView.html">ProvStatementView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="SearchResultView.html">SearchResultView</a></li><li><a href="SignInView.html">SignInView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="UserGroupView.html">UserGroupView</a></li><li><a href="UserView.html">UserView</a></li><li><a href="VersionNavigationView.html">VersionNavigationView</a></li><li><a href="ViewDataButtonView.html">ViewDataButtonView</a></li><li class='category-heading' data-category='Views/Accordion'>Views/Accordion</li><li><a href="AccordionItemView.html">AccordionItemView</a></li><li><a href="AccordionView.html">AccordionView</a></li><li class='category-heading' data-category='Views/FileTable'>Views/FileTable</li><li><a href="FileItemActionView.html">FileItemActionView</a></li><li><a href="FileItemView.html">FileItemView</a></li><li><a href="FileTableView.html">FileTableView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterEditorView.html">FilterEditorView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="SemanticFilterView.html">SemanticFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Maps'>Views/Maps</li><li><a href="CesiumWidgetView.html">CesiumWidgetView</a></li><li><a href="DownloadPanelView.html">DownloadPanelView</a></li><li><a href="FeatureInfoView.html">FeatureInfoView</a></li><li><a href="LayerCategoryListView.html">LayerCategoryListView</a></li><li><a href="LayerDetailView.html">LayerDetailView</a></li><li><a href="LayerDetailsView.html">LayerDetailsView</a></li><li><a href="LayerDownloadView.html">LayerDownloadView</a></li><li><a href="LayerInfoView.html">LayerInfoView</a></li><li><a href="LayerItemView.html">LayerItemView</a></li><li><a href="LayerListView.html">LayerListView</a></li><li><a href="LayerNavigationView.html">LayerNavigationView</a></li><li><a href="LayerOpacityView.html">LayerOpacityView</a></li><li><a href="LayersPanelView.html">LayersPanelView</a></li><li><a href="MapHelpPanel.html">MapHelpPanel</a></li><li><a href="MapView.html">MapView</a></li><li><a href="MapWidgetContainerView.html">MapWidgetContainerView</a></li><li><a href="PredictionView.html">PredictionView</a></li><li><a href="PredictionsListView.html">PredictionsListView</a></li><li><a href="ScaleBarView.html">ScaleBarView</a></li><li><a href="SchemaOrgView.html">SchemaOrgView</a></li><li><a href="SearchInputView.html">SearchInputView</a></li><li><a href="SearchView.html">SearchView</a></li><li><a href="ShareUrlView.html">ShareUrlView</a></li><li><a href="ToolbarView.html">ToolbarView</a></li><li><a href="VectorFilterView.html">VectorFilterView</a></li><li><a href="ViewfinderView.html">ViewfinderView</a></li><li><a href="VisualizationPanelView.html">VisualizationPanelView</a></li><li class='category-heading' data-category='Views/Maps/Legend'>Views/Maps/Legend</li><li><a href="CategoricalSwatchView.html">CategoricalSwatchView</a></li><li><a href="ContinuousSwatchView.html">ContinuousSwatchView</a></li><li><a href="LayerLegendView.html">LayerLegendView</a></li><li><a href="LegendContainerView.html">LegendContainerView</a></li><li class='category-heading' data-category='Views/Maps/Viewfinder'>Views/Maps/Viewfinder</li><li><a href="ExpansionPanelView.html">ExpansionPanelView</a></li><li><a href="ViewfinderCardView.html">ViewfinderCardView</a></li><li><a href="ViewfinderCardsListView.html">ViewfinderCardsListView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="AutofillAttributesView.html">AutofillAttributesView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLAttributesView.html">EMLAttributesView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMeasurementTypeView.html">EMLMeasurementTypeView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLMissingValueCodeView.html">EMLMissingValueCodeView</a></li><li><a href="EMLMissingValueCodesView.html">EMLMissingValueCodesView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="EMlGeoCoverageView_.html">EMlGeoCoverageView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/MetadataView'>Views/MetadataView</li><li><a href="DatasetControls.html">DatasetControls</a></li><li class='category-heading' data-category='Views/Ontologies'>Views/Ontologies</li><li><a href="BioontologyBrowser.html">BioontologyBrowser</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li><a href="PortalsSearchView.html">PortalsSearchView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li class='category-heading' data-category='Views/Projects'>Views/Projects</li><li><a href="ProjectView.html">ProjectView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilderView.html">QueryBuilderView</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/Search'>Views/Search</li><li><a href="SearchResultsPagerView.html">SearchResultsPagerView</a></li><li><a href="SearchResultsView.html">SearchResultsView</a></li><li><a href="SorterView.html">SorterView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AccountSelectView.html">AccountSelectView</a></li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="BioontologySelectView.html">BioontologySelectView</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="ObjectFormatSelect.html">ObjectFormatSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchSelectView.html">SearchSelectView</a></li><li><a href="SeparatorView.html">SeparatorView</a></li><li class='category-heading' data-category='Views/UIElements'>Views/UIElements</li><li><a href="ToggleView.html">ToggleView</a></li><li class='category-heading' data-category='Views/VersionHistory'>Views/VersionHistory</li><li><a href="ObjectVersionView.html">ObjectVersionView</a></li><li><a href="ObjectVersionsView.html">ObjectVersionsView</a></li><li><a href="VersionHistoryView.html">VersionHistoryView</a></li><li><a href="VersionTimelineGroupView.html">VersionTimelineGroupView</a></li><li><a href="VersionTimelineGroupsView.html">VersionTimelineGroupsView</a></li><li><a href="DataONEHttpError.html">DataONEHttpError</a></li><li><a href="EMLTaxonView.html">EMLTaxonView</a></li><li><a href="EventLog.html">EventLog</a></li><li><a href="HttpRetryPolicy.html">HttpRetryPolicy</a></li><li><a href="PersistentStorage.html">PersistentStorage</a></li><li><a href="QueryService.html">QueryService</a></li><li><a href="SystemMetadata.html">SystemMetadata</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="AnnotatorView.html">AnnotatorView</a></li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li><li><a href="ZoomPresetCategories.html">ZoomPresetCategories</a></li><li><a href="ZoomPresetCategory.html">ZoomPresetCategory</a></li><li><a href="ZoomPresetModel.html">ZoomPresetModel</a></li><li><a href="ZoomPresetView.html">ZoomPresetView</a></li><li><a href="ZoomPresets.html">ZoomPresets</a></li><li><a href="ZoomPresetsListView.html">ZoomPresetsListView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DEFAULT_MAX_CHAIN_HOPS">DEFAULT_MAX_CHAIN_HOPS</a></li><li><a href="global.html#DEFAULT_TTL_MS">DEFAULT_TTL_MS</a></li><li><a href="global.html#actionMenuTemplate">actionMenuTemplate</a></li><li><a href="global.html#actionsTemplate">actionsTemplate</a></li><li><a href="global.html#addClassesFromResponse">addClassesFromResponse</a></li><li><a href="global.html#addFields">addFields</a></li><li><a href="global.html#addProv">addProv</a></li><li><a href="global.html#addRow">addRow</a></li><li><a href="global.html#addSection">addSection</a></li><li><a href="global.html#addSelected">addSelected</a></li><li><a href="global.html#adjustDescriptionLength">adjustDescriptionLength</a></li><li><a href="global.html#alertTemplate">alertTemplate</a></li><li><a href="global.html#allHidden">allHidden</a></li><li><a href="global.html#appConfigPath">appConfigPath</a></li><li><a href="global.html#applyDisabledState">applyDisabledState</a></li><li><a href="global.html#applyTableStateToRow">applyTableStateToRow</a></li><li><a href="global.html#attributeTemplate">attributeTemplate</a></li><li><a href="global.html#attributes">attributes</a></li><li><a href="global.html#blockDisabledInteraction">blockDisabledInteraction</a></li><li><a href="global.html#buildChildrenUrl">buildChildrenUrl</a></li><li><a href="global.html#buildSearchUrl">buildSearchUrl</a></li><li><a href="global.html#canChangeSeparator">canChangeSeparator</a></li><li><a href="global.html#changeProv">changeProv</a></li><li><a href="global.html#changeSubmenuOnSearch">changeSubmenuOnSearch</a></li><li><a href="global.html#className">className</a></li><li><a href="global.html#clearDropTarget">clearDropTarget</a></li><li><a href="global.html#closeActionViews">closeActionViews</a></li><li><a href="global.html#closeDropdowns">closeDropdowns</a></li><li><a href="global.html#closeEmptyAction">closeEmptyAction</a></li><li><a href="global.html#closeProvEntitySelect">closeProvEntitySelect</a></li><li><a href="global.html#closeShareActionView">closeShareActionView</a></li><li><a href="global.html#closeSubviews">closeSubviews</a></li><li><a href="global.html#collapseAll">collapseAll</a></li><li><a href="global.html#collapseNodes">collapseNodes</a></li><li><a href="global.html#collapseRow">collapseRow</a></li><li><a href="global.html#commitRename">commitRename</a></li><li><a href="global.html#comparator">comparator</a></li><li><a href="global.html#couldBeLatLong">couldBeLatLong</a></li><li><a href="global.html#createBatchPayload">createBatchPayload</a></li><li><a href="global.html#createConnecter">createConnecter</a></li><li><a href="global.html#createEditTooltip">createEditTooltip</a></li><li><a href="global.html#createEditorNode">createEditorNode</a></li><li><a href="global.html#createHeaders">createHeaders</a></li><li><a href="global.html#createNode">createNode</a></li><li><a href="global.html#createPointer">createPointer</a></li><li><a href="global.html#createRelatedElement">createRelatedElement</a></li><li><a href="global.html#createSection">createSection</a></li><li><a href="global.html#defaults">defaults</a></li><li><a href="global.html#destroyInitializedTooltips">destroyInitializedTooltips</a></li><li><a href="global.html#destroyTooltip">destroyTooltip</a></li><li><a href="global.html#destroyTooltips">destroyTooltips</a></li><li><a href="global.html#disableInteractiveElements">disableInteractiveElements</a></li><li><a href="global.html#encodeIfPresent">encodeIfPresent</a></li><li><a href="global.html#events">events</a></li><li><a href="global.html#excludeFields">excludeFields</a></li><li><a href="global.html#expandAll">expandAll</a></li><li><a href="global.html#expandControlTemplate">expandControlTemplate</a></li><li><a href="global.html#expandNodes">expandNodes</a></li><li><a href="global.html#expandRow">expandRow</a></li><li><a href="global.html#fetchClasses">fetchClasses</a></li><li><a href="global.html#fetchClassesFromOntology">fetchClassesFromOntology</a></li><li><a href="global.html#fetchFromOntologies">fetchFromOntologies</a></li><li><a href="global.html#fetchQueryFields">fetchQueryFields</a></li><li><a href="global.html#fieldToOption">fieldToOption</a></li><li><a href="global.html#filterClassesToFetch">filterClassesToFetch</a></li><li><a href="global.html#finalizeFetch">finalizeFetch</a></li><li><a href="global.html#finishPending">finishPending</a></li><li><a href="global.html#formatAttribute">formatAttribute</a></li><li><a href="global.html#formatResult">formatResult</a></li><li><a href="global.html#formatResults">formatResults</a></li><li><a href="global.html#generateGeoJSONPoint">generateGeoJSONPoint</a></li><li><a href="global.html#generateGeoJSONPolygon">generateGeoJSONPolygon</a></li><li><a href="global.html#generateGeoJSONString">generateGeoJSONString</a></li><li><a href="global.html#generateIdentifier">generateIdentifier</a></li><li><a href="global.html#generateSpatialCoverage">generateSpatialCoverage</a></li><li><a href="global.html#getAccountDetails">getAccountDetails</a></li><li><a href="global.html#getActions">getActions</a></li><li><a href="global.html#getCachedClasses">getCachedClasses</a></li><li><a href="global.html#getCategoryNames">getCategoryNames</a></li><li><a href="global.html#getChainOrdered">getChainOrdered</a></li><li><a href="global.html#getChildren">getChildren</a></li><li><a href="global.html#getCitationModel">getCitationModel</a></li><li><a href="global.html#getClasses">getClasses</a></li><li><a href="global.html#getColumnCount">getColumnCount</a></li><li><a href="global.html#getDOIURL">getDOIURL</a></li><li><a href="global.html#getDateRange">getDateRange</a></li><li><a href="global.html#getDisplayLabel">getDisplayLabel</a></li><li><a href="global.html#getEmptyAction">getEmptyAction</a></li><li><a href="global.html#getEventRowId">getEventRowId</a></li><li><a href="global.html#getEventRowModel">getEventRowModel</a></li><li><a href="global.html#getFileDropTarget">getFileDropTarget</a></li><li><a href="global.html#getIconType">getIconType</a></li><li><a href="global.html#getIncludeParam">getIncludeParam</a></li><li><a href="global.html#getIndexMetadata">getIndexMetadata</a></li><li><a href="global.html#getMenuActionData">getMenuActionData</a></li><li><a href="global.html#getNextPage">getNextPage</a></li><li><a href="global.html#getNextSeparator">getNextSeparator</a></li><li><a href="global.html#getOptionByLabelOrValue">getOptionByLabelOrValue</a></li><li><a href="global.html#getOptionsByCategory">getOptionsByCategory</a></li><li><a href="global.html#getQueryFieldOptions">getQueryFieldOptions</a></li><li><a href="global.html#getRandomInt">getRandomInt</a></li><li><a href="global.html#getRowClassName">getRowClassName</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSelectedModels">getSelectedModels</a></li><li><a href="global.html#getSelectedProvEntities">getSelectedProvEntities</a></li><li><a href="global.html#getShareAction">getShareAction</a></li><li><a href="global.html#getTitleTooltip">getTitleTooltip</a></li><li><a href="global.html#groupByDate">groupByDate</a></li><li><a href="global.html#handleActionClick">handleActionClick</a></li><li><a href="global.html#handleClick">handleClick</a></li><li><a href="global.html#handleEmptyActionClick">handleEmptyActionClick</a></li><li><a href="global.html#handleFilesDrop">handleFilesDrop</a></li><li><a href="global.html#handleMenuActionClick">handleMenuActionClick</a></li><li><a href="global.html#handleModelChange">handleModelChange</a></li><li><a href="global.html#handleNoticeAction">handleNoticeAction</a></li><li><a href="global.html#handleRenameCommit">handleRenameCommit</a></li><li><a href="global.html#handleRenameKeydown">handleRenameKeydown</a></li><li><a href="global.html#handleRowRender">handleRowRender</a></li><li><a href="global.html#hasInvalidSelections">hasInvalidSelections</a></li><li><a href="global.html#headerTemplate">headerTemplate</a></li><li><a href="global.html#hideDropTarget">hideDropTarget</a></li><li><a href="global.html#hideLazyTooltip">hideLazyTooltip</a></li><li><a href="global.html#hideRemovePreview">hideRemovePreview</a></li><li><a href="global.html#id">id</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#initializeFetch">initializeFetch</a></li><li><a href="global.html#insertDataDetails">insertDataDetails</a></li><li><a href="global.html#isEnabled">isEnabled</a></li><li><a href="global.html#isNewest">isNewest</a></li><li><a href="global.html#isOldest">isOldest</a></li><li><a href="global.html#isValidValue">isValidValue</a></li><li><a href="global.html#listenToActions">listenToActions</a></li><li><a href="global.html#listenToRows">listenToRows</a></li><li><a href="global.html#loadingTemplate">loadingTemplate</a></li><li><a href="global.html#mergeRows">mergeRows</a></li><li><a href="global.html#messageRowTemplate">messageRowTemplate</a></li><li><a href="global.html#metricsTemplate">metricsTemplate</a></li><li><a href="global.html#model">model</a></li><li><a href="global.html#moveClassesToNotFound">moveClassesToNotFound</a></li><li><a href="global.html#nameTemplate">nameTemplate</a></li><li><a href="global.html#nameTooltipHtml">nameTooltipHtml</a></li><li><a href="global.html#noticeTemplate">noticeTemplate</a></li><li><a href="global.html#onClose">onClose</a></li><li><a href="global.html#optionsAsJSON">optionsAsJSON</a></li><li><a href="global.html#orderRows">orderRows</a></li><li><a href="global.html#padDescription">padDescription</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#previewData">previewData</a></li><li><a href="global.html#readSelected">readSelected</a></li><li><a href="global.html#recordError">recordError</a></li><li><a href="global.html#refreshHierarchyState">refreshHierarchyState</a></li><li><a href="global.html#refreshHierarchyVisibility">refreshHierarchyVisibility</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#removeProv">removeProv</a></li><li><a href="global.html#removeRow">removeRow</a></li><li><a href="global.html#removeSelected">removeSelected</a></li><li><a href="global.html#renameCategory">renameCategory</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#renderActions">renderActions</a></li><li><a href="global.html#renderEmptyAction">renderEmptyAction</a></li><li><a href="global.html#renderRows">renderRows</a></li><li><a href="global.html#renderShareAction">renderShareAction</a></li><li><a href="global.html#reset">reset</a></li><li><a href="global.html#resetPageInfo">resetPageInfo</a></li><li><a href="global.html#responseAsync">responseAsync</a></li><li><a href="global.html#restoreTypes">restoreTypes</a></li><li><a href="global.html#selectProvEntities">selectProvEntities</a></li><li><a href="global.html#semanticFields">semanticFields</a></li><li><a href="global.html#separatorRequired">separatorRequired</a></li><li><a href="global.html#serialize">serialize</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#setAddedFieldDetails">setAddedFieldDetails</a></li><li><a href="global.html#setDataCatalogSchema">setDataCatalogSchema</a></li><li><a href="global.html#setDatasetSchema">setDatasetSchema</a></li><li><a href="global.html#setDisabled">setDisabled</a></li><li><a href="global.html#setNextSeparator">setNextSeparator</a></li><li><a href="global.html#setOptionsForPreselected">setOptionsForPreselected</a></li><li><a href="global.html#setRowExpanded">setRowExpanded</a></li><li><a href="global.html#setRows">setRows</a></li><li><a href="global.html#setSchema">setSchema</a></li><li><a href="global.html#setSchemaFromTemplate">setSchemaFromTemplate</a></li><li><a href="global.html#setSelected">setSelected</a></li><li><a href="global.html#shareTemplate">shareTemplate</a></li><li><a href="global.html#showDropTarget">showDropTarget</a></li><li><a href="global.html#showLazyTooltip">showLazyTooltip</a></li><li><a href="global.html#showNotIndexed">showNotIndexed</a></li><li><a href="global.html#showProvenanceError">showProvenanceError</a></li><li><a href="global.html#showRemovePreview">showRemovePreview</a></li><li><a href="global.html#sortByProp">sortByProp</a></li><li><a href="global.html#sortFields">sortFields</a></li><li><a href="global.html#startPending">startPending</a></li><li><a href="global.html#statusTemplate">statusTemplate</a></li><li><a href="global.html#switchNodes">switchNodes</a></li><li><a href="global.html#syncColumnState">syncColumnState</a></li><li><a href="global.html#tagName">tagName</a></li><li><a href="global.html#template">template</a></li><li><a href="global.html#toAccordionItem">toAccordionItem</a></li><li><a href="global.html#toJSON">toJSON</a></li><li><a href="global.html#toRenderData">toRenderData</a></li><li><a href="global.html#toSearchSelectOption">toSearchSelectOption</a></li><li><a href="global.html#toggleVisibility">toggleVisibility</a></li><li><a href="global.html#transformCamelCase">transformCamelCase</a></li><li><a href="global.html#triggerActionsUpdate">triggerActionsUpdate</a></li><li><a href="global.html#truncateDescription">truncateDescription</a></li><li><a href="global.html#type">type</a></li><li><a href="global.html#typeIconTemplate">typeIconTemplate</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#updateOptions">updateOptions</a></li><li><a href="global.html#updateRow">updateRow</a></li><li><a href="global.html#url">url</a></li><li><a href="global.html#waitForFetchComplete">waitForFetchComplete</a></li></ul>
+</nav>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/models/dataPackage/DataPackageMember.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+
+define([
+  "backbone",
+  "common/ErrorUtilities",
+  "common/ValueUtilities",
+  "common/XMLUtilities",
+  "models/dataONEServices/AuthorizationService",
+  "models/dataONEServices/ObjectService",
+  "models/dataONEServices/SysMetaService",
+  "models/resourceMap/ResourceMap",
+  "models/sysmeta/SystemMetadata",
+  "models/metadata/ScienceMetadata",
+  "models/metadata/eml211/EML211",
+  "models/viewService/ViewServiceDoc",
+  "collections/ObjectFormats",
+], (
+  Backbone,
+  ErrorUtilities,
+  Values,
+  XMLUtilities,
+  AuthorizationService,
+  ObjectService,
+  SysMetaService,
+  ResourceMap,
+  SystemMetadata,
+  ScienceMetadata,
+  EML211,
+  ViewServiceDoc,
+  ObjectFormats,
+) => {
+  const REMOTE_STATES = Object.freeze({
+    UNKNOWN: "unknown",
+    PENDING: "pending",
+    UPLOADING: "uploading",
+    UPLOADED: "uploaded",
+    FAILED: "failed",
+    AMBIGUOUS: "ambiguous",
+  });
+  const REQUIRED_OPERATIONS = Object.freeze({
+    NONE: "none",
+    CREATE: "create",
+    UPDATE: "update",
+    UPDATE_SYSTEM_METADATA: "updateSystemMetadata",
+    REMOVE: "remove",
+  });
+  const EDITABLE_STATE_FIELDS = new Set([
+    "pid",
+    "remotePid",
+    "aggregatedPid",
+    "sysMeta",
+    "remoteSysMeta",
+    "contentDirty",
+    "sysMetaDirty",
+    "accessPolicyDirty",
+    "removed",
+    "remoteState",
+    "lastUploadError",
+  ]);
+  const RESOURCE_MAP_GRAPH_FIELDS = Object.freeze([
+    "documents",
+    "isDocumentedBy",
+    "atLocations",
+  ]);
+  // These values describe package relationships, but they are not editable
+  // member state. Once a parsed ResourceMap is loaded, DataPackage refreshes
+  // the graph projection fields from the ResourceMap state. The resourceMap
+  // field remains parent-package/discovery metadata from Solr or resource map
+  // load seeding, not current graph membership.
+  const RESOURCE_MAP_RELATIONSHIP_FIELDS = new Set([
+    ...RESOURCE_MAP_GRAPH_FIELDS,
+    "resourceMap",
+  ]);
+  const MUTABLE_SYSTEM_METADATA_FIELDS = [
+    "rightsHolder",
+    "accessPolicy",
+    "replicationPolicy",
+    "archived",
+    "fileName",
+  ];
+  const FALLBACK_OBJECT_FORMATS = new ObjectFormats();
+
+  /**
+   * Store one data package member's manifest, editable, and upload state.
+   * @class DataPackageMember
+   * @classcategory Models/DataPackage
+   * @since 2.39.0
+   */
+  class DataPackageMember {
+    /**
+     * Create a package member.
+     * @param {object} [info] Member fields and editable state
+     * @param {ObjectFormats} [info.objectFormats] Format collection used for
+     * classification
+     */
+    constructor(info = {}) {
+      this.pid = Values.normalizeText(info.pid || info.id || info.identifier);
+      this.events = { ...Backbone.Events };
+      this.sources = [];
+      this.addSources(info.sources);
+      // Package members receive their collection's shared formats. Standalone
+      // members use the built-in formats without starting a remote request.
+      this.objectFormats = info.objectFormats || FALLBACK_OBJECT_FORMATS;
+      // Preserve Solr, ResourceMap, and View Service fields that package
+      // table, viewer, and provenance paths may read directly.
+      Object.entries(info).forEach(([key, value]) => {
+        if (
+          key === "id" ||
+          key === "identifier" ||
+          EDITABLE_STATE_FIELDS.has(key)
+        ) {
+          return; // initialized below
+        }
+        if (key === "events" || key === "sources" || key === "objectFormats") {
+          return; // handled above
+        }
+        if (key === "isPublic") {
+          // Preserve Solr's snapshot without shadowing the isPublic() method.
+          this.indexedIsPublic = value;
+          return;
+        }
+        this[key] = value;
+      });
+      this.initializeEditableState(info);
+    }
+
+    /**
+     * Return a member instance for a member or plain object.
+     * @param {DataPackageMember|object} [value] Member value
+     * @param {object} [options] Conversion options
+     * @param {string[]} [options.sources] Manifest sources to add
+     * @returns {DataPackageMember} Member instance
+     */
+    static from(value = {}, options = {}) {
+      if (value instanceof DataPackageMember) {
+        if (options.sources) {
+          value.addSources(options.sources);
+        }
+        return value;
+      }
+
+      const newValues = { ...value };
+      if (options.sources) {
+        newValues.sources = options.sources;
+      }
+      return new DataPackageMember(newValues);
+    }
+
+    /**
+     * Add manifest sources without duplicates.
+     * @param {string|string[]} sources Sources to add
+     * @returns {void}
+     */
+    addSources(sources) {
+      if (!sources) return;
+      const existingSources = Array.isArray(this.sources) ? this.sources : [];
+      const newSources = Values.listify(sources);
+      this.sources = Array.from(new Set([...existingSources, ...newSources]));
+    }
+
+    /**
+     * Download and parse this member's object into a typed model, stored on
+     * `this.objectModel`:
+     *  - metadata    → an EML211 (EML) or ScienceMetadata (other format) model
+     *  - resourceMap → a ResourceMap model
+     *  - data/unknown → no model (data is fetched on demand for preview/download)
+     * @param {object} [options] Fetch options
+     * @param {AbortSignal} [options.signal] Signal used to cancel downloads
+     * @param {ObjectService} [options.objectService] Service used to download a
+     * Resource Map
+     * @returns {Promise&lt;object|null>} The parsed object model, or null
+     */
+    async fetchObject(options = {}) {
+      const { pid } = this;
+
+      if (this.isMetadata()) {
+        this.objectModel = await this.fetchMetadataModel(options);
+        return this.objectModel;
+      }
+
+      if (this.isResourceMap()) {
+        const { objectService } = options;
+        const downloadOptions = {};
+        if (options.signal) downloadOptions.signal = options.signal;
+        const blob = await objectService.download(pid, downloadOptions);
+        this.rawData = await blob.text();
+        this.objectModel = ResourceMap.fromXml(pid, this.rawData, {
+          resolveServiceUrl: objectService.readBaseUrl,
+          objectServiceUrl: objectService.readBaseUrl,
+        });
+        return this.objectModel;
+      }
+
+      // Data objects are downloaded on demand for preview/download rather than
+      // parsed into a model, so there is nothing to build here.
+      return this.objectModel || null;
+    }
+
+    /**
+     * Build this member's typed metadata model and download its content. The
+     * member already knows its formatId from the manifest, so the typed model
+     * is constructed without a Solr round trip or ScienceMetadata→EML
+     * "replace" handshake. The model is created unsynced so fetch population
+     * is not trickled up as a user edit; it flips `synced` to true on its own
+     * "sync" event.
+     * @param {object} [options] Fetch options
+     * @param {AbortSignal} [options.signal] Signal used to cancel fetches
+     * @returns {Promise&lt;EML211|ScienceMetadata>} The fetched metadata model
+     */
+    async fetchMetadataModel(options = {}) {
+      const { pid } = this;
+      const formatId = this.getFormatId() || undefined;
+      const model = this.isEML()
+        ? new EML211(
+            { id: pid, formatId, synced: false },
+            { packageEvents: this._packageEvents },
+          )
+        : new ScienceMetadata(
+            { id: pid, formatId, synced: false },
+            { packageEvents: this._packageEvents },
+          );
+
+      // Wait on the model's events, not fetch() callbacks: EML211.fetch also
+      // runs a separate system-metadata fetch that invokes the success/error
+      // callbacks, but only the document load fires "sync" (sysmeta fires
+      // "sysMetaUpdated"). This ties resolution to the document itself.
+      await new Promise((resolve, reject) => {
+        model.once("sync", resolve);
+        model.once("error", (_model, err) =>
+          reject(
+            err instanceof Error
+              ? err
+              : new Error(`Failed to fetch metadata object ${pid}`),
+          ),
+        );
+        const fetchOptions = options.signal
+          ? { signal: options.signal }
+          : undefined;
+        model.fetch(fetchOptions);
+      });
+
+      // Preserve the raw XML for the upload fallback (objectModel.serialize() is
+      // the primary serializer; rawData is only the fallback).
+      const objectXML = model.get?.("objectXML");
+      if (objectXML) this.rawData = objectXML;
+
+      return model;
+    }
+
+    /**
+     * Download system metadata and update this member's remote baseline.
+     * @param {object} [options] Download and service options
+     * @param {SysMetaService} [options.sysMetaService] Service instance
+     * @param {object} [options.sysMetaServiceOptions] Service constructor options
+     * @returns {Promise&lt;SystemMetadata>} Downloaded system metadata
+     */
+    async fetchSysMeta(options = {}) {
+      const pid = this.remotePid || this.aggregatedPid || this.pid;
+      const {
+        sysMetaService = null,
+        sysMetaServiceOptions = {},
+        ...downloadOptions
+      } = options;
+      const service =
+        sysMetaService || new SysMetaService(sysMetaServiceOptions);
+      const sysMeta = await service.download(pid, downloadOptions);
+      this.sysMetaReadDenied = false;
+      if (!this.remotePid &amp;&amp; this.aggregatedPid) {
+        this.remotePid = this.aggregatedPid;
+      }
+      this._rebaseSystemMetadata(sysMeta);
+      const sysMetaMember = new DataPackageMember({
+        ...sysMeta.toJSON(),
+        sources: ["sysMeta"],
+      });
+      if (this.pid === sysMetaMember.pid) {
+        this.merge(sysMetaMember);
+      }
+      return this.sysMeta;
+    }
+
+    /**
+     * Replace the remote baseline while retaining planned mutable changes.
+     * @param {SystemMetadata|object} remoteSysMeta Fresh remote System Metadata
+     * @param {object} [options] Rebase options
+     * @param {boolean} [options.updateRemoteBaseline] Whether the fresh source
+     * replaces the member's confirmed remote baseline
+     * @param {SystemMetadata|object} [options.localEditBaseline] Baseline used
+     * to distinguish explicit local edits from prior source values
+     * @returns {SystemMetadata} Rebased desired System Metadata
+     * @private
+     */
+    _rebaseSystemMetadata(
+      remoteSysMeta,
+      { updateRemoteBaseline = true, localEditBaseline = null } = {},
+    ) {
+      const fresh =
+        remoteSysMeta instanceof SystemMetadata
+          ? remoteSysMeta
+          : new SystemMetadata(remoteSysMeta);
+      const previousSysMeta = localEditBaseline || this.remoteSysMeta;
+      const previousValues =
+        previousSysMeta?.toJSON?.() || previousSysMeta || {};
+      const desiredValues = this.sysMeta?.toJSON?.() || {};
+      const values = fresh.toJSON();
+
+      if (this.sysMetaDirty &amp;&amp; this.sysMeta) {
+        MUTABLE_SYSTEM_METADATA_FIELDS.forEach((field) => {
+          if (
+            !previousSysMeta ||
+            (field === "accessPolicy" &amp;&amp; this.accessPolicyDirty) ||
+            !Values.deepEqual(previousValues[field], desiredValues[field])
+          ) {
+            values[field] = desiredValues[field];
+          }
+        });
+      }
+
+      if (updateRemoteBaseline) {
+        this.remoteSysMeta = fresh.clone();
+        this._remoteSysMetaDownloaded = true;
+        this._remoteSysMetaParseWarnings = [...(fresh.parseWarnings || [])];
+      } else if (this._replacementSourcePid) {
+        // A retargeted replacement inherits from another remote object. Keep
+        // that source separate from this member's own confirmed remote baseline.
+        this._replacementSourceSysMeta = fresh.clone();
+      }
+      this.sysMeta = new SystemMetadata(values);
+      this.sysMetaMissing = false;
+      return this.sysMeta;
+    }
+
+    /**
+     * Add information inferred from a rendered metadata document.
+     * @param {object} viewInfo Plain entity summary from
+     * ViewServiceDoc
+     * @returns {DataPackageMember} This member
+     * @throws {Error} When the view information belongs to another PID
+     */
+    addViewInfo(viewInfo = {}) {
+      const info = DataPackageMember.normalizeViewInfo(viewInfo);
+      if (!info.pid) return this;
+
+      if (this.pid &amp;&amp; info.pid !== this.pid) {
+        throw new Error("Cannot add view info for a different member PID");
+      }
+
+      this.viewServiceEntity = {
+        ...(this.viewServiceEntity || {}),
+        ...info,
+      };
+      this.addSources(["viewService"]);
+
+      if (!this.fileName &amp;&amp; info.fileName) this.fileName = info.fileName;
+      if (!this.title &amp;&amp; info.entityName) this.title = info.entityName;
+
+      return this;
+    }
+
+    /**
+     * Normalize a rendered metadata entity summary for matching and merging.
+     * Identifiers follow the same conventions as {@link ViewServiceDoc} so the
+     * summary can be matched against member PIDs.
+     * @param {object} [viewInfo] Entity summary from ViewServiceDoc
+     * @returns {object} Normalized summary with a normalized `pid` (or null)
+     */
+    static normalizeViewInfo(viewInfo = {}) {
+      return {
+        ...viewInfo,
+        pid: ViewServiceDoc.normalizeIdentifier(
+          viewInfo.pid || viewInfo.identifier || viewInfo.id,
+        ),
+        fileName:
+          Values.normalizeText(viewInfo.fileName || viewInfo.objectName) ||
+          null,
+        entityName: Values.normalizeText(viewInfo.entityName) || null,
+        objectUrl: Values.normalizeText(viewInfo.objectUrl) || null,
+      };
+    }
+
+    /**
+     * Merge enrichment data without overwriting editable lifecycle state.
+     * @param {DataPackageMember|object} packageMember Member data to merge
+     * @returns {DataPackageMember} This member
+     * @throws {Error} When the incoming member has a different PID
+     */
+    merge(packageMember) {
+      const incomingMember = DataPackageMember.from(packageMember);
+      const newData = incomingMember.toJSON();
+      if (this.pid !== newData.pid) {
+        throw new Error("Cannot merge DataPackageMember with different pid");
+      }
+      const incomingFromParsedResourceMap =
+        incomingMember.sources.includes("resourceMap");
+
+      Object.entries(newData).forEach(([key, value]) => {
+        if (key === "pid") return; // never merge pid, it should be the same
+        if (key === "sources") {
+          this.addSources(value);
+          return;
+        }
+        if (EDITABLE_STATE_FIELDS.has(key)) return;
+        if (RESOURCE_MAP_RELATIONSHIP_FIELDS.has(key)) {
+          if (incomingFromParsedResourceMap) {
+            this[key] = Array.isArray(value) ? [...value] : value;
+          }
+          return;
+        }
+        if (Array.isArray(value)) {
+          const existingArray = Array.isArray(this[key]) ? this[key] : [];
+          this[key] = Array.from(new Set([...existingArray, ...value]));
+        } else if (value &amp;&amp; typeof value === "object") {
+          this[key] = { ...(this[key] || {}), ...value };
+        } else if (value !== undefined &amp;&amp; value !== null) {
+          // For primitive values, overwrite if new value is not undefined
+          this[key] = value;
+        } // else keep existing value
+      });
+
+      return this;
+    }
+
+    /**
+     * Get the member ready for editing by initializing fields that are not set
+     * by the manifest or Solr. It does not overwrite existing editable state.
+     * @param {object} [state] Editable state values
+     * @returns {DataPackageMember} This member
+     */
+    initializeEditableState(state = {}) {
+      this.remotePid = Values.normalizeText(state.remotePid) || null;
+      this.aggregatedPid = Values.normalizeText(state.aggregatedPid) || null;
+      this.sysMeta = state.sysMeta ? new SystemMetadata(state.sysMeta) : null;
+      this.remoteSysMeta = state.remoteSysMeta
+        ? new SystemMetadata(state.remoteSysMeta)
+        : null;
+      this._remoteSysMetaDownloaded = false;
+      this._remoteSysMetaParseWarnings = [];
+      this.contentDirty = state.contentDirty === true;
+      this.sysMetaDirty = state.sysMetaDirty === true;
+      this.accessPolicyDirty = state.accessPolicyDirty === true;
+      this.removed = state.removed === true;
+      this.remoteState =
+        state.remoteState ||
+        (this.remotePid ? REMOTE_STATES.UPLOADED : REMOTE_STATES.UNKNOWN);
+      this.lastUploadError = state.lastUploadError || null;
+      this._replacementSourcePid = null;
+      this._replacementSourceSysMeta = null;
+      return this;
+    }
+
+    /**
+     * Change the PID desired by the editable package without changing the
+     * confirmed remote or last aggregated PID.
+     * @param {string} pid Desired PID
+     * @returns {DataPackageMember} This member
+     * @throws {Error} When an ambiguous remote write is unresolved
+     */
+    setDesiredPid(pid) {
+      if (this.remoteState === REMOTE_STATES.AMBIGUOUS) {
+        throw new Error(
+          "Resolve the ambiguous remote write before changing the desired PID",
+        );
+      }
+      const desiredPid = Values.requireNonEmptyString(
+        pid,
+        "DataPackageMember.setDesiredPid requires a PID",
+      );
+      this.pid = desiredPid;
+      if (desiredPid !== this.remotePid) this.contentDirty = true;
+      this.removed = false;
+      if (this.contentDirty) this.remoteState = REMOTE_STATES.PENDING;
+      return this;
+    }
+
+    /**
+     * Attach desired object bytes.
+     * @param {Blob|File} file File or Blob to upload
+     * @returns {DataPackageMember} This member
+     * @throws {Error} When the write is ambiguous or the file is invalid
+     */
+    setLocalFile(file) {
+      if (this.remoteState === REMOTE_STATES.AMBIGUOUS) {
+        throw new Error(
+          "Resolve the ambiguous remote write before changing local content",
+        );
+      }
+      DataPackageMember.validateLocalFile(file);
+      this.uploadFile = file;
+      this.contentDirty = true;
+      this.removed = false;
+      this.remoteState = REMOTE_STATES.PENDING;
+      if (typeof file.size === "number") this.size = file.size;
+      if (file.name) this.fileName = file.name;
+      this.sysMeta?.checksum.clear();
+      this.checksum = null;
+      this.checksumAlgorithm = null;
+      return this;
+    }
+
+    /**
+     * Validate file content before allocating identifiers or editing state.
+     * @param {Blob|File} file File or Blob to validate
+     * @returns {Blob|File} Validated file
+     * @throws {Error} When the value is not a non empty Blob or File
+     */
+    static validateLocalFile(file) {
+      if (!(file instanceof Blob)) {
+        throw new Error(
+          "DataPackageMember.setLocalFile requires a Blob or File",
+        );
+      }
+      if (file.size === 0) {
+        throw new Error("Cannot upload an empty file");
+      }
+      return file;
+    }
+
+    /**
+     * Build fresh System Metadata for a create or content update.
+     * @param {object} [defaults] Values not already present on the member
+     * @param {boolean} [defaults.useBlobMediaType] Whether to infer mediaType
+     * from generated Blob content
+     * @param {SystemMetadata|object} [desiredSystemMetadata] Prepared desired
+     * values to use instead of the member's stored source baseline
+     * @returns {Promise&lt;SystemMetadata>} Desired System Metadata
+     * @throws {Error} When object content is missing or empty
+     */
+    async buildObjectSystemMetadata(
+      defaults = {},
+      desiredSystemMetadata = null,
+    ) {
+      let blob = this.uploadFile;
+      if (!(blob instanceof Blob) &amp;&amp; this.objectModel?.serialize) {
+        // Serialize at the desired PID so the embedded identifier (for example
+        // an EML packageId) matches the upload, without mutating the model.
+        const serialized = await this.objectModel.serialize({
+          packageId: this.pid,
+        });
+        blob =
+          serialized instanceof Blob
+            ? serialized
+            : new Blob([serialized], { type: defaults.contentType || "" });
+      }
+      if (!(blob instanceof Blob) &amp;&amp; this.rawData !== undefined) {
+        blob =
+          this.rawData instanceof Blob
+            ? this.rawData
+            : new Blob([this.rawData], { type: defaults.contentType || "" });
+      }
+      if (!(blob instanceof Blob)) {
+        throw new Error("Cannot build System Metadata without object content");
+      }
+      if (blob.size === 0) {
+        throw new Error("Cannot upload an empty object");
+      }
+
+      const checksum = await Values.calculateBlobChecksum(blob, {
+        algorithm: defaults.checksumAlgorithm || "MD5",
+        signal: defaults.signal,
+        onProgress: defaults.onProgress,
+      });
+      const replacementSourceValues =
+        this._replacementSourceSysMeta?.toJSON?.() ||
+        this._replacementSourceSysMeta ||
+        null;
+      const preparedValues =
+        desiredSystemMetadata?.toJSON?.() || desiredSystemMetadata || null;
+      const desiredValues =
+        preparedValues ||
+        replacementSourceValues ||
+        this.sysMeta?.toJSON() ||
+        this.remoteSysMeta?.toJSON() ||
+        this;
+      const desiredAccessPolicy = desiredValues.accessPolicy;
+      const hasDesiredAccessPolicy =
+        desiredAccessPolicy !== undefined &amp;&amp; desiredAccessPolicy !== null;
+      const accessPolicyWasExplicitlySet =
+        this.accessPolicyDirty ||
+        (this.remotePid &amp;&amp; hasDesiredAccessPolicy) ||
+        Boolean(desiredAccessPolicy?.length);
+      const mediaType =
+        defaults.mediaType ||
+        (defaults.useBlobMediaType === false
+          ? desiredValues.mediaType || null
+          : blob.type || desiredValues.mediaType || null);
+      const replacementFileNameChanged =
+        this._replacementDisplay &amp;&amp;
+        this.fileName !== this._replacementDisplay.fileName;
+      const fileName =
+        preparedValues &amp;&amp; !replacementFileNameChanged
+          ? preparedValues.fileName
+          : this.fileName || desiredValues.fileName;
+      // Selected files can change format, while the existing format breaks
+      // ties between ambiguous signals. Generated metadata Blobs retain their
+      // explicit DataONE format ID.
+      const formatId =
+        blob instanceof File
+          ? this.objectFormats.getFormatId({
+              existingFormatId: desiredValues.formatId || this.formatId,
+              filename: blob.name,
+              mediaType: blob.type,
+            })
+          : this.formatId || defaults.formatId;
+      const sysMeta = new SystemMetadata({
+        identifier: this.pid,
+        formatId,
+        size: blob.size,
+        checksum,
+        submitter: desiredValues.submitter || defaults.submitter,
+        rightsHolder: desiredValues.rightsHolder || defaults.rightsHolder,
+        // Use the default only for a new object with no explicit policy. An
+        // empty policy on an existing object, or one deliberately made
+        // private, must remain empty when its content is versioned.
+        accessPolicy: accessPolicyWasExplicitlySet
+          ? desiredAccessPolicy
+          : defaults.accessPolicy,
+        replicationPolicy:
+          desiredValues.replicationPolicy ?? defaults.replicationPolicy,
+        obsoletes: this._replacementSourcePid || this.remotePid,
+        obsoletedBy: null,
+        archived:
+          desiredValues.archived === true || defaults.archived === true
+            ? true
+            : null,
+        authoritativeMemberNode:
+          desiredValues.authoritativeMemberNode ||
+          defaults.authoritativeMemberNode,
+        seriesId: desiredValues.seriesId || defaults.seriesId,
+        fileName: fileName || defaults.fileName || this.uploadFile?.name,
+        mediaType,
+      });
+      sysMeta.serialize();
+
+      this.uploadFile = blob;
+      this.sysMeta = sysMeta;
+      this.sysMetaDirty = true;
+      this.fileName = sysMeta.fileName || null;
+      this.size = blob.size;
+      this.checksum = checksum.value;
+      this.checksumAlgorithm = checksum.algorithm;
+      return sysMeta;
+    }
+
+    /**
+     * Build an update limited to System Metadata from the confirmed remote
+     * baseline.
+     * @param {SystemMetadata} [freshRemoteSysMeta] Fresh preflight baseline
+     * @returns {SystemMetadata} Desired System Metadata
+     * @throws {Error} When remote or desired system metadata is missing
+     */
+    buildSystemMetadataUpdate(freshRemoteSysMeta = null) {
+      if (!freshRemoteSysMeta &amp;&amp; !this.remoteSysMeta) {
+        throw new Error(
+          "Cannot build a System Metadata update without remote System Metadata",
+        );
+      }
+      if (!this.sysMeta) {
+        throw new Error(
+          "Cannot build a System Metadata update without desired System Metadata",
+        );
+      }
+
+      if (freshRemoteSysMeta) {
+        this._rebaseSystemMetadata(freshRemoteSysMeta);
+      }
+
+      const values = this.remoteSysMeta.toJSON();
+      const desiredValues = this.sysMeta.toJSON();
+      // After rebasing, desiredValues contains the fresh remote values plus
+      // only the mutable fields that were deliberately changed in the draft.
+      MUTABLE_SYSTEM_METADATA_FIELDS.forEach((field) => {
+        values[field] = desiredValues[field];
+      });
+      const sysMeta = new SystemMetadata(values);
+      sysMeta.serialize();
+
+      this.sysMeta = sysMeta;
+      this.sysMetaDirty = true;
+      return sysMeta;
+    }
+
+    /**
+     * Serialize desired System Metadata for upload.
+     * @returns {string} Canonical System Metadata XML
+     * @throws {Error} When system metadata is missing
+     */
+    serializeSystemMetadata() {
+      if (!this.sysMeta) {
+        throw new Error("Cannot serialize missing System Metadata");
+      }
+      return this.sysMeta.serialize();
+    }
+
+    /**
+     * Return the fields used to verify an ambiguous object write: enough to
+     * confirm the target PID exists with the intended bytes.
+     * @param {object} [options] Verification options
+     * @param {boolean} [options.includeMutableFields] Include mutable fields
+     * @returns {object} Verification fields
+     */
+    getSystemMetadataVerificationFields({ includeMutableFields = false } = {}) {
+      if (!this.sysMeta) return null;
+      const sysMeta = this.sysMeta.toJSON();
+      const verification = {
+        identifier: sysMeta.identifier,
+        checksum: {
+          value: sysMeta.checksum,
+          algorithm: sysMeta.checksumAlgorithm,
+        },
+      };
+      if (includeMutableFields) {
+        verification.mutableFields = Object.fromEntries(
+          MUTABLE_SYSTEM_METADATA_FIELDS.map((field) => [
+            field,
+            sysMeta[field],
+          ]),
+        );
+      }
+      return verification;
+    }
+
+    /**
+     * Validate the member's desired object content before upload.
+     * @returns {object[]} Validation issues (empty when valid)
+     */
+    validateContent() {
+      if (this.uploadFile instanceof Blob) {
+        try {
+          DataPackageMember.validateLocalFile(this.uploadFile);
+        } catch (error) {
+          return [{ pid: this.pid, message: error.message }];
+        }
+        return [];
+      }
+      const model = this.objectModel;
+      if (model &amp;&amp; typeof model.isValid === "function" &amp;&amp; !model.isValid()) {
+        return [
+          {
+            pid: this.pid,
+            message: "Invalid metadata content",
+            errors: model.validationError || null,
+          },
+        ];
+      }
+      return [];
+    }
+
+    /**
+     * Serialize the member's desired object content for upload. Cached upload
+     * bytes are returned as is so the payload matches the computed checksum;
+     * otherwise the attached object model is serialized at the desired PID.
+     * @param {object} [options] Serialization options
+     * @param {string} [options.pid] Desired PID to embed (for example, an EML
+     * packageId)
+     * @returns {Promise&lt;Blob|string>} Serialized content
+     * @throws {Error} When the member has no serializable content
+     */
+    async serializeContent({ pid = this.pid } = {}) {
+      if (this.uploadFile instanceof Blob) {
+        return this.uploadFile;
+      }
+      const model = this.objectModel;
+      if (model &amp;&amp; typeof model.serialize === "function") {
+        return model.serialize({ packageId: pid });
+      }
+      if (this.rawData !== undefined &amp;&amp; this.rawData !== null) {
+        return this.rawData;
+      }
+      throw new Error(
+        `Cannot serialize content for member ${this.pid} without object content`,
+      );
+    }
+
+    /**
+     * Set desired System Metadata.
+     * @param {SystemMetadata|object|null} sysMeta Desired System Metadata
+     * @param {object} [options] Update options
+     * @param {boolean} [options.markDirty] Whether this is a local edit
+     * @returns {DataPackageMember} This member
+     * @throws {Error} When an ambiguous remote write is unresolved
+     */
+    setSystemMetadata(sysMeta, { markDirty = true } = {}) {
+      if (markDirty &amp;&amp; this.remoteState === REMOTE_STATES.AMBIGUOUS) {
+        throw new Error(
+          "Resolve the ambiguous remote write before changing System Metadata",
+        );
+      }
+      this.sysMeta = sysMeta ? new SystemMetadata(sysMeta) : null;
+      this.sysMetaDirty = markDirty === true;
+      if (!markDirty) {
+        this.remoteSysMeta = this.sysMeta?.clone() || null;
+        this._remoteSysMetaDownloaded = false;
+        this._remoteSysMetaParseWarnings = [];
+      } else if (this.contentDirty) {
+        this.remoteState = REMOTE_STATES.PENDING;
+      }
+      return this;
+    }
+
+    /**
+     * Mark the member for removal from the package.
+     * @returns {DataPackageMember} This member
+     */
+    markRemoved() {
+      this.removed = true;
+      return this;
+    }
+
+    /**
+     * Mark the member's remote write as in progress.
+     * @returns {DataPackageMember} This member
+     */
+    markRemoteUploading() {
+      this.remoteState = REMOTE_STATES.UPLOADING;
+      this.lastUploadError = null;
+      return this;
+    }
+
+    /**
+     * Record a confirmed remote write and clear local dirty state.
+     * @param {object} [options] Confirmation details
+     * @param {string} [options.pid] Confirmed remote PID
+     * @param {object} [options.response] DataONE write response
+     * @param {SystemMetadata|object} [options.sysMeta] Confirmed system metadata
+     * @returns {DataPackageMember} This member
+     * @throws {Error} When the confirmed PID is missing or does not match
+     */
+    markRemoteSuccess({ pid = null, response = null, sysMeta = null } = {}) {
+      const confirmedPid = Values.requireNonEmptyString(
+        response ? response?.data?.identifier : pid || this.pid,
+        response
+          ? "Upload response did not include an identifier"
+          : "DataPackageMember.markRemoteSuccess requires a PID",
+      );
+      if (confirmedPid !== this.pid) {
+        throw new Error(
+          response
+            ? "Upload response identifier does not match desired PID"
+            : "Confirmed remote PID does not match desired PID",
+        );
+      }
+      this.remotePid = confirmedPid;
+      const confirmedSysMeta = sysMeta || this.sysMeta;
+      this.sysMeta = confirmedSysMeta
+        ? new SystemMetadata(confirmedSysMeta)
+        : null;
+      // A caller-supplied sysMeta is server-confirmed (ambiguous-write
+      // verification), so it is a trustworthy remote baseline. The sysMeta we
+      // built locally for a write is not: the server assigns serialVersion,
+      // dateUploaded, and dateSysMetadataModified on write. Drop the remote
+      // baseline in that case so the next edit re-fetches a fresh one before
+      // building another System Metadata update.
+      this.remoteSysMeta = sysMeta ? this.sysMeta.clone() : null;
+      this._remoteSysMetaDownloaded = Boolean(sysMeta);
+      this._remoteSysMetaParseWarnings = sysMeta?.parseWarnings
+        ? [...sysMeta.parseWarnings]
+        : [];
+      // Upload bytes are scoped to the confirmed write. Future model-backed
+      // saves must serialize the current objectModel instead of replaying them.
+      this.uploadFile = null;
+      this.contentDirty = false;
+      this.sysMetaDirty = false;
+      this.accessPolicyDirty = false;
+      this.remoteState = REMOTE_STATES.UPLOADED;
+      this.lastUploadError = null;
+      this._replacementDisplay = null;
+      this._replacementSourcePid = null;
+      this._replacementSourceSysMeta = null;
+      return this;
+    }
+
+    /**
+     * Record a failed or ambiguous remote write.
+     * @param {Error} error Write error
+     * @param {object} [options] Failure options
+     * @param {boolean} [options.ambiguous] Whether the write may have committed
+     * @returns {DataPackageMember} This member
+     */
+    markRemoteFailure(error, { ambiguous = false } = {}) {
+      this.remoteState = ambiguous
+        ? REMOTE_STATES.AMBIGUOUS
+        : REMOTE_STATES.FAILED;
+      this.lastUploadError = error || null;
+      return this;
+    }
+
+    /**
+     * Align the aggregated PID with confirmed remote state.
+     * @returns {DataPackageMember} This member
+     * @throws {Error} When an active member is not confirmed remote
+     */
+    promoteAggregatedState() {
+      if (!this.removed &amp;&amp; this.pid !== this.remotePid) {
+        throw new Error("Cannot aggregate a PID that is not confirmed remote");
+      }
+      this.aggregatedPid = this.removed ? null : this.pid;
+      return this;
+    }
+
+    /**
+     * Return the remote operation required by the member's dirty state.
+     * @returns {string} Required operation
+     */
+    getRequiredOperation() {
+      if (this.removed) return REQUIRED_OPERATIONS.REMOVE;
+      if (this.contentDirty) {
+        return this.remotePid
+          ? REQUIRED_OPERATIONS.UPDATE
+          : REQUIRED_OPERATIONS.CREATE;
+      }
+      if (this.sysMetaDirty) {
+        return REQUIRED_OPERATIONS.UPDATE_SYSTEM_METADATA;
+      }
+      return REQUIRED_OPERATIONS.NONE;
+    }
+
+    /**
+     * Return the best available member file name.
+     * @returns {string|null} File name, or null
+     */
+    getFileName() {
+      return (
+        this.fileName ||
+        this.filename ||
+        this.sysMeta?.fileName ||
+        this.viewServiceEntity?.fileName ||
+        null
+      );
+    }
+
+    /**
+     * Inject the loaded ObjectFormats collection so this member can classify
+     * its format type synchronously. Excluded from toJSON()/merge() so the
+     * collection is never serialized or copied between members.
+     * @param {ObjectFormats} objectFormats Loaded ObjectFormats collection
+     * @returns {DataPackageMember} This member
+     */
+    setObjectFormats(objectFormats) {
+      this.objectFormats = objectFormats || FALLBACK_OBJECT_FORMATS;
+      return this;
+    }
+
+    /**
+     * Collect the format fields used for object format classification.
+     * @returns {{formatType: string, formatId: string, mediaType: string, filename: string}} Format fields
+     */
+    getFormatProperties() {
+      const sysMetaMediaType = this.sysMeta?.mediaType;
+      const memberMediaType = this.mediaType;
+      const sysMetaMediaTypeName =
+        typeof sysMetaMediaType === "object"
+          ? sysMetaMediaType?.name
+          : sysMetaMediaType;
+      const memberMediaTypeName =
+        typeof memberMediaType === "object"
+          ? memberMediaType?.name
+          : memberMediaType;
+      return {
+        formatType: Values.normalizeText(this.formatType) || "",
+        formatId:
+          Values.normalizeText(this.sysMeta?.formatId) ||
+          Values.normalizeText(this.formatId) ||
+          "",
+        mediaType:
+          Values.normalizeText(sysMetaMediaTypeName) ||
+          Values.normalizeText(memberMediaTypeName) ||
+          "",
+        filename: Values.normalizeText(this.getFileName()) || "",
+      };
+    }
+
+    /**
+     * Return the member's DataONE format type.
+     * @returns {string|null} Format type, or null when unknown
+     */
+    getFormatType() {
+      const props = this.getFormatProperties();
+      // A member known only by PID (e.g. an unresolved or private object) has
+      // no format signal at all: its type is unknown. Don't let ObjectFormats
+      // default it to octet-stream/DATA, which would leak such members into
+      // getData() and the file table.
+      if (
+        !props.formatType &amp;&amp;
+        !props.formatId &amp;&amp;
+        !props.mediaType &amp;&amp;
+        !props.filename
+      ) {
+        return null;
+      }
+      // Prefer the injected format list (needed to derive a type from a
+      // formatId/extension). Without it, trust an explicit formatType.
+      if (this.objectFormats) return this.objectFormats.getFormatType(props);
+      return props.formatType || null;
+    }
+
+    /**
+     * Return the member's object format identifier.
+     * @returns {string|null} Format identifier, or null
+     */
+    getFormatId() {
+      const props = this.getFormatProperties();
+      if (this.objectFormats) return this.objectFormats.getFormatId(props);
+      return props.formatId || null;
+    }
+
+    /**
+     * Check whether the member is science metadata.
+     * @returns {boolean} Whether the member is metadata
+     */
+    isMetadata() {
+      const props = this.getFormatProperties();
+      return (
+        this.objectFormats.isMetadata(props) || this.objectFormats.isEML(props)
+      );
+    }
+
+    /**
+     * Check whether the member is a data object.
+     * @returns {boolean} Whether the member is data
+     */
+    isData() {
+      const props = this.getFormatProperties();
+      if (
+        !props.formatType &amp;&amp;
+        !props.formatId &amp;&amp;
+        !props.mediaType &amp;&amp;
+        !props.filename
+      ) {
+        return false;
+      }
+      return this.objectFormats.isData(props);
+    }
+
+    /**
+     * Check whether the member is a resource map.
+     * @returns {boolean} Whether the member is a resource map
+     */
+    isResourceMap() {
+      const props = this.getFormatProperties();
+      return props.formatId
+        ? this.objectFormats.isResourceMap(props)
+        : this.objectFormats.isResource(props);
+    }
+
+    /**
+     * Check whether the member uses an EML format.
+     * @returns {boolean} Whether the member is EML
+     */
+    isEML() {
+      return this.objectFormats.isEML(this.getFormatProperties());
+    }
+
+    /**
+     * Check whether the member has a previewable image format.
+     * @returns {boolean} Whether the member can use an image preview
+     */
+    isImage() {
+      return this.objectFormats.isImage(this.getFormatProperties());
+    }
+
+    /**
+     * Check whether the member is an index placeholder.
+     * @returns {boolean} Whether the member is a placeholder
+     */
+    isPlaceholder() {
+      return this.isPlaceHolder_b === true;
+    }
+
+    /**
+     * Check whether the member's access policy is public.
+     * @param {object} [options] Options forwarded to `fetchSysMeta`
+     * @returns {Promise&lt;boolean|null>} Public state, or null when unknown
+     */
+    async isPublic(options = {}) {
+      if (!this.sysMeta &amp;&amp; this.indexedIsPublic === true) return true;
+      if (!this.sysMeta) {
+        try {
+          await this.fetchSysMeta(options);
+        } catch (error) {
+          if (error?.status === 401 || error?.status === 403) return false;
+          return null;
+        }
+      }
+      const accessPolicy = this.sysMeta?.accessPolicy;
+      if (!accessPolicy) return null;
+      return accessPolicy.isPublic();
+    }
+
+    /**
+     * Serialize member state without runtime services, models, or upload bytes.
+     * @returns {object} Serializable member state
+     */
+    toJSON() {
+      const json = {};
+      Object.entries(this).forEach(([key, value]) => {
+        if (
+          value === undefined ||
+          value === null ||
+          key.startsWith("_") ||
+          key === "uploadFile" ||
+          key === "objectModel" ||
+          key === "objectFormats" ||
+          key === "events" ||
+          key === "rawData" ||
+          key === "sysMetaReadDenied" ||
+          typeof value === "function" ||
+          value instanceof AuthorizationService ||
+          value instanceof ObjectService ||
+          value instanceof SysMetaService ||
+          (typeof Blob !== "undefined" &amp;&amp; value instanceof Blob)
+        ) {
+          return;
+        }
+        if (value instanceof Error) {
+          json[key] = {
+            name: value.name,
+            message: value.message,
+            code: value.code,
+            status: value.status,
+          };
+          return;
+        }
+        const serializable =
+          typeof value.toJSON === "function" ? value.toJSON() : value;
+        if (serializable === undefined) return;
+        if (serializable === null || typeof serializable !== "object") {
+          json[key] = serializable;
+          return;
+        }
+        try {
+          json[key] = JSON.parse(JSON.stringify(serializable));
+        } catch {
+          // Complex runtime-only values are intentionally omitted.
+        }
+      });
+
+      const fileName = this.getFileName();
+      if (fileName) json.fileName = fileName;
+
+      const { formatId } = this.getFormatProperties();
+      if (formatId) json.formatId = formatId;
+
+      const sysMeta = json.sysMeta || {};
+      if (!json.checksum &amp;&amp; sysMeta.checksum) {
+        json.checksum = sysMeta.checksum;
+      }
+      if (!json.checksumAlgorithm &amp;&amp; sysMeta.checksumAlgorithm) {
+        json.checksumAlgorithm = sysMeta.checksumAlgorithm;
+      }
+      return json;
+    }
+
+    /**
+     * Check the current user's permission for this member. Results are cached
+     * in memory on the member, keyed by user subject.
+     * @param {string} [action] Permission action. Defaults to "write"
+     * @param {object|boolean} [options] Options or refresh boolean
+     * @param {boolean} [options.refresh] Whether to bypass the cache and check again
+     * @param {AbortSignal} [options.signal] Signal used to cancel permission checks
+     * @param {AuthorizationService} [authorizationService] Service used to
+     * resolve the current user and check permission
+     * @returns {Promise&lt;boolean>} Permission result
+     */
+    async checkPermission(
+      action = "write",
+      options = {},
+      authorizationService = null,
+    ) {
+      const opts =
+        typeof options === "boolean" ? { refresh: options } : options || {};
+      const authOpts = { ...(opts.auth || {}) };
+      const requestOptions = { ...authOpts };
+      if (opts.signal) requestOptions.signal = opts.signal;
+
+      const service =
+        authorizationService || new AuthorizationService(authOpts);
+      const user = await service.getUserKey();
+      this.permissions = this.permissions || {};
+      if (!this.permissions[user]) {
+        this.permissions[user] = {};
+      }
+      if (
+        opts.refresh !== true &amp;&amp;
+        Values.hasOwn(this.permissions[user], action) &amp;&amp;
+        typeof this.permissions[user][action] === "boolean"
+      ) {
+        return this.permissions[user][action];
+      }
+      let can;
+      try {
+        can = await service.check(this.pid, action, requestOptions);
+      } catch (error) {
+        if (ErrorUtilities.isAbortError(error)) return false;
+        // eslint-disable-next-line no-console
+        console.error(
+          `Error checking ${action} permission for PID ${this.pid}:`,
+          error,
+        );
+        return false;
+      }
+      this.permissions[user][action] = can;
+      return can;
+    }
+
+    /**
+     * Check write permission for the current user.
+     * @param {object|boolean} [options] Options or refresh boolean
+     * @param {AuthorizationService} [authorizationService] Service used to
+     * resolve the current user and check permission
+     * @returns {Promise&lt;boolean>} Write permission result
+     */
+    checkWritePermission(options = {}, authorizationService = null) {
+      return this.checkPermission("write", options, authorizationService);
+    }
+
+    /**
+     * Convert this member's PID to the legacy XML-safe identifier form.
+     * @returns {string|null} XML-safe identifier, or null for an empty PID
+     */
+    getXMLSafeID() {
+      return XMLUtilities.getXMLSafeID(this.pid);
+    }
+  }
+
+  DataPackageMember.RemoteState = REMOTE_STATES;
+  DataPackageMember.RequiredOperation = REQUIRED_OPERATIONS;
+  DataPackageMember.ResourceMapGraphFields = RESOURCE_MAP_GRAPH_FIELDS;
+
+  return DataPackageMember;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

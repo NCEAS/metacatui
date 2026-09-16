@@ -111,7 +111,7 @@ define([
      * Build a linked label for a related provenance record.
      * @param {object} record Related chart record
      * @returns {JQuery} Linked or currently viewed record label
-     * @since 0.0.0
+     * @since 2.39.0
      */
     createRelatedElement(record) {
       const icon = $(document.createElement("i")).addClass(

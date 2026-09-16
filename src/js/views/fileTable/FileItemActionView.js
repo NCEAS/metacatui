@@ -18,7 +18,7 @@ define([
    * @classdesc Generic file table action button. It renders action state and
    * emits clicks without performing the action
    * @classcategory Views/FileTable
-   * @since 0.0.0
+   * @since 2.39.0
    * @screenshot views/fileTable/FileItemActionView.png
    * @augments Backbone.View
    */

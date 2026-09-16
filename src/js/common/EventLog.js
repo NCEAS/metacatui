@@ -62,7 +62,7 @@ define(["models/analytics/Analytics"], (Analytics) => {
     /**
      * Get the analytics model currently available to the event log.
      * @returns {Backbone.Model|null} The analytics model
-     * @since 0.0.0
+     * @since 2.39.0
      */
     get analytics() {
       return (

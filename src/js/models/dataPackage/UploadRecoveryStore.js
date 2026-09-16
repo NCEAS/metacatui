@@ -27,7 +27,7 @@ define(["models/PersistentStorage", "common/UrlUtilities"], (
    * be retrieved.
    * @class UploadRecoveryStore
    * @classcategory Models/DataPackage
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class UploadRecoveryStore {
     /**

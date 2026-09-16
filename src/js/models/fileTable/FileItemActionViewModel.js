@@ -5,7 +5,7 @@ define(["backbone"], (Backbone) => {
    * @class FileItemActionViewModel
    * @classdesc Generic render state for a file table action
    * @classcategory Models/FileTable
-   * @since 0.0.0
+   * @since 2.39.0
    * @augments Backbone.Model
    */
   const FileItemActionViewModel = Backbone.Model.extend({

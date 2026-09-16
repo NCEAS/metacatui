@@ -11,7 +11,7 @@ define([
    * @class ViewService
    * @augments DataONEService
    * @classcategory Models/DataONEServices
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class ViewService extends DataONEService {
     /**

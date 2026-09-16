@@ -225,7 +225,7 @@ define([
    * @param {object} [state] Upload result or error
    * @returns {string|null} Required reload message, or null
    * @private
-   * @since 0.0.0
+   * @since 2.39.0
    */
   function getPackageSaveReloadMessage(members = [], state = null) {
     const failedMembers = members.filter(
@@ -408,7 +408,7 @@ define([
        * reuse.
        * @type {string|null}
        * @default null
-       * @since 0.0.0
+       * @since 2.39.0
        * @example
        * view.packageSaveReloadMessage = "Reload before saving again.";
        */
@@ -711,7 +711,7 @@ define([
        * Start a render and cancel work owned by the previous render.
        * @returns {{renderId: string, signal: AbortSignal}} Render identity and
        * cancellation signal
-       * @since 0.0.0
+       * @since 2.39.0
        */
       startRender() {
         this.abortRender();
@@ -726,7 +726,7 @@ define([
       /**
        * Cancel fetch capable work owned by the active render.
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       abortRender() {
         if (!this.renderAbortController) return;
@@ -738,7 +738,7 @@ define([
        * Check whether an asynchronous callback belongs to the active render.
        * @param {string} renderId Render identifier to check
        * @returns {boolean} True when the render still owns the view
-       * @since 0.0.0
+       * @since 2.39.0
        */
       isCurrentRender(renderId) {
         return Boolean(renderId && renderId === this.renderId && this.model);
@@ -751,7 +751,7 @@ define([
        * @param {AbortSignal} [options.signal] Cancellation signal
        * @returns {{renderId: string|null, signal: AbortSignal|undefined}}
        * Resolved render options
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getRenderOptions(options = {}) {
         return {
@@ -798,7 +798,7 @@ define([
        * Update the loading message for a typed DataPackage load phase.
        * @param {object} [progress] DataPackage load progress payload
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       updateDataPackageLoadProgress(progress = {}) {
         const message = DataPackage.LoadProgressMessages[progress.phase];
@@ -971,7 +971,7 @@ define([
       /**
        * Return the configured editor member limit.
        * @returns {number} Maximum package members, excluding the root ResourceMap
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getEditorPackageMemberLimit() {
         const configuredLimit = Utilities.getMetacatUIProperty(
@@ -987,7 +987,7 @@ define([
        * Block editing and show support details for an oversized package.
        * @param {object} [details] Member limit error or package details
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showPackageMemberLimitExceeded(details) {
         const limit = details?.maxMembers || this.getEditorPackageMemberLimit();
@@ -1017,7 +1017,7 @@ define([
        * Route editable package loading failures to a blocking editor message.
        * @param {Error} error Loading failure
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       handleDataPackageLoadError(error) {
         if (error?.code === "resource_map_not_editable") {
@@ -1048,7 +1048,7 @@ define([
        * Explain why metadata from an earlier dataset version cannot be edited.
        * @param {Error} error Structured ResourceMap loading error
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showMetadataNotAggregated(error = {}) {
         const metadataPid =
@@ -1086,7 +1086,7 @@ define([
        * cannot inject markup into the editor.
        * @param {Error} error Structured ResourceMap loading error
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showResourceMapNotEditable(error) {
         const resourceMapPid = error?.rootResourceMapPid || null;
@@ -1271,7 +1271,7 @@ ${supportDetails}`;
        * Attach the current metadata model to its package member.
        * @param {ScienceMetadata|EML211} [metadataModel] Metadata model to attach
        * @returns {DataPackageMember|null} Updated matching metadata member
-       * @since 0.0.0
+       * @since 2.39.0
        */
       attachMetadataModelToPackage(metadataModel = this.model) {
         const metadataPid =
@@ -1302,7 +1302,7 @@ ${supportDetails}`;
        * Render the citation header from the loaded metadata model.
        * @param {Backbone.Model} model Metadata model
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       renderCitationHeader(model) {
         if (!model) return;
@@ -1334,7 +1334,7 @@ ${supportDetails}`;
        * Add missing EML entities and fill missing fields for data members documented by the metadata.
        * @param {DataPackageMember} metadataMember Primary metadata member
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       syncMetadataEntities(metadataMember) {
         const metadataModel = metadataMember?.objectModel;
@@ -1558,7 +1558,7 @@ ${supportDetails}`;
        * Fill incomplete editor rows from system metadata after the first paint.
        * @param {object} [options] Fetch options owned by the active render
        * @returns {Promise<void>} Resolves after row enrichment finishes
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async enrichEditorFileTableMembers(options = {}) {
         const { renderId, signal } = this.getRenderOptions(options);
@@ -1591,7 +1591,7 @@ ${supportDetails}`;
       /**
        * Build editor rows from the active package members.
        * @returns {object[]} File table row definitions
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getEditorFileTableRows() {
         const resolveBaseUrl =
@@ -1635,7 +1635,7 @@ ${supportDetails}`;
        * @param {DataPackageMember[]} [members] Members to match
        * @param {EML211} [metadataModel] Metadata model containing entities
        * @returns {Map<string, EMLEntity>} Entities keyed by member PID
-       * @since 0.0.0
+       * @since 2.39.0
        */
       buildEntityByMemberPid(members = [], metadataModel = this.model) {
         const entities = metadataModel?.get?.("entities");
@@ -1727,7 +1727,7 @@ ${supportDetails}`;
        * @param {DataPackageMember} member Package member
        * @param {string} type Member format type
        * @returns {object|null} Row status or null when no status is shown
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getEditorFileTableStatus(member, type) {
         const remoteState = member?.remoteState;
@@ -1833,7 +1833,7 @@ ${supportDetails}`;
       /**
        * Merge current package rows into the rendered file table.
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       refreshFileTable() {
         clearTimeout(this.fileTableRefreshTimeout);
@@ -1851,7 +1851,7 @@ ${supportDetails}`;
       /**
        * Show the add files prompt for a new package with no data members.
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       renderFileTableStartMessage() {
         const tableView = this.fileTableView;
@@ -1891,7 +1891,7 @@ ${supportDetails}`;
        * Enable or disable file table interactions.
        * @param {boolean} disabled Whether file table controls are disabled
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       setFileTableDisabled(disabled) {
         this.fileTableView?.setDisabled?.(disabled);
@@ -1901,7 +1901,7 @@ ${supportDetails}`;
        * Update one data member row without rebuilding the table.
        * @param {DataPackageMember|string} memberOrPid Member or PID to update
        * @returns {Backbone.Model|null} Updated row model, or null when absent
-       * @since 0.0.0
+       * @since 2.39.0
        */
       updateFileTableMemberStatus(memberOrPid) {
         const member =
@@ -1938,7 +1938,7 @@ ${supportDetails}`;
        * @param {object} [options] Picker options
        * @param {boolean} [options.multiple] Whether multiple files are allowed
        * @returns {Promise<File[]>} Selected files
-       * @since 0.0.0
+       * @since 2.39.0
        */
       choosePackageFiles({ multiple = false } = {}) {
         return new Promise((resolve) => {
@@ -1961,7 +1961,7 @@ ${supportDetails}`;
        * @param {Error} error Replacement failure
        * @param {string} [message] User-facing message override
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showReplaceFileFailedAlert(error, message = "") {
         const details = error?.message || (error ? String(error) : "");
@@ -1982,7 +1982,7 @@ ${supportDetails}`;
        * @param {string} rowId File table row identifier
        * @param {DataPackageMember} [member] Member being replaced
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       startFileReplacementPreview(rowId, member) {
         if (!rowId) return;
@@ -2006,7 +2006,7 @@ ${supportDetails}`;
        * Clear the optimistic replacement state and refresh the table.
        * @param {string} rowId File table row identifier
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       finishFileReplacementPreview(rowId) {
         if (!this.replacingPids?.delete(rowId)) return;
@@ -2022,7 +2022,7 @@ ${supportDetails}`;
        * @param {SystemMetadata|object} [options.sysMeta] System metadata
        * @param {string} [options.label] Preferred title
        * @returns {object} Replacement comparison details
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getReplaceFileDetails({ pid, member, rowModel, sysMeta, label }) {
         const values = sysMeta?.toJSON?.() || sysMeta || {};
@@ -2063,7 +2063,7 @@ ${supportDetails}`;
        * @param {object} details Replacement comparison details
        * @param {string} [className] Additional card class
        * @returns {jQuery} Rendered details card
-       * @since 0.0.0
+       * @since 2.39.0
        */
       renderReplaceFileDetails(heading, details, className = "") {
         const section = $(document.createElement("section")).addClass(
@@ -2119,7 +2119,7 @@ ${supportDetails}`;
        * @param {boolean} [options.showFailureAlert] Whether to show an alert
        * @returns {Promise<{ok: boolean, error: Error|undefined}>} Replacement
        * outcome
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async replaceFileFromFileTable(
         rowId,
@@ -2165,7 +2165,7 @@ ${supportDetails}`;
        * @param {object} options.latestDetails Newest version details
        * @param {File} options.file Replacement file
        * @returns {Promise<boolean>} True when the newest version was replaced
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showReplaceNewestVersionModal({
         rowId,
@@ -2297,7 +2297,7 @@ ${supportDetails}`;
        * Handle a replacement selected from a file table row.
        * @param {Backbone.Model} rowModel File table row
        * @returns {Promise<boolean>} False only when no file was selected
-       * @since 0.0.0
+       * @since 2.39.0
        * @example
        * const handled = await view.handleFileTableReplaceAction(rowModel);
        */
@@ -2386,7 +2386,7 @@ ${supportDetails}`;
        * @param {Backbone.Model} actionModel Selected row action
        * @param {Event} [event] Click event
        * @returns {Promise<boolean>} True when the action was handled
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async handleFileTableAction(rowModel, actionModel, event) {
         const actionId = actionModel?.get?.("id");
@@ -2450,7 +2450,7 @@ ${supportDetails}`;
        * Add files through the empty package prompt.
        * @param {Event} [event] Click event
        * @returns {Promise<boolean>} True when files were selected and handled
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async handleFileTableStartAddFiles(event) {
         event?.preventDefault?.();
@@ -2470,7 +2470,7 @@ ${supportDetails}`;
        * @param {Backbone.Model} rowModel File table row
        * @param {Event} [event] Click event
        * @returns {Promise<boolean>} True when the request was handled
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async showFileTableAccessPolicy(rowModel, event) {
         if (!this.isAccessPolicyEditEnabled()) return false;
@@ -2554,7 +2554,7 @@ ${supportDetails}`;
        * @param {boolean} [options.packageLevel] Whether apply should target the
        * whole package
        * @returns {object} AccessPolicy modal options
-       * @since 0.0.0
+       * @since 2.39.0
        */
       buildAccessPolicyModalOptions(member, { packageLevel = false } = {}) {
         const sysMeta = member.sysMeta || member.remoteSysMeta;
@@ -2606,7 +2606,7 @@ ${supportDetails}`;
        * Resolve the package member represented by a file table row.
        * @param {Backbone.Model} rowModel File table row
        * @returns {DataPackageMember|null} Matching package member
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getFileTablePackageMember(rowModel) {
         const rowKind = rowModel?.get?.("kind");
@@ -2622,7 +2622,7 @@ ${supportDetails}`;
        * @param {FileList|File[]} files Dropped files
        * @param {Event} [event] Drop event
        * @returns {Promise<void>} Resolves after the files are handled
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async handleFileTableFilesDrop(rowModel, files, event) {
         event?.preventDefault?.();
@@ -2632,7 +2632,7 @@ ${supportDetails}`;
       /**
        * Leave a rendering opportunity before continuing bulk file work.
        * @returns {Promise<void>} Resolves after an intervening animation frame
-       * @since 0.0.0
+       * @since 2.39.0
        */
       waitForNextPaint() {
         if (
@@ -2653,7 +2653,7 @@ ${supportDetails}`;
        * @param {Backbone.Model} rowModel Add target row
        * @param {File[]} files Files to add
        * @returns {Promise<DataPackageMember[]>} Members retained in the package
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async addFilesFromFileTable(rowModel, files) {
         if (!files.length) return [];
@@ -2757,7 +2757,7 @@ ${supportDetails}`;
        * @param {Backbone.Model} rowModel Renamed row
        * @param {string} proposedLabel Proposed title or filename
        * @returns {Promise<void>} Resolves after the rename attempt
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async handleFileTableRename(rowModel, proposedLabel) {
         const rowId = rowModel?.get?.("id");
@@ -2877,7 +2877,7 @@ ${supportDetails}`;
        * Listen for changes and upload events from a data package.
        * @param {DataPackage} dataPackage Data package for the active render
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       setDataPackageListeners(dataPackage) {
         const dataPackageEvents = dataPackage.events;
@@ -2981,7 +2981,7 @@ ${supportDetails}`;
       /**
        * Queue metadata upload after a package relationship edit.
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       queueMetadataUploadAfterPackageChange() {
         // Mark the metadata for re-upload on package changes, but skip the set
@@ -2996,7 +2996,7 @@ ${supportDetails}`;
        * Clear row progress after an eager upload settles.
        * @param {object} [event] Eager upload event payload
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       handleEagerUploadSettled(event = {}) {
         if (event.error?.code === "unauthorized") {
@@ -3023,7 +3023,7 @@ ${supportDetails}`;
        * Clear completed row progress after package upload actions succeed.
        * @param {object} [event] Package upload event payload
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       handlePackageUploadSuccess(event = {}) {
         const actionPids = (event.actions || [])
@@ -3047,7 +3047,7 @@ ${supportDetails}`;
        * Return whether a failed file upload is known not to require a reload.
        * @param {DataPackageMember} member Package member
        * @returns {boolean} Whether the failed upload can be discarded
-       * @since 0.0.0
+       * @since 2.39.0
        * @example
        * view.isDiscardableFileUploadFailure(member); // true
        */
@@ -3061,7 +3061,7 @@ ${supportDetails}`;
       /**
        * Return failed data members that replaced an existing remote PID.
        * @returns {DataPackageMember[]} Failed replacement members
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getFailedFileReplacements() {
         return (MetacatUI.rootDataPackage?.toArray?.() || []).filter(
@@ -3077,7 +3077,7 @@ ${supportDetails}`;
        * Build the user facing label for a failed file upload.
        * @param {DataPackageMember} member Failed member
        * @returns {string} File label with an optional failure reason
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getFailedFileMessage(member) {
         const label = member?.fileName || member?.remotePid || member?.pid;
@@ -3088,7 +3088,7 @@ ${supportDetails}`;
       /**
        * Restore remote members after their replacement uploads fail.
        * @returns {Promise<string[]>} Labels for discarded replacements
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async discardFailedFileReplacements() {
         const discardReplacement =
@@ -3114,7 +3114,7 @@ ${supportDetails}`;
        * @param {DataPackageMember[]} packageMembers Current package members
        * @returns {Promise<object>} Labels for files omitted from the save
        * @private
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async discardFailedFilesBeforeSave(packageMembers) {
         const failedNewDataMembers = packageMembers.filter(
@@ -3141,7 +3141,7 @@ ${supportDetails}`;
        * Synchronize edited EML with its package member before upload.
        * @returns {Promise<void>}
        * @private
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async syncMetadataForPackageSave() {
         let metadataMember =
@@ -3169,7 +3169,7 @@ ${supportDetails}`;
        * Upload the package, retrying once without failed file replacements.
        * @returns {Promise<object>} Final result, reload message, and skipped files
        * @private
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async uploadWithReplacementFallback() {
         let result = await MetacatUI.rootDataPackage.upload();
@@ -3334,7 +3334,7 @@ ${supportDetails}`;
        * Build the editor message for a failed package upload.
        * @param {UploadResult} result Package upload result
        * @returns {string} User facing upload error message
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getUploadErrorMessage(result) {
         if (!result) return MESSAGES.uploadDidNotComplete;
@@ -3424,7 +3424,7 @@ ${supportDetails}`;
        * @param {string} introText Warning introduction
        * @param {string[]} [messages] Skipped file messages
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showSkippedFilesWarning(introText, messages = []) {
         if (!messages.length) return;
@@ -3616,7 +3616,7 @@ ${supportDetails}`;
        * Update the Save button during package upload preparation.
        * @param {object} [progress] Upload preparation progress
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       handlePackageUploadPrepareProgress(progress = {}) {
         this.packageSavePrepMessage = progress.message || null;
@@ -3637,7 +3637,7 @@ ${supportDetails}`;
        * Update row and Save button progress for one upload action.
        * @param {object} [progress] Upload action progress
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       handlePackageUploadProgress(progress = {}) {
         this.packageSavePrepMessage = null;
@@ -3704,7 +3704,7 @@ ${supportDetails}`;
        * @param {DataPackageMember} dataPackageMember Member to describe
        * @param {Backbone.Model} [rowModel] File table row
        * @returns {boolean} True when the entity editor is shown
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showEntityForMember(dataPackageMember, rowModel = null) {
         if (!dataPackageMember || this.model.type !== "EML") return false;
@@ -3792,7 +3792,7 @@ ${supportDetails}`;
        * Return a data row's position among the table's data members.
        * @param {string} pid Data member PID
        * @returns {number} Zero based data row position
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getDataFileTablePosition(pid) {
         const rows = this.fileTableView?.viewModel?.getRows?.();
@@ -3839,7 +3839,7 @@ ${supportDetails}`;
       /**
        * Stop editing an older package until its interrupted save is recovered.
        * @param {string} metadataPid Metadata PID with a recovery record
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showInterruptedSave(metadataPid) {
         const message = `
@@ -3963,7 +3963,7 @@ ${supportDetails}`;
        * @param {string} metadataPid Orphaned metadata PID to repair
        * @param {object} [recoveryOptions] Recovery strategy options
        * @returns {Promise<void>} Resolves once repair has been attempted
-       * @since 0.0.0
+       * @since 2.39.0
        */
       async repairDataset(metadataPid, recoveryOptions = {}) {
         const button = this.$(".repair-dataset");
@@ -4080,7 +4080,7 @@ ${supportDetails}`;
       /**
        * Return the current package save progress message.
        * @returns {string} Save preparation or upload progress message
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getPackageSaveMessage() {
         const count = this.packageSaveUploadCount;
@@ -4222,7 +4222,7 @@ ${supportDetails}`;
        * repository. Closing mid save can commit the metadata document without
        * its resource map, leaving an orphaned EML that is hard to recover.
        * @returns {boolean} True when the editor can close
-       * @since 0.0.0
+       * @since 2.39.0
        */
       canClose() {
         if (MetacatUI.rootDataPackage?.isEditLocked?.()) return false;
@@ -4337,7 +4337,7 @@ ${supportDetails}`;
       /**
        * Run a pending draft save immediately. Used only when the editor is
        * closing, so normal field edits stay debounced.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       flushDraftSave() {
         if (!this.draftSaveTimeout) return;
@@ -4351,7 +4351,7 @@ ${supportDetails}`;
 
       /**
        * Serialize and store a draft of the parent EML model immediately.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       saveDraftNow() {
         const view = this;

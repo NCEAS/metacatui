@@ -9,7 +9,7 @@ define(["backbone", "models/DataONEObject", "common/DateUtilities"], (
    * @class DataONEObjects
    * @classdesc A collection of DataONEObject models.
    * @classcategory Collections/SearchSelect
-   * @since 0.0.0
+   * @since 2.39.0
    */
   const DataONEObjects = Backbone.Collection.extend({
     /** @lends DataONEObjects.prototype */

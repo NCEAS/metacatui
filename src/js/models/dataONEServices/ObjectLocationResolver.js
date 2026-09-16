@@ -11,7 +11,7 @@ define([
    * Metadata.
    * @class ObjectLocationResolver
    * @classcategory Models/DataONEServices
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class ObjectLocationResolver {
     /**

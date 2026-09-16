@@ -78,7 +78,7 @@ define([
    * @param {object} dataPackage Owning DataPackage instance
    * @returns {object[]} Permission groups and their source checks
    * @private
-   * @since 0.0.0
+   * @since 2.39.0
    */
   function buildWritePermissionGroups(actions, dataPackage) {
     const checksByPermission = new Map();
@@ -106,7 +106,7 @@ define([
    * @param {object} authService Authorization service
    * @returns {Promise<object>} Authentication state and current subjects
    * @private
-   * @since 0.0.0
+   * @since 2.39.0
    */
   async function getCurrentUserAuthorizationContext(authService) {
     const currentSubject =
@@ -154,7 +154,7 @@ define([
    * @param {string[]} context.subjects Subjects representing the current user
    * @returns {boolean} Whether local state proves the permission
    * @private
-   * @since 0.0.0
+   * @since 2.39.0
    */
   function canProvePermissionLocally(
     member,
@@ -197,7 +197,7 @@ define([
    * persistence for one {@link DataPackage} instance.
    * @class DataPackageUploader
    * @classcategory Models/DataPackage
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class DataPackageUploader {
     /**

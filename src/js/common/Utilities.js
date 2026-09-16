@@ -47,7 +47,7 @@ define(["collections/ObjectFormats", "common/ValueUtilities", "md5"], (
      * @param {Function} [options.onItemComplete] Called after each item
      *   settles.
      * @returns {Promise<object>} Collected errors.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     async processConcurrently(
       items,
@@ -100,7 +100,7 @@ define(["collections/ObjectFormats", "common/ValueUtilities", "md5"], (
      * default.
      * @param {number} [maxConcurrent] Preferred limit
      * @returns {number} Positive integer limit.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     getMaxConcurrent(maxConcurrent) {
       return ValueUtilities.normalizePositiveInteger(
@@ -484,7 +484,7 @@ define(["collections/ObjectFormats", "common/ValueUtilities", "md5"], (
      * @param {string} property Property name to retrieve.
      * @param {object} [app] MetacatUI object.
      * @returns {*} Property value, or `undefined` when not present.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     getMetacatUIProperty(property, app) {
       const normalizedApp = app || globalThis.MetacatUI?.appModel;
@@ -516,7 +516,7 @@ define(["collections/ObjectFormats", "common/ValueUtilities", "md5"], (
      * @returns {Promise<*>} Promise resolving to the requested global object or
      * property value.
      * @throws {Error} If the requested value is not available in time.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     async awaitMetacatUI({
       maxAttempts = 20,
@@ -591,7 +591,7 @@ define(["collections/ObjectFormats", "common/ValueUtilities", "md5"], (
      * Get the list of object formats from the Coordinating Node.
      * @returns {Promise<ObjectFormats>} Promise resolving to the object
      * formats collection.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     async awaitObjectFormats() {
       const app = await Utilities.awaitMetacatUI();

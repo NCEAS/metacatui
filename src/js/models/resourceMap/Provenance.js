@@ -58,7 +58,7 @@ define([
    * runs. The relationships are stored in the Resource Map's RDF graph.
    * @class Provenance
    * @classcategory Models/ResourceMap
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class Provenance {
     /**

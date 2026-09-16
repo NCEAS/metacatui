@@ -20,7 +20,7 @@ define([
    * Shared type registry for basic XML value fields.
    * @namespace XMLTypes
    * @classcategory Common
-   * @since 0.0.0
+   * @since 2.39.0
    */
   return {
     text: {

@@ -23,7 +23,7 @@ define(["common/ValueUtilities", "models/dataPackage/DataPackageMember"], (
    * Store data package members and provide PID and format based lookups.
    * @class DataPackageMembers
    * @classcategory Models/DataPackage
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class DataPackageMembers {
     /**

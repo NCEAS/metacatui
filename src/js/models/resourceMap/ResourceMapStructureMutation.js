@@ -5,7 +5,7 @@
  * statements say which objects belong to the package; CiTO statements say
  * which metadata object documents which data object. Callers use ResourceMap,
  * which starts each graph transaction and handles rollback.
- * @since 0.0.0
+ * @since 2.39.0
  */
 
 define([
@@ -239,7 +239,7 @@ define([
    * one Resource Map.
    * @class ResourceMapStructureMutation
    * @classcategory Models/ResourceMap
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class ResourceMapStructureMutation {
     /**

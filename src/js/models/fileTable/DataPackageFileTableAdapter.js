@@ -16,7 +16,7 @@ define([
    * `buildRows()` is pure; `enrichMembers()` fetches the system metadata needed
    * to populate those rows.
    * @classcategory Models/FileTable
-   * @since 0.0.0
+   * @since 2.39.0
    */
 
   const CLASS_NAMES = {

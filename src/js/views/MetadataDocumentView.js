@@ -88,7 +88,7 @@ define([
    * @classcategory Views
    * @augments Backbone.View
    * @screenshot views/MetadataDocumentView.png
-   * @since 0.0.0
+   * @since 2.39.0
    */
   const MetadataDocumentView = Backbone.View.extend(
     /** @lends MetadataDocumentView.prototype */ {

@@ -276,7 +276,7 @@ define([
        * @param {Event} e Click event
        * @param {string} [message] Loading message
        * @returns {boolean} Whether the loading modal was shown
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showAccessPolicyLoadingModal(e, message = "Loading sharing settings...") {
         try {
@@ -325,7 +325,7 @@ define([
       /**
        * Shows an error in the AccessPolicy modal body.
        * @param {string} message Error message
-       * @since 0.0.0
+       * @since 2.39.0
        */
       showAccessPolicyLoadError(message) {
         const modal = this.$(
@@ -427,7 +427,7 @@ define([
 
       /**
        * Remove the current AccessPolicyView and its editor listener.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       removeAccessPolicyView() {
         const { accessPolicyView } = this;

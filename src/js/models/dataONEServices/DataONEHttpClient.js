@@ -156,7 +156,7 @@ define([
    * retries with backoff, optional in-flight deduplication, abort support,
    * normalized responses/errors, and timeouts. It does not know about app
    * models or TTLs; it only handles transport concerns.
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class DataONEHttpClient {
     /**
@@ -498,7 +498,7 @@ define([
      * @returns {"fetch"|"xhr"} Normalized transport.
      * @throws {Error} When transport is not `fetch` or `xhr`
      * @private
-     * @since 0.0.0
+     * @since 2.39.0
      */
     static normalizeTransport(transport) {
       if (typeof transport !== "string") {
@@ -649,7 +649,7 @@ define([
      * @returns {Promise<DataONEHttpResponse>} A promise that resolves to a
      * normalized response object.
      * @private
-     * @since 0.0.0
+     * @since 2.39.0
      */
     async performRequest(options = {}) {
       if (options.transport === "xhr") {
@@ -755,7 +755,7 @@ define([
      * @returns {Promise<DataONEHttpResponse>} A promise that resolves to a
      * normalized response object.
      * @private
-     * @since 0.0.0
+     * @since 2.39.0
      */
     async performXhr(options = {}) {
       const {
@@ -975,7 +975,7 @@ define([
      * @returns {*} Parsed response data
      * @throws {Error} When a text response cannot be read
      * @private
-     * @since 0.0.0
+     * @since 2.39.0
      */
     static readXhrBody(xhr, responseType) {
       const type = String(responseType || "text").toLowerCase();
@@ -1036,7 +1036,7 @@ define([
      * @param {string} rawHeaders Raw header string
      * @returns {Headers} Parsed headers
      * @private
-     * @since 0.0.0
+     * @since 2.39.0
      */
     static parseRawHeaders(rawHeaders = "") {
       const headers = new Headers();

@@ -185,7 +185,7 @@ define([
 
       /**
        * Listen for structural changes in the active entities collection.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       listenToEntities() {
         const previousEntities = this.previous("entities");
@@ -1975,7 +1975,7 @@ define([
        * @param {object|string} oldMember Existing member descriptor or PID
        * @param {object|string} newMember Replacement member descriptor or PID
        * @returns {number} Number of matching entities updated
-       * @since 0.0.0
+       * @since 2.39.0
        */
       replaceMemberPid(oldMember, newMember) {
         const oldPid = getDescriptorId(oldMember);

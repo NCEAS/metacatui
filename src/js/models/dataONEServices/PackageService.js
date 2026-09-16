@@ -4,7 +4,7 @@ define(["models/dataONEServices/DataONEService"], (DataONEService) => {
    * @class PackageService
    * @augments DataONEService
    * @classcategory Models/DataONEServices
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class PackageService extends DataONEService {
     /**

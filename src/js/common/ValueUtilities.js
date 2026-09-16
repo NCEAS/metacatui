@@ -15,7 +15,7 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
    * Generic helpers for normalizing, comparing, and serializing values.
    * @namespace ValueUtilities
    * @classcategory Common
-   * @since 0.0.0
+   * @since 2.39.0
    */
   const ValueUtilities = {
     /**

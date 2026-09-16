@@ -20,7 +20,7 @@ define([
    * permissions.
    * @class AccessRule
    * @classcategory Models/SysMeta
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class AccessRule {
     /**

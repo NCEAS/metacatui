@@ -18,7 +18,7 @@ define([], () => {
    * enough to be used across different parts of MetacatUI.
    * @namespace ErrorUtilities
    * @classcategory Common
-   * @since 0.0.0
+   * @since 2.39.0
    */
   const ErrorUtilities = {
     /**

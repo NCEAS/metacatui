@@ -14,7 +14,7 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
      * Clean text so it can be safely serialized into EML XML.
      * @param {*} value Candidate text value.
      * @returns {*} Cleaned text, or the original non-string value.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     cleanXMLText(value) {
       if (typeof value !== "string") return value;
@@ -68,7 +68,7 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
 
     /**
      * Mark the active package as edited after an EML model or view change.
-     * @since 0.0.0
+     * @since 2.39.0
      */
     markRootDataPackageChanged() {
       const dataPackage = MetacatUI.rootDataPackage;

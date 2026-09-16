@@ -78,7 +78,7 @@ define([
    * @classdesc Generic file table row view. It renders view model state and
    * emits UI events; it does not fetch, upload, download, or mutate files
    * @classcategory Views/FileTable
-   * @since 0.0.0
+   * @since 2.39.0
    * @screenshot views/fileTable/FileItemView.png
    * @augments Backbone.View
    */

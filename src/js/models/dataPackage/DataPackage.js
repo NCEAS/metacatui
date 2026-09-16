@@ -72,7 +72,7 @@ define([
    * package.
    * @class DataPackage
    * @classcategory Models/DataPackage
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class DataPackage {
     /**

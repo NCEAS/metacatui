@@ -345,7 +345,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * formats.
        * @param {boolean} [options.fallback] Set false to skip fallback formats.
        * @param {string} [options.formatsServiceUrl] URL used to fetch formats
-       * @since 0.0.0
+       * @since 2.39.0
        */
       initialize(models, options = {}) {
         this.formatsServiceUrl = options.formatsServiceUrl || null;
@@ -432,7 +432,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * sync or error event.
        * @param {object} [options] Options to pass to {@link ObjectFormats#fetch}
        * @returns {Promise<ObjectFormats>} Promise resolving to this collection
-       * @since 0.0.0
+       * @since 2.39.0
        */
       fetchPromise(options) {
         if (this.fetchingPromise) return this.fetchingPromise;
@@ -502,7 +502,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * @param {string} formatId Format ID to convert.
        * @returns {string} Friendly format name, or the original value when no
        * match is available.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getFriendlyFormat(formatId) {
         if (!formatId) return formatId;
@@ -529,7 +529,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * collection
        * @returns {string} - The best matching formatId from the collection, or
        * the default formatId if no match is found.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getFormatId({ formatId, existingFormatId, filename, mediaType }) {
         if (formatId) return formatId;
@@ -598,7 +598,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * @param {string} [props.mediaType] Media type used for format matching.
        * @returns {string|null} One of "RESOURCE", "METADATA", "DATA", or null
        * when no match is available.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getFormatType(props) {
         const { formatType } = props;
@@ -621,7 +621,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * Determine the general display type for an object.
        * @param {object} [props] Object format and provenance properties
        * @returns {string} A value from {@link ObjectFormats#OBJECT_TYPES}
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getType(props = {}) {
         const instanceOfClass = props.prov_instanceOfClass;
@@ -664,7 +664,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * @param {object} props Object format and provenance properties accepted
        * by {@link ObjectFormats#getType}
        * @returns {boolean} True when the object has an image display type
-       * @since 0.0.0
+       * @since 2.39.0
        */
       isImage(props) {
         return this.getType(props) === OBJECT_TYPES.IMAGE;
@@ -675,7 +675,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * @param {object} props Format properties accepted by
        * {@link ObjectFormats#getFormatType}.
        * @returns {boolean} True when the format type is METADATA.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       isMetadata(props) {
         return this.getFormatType(props) === FORMAT_TYPES.METADATA;
@@ -686,7 +686,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * @param {object} props Format properties accepted by
        * {@link ObjectFormats#getFormatType}.
        * @returns {boolean} True when the format type is DATA.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       isData(props) {
         return this.getFormatType(props) === FORMAT_TYPES.DATA;
@@ -697,7 +697,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * @param {object} props Format properties accepted by
        * {@link ObjectFormats#getFormatType}.
        * @returns {boolean} True when the format type is RESOURCE.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       isResource(props) {
         return this.getFormatType(props) === FORMAT_TYPES.RESOURCE;
@@ -710,7 +710,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * @param {string} [props.filename] File name used for extension matching.
        * @param {string} [props.mediaType] Media type used for format matching.
        * @returns {boolean} True when the resolved format ID is an EML format.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       isEML(props) {
         const formatIdToUse = this.getFormatId(props);
@@ -726,7 +726,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
        * @param {string} [props.filename] File name used for extension matching.
        * @param {string} [props.mediaType] Media type used for format matching.
        * @returns {boolean} True when the resolved format ID is the ORE format.
-       * @since 0.0.0
+       * @since 2.39.0
        */
       isResourceMap(props) {
         return this.getFormatId(props) === FORMAT_IDS.RESOURCE_MAP;
@@ -740,7 +740,7 @@ application/gpx+xml|Global Positioning System XML (GPX)|DATA|application/gpx+xml
    * @param {string} formatId Format ID to convert.
    * @returns {string} Friendly format name, or the original value when no match
    * is available.
-   * @since 0.0.0
+   * @since 2.39.0
    */
   ObjectFormats.getFriendlyFormat = (formatId) =>
     FRIENDLY_FORMAT_NAMES[formatId] ||

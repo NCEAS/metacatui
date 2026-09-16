@@ -40,7 +40,7 @@ define(["common/ValueUtilities"], (ValueUtilities) => {
    * Generic helpers for normalizing and composing URLs.
    * @namespace UrlUtilities
    * @classcategory Common
-   * @since 0.0.0
+   * @since 2.39.0
    */
   const UrlUtilities = {
     /**

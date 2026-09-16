@@ -10,7 +10,7 @@ define([
    * Checksum value object for System Metadata.
    * @class Checksum
    * @classcategory Models/SysMeta
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class Checksum {
     /**

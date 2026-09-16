@@ -80,7 +80,7 @@ define([
    * @classdesc Generic file table view. It renders table state from a view
    * model and delegates row rendering to FileItemView
    * @classcategory Views/FileTable
-   * @since 0.0.0
+   * @since 2.39.0
    * @screenshot views/fileTable/FileTableView.png
    * @augments Backbone.View
    */

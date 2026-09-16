@@ -659,7 +659,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
        * node. If it is, then use the repository name.
        * @param {Backbone.Model} sourceModel - The model to get publisher from
        * @returns {string|null} The publisher
-       * @since 0.0.0
+       * @since 2.39.0
        */
       getPublisherFromSourceModel(sourceModel) {
         const publisher = sourceModel.get("publisher");

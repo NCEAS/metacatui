@@ -53,7 +53,7 @@ define([
    * @class ObjectService
    * @augments DataONEService
    * @classcategory Models/DataONEServices
-   * @since 0.0.0
+   * @since 2.39.0
    */
   class ObjectService extends DataONEService {
     /**
@@ -201,7 +201,7 @@ define([
      * Get a read client for a selected object service URL.
      * @param {string} baseUrl Object service base URL
      * @returns {DataONEHttpClient} Read client instance
-     * @since 0.0.0
+     * @since 2.39.0
      */
     getReadClient(baseUrl) {
       return DataONEHttpClient.get({
@@ -312,7 +312,7 @@ define([
      * @param {object} request Built request options
      * @param {string} token Bearer token
      * @returns {Promise<DataONEHttpResponse>} Full response object
-     * @since 0.0.0
+     * @since 2.39.0
      */
     fetchFromLocations(objectServiceUrls, request, token) {
       const attempts = [];

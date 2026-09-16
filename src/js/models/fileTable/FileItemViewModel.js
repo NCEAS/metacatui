@@ -8,7 +8,7 @@ define(["backbone", "models/fileTable/FileItemActionViewModel"], (
    * @class FileItemActionCollection
    * @classdesc Collection of file table action view models
    * @classcategory Models/FileTable
-   * @since 0.0.0
+   * @since 2.39.0
    * @augments Backbone.Collection
    */
   const FileItemActionCollection = Backbone.Collection.extend({
@@ -34,7 +34,7 @@ define(["backbone", "models/fileTable/FileItemActionViewModel"], (
    * models can update this model later, but this model does not know about
    * those sources
    * @classcategory Models/FileTable
-   * @since 0.0.0
+   * @since 2.39.0
    * @augments Backbone.Model
    */
   const FileItemViewModel = Backbone.Model.extend({
