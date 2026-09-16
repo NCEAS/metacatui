@@ -5,19 +5,23 @@ define([
   "underscore",
   "backbone",
   "collections/maps/MapAssets",
+  "models/maps/ActiveFeatureRestoreController",
   "models/maps/MapInteraction",
   "collections/maps/AssetCategories",
   "collections/maps/viewfinder/ViewfinderCardCategories",
   "common/SearchParams",
+  "models/maps/featureIdHelpers",
 ], (
   $,
   _,
   Backbone,
   MapAssets,
+  ActiveFeatureRestoreController,
   Interactions,
   AssetCategories,
   ViewfinderCardCategories,
   SearchParams,
+  { getIdFromProperties },
 ) => {
   /**
    * Determine if array is empty.
@@ -536,6 +540,10 @@ define([
         this.debouncedUpdateSearchParams = _.debounce(() => {
           this.updateSearchParams();
         }, 150 /* milliseconds */);
+        this.featureRestoreController = new ActiveFeatureRestoreController({
+          mapModel: this,
+        });
+        this.featureRestoreSession = null;
         this.setUpUrlStateListeners();
         this.applyRestoreState();
       },
@@ -584,6 +592,54 @@ define([
       },
 
       /**
+       * Find a feature by id, optionally scoped to a single layer id.
+       * @param {string} featureId Feature id to find.
+       * @param {string} [layerId] Optional layer id to constrain search.
+       * @returns {{layer: MapAsset, feature: object, attributes: object}|null}
+       * Matching feature result or null when not found.
+       * @since 0.0.0
+       */
+      findFeature(featureId, layerId) {
+        const normalizedFeatureId =
+          typeof featureId === "string" ? featureId.trim() : "";
+        if (!normalizedFeatureId.length) return null;
+
+        const normalizedLayerId =
+          typeof layerId === "string" && layerId.trim().length
+            ? layerId.trim()
+            : null;
+
+        const searchableLayers = this.getAllLayers().filter(
+          (layer) => typeof layer.getFeatureById === "function",
+        );
+        const candidateLayers = normalizedLayerId
+          ? searchableLayers.filter(
+              (layer) => layer.get("layerId") === normalizedLayerId,
+            )
+          : searchableLayers;
+
+        return (
+          candidateLayers.reduce((match, layer) => {
+            if (match) return match;
+
+            const feature = layer.getFeatureById(normalizedFeatureId);
+            if (!feature || typeof layer.getFeatureAttributes !== "function") {
+              return match;
+            }
+
+            const attributes = layer.getFeatureAttributes(feature);
+            if (!attributes) return match;
+
+            return {
+              layer,
+              feature,
+              attributes,
+            };
+          }, null) || null
+        );
+      },
+
+      /**
        * Returns true when the map should sync URL state.
        * @returns {boolean} Whether URL sync is enabled.
        * @since 2.38.0
@@ -601,8 +657,10 @@ define([
       handleShowShareUrlChange(_model, showShareUrl) {
         if (showShareUrl) {
           this.applyRestoreState();
-          this.setUpUrlStateListeners();
+        } else {
+          this.clearFeatureRestoreSession();
         }
+        this.setUpUrlStateListeners();
       },
 
       /**
@@ -615,10 +673,12 @@ define([
           !this.shouldSyncUrlState() ||
           !isCompletePosition(restoreState.destination)
         ) {
+          this.applyFeatureRestoreState();
           return;
         }
 
         this.zoomTo(restoreState.destination);
+        this.applyFeatureRestoreState();
       },
 
       /**
@@ -627,6 +687,7 @@ define([
        */
       setUpUrlStateListeners() {
         const interactions = this.get("interactions");
+        const selectedFeatures = interactions?.get("selectedFeatures");
 
         this.stopListening(
           this,
@@ -644,6 +705,22 @@ define([
           });
         }
         this.urlStateLayerGroups = [];
+
+        if (interactions) {
+          this.stopListening(
+            interactions,
+            "change:cameraPosition",
+            this.debouncedUpdateSearchParams,
+          );
+        }
+
+        if (selectedFeatures) {
+          this.stopListening(
+            selectedFeatures,
+            "update",
+            this.syncSelectedFeaturesToUrl,
+          );
+        }
 
         if (!this.shouldSyncUrlState() || !interactions) {
           return;
@@ -671,6 +748,78 @@ define([
             );
           }
         });
+
+        if (selectedFeatures) {
+          this.listenTo(
+            selectedFeatures,
+            "update",
+            this.syncSelectedFeaturesToUrl,
+          );
+        }
+      },
+
+      /**
+       * Get selected feature/layer entries from current map interaction state
+       * for URL sync.
+       * @returns {{featureId: string, layerId: (string|null)}[]}
+       * Selected feature state entries.
+       * @since 0.0.0
+       */
+      getSelectedFeatureStateForUrlState() {
+        const selectedFeatures = this.getSelectedFeatures();
+        const seen = new Set();
+        const selected = [];
+
+        (selectedFeatures?.models || []).forEach((feature) => {
+          const featureId = getIdFromProperties(feature?.get("properties"));
+          if (!featureId) {
+            return;
+          }
+
+          const mapAsset = feature.get("mapAsset");
+          const layerId =
+            mapAsset && typeof mapAsset.get === "function"
+              ? mapAsset.get("layerId")
+              : null;
+          const entry = {
+            featureId,
+            layerId:
+              typeof layerId === "string" && layerId.trim().length
+                ? layerId.trim()
+                : null,
+          };
+          const dedupeKey = JSON.stringify(entry);
+          if (seen.has(dedupeKey)) return;
+
+          seen.add(dedupeKey);
+          selected.push(entry);
+        });
+
+        return selected;
+      },
+
+      /**
+       * Write the currently selected feature ids to the URL. Called when
+       * selectedFeatures changes. Managed independently from updateSearchParams
+       * so that camera/layer syncs cannot inadvertently clear the f param.
+       * @since 0.0.0
+       */
+      syncSelectedFeaturesToUrl() {
+        if (!this.shouldSyncUrlState()) return;
+        const selectedFeatures = this.getSelectedFeatureStateForUrlState();
+        SearchParams.updateActiveFeatures(
+          this.featureRestoreController.getRequestedFeaturesForUrlSync(
+            selectedFeatures,
+          ),
+        );
+      },
+
+      /**
+       * Cancel and clear any in-flight asynchronous feature restore waiters.
+       * @since 0.0.0
+       */
+      clearFeatureRestoreSession() {
+        this.featureRestoreController.clearSession();
       },
 
       /**
@@ -707,6 +856,18 @@ define([
         }
 
         SearchParams.updateStateInUrl(partialState);
+      },
+
+      /**
+       * Open the feature info panel for any feature ids stored in restoreState.
+       * Called after other state is restored so the feature panel appears last.
+       * Searches all map layers for a matching feature and selects it directly
+       * without simulating a user click. If entities are not yet loaded,
+       * waits for each layer's status to become 'ready' before retrying.
+       * @since 0.0.0
+       */
+      applyFeatureRestoreState() {
+        this.featureRestoreController.applyRestoreState();
       },
 
       /**
