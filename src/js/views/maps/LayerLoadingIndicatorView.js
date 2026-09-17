@@ -53,6 +53,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
        * (`LayerItemView`), so it's set here via `innerHTML` rather than
        * `textContent` to render the same way.
        * @param {string} message The message to display.
+       * @since 0.0.0
        */
       setMessage(message) {
         if (this.messageEl) this.messageEl.innerHTML = message || "";

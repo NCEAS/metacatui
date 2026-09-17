@@ -330,6 +330,7 @@ define([
       /**
        * Derive the current status state being rendered for this layer.
        * @returns {object} State data used by the status UI.
+       * @since 0.0.0
        */
       getStatusState() {
         const layerModel = this.model;
@@ -348,6 +349,7 @@ define([
        * Append a status-related element to the layer label while keeping UI setup
        * centralized.
        * @param {HTMLElement} element The element to append.
+       * @since 0.0.0
        */
       appendStatusElement(element) {
         if (!element || !this.labelEl) {
