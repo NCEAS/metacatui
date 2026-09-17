@@ -2456,6 +2456,8 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             "urn:node:GERI",
             "urn:node:FWC",
             "urn:node:SDR",
+            "urn:node:ESA",
+            "urn:node:GOA",
           ],
 
           /**
