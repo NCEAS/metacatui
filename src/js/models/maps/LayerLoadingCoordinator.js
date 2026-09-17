@@ -2,6 +2,77 @@
 
 define([], () => {
   /**
+   * Labels longer than this are truncated with an ellipsis so a single very long
+   * layer name can't dominate the loading message width.
+   * @type {number}
+   */
+  const MAX_LABEL_LENGTH = 50;
+
+  /**
+   * Truncate a layer label's visible text to {@link MAX_LABEL_LENGTH} characters,
+   * appending an ellipsis when truncated. Labels can contain HTML markup (e.g.
+   * `<sub>`/`<sup>` tags for chemical/mathematical notation, rendered as real
+   * HTML by the layer menu, see `layer-item.html`); truncating is done by
+   * parsing the label with the browser's own HTML parser and trimming text
+   * nodes, so any markup that survives stays well-formed instead of being cut
+   * off mid-tag.
+   * @param {string} label The label to truncate, which may contain HTML markup.
+   * @returns {string} The truncated label, as an HTML string.
+   * @since 0.0.0
+   */
+  function truncateLabel(label) {
+    const container = document.createElement("div");
+    container.innerHTML = label;
+    if (container.textContent.length <= MAX_LABEL_LENGTH) return label;
+
+    let remaining = MAX_LABEL_LENGTH;
+    const trimNode = (node) => {
+      if (remaining <= 0) {
+        node.remove();
+        return;
+      }
+      if (node.nodeType === Node.TEXT_NODE) {
+        const truncated = node.textContent.slice(0, remaining);
+        // eslint-disable-next-line no-param-reassign
+        node.textContent = truncated;
+        remaining -= truncated.length;
+        return;
+      }
+      Array.from(node.childNodes).forEach(trimNode);
+    };
+    Array.from(container.childNodes).forEach(trimNode);
+
+    return `${container.innerHTML}…`;
+  }
+
+  /**
+   * Get a user-facing label for a loading layer. The label is returned as-is
+   * (including any HTML markup, like the `<sub>`/`<sup>` tags the layer menu
+   * already renders as HTML, see `LayerItemView`/`layer-item.html`) so the
+   * loading message reads the same as the layer menu.
+   * @param {Backbone.Model|object} layer The layer model.
+   * @returns {string|null} The label to surface in the loading message.
+   * @since 0.0.0
+   */
+  function getLoadingLayerLabel(layer) {
+    const label = layer?.get("label");
+    if (typeof label !== "string" || !label.trim().length) return null;
+    return truncateLabel(label.trim());
+  }
+
+  /**
+   * Get the distinct labels for layers contributing to the current loading state.
+   * @param {Backbone.Model[]} [loadingLayers] Optional precomputed loading layers.
+   * @returns {string[]} A deduplicated list of loading layer labels.
+   * @since 0.0.0
+   */
+  function getLoadingLayerLabels(loadingLayers) {
+    return loadingLayers
+      .map((layer) => getLoadingLayerLabel(layer))
+      .filter(Boolean);
+  }
+
+  /**
    * Determine whether a layer should participate in the aggregate loading state.
    * Internal helper layers can opt out explicitly.
    * @param {Backbone.Model|object} layer The layer model to check.
@@ -66,49 +137,6 @@ define([], () => {
       if (layer.get("isLoadingLayer") === isLoadingLayer) return;
       layer.set("isLoadingLayer", isLoadingLayer);
     });
-  }
-
-  /**
-   * Labels longer than this are truncated with an ellipsis so a single very long
-   * layer name can't dominate the loading message width.
-   * @type {number}
-   */
-  const MAX_LABEL_LENGTH = 50;
-
-  /**
-   * Truncate a label to {@link MAX_LABEL_LENGTH} characters, appending an ellipsis
-   * when truncated.
-   * @param {string} label The label to truncate.
-   * @returns {string} The truncated label.
-   * @since 0.0.0
-   */
-  function truncateLabel(label) {
-    if (label.length <= MAX_LABEL_LENGTH) return label;
-    return `${label.slice(0, MAX_LABEL_LENGTH)}…`;
-  }
-
-  /**
-   * Get a user-facing label for a loading layer.
-   * @param {Backbone.Model|object} layer The layer model.
-   * @returns {string|null} The label to surface in the loading message.
-   * @since 0.0.0
-   */
-  function getLoadingLayerLabel(layer) {
-    const label = layer?.get("label");
-    if (typeof label !== "string" || !label.trim().length) return null;
-    return truncateLabel(label.trim());
-  }
-
-  /**
-   * Get the distinct labels for layers contributing to the current loading state.
-   * @param {Backbone.Model[]} [loadingLayers] Optional precomputed loading layers.
-   * @returns {string[]} A deduplicated list of loading layer labels.
-   * @since 0.0.0
-   */
-  function getLoadingLayerLabels(loadingLayers) {
-    return loadingLayers
-      .map((layer) => getLoadingLayerLabel(layer))
-      .filter(Boolean);
   }
 
   /**

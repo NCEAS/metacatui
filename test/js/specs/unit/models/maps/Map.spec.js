@@ -1368,6 +1368,39 @@ define([
           "Loading Habitat roads and 2 other layers",
         );
       });
+
+      it("preserves sub/sup markup in the label so it renders like the menu", () => {
+        const map = new Map({ showShareUrl: false });
+        const layer = makeLayer({
+          label: "Average Terrestrial Net CO<sub>2</sub> Balance",
+          status: "loading",
+          visible: true,
+        });
+
+        map.getAllLayers = () => [layer];
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Average Terrestrial Net CO<sub>2</sub> Balance",
+        );
+      });
+
+      it("truncates a long label without breaking markup it contains", () => {
+        const map = new Map({ showShareUrl: false });
+        const layer = makeLayer({
+          label:
+            "Very Long Terrestrial Net CO<sub>2</sub> Balance And More Words",
+          status: "loading",
+          visible: true,
+        });
+
+        map.getAllLayers = () => [layer];
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Very Long Terrestrial Net CO<sub>2</sub> Balance And More Wor…",
+        );
+      });
     });
   });
 });

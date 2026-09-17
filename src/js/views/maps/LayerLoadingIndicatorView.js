@@ -46,11 +46,16 @@ define(["underscore", "backbone"], (_, Backbone) => {
       },
 
       /**
-       * Update the message shown next to the loading bar.
+       * Update the message shown next to the loading bar. The message may
+       * contain HTML markup carried over from a layer's `label` (see
+       * `LayerLoadingCoordinator.getLoadingLayerLabel`), the same trusted,
+       * config-authored content already rendered as HTML by the layer menu
+       * (`LayerItemView`), so it's set here via `innerHTML` rather than
+       * `textContent` to render the same way.
        * @param {string} message The message to display.
        */
       setMessage(message) {
-        if (this.messageEl) this.messageEl.textContent = message || "";
+        if (this.messageEl) this.messageEl.innerHTML = message || "";
       },
     },
   );
