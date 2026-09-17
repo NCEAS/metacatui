@@ -585,7 +585,15 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
 .map-status-bar__loading-row-inner {
   min-height: 0;
   overflow: hidden;
-  border-top: 1px solid var(--portal-col-primary-2);
+  /* Transparent until expanded -- a visible border here would still paint as a
+  thin line even while the row is collapsed to 0 height, since border-width isn't
+  squeezed by the 0fr grid row the way content height is. */
+  border-top: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.map-status-bar--loading-expanded .map-status-bar__loading-row-inner {
+  border-top-color: var(--portal-col-primary-2);
 }
 
 .map-status-bar__loading-bar {
