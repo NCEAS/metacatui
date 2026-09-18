@@ -100,6 +100,9 @@ define([
        * @property {"showDetails"|"zoom"} [clickFeatureAction = null] The action to take when a user clicks on a feature on the layer. The
        * available options are "showDetails" (show the feature details in the
        * sidebar) or "zoom" (zoom to the feature's location).
+       * @property {boolean} [renderAboveOtherLayers = false] Set to true to
+       * keep this layer's vector data rendered above all other vector layers
+       * on the map, e.g. for a layer that a user is actively drawing on.
        */
       defaults() {
         return {
@@ -130,6 +133,7 @@ define([
           hideInLayerList: false,
           showOpacitySlider: true,
           clickFeatureAction: null,
+          renderAboveOtherLayers: false,
         };
       },
 

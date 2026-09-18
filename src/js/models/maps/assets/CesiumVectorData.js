@@ -198,6 +198,7 @@ define([
 
           // There is no data to load for a CustomDataSource
           if (type === "CustomDataSource") {
+            dataSource.mapAssetModel = model;
             model.set("cesiumModel", dataSource);
             model.setListeners();
             model.setReady();
@@ -221,6 +222,7 @@ define([
           dataSource
             .load(data, cesiumOptions)
             .then(function (loadedData) {
+              loadedData.mapAssetModel = model;
               model.set("cesiumModel", loadedData);
               if (!recreate) {
                 model.setListeners();

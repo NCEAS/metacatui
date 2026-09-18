@@ -384,6 +384,7 @@ define([
           description: "The polygon that you are drawing on the map",
           hideInLayerList: true,
           excludeFromLoadingState: true,
+          renderAboveOtherLayers: true,
           outlineColor: this.color,
           highlightColor: this.color,
           opacity: this.opacity,
