@@ -25,6 +25,16 @@ define([
    */
   const COMPLETED_MESSAGE = "Loading completed!";
 
+  /**
+   * Minimum time between visible message text updates. Layer status can churn
+   * (e.g. several layers finishing/starting within milliseconds of each other),
+   * so updates are throttled to this rate rather than applied as soon as they
+   * happen, which would make the message flicker between different layer
+   * names/counts.
+   * @type {number}
+   */
+  const MESSAGE_UPDATE_INTERVAL_MS = 400;
+
   const CLASS_NAMES = {
     expanded: "map-status-bar--loading-expanded",
   };
@@ -60,7 +70,11 @@ define([
         this.pointModel = options.pointModel;
         this.revealTimer = null;
         this.collapseTimer = null;
+        this.messageUpdateTimer = null;
+        this.lastMessageUpdateAt = 0;
+        this.pendingMessage = null;
         this.expandedAt = null;
+        this.isCurrentlyLoading = false;
       },
 
       /** @inheritdoc */
@@ -110,12 +124,25 @@ define([
         const isLoading = this.model.get("isLoadingLayers") === true;
 
         if (!isLoading) {
+          this.isCurrentlyLoading = false;
           this.handleLoadingFinished();
           return;
         }
 
         const message = this.model.get("loadingLayersMessage") || "Loading layers";
-        this.loadingIndicator.setMessage(message);
+        const justStarted = !this.isCurrentlyLoading;
+        this.isCurrentlyLoading = true;
+
+        if (justStarted) {
+          // A fresh loading start (or resume right after finishing) is a
+          // meaningful transition, not churn, so show it immediately instead
+          // of waiting out the throttle window below.
+          this.clearMessageUpdateTimer();
+          this.pendingMessage = message;
+          this.flushMessageUpdate();
+        } else {
+          this.scheduleMessageUpdate(message);
+        }
 
         if (this.isExpanded()) {
           // Loading resumed/changed while already open; keep it open.
@@ -124,6 +151,36 @@ define([
         }
 
         this.scheduleReveal();
+      },
+
+      /**
+       * Show the latest message, but no more than once every
+       * {@link MESSAGE_UPDATE_INTERVAL_MS}, so a burst of near-simultaneous
+       * layer status changes settles into a single visible update instead of
+       * flickering through every intermediate value. Always resolves to the
+       * most recent message once the interval has elapsed.
+       * @param {string} message The latest message to (eventually) display.
+       */
+      scheduleMessageUpdate(message) {
+        this.pendingMessage = message;
+
+        const elapsed = Date.now() - this.lastMessageUpdateAt;
+        if (elapsed >= MESSAGE_UPDATE_INTERVAL_MS) {
+          this.flushMessageUpdate();
+          return;
+        }
+
+        if (this.messageUpdateTimer) return;
+        this.messageUpdateTimer = setTimeout(() => {
+          this.messageUpdateTimer = null;
+          this.flushMessageUpdate();
+        }, MESSAGE_UPDATE_INTERVAL_MS - elapsed);
+      },
+
+      /** Render the currently pending message and record the update time. */
+      flushMessageUpdate() {
+        this.lastMessageUpdateAt = Date.now();
+        this.loadingIndicator.setMessage(this.pendingMessage);
       },
 
       /** @returns {boolean} Whether the loading row is currently expanded. */
@@ -165,6 +222,7 @@ define([
        */
       handleLoadingFinished() {
         this.clearRevealTimer();
+        this.clearMessageUpdateTimer();
         if (!this.isExpanded()) return;
 
         const remaining =
@@ -174,7 +232,10 @@ define([
           return;
         }
 
-        this.loadingIndicator.setMessage(COMPLETED_MESSAGE);
+        // Completion is a definitive, one-time change, so it bypasses the
+        // message throttle rather than waiting for it.
+        this.pendingMessage = COMPLETED_MESSAGE;
+        this.flushMessageUpdate();
         this.clearCollapseTimer();
         this.collapseTimer = setTimeout(() => {
           this.collapseTimer = null;
@@ -196,10 +257,18 @@ define([
         this.collapseTimer = null;
       },
 
+      /** Clear the pending message-update timer, if any. */
+      clearMessageUpdateTimer() {
+        if (!this.messageUpdateTimer) return;
+        clearTimeout(this.messageUpdateTimer);
+        this.messageUpdateTimer = null;
+      },
+
       /** @inheritdoc */
       onClose() {
         this.clearRevealTimer();
         this.clearCollapseTimer();
+        this.clearMessageUpdateTimer();
         this.stopListening(this.model);
         if (this.scaleBar?.onClose) this.scaleBar.onClose();
       },
