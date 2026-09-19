@@ -1714,6 +1714,12 @@ define([
        */
       add3DTileset(cesiumModel) {
         this.scene.primitives.add(cesiumModel);
+        const mapAsset = cesiumModel?.mapAssetModel;
+
+        if (mapAsset?.startLoadingStateTracking) {
+          mapAsset.startLoadingStateTracking({ scene: this.scene });
+        }
+        this.requestRender();
       },
 
       /**
@@ -1723,6 +1729,10 @@ define([
        * @since 2.27.0
        */
       remove3DTileset(cesiumModel) {
+        const mapAsset = cesiumModel?.mapAssetModel;
+        if (mapAsset?.stopLoadingStateTracking) {
+          mapAsset.stopLoadingStateTracking();
+        }
         this.scene.primitives.remove(cesiumModel);
       },
 
@@ -1733,6 +1743,13 @@ define([
        */
       addVectorData(cesiumModel) {
         this.dataSourceCollection.add(cesiumModel);
+        if (cesiumModel?.mapAssetModel?.get("renderAboveOtherLayers")) {
+          this.alwaysOnTopDataSources = this.alwaysOnTopDataSources || [];
+          if (!this.alwaysOnTopDataSources.includes(cesiumModel)) {
+            this.alwaysOnTopDataSources.push(cesiumModel);
+          }
+        }
+        this.raiseAlwaysOnTopVectorData();
       },
 
       /**
@@ -1743,6 +1760,25 @@ define([
        */
       removeVectorData(cesiumModel) {
         this.dataSourceCollection.remove(cesiumModel);
+        if (this.alwaysOnTopDataSources) {
+          const index = this.alwaysOnTopDataSources.indexOf(cesiumModel);
+          if (index > -1) this.alwaysOnTopDataSources.splice(index, 1);
+        }
+      },
+
+      /**
+       * Re-raises any vector data sources flagged with
+       * `renderAboveOtherLayers` to the top of the dataSourceCollection so
+       * that they continue to render above vector data added afterwards, e.g.
+       * the polygon that a user draws with the download tool.
+       * @since 0.0.0
+       */
+      raiseAlwaysOnTopVectorData() {
+        (this.alwaysOnTopDataSources || []).forEach((dataSource) => {
+          if (this.dataSourceCollection.contains(dataSource)) {
+            this.dataSourceCollection.raiseToTop(dataSource);
+          }
+        });
       },
 
       /**
@@ -1753,6 +1789,13 @@ define([
       addImagery(cesiumModel) {
         this.scene.imageryLayers.add(cesiumModel);
         this.sortImagery();
+        const mapAsset = cesiumModel?.mapAssetModel;
+
+        if (mapAsset?.startLoadingStateTracking) {
+          mapAsset.startLoadingStateTracking({ scene: this.scene });
+        }
+
+        this.requestRender();
       },
 
       /**
@@ -1762,6 +1805,10 @@ define([
        * @since 2.27.0
        */
       removeImagery(cesiumModel) {
+        const mapAsset = cesiumModel?.mapAssetModel;
+        if (mapAsset?.stopLoadingStateTracking) {
+          mapAsset.stopLoadingStateTracking();
+        }
         console.log("Removing imagery from map", cesiumModel);
         console.log("Imagery layers", this.scene.imageryLayers);
         this.scene.imageryLayers.remove(cesiumModel);

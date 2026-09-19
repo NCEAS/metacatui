@@ -48,19 +48,25 @@ define([
         ).to.have.lengthOf(1);
       });
 
-      it("adds a scale bar to the DOM tree if enabled", () => {
+      it("adds a status bar containing the scale bar to the DOM tree if enabled", () => {
         state.view.model.set("showScaleBar", true);
         state.view.render();
 
+        expect(
+          state.view.el.getElementsByClassName("map-status-bar"),
+        ).to.have.lengthOf(1);
         expect(
           state.view.el.getElementsByClassName(new ScaleBarView({}).className),
         ).to.have.lengthOf(1);
       });
 
-      it("does not add a scale bar to the DOM tree if disabled", () => {
+      it("does not add a status bar to the DOM tree if disabled", () => {
         state.view.model.set("showScaleBar", false);
         state.view.render();
 
+        expect(
+          state.view.el.getElementsByClassName("map-status-bar"),
+        ).to.have.lengthOf(0);
         expect(
           state.view.el.getElementsByClassName(new ScaleBarView({}).className),
         ).to.have.lengthOf(0);

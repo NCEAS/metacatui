@@ -4,8 +4,8 @@ define([
   "backbone",
   "views/maps/CesiumWidgetView",
   "views/maps/legend/LegendContainerView",
-  "views/maps/ScaleBarView",
-], (Backbone, CesiumWidgetView, LegendContainerView, ScaleBarView) => {
+  "views/maps/MapStatusBarView",
+], (Backbone, CesiumWidgetView, LegendContainerView, MapStatusBarView) => {
   /**
    * @class MapWidgetContainerView
    * @classdesc A container for CesiumWidgetView and other map overlays, e.g. lat/lng, legends, etc.
@@ -38,7 +38,7 @@ define([
         this.renderLegendContainer();
 
         if (this.model.get("showScaleBar")) {
-          this.renderScaleBar();
+          this.renderStatusBar();
         }
       },
 
@@ -63,46 +63,47 @@ define([
       },
 
       /**
-       * Renders the scale bar view that shows the current position of the mouse on the
-       * map.
+       * Renders the status bar, which shows the scale bar (current mouse position
+       * and map scale) along with a loading indicator that appears beneath it while
+       * map layers are loading.
        */
-      renderScaleBar() {
+      renderStatusBar() {
         const interactions = this.model.get("interactions");
         if (!interactions) {
           this.listenToOnce(
             this.model,
             "change:interactions",
-            this.renderScaleBar,
+            this.renderStatusBar,
           );
           return;
         }
-        const scaleBar = new ScaleBarView({
-          // el: this.el,
+        const statusBar = new MapStatusBarView({
+          model: this.model,
           scaleModel: interactions.get("scale"),
           pointModel: interactions.get("mousePosition"),
         });
-        scaleBar.render();
-        this.scaleBar = scaleBar;
-        this.$el.append(scaleBar.el);
+        statusBar.render();
+        this.statusBar = statusBar;
+        this.$el.append(statusBar.el);
 
         // If the interaction model or relevant sub-models are ever completely
-        // replaced for any reason, re-render the scale bar.
+        // replaced for any reason, re-render the status bar.
         this.listenToOnce(
           interactions,
           "change:scale change:mousePosition",
-          this.renderScaleBar,
+          this.renderStatusBar,
         );
         this.listenToOnce(
           this.model,
           "change:interactions",
-          this.renderScaleBar,
+          this.renderStatusBar,
         );
       },
 
       /** Call the onClose method of each subview. */
       onClose() {
         const subViews = [
-          this.scaleBar,
+          this.statusBar,
           this.legendContainerView,
           this.mapWidget,
         ];

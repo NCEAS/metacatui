@@ -249,6 +249,7 @@ define([
 
         view.featureInfo = new FeatureInfoView({
           el: view.subElements.featureInfoContainer,
+          mapModel: view.model,
           model: features.at(0),
         }).render();
 
@@ -318,6 +319,7 @@ define([
        * @since 2.27.0
        */
       onClose() {
+        this.clearLayerLoadingIndicatorTimer();
         const subViews = this.getSubViews();
         subViews.forEach((subView) => {
           if (subView && typeof subView.onClose === "function") {

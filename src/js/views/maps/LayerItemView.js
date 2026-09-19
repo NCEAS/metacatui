@@ -70,6 +70,11 @@ define([
        * @property {string} badge The class to add to the badge element that is shown
        * when the layer has a notification message
        * @property {string} tooltip Class added to tooltips used in this view
+       * @property {string} statusIcon The class for the reserved status icon slot
+       * (spinner/warning) that stays in the DOM at a fixed size so its
+       * appearance/disappearance never shifts sibling elements
+       * @property {string} statusIconVisible The class added to the status icon slot
+       * to reveal its current icon
        */
       classes: {
         label: "list-item__label",
@@ -86,6 +91,8 @@ define([
         button: "map-view__button",
         filterIcon: "list-item__filter-icon",
         filterIconActive: "list-item__filter-icon--active",
+        statusIcon: "list-item__status-icon",
+        statusIconVisible: "list-item__status-icon--visible",
       },
 
       /**
@@ -146,6 +153,10 @@ define([
           this.insertFilterIcon();
         }
 
+        // Reserve a fixed-size slot for the status icon up front so that it
+        // showing/hiding later never shifts the filter icon or label text.
+        this.insertStatusIconSlot();
+
         // Ensure the view's main element has the given class name
         this.el.classList.add(this.className);
 
@@ -168,6 +179,7 @@ define([
         this.stopListening(this.model, "change:visible");
         this.listenTo(this.model, "change:visible", () => {
           this.showVisibility();
+          this.showStatus();
           this.toggleFilterIconVisibility();
         });
 
@@ -175,6 +187,8 @@ define([
         // been an error.
         this.stopListening(this.model, "change:status");
         this.listenTo(this.model, "change:status", this.showStatus);
+        this.stopListening(this.model, "change:isLoadingLayer");
+        this.listenTo(this.model, "change:isLoadingLayer", this.showStatus);
 
         this.stopListening(this.model, "change:filters");
         this.listenTo(
@@ -228,6 +242,19 @@ define([
         // filterIconEl.className = `${this.classes.button}`;
         filterIconEl.innerHTML = `<i class="icon icon-filter"></i>`;
         this.labelEl.appendChild(filterIconEl);
+      },
+
+      /**
+       * Create the (always-present, fixed-size) slot used to show the loading
+       * spinner or error icon next to the label. Kept in the DOM permanently
+       * and toggled via visibility so it never changes the label row's layout.
+       * @since 0.0.0
+       */
+      insertStatusIconSlot() {
+        const statusIconEl = document.createElement("span");
+        statusIconEl.classList.add(this.classes.statusIcon);
+        this.statusIconSlot = statusIconEl;
+        this.labelEl.appendChild(statusIconEl);
       },
 
       /**
@@ -325,24 +352,57 @@ define([
       },
 
       /**
+       * Derive the current status state being rendered for this layer.
+       * @returns {object} State data used by the status UI.
+       * @since 0.0.0
+       */
+      getStatusState() {
+        const layerModel = this.model;
+        const notice = layerModel.get("notification");
+
+        return {
+          status: layerModel.get("status"),
+          isLoading: layerModel.get("isLoadingLayer") === true,
+          notice,
+          badge: notice ? notice.badge : null,
+          errorMessage: layerModel.get("statusDetails"),
+        };
+      },
+
+      /**
+       * Append a status-related element to the layer label while keeping UI setup
+       * centralized.
+       * @param {HTMLElement} element The element to append.
+       * @since 0.0.0
+       */
+      appendStatusElement(element) {
+        if (!element || !this.labelEl) {
+          return;
+        }
+        this.labelEl.append(element);
+      },
+
+      /**
        * Gets the Map Asset model's status and updates this Layer Item View to reflect
        * that status to the user.
        */
       showStatus() {
-        const layerModel = this.model;
-        const status = layerModel.get("status");
+        const { status, isLoading, badge, notice, errorMessage } =
+          this.getStatusState();
+
         if (status === "error") {
-          const errorMessage = layerModel.get("statusDetails");
           this.showError(errorMessage);
-        } else if (status === "ready") {
-          this.removeStatuses();
-          const notice = layerModel.get("notification");
-          const badge = notice ? notice.badge : null;
-          if (badge) {
-            this.showBadge(badge, notice.style);
-          }
-        } else if (status === "loading") {
+          return;
+        }
+
+        if (isLoading) {
           this.showLoading();
+          return;
+        }
+
+        this.removeStatuses();
+        if (status === "ready" && badge) {
+          this.showBadge(badge, notice?.style);
         }
       },
 
@@ -351,11 +411,13 @@ define([
        * or loading status in this view
        */
       removeStatuses() {
-        if (this.statusIcon) {
-          this.statusIcon.remove();
+        if (this.statusIconSlot) {
+          this.statusIconSlot.innerHTML = "";
+          this.statusIconSlot.classList.remove(this.classes.statusIconVisible);
         }
         if (this.badge) {
           this.badge.remove();
+          this.badge = null;
         }
         this.$el.tooltip("destroy");
       },
@@ -374,7 +436,7 @@ define([
         this.badge = document.createElement("span");
         this.badge.classList.add(this.classes.badge);
         this.badge.innerText = text;
-        this.labelEl.append(this.badge);
+        this.appendStatusElement(this.badge);
         if (style) {
           const badgeClass = `${this.classes.badge}--${style}`;
           this.badge.classList.add(badgeClass);
@@ -393,11 +455,9 @@ define([
         // Remove any style elements for other statuses
         this.removeStatuses();
 
-        // Show a warning icon
-        this.statusIcon = document.createElement("span");
-        this.statusIcon.innerHTML = `<i class="icon-warning-sign icon icon-on-right"></i>`;
-        this.statusIcon.style.opacity = "0.6";
-        this.labelEl.append(this.statusIcon);
+        // Show a warning icon in the reserved status icon slot
+        this.statusIconSlot.innerHTML = `<i class="icon-warning-sign icon"></i>`;
+        this.statusIconSlot.classList.add(this.classes.statusIconVisible);
 
         // Show a tooltip with the error message
         let fullMessage = this.errorMessage;
@@ -423,11 +483,9 @@ define([
         // Remove any style elements for other statuses
         this.removeStatuses();
 
-        // Show a spinner icon
-        this.statusIcon = document.createElement("span");
-        this.statusIcon.innerHTML = `<i class="icon-spinner icon-spin icon-small loading icon icon-on-right"></i>`;
-        this.statusIcon.style.opacity = "0.6";
-        this.labelEl.append(this.statusIcon);
+        // Show a spinner icon in the reserved status icon slot
+        this.statusIconSlot.innerHTML = `<i class="icon-spinner icon-spin icon-small loading icon"></i>`;
+        this.statusIconSlot.classList.add(this.classes.statusIconVisible);
       },
 
       /**

@@ -198,6 +198,7 @@ define([
 
           // There is no data to load for a CustomDataSource
           if (type === "CustomDataSource") {
+            dataSource.mapAssetModel = model;
             model.set("cesiumModel", dataSource);
             model.setListeners();
             model.setReady();
@@ -221,6 +222,7 @@ define([
           dataSource
             .load(data, cesiumOptions)
             .then(function (loadedData) {
+              loadedData.mapAssetModel = model;
               model.set("cesiumModel", loadedData);
               if (!recreate) {
                 model.setListeners();
@@ -231,7 +233,7 @@ define([
             })
             .otherwise((error) => {
               console.log("Failed to load Cesium Vector Data.", error);
-              model.setError.bind(model, error.message || error);
+              model.setError(error?.message || error);
             });
         } catch (error) {
           console.log("Failed to create a VectorData Cesium Model.", error);
@@ -407,7 +409,12 @@ define([
           const model = this;
           const entities = this.getEntities();
           const entityCollection = this.getEntityCollection();
-          this.set("displayReady", false);
+          // Only reset display readiness for active layer load cycles.
+          // Selection/highlight restyling also calls updateAppearance, but it
+          // should not trigger map-level loading indicators.
+          if (this.get("status") === "loading") {
+            this.set("displayReady", false);
+          }
 
           if (entities && entities.length) {
             if (model.isVisible()) {
