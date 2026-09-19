@@ -1100,8 +1100,8 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
 
     .list-item__settings {
       /* Show button when layer is hovered. */
-      display: flex;
-      border: 1px solid var(--portal-col-neutral-4);
+      visibility: visible;
+      border-color: var(--portal-col-neutral-4);
 
       /* Use the same style on button hover and when selected. */
       &.list-item--selected,
@@ -1131,8 +1131,8 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
 
     .list-item__settings {
       /* Show button when layer is shown. */
-      display: flex;
-      border: 1px solid var(--portal-col-primary-2);
+      visibility: visible;
+      border-color: var(--portal-col-primary-2);
     }
   }
 
@@ -1141,10 +1141,14 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
   }
 
   .list-item__settings {
-    /* By default, don't show button. */
-    display: none;
+    /* Always reserve this column's width (max-content) so hovering/selecting
+       a layer never resizes it and shifts the label/filter icon; hide via
+       visibility (not display) and keep a same-size transparent border. */
+    display: flex;
+    visibility: hidden;
     align-items: center;
     border-radius: var(--map-border-radius-small);
+    border: 1px solid transparent;
 
     .list-item__settings-toggle {
       font-size: 0.85rem;
@@ -1160,9 +1164,9 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
     /* Use the same style on button hover and when selected. */
     &.list-item--selected,
     &:hover {
-      display: flex;
+      visibility: visible;
       background-color: var(--portal-col-primary-1, #15324e);
-      border: 1px solid var(--portal-col-primary-1, #15324e);
+      border-color: var(--portal-col-primary-1, #15324e);
 
       .list-item__settings-toggle {
         color: var(--portal-col-primary-6);
@@ -1183,6 +1187,23 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.list-item__status-icon {
+  /* fixed footprint so the loading/error icon appearing or disappearing never
+     shifts sibling elements like the filter icon */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  opacity: 0.6;
+  visibility: hidden;
+}
+
+.list-item__status-icon--visible {
+  visibility: visible;
 }
 
 .list-item__highlighted-text {

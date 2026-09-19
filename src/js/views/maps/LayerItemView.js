@@ -70,6 +70,11 @@ define([
        * @property {string} badge The class to add to the badge element that is shown
        * when the layer has a notification message
        * @property {string} tooltip Class added to tooltips used in this view
+       * @property {string} statusIcon The class for the reserved status icon slot
+       * (spinner/warning) that stays in the DOM at a fixed size so its
+       * appearance/disappearance never shifts sibling elements
+       * @property {string} statusIconVisible The class added to the status icon slot
+       * to reveal its current icon
        */
       classes: {
         label: "list-item__label",
@@ -86,6 +91,8 @@ define([
         button: "map-view__button",
         filterIcon: "list-item__filter-icon",
         filterIconActive: "list-item__filter-icon--active",
+        statusIcon: "list-item__status-icon",
+        statusIconVisible: "list-item__status-icon--visible",
       },
 
       /**
@@ -145,6 +152,10 @@ define([
         if (this.model.get("filters")?.length) {
           this.insertFilterIcon();
         }
+
+        // Reserve a fixed-size slot for the status icon up front so that it
+        // showing/hiding later never shifts the filter icon or label text.
+        this.insertStatusIconSlot();
 
         // Ensure the view's main element has the given class name
         this.el.classList.add(this.className);
@@ -231,6 +242,19 @@ define([
         // filterIconEl.className = `${this.classes.button}`;
         filterIconEl.innerHTML = `<i class="icon icon-filter"></i>`;
         this.labelEl.appendChild(filterIconEl);
+      },
+
+      /**
+       * Create the (always-present, fixed-size) slot used to show the loading
+       * spinner or error icon next to the label. Kept in the DOM permanently
+       * and toggled via visibility so it never changes the label row's layout.
+       * @since 0.0.0
+       */
+      insertStatusIconSlot() {
+        const statusIconEl = document.createElement("span");
+        statusIconEl.classList.add(this.classes.statusIcon);
+        this.statusIconSlot = statusIconEl;
+        this.labelEl.appendChild(statusIconEl);
       },
 
       /**
@@ -387,9 +411,9 @@ define([
        * or loading status in this view
        */
       removeStatuses() {
-        if (this.statusIcon) {
-          this.statusIcon.remove();
-          this.statusIcon = null;
+        if (this.statusIconSlot) {
+          this.statusIconSlot.innerHTML = "";
+          this.statusIconSlot.classList.remove(this.classes.statusIconVisible);
         }
         if (this.badge) {
           this.badge.remove();
@@ -431,11 +455,9 @@ define([
         // Remove any style elements for other statuses
         this.removeStatuses();
 
-        // Show a warning icon
-        this.statusIcon = document.createElement("span");
-        this.statusIcon.innerHTML = `<i class="icon-warning-sign icon icon-on-right"></i>`;
-        this.statusIcon.style.opacity = "0.6";
-        this.appendStatusElement(this.statusIcon);
+        // Show a warning icon in the reserved status icon slot
+        this.statusIconSlot.innerHTML = `<i class="icon-warning-sign icon"></i>`;
+        this.statusIconSlot.classList.add(this.classes.statusIconVisible);
 
         // Show a tooltip with the error message
         let fullMessage = this.errorMessage;
@@ -461,11 +483,9 @@ define([
         // Remove any style elements for other statuses
         this.removeStatuses();
 
-        // Show a spinner icon
-        this.statusIcon = document.createElement("span");
-        this.statusIcon.innerHTML = `<i class="icon-spinner icon-spin icon-small loading icon icon-on-right"></i>`;
-        this.statusIcon.style.opacity = "0.6";
-        this.appendStatusElement(this.statusIcon);
+        // Show a spinner icon in the reserved status icon slot
+        this.statusIconSlot.innerHTML = `<i class="icon-spinner icon-spin icon-small loading icon"></i>`;
+        this.statusIconSlot.classList.add(this.classes.statusIconVisible);
       },
 
       /**
