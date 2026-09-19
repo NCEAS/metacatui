@@ -39,9 +39,7 @@ define(["underscore", "backbone"], (_, Backbone) => {
         this.$el.html(this.template());
         this.el.setAttribute("aria-live", "polite");
         this.el.setAttribute("aria-atomic", "true");
-        this.messageEl = this.el.querySelector(
-          ".map-status-bar__loading-text",
-        );
+        this.messageEl = this.el.querySelector(".map-status-bar__loading-text");
         return this;
       },
 

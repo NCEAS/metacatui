@@ -493,12 +493,14 @@ define([
           matchesRequestedFeature(requestedFeature, featureState),
         ),
       );
-      const allSearchableLayers = mapModel.getAllLayers().filter(
-        (layer) =>
-          layer.get("visible") !== false &&
-          typeof layer.getFeatureById === "function" &&
-          layer.get("status") !== "error",
-      );
+      const allSearchableLayers = mapModel
+        .getAllLayers()
+        .filter(
+          (layer) =>
+            layer.get("visible") !== false &&
+            typeof layer.getFeatureById === "function" &&
+            layer.get("status") !== "error",
+        );
       const featureAttrs = this.findFeatureAttributes(
         activeFeatures,
         allSearchableLayers,
@@ -514,7 +516,10 @@ define([
         (featureState) => !isFeatureResolved(featureState, resolvedFeatures),
       );
       const searchableLayerIds = allSearchableLayers
-        .map((layer) => normalizeId(layer.get("layerId")) || normalizeId(layer.cid))
+        .map(
+          (layer) =>
+            normalizeId(layer.get("layerId")) || normalizeId(layer.cid),
+        )
         .filter((layerId) => typeof layerId === "string" && layerId.length);
       const restoreScopeKey = serializeRestoreScopeKey(
         activeFeatures.map((feature) => getFeatureStateKey(feature)),

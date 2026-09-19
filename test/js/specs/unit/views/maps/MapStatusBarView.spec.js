@@ -32,9 +32,7 @@ define([
           state.view.el.getElementsByClassName("scale-bar"),
         ).to.have.lengthOf(1);
         expect(
-          state.view.el.getElementsByClassName(
-            "map-status-bar__loading-row",
-          ),
+          state.view.el.getElementsByClassName("map-status-bar__loading-row"),
         ).to.have.lengthOf(1);
       });
 

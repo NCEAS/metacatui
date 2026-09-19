@@ -105,4 +105,3 @@ define(["views/maps/MapView", "models/maps/Map", "common/SearchParams"], (
     });
   });
 });
-

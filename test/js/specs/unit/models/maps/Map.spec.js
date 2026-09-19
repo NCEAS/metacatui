@@ -1050,7 +1050,9 @@ define([
         map.handleLayerVisibilityChange(hiddenLayer, false);
 
         expect(map.featureRestoreSession).to.not.equal(null);
-        expect(map.get("restoreState")?.activeFeatures).to.deep.equal(activeFeatures);
+        expect(map.get("restoreState")?.activeFeatures).to.deep.equal(
+          activeFeatures,
+        );
         expect(SearchParams.parseStateFromUrl().activeFeatures).to.deep.equal(
           activeFeatures,
         );

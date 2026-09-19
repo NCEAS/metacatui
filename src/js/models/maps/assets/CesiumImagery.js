@@ -376,7 +376,10 @@ define([
        * requestImage function.
        * @since 0.0.0
        */
-      wrapRequestImageForPendingCount: function (provider, onPendingCountChange) {
+      wrapRequestImageForPendingCount: function (
+        provider,
+        onPendingCountChange,
+      ) {
         if (!provider || typeof provider.requestImage !== "function") {
           return function () {};
         }

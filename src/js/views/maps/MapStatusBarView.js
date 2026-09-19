@@ -114,7 +114,10 @@ define([
        * @param {number} barWidth The scale bar graphic's current width, in pixels.
        */
       handleBarWidthChange(barWidth) {
-        this.el.style.setProperty("--map-status-bar-bar-width", `${barWidth}px`);
+        this.el.style.setProperty(
+          "--map-status-bar-bar-width",
+          `${barWidth}px`,
+        );
       },
 
       /**
@@ -129,7 +132,8 @@ define([
           return;
         }
 
-        const message = this.model.get("loadingLayersMessage") || "Loading layers";
+        const message =
+          this.model.get("loadingLayersMessage") || "Loading layers";
         const justStarted = !this.isCurrentlyLoading;
         this.isCurrentlyLoading = true;
 
@@ -225,8 +229,7 @@ define([
         this.clearMessageUpdateTimer();
         if (!this.isExpanded()) return;
 
-        const remaining =
-          MIN_OPEN_DURATION_MS - (Date.now() - this.expandedAt);
+        const remaining = MIN_OPEN_DURATION_MS - (Date.now() - this.expandedAt);
         if (remaining <= 0) {
           this.collapse();
           return;
