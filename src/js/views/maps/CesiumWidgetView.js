@@ -1751,6 +1751,7 @@ define([
        * render
        */
       addImagery(cesiumModel) {
+        if (this.scene.imageryLayers.contains(cesiumModel)) return;
         this.scene.imageryLayers.add(cesiumModel);
         this.sortImagery();
       },
