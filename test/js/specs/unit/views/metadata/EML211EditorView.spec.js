@@ -9,6 +9,9 @@ define([
   "views/EditorView",
   "views/metadata/EML211EditorView",
   "common/Utilities",
+  "models/metadata/eml211/EML211",
+  "views/metadata/EMLAttributeView",
+  "views/metadata/EMLEntityView",
 ], function (
   $,
   Backbone,
@@ -20,6 +23,9 @@ define([
   EditorView,
   EML211EditorView,
   Utilities,
+  EML211,
+  EMLAttributeView,
+  EMLEntityView,
 ) {
   describe("EML211EditorView", function () {
     chai.should();
@@ -51,6 +57,123 @@ define([
     afterEach(function () {
       globalThis.MetacatUI = originalMetacatUI;
       sandbox.restore();
+    });
+
+    describe("attribute persistence across editor navigation", function () {
+      it("disposes cached entity editors when the EML editor closes", function () {
+        const attributesView = new Backbone.View();
+        attributesView.onClose = sandbox.spy();
+        const entityView = new Backbone.View();
+        entityView.attributesView = attributesView;
+        view.entityViews = { data_1: entityView };
+        sandbox.spy(attributesView, "remove");
+        sandbox.spy(entityView, "remove");
+        sandbox.stub(view, "flushDraftSave");
+
+        view.onClose();
+
+        sinon.assert.calledOnce(attributesView.onClose);
+        sinon.assert.calledOnce(attributesView.remove);
+        sinon.assert.calledOnce(entityView.remove);
+        chai.expect(view.entityViews).to.deep.equal({});
+      });
+
+      for (const mode of [
+        "existing",
+        "new",
+        "reopened existing",
+        "reopened new",
+      ]) {
+        it(`traces ${mode} attribute through package tracking and serialization`, async function () {
+          let eml = new EML211();
+          eml.set(
+            eml.parse(
+              `<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packageId="metadata_1" system="test"><dataset><title>Test</title><dataTable id="table"><entityName>data.csv</entityName><attributeList><attribute id="attr"><attributeName>Old name</attributeName><attributeDefinition>Test definition</attributeDefinition><measurementScale><nominal><nonNumericDomain><textDomain><definition>Text</definition></textDomain></nonNumericDomain></nominal></measurementScale></attribute></attributeList></dataTable></dataset></eml:eml>`,
+            ),
+          );
+          eml.set({ id: "metadata_1", synced: true });
+          view.model = eml;
+          if (mode.startsWith("reopened")) {
+            // Exercise the real cache and close lifecycle without opening modals.
+            sandbox.stub(EMLEntityView.prototype, "render").returnsThis();
+            sandbox.stub(EMLEntityView.prototype, "show");
+            const firstPackage = createEditorRootDataPackage();
+            globalThis.MetacatUI = {
+              ...originalMetacatUI,
+              rootDataPackage: firstPackage,
+            };
+            view.showEntityForMember(firstPackage.getMember("data_1"));
+            const persistedXML = eml.serialize();
+            sandbox.stub(view, "flushDraftSave");
+            view.onClose();
+            eml = new EML211();
+            eml.set(eml.parse(persistedXML));
+            eml.set({ id: "metadata_1", synced: true });
+            view.model = eml;
+          }
+          const dp = createEditorRootDataPackage();
+          globalThis.MetacatUI = { ...originalMetacatUI, rootDataPackage: dp };
+          const member = view.attachMetadataModelToPackage(eml);
+          member.uploadFile = new Blob([eml.serialize()]);
+          dp.metadataContentEdited = false;
+          member.contentDirty = false;
+          if (mode.startsWith("reopened"))
+            view.showEntityForMember(dp.getMember("data_1"));
+          const entity = mode.startsWith("reopened")
+            ? view.entityViews.data_1.model
+            : eml.get("entities").at(0);
+          const attrs = entity.get("attributeList").get("emlAttributes");
+          const attr = mode.endsWith("new")
+            ? attrs.addNewAttribute(entity, true)
+            : attrs.at(0);
+          if (mode.endsWith("new"))
+            attr.set({
+              attributeDefinition: "Test definition",
+              measurementScale: attrs.at(0).get("measurementScale").clone(),
+            });
+          const attrView = new EMLAttributeView({ model: attr }).render();
+          const input = attrView.el.querySelector(
+            ".input[data-category=attributeName]",
+          );
+          input.value = "Edited name";
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+          chai.expect(attr.get("attributeName")).to.equal("Edited name");
+          chai
+            .expect(dp.hasMetadataContentEdits(), "package dirty")
+            .to.equal(true);
+          chai
+            .expect(
+              attr.updateDOM().outerHTML.toLowerCase(),
+              `${mode} attribute XML`,
+            )
+            .to.contain("<attributename>edited name</attributename>");
+          chai
+            .expect(
+              entity.get("attributeList").updateDOM().outerHTML.toLowerCase(),
+              `${mode} list XML`,
+            )
+            .to.contain("<attributename>edited name</attributename>");
+          chai
+            .expect(
+              entity.updateDOM().outerHTML.toLowerCase(),
+              `${mode} entity XML`,
+            )
+            .to.contain("<attributename>edited name</attributename>");
+          chai
+            .expect(member.uploadFile, "prepared payload invalidated")
+            .to.equal(null);
+          // Keep remote version staging outside this model-to-payload test.
+          sandbox.stub(dp, "markMemberContentDirty").callsFake(async () => {
+            member.contentDirty = true;
+          });
+          await view.syncMetadataForPackageSave();
+          chai.expect(member.contentDirty, "save gate").to.equal(true);
+          chai
+            .expect(await member.serializeContent(), `${mode} upload payload`)
+            .to.contain("<attributeName>Edited name</attributeName>");
+          attrView.remove();
+        });
+      }
     });
 
     function createRootDataPackage({

@@ -4263,6 +4263,14 @@ ${supportDetails}`;
 
         this.subviews = [];
 
+        // Discard cached entity editors with the EML model they belong to.
+        Object.values(this.entityViews || {}).forEach((entityView) => {
+          entityView.attributesView?.onClose();
+          entityView.attributesView?.remove();
+          entityView.remove();
+        });
+        this.entityViews = {};
+
         this.undelegateEvents();
       },
 
