@@ -79,8 +79,9 @@ define([
    * Normalize configured and runtime visibility for a layer model/object.
    * configuredVisibility tracks the portal-configured value, while visible
    * tracks the current runtime value (which may be overridden from URL state).
-   *
-   * If both values are missing in config, default to hidden.
+   * The function is idempotent to protect against calls where both visible 
+   * and configuredVisibility are already set. If only one of the two is set, 
+   * the other is inferred from it. If neither is set, the default is visible.
    * @param {object} layer A layer config object.
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} [visibilityState]
    * Parsed URL visibility state used to override runtime visible state.
@@ -88,20 +89,23 @@ define([
    * @since 2.38.0
    */
   function normalizeLayerVisibility(layer, visibilityState) {
-    const { visible } = layer;
-    const configuredVisibility =
-      layer.configuredVisibility == null
-        ? visible === true
-        : layer.configuredVisibility === true;
-    const urlVisible = getUrlVisibilityOverride(layer, visibilityState);
-    let runtimeVisibility;
-    if (urlVisible != null) {
-      runtimeVisibility = urlVisible;
-    } else if (visible == null) {
-      runtimeVisibility = configuredVisibility;
+    const hasConfiguredVisibility = layer.configuredVisibility != null;
+    const hasVisible = layer.visible != null;
+    const configuredVisibilityIsTrue = layer.configuredVisibility === true;
+    const visibleIsTrue = layer.visible === true;
+
+    let configuredVisibility;
+    if (hasConfiguredVisibility) {
+      configuredVisibility = configuredVisibilityIsTrue;
+    } else if (hasVisible) {
+      configuredVisibility = visibleIsTrue;
     } else {
-      runtimeVisibility = visible === true;
+      configuredVisibility = true; // neither is configured: default to shown
     }
+
+    const urlVisible = getUrlVisibilityOverride(layer, visibilityState);
+    const runtimeVisibility =
+      urlVisible ?? (hasVisible ? visibleIsTrue : configuredVisibility);
 
     return {
       ...layer,
