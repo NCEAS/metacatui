@@ -57,6 +57,23 @@
   ];
 
   /**
+   * Normalize an input value to a positive integer and ensure it is within the
+   * valid range of indices. Throws an error if the index is out of bounds.
+   * @param {*} index Value to normalize as an array index.
+   * @param {Integer} length The length of the array to validate the index against.
+   * @returns {number} The normalized array index.
+   */
+  const requireIndex = (index, length) => {
+    const normalizedIndex = requireNonNegativeInteger(index);
+    if (normalizedIndex >= length) {
+      throw new Error(
+        `AccessPolicy operation could not find rule at index ${normalizedIndex}.`,
+      );
+    }
+    return normalizedIndex;
+  };
+
+  /**
    * Collection of access rules used by System Metadata.
    * @class AccessPolicy
    * @augments Array
@@ -111,12 +128,7 @@
      * @throws {Error} When index is invalid or does not identify a rule
      */
     replace(index, rule) {
-      const normalizedIndex = requireNonNegativeInteger(index);
-      if (normalizedIndex >= this.length) {
-        throw new Error(
-          `AccessPolicy.replace could not find rule at index ${normalizedIndex}.`,
-        );
-      }
+      const normalizedIndex = requireIndex(index, this.length);
       this[normalizedIndex] =
         rule instanceof AccessRule ? rule : new AccessRule(rule);
       return this;
@@ -129,12 +141,7 @@
      * @throws {Error} When index is invalid or does not identify a rule
      */
     remove(index) {
-      const normalizedIndex = requireNonNegativeInteger(index);
-      if (normalizedIndex >= this.length) {
-        throw new Error(
-          `AccessPolicy.remove could not find rule at index ${normalizedIndex}.`,
-        );
-      }
+      const normalizedIndex = requireIndex(index, this.length);
       this.splice(normalizedIndex, 1);
       return this;
     }
@@ -160,6 +167,7 @@
       );
       this.length = 0;
       super.push(...normalizedRules);
+      this.removeEmptyRules();
       return this;
     }
 
@@ -235,6 +243,26 @@
       return new AccessPolicy(Array.isArray(value) ? value : [value]);
     }
 
+    /** @returns {Array&lt;AccessRule>} All access rules in the policy. */
+    getRules() {
+      return Array.from(this);
+    }
+
+    /** @returns {Array&lt;AccessRule>} Rules missing a subject or permissions. */
+    getEmptyRules() {
+      return this.getRules().filter((rule) => rule.isEmpty());
+    }
+
+    /** @returns {Array&lt;AccessRule>} Rules with a subject and permissions. */
+    getNonEmptyRules() {
+      return this.getRules().filter((rule) => !rule.isEmpty());
+    }
+
+    /** Remove rules missing a subject or permissions. */
+    removeEmptyRules() {
+      this.getEmptyRules().forEach((rule) => this.remove(this.indexOf(rule)));
+    }
+
     /**
      * Validate each access rule in the policy.
      * @param {string} [path] Base path used in validation errors. Defaults to
@@ -243,7 +271,7 @@
      */
     validate(path = "accessPolicy") {
       const errors = [];
-      this.forEach((rule, index) => {
+      this.getNonEmptyRules().forEach((rule, index) => {
         errors.push(...rule.validate(`${path}[${index}]`));
       });
       return errors;
@@ -255,10 +283,11 @@
      * @returns {Element|null} Serialized XML element, or `null` when empty.
      */
     toElement(doc) {
-      if (!this.length) return null;
+      const rules = this.getNonEmptyRules();
+      if (!rules.length) return null;
 
       const element = doc.createElement("accessPolicy");
-      this.forEach((rule) => {
+      rules.forEach((rule) => {
         const ruleElement = rule.toElement(doc);
         if (ruleElement) element.appendChild(ruleElement);
       });
@@ -271,7 +300,7 @@
      * @returns {Array&lt;object>} Plain access rule data.
      */
     toJSON() {
-      return Array.from(this, (rule) => rule.toJSON());
+      return this.getNonEmptyRules().map((rule) => rule.toJSON());
     }
 
     /**
