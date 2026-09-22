@@ -1403,6 +1403,74 @@ define([
           "Loading Very Long Terrestrial Net CO<sub>2</sub> Balance And More Wor…",
         );
       });
+
+      describe("feature restore timeout", () => {
+        let clock;
+
+        beforeEach(() => {
+          clock = sinon.useFakeTimers();
+        });
+
+        afterEach(() => {
+          clock.restore();
+        });
+
+        it("clears the restore session and cancels every registered waiter once the bounded wait elapses", () => {
+          const map = new Map({
+            showShareUrl: true,
+            featureRestoreTimeoutMs: 1000,
+          });
+
+          let cancelCountA = 0;
+          let cancelCountB = 0;
+
+          const layerA = makeLayer({
+            layerId: "layer-a",
+            status: "ready",
+            getFeatureById: () => null,
+            waitForFeatureById: () => () => {
+              cancelCountA += 1;
+            },
+          });
+          const layerB = makeLayer({
+            layerId: "layer-b",
+            status: "ready",
+            getFeatureById: () => null,
+            waitForFeatureById: () => () => {
+              cancelCountB += 1;
+            },
+          });
+
+          map.getAllLayers = () => [layerA, layerB];
+          map.set("restoreState", {
+            activeFeatures: [
+              { featureId: "feature-a", layerId: "layer-a" },
+              { featureId: "feature-b", layerId: "layer-b" },
+            ],
+          });
+
+          map.applyFeatureRestoreState();
+
+          expect(map.featureRestoreSession).to.not.equal(null);
+          expect(cancelCountA).to.equal(0);
+          expect(cancelCountB).to.equal(0);
+
+          clock.tick(999);
+          expect(map.featureRestoreSession).to.not.equal(null);
+          expect(cancelCountA).to.equal(0);
+          expect(cancelCountB).to.equal(0);
+
+          clock.tick(1);
+
+          expect(map.featureRestoreSession).to.equal(null);
+          expect(cancelCountA).to.equal(1);
+          expect(cancelCountB).to.equal(1);
+
+          clock.tick(10000);
+          expect(cancelCountA).to.equal(1);
+          expect(cancelCountB).to.equal(1);
+        });
+      });
     });
   });
 });
