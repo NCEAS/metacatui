@@ -110,15 +110,6 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
     },
 
     /**
-     * Serialize text-like values to XML text.
-     * @param {*} value Value to serialize.
-     * @returns {string|null} Trimmed text, or `null` for nullish input.
-     */
-    serializeText(value) {
-      return ValueUtilities.normalizeText(value);
-    },
-
-    /**
      * Normalize any value into an array of trimmed strings.
      * @param {*} value Value or array of values.
      * @returns {Array<string|null>} Normalized string array.
@@ -283,7 +274,7 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
      */
     listify(value) {
       if (value === undefined || value === null) return [];
-      if (Array.isArray(value)) return value;
+      if (Array.isArray(value)) return [...value];
       return [value];
     },
 

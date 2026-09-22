@@ -317,11 +317,10 @@ define(["common/ValueUtilities", "common/UrlUtilities", "md5"], function (
         expect(ValueUtilities.serializeBoolean(null)).to.equal(null);
       });
 
-      it("serializes integers and text values to XML text", function () {
+      it("serializes integers to XML text", function () {
         expect(ValueUtilities.serializeInteger(7)).to.equal("7");
         expect(ValueUtilities.serializeInteger(" 7 ")).to.equal("7");
         expect(ValueUtilities.serializeInteger("abc")).to.equal("abc");
-        expect(ValueUtilities.serializeText("  hello  ")).to.equal("hello");
       });
     });
 

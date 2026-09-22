@@ -79,8 +79,8 @@ define([
    * Normalize configured and runtime visibility for a layer model/object.
    * configuredVisibility tracks the portal-configured value, while visible
    * tracks the current runtime value (which may be overridden from URL state).
-   * The function is idempotent to protect against calls where both visible 
-   * and configuredVisibility are already set. If only one of the two is set, 
+   * The function is idempotent to protect against calls where both visible
+   * and configuredVisibility are already set. If only one of the two is set,
    * the other is inferred from it. If neither is set, the default is visible.
    * @param {object} layer A layer config object.
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} [visibilityState]
