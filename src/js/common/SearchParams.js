@@ -107,7 +107,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * Normalize active feature entries into { featureId, layerId } pairs.
    * @param {unknown} value Candidate active feature entries.
    * @returns {{featureId: string, layerId: (string|null)}[]} Normalized entries.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   const normalizeActiveFeatures = (value) => {
     if (!Array.isArray(value)) return [];
@@ -141,7 +141,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * Expects JSON object payloads containing feature/layer ids.
    * @param {unknown} token Candidate f param value.
    * @returns {{featureId: string, layerId: (string|null)}|null} Parsed entry.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   const parseActiveFeatureToken = (token) => {
     if (typeof token !== "string") return null;
@@ -166,7 +166,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * Serialize one active-feature entry into a stable URL token.
    * @param {{featureId: string, layerId: (string|null)}} feature Active feature entry.
    * @returns {string|null} JSON-encoded token string.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   const serializeActiveFeatureToken = (feature) => {
     const [normalizedFeature] = normalizeActiveFeatures([feature]);
@@ -611,7 +611,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * Set active features in URL state as feature/layer pairs.
    * @param {{featureId: string, layerId: (string|null)}[]} activeFeatures
    * The feature state entries to write.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   const updateActiveFeatures = (activeFeatures) => {
     updateStateInUrl({ activeFeatures });

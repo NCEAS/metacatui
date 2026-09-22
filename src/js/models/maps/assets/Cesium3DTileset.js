@@ -375,7 +375,7 @@ define([
        * the given id string.
        * @param {string} id The stable property-based feature ID.
        * @returns {Cesium.Cesium3DTileFeature|null} The matching feature, or null.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       getFeatureById: function (id) {
         const cesiumModel = this.get("cesiumModel");
@@ -407,7 +407,7 @@ define([
        * @param {string} id The stable property-based feature ID.
        * @param {Function} onFound Callback invoked with the Cesium3DTileFeature.
        * @returns {Function} Cancel function that removes the tileVisible listener.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       waitForFeatureById: function (id, onFound) {
         const model = this;
