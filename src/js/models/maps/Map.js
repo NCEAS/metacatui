@@ -790,13 +790,13 @@ define([
           this.shouldSyncUrlState() &&
           isNonEmptyArray(activeFeatures)
         ) {
+          const removedSelectedFeatures =
+            this.clearSelectedFeaturesForLayer(layer);
           const removedRestoreFeatures =
             this.featureRestoreController.clearFeatureRestoreEntriesForLayer(
               layer,
             );
           if (removedRestoreFeatures) {
-            const removedSelectedFeatures =
-              this.clearSelectedFeaturesForLayer(layer);
             if (!removedSelectedFeatures) {
               this.syncSelectedFeaturesToUrl();
             }
