@@ -319,7 +319,6 @@ define([
        * @since 2.27.0
        */
       onClose() {
-        this.clearLayerLoadingIndicatorTimer();
         const subViews = this.getSubViews();
         subViews.forEach((subView) => {
           if (subView && typeof subView.onClose === "function") {
