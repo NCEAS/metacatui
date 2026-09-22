@@ -106,7 +106,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   /**
    * Normalize active feature entries into { featureId, layerId } pairs.
    * @param {unknown} value Candidate active feature entries.
-   * @returns {{featureId: string, layerId: (string|null)}[]} Normalized entries.
+   * @returns {Array.<{featureId: string, layerId: (string|null)}>} Normalized entries.
    * @since 2.40.0
    */
   const normalizeActiveFeatures = (value) => {
@@ -609,7 +609,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
 
   /**
    * Set active features in URL state as feature/layer pairs.
-   * @param {{featureId: string, layerId: (string|null)}[]} activeFeatures
+   * @param {Array.<{featureId: string, layerId: (string|null)}>} activeFeatures
    * The feature state entries to write.
    * @since 2.40.0
    */
