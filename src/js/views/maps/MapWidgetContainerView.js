@@ -77,6 +77,15 @@ define([
           );
           return;
         }
+
+        if (this.statusBar) {
+          if (typeof this.statusBar.onClose === "function") {
+            this.statusBar.onClose();
+          }
+          this.statusBar.remove();
+          this.statusBar = null;
+        }
+
         const statusBar = new MapStatusBarView({
           model: this.model,
           scaleModel: interactions.get("scale"),
