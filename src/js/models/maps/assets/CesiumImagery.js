@@ -436,7 +436,7 @@ define([
           return;
         }
 
-        model.set("tilesLoading", true);
+        model.set("tilesLoading", false);
 
         let isCanceled = false;
         let removePostRenderListener = null;
