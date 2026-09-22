@@ -15,6 +15,22 @@ define(["models/sysmeta/AccessPolicy", "models/sysmeta/AccessRule"], (
 
   describe("AccessPolicy", () => {
     describe("construction and mutation", () => {
+      it("removes rules without a subject or permissions", () => {
+        const policy = new AccessPolicy([
+          { subject: "public", read: false },
+          { permissions: ["read"] },
+          { subjects: ["uid=unused"], permissions: [] },
+          { subject: "uid=editor", read: true },
+        ]);
+
+        expect(policy.getEmptyRules()).to.have.length(3);
+        expect(policy.getNonEmptyRules()).to.have.length(1);
+        policy.removeEmptyRules();
+
+        expect(policy).to.have.length(1);
+        expect(policy.validate()).to.deep.equal([]);
+      });
+
       it("clones AccessRule instances and normalizes plain objects", () => {
         const sourceRule = new AccessRule({
           subjects: ["public"],
@@ -160,6 +176,28 @@ define(["models/sysmeta/AccessPolicy", "models/sysmeta/AccessRule"], (
     });
 
     describe("validate()", () => {
+      it("omits permissionless rules from validation and output", () => {
+        const policy = new AccessPolicy([
+          { subject: "public", read: false },
+          { subject: "uid=editor", read: true },
+        ]);
+
+        expect(policy.validate()).to.deep.equal([]);
+        expect(policy.toJSON()).to.deep.equal([
+          { subjects: ["uid=editor"], permissions: ["read"] },
+        ]);
+        expect(
+          new AccessPolicy([{ subject: "public", read: false }]).toElement(
+            createDoc(),
+          ),
+        ).to.equal(null);
+        expect(
+          new XMLSerializer().serializeToString(policy.toElement(createDoc())),
+        ).to.equal(
+          "<accessPolicy><allow><subject>uid=editor</subject><permission>read</permission></allow></accessPolicy>",
+        );
+      });
+
       it("prefixes nested access rule errors with rule indexes", () => {
         const errors = new AccessPolicy([
           { subjects: [""], permissions: ["bogus"] },

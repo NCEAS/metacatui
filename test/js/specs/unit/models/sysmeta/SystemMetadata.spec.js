@@ -433,6 +433,54 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
     });
 
     describe("serialize()", () => {
+      it("validates and serializes normalized values without changing the model", () => {
+        const sysMeta = SystemMetadata.fromXml(MINIMAL_XML);
+        sysMeta.size = "1";
+        sysMeta.accessPolicy.add({ subject: "public", read: false });
+        const policy = sysMeta.accessPolicy;
+
+        expect(sysMeta.validate()).to.deep.equal([]);
+        expect(sysMeta.toJSON().accessPolicy).to.deep.equal([]);
+        expect(sysMeta.serialize()).to.not.contain("<accessPolicy>");
+        expect(sysMeta.serialize({ validate: false })).to.not.contain(
+          "<accessPolicy>",
+        );
+        expect(sysMeta.size).to.equal("1");
+        expect(sysMeta.accessPolicy).to.equal(policy);
+        expect(policy).to.have.length(1);
+
+        sysMeta.normalize();
+        expect(sysMeta.size).to.equal(1);
+        expect(sysMeta.accessPolicy).to.have.length(0);
+      });
+
+      it("omits permissionless editor access rules before validation and serialization", () => {
+        const sysMeta = SystemMetadata.fromXml(MINIMAL_XML);
+        sysMeta.accessPolicy.add({ subject: "public", read: false });
+        sysMeta.accessPolicy.add({ subject: "userA", read: true });
+
+        expect(sysMeta.validate()).to.deep.equal([]);
+
+        const xml = sysMeta.serialize();
+        expect(xml).to.not.contain("<subject>public</subject>");
+        expect(xml).to.contain("<subject>userA</subject>");
+        expect(sysMeta.accessPolicy.toJSON()).to.deep.equal([
+          { subjects: ["userA"], permissions: ["read"] },
+        ]);
+      });
+
+      it("omits rules without a subject or permissions when serializing without validation", () => {
+        const sysMeta = SystemMetadata.fromXml(MINIMAL_XML);
+        sysMeta.accessPolicy.add({ subjects: ["public"], permissions: [] });
+        sysMeta.accessPolicy.add({ subject: "uid=unused" });
+        sysMeta.accessPolicy.add({ permissions: ["read"] });
+
+        const xml = sysMeta.serialize({ validate: false });
+
+        expect(xml).to.not.contain("<accessPolicy>");
+        expect(sysMeta.accessPolicy).to.have.length(3);
+      });
+
       it("round-trips parsed data through canonical v2 XML", () => {
         const sysMeta = SystemMetadata.fromXml(FULL_XML);
         const xml = sysMeta.serialize();
@@ -492,7 +540,9 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
         }
 
         expect(thrown).to.be.instanceof(Error);
-        expect(thrown.message).to.equal("SystemMetadata validation failed");
+        expect(thrown.message).to.equal(
+          SystemMetadata.MESSAGES.VALIDATION_ERROR,
+        );
         expect(thrown.validationErrors.map((issue) => issue.field)).to.include(
           "formatId",
         );

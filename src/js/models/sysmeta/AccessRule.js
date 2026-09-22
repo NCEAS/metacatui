@@ -141,6 +141,21 @@ define([
       return this.permissions.includes("changePermission");
     }
 
+    /** @returns {boolean} `true` when the rule has at least one permission. */
+    hasPermissions() {
+      return this.permissions.length > 0;
+    }
+
+    /** @returns {boolean} `true` when the rule has at least one subject. */
+    hasSubject() {
+      return this.subjects.length > 0;
+    }
+
+    /** @returns {boolean} `true` when the rule lacks a subject or permissions. */
+    isEmpty() {
+      return !this.hasPermissions() || !this.hasSubject();
+    }
+
     /**
      * Validate the access rule state.
      * @param {string} [path] Base path used in validation errors. Defaults to
@@ -150,7 +165,7 @@ define([
     validate(path = "accessPolicy") {
       const errors = [];
 
-      if (!this.subjects.length) {
+      if (!this.hasSubject()) {
         errors.push(
           createValidationIssue({
             field: `${path}.subjects`,
@@ -170,7 +185,7 @@ define([
         }
       });
 
-      if (!this.permissions.length) {
+      if (!this.hasPermissions()) {
         errors.push(
           createValidationIssue({
             field: `${path}.permissions`,
@@ -199,7 +214,7 @@ define([
      * @returns {Element|null} Serialized XML element, or `null` when empty.
      */
     toElement(doc) {
-      if (!this.subjects.length && !this.permissions.length) return null;
+      if (this.isEmpty()) return null;
 
       const element = doc.createElement("allow");
 

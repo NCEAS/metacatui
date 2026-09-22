@@ -49,6 +49,11 @@ define([
   );
   const OPTIONAL_PROPERTY_SET = new Set(OPTIONAL_PROPERTIES);
 
+  const MESSAGES = {
+    VALIDATION_ERROR:
+      "System Metadata validation failed. Please contact support for assistance.",
+  };
+
   /**
    * Typed DataONE System Metadata domain model with direct root properties,
    * owned child domains, tolerant XML parsing, and canonical v2 XML
@@ -277,14 +282,18 @@ define([
       if (validate) {
         const validationIssues = this.validate();
         if (validationIssues.length) {
+          // Until we have a better mechanism to display validation issues to
+          // the user, log them for debugging.
+          /* eslint-disable no-console */
+          console.error("SysMeta validation issues:", validationIssues, this);
           throw createValidationException(
-            "SystemMetadata validation failed",
+            MESSAGES.VALIDATION_ERROR,
             validationIssues,
           );
         }
       }
 
-      this.normalize();
+      const normalized = SystemMetadata.normalizeValues(this.toObject());
 
       const doc = document.implementation.createDocument(
         CANONICAL_XML.rootNamespaceUri,
@@ -308,12 +317,12 @@ define([
           case "mediaType":
           case "replicationPolicy":
           case "accessPolicy": {
-            const el = this[field]?.toElement?.(doc);
+            const el = normalized[field]?.toElement?.(doc);
             if (el) root.appendChild(el);
             return;
           }
           case "replica":
-            this.replicas.forEach((replica) => {
+            normalized.replicas.forEach((replica) => {
               const el = replica.toElement(doc);
               if (el) root.appendChild(el);
             });
@@ -325,7 +334,7 @@ define([
                 root,
                 field,
                 XMLTypes[SIMPLE_TYPE_BY_FIELD[field]]?.serialize?.(
-                  this[field],
+                  normalized[field],
                 ) ?? null,
               );
             }
@@ -444,8 +453,7 @@ define([
                 algorithm: source.checksumAlgorithm,
               }
             : source[field];
-        normalized[field] =
-          val instanceof Type ? val.normalize() : Type.fromValue(val);
+        normalized[field] = Type.fromValue(val).normalize();
       });
 
       return normalized;
@@ -525,6 +533,8 @@ define([
       return { normalizedValues, fatalIssues };
     }
   }
+
+  SystemMetadata.MESSAGES = MESSAGES;
 
   return SystemMetadata;
 });

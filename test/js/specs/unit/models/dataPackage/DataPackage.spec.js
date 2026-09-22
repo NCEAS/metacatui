@@ -2430,7 +2430,10 @@ define([
             get: (key) => {
               if (key === "inheritAccessPolicy") return true;
               if (key === "defaultAccessPolicy") {
-                return [{ subject: "public", read: true }];
+                return [
+                  { subject: "public", read: true },
+                  { subject: "uid=unused", read: false },
+                ];
               }
               return null;
             },
