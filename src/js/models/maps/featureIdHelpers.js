@@ -6,7 +6,7 @@
  * IDs in the URL and restore them on page load.
  * @module featureIdHelpers
  * @classcategory Models/Maps
- * @since 0.0.0
+ * @since 2.40.0
  */
 define([], () => {
   /** Property keys checked in priority order when deriving a stable feature ID. */

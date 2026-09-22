@@ -2,9 +2,9 @@ cff-version: 1.2.0
 message: If you use this software, please cite it using these metadata.
 type: software
 title: 'MetacatUI: A client-side web interface for DataONE data repositories'
-version: 2.39.0
-date-released: '2026-09-15'
-doi: 10.18739/A2GF0MZ7C
+version: 2.40.0
+date-released: '2026-09-22'
+doi: 10.18739/A2P26Q584
 authors:
 - given-names: Matthew B.
   family-names: Jones

@@ -601,7 +601,7 @@ define([
        * @param {string} [layerId] Optional layer id to constrain search.
        * @returns {{layer: MapAsset, feature: object, attributes: object}|null}
        * Matching feature result or null when not found.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       findFeature(featureId, layerId) {
         const normalizedFeatureId =
@@ -765,9 +765,9 @@ define([
       /**
        * Get selected feature/layer entries from current map interaction state
        * for URL sync.
-       * @returns {{featureId: string, layerId: (string|null)}[]}
+       * @returns {Array.<{featureId: string, layerId: (string|null)}>}
        * Selected feature state entries.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       getSelectedFeatureStateForUrlState() {
         const selectedFeatures = this.getSelectedFeatures();
@@ -806,7 +806,7 @@ define([
        * Write the currently selected feature ids to the URL. Called when
        * selectedFeatures changes. Managed independently from updateSearchParams
        * so that camera/layer syncs cannot inadvertently clear the f param.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       syncSelectedFeaturesToUrl() {
         if (!this.shouldSyncUrlState()) return;
@@ -820,7 +820,7 @@ define([
 
       /**
        * Cancel and clear any in-flight asynchronous feature restore waiters.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       clearFeatureRestoreSession() {
         this.featureRestoreController.clearSession();
@@ -868,7 +868,7 @@ define([
        * Searches all map layers for a matching feature and selects it directly
        * without simulating a user click. If entities are not yet loaded,
        * waits for each layer's status to become 'ready' before retrying.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       applyFeatureRestoreState() {
         this.featureRestoreController.applyRestoreState();
