@@ -155,13 +155,13 @@ define([], () => {
       return mapModel.get("isLoadingLayers") ? "Loading layers" : null;
     }
 
-    if (labels.length === 1) {
+    if (loadingLayers.length === 1) {
       return `Loading ${labels[0]}`;
     }
 
     // As soon as more than one layer is loading, switch to a compact "+n other
     // layers" form so the message doesn't keep growing with every extra label.
-    const otherCount = labels.length - 1;
+    const otherCount = loadingLayers.length - 1;
     const otherWord = otherCount === 1 ? "layer" : "layers";
     return `Loading ${labels[0]} and ${otherCount} other ${otherWord}`;
   }
