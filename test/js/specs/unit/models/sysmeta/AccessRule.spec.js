@@ -123,6 +123,19 @@ define(["models/sysmeta/AccessRule"], (AccessRule) => {
     });
 
     describe("toElement()", () => {
+      it("treats rules without a subject or permissions as empty", () => {
+        const permissionless = new AccessRule({ subject: "public", read: false });
+        const subjectless = new AccessRule({ permissions: ["read"] });
+
+        expect(permissionless.isEmpty()).to.equal(true);
+        expect(permissionless.toElement(createDoc())).to.equal(null);
+        expect(subjectless.isEmpty()).to.equal(true);
+        expect(subjectless.toElement(createDoc())).to.equal(null);
+        expect(subjectless.validate().map((issue) => issue.field)).to.include(
+          "accessPolicy.subjects",
+        );
+      });
+
       it("returns null when the rule has no serializable values", () => {
         expect(new AccessRule().toElement(createDoc())).to.equal(null);
       });
