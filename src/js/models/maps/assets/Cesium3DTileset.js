@@ -168,6 +168,7 @@ define([
               ". Error details: " +
               error,
           );
+          this.setError(error?.message || error);
         }
       },
 

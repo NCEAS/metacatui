@@ -237,6 +237,7 @@ define([
             });
         } catch (error) {
           console.log("Failed to create a VectorData Cesium Model.", error);
+          this.setError(error?.message || error);
         }
       },
 
