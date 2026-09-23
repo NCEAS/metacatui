@@ -1742,14 +1742,24 @@ define([
        * model to render on the map
        */
       addVectorData(cesiumModel) {
-        this.dataSourceCollection.add(cesiumModel);
+        const addPromise = this.dataSourceCollection.add(cesiumModel);
         if (cesiumModel?.mapAssetModel?.get("renderAboveOtherLayers")) {
           this.alwaysOnTopDataSources = this.alwaysOnTopDataSources || [];
           if (!this.alwaysOnTopDataSources.includes(cesiumModel)) {
             this.alwaysOnTopDataSources.push(cesiumModel);
           }
         }
-        this.raiseAlwaysOnTopVectorData();
+        // dataSourceCollection.add() resolves asynchronously, so the source
+        // isn't actually in the collection yet when this method returns.
+        Promise.resolve(addPromise)
+          .then(() => {
+            // Skip if the view was closed while the add was still pending.
+            if (this.isClosed) return;
+            this.raiseAlwaysOnTopVectorData();
+          })
+          .catch((e) => {
+            console.log("Error adding vector data to the map", e);
+          });
       },
 
       /**
@@ -1916,6 +1926,7 @@ define([
 
       /** Remove listeners and destroy the widget when the view is closed */
       onClose() {
+        this.isClosed = true;
         this.destroy3DTilesInspector();
         this.removeMouseListeners();
         this.removeCameraListeners();
@@ -1924,11 +1935,32 @@ define([
           this.removePreRenderLightListener();
           this.removePreRenderLightListener = null;
         }
+        this.stopAllLoadingStateTracking();
         this.stopListening();
         if (this.widget && !this.widget.isDestroyed()) {
           this.widget.destroy();
           this.widget = null;
         }
+      },
+
+      /**
+       * Stop loading state tracking for every asset currently attached to the
+       * map model. Called on view teardown so that tileset event callbacks
+       * and patched imagery providers are not retained after the widget is
+       * destroyed.
+       * @since 0.0.0
+       */
+      stopAllLoadingStateTracking() {
+        const allLayers =
+          typeof this.model.getAllLayers === "function"
+            ? this.model.getAllLayers()
+            : this.model.get("allLayers")?.models || [];
+
+        allLayers.forEach((mapAsset) => {
+          if (mapAsset?.stopLoadingStateTracking) {
+            mapAsset.stopLoadingStateTracking();
+          }
+        });
       },
     },
   );
