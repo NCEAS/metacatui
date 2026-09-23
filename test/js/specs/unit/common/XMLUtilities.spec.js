@@ -561,6 +561,36 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
       });
     });
 
+    describe("appendCdataElement", () => {
+      it("appends a CDATA element and preserves text containing ]]>", () => {
+        const doc = new DOMParser().parseFromString(
+          "<root />",
+          "application/xml",
+        );
+        const value = "Tom & Jerry <cartoon> ]]> more text";
+
+        const appended = XMLUtilities.appendCdataElement(
+          doc,
+          doc.documentElement,
+          "value",
+          value,
+        );
+
+        expect(appended.localName).to.equal("value");
+        expect(doc.documentElement.lastChild).to.equal(appended);
+        expect(appended.textContent).to.equal(value);
+        Array.from(appended.childNodes).forEach((node) => {
+          expect(node.nodeType).to.equal(Node.CDATA_SECTION_NODE);
+        });
+
+        const serialized = new XMLSerializer().serializeToString(doc);
+        const reparsed = XMLUtilities.parseXmlString(serialized);
+        expect(reparsed.documentElement.firstChild.textContent).to.equal(
+          value,
+        );
+      });
+    });
+
     describe("requireDocumentElement", () => {
       it("returns the root element when the expected name matches", () => {
         const xml = new DOMParser().parseFromString(
