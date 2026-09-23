@@ -8,6 +8,7 @@ define([
   "models/filters/Filter",
   "models/portals/PortalSectionModel",
   "models/portals/PortalVizSectionModel",
+  "models/portals/PortalOption",
   "models/portals/PortalImage",
   "models/metadata/eml211/EMLParty",
   "models/metadata/eml220/EMLText",
@@ -24,6 +25,7 @@ define([
   FilterModel,
   PortalSectionModel,
   PortalVizSectionModel,
+  PortalOption,
   PortalImage,
   EMLParty,
   EMLText,
@@ -617,19 +619,13 @@ define([
           .children("section")
           .each((i, section) => {
             // Get the section type, if there is one
-            const sectionTypeNode = $(section).find(
-              "optionName:contains(sectionType)",
+            const sectionTypeOption = PortalOption.findDirectChild(
+              section,
+              "sectionType",
             );
-            let sectionType = "";
-
-            if (sectionTypeNode.length) {
-              const optionValueNode = sectionTypeNode
-                .first()
-                .siblings("optionValue");
-              if (optionValueNode.length) {
-                sectionType = optionValueNode[0].textContent;
-              }
-            }
+            const sectionType = sectionTypeOption
+              ? PortalOption.fromElement(sectionTypeOption).optionValue[0]
+              : "";
 
             if (sectionType === "visualization") {
               // Create a new PortalVizSectionModel
@@ -700,24 +696,19 @@ define([
             );
           });
 
-        // Parse the options. Use children() and not find() because we only want
-        // option nodes that are direct children of the portal node. Option
-        // nodes can also be found within section nodes.
-        $(portalNode)
-          .children("option")
-          .each((i, option) => {
-            const optionName = $(option).find("optionName")[0].textContent;
-            let optionValue = $(option).find("optionValue")[0].textContent;
+        // Parse only direct root options; section options are nested in sections.
+        Array.from(portalNode.children)
+          .filter((child) => child.localName === "option")
+          .forEach((element) => {
+            const option = PortalOption.fromElement(element);
+            const { optionName } = option;
+            let optionValue = option.optionValue[0];
 
             if (optionValue === "true") {
               optionValue = true;
             } else if (optionValue === "false") {
               optionValue = false;
             }
-
-            // TODO: keep a list of optionNames so that in the case of custom
-            // options, we can serialize them in serialize() otherwise it's not
-            // saved in the model which attributes are <option></option>s
 
             // Convert the comma separated list of pages into an array
             if (
@@ -1278,78 +1269,47 @@ define([
             });
           }
 
-          try {
-            /* ====  Serialize options (including map options) ==== */
-            // This will only serialize the options named in `optNames` (below)
-            // Functionality needed in order to serialize new or custom options
+          /* ====  Serialize options (including map options) ==== */
+          // Only the standard option names are written from model attributes.
+          // Existing custom options remain in the cloned XML, but new or edited
+          // custom option attributes are not saved until their names are tracked.
+          // TODO: Track custom option names if editing them is supported.
+          _.each(this.get("optionNames"), (optName) => {
+            const optValue = model.get(optName);
+            const matchingOption = PortalOption.findDirectChild(
+              portalNode,
+              optName,
+            );
 
-            // The standard list of options used in portals
-            const optNames = this.get("optionNames");
+            if (
+              (optValue || optValue === 0 || optValue === false) &&
+              // XML option values are strings, while model defaults can be numbers.
+              // eslint-disable-next-line eqeqeq
+              optValue != model.defaults()[optName]
+            ) {
+              const option = matchingOption
+                ? PortalOption.fromElement(matchingOption)
+                : new PortalOption({
+                    optionName: optName,
+                    optionValue: [String(optValue)],
+                  });
+              if (matchingOption) option.optionValue[0] = String(optValue);
+              const optionElement = option.toElement(xmlDoc);
 
-            _.each(optNames, (optName) => {
-              // Get the value on the model
-              const optValue = model.get(optName);
-
-              // Get the existing optionName element
-              let matchingOption = $portalNode
-                .children("option")
-                .find(`optionName:contains('${optName}')`);
-
-              //
-              if (
-                !matchingOption.length ||
-                matchingOption.first().text() !== optName
-              ) {
-                matchingOption = false;
-              }
-
-              // Don't serialize null or undefined values. Also don't serialize
-              // values that match the default model value
-              if (
-                (optValue || optValue === 0 || optValue === false) &&
-                // XML option values are strings, while model defaults can be numbers.
-                // eslint-disable-next-line eqeqeq
-                optValue != model.defaults()[optName]
-              ) {
-                // Replace the existing option, if it exists
-                if (matchingOption) {
-                  matchingOption.siblings("optionValue").text(optValue);
+              if (matchingOption) {
+                matchingOption.replaceWith(optionElement);
+              } else {
+                const insertAfter = model.getXMLPosition(portalNode, "option");
+                if (insertAfter) {
+                  insertAfter.after(optionElement);
                 } else {
-                  // Make new node <optionName> and <optionValue> are
-                  // subelements of <option>
-                  const optionSerialized = xmlDoc.createElement("option");
-                  const optNameSerialized = xmlDoc.createElement("optionName");
-                  const optValueSerialized =
-                    xmlDoc.createElement("optionValue");
-
-                  $(optNameSerialized).text(optName);
-                  $(optValueSerialized).text(optValue);
-
-                  $(optionSerialized).append(
-                    optNameSerialized,
-                    optValueSerialized,
-                  );
-
-                  // Insert new node at correct position
-                  const insertAfter = model.getXMLPosition(
-                    portalNode,
-                    "option",
-                  );
-
-                  if (insertAfter) {
-                    insertAfter.after(optionSerialized);
-                  }
+                  portalNode.appendChild(optionElement);
                 }
-              } else if (matchingOption) {
-                // Remove the elements from the portal XML when the value is
-                // invalid
-                matchingOption.parent("option").remove();
               }
-            });
-          } catch (e) {
-            // eslint-disable-next-line no-console
-            console.error(e);
-          }
+            } else if (matchingOption) {
+              matchingOption.remove();
+            }
+          });
 
           /* ====  Serialize UI FilterGroups (aka custom search filters) ==== */
 
