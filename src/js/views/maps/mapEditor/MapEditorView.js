@@ -1,6 +1,11 @@
 "use strict";
 
 define(["backbone", "models/maps/Map"], (Backbone, Map) => {
+  const BASE_CLASS = "map-editor";
+  const CLASS_NAMES = {
+    BASE: BASE_CLASS,
+  };
+
   /**
    * @class MapEditorView
    * @classdesc Displays a map configuration for editing.
@@ -18,7 +23,7 @@ define(["backbone", "models/maps/Map"], (Backbone, Map) => {
       model: null,
 
       /** @inheritdoc */
-      className: "map-editor",
+      className: CLASS_NAMES.BASE,
 
       /** @inheritdoc */
       attributes: {
@@ -35,11 +40,10 @@ define(["backbone", "models/maps/Map"], (Backbone, Map) => {
         const layerItems = layerNames
           .map((name) => `<li>${name}</li>`)
           .join("");
-        return `<div class="map-editor">
-          <h3>Map Editor</h3>
-          <p>Layers in this map:</p>
+        return `
+          <h3>The Map is not yet editable. The following layers are present:</h3>
           <ul>${layerItems}</ul>
-        </div>`;
+        `;
       },
 
       /** @inheritdoc */
