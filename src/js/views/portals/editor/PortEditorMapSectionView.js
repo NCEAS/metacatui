@@ -2,7 +2,9 @@ define([
   "views/portals/editor/PortEditorSectionView",
   "views/maps/mapEditor/MapEditorView",
 ], (PortEditorSectionView, MapEditorView) => {
-  const CLASS_NAMES = {};
+  const CLASS_NAMES = {
+    mapContainer: "port-editor-map__map-container",
+  };
 
   /**
    * @class PortEditorMapSectionView
@@ -25,7 +27,7 @@ define([
        * The HTML classes to use for this view's element.
        * @type {string}
        */
-      className: `${PortEditorSectionView.prototype.className} port-editor-map port-editor-viz`,
+      className: `${PortEditorSectionView.prototype.className} ${CLASS_NAMES.mapContainer}`,
 
       /** @inheritdoc */
       attributes: {
@@ -44,14 +46,10 @@ define([
 
       /**
        * Creates the HTML for this view.
-       * @param {object} variables The variables to use in the template.
        * @returns {string} The HTML for this view.
        */
-      template(variables) {
-        const { title } = variables;
-        const CN = CLASS_NAMES;
-        return `<h2>${title}</h2>
-          <div class="${CN.mapContainer}"></div>`;
+      template() {
+        return `<div class="${CLASS_NAMES.mapContainer}"></div>`;
       },
 
       /**
@@ -60,10 +58,7 @@ define([
        */
       render() {
         this.$el.data("view", this);
-        const vars = {
-          title: this.model.get("title"),
-        };
-        this.$el.html(this.template(vars));
+        this.$el.html(this.template());
         const mapContainer = this.el.querySelector(
           `.${CLASS_NAMES.mapContainer}`,
         );
