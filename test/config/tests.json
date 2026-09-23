@@ -21,6 +21,7 @@
     "./js/specs/unit/models/Search.spec.js",
     "./js/specs/unit/models/filters/Filter.spec.js",
     "./js/specs/unit/models/filters/NumericFilter.spec.js",
+    "./js/specs/unit/models/portals/PortalModel.spec.js",
     "./js/specs/unit/models/portals/PortalOption.spec.js",
     "./js/specs/unit/models/portals/PortalVizSectionModel.spec.js",
     "./js/specs/unit/models/CitationModel.spec.js",
