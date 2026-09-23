@@ -459,6 +459,10 @@ define([
        */
       initialize(options = {}) {
         const config = options;
+
+        // Keep a copy of the original configuration for reference.
+        this.set("originalConfig", JSON.stringify(config));
+
         if (config && config instanceof Object) {
           const visibilityState = parseLayerVisibilityStateFromUrl();
           if (isNonEmptyArray(config.layerCategories)) {
@@ -977,6 +981,36 @@ define([
           if (layers) layers.remove(asset.cid);
         });
         this.refreshAllLayers();
+      },
+
+      /**
+       * Validate the map model.
+       * @returns {object|null} Null if map is valid, otherwise errors keyed by
+       * attribute names.
+       */
+      validate() {
+        // TODO: Minimum required validation logic.
+        return null;
+      },
+
+      /** @returns {boolean} True if map is valid, otherwise false. */
+      isValid() {
+        return this.validate() === null;
+      },
+
+      /**
+       * Serialize the map model to JSON for saving, for example, into a portal
+       * document.
+       * @returns {string} The JSON representation of the map model as a string.
+       * @since 0.0.0
+       */
+      toConfig() {
+        // TODO: Build toConfig to convert map model abd sub models to a JSON
+        // representation suitable for saving.
+
+        // As an intermediate step in the iterative development, return the
+        // original, unchanged config
+        return JSON.parse(this.get("originalConfig"));
       },
     },
   );
