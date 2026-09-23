@@ -246,7 +246,7 @@ define([
        * @param {XMLDocument} response - The XMLDocument returned from the fetch() AJAX call
        * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
        */
-      parse: function (json) {
+      parse: function (response) {
         //Start the empty JSON object
         var modelJSON = {},
           collectionNode;
@@ -512,7 +512,7 @@ define([
         var currentNamespace = this.defaults().formatId;
 
         // The NS attribute name could be xmlns:por or xmlns:col
-        objectDOM.attributes.forEach(function (attr) {
+        Array.from(objectDOM.attributes).forEach(function (attr) {
           if (attr.name.match(/^xmlns/)) {
             if (attr.value !== currentNamespace) {
               var newObjectDOM = this.createXML().documentElement;
@@ -571,7 +571,7 @@ define([
         var xmlString =
             '<col:collection xmlns:col="https://purl.dataone.org/collections-1.1.0"></col:collection>',
           xmlNew = $.parseXML(xmlString),
-          colNode = xmlNew.getElementsByTagName("col:collections")[0];
+          colNode = xmlNew.getElementsByTagName("col:collection")[0];
 
         // set attributes
         colNode.setAttribute(
