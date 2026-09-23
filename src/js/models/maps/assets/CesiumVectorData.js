@@ -114,7 +114,6 @@ define([
           if (assetConfig.filters) {
             const filters = new VectorFilters(assetConfig.filters);
             this.set("filters", filters);
-            assetConfig.filters = filters;
           }
 
           MapAsset.prototype.initialize.call(this, assetConfig);
