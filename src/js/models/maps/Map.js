@@ -911,7 +911,7 @@ define([
       /**
        * Get selected feature/layer entries from current map interaction state
        * for URL sync.
-       * @returns {{featureId: string, layerId: (string|null)}[]}
+       * @returns {Array<{featureId: string, layerId: (string|null)}>}
        * Selected feature state entries.
        * @since 0.0.0
        */

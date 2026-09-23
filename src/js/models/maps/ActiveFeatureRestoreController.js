@@ -81,7 +81,7 @@ define([
   /**
    * Normalize and deduplicate feature state entries.
    * @param {unknown[]} entries Candidate entries.
-   * @returns {{featureId: string, layerId: (string|null)}[]} Normalized entries.
+   * @returns {Array<{featureId: string, layerId: (string|null)}>} Normalized entries.
    * @since 0.0.0
    */
   function normalizeFeatureState(entries) {
@@ -122,7 +122,7 @@ define([
   /**
    * Convert selected features to normalized feature state entries.
    * @param {Array<Backbone.Model|object>} features Selected features.
-   * @returns {{featureId: string, layerId: (string|null)}[]} Normalized entries.
+   * @returns {Array<{featureId: string, layerId: (string|null)}>} Normalized entries.
    * @since 0.0.0
    */
   function getFeatureStateFromSelections(features = []) {
@@ -150,7 +150,7 @@ define([
   /**
    * Check whether a requested feature is resolved by any resolved entry.
    * @param {{featureId: string, layerId: (string|null)}} requestedFeature Requested entry.
-   * @param {{featureId: string, layerId: (string|null)}[]} resolvedFeatures Resolved entries.
+   * @param {Array<{featureId: string, layerId: (string|null)}>} resolvedFeatures Resolved entries.
    * @returns {boolean} True when request is resolved.
    * @since 0.0.0
    */
@@ -248,9 +248,9 @@ define([
 
     /**
      * Merge selected features with in-flight restore entries for URL sync.
-     * @param {{featureId: string, layerId: (string|null)}[]} selectedFeatures
+     * @param {Array<{featureId: string, layerId: (string|null)}>} selectedFeatures
      * Currently selected feature state entries.
-     * @returns {{featureId: string, layerId: (string|null)}[]}
+     * @returns {Array<{featureId: string, layerId: (string|null)}>}
      * Feature state entries to write to URL.
      * @since 0.0.0
      */
@@ -355,7 +355,7 @@ define([
 
     /**
      * Start a new feature restore session, canceling any previous one.
-     * @param {{featureId: string, layerId: (string|null)}[]} activeFeatures
+     * @param {Array<{featureId: string, layerId: (string|null)}>} activeFeatures
      * The features being restored.
      * @param {string[]} [searchableLayerIds] Current searchable visible layers.
      * @returns {object} The active restore session.
@@ -420,7 +420,7 @@ define([
     /**
      * Search layers for features matching the given feature state and return
      * feature attribute objects ready to be passed to selectFeatures().
-     * @param {{featureId: string, layerId: (string|null)}[]} features
+     * @param {Array<{featureId: string, layerId: (string|null)}>} features
      * Feature state entries to search for.
      * @param {Array<object>} [layers] Layers to search within.
      * @returns {object[]} Matching feature attribute objects.
@@ -455,7 +455,7 @@ define([
 
     /**
      * Read normalized feature state from restoreState.
-     * @returns {{featureId: string, layerId: (string|null)}[]} Restore entries.
+     * @returns {Array<{featureId: string, layerId: (string|null)}>} Restore entries.
      * @since 0.0.0
      */
     getRestoreFeatures() {
