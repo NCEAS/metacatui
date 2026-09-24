@@ -142,7 +142,7 @@ gradually be modernized and brought into alignment with these standards.
 - Define constants like class names, defaults, and user facing messages in a
   single location (like at the top of a file) instead of hardcoding them in
   multiple places. For example, instead of `this.el.querySelector('.my-class')`
-  and `someEl.classList.add('my-class')`, define a constant like 
+  and `someEl.classList.add('my-class')`, define a constant like
   `const MY_CLASS = 'my-class'` and use it in both places.
 - Avoid use of Underscore and jQuery in favour of native JavaScript and DOM
   APIs. Use methods such as `map`, `filter`, `find`, `querySelector`, and

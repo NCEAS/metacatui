@@ -124,7 +124,10 @@ define(["models/sysmeta/AccessRule"], (AccessRule) => {
 
     describe("toElement()", () => {
       it("treats rules without a subject or permissions as empty", () => {
-        const permissionless = new AccessRule({ subject: "public", read: false });
+        const permissionless = new AccessRule({
+          subject: "public",
+          read: false,
+        });
         const subjectless = new AccessRule({ permissions: ["read"] });
 
         expect(permissionless.isEmpty()).to.equal(true);
