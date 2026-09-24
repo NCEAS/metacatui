@@ -1179,7 +1179,10 @@ define([
        */
       toConfig() {
         const config = Object.fromEntries(
-          MAP_CONFIG_FIELDS_TO_COPY.map((field) => [field, this.get(field)]),
+          MAP_CONFIG_FIELDS_TO_COPY.map((field) => [
+            field,
+            this.get(field),
+          ]).filter(([, value]) => value != null),
         );
 
         const categories = this.get("layerCategories");

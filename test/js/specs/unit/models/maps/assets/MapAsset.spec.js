@@ -146,6 +146,48 @@ define([
       expect(asset.toConfig().saturation).to.equal(0.7);
     });
 
+    it("saves numeric defaults and omits nullish optional values", () => {
+      const asset = new MapAsset({
+        type: "UnknownAsset",
+        colorPalette: null,
+        clickFeatureAction: null,
+      });
+      asset.set({ opacity: 0.4, saturation: 0.6 });
+
+      const config = asset.toConfig();
+      expect(config).to.include({ opacity: 1, saturation: 1, visible: true });
+      expect(config).not.to.have.any.keys("colorPalette", "clickFeatureAction");
+
+      const zeroConfig = new MapAsset({
+        type: "UnknownAsset",
+        opacity: 0,
+        saturation: 0,
+      }).toConfig();
+      expect(zeroConfig).to.include({ opacity: 0, saturation: 0 });
+    });
+
+    it("saves asset defaults instead of later live changes", () => {
+      const asset = new CesiumVectorData({
+        type: "GeoJsonDataSource",
+        visible: false,
+      });
+      asset.set({
+        icon: '<svg viewBox="0 0 1 1"></svg>',
+        cesiumOptions: { changed: true },
+      });
+      const config = asset.toConfig();
+
+      expect(config.icon).to.contain('viewBox="0 0 448 512"');
+      expect(config.cesiumOptions).to.deep.equal({});
+      expect(config.filters).to.deep.equal([]);
+      expect(config.colorPalette).to.deep.include({
+        paletteType: "categorical",
+        colors: [],
+      });
+      expect(config.visible).to.equal(false);
+      expect(new CesiumVectorData(config).toConfig()).to.deep.equal(config);
+    });
+
     it("keeps a complex config the same after saving and reloading", () => {
       const config = {
         type: "GeoJsonDataSource",
