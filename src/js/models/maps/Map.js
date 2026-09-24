@@ -489,9 +489,6 @@ define([
       initialize(options = {}) {
         const config = options;
 
-        // Keep a copy of the original configuration for reference.
-        this.set("originalConfig", JSON.stringify(config));
-
         if (config && config instanceof Object) {
           const visibilityState = parseLayerVisibilityStateFromUrl();
           if (isNonEmptyArray(config.layerCategories)) {
@@ -526,7 +523,7 @@ define([
           // Backward compatibility: keep legacy allLayers attribute populated.
           this.refreshAllLayers();
 
-          if (isNonEmptyArray(config.terrains)) {
+          if (Array.isArray(config.terrains)) {
             this.set("terrains", new MapAssets(config.terrains));
           }
 
@@ -547,8 +544,7 @@ define([
               label: "Zoom to...",
               icon: "plane",
               expanded: true,
-              // Use the legacy key so ViewfinderCardCategory can resolve it.
-              zoomPresets: simpleCards,
+              viewfinderCards: simpleCards,
             };
             categoryCards = [category];
           }
@@ -1198,14 +1194,10 @@ define([
 
         config.terrains = this.get("terrains").toConfig();
 
-        // Viewfinder collections are not serialized yet. Keep their original
-        // config values for now.
-        const originalConfig = JSON.parse(this.get("originalConfig"));
-        config.viewfinderCards = originalConfig.viewfinderCards;
         config.viewfinderCardCategories =
-          originalConfig.viewfinderCardCategories;
-        config.zoomPresets = originalConfig.zoomPresets;
-        config.zoomPresetCategories = originalConfig.zoomPresetCategories;
+          this.get("viewfinderCardsCollection")?.map((category) =>
+            category.toConfig(),
+          ) || [];
 
         return JSON.parse(JSON.stringify(config));
       },
