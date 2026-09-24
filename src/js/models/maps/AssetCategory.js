@@ -59,7 +59,8 @@ define([
        * category label. It should be an SVG file that has no fills, borders, or styles
        * set on it (since the icon will be shaded dynamically by the maps CSS using a
        * fill attribute). It must use a viewbox property rather than a height and width.
-       * @property {MapAssets} layers - The data to render in the map.
+       * @property {MapConfig#MapAssetConfig[]} layers - The assets in the category.
+       * @property {boolean} [expanded=false] Whether the category is expanded.
        */
 
       /**
@@ -72,6 +73,8 @@ define([
           throw new Error(`Category ${categoryConfig.label} has empty layers.`);
         }
 
+        // Keep the config icon ID when the live icon is replaced by its SVG.
+        this._configIcon = categoryConfig.icon;
         this.set("mapAssets", new MapAssets(categoryConfig.layers));
 
         this.set("label", categoryConfig.label);
@@ -90,6 +93,20 @@ define([
             // Do nothing. Use the default icon instead.
           }
         }
+      },
+
+      /**
+       * Return the category metadata and current assets to save in map config.
+       * @returns {MapConfig#AssetCategoryConfig} A plain category config
+       * @since 0.0.0
+       */
+      toConfig() {
+        return {
+          label: this.get("label"),
+          icon: this._configIcon ?? this.get("icon"),
+          expanded: this.get("expanded"),
+          layers: this.get("mapAssets").toConfig(),
+        };
       },
 
       /**
