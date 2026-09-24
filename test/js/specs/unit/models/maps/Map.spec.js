@@ -475,24 +475,251 @@ define([
         expect(map.get("layers").at(0).get("label")).to.equal("Original");
       });
 
-      it("keeps all viewfinder input keys as config during the transition", () => {
-        const viewfinderCards = [
-          { title: "Card", latitude: 45, longitude: -80 },
-        ];
-        const zoomPresets = [{ title: "Legacy", latitude: 46, longitude: -81 }];
+      it("saves simple cards in the canonical category wrapper", () => {
         const map = new Map({
-          viewfinderCards,
-          viewfinderCardCategories: [],
-          zoomPresets,
-          zoomPresetCategories: [],
+          viewfinderCards: [{ title: "Home", latitude: 45, longitude: -80 }],
         });
-
         const config = map.toConfig();
 
-        expect(config.viewfinderCards).to.deep.equal(viewfinderCards);
-        expect(config.viewfinderCardCategories).to.deep.equal([]);
-        expect(config.zoomPresets).to.deep.equal(zoomPresets);
-        expect(config.zoomPresetCategories).to.deep.equal([]);
+        expect(config.viewfinderCardCategories).to.deep.equal([
+          {
+            label: "Zoom to...",
+            icon: "plane",
+            expanded: true,
+            viewfinderCards: [
+              {
+                title: "Home",
+                description: "",
+                image: null,
+                buttons: [
+                  {
+                    type: "map",
+                    ordinality: "secondary",
+                    label: "View Layers",
+                    icon: "eye-open",
+                    latitude: 45,
+                    longitude: -80,
+                    height: null,
+                    layerIds: [],
+                  },
+                ],
+                featureLayerId: null,
+              },
+            ],
+          },
+        ]);
+        expect(config).not.to.have.any.keys(
+          "viewfinderCards",
+          "zoomPresets",
+          "zoomPresetCategories",
+        );
+      });
+
+      it("saves grouped inline card edits without live references", () => {
+        const map = new Map({
+          layers: [
+            {
+              type: "OpenStreetMapImageryProvider",
+              layerId: "site",
+              label: "Site",
+            },
+          ],
+          viewfinderCardCategories: [
+            {
+              label: "Places",
+              icon: "map-marker",
+              expanded: false,
+              viewfinderCards: [
+                {
+                  title: "Old title",
+                  description: "Old description",
+                  image: "https://example.com/old.png",
+                  imageFallback: "https://example.com/fallback.png",
+                  featureId: "feature-1",
+                  featureLayerId: "site",
+                  buttons: [
+                    {
+                      id: "open-dashboard",
+                      type: "iframe",
+                      label: "Open dashboard",
+                      url: "https://example.com/dashboard",
+                      initialQueryParams: { theme: "dark" },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        });
+        const category = map.get("viewfinderCardsCollection").at(0);
+        const card = category.get("viewfinderCards").at(0);
+        category.set({ label: "Edited places", expanded: true });
+        card.set({
+          title: "Edited title",
+          image: "https://example.com/new.png",
+        });
+        card.set("buttons", [
+          { ...card.get("buttons")[0], label: "Edited dashboard" },
+        ]);
+        card.set("featureLayer", map.get("layers").at(0));
+        card.set("enabledLayerLabels", ["Site"]);
+
+        const saved = map.toConfig().viewfinderCardCategories[0];
+
+        expect(saved.label).to.equal("Edited places");
+        expect(saved.expanded).to.equal(true);
+        expect(saved.icon).to.equal("map-marker");
+        expect(saved.viewfinderCards[0]).to.deep.equal({
+          title: "Edited title",
+          description: "Old description",
+          image: "https://example.com/new.png",
+          imageFallback: "https://example.com/fallback.png",
+          featureId: "feature-1",
+          featureLayerId: "site",
+          buttons: [
+            {
+              id: "open-dashboard",
+              type: "iframe",
+              label: "Edited dashboard",
+              url: "https://example.com/dashboard",
+              initialQueryParams: { theme: "dark" },
+            },
+          ],
+        });
+        expect(map.has("originalConfig")).to.equal(false);
+      });
+
+      it("converts both legacy simple and category keys to canonical output", () => {
+        const simple = new Map({
+          zoomPresets: [
+            { title: "Simple", position: { latitude: 1, longitude: 2 } },
+          ],
+        });
+        const grouped = new Map({
+          zoomPresetCategories: [
+            {
+              label: "Legacy",
+              zoomPresets: [{ title: "Grouped", layerIds: ["site"] }],
+            },
+          ],
+        });
+
+        expect(
+          simple.toConfig().viewfinderCardCategories[0].viewfinderCards[0]
+            .buttons,
+        ).to.have.length(1);
+        expect(
+          grouped.toConfig().viewfinderCardCategories[0].viewfinderCards[0]
+            .buttons,
+        ).to.deep.include({
+          type: "map",
+          ordinality: "secondary",
+          label: "View Layers",
+          icon: "eye-open",
+          latitude: null,
+          longitude: null,
+          height: null,
+          layerIds: ["site"],
+        });
+        expect(grouped.toConfig()).not.to.have.any.keys(
+          "zoomPresets",
+          "zoomPresetCategories",
+        );
+        expect(
+          grouped.toConfig().viewfinderCardCategories[0],
+        ).not.to.have.property("zoomPresets");
+      });
+
+      it("keeps one legacy map action after two save and reload cycles", () => {
+        [
+          { position: { latitude: 45, longitude: -80 }, layerIds: ["site"] },
+          { layerIds: ["site"] },
+        ].forEach((legacyCard) => {
+          const first = new Map({
+            viewfinderCards: [{ title: "Legacy", ...legacyCard }],
+          });
+          const second = new Map(first.toConfig());
+          const third = new Map(second.toConfig());
+
+          expect(
+            second.toConfig().viewfinderCardCategories[0].viewfinderCards[0]
+              .buttons,
+          ).to.have.length(1);
+          expect(
+            third.toConfig().viewfinderCardCategories[0].viewfinderCards[0]
+              .buttons,
+          ).to.have.length(1);
+        });
+      });
+
+      it("keeps a URL card source before and after fetched cards load", () => {
+        const source = {
+          url: "https://leonetwork.org/en/lists/geojson/example",
+          layerIds: ["site"],
+          featureLayerId: "site",
+          initialQueryParams: { language: "en" },
+        };
+        const map = new Map({
+          viewfinderCardCategories: [
+            { label: "Network", viewfinderCards: source },
+          ],
+        });
+        const cards = map
+          .get("viewfinderCardsCollection")
+          .at(0)
+          .get("viewfinderCards");
+        expect(
+          map.toConfig().viewfinderCardCategories[0].viewfinderCards,
+        ).to.deep.equal(source);
+
+        cards.sync = (_method, _collection, options) => {
+          options.success({
+            features: [
+              {
+                type: "Feature",
+                geometry: { type: "Point", coordinates: [-80, 45] },
+                properties: {
+                  id: "observation-1",
+                  localized_date: "2026 Sep 24",
+                  thumbnail_url: "/en/attachments/thumbnail/image-1",
+                  observation: { title: "Fetched", summary: "Summary" },
+                },
+              },
+            ],
+          });
+        };
+        cards.fetch();
+
+        expect(cards).to.have.length(1);
+        expect(
+          map.toConfig().viewfinderCardCategories[0].viewfinderCards,
+        ).to.deep.equal(source);
+      });
+
+      it("keeps a category icon ID after its SVG loads", async () => {
+        const originalFetchIcon = IconUtilities.fetchIcon;
+        IconUtilities.fetchIcon = () => Promise.resolve("<svg></svg>");
+
+        try {
+          const map = new Map({
+            viewfinderCardCategories: [
+              {
+                label: "Places",
+                icon: "doi:10.1234/icon",
+                viewfinderCards: [],
+              },
+            ],
+          });
+          await Promise.resolve();
+          const category = map.get("viewfinderCardsCollection").at(0);
+
+          expect(category.get("icon")).not.to.equal("doi:10.1234/icon");
+          expect(map.toConfig().viewfinderCardCategories[0].icon).to.equal(
+            "doi:10.1234/icon",
+          );
+        } finally {
+          IconUtilities.fetchIcon = originalFetchIcon;
+        }
       });
 
       it("omits only assets explicitly marked as live and temporary", () => {

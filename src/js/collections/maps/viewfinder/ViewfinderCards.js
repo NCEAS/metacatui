@@ -121,6 +121,15 @@ define([
       },
 
       /**
+       * Return the configured URL source or the current inline cards.
+       * @returns {object|object[]} Plain card source config
+       * @since 0.0.0
+       */
+      toConfig() {
+        return this._configSource || this.map((card) => card.toConfig());
+      },
+
+      /**
        * Checks if this collection of cards is fetched from the LEO Network.
        * @returns {boolean} True if there is a URL and it contains the LEO
        * Network domain, false otherwise.
@@ -154,6 +163,7 @@ define([
         let response = resp;
 
         if (response?.url) {
+          this._configSource = { ...response };
           this.url = response.url;
           this.defaults = {
             layerIds: response.layerIds,

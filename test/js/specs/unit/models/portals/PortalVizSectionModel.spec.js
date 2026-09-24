@@ -189,9 +189,13 @@ define([
         mapConfig.homePosition,
       );
       expect(updatedMapConfig.showToolbar).to.equal(true);
-      expect(updatedMapConfig.viewfinderCards).to.deep.equal(
-        mapConfig.viewfinderCards,
+      expect(updatedMapConfig.viewfinderCardCategories[0].label).to.equal(
+        "Zoom to...",
       );
+      expect(
+        updatedMapConfig.viewfinderCardCategories[0].viewfinderCards[0].buttons,
+      ).to.have.length(1);
+      expect(updatedMapConfig).not.to.have.property("viewfinderCards");
       const mapOptions = Array.from(updatedDOM.children).filter(
         (child) =>
           child.localName === "option" &&
