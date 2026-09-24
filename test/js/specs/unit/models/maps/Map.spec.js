@@ -7,6 +7,7 @@ define([
   "/test/js/specs/shared/clean-state.js",
   "common/SearchParams",
   "common/IconUtilities",
+  "text!/test/data/models/maps/mapConfig.json",
 ], (
   Backbone,
   Map,
@@ -16,6 +17,7 @@ define([
   cleanState,
   SearchParams,
   IconUtilities,
+  mapConfigText,
 ) => {
   const expect = chai.expect;
 
@@ -328,6 +330,84 @@ define([
     });
 
     describe("toConfig", () => {
+      it("round-trips the categorized map config fixture", () => {
+        const inputConfig = JSON.parse(mapConfigText);
+        const savedConfig = new Map(JSON.parse(mapConfigText)).toConfig();
+        const reloadedConfig = new Map(
+          JSON.parse(JSON.stringify(savedConfig)),
+        ).toConfig();
+        const {
+          layerCategories,
+          terrains,
+          viewfinderCardCategories,
+          ...mapSettings
+        } = inputConfig;
+
+        expect(reloadedConfig).to.deep.equal(savedConfig);
+        expect(savedConfig).to.deep.include(mapSettings);
+        expect(savedConfig.layerCategories).to.have.length(
+          layerCategories.length,
+        );
+        layerCategories.forEach((category, index) => {
+          const savedCategory = savedConfig.layerCategories[index];
+          expect(savedCategory).to.deep.include({
+            label: category.label,
+            icon: category.icon,
+            expanded: category.expanded,
+          });
+          expect(savedCategory.layers).to.have.length(category.layers.length);
+          category.layers.forEach((layer, layerIndex) => {
+            expect(savedCategory.layers[layerIndex]).to.deep.include(layer);
+          });
+        });
+        expect(savedConfig.terrains).to.have.length(terrains.length);
+        terrains.forEach((terrain, index) => {
+          expect(savedConfig.terrains[index]).to.deep.include(terrain);
+        });
+        expect(savedConfig.viewfinderCardCategories).to.have.length(
+          viewfinderCardCategories.length,
+        );
+        const firstCard = viewfinderCardCategories[0].viewfinderCards[0];
+        viewfinderCardCategories.forEach((category, index) => {
+          const savedCategory = savedConfig.viewfinderCardCategories[index];
+          expect(savedCategory).to.deep.include({
+            label: category.label,
+            icon: category.icon,
+            expanded: category.expanded,
+          });
+          expect(savedCategory.viewfinderCards).to.have.length(
+            category.viewfinderCards.length,
+          );
+          category.viewfinderCards.forEach((card, cardIndex) => {
+            const savedCard = savedCategory.viewfinderCards[cardIndex];
+            expect(savedCard.title).to.equal(card.title);
+            expect(savedCard.description).to.equal(card.description);
+            expect(savedCard.image).to.equal(card.image);
+            expect(savedCard.featureId).to.equal(card.featureId);
+            expect(savedCard.featureLayerId).to.equal(card.featureLayerId);
+            // The first card's top-level location adds a map button.
+            if (index !== 0 || cardIndex !== 0) {
+              expect(savedCard.buttons).to.deep.equal(card.buttons);
+            }
+          });
+        });
+        const firstSavedCard =
+          savedConfig.viewfinderCardCategories[0].viewfinderCards[0];
+        expect(firstSavedCard.buttons).to.deep.equal([
+          ...firstCard.buttons,
+          {
+            type: "map",
+            ordinality: "secondary",
+            label: "View Layers",
+            icon: "eye-open",
+            latitude: firstCard.latitude,
+            longitude: firstCard.longitude,
+            height: firstCard.height,
+            layerIds: firstCard.layerIds,
+          },
+        ]);
+      });
+
       it("saves current config settings without live map state", () => {
         const map = new Map({ showToolbar: false });
         map.set("showToolbar", true);
