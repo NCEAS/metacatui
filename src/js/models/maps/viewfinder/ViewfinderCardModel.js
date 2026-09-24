@@ -115,7 +115,7 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
 
     if (
       !hasExplicitMapButton &&
-      (location.latitude != null || location.longitude != null)
+      (location.latitude != null || location.longitude != null || ids.length)
     ) {
       allActions.push({
         type: "map",
@@ -236,6 +236,23 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
         this.set("buttons", normalizeConfiguredActionIds(buttons), {
           silent: true,
         });
+      },
+
+      /**
+       * Return configured card details and plain actions, excluding live data.
+       * @returns {MapConfig#ViewfinderCard} A plain card config
+       * @since 0.0.0
+       */
+      toConfig() {
+        return {
+          title: this.get("title"),
+          description: this.get("description"),
+          image: this.get("image"),
+          imageFallback: this.get("imageFallback"),
+          buttons: this.get("buttons"),
+          featureId: this.get("featureId"),
+          featureLayerId: this.get("featureLayerId"),
+        };
       },
 
       /**
