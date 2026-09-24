@@ -74,29 +74,16 @@
   --map-width-feature-info-wide: calc(var(--map-width-toolbar-wide) * 1.25);
   --map-padding-feature-info: 1.5rem;
   --map-top-control-height: 2rem;
-  --map-top-controls-gutter: 1rem;
-  --map-top-controls-left-reserved: calc(
-    var(--map-toolbar-link-width) + (2 * var(--map-size-toolbar-link-margin)) +
-      var(--map-top-controls-gutter)
-  );
   /* Worst-case width of everything in the status bar except the scale bar graphic
   itself: padding, the signed 5-decimal lat + lng (with their reserved digit widths),
   and the longest realistic distance label. */
   --map-scale-bar-base-width: 18rem;
-  /* The scale bar graphic's max drawn length (see `maxBarWidth` in ScaleBarView). */
-  --map-scale-bar-max-bar-width: 6.25rem;
   /* Live pixel width of the scale bar graphic (`.scale-bar__bar`), mirrored here by
   ScaleBarView/MapStatusBarView on every update. The status bar's own width tracks
   this exactly (see `.map-status-bar` below) so it grows/shrinks by the same amount,
   in sync with the bar, and -- being a plain length rather than content-driven
   auto-sizing -- animates smoothly with `transition: width` in every browser. */
   --map-status-bar-bar-width: 0px;
-  --map-scale-bar-reserved-width: calc(
-    var(--map-scale-bar-base-width) + var(--map-scale-bar-max-bar-width)
-  );
-  --map-top-controls-right-reserved: calc(
-    var(--map-scale-bar-reserved-width) + var(--map-top-controls-gutter)
-  );
   /* SHADOWS */
   --map-shadow-md: var(
     --portal-shadow-md,

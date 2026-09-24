@@ -175,7 +175,6 @@ define([], () => {
     const loadingLayers = getTrackedLoadingLayers(mapModel);
     syncTrackedLayerLoadingFlags(mapModel, loadingLayers);
 
-    const hadLoadingState = mapModel.get("isLoadingLayers") === true;
     const isLoadingLayers = loadingLayers.length > 0;
     const loadingLayersMessage = isLoadingLayers
       ? getLoadingLayersMessage(mapModel, loadingLayers) || "Loading layers"
@@ -192,10 +191,6 @@ define([], () => {
       isLoadingLayers,
       loadingLayersMessage,
     });
-
-    if (!hadLoadingState && isLoadingLayers && !loadingLayersMessage) {
-      mapModel.trigger("loading:started");
-    }
   }
 
   return {
