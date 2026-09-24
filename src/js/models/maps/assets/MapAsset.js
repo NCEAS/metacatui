@@ -364,9 +364,32 @@ define([
         const assetConfigCopy =
           !assetConfig || typeof assetConfig !== "object" ? {} : assetConfig;
 
+        const defaults = this.defaults();
         const configValues = {};
         CONFIG_FIELDS_FROM_INPUT.forEach((field) => {
-          configValues[field] = assetConfigCopy[field];
+          // Type may be normalized, and the URL may override live visibility.
+          // Save defaults for the other config fields before loading.
+          const defaultValue =
+            field === "type" ||
+            field === "visible" ||
+            field === "configuredVisibility"
+              ? undefined
+              : defaults[field];
+          const inputValue = assetConfigCopy[field];
+          const value = inputValue === undefined ? defaultValue : inputValue;
+
+          // Null is needed only when it overrides a non-null default.
+          if (value == null && defaultValue == null) return;
+
+          if (
+            inputValue === undefined &&
+            (field === "outlineColor" || field === "highlightColor") &&
+            value instanceof Backbone.Model
+          ) {
+            configValues[field] = value.get("color");
+          } else {
+            configValues[field] = value;
+          }
         });
         this._configValues = JSON.parse(JSON.stringify(configValues));
 
@@ -421,6 +444,9 @@ define([
           ? this.get("configuredVisibility")
           : this._configValues.visible ?? this.get("configuredVisibility");
         delete config.configuredVisibility;
+        CONFIG_FIELDS_FROM_MODEL.forEach((field) => {
+          if (config[field] == null) delete config[field];
+        });
         return config;
       },
 

@@ -350,6 +350,13 @@ define([
         );
       });
 
+      it("keeps map defaults and false values without nullish settings", () => {
+        const config = new Map({ showToolbar: false }).toConfig();
+
+        expect(config).to.include({ showToolbar: false, showLayerList: true });
+        expect(config).not.to.have.any.keys("feedbackText", "globeBaseColor");
+      });
+
       it("saves current flat layers and reloads the saved config", () => {
         const map = new Map({
           layers: [{ type: "OpenStreetMapImageryProvider", label: "Old" }],
@@ -477,7 +484,16 @@ define([
 
       it("saves simple cards in the canonical category wrapper", () => {
         const map = new Map({
-          viewfinderCards: [{ title: "Home", latitude: 45, longitude: -80 }],
+          viewfinderCards: [
+            {
+              title: "Home",
+              latitude: 45,
+              longitude: -80,
+              imageFallback: null,
+              featureId: null,
+              featureLayerId: null,
+            },
+          ],
         });
         const config = map.toConfig();
 
@@ -490,7 +506,6 @@ define([
               {
                 title: "Home",
                 description: "",
-                image: null,
                 buttons: [
                   {
                     type: "map",
@@ -499,11 +514,9 @@ define([
                     icon: "eye-open",
                     latitude: 45,
                     longitude: -80,
-                    height: null,
                     layerIds: [],
                   },
                 ],
-                featureLayerId: null,
               },
             ],
           },
@@ -611,16 +624,15 @@ define([
         expect(
           grouped.toConfig().viewfinderCardCategories[0].viewfinderCards[0]
             .buttons,
-        ).to.deep.include({
-          type: "map",
-          ordinality: "secondary",
-          label: "View Layers",
-          icon: "eye-open",
-          latitude: null,
-          longitude: null,
-          height: null,
-          layerIds: ["site"],
-        });
+        ).to.deep.equal([
+          {
+            type: "map",
+            ordinality: "secondary",
+            label: "View Layers",
+            icon: "eye-open",
+            layerIds: ["site"],
+          },
+        ]);
         expect(grouped.toConfig()).not.to.have.any.keys(
           "zoomPresets",
           "zoomPresetCategories",

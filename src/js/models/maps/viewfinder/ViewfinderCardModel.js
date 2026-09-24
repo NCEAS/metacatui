@@ -244,15 +244,22 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
        * @since 0.0.0
        */
       toConfig() {
-        return {
+        const config = {
           title: this.get("title"),
           description: this.get("description"),
           image: this.get("image"),
           imageFallback: this.get("imageFallback"),
-          buttons: this.get("buttons"),
+          buttons: this.get("buttons").map((button) =>
+            Object.fromEntries(
+              Object.entries(button).filter(([, value]) => value != null),
+            ),
+          ),
           featureId: this.get("featureId"),
           featureLayerId: this.get("featureLayerId"),
         };
+        return Object.fromEntries(
+          Object.entries(config).filter(([, value]) => value != null),
+        );
       },
 
       /**
