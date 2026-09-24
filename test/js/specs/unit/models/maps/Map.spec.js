@@ -41,12 +41,6 @@ define([
         expect(state.model.get("debug")).to.equal(false);
       });
 
-      it("excludes the default base layer from loading-state tracking", () => {
-        const layers = state.model.get("layers");
-        expect(layers).to.have.lengthOf(1);
-        expect(layers.at(0).get("label")).to.equal("Base layer");
-        expect(layers.at(0).get("excludeFromLoadingState")).to.equal(true);
-      });
 
       it("ignores layers if layerCategories exist", () => {
         const map = new Map({

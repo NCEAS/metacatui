@@ -425,7 +425,6 @@ define([
             {
               type: "OpenStreetMapImageryProvider",
               label: "Base layer",
-              excludeFromLoadingState: true,
             },
           ]),
           terrains: new MapAssets(),
