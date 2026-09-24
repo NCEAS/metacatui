@@ -335,7 +335,7 @@ define([
           return false;
         }
 
-        const imageryCache = imageryLayer["_imageryCache"];
+        const imageryCache = imageryLayer._imageryCache;
         if (!imageryCache || typeof imageryCache !== "object") {
           return false;
         }
