@@ -1,71 +1,72 @@
-define([
-  "jquery",
-  "underscore",
-  "backbone",
-  "models/portals/PortalSectionModel",
-  "models/maps/Map",
-], function ($, _, Backbone, PortalSectionModel, Map) {
+define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
+  $,
+  PortalSectionModel,
+  Map,
+) => {
   /**
    * @class PortalVizSectionModel
-   * @classdesc A Portal Section for Data Visualizations. This is still an experimental feature and not recommended for general use.
+   * @classdesc A Portal Section for Data Visualizations. This is still an
+   * experimental feature and not recommended for general use.
    * @classcategory Models/Portals
-   * @extends PortalSectionModel
+   * @augments PortalSectionModel
    * @private
    */
-  var PortalVizSectionModel = PortalSectionModel.extend(
+  const PortalVizSectionModel = PortalSectionModel.extend(
     /** @lends PortalVizSectionModel.prototype */ {
       type: "PortalVizSection",
 
-      defaults: function () {
-        return _.extend(PortalSectionModel.prototype.defaults(), {
+      /** @returns {object} The default visualization section attributes */
+      defaults() {
+        return {
+          ...PortalSectionModel.prototype.defaults(),
           sectionType: "visualization",
           visualizationType: "",
           supportedVisualizationTypes: ["fever", "cesium"],
-        });
+        };
       },
 
       /**
        * Parses a <section> element from a portal document
-       *
-       *  @param {XMLElement} objectDOM - A ContentSectionType XML element from a portal document
-       *  @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
+       *  @param {XMLElement} objectDOM - A ContentSectionType XML element from
+       *  a portal document
+       *  @returns {object} The parsed section attributes, to be set directly on
+       *  the model.
        */
-      parse: function (objectDOM) {
+      parse(objectDOM) {
         if (!objectDOM) {
           return {};
         }
 
-        //Create a jQuery object of the XML DOM
-        var $objectDOM = $(objectDOM),
-          //Parse the XML using the parent class, PortalSectionModel.parse()
-          modelJSON = this.constructor.__super__.parse(objectDOM);
+        // Create a jQuery object of the XML DOM
+        const $objectDOM = $(objectDOM);
+        // Parse the XML using the parent class, PortalSectionModel.parse()
+        const modelJSON = PortalSectionModel.prototype.parse.call(
+          this,
+          objectDOM,
+        );
 
-        //Parse the visualization type
-        var allOptions = $objectDOM.children("option"),
-          vizType = "";
+        // Parse the visualization type
+        const allOptions = $objectDOM.children("option");
+        let vizType = "";
 
-        var vizTypeNode = allOptions.find(
+        const vizTypeNode = allOptions.find(
           "optionName:contains(visualizationType)",
         );
         if (vizTypeNode.length) {
           vizType = vizTypeNode.first().siblings("optionValue").text();
 
-          //Right now, only support "fever" as a visualization type, until this feature is expanded.
-          if (vizType == "fever") {
-            //  modelJSON.visualizationType = "fever";
-          }
-
-          var vizTypes = this.get("supportedVisualizationTypes");
+          const vizTypes = this.get("supportedVisualizationTypes");
           if (Array.isArray(vizTypes) && vizTypes.includes(vizType)) {
             modelJSON.visualizationType = vizType;
           }
 
-          // Find the map configuration JSON in the section option, if there is one.
-          if (vizType == "cesium") {
-            var mapConfigNode = allOptions.find(
+          // Find the map configuration JSON in the section option, if there is
+          // one.
+          if (vizType === "cesium") {
+            const mapConfigNode = allOptions.find(
               "optionName:contains(mapConfig)",
             );
-            var mapConfig = {};
+            let mapConfig = {};
             if (mapConfigNode.length) {
               mapConfig = mapConfigNode.first().siblings("optionValue").text();
               if (mapConfig && mapConfig.length) {
@@ -80,74 +81,58 @@ define([
       },
 
       /**
-       *  Makes a copy of the original XML DOM and updates it with the new values from the model.
-       *  For now, this function only updates the label. All other parts of Viz sections are not editable
-       * in MetacatUI, since this is still an experimental feature.
-       *
-       *  @return {XMLElement} An updated ContentSectionType XML element from a portal document
+       *  Makes a copy of the original XML DOM and updates it with the new
+       *  values from the model. For now, this function only updates the label.
+       *  All other parts of Viz sections are not editable in MetacatUI, since
+       *  this is still an experimental feature.
+       *  @returns {(XMLElement|string)} An updated ContentSectionType XML
+       *  element, or an empty string when nothing is serialized
        */
-      updateDOM: function () {
-        var objectDOM = this.get("objectDOM");
+      updateDOM() {
+        let objectDOM = this.get("objectDOM");
 
-        //Clone the DOM if it exists already
+        // Clone the DOM if it exists already
         if (objectDOM) {
           objectDOM = objectDOM.cloneNode(true);
-          //Or create a new DOM
+          // Or create a new DOM
         } else {
           // create an XML section element from scratch
-          var xmlText =
-              "<section>  <content>FEVer visualization</content><option><optionName>sectionType</optionName><optionValue>visualization</optionValue>" +
-              "</option><option><optionName>visualizationType</optionName><optionValue>fever</optionValue></option></section>",
-            objectDOM = new DOMParser().parseFromString(xmlText, "text/xml"),
-            objectDOM = $(objectDOM).children()[0];
+          const xmlText =
+            "<section>  <content>FEVer visualization</content><option><optionName>sectionType</optionName><optionValue>visualization</optionValue>" +
+            "</option><option><optionName>visualizationType</optionName><optionValue>fever</optionValue></option></section>";
+          const xmlDocument = new DOMParser().parseFromString(
+            xmlText,
+            "text/xml",
+          );
+          [objectDOM] = $(xmlDocument).children();
         }
 
-        // Get and update the simple text strings (everything but content)
-        var sectionTextData = {
-          label: this.get("label"),
-        };
+        // Update the required label
+        const label = this.get("label");
+        if (label) {
+          const labelElement = objectDOM.ownerDocument.createElement("label");
+          $(labelElement).text(label);
+          this.addUpdatedXMLNode(objectDOM, labelElement);
+        } else {
+          $(objectDOM).children("label").remove();
+        }
 
-        _.map(
-          sectionTextData,
-          function (value, nodeName) {
-            // Don't serialize default values, except for default label strings, since labels are required
-            if (
-              value &&
-              (value != this.defaults()[nodeName] ||
-                (nodeName == "label" && typeof value == "string"))
-            ) {
-              // Make new sub-node
-              var sectionSubnodeSerialized =
-                objectDOM.ownerDocument.createElement(nodeName);
-              $(sectionSubnodeSerialized).text(value);
-
-              this.addUpdatedXMLNode(objectDOM, sectionSubnodeSerialized);
-            }
-            //If the value was removed from the model, then remove the element from the XML
-            else {
-              $(objectDOM).children(nodeName).remove();
-            }
-          },
-          this,
-        );
-
-        //Make sure the content element is valid
-        var contentEl = $(objectDOM).children("content");
+        // Make sure the content element is valid
+        const contentEl = $(objectDOM).children("content");
         if (contentEl.length) {
-          //If there is content in the content element
+          // If there is content in the content element
           if (contentEl[0].childNodes.length) {
-            //If there is only text in the <content> element, we need to wrap it in a <markdown> element so it's schema valid
-            if (contentEl[0].childNodes[0].nodeType == 3) {
+            // If there is only text in the <content> element, we need to wrap
+            // it in a <markdown> element so it's schema valid
+            if (contentEl[0].childNodes[0].nodeType === 3) {
               $(contentEl[0]).html(
-                "<markdown>" +
-                  contentEl[0].childNodes[0].textContent +
-                  "</markdown>",
+                `<markdown>${contentEl[0].childNodes[0].textContent}</markdown>`,
               );
             }
           }
         }
 
-        //If nothing was serialized, return an empty string
+        // If nothing was serialized, return an empty string
         if (!$(objectDOM).children().length) {
           return "";
         }
@@ -156,37 +141,34 @@ define([
       },
 
       /**
-       * Overrides the default Backbone.Model.validate.function() to
-       * check if this PortalSection model has all the required values necessary
-       * to save to the server.
-       *
-       * @return {Object} If there are errors, an object comprising error
+       * Overrides the default Backbone.Model.validate.function() to check if
+       * this PortalSection model has all the required values necessary to save
+       * to the server.
+       * @returns {object|undefined} If there are errors, an object comprising error
        *                   messages. If no errors, returns nothing.
        */
-      validate: function () {
+      validate() {
         try {
-          var errors = {};
+          const errors = {};
 
-          //--Validate the label--
-          //Labels are always required
+          // --Validate the label-- Labels are always required
           if (!this.get("label")) {
             errors.label = "Please provide a page name.";
           }
 
-          //---Validate the section content---
-          //Content is always required, but for visualizations, we can just input dummy content
+          // ---Validate the section content--- Content is always required, but
+          // for visualizations, we can just input dummy content
           if (!this.get("content")) {
             this.set("content", "visualization");
           }
 
-          //Return the errors object
+          // Return the errors object
           if (Object.keys(errors).length) return errors;
-          else {
-            return;
-          }
+          return undefined;
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.error(e);
-          return;
+          return undefined;
         }
       },
 

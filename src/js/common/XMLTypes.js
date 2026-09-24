@@ -11,7 +11,6 @@ define([
     normalizeText,
     serializeBoolean,
     serializeInteger,
-    serializeText,
   } = ValueUtilities;
   const { validateBoolean, validateDate, validateInteger, validateText } =
     ValidationUtilities;
@@ -25,7 +24,7 @@ define([
   return {
     text: {
       normalize: normalizeText,
-      serialize: serializeText,
+      serialize: normalizeText,
       validate(value, options = {}) {
         return validateText(value, options);
       },
