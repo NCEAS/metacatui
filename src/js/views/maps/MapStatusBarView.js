@@ -35,8 +35,9 @@ define([
    */
   const MESSAGE_UPDATE_INTERVAL_MS = 400;
 
+  const BASE_CLASS = "map-status-bar";
   const CLASS_NAMES = {
-    expanded: "map-status-bar--loading-expanded",
+    expanded: `${BASE_CLASS}--loading-expanded`,
   };
 
   /**
@@ -55,7 +56,73 @@ define([
   const MapStatusBarView = Backbone.View.extend(
     /** @lends MapStatusBarView.prototype */ {
       /** @inheritdoc */
-      className: "map-status-bar",
+      className: BASE_CLASS,
+
+      /**
+       * The map model that provides the aggregate `isLoadingLayers`/
+       * `loadingLayersMessage` loading state.
+       * @type {Map}
+       */
+      model: null,
+
+      /**
+       * Passed through to the ScaleBarView.
+       * @type {GeoScale}
+       */
+      scaleModel: null,
+
+      /**
+       * Passed through to the ScaleBarView.
+       * @type {GeoPoint}
+       */
+      pointModel: null,
+
+      /**
+       * Timer id for the pending {@link MapStatusBarView#scheduleReveal} expand,
+       * or null if none is pending.
+       * @type {number|null}
+       */
+      revealTimer: null,
+
+      /**
+       * Timer id for the pending {@link MapStatusBarView#handleLoadingFinished}
+       * collapse, or null if none is pending.
+       * @type {number|null}
+       */
+      collapseTimer: null,
+
+      /**
+       * Timer id for the pending throttled {@link MapStatusBarView#flushMessageUpdate}
+       * call, or null if none is pending.
+       * @type {number|null}
+       */
+      messageUpdateTimer: null,
+
+      /**
+       * Timestamp (ms) of the last time the visible message was updated.
+       * @type {number}
+       */
+      lastMessageUpdateAt: 0,
+
+      /**
+       * The most recent message awaiting display, throttled by
+       * {@link MESSAGE_UPDATE_INTERVAL_MS}.
+       * @type {?string}
+       */
+      pendingMessage: null,
+
+      /**
+       * Timestamp (ms) when the loading row was last expanded, or null if it is
+       * currently collapsed.
+       * @type {?number}
+       */
+      expandedAt: null,
+
+      /**
+       * Whether the map is currently reporting that layers are loading.
+       * @type {boolean}
+       */
+      isCurrentlyLoading: false,
 
       /**
        * @param {object} options The options for this view.
@@ -68,13 +135,6 @@ define([
         this.model = options.model;
         this.scaleModel = options.scaleModel;
         this.pointModel = options.pointModel;
-        this.revealTimer = null;
-        this.collapseTimer = null;
-        this.messageUpdateTimer = null;
-        this.lastMessageUpdateAt = 0;
-        this.pendingMessage = null;
-        this.expandedAt = null;
-        this.isCurrentlyLoading = false;
       },
 
       /** @inheritdoc */
