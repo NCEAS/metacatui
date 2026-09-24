@@ -381,6 +381,8 @@ define([
         this.layer = this.mapModel.addAsset({
           type: "CustomDataSource",
           label: "Your Polygon",
+          // This live drawing is temporary and should not be saved in map config.
+          transient: true,
           description: "The polygon that you are drawing on the map",
           hideInLayerList: true,
           outlineColor: this.color,

@@ -6,6 +6,7 @@ define([
   "collections/maps/MapAssets",
   "/test/js/specs/shared/clean-state.js",
   "common/SearchParams",
+  "common/IconUtilities",
 ], (
   Backbone,
   Map,
@@ -14,6 +15,7 @@ define([
   MapAssets,
   cleanState,
   SearchParams,
+  IconUtilities,
 ) => {
   const expect = chai.expect;
 
@@ -322,6 +324,193 @@ define([
         expect(SearchParams.parseStateFromUrl().enabledLayerIds).to.deep.equal([
           "layer-1",
         ]);
+      });
+    });
+
+    describe("toConfig", () => {
+      it("saves current config settings without live map state", () => {
+        const map = new Map({ showToolbar: false });
+        map.set("showToolbar", true);
+        map.set("homePosition", { longitude: -80, latitude: 45 });
+        map.set("activeVisualizationUrl", "https://example.com/live");
+
+        const config = map.toConfig();
+
+        expect(config.showToolbar).to.equal(true);
+        expect(config.homePosition).to.deep.equal({
+          longitude: -80,
+          latitude: 45,
+        });
+        expect(config).not.to.have.any.keys(
+          "interactions",
+          "allLayers",
+          "restoreState",
+          "activeVisualizationUrl",
+          "originalConfig",
+        );
+      });
+
+      it("saves current flat layers and reloads the saved config", () => {
+        const map = new Map({
+          layers: [{ type: "OpenStreetMapImageryProvider", label: "Old" }],
+        });
+        map.get("layers").at(0).set("label", "Edited");
+        map.addAsset({ type: "OpenStreetMapImageryProvider", label: "Added" });
+
+        const config = map.toConfig();
+        const reloaded = new Map(JSON.parse(JSON.stringify(config)));
+
+        expect(config.layers.map((layer) => layer.label)).to.deep.equal([
+          "Edited",
+          "Added",
+        ]);
+        expect(reloaded.get("layers").pluck("label")).to.deep.equal([
+          "Edited",
+          "Added",
+        ]);
+      });
+
+      it("saves current category metadata and assets with the config icon ID", async () => {
+        const originalFetchIcon = IconUtilities.fetchIcon;
+        IconUtilities.fetchIcon = () => Promise.resolve("<svg></svg>");
+
+        try {
+          const map = new Map({
+            layerCategories: [
+              {
+                label: "Old category",
+                icon: "category-icon-pid",
+                layers: [
+                  { type: "OpenStreetMapImageryProvider", label: "Old" },
+                ],
+              },
+            ],
+            layers: [
+              { type: "OpenStreetMapImageryProvider", label: "Ignored" },
+            ],
+          });
+          const category = map.get("layerCategories").at(0);
+          category.set("label", "Edited category");
+          category.get("mapAssets").at(0).set("label", "Edited layer");
+          category.get("mapAssets").add({
+            type: "OpenStreetMapImageryProvider",
+            label: "Added layer",
+          });
+          await Promise.resolve();
+
+          expect(category.get("icon")).not.to.equal("category-icon-pid");
+
+          const config = map.toConfig();
+
+          expect(config).not.to.have.property("layers");
+          expect(config.layerCategories[0].label).to.equal("Edited category");
+          expect(config.layerCategories[0].icon).to.equal("category-icon-pid");
+          expect(config.layerCategories[0].expanded).to.equal(false);
+          expect(
+            config.layerCategories[0].layers.map((layer) => layer.label),
+          ).to.deep.equal(["Edited layer", "Added layer"]);
+          expect(config.layerCategories[0]).not.to.have.property("mapAssets");
+          const reloaded = new Map(JSON.parse(JSON.stringify(config)));
+          expect(reloaded.get("layerCategories").at(0).get("label")).to.equal(
+            "Edited category",
+          );
+          expect(
+            reloaded.getAllLayers().map((layer) => layer.get("label")),
+          ).to.deep.equal(["Edited layer", "Added layer"]);
+        } finally {
+          IconUtilities.fetchIcon = originalFetchIcon;
+        }
+      });
+
+      it("saves current terrain assets", () => {
+        const map = new Map({
+          terrains: [{ type: "CesiumTerrainProvider", label: "Old terrain" }],
+        });
+        map.get("terrains").at(0).set("label", "Edited terrain");
+
+        expect(map.toConfig().terrains[0].label).to.equal("Edited terrain");
+      });
+
+      it("saves config visibility despite a live URL override", () => {
+        SearchParams.updateStateInUrl({ enabledLayerIds: [] });
+        const map = new Map({
+          layers: [
+            {
+              type: "OpenStreetMapImageryProvider",
+              layerId: "layer-1",
+              visible: true,
+            },
+          ],
+        });
+
+        expect(map.get("layers").at(0).get("visible")).to.equal(false);
+        expect(map.toConfig().layers[0].visible).to.equal(true);
+      });
+
+      it("round-trips an empty effective layer list", () => {
+        const map = new Map();
+        map.get("layers").reset();
+        const config = map.toConfig();
+        const reloaded = new Map(JSON.parse(JSON.stringify(config)));
+
+        expect(config.layers).to.deep.equal([]);
+        expect(reloaded.get("layers")).to.be.instanceof(MapAssets);
+        expect(reloaded.getAllLayers()).to.have.length(0);
+      });
+
+      it("returns a detached JSON-safe config without live asset references", () => {
+        const map = new Map({
+          layers: [{ type: "OpenStreetMapImageryProvider", label: "Original" }],
+        });
+        map.get("layers").at(0).set("cesiumModel", { mapModel: map });
+
+        const config = map.toConfig();
+        config.homePosition.longitude = 12;
+        config.layers[0].label = "Changed copy";
+
+        expect(
+          JSON.parse(JSON.stringify(config)).layers[0],
+        ).not.to.have.property("cesiumModel");
+        expect(map.get("homePosition").longitude).to.equal(-65);
+        expect(map.get("layers").at(0).get("label")).to.equal("Original");
+      });
+
+      it("keeps all viewfinder input keys as config during the transition", () => {
+        const viewfinderCards = [
+          { title: "Card", latitude: 45, longitude: -80 },
+        ];
+        const zoomPresets = [{ title: "Legacy", latitude: 46, longitude: -81 }];
+        const map = new Map({
+          viewfinderCards,
+          viewfinderCardCategories: [],
+          zoomPresets,
+          zoomPresetCategories: [],
+        });
+
+        const config = map.toConfig();
+
+        expect(config.viewfinderCards).to.deep.equal(viewfinderCards);
+        expect(config.viewfinderCardCategories).to.deep.equal([]);
+        expect(config.zoomPresets).to.deep.equal(zoomPresets);
+        expect(config.zoomPresetCategories).to.deep.equal([]);
+      });
+
+      it("omits only assets explicitly marked as live and temporary", () => {
+        const map = new Map({ layers: [] });
+        map.addAsset({
+          type: "OpenStreetMapImageryProvider",
+          label: "Legitimate hidden layer",
+          hideInLayerList: true,
+        });
+        map.addAsset({
+          type: "CustomDataSource",
+          label: "Your Polygon",
+          transient: true,
+        });
+
+        expect(map.toConfig().layers.map((layer) => layer.label)).to.deep.equal(
+          ["Legitimate hidden layer"],
+        );
       });
     });
 

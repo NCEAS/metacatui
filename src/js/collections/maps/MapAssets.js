@@ -141,6 +141,18 @@ define([
       },
 
       /**
+       * Return the assets to save in map config, excluding live temporary
+       * assets.
+       * @returns {MapConfig#MapAssetConfig[]} Plain asset configs
+       * @since 0.0.0
+       */
+      toConfig() {
+        return this.filter((asset) => asset.get("transient") !== true).map(
+          (asset) => asset.toConfig(),
+        );
+      },
+
+      /**
        * Set the parent map model on each of the MapAsset models in this
        * collection. This must be the Map model that contains this asset
        * collection.
