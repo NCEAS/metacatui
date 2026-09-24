@@ -1,14 +1,14 @@
 "use strict";
 
-define(["underscore", "backbone"], (_, Backbone) => {
-  const template = `
-    <div class="map-status-bar__loading-row-inner">
-      <div class="map-status-bar__loading-bar"></div>
-      <div class="map-status-bar__loading-message">
-        <span class="map-status-bar__loading-text"></span>
-      </div>
-    </div>
-  `;
+define(["backbone"], (Backbone) => {
+  /** CSS class names used by this view. */
+  const CLASS_NAMES = {
+    row: "map-status-bar__loading-row",
+    rowInner: "map-status-bar__loading-row-inner",
+    bar: "map-status-bar__loading-bar",
+    message: "map-status-bar__loading-message",
+    text: "map-status-bar__loading-text",
+  };
 
   /**
    * @class LayerLoadingIndicatorView
@@ -26,20 +26,27 @@ define(["underscore", "backbone"], (_, Backbone) => {
   const LayerLoadingIndicatorView = Backbone.View.extend(
     /** @lends LayerLoadingIndicatorView.prototype */ {
       /** @inheritdoc */
-      className: "map-status-bar__loading-row",
+      className: CLASS_NAMES.row,
 
       /**
        * The primary HTML template for this view
-       * @type {Underscore.template}
+       * @type {string}
        */
-      template: _.template(template),
+      template: `
+        <div class="${CLASS_NAMES.rowInner}">
+          <div class="${CLASS_NAMES.bar}"></div>
+          <div class="${CLASS_NAMES.message}">
+            <span class="${CLASS_NAMES.text}"></span>
+          </div>
+        </div>
+      `,
 
       /** @inheritdoc */
       render() {
-        this.$el.html(this.template());
+        this.$el.html(this.template);
         this.el.setAttribute("aria-live", "polite");
         this.el.setAttribute("aria-atomic", "true");
-        this.messageEl = this.el.querySelector(".map-status-bar__loading-text");
+        this.messageEl = this.el.querySelector(`.${CLASS_NAMES.text}`);
         return this;
       },
 
