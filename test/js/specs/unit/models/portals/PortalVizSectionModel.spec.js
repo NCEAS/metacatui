@@ -20,6 +20,9 @@ define([
       height: 3000000,
     },
     showToolbar: false,
+    viewfinderCards: [
+      { title: "Original place", latitude: 65, longitude: -110 },
+    ],
   };
 
   const getOptionValue = (section, optionName) => {
@@ -75,7 +78,10 @@ define([
             <option>
               <optionName>mapConfig</optionName>
               <optionValue>${JSON.stringify(mixedMapConfig)}</optionValue>
+              <optionValue>keep map extra</optionValue>
             </option>
+            <option><optionName>mapConfigExtra</optionName><optionValue>keep nearby</optionValue></option>
+            <option><optionName>customSection</optionName><optionValue>keep section</optionValue></option>
           </section>
           <option><optionName>hideData</optionName><optionValue>true</optionValue></option>
           <option><optionName>customRoot</optionName><optionValue>keep root</optionValue></option>
@@ -253,6 +259,16 @@ define([
 
     it("round-trips freeform and Cesium sections through serialization", () => {
       const portal = createMixedPortal();
+      const sourceSection = portal.get("sections")[1];
+      const map = sourceSection.get("mapModel");
+      const sourceDOM = sourceSection.get("objectDOM");
+      const sourceXML = new XMLSerializer().serializeToString(sourceDOM);
+      map.set("showToolbar", true);
+      const cards = map
+        .get("viewfinderCardsCollection")
+        .at(0)
+        .get("viewfinderCards");
+      cards.at(0).set("title", "Edited place");
       portal.set("hideData", false);
       portal.set("theme", "ocean");
       const serializedPortal = portal.serialize();
@@ -272,18 +288,42 @@ define([
         mapSectionElement,
         "mapConfig",
       );
+      const directMapOptions = Array.from(mapSectionElement.children).filter(
+        (child) =>
+          child.localName === "option" &&
+          child.firstElementChild?.textContent === "mapConfig",
+      );
 
       expect(root.namespaceURI).to.equal(
         "https://purl.dataone.org/portals-1.1.0",
       );
       expect(mapOption.children[1].firstChild.nodeType).to.equal(4);
+      expect(directMapOptions).to.have.length(1);
+      const savedConfig = JSON.parse(mapOption.children[1].textContent);
+      expect(savedConfig.showToolbar).to.equal(true);
       expect(
-        JSON.parse(mapOption.children[1].textContent).showToolbar,
-      ).to.equal(false);
+        savedConfig.viewfinderCardCategories[0].viewfinderCards[0].title,
+      ).to.equal("Edited place");
+      expect(savedConfig).not.to.have.property("viewfinderCards");
+      const mapOptionValues = PortalOption.fromElement(mapOption).optionValue;
+      expect(mapOptionValues).to.have.length(2);
+      expect(mapOptionValues[1]).to.equal("keep map extra");
+      expect(
+        PortalOption.findDirectChild(mapSectionElement, "mapConfigExtra")
+          .children[1].textContent,
+      ).to.equal("keep nearby");
+      expect(
+        PortalOption.findDirectChild(mapSectionElement, "customSection")
+          .children[1].textContent,
+      ).to.equal("keep section");
       expect(
         PortalOption.findDirectChild(root, "customRoot").children[1]
           .textContent,
       ).to.equal("keep root");
+      expect(sourceSection.get("objectDOM")).to.equal(sourceDOM);
+      expect(new XMLSerializer().serializeToString(sourceDOM)).to.equal(
+        sourceXML,
+      );
 
       const reloadedPortal = parsePortal(serializedPortal);
       const [freeformSection, mapSection] = reloadedPortal.get("sections");
@@ -306,7 +346,13 @@ define([
       expect(mapSection.get("mapModel").get("homePosition")).to.deep.equal(
         mixedMapConfig.homePosition,
       );
-      expect(mapSection.get("mapModel").get("showToolbar")).to.equal(false);
+      expect(mapSection.get("mapModel").get("showToolbar")).to.equal(true);
+      const reloadedCards = mapSection
+        .get("mapModel")
+        .get("viewfinderCardsCollection")
+        .at(0)
+        .get("viewfinderCards");
+      expect(reloadedCards.at(0).get("title")).to.equal("Edited place");
     });
 
     it("serializes and reparses a new portal with root and Cesium options", () => {
@@ -319,6 +365,9 @@ define([
       });
       const section = portal.addSection("cesium");
       section.set("label", "Map");
+      const map = section.get("mapModel");
+      map.set("showToolbar", false);
+      map.get("layers").at(0).set("label", "Edited base layer");
 
       const serialized = portal.serialize();
       expect(serialized).to.be.a("string").and.not.empty;
@@ -334,15 +383,22 @@ define([
         sectionElement,
         "mapConfig",
       );
+      const directMapOptions = Array.from(sectionElement.children).filter(
+        (child) =>
+          child.localName === "option" &&
+          child.firstElementChild?.textContent === "mapConfig",
+      );
 
       expect(root.namespaceURI).to.equal(
         "https://purl.dataone.org/portals-1.1.0",
       );
       expect(PortalOption.findDirectChild(root, "hideMetrics")).to.exist;
+      expect(directMapOptions).to.have.length(1);
+      expect(mapOption.children).to.have.length(2);
       expect(mapOption.children[1].firstChild.nodeType).to.equal(4);
-      expect(
-        JSON.parse(mapOption.children[1].textContent).showToolbar,
-      ).to.equal(true);
+      const savedConfig = JSON.parse(mapOption.children[1].textContent);
+      expect(savedConfig.showToolbar).to.equal(false);
+      expect(savedConfig.layers[0].label).to.equal("Edited base layer");
 
       const reloaded = parsePortal(xml);
       expect(reloaded.get("hideMetrics")).to.equal(true);
@@ -350,6 +406,48 @@ define([
         PortalVizSectionModel,
       );
       expect(reloaded.get("sections")[0].get("mapModel")).to.be.instanceof(Map);
+      const reloadedMap = reloaded.get("sections")[0].get("mapModel");
+      expect(reloadedMap.get("showToolbar")).to.equal(false);
+      expect(reloadedMap.get("layers").at(0).get("label")).to.equal(
+        "Edited base layer",
+      );
+    });
+
+    it("round-trips a map config value containing a CDATA terminator", () => {
+      const portal = new PortalModel({});
+      portal.set("label", "New portal");
+      portal.get("definitionFilters").add({
+        fields: ["formatType"],
+        values: ["METADATA"],
+      });
+      const section = portal.addSection("cesium");
+      section.set("label", "Map");
+      section.get("mapModel").set("feedbackText", "Before ]]> after");
+
+      const serialized = portal.serialize();
+      expect(serialized).to.be.a("string").and.not.empty;
+      const xml = new DOMParser().parseFromString(
+        serialized,
+        "application/xml",
+      );
+      expect(xml.getElementsByTagName("parsererror").length).to.equal(0);
+
+      const sectionElement = Array.from(xml.documentElement.children).find(
+        (child) => child.localName === "section",
+      );
+      const mapOption = PortalOption.findDirectChild(
+        sectionElement,
+        "mapConfig",
+      );
+      expect(mapOption.children[1].firstChild.nodeType).to.equal(4);
+      expect(
+        JSON.parse(mapOption.children[1].textContent).feedbackText,
+      ).to.equal("Before ]]> after");
+
+      const reloaded = parsePortal(xml);
+      expect(
+        reloaded.get("sections")[0].get("mapModel").get("feedbackText"),
+      ).to.equal("Before ]]> after");
     });
 
     it("persists Cesium section removal without dropping freeform content", () => {
