@@ -112,6 +112,7 @@ define([
           height: 2500000,
         },
         showToolbar: false,
+        viewfinderCards: [{ title: "Home", latitude: 70, longitude: -120 }],
       };
       const xml = new DOMParser().parseFromString(
         `<por:portal xmlns:por="https://purl.dataone.org/portals-1.1.0">
@@ -160,6 +161,7 @@ define([
 
       const sourceDOM = section.get("objectDOM");
       section.set("label", "Updated map");
+      map.set("showToolbar", true);
       const updatedDOM = section.updateDOM();
 
       expect(updatedDOM).not.to.equal(sourceDOM);
@@ -186,7 +188,10 @@ define([
       expect(updatedMapConfig.homePosition).to.deep.equal(
         mapConfig.homePosition,
       );
-      expect(updatedMapConfig.showToolbar).to.equal(false);
+      expect(updatedMapConfig.showToolbar).to.equal(true);
+      expect(updatedMapConfig.viewfinderCards).to.deep.equal(
+        mapConfig.viewfinderCards,
+      );
       const mapOptions = Array.from(updatedDOM.children).filter(
         (child) =>
           child.localName === "option" &&
@@ -234,7 +239,12 @@ define([
       const mapConfig = PortalOption.findDirectChild(sectionDOM, "mapConfig");
       expect(mapConfig).to.exist;
       expect(mapConfig.children[1].firstChild.nodeType).to.equal(4);
-      expect(JSON.parse(mapConfig.children[1].textContent)).to.deep.equal({});
+      const savedConfig = JSON.parse(mapConfig.children[1].textContent);
+      expect(savedConfig.showToolbar).to.equal(true);
+      expect(savedConfig.layers[0].type).to.equal(
+        "OpenStreetMapImageryProvider",
+      );
+      expect(savedConfig.terrains).to.deep.equal([]);
     });
 
     it("round-trips freeform and Cesium sections through serialization", () => {
@@ -326,7 +336,9 @@ define([
       );
       expect(PortalOption.findDirectChild(root, "hideMetrics")).to.exist;
       expect(mapOption.children[1].firstChild.nodeType).to.equal(4);
-      expect(JSON.parse(mapOption.children[1].textContent)).to.deep.equal({});
+      expect(
+        JSON.parse(mapOption.children[1].textContent).showToolbar,
+      ).to.equal(true);
 
       const reloaded = parsePortal(xml);
       expect(reloaded.get("hideMetrics")).to.equal(true);
