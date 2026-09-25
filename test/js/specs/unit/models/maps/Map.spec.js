@@ -41,7 +41,6 @@ define([
         expect(state.model.get("debug")).to.equal(false);
       });
 
-
       it("ignores layers if layerCategories exist", () => {
         const map = new Map({
           layerCategories: [{ layers: [{}] }],
