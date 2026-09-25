@@ -249,6 +249,7 @@ define([
 
         view.featureInfo = new FeatureInfoView({
           el: view.subElements.featureInfoContainer,
+          mapModel: view.model,
           model: features.at(0),
         }).render();
 

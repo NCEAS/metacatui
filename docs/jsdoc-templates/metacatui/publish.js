@@ -369,7 +369,7 @@ function buildMemberNav(items, itemHeading, itemsSeen, linktoFn) {
           "</li>";
       }
 
-      organizedItems[category].forEach((item) => {
+      (organizedItems[category] || []).forEach((item) => {
         let displayName;
 
         if (!hasOwnProp.call(item, "longname")) {

@@ -4,6 +4,7 @@ define([
   "models/maps/AssetCategory",
   "collections/maps/AssetCategories",
   "collections/maps/MapAssets",
+  "models/maps/LayerLoadingCoordinator",
   "/test/js/specs/shared/clean-state.js",
   "common/SearchParams",
 ], (
@@ -12,6 +13,7 @@ define([
   AssetCategory,
   AssetCategories,
   MapAssets,
+  LayerLoadingCoordinator,
   cleanState,
   SearchParams,
 ) => {
@@ -510,6 +512,9 @@ define([
         });
         map.applyFeatureRestoreState();
 
+        expect(map.get("isLoadingLayers")).to.equal(false);
+        expect(map.get("loadingLayersMessage")).to.equal(null);
+
         expect(
           (map.getSelectedFeatures()?.models || []).some(
             (f) => f.get("featureID") === "building-42",
@@ -525,8 +530,53 @@ define([
           expect(
             selected.some((f) => f.get("featureID") === "building-42"),
           ).to.equal(true);
+          expect(map.get("isLoadingLayers")).to.equal(false);
           done();
         }, 0);
+      });
+
+      it("retries feature restore when layer loading metadata changes", () => {
+        const map = new Map({ showShareUrl: true });
+        const fakeFeature = {};
+        const fakeAttrs = {
+          featureID: "road-feature-1",
+          properties: {},
+          mapAsset: null,
+          featureObject: fakeFeature,
+          label: null,
+        };
+
+        let featureAvailable = false;
+        const layer = makeLayer({
+          label: "Habitat roads",
+          status: "loading",
+          displayReady: false,
+          getFeatureById: (id) =>
+            id === "road-feature-1" && featureAvailable ? fakeFeature : null,
+          getFeatureAttributes: () => fakeAttrs,
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "road-feature-1", layerId: null }],
+        });
+        map.applyFeatureRestoreState();
+
+        expect(
+          (map.getSelectedFeatures()?.models || []).some(
+            (f) => f.get("featureID") === "road-feature-1",
+          ),
+        ).to.equal(false);
+
+        featureAvailable = true;
+        layer.set("status", "ready");
+        map.handleLayerLoadingStateChange();
+
+        expect(
+          (map.getSelectedFeatures()?.models || []).some(
+            (f) => f.get("featureID") === "road-feature-1",
+          ),
+        ).to.equal(true);
       });
 
       it("keeps the restore session active across partial feature resolution", (done) => {
@@ -778,6 +828,641 @@ define([
         map.applyFeatureRestoreState();
 
         expect(waitCallCount).to.equal(1);
+      });
+
+      it("replaces a stale restore session when comma-containing ids form a different scope", () => {
+        const map = new Map({ showShareUrl: true });
+        const layer = makeLayer({
+          layerId: "layer-1",
+          getFeatureById: () => null,
+          waitForFeatureById: () => () => {},
+        });
+
+        map.getAllLayers = () => [layer];
+        map.featureRestoreSession = {
+          cancelers: [],
+          key: JSON.stringify({
+            featureKeys: [
+              JSON.stringify({ featureId: "a", layerId: null }),
+              JSON.stringify({ featureId: "b,c", layerId: null }),
+            ],
+            layerIds: ["layer-1"],
+          }),
+          requestedFeatures: [
+            { featureId: "a", layerId: null },
+            { featureId: "b,c", layerId: null },
+          ],
+        };
+        map.set("restoreState", {
+          activeFeatures: [
+            { featureId: "a,b", layerId: null },
+            { featureId: "c", layerId: null },
+          ],
+        });
+
+        map.applyFeatureRestoreState();
+
+        expect(map.featureRestoreSession?.requestedFeatures).to.deep.equal([
+          { featureId: "a,b", layerId: null },
+          { featureId: "c", layerId: null },
+        ]);
+      });
+
+      it("re-runs feature restore when a hidden searchable layer becomes visible after no session was created", () => {
+        const map = new Map({ showShareUrl: true });
+        const fakeFeature = {};
+        const fakeAttrs = {
+          featureID: "hidden-feature-1",
+          properties: {},
+          mapAsset: null,
+          featureObject: fakeFeature,
+          label: null,
+        };
+
+        const layer = makeLayer({
+          layerId: "searchable-layer",
+          visible: false,
+          status: "ready",
+          getFeatureById: (id) =>
+            id === "hidden-feature-1" ? fakeFeature : null,
+          getFeatureAttributes: () => fakeAttrs,
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "hidden-feature-1", layerId: null }],
+        });
+
+        map.applyFeatureRestoreState();
+        expect(map.featureRestoreSession).to.equal(null);
+        expect(
+          (map.getSelectedFeatures()?.models || []).some(
+            (feature) => feature.get("featureID") === "hidden-feature-1",
+          ),
+        ).to.equal(false);
+
+        layer.set("visible", true);
+        map.handleLayerVisibilityChange();
+
+        expect(
+          (map.getSelectedFeatures()?.models || []).some(
+            (feature) => feature.get("featureID") === "hidden-feature-1",
+          ),
+        ).to.equal(true);
+      });
+
+      it("replaces restore waiters when visible searchable layers change for the same requested feature ids", (done) => {
+        const map = new Map({ showShareUrl: true });
+        const fakeFeature = {};
+        const fakeAttrs = {
+          featureID: "road-feature-1",
+          properties: {},
+          mapAsset: null,
+          featureObject: fakeFeature,
+          label: null,
+        };
+
+        let roadReady = false;
+        let staleRoadCallback = null;
+        let roadCancelCount = 0;
+        let fallbackWaitCount = 0;
+
+        const roadsLayer = makeLayer({
+          layerId: "roads",
+          label: "Roads",
+          visible: true,
+          status: "ready",
+          getFeatureById: (id) => {
+            if (id === "road-feature-1" && roadReady) return fakeFeature;
+            return null;
+          },
+          getFeatureAttributes: () => fakeAttrs,
+          waitForFeatureById: (_id, cb) => {
+            staleRoadCallback = cb;
+            return () => {
+              roadCancelCount += 1;
+            };
+          },
+        });
+
+        const fallbackLayer = makeLayer({
+          layerId: "fallback",
+          label: "Fallback",
+          visible: true,
+          status: "loading",
+          getFeatureById: () => null,
+          waitForFeatureById: () => {
+            fallbackWaitCount += 1;
+            return () => {};
+          },
+        });
+
+        map.getAllLayers = () => [roadsLayer, fallbackLayer];
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "road-feature-1", layerId: null }],
+        });
+
+        map.applyFeatureRestoreState();
+        expect(roadCancelCount).to.equal(0);
+
+        roadsLayer.set("visible", false);
+        map.applyFeatureRestoreState();
+
+        expect(roadCancelCount).to.equal(1);
+        expect(fallbackWaitCount).to.equal(2);
+
+        roadReady = true;
+        staleRoadCallback();
+
+        setTimeout(() => {
+          try {
+            const selected = map.getSelectedFeatures()?.models || [];
+            expect(
+              selected.some((f) => f.get("featureID") === "road-feature-1"),
+            ).to.equal(false);
+            done();
+          } catch (error) {
+            done(error);
+          }
+        }, 0);
+      });
+
+      it("clears the loading state when no layer can continue the restore asynchronously", () => {
+        const map = new Map({ showShareUrl: true });
+        const layer = makeLayer({
+          getFeatureById: () => null,
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "missing-feature", layerId: null }],
+        });
+        map.applyFeatureRestoreState();
+
+        expect(map.get("isLoadingLayers")).to.equal(false);
+      });
+
+      it("keeps restore state alive when an unrelated layer is hidden", () => {
+        const map = new Map({ showShareUrl: true });
+
+        const roadsLayer = makeLayer({
+          layerId: "roads",
+          label: "Roads",
+          visible: true,
+          status: "ready",
+          getFeatureById: () => null,
+        });
+        const buildingsLayer = makeLayer({
+          layerId: "buildings",
+          label: "Buildings",
+          visible: true,
+          status: "ready",
+          getFeatureById: () => null,
+          waitForFeatureById: () => () => {},
+        });
+        const hiddenLayer = makeLayer({
+          layerId: "hidden",
+          label: "Hidden",
+          visible: false,
+          status: "ready",
+          getFeatureById: () => null,
+        });
+
+        map.getAllLayers = () => [roadsLayer, buildingsLayer, hiddenLayer];
+        const activeFeatures = [
+          { featureId: "loaded-feature", layerId: "roads" },
+          { featureId: "pending-feature", layerId: "buildings" },
+        ];
+        map.set("restoreState", { activeFeatures });
+        SearchParams.updateActiveFeatures(activeFeatures);
+
+        map.applyFeatureRestoreState();
+        expect(map.featureRestoreSession).to.not.equal(null);
+
+        hiddenLayer.set("visible", false);
+        map.handleLayerVisibilityChange(hiddenLayer, false);
+
+        expect(map.featureRestoreSession).to.not.equal(null);
+        expect(map.get("restoreState")?.activeFeatures).to.deep.equal(
+          activeFeatures,
+        );
+        expect(SearchParams.parseStateFromUrl().activeFeatures).to.deep.equal(
+          activeFeatures,
+        );
+      });
+
+      it("clears pending feature restore ids from the URL when the restoring layer is hidden before the feature appears", () => {
+        const map = new Map({ showShareUrl: true });
+        let cancelCount = 0;
+
+        const roadsLayer = makeLayer({
+          layerId: "roads",
+          label: "Roads",
+          visible: true,
+          status: "ready",
+          getFeatureById: () => null,
+          waitForFeatureById: () => {
+            return () => {
+              cancelCount += 1;
+            };
+          },
+        });
+
+        map.getAllLayers = () => [roadsLayer];
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "road-feature-1", layerId: "roads" }],
+        });
+        SearchParams.updateActiveFeatures([
+          { featureId: "road-feature-1", layerId: "roads" },
+        ]);
+
+        map.applyFeatureRestoreState();
+        expect(map.featureRestoreSession).to.not.equal(null);
+        expect(SearchParams.parseStateFromUrl().activeFeatures).to.deep.equal([
+          { featureId: "road-feature-1", layerId: "roads" },
+        ]);
+
+        roadsLayer.set("visible", false);
+        map.handleLayerVisibilityChange(roadsLayer, false);
+
+        expect(cancelCount).to.equal(1);
+        expect(map.featureRestoreSession).to.equal(null);
+        expect(map.get("restoreState")?.activeFeatures).to.deep.equal([]);
+        expect(SearchParams.parseStateFromUrl().activeFeatures).to.deep.equal(
+          [],
+        );
+      });
+
+      it("does not treat feature restore sessions as map layer loading state", () => {
+        const map = new Map({ showShareUrl: true });
+
+        const layer = makeLayer({
+          label: "Habitat roads",
+          visible: true,
+          status: "ready",
+          displayReady: true,
+          getFeatureById: () => null,
+          waitForFeatureById: () => () => {},
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "road-feature-1", layerId: null }],
+        });
+
+        map.applyFeatureRestoreState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.featureRestoreSession).to.not.equal(null);
+        expect(map.get("isLoadingLayers")).to.equal(false);
+        expect(map.get("loadingLayersMessage")).to.equal(null);
+      });
+
+      it("clears loading state when a restored layer is toggled off before loading, and reopens on toggle on", () => {
+        const map = new Map({ showShareUrl: true });
+        let waitCallCount = 0;
+
+        const layer = makeLayer({
+          label: "Roads (HABITAT-OSM)",
+          status: "ready",
+          displayReady: false,
+          visible: true,
+          getFeatureById: () => null,
+          waitForFeatureById: () => {
+            waitCallCount += 1;
+            return () => {};
+          },
+        });
+
+        map.getAllLayers = () => [layer];
+        map.set("restoreState", {
+          activeFeatures: [{ featureId: "road-feature-1", layerId: null }],
+        });
+
+        map.applyFeatureRestoreState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Roads (HABITAT-OSM)",
+        );
+
+        layer.set("visible", false);
+        map.applyFeatureRestoreState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.get("isLoadingLayers")).to.equal(false);
+        expect(map.get("loadingLayersMessage")).to.equal(null);
+
+        layer.set("visible", true);
+        map.applyFeatureRestoreState();
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Roads (HABITAT-OSM)",
+        );
+        expect(waitCallCount).to.equal(2);
+      });
+
+      it("treats visible loading layers as map loading state", () => {
+        const map = new Map({ showShareUrl: false });
+        const layer = makeLayer({
+          label: "Habitat roads",
+          status: "loading",
+          visible: true,
+        });
+
+        map.getAllLayers = () => [layer];
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Habitat roads",
+        );
+      });
+
+      it("recalculates loading state when a loading layer is added dynamically", () => {
+        const map = new Map({
+          showShareUrl: false,
+          layers: [
+            {
+              layerId: "base",
+              label: "Base",
+              visible: true,
+              status: "ready",
+              displayReady: true,
+              excludeFromLoadingState: true,
+            },
+          ],
+        });
+
+        expect(map.get("isLoadingLayers")).to.equal(false);
+
+        map.addAsset({
+          layerId: "roads",
+          label: "Roads",
+          visible: true,
+          status: "ready",
+          displayReady: false,
+        });
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal("Loading Roads");
+      });
+
+      it("recalculates loading state when a loading layer is removed dynamically", () => {
+        const map = new Map({
+          showShareUrl: false,
+          layers: [
+            {
+              layerId: "base",
+              label: "Base",
+              visible: true,
+              status: "ready",
+              displayReady: true,
+              excludeFromLoadingState: true,
+            },
+          ],
+        });
+
+        const roads = map.addAsset({
+          layerId: "roads",
+          label: "Roads",
+          visible: true,
+          status: "loading",
+          displayReady: false,
+        });
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal("Loading Roads");
+
+        map.removeAsset(roads);
+
+        expect(map.get("isLoadingLayers")).to.equal(false);
+        expect(map.get("loadingLayersMessage")).to.equal(null);
+      });
+
+      it("does not treat failed visible layers as still loading", () => {
+        const map = new Map({ showShareUrl: false });
+        const layer = makeLayer({
+          label: "Lakes",
+          status: "error",
+          visible: true,
+          displayReady: false,
+        });
+
+        map.getAllLayers = () => [layer];
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.get("isLoadingLayers")).to.equal(false);
+        expect(map.get("loadingLayersMessage")).to.equal(null);
+      });
+
+      it("treats visible layers that are not yet display-ready as loading", () => {
+        const map = new Map({ showShareUrl: false });
+        const layer = makeLayer({
+          label: "Buildings (HABITAT-OSM)",
+          status: "ready",
+          visible: true,
+          displayReady: false,
+        });
+
+        map.getAllLayers = () => [layer];
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Buildings (HABITAT-OSM)",
+        );
+      });
+
+      it("syncs per-layer loading flags with aggregate loading state", () => {
+        const map = new Map({ showShareUrl: false });
+        const roads = makeLayer({
+          label: "Roads",
+          status: "ready",
+          visible: true,
+          displayReady: false,
+        });
+        const buildings = makeLayer({
+          label: "Buildings",
+          status: "ready",
+          visible: true,
+          displayReady: true,
+        });
+
+        map.getAllLayers = () => [roads, buildings];
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(roads.get("isLoadingLayer")).to.equal(true);
+        expect(buildings.get("isLoadingLayer")).to.equal(false);
+        expect(map.get("isLoadingLayers")).to.equal(true);
+
+        roads.set("displayReady", true);
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(roads.get("isLoadingLayer")).to.equal(false);
+        expect(buildings.get("isLoadingLayer")).to.equal(false);
+        expect(map.get("isLoadingLayers")).to.equal(false);
+        expect(map.get("loadingLayersMessage")).to.equal(null);
+      });
+
+      it("ignores helper layers that opt out of loading state tracking", () => {
+        const map = new Map({ showShareUrl: false });
+        const layers = [
+          makeLayer({
+            label: "Your Polygon",
+            status: "loading",
+            visible: true,
+            excludeFromLoadingState: true,
+          }),
+          makeLayer({
+            label: "Habitat roads",
+            status: "ready",
+            visible: true,
+            displayReady: false,
+          }),
+        ];
+
+        map.getAllLayers = () => layers;
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.get("isLoadingLayers")).to.equal(true);
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Habitat roads",
+        );
+      });
+
+      it("summarizes multiple visible loading layers in the loading message", () => {
+        const map = new Map({ showShareUrl: false });
+        const layers = [
+          makeLayer({
+            label: "Habitat roads",
+            status: "loading",
+            visible: true,
+          }),
+          makeLayer({
+            label: "Wetlands",
+            status: "ready",
+            visible: true,
+            displayReady: false,
+          }),
+          makeLayer({
+            label: "Elevation",
+            status: "ready",
+            visible: true,
+            displayReady: false,
+          }),
+        ];
+
+        map.getAllLayers = () => layers;
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Habitat roads and 2 other layers",
+        );
+      });
+
+      it("preserves sub/sup markup in the label so it renders like the menu", () => {
+        const map = new Map({ showShareUrl: false });
+        const layer = makeLayer({
+          label: "Average Terrestrial Net CO<sub>2</sub> Balance",
+          status: "loading",
+          visible: true,
+        });
+
+        map.getAllLayers = () => [layer];
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Average Terrestrial Net CO<sub>2</sub> Balance",
+        );
+      });
+
+      it("truncates a long label without breaking markup it contains", () => {
+        const map = new Map({ showShareUrl: false });
+        const layer = makeLayer({
+          label:
+            "Very Long Terrestrial Net CO<sub>2</sub> Balance And More Words",
+          status: "loading",
+          visible: true,
+        });
+
+        map.getAllLayers = () => [layer];
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
+
+        expect(map.get("loadingLayersMessage")).to.equal(
+          "Loading Very Long Terrestrial Net CO<sub>2</sub> Balance And More Wor…",
+        );
+      });
+
+      describe("feature restore timeout", () => {
+        let clock;
+
+        beforeEach(() => {
+          clock = sinon.useFakeTimers();
+        });
+
+        afterEach(() => {
+          clock.restore();
+        });
+
+        it("clears the restore session and cancels every registered waiter once the bounded wait elapses", () => {
+          const map = new Map({
+            showShareUrl: true,
+            featureRestoreTimeoutMs: 1000,
+          });
+
+          let cancelCountA = 0;
+          let cancelCountB = 0;
+
+          const layerA = makeLayer({
+            layerId: "layer-a",
+            status: "ready",
+            getFeatureById: () => null,
+            waitForFeatureById: () => () => {
+              cancelCountA += 1;
+            },
+          });
+          const layerB = makeLayer({
+            layerId: "layer-b",
+            status: "ready",
+            getFeatureById: () => null,
+            waitForFeatureById: () => () => {
+              cancelCountB += 1;
+            },
+          });
+
+          map.getAllLayers = () => [layerA, layerB];
+          map.set("restoreState", {
+            activeFeatures: [
+              { featureId: "feature-a", layerId: "layer-a" },
+              { featureId: "feature-b", layerId: "layer-b" },
+            ],
+          });
+
+          map.applyFeatureRestoreState();
+
+          expect(map.featureRestoreSession).to.not.equal(null);
+          expect(cancelCountA).to.equal(0);
+          expect(cancelCountB).to.equal(0);
+
+          clock.tick(999);
+          expect(map.featureRestoreSession).to.not.equal(null);
+          expect(cancelCountA).to.equal(0);
+          expect(cancelCountB).to.equal(0);
+
+          clock.tick(1);
+
+          expect(map.featureRestoreSession).to.equal(null);
+          expect(cancelCountA).to.equal(1);
+          expect(cancelCountB).to.equal(1);
+
+          clock.tick(10000);
+          expect(cancelCountA).to.equal(1);
+          expect(cancelCountB).to.equal(1);
+        });
       });
     });
   });

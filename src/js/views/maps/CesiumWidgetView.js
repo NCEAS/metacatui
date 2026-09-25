@@ -1714,6 +1714,12 @@ define([
        */
       add3DTileset(cesiumModel) {
         this.scene.primitives.add(cesiumModel);
+        const mapAsset = cesiumModel?.mapAssetModel;
+
+        if (mapAsset?.startLoadingStateTracking) {
+          mapAsset.startLoadingStateTracking({ scene: this.scene });
+        }
+        this.requestRender();
       },
 
       /**
@@ -1723,6 +1729,10 @@ define([
        * @since 2.27.0
        */
       remove3DTileset(cesiumModel) {
+        const mapAsset = cesiumModel?.mapAssetModel;
+        if (mapAsset?.stopLoadingStateTracking) {
+          mapAsset.stopLoadingStateTracking();
+        }
         this.scene.primitives.remove(cesiumModel);
       },
 
@@ -1732,7 +1742,24 @@ define([
        * model to render on the map
        */
       addVectorData(cesiumModel) {
-        this.dataSourceCollection.add(cesiumModel);
+        const addPromise = this.dataSourceCollection.add(cesiumModel);
+        if (cesiumModel?.mapAssetModel?.get("renderAboveOtherLayers")) {
+          this.alwaysOnTopDataSources = this.alwaysOnTopDataSources || [];
+          if (!this.alwaysOnTopDataSources.includes(cesiumModel)) {
+            this.alwaysOnTopDataSources.push(cesiumModel);
+          }
+        }
+        // dataSourceCollection.add() resolves asynchronously, so the source
+        // isn't actually in the collection yet when this method returns.
+        Promise.resolve(addPromise)
+          .then(() => {
+            // Skip if the view was closed while the add was still pending.
+            if (this.isClosed) return;
+            this.raiseAlwaysOnTopVectorData();
+          })
+          .catch((e) => {
+            console.log("Error adding vector data to the map", e);
+          });
       },
 
       /**
@@ -1743,6 +1770,25 @@ define([
        */
       removeVectorData(cesiumModel) {
         this.dataSourceCollection.remove(cesiumModel);
+        if (this.alwaysOnTopDataSources) {
+          const index = this.alwaysOnTopDataSources.indexOf(cesiumModel);
+          if (index > -1) this.alwaysOnTopDataSources.splice(index, 1);
+        }
+      },
+
+      /**
+       * Re-raises any vector data sources flagged with
+       * `renderAboveOtherLayers` to the top of the dataSourceCollection so
+       * that they continue to render above vector data added afterwards, e.g.
+       * the polygon that a user draws with the download tool.
+       * @since 0.0.0
+       */
+      raiseAlwaysOnTopVectorData() {
+        (this.alwaysOnTopDataSources || []).forEach((dataSource) => {
+          if (this.dataSourceCollection.contains(dataSource)) {
+            this.dataSourceCollection.raiseToTop(dataSource);
+          }
+        });
       },
 
       /**
@@ -1754,6 +1800,13 @@ define([
         if (this.scene.imageryLayers.contains(cesiumModel)) return;
         this.scene.imageryLayers.add(cesiumModel);
         this.sortImagery();
+        const mapAsset = cesiumModel?.mapAssetModel;
+
+        if (mapAsset?.startLoadingStateTracking) {
+          mapAsset.startLoadingStateTracking({ scene: this.scene });
+        }
+
+        this.requestRender();
       },
 
       /**
@@ -1763,6 +1816,10 @@ define([
        * @since 2.27.0
        */
       removeImagery(cesiumModel) {
+        const mapAsset = cesiumModel?.mapAssetModel;
+        if (mapAsset?.stopLoadingStateTracking) {
+          mapAsset.stopLoadingStateTracking();
+        }
         console.log("Removing imagery from map", cesiumModel);
         console.log("Imagery layers", this.scene.imageryLayers);
         this.scene.imageryLayers.remove(cesiumModel);
@@ -1870,6 +1927,7 @@ define([
 
       /** Remove listeners and destroy the widget when the view is closed */
       onClose() {
+        this.isClosed = true;
         this.destroy3DTilesInspector();
         this.removeMouseListeners();
         this.removeCameraListeners();
@@ -1878,11 +1936,32 @@ define([
           this.removePreRenderLightListener();
           this.removePreRenderLightListener = null;
         }
+        this.stopAllLoadingStateTracking();
         this.stopListening();
         if (this.widget && !this.widget.isDestroyed()) {
           this.widget.destroy();
           this.widget = null;
         }
+      },
+
+      /**
+       * Stop loading state tracking for every asset currently attached to the
+       * map model. Called on view teardown so that tileset event callbacks
+       * and patched imagery providers are not retained after the widget is
+       * destroyed.
+       * @since 0.0.0
+       */
+      stopAllLoadingStateTracking() {
+        const allLayers =
+          typeof this.model.getAllLayers === "function"
+            ? this.model.getAllLayers()
+            : this.model.get("allLayers")?.models || [];
+
+        allLayers.forEach((mapAsset) => {
+          if (mapAsset?.stopLoadingStateTracking) {
+            mapAsset.stopLoadingStateTracking();
+          }
+        });
       },
     },
   );
