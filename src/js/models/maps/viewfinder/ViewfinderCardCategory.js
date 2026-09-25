@@ -68,6 +68,8 @@ define([
        * the attributes, which will be set on the model.
        */
       initialize(attrs = {}) {
+        // The live icon may become an SVG or normalized CSS class.
+        this._configIcon = attrs.icon;
         // Support legacy portal config key `zoomPresets` as well as new key
         // `viewfinderCards`.
         const cardsConfig = attrs?.viewfinderCards ?? attrs?.zoomPresets;
@@ -114,6 +116,20 @@ define([
             this.set("icon", this.defaults().icon);
           }
         }
+      },
+
+      /**
+       * Return the current category and its configured card source.
+       * @returns {MapConfig#ViewfinderCardCategory} A plain category config
+       * @since 0.0.0
+       */
+      toConfig() {
+        return {
+          label: this.get("label"),
+          icon: this._configIcon ?? this.get("icon"),
+          expanded: this.get("expanded"),
+          viewfinderCards: this.get("viewfinderCards").toConfig(),
+        };
       },
 
       /**

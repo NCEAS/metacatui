@@ -98,6 +98,7 @@
     "./js/specs/unit/models/metadata/eml211/EMLAttributeList.spec.js",
     "./js/specs/unit/models/metadata/eml211/EMLReferences.spec.js",
     "./js/specs/unit/models/maps/ExpansionPanelsModel.spec.js",
+    "./js/specs/unit/models/maps/assets/MapAsset.spec.js",
     "./js/specs/unit/models/maps/assets/CesiumImagery.spec.js",
     "./js/specs/unit/collections/maps/Geohashes.spec.js",
     "./js/specs/unit/models/maps/GeoPoint.spec.js",

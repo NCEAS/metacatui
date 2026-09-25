@@ -1,0 +1,285 @@
+{
+  "homePosition": {
+    "longitude": -148.75,
+    "latitude": 64.83,
+    "height": 1250000,
+    "heading": 15,
+    "pitch": -55,
+    "roll": 0
+  },
+  "layerCategories": [
+    {
+      "label": "Reference imagery",
+      "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M2 4h20v16H2z\"/></svg>",
+      "expanded": true,
+      "layers": [
+        {
+          "type": "OpenStreetMapImageryProvider",
+          "label": "Street basemap",
+          "layerId": "street-basemap",
+          "description": "Reference streets and place names",
+          "attribution": "OpenStreetMap contributors",
+          "visible": true,
+          "opacity": 0.85,
+          "saturation": 0.7,
+          "cesiumOptions": {
+            "url": "https://tile.openstreetmap.org/"
+          }
+        },
+        {
+          "type": "NaturalEarthII",
+          "label": "Natural Earth overview",
+          "layerId": "natural-earth",
+          "visible": false,
+          "hideInLayerList": true
+        },
+        {
+          "type": "WebMapServiceImageryProvider",
+          "label": "Coastal imagery",
+          "layerId": "coastal-imagery",
+          "visible": false,
+          "opacity": 0.6,
+          "showOpacitySlider": false,
+          "moreInfoLink": "https://example.org/coastal-imagery",
+          "cesiumOptions": {
+            "url": "https://example.org/wms",
+            "layers": "coastal_imagery",
+            "parameters": {
+              "format": "image/png",
+              "transparent": true
+            },
+            "rectangle": [-170, 50, -120, 75]
+          },
+          "colorPalette": {
+            "paletteType": "categorical",
+            "property": "surface",
+            "label": "Surface type",
+            "colors": [
+              { "value": "land", "label": "Land", "color": "#A98B64" },
+              { "value": "water", "label": "Water", "color": "#427DA3" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Research data",
+      "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"8\"/></svg>",
+      "expanded": false,
+      "layers": [
+        {
+          "type": "GeoJsonDataSource",
+          "label": "Field sites",
+          "layerId": "field-sites",
+          "id": "urn:uuid:field-sites-package",
+          "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M12 2 3 22h18z\"/></svg>",
+          "description": "Sample sites with measurements and collection dates",
+          "attribution": "Example research team",
+          "moreInfoLink": "https://example.org/field-sites",
+          "downloadLink": "https://example.org/field-sites.geojson",
+          "visible": false,
+          "opacity": 0.75,
+          "clickFeatureAction": "zoom",
+          "cesiumOptions": {
+            "data": {
+              "type": "FeatureCollection",
+              "features": [
+                {
+                  "type": "Feature",
+                  "id": "site-1",
+                  "geometry": { "type": "Point", "coordinates": [-148.75, 64.83] },
+                  "properties": {
+                    "name": "Site One",
+                    "region": "Interior",
+                    "temperature": -8.4,
+                    "collectedAt": "2025-06-12",
+                    "summary": "A representative field site",
+                    "imageSrc": "https://example.org/site-1.jpg",
+                    "newsLink": "https://example.org/site-1"
+                  }
+                }
+              ]
+            },
+            "clampToGround": true
+          },
+          "filters": [
+            {
+              "filterType": "categorical",
+              "property": "region",
+              "allValues": ["Interior", "Coastal"],
+              "values": ["Interior"]
+            },
+            {
+              "filterType": "numeric",
+              "property": "temperature",
+              "min": -30,
+              "max": 5
+            }
+          ],
+          "colorPalette": {
+            "paletteType": "continuous",
+            "property": "temperature",
+            "label": "Temperature (°C)",
+            "colors": [
+              { "value": -30, "color": "#2C4F9C" },
+              { "value": 5, "color": "#E8A74D" }
+            ]
+          },
+          "outlineColor": "#102C3A",
+          "highlightColor": "#FFE082",
+          "featureTemplate": {
+            "template": "story",
+            "label": "name",
+            "options": {
+              "subtitle": "collectionYear",
+              "description": "summary",
+              "thumbnail": "imageSrc",
+              "url": "newsLink",
+              "urlText": "linkText"
+            }
+          },
+          "customProperties": {
+            "collectionYear": {
+              "type": "date",
+              "property": "collectedAt",
+              "format": "YYYY"
+            },
+            "linkText": { "type": "string", "value": "Read site details" }
+          },
+          "notification": {
+            "style": "blue",
+            "badge": "New",
+            "message": "Recently added field observations"
+          }
+        },
+        {
+          "type": "Cesium3DTileset",
+          "label": "Research structures",
+          "layerId": "research-structures",
+          "visible": false,
+          "cesiumOptions": {
+            "url": "https://example.org/tiles/tileset.json",
+            "debugShowGeometricError": true
+          },
+          "filters": [
+            {
+              "filterType": "categorical",
+              "property": "structureType",
+              "values": ["station", "tower"]
+            }
+          ],
+          "colorPalette": {
+            "paletteType": "categorical",
+            "property": "structureType",
+            "colors": [
+              { "value": "station", "label": "Station", "color": "#1B8A72" },
+              { "value": "tower", "label": "Tower", "color": "#D87932" }
+            ]
+          },
+          "featureTemplate": { "label": "name" }
+        }
+      ]
+    }
+  ],
+  "terrains": [
+    {
+      "type": "CesiumTerrainProvider",
+      "label": "Regional elevation",
+      "cesiumOptions": {
+        "url": "https://example.org/terrain",
+        "requestVertexNormals": true,
+        "requestWaterMask": false
+      }
+    }
+  ],
+  "showToolbar": true,
+  "showLayerList": true,
+  "showHomeButton": false,
+  "showViewfinder": true,
+  "showShareUrl": true,
+  "toolbarOpen": true,
+  "showScaleBar": false,
+  "showFeatureInfo": true,
+  "showDownloadPanel": true,
+  "clickFeatureAction": "showDetails",
+  "showNavHelp": false,
+  "showFeedback": true,
+  "feedbackText": "Send feedback about this map",
+  "globeBaseColor": "#193447",
+  "debug": true,
+  "show3DTilesInspector": true,
+  "viewfinderCardCategories": [
+    {
+      "label": "Places",
+      "icon": "icon-map-marker",
+      "expanded": true,
+      "viewfinderCards": [
+        {
+          "title": "Site One",
+          "description": "Explore observations from the field site",
+          "image": "https://example.org/site-1-preview.jpg",
+          "latitude": 64.83,
+          "longitude": -148.75,
+          "height": 18000,
+          "layerIds": ["field-sites", "coastal-imagery"],
+          "featureLayerId": "field-sites",
+          "featureId": "site-1",
+          "buttons": [
+            {
+              "id": "site-one-dashboard",
+              "type": "iframe",
+              "label": "Explore dashboard",
+              "url": "https://example.org/dashboard{?site,lat,lon,zoom}",
+              "initialQueryParams": {
+                "site": "site-1",
+                "theme": "dark"
+              }
+            },
+            {
+              "id": "site-one-data",
+              "type": "tab",
+              "label": "Open data",
+              "url": "https://example.org/field-sites"
+            }
+          ]
+        },
+        {
+          "title": "Regional overview",
+          "description": "Show the observation and imagery layers together",
+          "buttons": [
+            {
+              "id": "regional-overview-map",
+              "type": "map",
+              "label": "View region",
+              "icon": "globe",
+              "ordinality": "primary",
+              "latitude": 67,
+              "longitude": -145,
+              "height": 600000,
+              "layerIds": ["field-sites", "coastal-imagery"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Dashboards",
+      "icon": "chart-bar",
+      "expanded": false,
+      "viewfinderCards": [
+        {
+          "title": "Map summary",
+          "description": "Open a summary in a separate tab",
+          "buttons": [
+            {
+              "id": "map-summary-tab",
+              "type": "tab",
+              "label": "Open summary",
+              "url": "https://example.org/map-summary"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -29,6 +29,38 @@ define([
         const noLabelModel = new CesiumGeohash({ showLabels: false });
         noLabelModel.get("type").should.equal("GeoJsonDataSource");
       });
+
+      it("saves its initialized type rather than the raw default", function () {
+        expect(this.model.toConfig().type).to.equal("CzmlDataSource");
+      });
+
+      it("reloads configured default colors as AssetColor values", function () {
+        const config = this.model.toConfig();
+        const reloaded = new CesiumGeohash(config);
+
+        expect(reloaded.get("outlineColor").get("color")).to.deep.equal(
+          this.model.get("outlineColor").get("color"),
+        );
+        expect(reloaded.get("highlightColor").get("color")).to.deep.equal(
+          this.model.get("highlightColor").get("color"),
+        );
+        expect(
+          reloaded.get("colorPalette").get("colors").toJSON(),
+        ).to.deep.equal(this.model.get("colorPalette").get("colors").toJSON());
+      });
+
+      it("keeps a disabled outline after saving and reloading", function () {
+        const model = new CesiumGeohash({
+          type: "CesiumGeohash",
+          outlineColor: null,
+          visible: false,
+        });
+        const config = model.toConfig();
+        const reloaded = new CesiumGeohash(config);
+
+        expect(config).to.have.property("outlineColor", null);
+        expect(reloaded.get("outlineColor")).to.equal(null);
+      });
     });
 
     describe("getGeohashes", function () {
