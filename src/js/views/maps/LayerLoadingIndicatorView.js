@@ -20,6 +20,7 @@ define(["backbone"], (Backbone) => {
    * @classcategory Views/Maps
    * @name LayerLoadingIndicatorView
    * @augments Backbone.View
+   * @screenshot views/maps/LayerLoadingIndicatorView.png
    * @since 0.0.0
    * @constructs
    */
