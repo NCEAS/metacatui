@@ -1,17 +1,12 @@
-define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
-  _,
-  $,
-  Backbone,
-  AccessRule,
-) {
+define(["underscore", "jquery", "backbone"], (_, $, Backbone) => {
   /**
    * @class AccessRuleView
    * @classdesc Renders a single access rule from an object's access policy
    * @classcategory Views
    * @screenshot views/AccessRuleView.png
-   * @extends Backbone.View
+   * @augments Backbone.View
    */
-  var AccessRuleView = Backbone.View.extend(
+  const AccessRuleView = Backbone.View.extend(
     /** @lends AccessRuleView.prototype */ {
       /**
        * The type of View this is
@@ -52,7 +47,7 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
 
       /**
        * The events this view will listen to and the associated function to call.
-       * @type {Object}
+       * @type {object}
        */
       events: {
         "keypress .search input": "listenForEnter",
@@ -61,54 +56,43 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
       },
 
       /**
-       * Is executed when a new AccessRuleView is created
-       * @param {Object} options - A literal object with options to pass to the view
-       */
-      initialize: function (options) {},
-
-      /**
        * Renders a single Access Rule
        */
-      render: function () {
+      render() {
         try {
           this.$el.empty();
 
-          //If there's no model, exit now since there's nothing to render
+          // If there's no model, exit now since there's nothing to render
           if (!this.model) {
             return;
           }
 
-          //Get the subjects that should be hidden
-          var hiddenSubjects = MetacatUI.appModel.get(
+          // Get the subjects that should be hidden
+          const hiddenSubjects = MetacatUI.appModel.get(
             "hiddenSubjectsInAccessPolicy",
           );
-          //If this AccessRule is for a subject that should be hidden,
+          // If this AccessRule is for a subject that should be hidden,
           if (
             Array.isArray(hiddenSubjects) &&
             _.contains(hiddenSubjects, this.model.get("subject"))
           ) {
-            var usersGroups = _.pluck(
-              MetacatUI.appUserModel.get("isMemberOf"),
-              "groupId",
+            const userSubjects = _.union(
+              [MetacatUI.appUserModel.get("username")],
+              _.pluck(MetacatUI.appUserModel.get("isMemberOf"), "groupId"),
+              MetacatUI.appUserModel.get("allIdentitiesAndGroups") || [],
             );
 
-            //If the current user is not part of this hidden group or is not the hidden user
-            if (
-              !_.contains(
-                hiddenSubjects,
-                MetacatUI.appUserModel.get("username"),
-              ) &&
-              !_.intersection(hiddenSubjects, usersGroups).length
-            ) {
-              //Remove this view
+            // If the current user is not part of this hidden group or is not the hidden user
+            if (!_.contains(userSubjects, this.model.get("subject"))) {
+              // Remove this view
               this.remove();
-              //Exit
+              // Exit
               return;
             }
           }
 
           if (this.isNew) {
-            //If we aren't allowing changes to this AccessRule, then don't display
+            // If we aren't allowing changes to this AccessRule, then don't display
             // anything for new AcccessRule rows
             if (!this.allowChanges) {
               return;
@@ -116,47 +100,37 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
 
             this.$el.addClass("new");
 
-            //Create a text input for adding a subject or name
-            var label = $(document.createElement("label"))
-                .attr("for", "search")
-                .text("Search by name, ORCID, or group name")
-                .addClass("subtle"),
-              input = $(document.createElement("input"))
-                .attr("type", "text")
-                .attr("name", "search")
-                .attr("placeholder", "e.g. Lauren Walker"),
-              hiddenInput = $(document.createElement("input"))
-                .attr("type", "hidden")
-                .attr("name", "subject")
-                .addClass("hidden"),
-              searchCell = $(document.createElement("td"))
-                .addClass("search")
-                .attr("colspan", "2")
-                .append(label, input, hiddenInput),
-              view = this;
+            // Create a text input for adding a subject or name
+            const label = $(document.createElement("label"))
+              .attr("for", "search")
+              .text("Search by name, ORCID, or group name")
+              .addClass("subtle");
+            const input = $(document.createElement("input"))
+              .attr("type", "text")
+              .attr("name", "search")
+              .attr("placeholder", "e.g. Lauren Walker");
+            const hiddenInput = $(document.createElement("input"))
+              .attr("type", "hidden")
+              .attr("name", "subject")
+              .addClass("hidden");
+            const searchCell = $(document.createElement("td"))
+              .addClass("search")
+              .attr("colspan", "2")
+              .append(label, input, hiddenInput);
+            const view = this;
 
-            //Setup the autocomplete widget for the input so users can search for people and groups
+            // Setup the autocomplete widget for the input so users can search for people and groups
             input.autocomplete({
-              source: function (request, response) {
-                var beforeRequest = function () {
-                  //loadingSpinner.show();
-                };
-
-                var afterRequest = function () {
-                  //loadingSpinner.hide();
-                };
-
+              source(request, response) {
                 return MetacatUI.appLookupModel.getAccountsAutocomplete(
                   request,
                   response,
-                  beforeRequest,
-                  afterRequest,
                 );
               },
-              select: function (e, ui) {
+              select(e, ui) {
                 e.preventDefault();
 
-                var value = ui.item.value;
+                const { value } = ui.item;
                 hiddenInput.val(value);
                 input.val(value);
 
@@ -174,42 +148,43 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
 
             this.$el.append(searchCell);
           } else {
+            const subject = this.model.get("subject");
+
             try {
               if (this.$el.is(".new")) {
                 this.$el.removeClass("new");
               }
 
-              //Create elements for the 'Name' column of this table row
-              var subject = this.model.get("subject"),
-                icon;
+              // Create elements for the 'Name' column of this table row
+              let icon;
 
-              //If the subject is public, don't display an icon
-              if (subject == "public") {
+              // If the subject is public, don't display an icon
+              if (subject === "public") {
                 icon = "";
               }
-              //If this is a group subject, display the group icon
+              // If this is a group subject, display the group icon
               else if (this.model.isGroup()) {
                 icon = $(document.createElement("i")).addClass(
                   "icon icon-on-left icon-group",
                 );
               }
-              //If this is a username, display the user icon
+              // If this is a username, display the user icon
               else {
                 icon = $(document.createElement("i")).addClass(
                   "icon icon-on-left icon-user",
                 );
               }
 
-              //Get the user or group's name - or use the subject, as a backup
-              var name = this.model.get("name") || subject;
+              // Get the user or group's name - or use the subject, as a backup
+              let name = this.model.get("name") || subject;
 
-              //Display "You" next to the user's own name, for extra helpfulness
-              if (subject == MetacatUI.appUserModel.get("username")) {
+              // Display "You" next to the user's own name, for extra helpfulness
+              if (subject === MetacatUI.appUserModel.get("username")) {
                 name += " (You)";
               }
 
-              //Create an element for the name
-              var nameEl = $(document.createElement("span")).text(name);
+              // Create an element for the name
+              const nameEl = $(document.createElement("span")).text(name);
 
               this.$el.append(
                 $(document.createElement("td"))
@@ -224,15 +199,15 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
             }
 
             try {
-              //If this subject is an ORCID, display the ORCID and ORCID icon
+              // If this subject is an ORCID, display the ORCID and ORCID icon
               if (subject.indexOf("orcid") >= 0) {
-                //Create the "subject/orcid" column
-                var orcidImg = $(document.createElement("img"))
-                    .attr("src", MetacatUI.root + "/img/orcid_64x64.png")
-                    .addClass("orcid icon icon-on-left"),
-                  orcid = $(document.createElement("span")).text(
-                    this.model.get("subject"),
-                  );
+                // Create the "subject/orcid" column
+                const orcidImg = $(document.createElement("img"))
+                  .attr("src", `${MetacatUI.root}/img/orcid_64x64.png`)
+                  .addClass("orcid icon icon-on-left");
+                const orcid = $(document.createElement("span")).text(
+                  this.model.get("subject"),
+                );
 
                 this.$el.append(
                   $(document.createElement("td"))
@@ -240,7 +215,7 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
                     .append(orcidImg, orcid),
                 );
               } else {
-                //For other subject types, don't show an ORCID icon
+                // For other subject types, don't show an ORCID icon
                 this.$el.append(
                   $(document.createElement("td"))
                     .addClass("subject")
@@ -256,16 +231,18 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
           }
 
           try {
-            if (this.allowChanges) {
-              //Create the access/permission options select dropdown
-              var accessOptions = $(document.createElement("select"));
+            let accessOptions;
 
-              //Create option elements for each access rule type that is enabled in the app
+            if (this.allowChanges) {
+              // Create the access/permission options select dropdown
+              accessOptions = $(document.createElement("select"));
+
+              // Create option elements for each access rule type that is enabled in the app
               _.mapObject(
                 MetacatUI.appModel.get("accessRuleOptions"),
-                function (isEnabled, optionType) {
+                (isEnabled, optionType) => {
                   if (isEnabled) {
-                    var option = $(document.createElement("option"))
+                    const option = $(document.createElement("option"))
                       .attr("value", optionType)
                       .text(
                         MetacatUI.appModel.get("accessRuleOptionNames")[
@@ -273,7 +250,7 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
                         ],
                       );
 
-                    //If this is the access type enabled in this AccessRule, then select this option
+                    // If this is the access type enabled in this AccessRule, then select this option
                     if (this.model.get(optionType)) {
                       option.prop("selected", "selected");
                     }
@@ -281,17 +258,16 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
                     accessOptions.append(option);
                   }
                 },
-                this,
               );
             } else {
-              //Create an element to display the access type
-              var accessOptions = $(document.createElement("span"));
+              // Create an element to display the access type
+              accessOptions = $(document.createElement("span"));
 
-              //Create option elements for each access rule type that is enabled in the app
+              // Create option elements for each access rule type that is enabled in the app
               _.mapObject(
                 MetacatUI.appModel.get("accessRuleOptions"),
-                function (isEnabled, optionType) {
-                  //If this is the access type enabled in this AccessRule, then select this option
+                (isEnabled, optionType) => {
+                  // If this is the access type enabled in this AccessRule, then select this option
                   if (this.model.get(optionType)) {
                     accessOptions
                       .text(
@@ -302,11 +278,10 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
                       .attr("title", "This cannot be changed.");
                   }
                 },
-                this,
               );
             }
 
-            //Create the table cell and add the access options element
+            // Create the table cell and add the access options element
             this.$el.append(
               $(document.createElement("td"))
                 .addClass("access")
@@ -319,37 +294,34 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
             );
           }
 
-          //Render the Remove column of the table
+          // Render the Remove column of the table
           try {
             if (this.isNew) {
-              var addIcon = $(document.createElement("i"))
+              const addIcon = $(document.createElement("i"))
                 .addClass("add icon icon-plus")
                 .attr("title", "Add this access");
-              //Create an empty table cell for "new" blank rows
+              // Create an empty table cell for "new" blank rows
               this.$el.append(
                 $(document.createElement("td"))
                   .addClass("add-rule")
                   .append(addIcon),
               );
-            } else {
-              //Only display a remove icon if we are allowing changes to this AccessRule
-              if (this.allowChanges) {
-                //Create a remove icon
-                var userType = this.model.isGroup() ? "group" : "person",
-                  removeIcon = $(document.createElement("i"))
-                    .addClass("remove icon icon-remove")
-                    .attr("title", "Remove access for this " + userType);
+            } else if (this.allowChanges) {
+              // Create a remove icon
+              const userType = this.model.isGroup() ? "group" : "person";
+              const removeIcon = $(document.createElement("i"))
+                .addClass("remove icon icon-remove")
+                .attr("title", `Remove access for this ${userType}`);
 
-                //Create a table cell and append the remove icon
-                this.$el.append(
-                  $(document.createElement("td"))
-                    .addClass("remove-rule")
-                    .append(removeIcon),
-                );
-              } else {
-                //Add an empty table cell so the other rows don't look weird, if they have remove icons
-                this.$el.append($(document.createElement("td")));
-              }
+              // Create a table cell and append the remove icon
+              this.$el.append(
+                $(document.createElement("td"))
+                  .addClass("remove-rule")
+                  .append(removeIcon),
+              );
+            } else {
+              // Add an empty table cell so the other rows don't look weird, if they have remove icons
+              this.$el.append($(document.createElement("td")));
             }
           } catch (e) {
             console.error(
@@ -358,7 +330,7 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
             );
           }
 
-          //If there is no name set on this model, listen to when it may be set, and update the view
+          // If there is no name set on this model, listen to when it may be set, and update the view
           if (!this.model.get("name")) {
             this.listenToOnce(
               this.model,
@@ -367,23 +339,23 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
             );
           }
 
-          //Listen to changes on the access options and update the view if they are changed
+          // Listen to changes on the access options and update the view if they are changed
           this.listenTo(
             this.model,
             "change:read change:write change:changePermission",
             this.updateAccessDisplay,
           );
 
-          //When the model is removed from the collection, remove this view
+          // When the model is removed from the collection, remove this view
           this.listenTo(this.model, "remove", this.onRemove);
 
-          //Attach the AccessRule model to the view element
+          // Attach the AccessRule model to the view element
           this.$el.data("model", this.model);
           this.$el.data("view", this);
         } catch (e) {
           console.error(e);
 
-          //Don't display a message to the user since this view is pretty small. Just remove it from the page.
+          // Don't display a message to the user since this view is pretty small. Just remove it from the page.
           this.$el.remove();
         }
       },
@@ -391,47 +363,47 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
       /**
        * Update the name in this view with the name from the model
        */
-      updateNameDisplay: function () {
-        //If there is no name set on the model, exit now, so that we don't show an empty string or falsey value
+      updateNameDisplay() {
+        // If there is no name set on the model, exit now, so that we don't show an empty string or falsey value
         if (!this.model.get("name")) {
           return;
         }
 
-        var name = this.model.get("name");
+        let name = this.model.get("name");
 
-        //Display "You" next to the user's own name, for extra helpfulness
+        // Display "You" next to the user's own name, for extra helpfulness
         if (
-          this.model.get("subject") == MetacatUI.appUserModel.get("username")
+          this.model.get("subject") === MetacatUI.appUserModel.get("username")
         ) {
           name += " (You)";
         }
 
-        //Find the name element and update the text content
+        // Find the name element and update the text content
         this.$(".name span").text(name);
       },
 
       /**
        * Update the AccessRule model with the selected access option
        */
-      updateAccess: function () {
+      updateAccess() {
         try {
-          //Get the value of the dropdown
-          var selection = this.$(".access select").val();
+          // Get the value of the dropdown
+          const selection = this.$(".access select").val();
 
-          //If nothing was selected for some reason, exit now
+          // If nothing was selected for some reason, exit now
           if (!selection) {
             return;
           }
 
-          if (selection == "read") {
+          if (selection === "read") {
             this.model.set("read", true);
             this.model.set("write", null);
             this.model.set("changePermission", null);
-          } else if (selection == "write") {
+          } else if (selection === "write") {
             this.model.set("read", true);
             this.model.set("write", true);
             this.model.set("changePermission", null);
-          } else if (selection == "changePermission") {
+          } else if (selection === "changePermission") {
             this.model.set("read", true);
             this.model.set("write", true);
             this.model.set("changePermission", true);
@@ -444,11 +416,11 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
       /**
        * Update the access in this view with the access from the model
        */
-      updateAccessDisplay: function () {
-        //Get the select dropdown menu from this view
-        var select = this.$(".access select");
+      updateAccessDisplay() {
+        // Get the select dropdown menu from this view
+        const select = this.$(".access select");
 
-        //Update the select dropdown menu with the value from the model
+        // Update the select dropdown menu with the value from the model
         if (this.model.get("changePermission")) {
           select.val("changePermission");
         } else if (this.model.get("write")) {
@@ -461,22 +433,22 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
       /**
        * Update the subject of the AccessRule
        */
-      updateSubject: function () {
-        //Get the subject from the hidden text input, which is populated from the
+      updateSubject() {
+        // Get the subject from the hidden text input, which is populated from the
         // jQueryUI autocomplete widget
-        var subject = this.$(".search input.hidden").val();
+        let subject = this.$(".search input.hidden").val();
 
-        //If the hidden input doesn't have a value, get the value from the visible input
+        // If the hidden input doesn't have a value, get the value from the visible input
         if (!subject) {
           subject = this.$(".search input:not(.hidden)").val();
         }
 
-        //If there is no subject typed in, exit
+        // If there is no subject typed in, exit
         if (!subject) {
           return;
         }
 
-        //Set the subject on the model
+        // Set the subject on the model
         this.model.set("subject", subject);
 
         this.isNew = false;
@@ -487,8 +459,8 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
       /**
        * Updates the model associated with this view
        */
-      updateModel: function () {
-        //Update the access and the subject
+      updateModel() {
+        // Update the access and the subject
         this.updateAccess();
         this.updateSubject();
       },
@@ -496,17 +468,14 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
       /**
        * Remove this AccessRule from the AccessPolicy
        */
-      onRemove: function () {
-        //If it is the rightsHolder of the object, don't remove the view
-        if (
-          this.model.get("dataONEObject") &&
-          this.model.get("dataONEObject").get("rightsHolder") ==
-            this.model.get("subject")
-        ) {
+      onRemove() {
+        // If it is the rightsHolder of the object, don't remove the view
+        const rightsHolder = this.accessPolicyView.getRightsHolder();
+        if (rightsHolder && rightsHolder === this.model.get("subject")) {
           return;
         }
 
-        //Remove this view from the page
+        // Remove this view from the page
         this.remove();
       },
 
@@ -514,18 +483,18 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
        * Handles when the user has typed at least one character in the name search input
        * @param {Event} e - The keypress event
        */
-      listenForEnter: function (e) {
+      listenForEnter(e) {
         try {
           if (!e) {
             return;
           }
 
-          //If Enter was pressed,
-          if (e.keyCode == 13) {
-            //Update the subject on this model
+          // If Enter was pressed,
+          if (e.keyCode === 13) {
+            // Update the subject on this model
             this.updateSubject();
           }
-        } catch (e) {
+        } catch (error) {
           MetacatUI.appView.showAlert(
             "This group or person could not be added.",
             "alert-error",
@@ -534,7 +503,7 @@ define(["underscore", "jquery", "backbone", "models/AccessRule"], function (
           );
           console.error(
             "Error while listening to the Enter key in AccessRuleView: ",
-            e,
+            error,
           );
         }
       },

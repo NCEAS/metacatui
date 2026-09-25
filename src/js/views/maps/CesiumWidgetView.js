@@ -753,7 +753,7 @@ define([
 
       /**
        * Push the current Cesium camera position into shared interaction state.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       updateCameraPosition() {
         if (!this.interactions) return;
@@ -1797,6 +1797,7 @@ define([
        * render
        */
       addImagery(cesiumModel) {
+        if (this.scene.imageryLayers.contains(cesiumModel)) return;
         this.scene.imageryLayers.add(cesiumModel);
         this.sortImagery();
         const mapAsset = cesiumModel?.mapAssetModel;

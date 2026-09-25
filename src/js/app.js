@@ -206,6 +206,7 @@ require(["bootstrap", "views/AppView", "models/AppModel"], function (
     "underscore",
     "backbone",
     "routers/router",
+    "collections/ObjectFormats",
     "collections/SolrResults",
     "models/Search",
     "models/Stats",
@@ -214,11 +215,11 @@ require(["bootstrap", "views/AppView", "models/AppModel"], function (
     "models/NodeModel",
     "models/UserModel",
     "models/DataONEObject",
-    "collections/DataPackage",
   ], function (
     _,
     Backbone,
     UIRouter,
+    ObjectFormats,
     SolrResultList,
     Search,
     Stats,
@@ -227,11 +228,16 @@ require(["bootstrap", "views/AppView", "models/AppModel"], function (
     NodeModel,
     UserModel,
     DataONEObject,
-    DataPackage,
   ) {
     "use strict";
 
     //Create all the other models and collections first
+    MetacatUI.objectFormats = new ObjectFormats(undefined, {
+      formatsServiceUrl: MetacatUI.appModel.get("formatsServiceUrl"),
+    });
+    // Keep the built-in formats when the remote request fails.
+    MetacatUI.objectFormats.fetchPromise().catch(() => MetacatUI.objectFormats);
+
     MetacatUI.appSearchResults = new SolrResultList([], {});
 
     MetacatUI.appSearchModel = new Search();

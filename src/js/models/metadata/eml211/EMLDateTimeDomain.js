@@ -4,7 +4,7 @@ define([
   "backbone",
   "models/DataONEObject",
   "common/EMLUtilities",
-], function ($, _, Backbone, DataONEObject, EMLUtilities) {
+], ($, _, Backbone, DataONEObject, EMLUtilities) => {
   /**
    * @classdesc EMLDateTimeDomain represents the measurement scale of a date/time
    * attribute.
@@ -12,7 +12,7 @@ define([
    * @see https://eml.ecoinformatics.org/schema/eml-attribute_xsd.html#AttributeType_AttributeType_measurementScale_dateTime
    * @extends Backbone.Model
    */
-  var EMLDateTimeDomain = Backbone.Model.extend(
+  const EMLDateTimeDomain = Backbone.Model.extend(
     /** @lends EMLDateTimeDomain.prototype */ {
       type: "EMLDateTimeDomain",
 
@@ -354,8 +354,8 @@ define([
       },
 
       /* Let the top level package know of attribute changes from this object */
-      trickleUpChange: function () {
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+      trickleUpChange() {
+        EMLUtilities.markRootDataPackageChanged();
       },
 
       /* Validate the values of this model */

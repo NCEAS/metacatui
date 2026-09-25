@@ -3,9 +3,9 @@
 define([
   "backbone",
   "underscore",
-  "common/Utilities",
+  "common/ValueUtilities",
   "text!templates/maps/legend/continuous-swatch.html",
-], (Backbone, _, Utilities, Template) => {
+], (Backbone, _, ValueUtilities, Template) => {
   const BASE_CLASS = "continuous-swatch";
   const CLASS_NAMES = {
     swatch: `${BASE_CLASS}__swatch`,
@@ -59,9 +59,9 @@ define([
         this.$el.html(
           this.template({
             classNames: CLASS_NAMES,
-            min: Utilities.formatNumber(min, range),
-            mid: Utilities.formatNumber(mid, range),
-            max: Utilities.formatNumber(max, range),
+            min: ValueUtilities.formatNumber(min, range),
+            mid: ValueUtilities.formatNumber(mid, range),
+            max: ValueUtilities.formatNumber(max, range),
           }),
         );
 

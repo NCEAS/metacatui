@@ -63,6 +63,8 @@ define(["jquery", "underscore", "backbone", "models/UserModel"], function (
           }
         }
 
+        this.fullyLoaded = Boolean(options && options.rawData);
+
         //Add all our models to this collection
         this.add(models);
       },
@@ -75,7 +77,9 @@ define(["jquery", "underscore", "backbone", "models/UserModel"], function (
           this.groupId = "CN=" + this.name + ",DC=dataone,DC=org";
         }
 
-        this.fetch(options);
+        this.fetch(options).done(() => {
+          this.fullyLoaded = true;
+        });
 
         return this;
       },
@@ -177,6 +181,7 @@ define(["jquery", "underscore", "backbone", "models/UserModel"], function (
        */
       save: function (onSuccess, onError) {
         if (this.pending && this.nameAvailable == false) return false;
+        if (!this.pending && !this.fullyLoaded) return false;
 
         var memberXML = "",
           ownerXML = "",

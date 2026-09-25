@@ -127,16 +127,16 @@ define([
         expect(map.getAllLayers()[1].get("visible")).to.be.true;
       });
 
-      it("defaults flat layers with undefined visibility to hidden", () => {
+      it("defaults flat layers with undefined visibility to visible", () => {
         const map = new Map({
           layers: [{ layerId: "layer-1" }, { layerId: "layer-2" }],
         });
 
-        expect(map.get("layers").at(0).get("visible")).to.be.false;
-        expect(map.get("layers").at(1).get("visible")).to.be.false;
+        expect(map.get("layers").at(0).get("visible")).to.be.true;
+        expect(map.get("layers").at(1).get("visible")).to.be.true;
       });
 
-      it("defaults categorized layers with undefined visibility to hidden", () => {
+      it("defaults categorized layers with undefined visibility to visible", () => {
         const map = new Map({
           layerCategories: [
             {
@@ -145,8 +145,8 @@ define([
           ],
         });
 
-        expect(map.getAllLayers()[0].get("visible")).to.be.false;
-        expect(map.getAllLayers()[1].get("visible")).to.be.false;
+        expect(map.getAllLayers()[0].get("visible")).to.be.true;
+        expect(map.getAllLayers()[1].get("visible")).to.be.true;
       });
 
       it("uses configuredVisibility when visible is omitted for flat layers", () => {

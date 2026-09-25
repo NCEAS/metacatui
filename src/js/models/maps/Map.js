@@ -38,7 +38,7 @@ define([
    * Parse layer visibility state from URL once for initialization.
    * @returns {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}}
    * URL-derived layer visibility state.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function parseLayerVisibilityStateFromUrl() {
     const { enabledLayerIds, enabledLayerStateProvided } =
@@ -51,7 +51,7 @@ define([
    * @param {Array<object>} layers Candidate layer config entries.
    * @param {string} configKey Name of the config property being validated.
    * @throws {Error} When a Backbone model instance is provided.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function assertPlainLayerConfigs(layers, configKey) {
     if (layers.some((layer) => layer instanceof Backbone.Model)) {
@@ -67,7 +67,7 @@ define([
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
    * Parsed URL visibility state.
    * @returns {boolean|undefined} The overridden visible value, if applicable.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function getUrlVisibilityOverride(layer, visibilityState) {
     if (!visibilityState?.enabledLayerStateProvided) return undefined;
@@ -81,29 +81,33 @@ define([
    * Normalize configured and runtime visibility for a layer model/object.
    * configuredVisibility tracks the portal-configured value, while visible
    * tracks the current runtime value (which may be overridden from URL state).
-   *
-   * If both values are missing in config, default to hidden.
+   * The function is idempotent to protect against calls where both visible
+   * and configuredVisibility are already set. If only one of the two is set,
+   * the other is inferred from it. If neither is set, the default is visible.
    * @param {object} layer A layer config object.
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} [visibilityState]
    * Parsed URL visibility state used to override runtime visible state.
    * @returns {object} The normalized layer config.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function normalizeLayerVisibility(layer, visibilityState) {
-    const { visible } = layer;
-    const configuredVisibility =
-      layer.configuredVisibility == null
-        ? visible === true
-        : layer.configuredVisibility === true;
-    const urlVisible = getUrlVisibilityOverride(layer, visibilityState);
-    let runtimeVisibility;
-    if (urlVisible != null) {
-      runtimeVisibility = urlVisible;
-    } else if (visible == null) {
-      runtimeVisibility = configuredVisibility;
+    const hasConfiguredVisibility = layer.configuredVisibility != null;
+    const hasVisible = layer.visible != null;
+    const configuredVisibilityIsTrue = layer.configuredVisibility === true;
+    const visibleIsTrue = layer.visible === true;
+
+    let configuredVisibility;
+    if (hasConfiguredVisibility) {
+      configuredVisibility = configuredVisibilityIsTrue;
+    } else if (hasVisible) {
+      configuredVisibility = visibleIsTrue;
     } else {
-      runtimeVisibility = visible === true;
+      configuredVisibility = true; // neither is configured: default to shown
     }
+
+    const urlVisible = getUrlVisibilityOverride(layer, visibilityState);
+    const runtimeVisibility =
+      urlVisible ?? (hasVisible ? visibleIsTrue : configuredVisibility);
 
     return {
       ...layer,
@@ -118,7 +122,7 @@ define([
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
    * Parsed URL visibility state.
    * @returns {Array<object>} Normalized layer configs.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function normalizeLayerListVisibility(layers, visibilityState) {
     return layers.map((layer) =>
@@ -132,7 +136,7 @@ define([
    * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
    * Parsed URL visibility state.
    * @returns {Array<Backbone.Model|object>} Category configs with normalized layers.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function normalizeLayerCategoryVisibility(layerCategories, visibilityState) {
     return layerCategories.map((category) => {
@@ -163,7 +167,7 @@ define([
    * Check whether a camera/destination object has complete coordinates.
    * @param {object} position The position to validate.
    * @returns {boolean} Whether longitude, latitude, and height are present.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function isCompletePosition(position) {
     return (
@@ -560,7 +564,7 @@ define([
       /**
        * Keep legacy allLayers attribute in sync for backward compatibility.
        * @returns {MapAssets} Flattened layer collection.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       refreshAllLayers() {
         const allLayers = new MapAssets(this.getAllLayers());
@@ -630,7 +634,7 @@ define([
        * @param {string} [layerId] Optional layer id to constrain search.
        * @returns {{layer: MapAsset, feature: object, attributes: object}|null}
        * Matching feature result or null when not found.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       findFeature(featureId, layerId) {
         const normalizedFeatureId =
@@ -675,7 +679,7 @@ define([
       /**
        * Returns true when the map should sync URL state.
        * @returns {boolean} Whether URL sync is enabled.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       shouldSyncUrlState() {
         return this.get("showShareUrl") === true;
@@ -685,7 +689,7 @@ define([
        * Re-apply restore state when share URL syncing is toggled on.
        * @param {MapModel} _model The model that changed.
        * @param {boolean} showShareUrl Whether URL syncing is enabled.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       handleShowShareUrlChange(_model, showShareUrl) {
         if (showShareUrl) {
@@ -814,7 +818,7 @@ define([
 
       /**
        * Apply the restored URL destination as a navigation target.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       applyRestoreState() {
         const restoreState = this.get("restoreState") || {};
@@ -832,7 +836,7 @@ define([
 
       /**
        * Set up listeners that keep URL state in sync with the map model.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       setUpUrlStateListeners() {
         const interactions = this.get("interactions");
@@ -910,9 +914,9 @@ define([
       /**
        * Get selected feature/layer entries from current map interaction state
        * for URL sync.
-       * @returns {Array<{featureId: string, layerId: (string|null)}>}
+       * @returns {Array.<{featureId: string, layerId: (string|null)}>}
        * Selected feature state entries.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       getSelectedFeatureStateForUrlState() {
         const selectedFeatures = this.getSelectedFeatures();
@@ -951,7 +955,7 @@ define([
        * Write the currently selected feature ids to the URL. Called when
        * selectedFeatures changes. Managed independently from updateSearchParams
        * so that camera/layer syncs cannot inadvertently clear the f param.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       syncSelectedFeaturesToUrl() {
         if (!this.shouldSyncUrlState()) return;
@@ -971,7 +975,7 @@ define([
 
       /**
        * Cancel and clear any in-flight asynchronous feature restore waiters.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       clearFeatureRestoreSession() {
         this.featureRestoreController.clearSession();
@@ -980,7 +984,7 @@ define([
       /**
        * Get enabled layer ids from live layer groups for URL state sync.
        * @returns {string[]} A normalized list of visible layer ids.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       getEnabledLayerIdsForUrlState() {
         const layers = this.getAllLayers();
@@ -993,7 +997,7 @@ define([
       /**
        * Update the search parameters related to the current map position and
        * visible layers.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       updateSearchParams() {
         if (!this.shouldSyncUrlState()) return;
@@ -1019,7 +1023,7 @@ define([
        * Searches all map layers for a matching feature and selects it directly
        * without simulating a user click. If entities are not yet loaded,
        * waits for each layer's status to become 'ready' before retrying.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       applyFeatureRestoreState() {
         this.featureRestoreController.applyRestoreState();

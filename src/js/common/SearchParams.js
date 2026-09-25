@@ -24,7 +24,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   /**
    * @param {string} actionId Stable action identifier.
    * @returns {string} Prefix for namespaced action state keys.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const actionPrefix = (actionId) => `${actionId}-`;
 
@@ -32,7 +32,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @param {string} actionId Stable action identifier.
    * @param {string} key Variable name from the iframe URL template.
    * @returns {string} Namespaced URL key (e.g., `wt-lat`).
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const namespacedActionKey = (actionId, key) =>
     `${actionPrefix(actionId)}${key}`;
@@ -50,7 +50,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   /**
    * The normalized default state returned by parser and normalizer.
    * @returns {object} normalized state with default values.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const getDefaultState = () => ({
     schemaVersion: 0,
@@ -65,14 +65,14 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   /**
    * Return a URL instance for reading/writing current search params.
    * @returns {URL} the current URL
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const getCurrentUrl = () => new URL(window.location.href);
 
   /**
    * Replace the browser URL without navigating.
    * @param {URL} url The URL instance to write to history.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const replaceUrl = (url) => {
     window.history.replaceState(null, "", url);
@@ -82,7 +82,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * Parse a comma-separated string into a clean string list.
    * @param {string|null} value A comma-separated value.
    * @returns {string[]} A cleaned list of non-empty values.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const parseCommaSeparated = (value) => {
     if (typeof value !== "string" || !value.length) return [];
@@ -95,7 +95,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   /**
    * @param {unknown} value Candidate ID from the URL or model.
    * @returns {string|null} A normalized ID string, or null if invalid.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   function normalizeId(value) {
     if (typeof value !== "string") return null;
@@ -106,8 +106,8 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   /**
    * Normalize active feature entries into { featureId, layerId } pairs.
    * @param {unknown} value Candidate active feature entries.
-   * @returns {Array<{featureId: string, layerId: (string|null)}>} Normalized entries.
-   * @since 0.0.0
+   * @returns {Array.<{featureId: string, layerId: (string|null)}>} Normalized entries.
+   * @since 2.40.0
    */
   const normalizeActiveFeatures = (value) => {
     if (!Array.isArray(value)) return [];
@@ -141,7 +141,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * Expects JSON object payloads containing feature/layer ids.
    * @param {unknown} token Candidate f param value.
    * @returns {{featureId: string, layerId: (string|null)}|null} Parsed entry.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   const parseActiveFeatureToken = (token) => {
     if (typeof token !== "string") return null;
@@ -166,7 +166,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * Serialize one active-feature entry into a stable URL token.
    * @param {{featureId: string, layerId: (string|null)}} feature Active feature entry.
    * @returns {string|null} JSON-encoded token string.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   const serializeActiveFeatureToken = (feature) => {
     const [normalizedFeature] = normalizeActiveFeatures([feature]);
@@ -182,7 +182,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * Normalize action URL template variable names.
    * @param {unknown} variableNames Candidate variable names list.
    * @returns {string[]} Unique non-empty variable names.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const normalizeVariableNames = (variableNames) => {
     if (!Array.isArray(variableNames)) return [];
@@ -205,7 +205,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * non-finite values.
    * @param {object} destination Candidate destination object.
    * @returns {object} A normalized destination object.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const normalizeDestination = (destination = {}) => {
     const normalized = {};
@@ -223,7 +223,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * Normalize a state candidate into the full restore-state shape.
    * @param {object} [state] Candidate state.
    * @returns {object} The normalized restore state.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const normalizeState = (state = {}) => {
     const defaults = getDefaultState();
@@ -266,7 +266,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   /**
    * Parse restore state from the current URL search params.
    * @returns {object} Normalized restore state.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const parseStateFromUrl = () => {
     const url = getCurrentUrl();
@@ -319,7 +319,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * query parameters.
    * @param {object} state Restore state candidate.
    * @returns {object} The normalized restore state that was written.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const writeStateToUrl = (state) => {
     const url = getCurrentUrl();
@@ -377,7 +377,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * Update restore state by merging a partial state into the current URL state.
    * @param {object} partialState Partial restore state.
    * @returns {object} The normalized restore state after merge.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const updateStateInUrl = (partialState = {}) => {
     const current = parseStateFromUrl();
@@ -403,7 +403,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
 
   /**
    * Remove all known restore state params from the URL.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const clearStateInUrl = () => {
     const url = getCurrentUrl();
@@ -419,7 +419,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @param {string} actionId Stable action identifier.
    * @param {string[]} variableNames Allowed keys from the action URL template.
    * @returns {object} State object keyed by template variable name.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const getActionStateFromUrl = (actionId, variableNames = []) => {
     const normalizedActionId = normalizeId(actionId);
@@ -447,7 +447,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @param {string[]} variableNames Allowed keys from the action URL template.
    * @param {object} nextValues Parsed values keyed by template variable name.
    * @returns {boolean} True when URL state was written.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const writeActionStateToUrl = (
     actionId,
@@ -485,7 +485,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   /**
    * Remove all namespaced action keys for a given action id.
    * @param {string} actionId Stable action identifier.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const clearActionStateInUrl = (actionId) => {
     const normalizedActionId = normalizeId(actionId);
@@ -514,7 +514,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @param {boolean} [showShareUrl] Whether to read namespaced browser
    *   state when resolving the template.
    * @returns {string|null} The resolved iframe URL or null when no URL exists.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const resolveActionUrl = (action = {}, showShareUrl = true) => {
     if (typeof action?.url !== "string" || !action.url.length) return null;
@@ -552,7 +552,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @param {string} options.actionUrlTemplate RFC6570 template from action config.
    * @param {string} options.visualizationUrl URL sent from the iframe app.
    * @returns {boolean} True when namespaced state was applied.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const syncActionStateFromVisualizationUrl = ({
     actionId,
@@ -585,14 +585,14 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   /**
    * Get schema version from URL.
    * @returns {number} the schema version from the URL, or 0 if not present or invalid.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const getSchemaVersion = () => parseStateFromUrl().schemaVersion;
 
   /**
    * Set or clear active action id in URL state.
    * @param {string|null} activeActionId The action id to write.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const updateActiveActionId = (activeActionId) => {
     updateStateInUrl({ activeActionId });
@@ -601,7 +601,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
   /**
    * Set or clear open panel id in URL state.
    * @param {string|null} openPanel The panel id to write.
-   * @since 0.0.0
+   * @since 2.38.0
    */
   const updateOpenPanel = (openPanel) => {
     updateStateInUrl({ openPanel });
@@ -609,9 +609,9 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
 
   /**
    * Set active features in URL state as feature/layer pairs.
-   * @param {Array<{featureId: string, layerId: (string|null)}>} activeFeatures
+   * @param {Array.<{featureId: string, layerId: (string|null)}>} activeFeatures
    * The feature state entries to write.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   const updateActiveFeatures = (activeFeatures) => {
     updateStateInUrl({ activeFeatures });

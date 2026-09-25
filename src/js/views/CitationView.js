@@ -338,7 +338,10 @@ define([
             citationMetadataClass: this.citationMetadataClass,
             ...this.model.toJSON(),
           };
-          if (!options.title) options.title = this.defaultTitle || "";
+          options.title =
+            (Array.isArray(options.title) ? options.title[0] : options.title) ||
+            this.defaultTitle ||
+            "";
 
           // PANGAEA specific override. If this is a PANGAEA object, then do not
           // show the UUID if the seriesId is a DOI.

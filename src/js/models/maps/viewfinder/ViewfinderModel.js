@@ -168,7 +168,7 @@ define([
        * the activeVisualizationUrl attribute on the map model.
        * @param {object|string} actionOrUrl A configured iframe action object,
        * or a raw URL string for backward compatibility.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       openVisualization(actionOrUrl) {
         if (typeof actionOrUrl === "string") {
@@ -218,7 +218,7 @@ define([
        * optionally navigating to coordinates.
        * @param {ViewfinderCardModel} card The source card model.
        * @param {ViewfinderCardAction} [action] The map action from the card.
-       * @since 0.0.0
+       * @since 2.38.0
        */
       applyMapAction(card, action) {
         let enabledLayerIds;
@@ -276,7 +276,7 @@ define([
        * @param {ViewfinderCardModel} card The card to apply.
        * @param {ViewfinderCardAction} [action] The card action.
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.38.0
        */
       selectViewfinderCard(card, action) {
         return this.applyMapAction(card, action);

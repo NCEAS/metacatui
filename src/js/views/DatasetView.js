@@ -17,6 +17,13 @@ define([
   EMLView,
   Template,
 ) {
+  /**
+   * @deprecated
+   * Introduced: 2017-12-28 in commit bcbf79d5edd0acdca75514498bd64f437467fba9
+   * It is an unfinished stub/prototype that was superseded by the fully
+   * implemented MetadataView.js
+   * Will be removed in a future release.
+   */
   var DatasetView = Backbone.View.extend({
     el: "#Content",
 

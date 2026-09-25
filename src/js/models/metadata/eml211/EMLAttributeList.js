@@ -56,11 +56,8 @@ define([
       },
 
       /**
-       * Trigger a change:emlAttributes event on this model when the
-       * emlAttributes collection within this model adds, removes, or changes
-       * one if it's models. This event can be used to notify other views/models
-       * that the attributes collection has changed OR been replaced with a new
-       * collection.
+       * Trigger a change:emlAttributes event when the emlAttributes collection
+       * changes, and identify whether the change was structural or content only.
        */
       listenToAttributes() {
         // Stop listening to previous collection
@@ -71,10 +68,17 @@ define([
         const attrs = this.get("emlAttributes");
         if (!attrs) return;
 
-        // Listen to changes in the collection
         this.stopListening(attrs, "update change");
-        this.listenTo(attrs, "update change", () => {
-          this.trigger("change:emlAttributes", this, attrs);
+        this.listenTo(attrs, "update", () => {
+          EMLUtilities.markRootDataPackageChanged();
+          this.trigger("change:emlAttributes", this, attrs, {
+            structural: true,
+          });
+        });
+        this.listenTo(attrs, "change", () => {
+          this.trigger("change:emlAttributes", this, attrs, {
+            structural: false,
+          });
         });
       },
 

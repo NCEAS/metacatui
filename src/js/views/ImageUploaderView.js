@@ -3,20 +3,10 @@ define([
   "jquery",
   "backbone",
   "models/DataONEObject",
-  "collections/ObjectFormats",
   "Dropzone",
   "text!templates/imageUploader.html",
   "corejs",
-], function (
-  _,
-  $,
-  Backbone,
-  DataONEObject,
-  ObjectFormats,
-  Dropzone,
-  Template,
-  corejs,
-) {
+], (_, $, Backbone, DataONEObject, Dropzone, Template, _corejs) => {
   /**
    * @class ImageUploaderView
    * @classdesc A view that allows a person to upload an image to the repository
@@ -171,12 +161,6 @@ define([
             if (!this.url && this.model) {
               this.url = this.model.url();
             }
-          }
-
-          // Ensure the object formats are cached for uploader's use
-          if (typeof MetacatUI.objectFormats === "undefined") {
-            MetacatUI.objectFormats = new ObjectFormats();
-            MetacatUI.objectFormats.fetch();
           }
 
           // Bug fix: Overwrite a dropzone function that causes a bug in Edge 16 &

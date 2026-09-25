@@ -53,6 +53,35 @@ npm run test
 
 and view the tests in a web browser by going to the localhost address printed out (e.g. `http://localhost:3001`).
 
+## Single spec tests
+
+To run one unit spec in isolation, pass a spec path that is listed in `test/config/tests.json`:
+
+```
+npm run test:spec -- ./js/specs/unit/collections/ObjectFormats.spec.js
+```
+
+The path may also be copied from the repository root:
+
+```
+npm run test:spec -- test/js/specs/unit/collections/ObjectFormats.spec.js
+```
+
+To run one integration spec in isolation, use the integration spec shortcut:
+
+```
+npm run test:integration:spec -- test/js/specs/integration/models/dataPackage/DataPackageWorkflows.spec.js
+```
+
+This mode loads the shared test setup and only the requested spec. It is useful for development and debugging, but it is not a replacement for the broader manifest suite before merge. A spec that only passes when other specs run first should be fixed so it passes in isolated mode.
+
+The browser URL form is:
+
+```
+http://localhost:3001/test/?type=unit&spec=./js/specs/unit/collections/ObjectFormats.spec.js
+http://localhost:3001/test/?type=integration&spec=./js/specs/integration/models/dataPackage/DataPackageWorkflows.spec.js
+```
+
 ## Integration tests
 
 Integration tests are not run by default, since they are most resource and time intensive. To run the integration test suite

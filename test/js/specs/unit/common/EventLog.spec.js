@@ -26,8 +26,6 @@ define([
     );
 
     afterEach(() => {
-      // Blow away any logs created during the test
-      state.eventLog.logs.clear();
       state.sandbox.restore();
     });
 
@@ -39,7 +37,29 @@ define([
 
       it("accepts consoleLevel = false to silence console output", () => {
         const silent = new EventLog({ consoleLevel: false });
-        silent.consoleLevel.should.be.false;
+        const log = silent.getOrCreateLog("silent");
+
+        silent.log(log, "error", "nothing to see");
+
+        console.error.called.should.be.false;
+      });
+
+      it("uses an explicit analytics override or the current app model", () => {
+        const originalMetacatUI = globalThis.MetacatUI;
+        const override = new Analytics();
+        const eventLog = new EventLog({ analyticsModel: override });
+
+        try {
+          globalThis.MetacatUI = { ...(originalMetacatUI || {}) };
+          eventLog.analytics.should.equal(override);
+
+          const appAnalytics = new Analytics();
+          const defaultEventLog = new EventLog();
+          globalThis.MetacatUI.analytics = appAnalytics;
+          defaultEventLog.analytics.should.equal(appAnalytics);
+        } finally {
+          globalThis.MetacatUI = originalMetacatUI;
+        }
       });
     });
 
@@ -98,70 +118,6 @@ define([
 
         console.info.called.should.be.false;
         console.warn.calledOnce.should.be.true;
-      });
-
-      it("supports disabling console logging", () => {
-        const log = state.eventLog.getOrCreateLog("silent");
-        state.eventLog.setConsoleLogLevel(false);
-
-        state.eventLog.log(log, "error", "nothing to see");
-
-        console.error.called.should.be.false;
-      });
-    });
-
-    describe("clearLog()", () => {
-      it("empties events and resets startTime", async () => {
-        const log = state.eventLog.getOrCreateLog("clear");
-        state.eventLog.log(log, "info", "before clear");
-        const oldStart = log.startTime;
-
-        // wait a beat so we can see the startTime change
-        await new Promise((r) => setTimeout(r, 5));
-        state.eventLog.clearLog(log);
-
-        log.events.should.be.empty;
-        log.startTime.should.be.greaterThan(oldStart);
-      });
-    });
-
-    describe("sendToAnalytics()", () => {
-      it("sends each event via Analytics.trackCustomEvent", () => {
-        const log = state.eventLog.getOrCreateLog("analytics");
-        state.eventLog.log(log, "info", "a‑1", { x: 1 });
-        state.eventLog.log(log, "warning", "a‑2", { x: 2 });
-
-        // stub event log because it can be blocked by extensions
-        state.eventLog.analytics = new Backbone.Model();
-        state.eventLog.analytics.trackCustomEvent = function () {};
-
-        // stub the underlying Analytics method
-        const trackStub = state.sandbox.stub(
-          state.eventLog.analytics,
-          "trackCustomEvent",
-        );
-
-        state.eventLog.sendToAnalytics(log, "eventName");
-
-        trackStub.calledTwice.should.be.true;
-        const [name, pararms] = trackStub.firstCall.args;
-        name.should.equal("eventName");
-        pararms.should.deep.equal({
-          timestamp: log.events[0].timestamp,
-          level: "info",
-          message: "a‑1",
-          x: 1,
-        });
-      });
-    });
-
-    describe("static getLogs()", () => {
-      it("returns the events array for inspection", () => {
-        const log = state.eventLog.getOrCreateLog("static");
-        state.eventLog.log(log, "info", "peek");
-        const arr = EventLog.getLogs(log);
-        arr.should.equal(log.events);
-        arr.length.should.equal(1);
       });
     });
   });

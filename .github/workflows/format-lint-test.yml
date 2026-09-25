@@ -46,6 +46,10 @@ jobs:
         id: test
         if: always()
         run: npm test
+      - name: Ensure integration tests pass
+        id: integration-test
+        if: always()
+        run: npm run integration-test
       - name: Ensure docs build without errors
         id: jsdoc-dry-run
         if: always()

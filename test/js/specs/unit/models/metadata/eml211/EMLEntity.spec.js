@@ -71,6 +71,24 @@ define([
           .get("entityDescription")
           .should.equal(attributes.entityDescription);
       });
+
+      it("decodes a DataONE PID from a download URL", function () {
+        const entity = new EMLEntity();
+        const parsed = entity.parse({
+          objectXML: `<otherEntity id="urn-uuid-data.1">
+            <entityName>data.csv</entityName>
+            <physical>
+              <distribution>
+                <online>
+                  <url function="download">https://cn.test/resolve/urn%3Auuid%3Adata.1</url>
+                </online>
+              </distribution>
+            </physical>
+          </otherEntity>`,
+        });
+
+        parsed.downloadID.should.equal("urn:uuid:data.1");
+      });
     });
 
     describe("Updating", function () {
@@ -100,7 +118,6 @@ define([
       });
 
       it("updates the XML ID", function () {
-        console.log(updatedDOM);
         $(updatedDOM).attr("id").should.equal(attributes.id);
       });
 
@@ -125,6 +142,73 @@ define([
           .children("entityDescription")
           .text()
           .should.equal(attributes.entityDescription);
+      });
+
+      it("derives a data pid from the entity and reuses it for xmlID when needed", function () {
+        emlEntity.unset("xmlID");
+        emlEntity.set("downloadID", "urn:uuid:data.1");
+
+        const dom = emlEntity.updateDOM();
+
+        emlEntity.getDataPid().should.equal("urn:uuid:data.1");
+        emlEntity.get("xmlID").should.equal("urn-uuid-data.1");
+        $(dom).attr("id").should.equal("urn-uuid-data.1");
+      });
+
+      it("serializes the current PID in an existing download URL", function () {
+        const entity = new EMLEntity(
+          {
+            objectXML: `<otherEntity id="data.1">
+              <physical>
+                <distribution>
+                  <online>
+                    <url function="download">https://cn.test/resolve/data.1</url>
+                  </online>
+                </distribution>
+              </physical>
+            </otherEntity>`,
+          },
+          { parse: true },
+        );
+
+        entity.setMemberDescriptor({
+          id: "urn:uuid:data.2",
+          previousId: "data.1",
+        });
+
+        entity
+          .updateDOM()
+          .querySelector('url[function="download"]')
+          .textContent.should.equal(
+            "https://cn.test/resolve/urn%3Auuid%3Adata.2",
+          );
+      });
+
+      it("does not replace an information URL after an external download URL", function () {
+        const entity = new EMLEntity(
+          {
+            objectXML: `<otherEntity id="data.1">
+              <physical>
+                <distribution>
+                  <online>
+                    <url function="download">https://example.test/download</url>
+                    <url function="information">https://cn.test/resolve/data.1</url>
+                  </online>
+                </distribution>
+              </physical>
+            </otherEntity>`,
+          },
+          { parse: true },
+        );
+
+        entity.setMemberDescriptor({
+          id: "data.2",
+          previousId: "data.1",
+        });
+
+        const urls = entity.updateDOM().querySelectorAll("url");
+        urls[0].textContent.should.equal("https://example.test/download");
+        urls[1].textContent.should.equal("https://cn.test/resolve/data.1");
       });
     });
   });

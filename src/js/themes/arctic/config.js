@@ -92,7 +92,7 @@ MetacatUI.AppConfig = {
 
   // Searching
   enableSolrJoins: true,
-  mapKey: "AIzaSyCYoTkUEpMAiOoWx5M61ButwgNGX8fIHUs",
+  mapKey: "",
   searchMapTileHue: "231",
   defaultSearchFilters: [
     "all",

@@ -17,9 +17,9 @@ if(includeEmail === undefined){
 var email = "";
 var emailAddress = MetacatUI.appModel.get("emailContact");
 if (typeof emailOptions !== "undefined" && emailOptions) {
-	emailOptions = "?" + emailOptions.trim()
+	var emailOptions = "?" + emailOptions.trim();
 } else {
-	emailOptions = ""
+	var emailOptions = "";
 }
 var emailStr = "mailto:" + emailAddress + emailOptions;
 

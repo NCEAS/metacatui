@@ -498,26 +498,16 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           require(["views/MetadataView"], function (MetadataView) {
             MetacatUI.appView.metadataView = new MetadataView();
 
-            //Send the id(s) to the view
-            MetacatUI.appView.metadataView.seriesId = seriesId;
-            MetacatUI.appView.metadataView.pid = pid;
-
-            MetacatUI.appView.showView(MetacatUI.appView.metadataView);
+            MetacatUI.appView.showView(MetacatUI.appView.metadataView, {
+              pid,
+              seriesId,
+            });
           });
         } else {
-          //Send the id(s) to the view
-          MetacatUI.appView.metadataView.seriesId = seriesId;
-          MetacatUI.appView.metadataView.pid = pid;
-
-          // MetacatUI resets the dataPackage and dataPackageSynced
-          // attributes before rendering the view. These attributes are
-          // initialized on a per-dataset basis to prevent displaying the
-          // same dataset repeatedly.
-
-          MetacatUI.appView.metadataView.dataPackage = null;
-          MetacatUI.appView.metadataView.dataPackageSynced = false;
-
-          MetacatUI.appView.showView(MetacatUI.appView.metadataView);
+          MetacatUI.appView.showView(MetacatUI.appView.metadataView, {
+            pid,
+            seriesId,
+          });
         }
       },
 

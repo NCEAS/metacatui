@@ -139,7 +139,7 @@ define([
        * Collapses the iframe by setting its height to 0 and opacity to 0.
        * This is used when the feature info box opens for the first time so
        * the iFrame doesn't flash empty before it's ready.
-       * @since 0.0.0
+       * @since 2.40.0
        */
       collapseiFrame() {
         const iFrame = this.elements?.iFrame;

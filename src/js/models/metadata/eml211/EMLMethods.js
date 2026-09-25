@@ -6,15 +6,7 @@ define([
   "models/metadata/eml/EMLMethodStep",
   "models/metadata/eml211/EMLText",
   "common/EMLUtilities",
-], function (
-  $,
-  _,
-  Backbone,
-  DataONEObject,
-  EMLMethodStep,
-  EMLText,
-  EMLUtilities,
-) {
+], ($, _, Backbone, DataONEObject, EMLMethodStep, EMLText, EMLUtilities) => {
   /**
   * @class EMLMethods
   * @classdesc Represents the EML Methods module. The methods field documents scientific methods
@@ -24,7 +16,7 @@ define([
   * @classcategory Models/Metadata/EML211
   * @extends Backbone.Model
   */
-  var EMLMethods = Backbone.Model.extend(
+  const EMLMethods = Backbone.Model.extend(
     /** @lends EMLMethods.prototype */ {
       /**
     * The default values of this model that are get() or set()
@@ -563,8 +555,8 @@ define([
         return EMLUtilities.getParentEML(this);
       },
 
-      trickleUpChange: function () {
-        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+      trickleUpChange() {
+        EMLUtilities.markRootDataPackageChanged();
       },
 
       formatXML: function (xmlString) {

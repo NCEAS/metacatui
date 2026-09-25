@@ -1,4 +1,9 @@
-define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
+define(["jquery", "underscore", "backbone", "common/EMLUtilities"], (
+  $,
+  _,
+  Backbone,
+  EMLUtilities,
+) => {
   /**
    * @class EMLAnnotation
    * @classdesc Stores EML SemanticAnnotation elements.
@@ -6,7 +11,7 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
    * @see https://eml.ecoinformatics.org/eml-2.2.0/eml-semantics.xsd
    * @extends Backbone.Model
    */
-  var EMLAnnotation = Backbone.Model.extend(
+  const EMLAnnotation = Backbone.Model.extend(
     /** @lends EMLAnnotation.prototype */ {
       type: "EMLAnnotation",
 
@@ -173,8 +178,8 @@ define(["jquery", "underscore", "backbone"], function ($, _, Backbone) {
       },
 
       /* Let the top level package know of attribute changes from this object */
-      trickleUpChange: function () {
-        MetacatUI.rootDataPackage.packageModel?.set("changed", true);
+      trickleUpChange() {
+        EMLUtilities.markRootDataPackageChanged();
       },
     },
   );

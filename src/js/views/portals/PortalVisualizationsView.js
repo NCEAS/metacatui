@@ -57,6 +57,7 @@ define([
             this,
           );
         }
+        this.adjustVizHeight = this.adjustVizHeight.bind(this);
       },
 
       /**
@@ -141,8 +142,8 @@ define([
           }
 
           if (this.model.get("visualizationType") == "fever") {
-            $(window).resize(this.adjustVizHeight);
-            $(".auto-height-member").resize(this.adjustVizHeight);
+            $(window).on("resize", this.adjustVizHeight);
+            $(".auto-height-member").on("resize", this.adjustVizHeight);
 
             //Get the height of the visible part of the page for the iframe
             this.adjustVizHeight();
@@ -184,16 +185,8 @@ define([
         // Remove body height style tag
         document.body.style.removeProperty("height");
 
-        // this is failing for Cesium pages but might be necessary in FEVer ones
-        try {
-          $(window).removeListener("resize", this.adjustVizHeight);
-        } catch (error) {
-          console.log(
-            "Failed to remove resize listener in portal viz onClose function. " +
-              "Error details: " +
-              error,
-          );
-        }
+        $(window).off("resize", this.adjustVizHeight);
+        $(".auto-height-member").off("resize", this.adjustVizHeight);
       },
     },
   );

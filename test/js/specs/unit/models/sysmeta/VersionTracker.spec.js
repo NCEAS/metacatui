@@ -1,16 +1,24 @@
 define([
   "/test/js/specs/shared/clean-state.js",
+  "/test/js/specs/shared/concurrency-tracker.js",
   "models/sysmeta/VersionTracker",
-  "models/dataONEServices/SysMetaService",
-], (cleanState, VersionTracker, SysMetaService) => {
+], (cleanState, trackConcurrency, VersionTracker) => {
   const should = chai.should();
   const expect = chai.expect;
 
   const makeSysMeta = (nextPid = null, prevPid = null) => ({
-    data: {
-      obsoletedBy: nextPid,
-      obsoletes: prevPid,
-    },
+    obsoletedBy: nextPid,
+    obsoletes: prevPid,
+  });
+
+  const makeIdentifiedSysMeta = (
+    identifier,
+    nextPid = null,
+    prevPid = null,
+  ) => ({
+    identifier,
+    obsoletedBy: nextPid,
+    obsoletes: prevPid,
   });
 
   const makeDatedSysMeta = ({
@@ -19,12 +27,10 @@ define([
     nextPid = null,
     prevPid = null,
   }) => ({
-    data: {
-      identifier,
-      dateUploaded,
-      obsoletedBy: nextPid,
-      obsoletes: prevPid,
-    },
+    identifier,
+    dateUploaded,
+    obsoletedBy: nextPid,
+    obsoletes: prevPid,
   });
 
   describe("VersionTracker", () => {
@@ -371,15 +377,17 @@ define([
         caught.message.should.match(/Steps must be an integer/);
       });
 
-      it("marks endIsPrivate on 401 errors", async () => {
-        const error = new Error("private");
-        error.status = 401;
-        state.sandbox.stub(state.vt, "getAdjacent").rejects(error);
+      [401, 403].forEach((status) => {
+        it(`marks endIsPrivate on ${status} errors`, async () => {
+          const error = new Error("private");
+          error.status = status;
+          state.sandbox.stub(state.vt, "getAdjacent").rejects(error);
 
-        const record = await state.vt.getVersions("pid.1", 2);
-        record.endIsPrivate.should.equal(true);
-        record.endNotFound.should.equal(false);
-        record.chainComplete.should.equal(false);
+          const record = await state.vt.getVersions("pid.1", 2);
+          record.endIsPrivate.should.equal(true);
+          record.endNotFound.should.equal(false);
+          record.chainComplete.should.equal(false);
+        });
       });
 
       it("marks endNotFound on 404 errors", async () => {
@@ -651,6 +659,29 @@ define([
         expect(result).to.equal("pid.3");
       });
 
+      [401, 404].forEach((status) => {
+        it(`getNth rejects when the requested version ends with ${status}`, async () => {
+          const error = Object.assign(new Error("Cannot read sysmeta"), {
+            status,
+          });
+          state.sandbox.stub(state.vt, "notify").resolves();
+          state.service.download
+            .withArgs("pid.1")
+            .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+          state.service.download.withArgs("pid.2").rejects(error);
+
+          let caught;
+          try {
+            await state.vt.getNth("pid.1", 1);
+          } catch (error) {
+            caught = error;
+          }
+
+          expect(caught).to.be.instanceof(Error);
+          caught.status.should.equal(status);
+        });
+      });
+
       it("getNth returns the same PID for zero steps without traversal", async () => {
         const versionsStub = state.sandbox.stub(state.vt, "getVersions");
         const result = await state.vt.getNth("pid.1", 0);
@@ -692,6 +723,70 @@ define([
         stub.secondCall.args.should.deep.equal(["pid.1", true, options]);
       });
 
+      it("checkPidsInSameVersionChain returns chain membership details", async () => {
+        state.sandbox.stub(state.vt, "getAllVersions").resolves({
+          prev: { versions: ["pid.0"] },
+          next: { versions: ["pid.2"], chainComplete: true },
+        });
+
+        const result = await state.vt.checkPidsInSameVersionChain([
+          "pid.1",
+          "pid.2",
+        ]);
+
+        result.should.deep.equal({
+          pids: ["pid.1", "pid.2"],
+          sameChain: true,
+          chain: ["pid.0", "pid.1", "pid.2"],
+          newestPid: "pid.2",
+          newestInChain: "pid.2",
+          chainComplete: true,
+          endIsPrivate: false,
+          endNotFound: false,
+        });
+      });
+
+      it("checkPidsInSameVersionChain reports incomplete private ends", async () => {
+        state.sandbox.stub(state.vt, "getAllVersions").resolves({
+          prev: { versions: [] },
+          next: {
+            versions: ["pid.2"],
+            chainComplete: false,
+            endIsPrivate: true,
+          },
+        });
+
+        const result = await state.vt.checkPidsInSameVersionChain([
+          "pid.1",
+          "pid.other",
+        ]);
+
+        result.sameChain.should.equal(false);
+        result.newestPid.should.equal("pid.1");
+        result.chainComplete.should.equal(false);
+        result.endIsPrivate.should.equal(true);
+      });
+
+      it("checkPidsInSameVersionChain reports incomplete older ends", async () => {
+        state.sandbox.stub(state.vt, "getAllVersions").resolves({
+          prev: {
+            versions: ["pid.0"],
+            chainComplete: false,
+            endNotFound: true,
+          },
+          next: { versions: ["pid.2"], chainComplete: true },
+        });
+
+        const result = await state.vt.checkPidsInSameVersionChain([
+          "pid.1",
+          "pid.2",
+        ]);
+
+        result.sameChain.should.equal(true);
+        result.chainComplete.should.equal(false);
+        result.endNotFound.should.equal(true);
+      });
+
       it("isEndOfChain inspects sysmeta links", async () => {
         state.service.download.resolves(makeSysMeta("pid.2", null));
 
@@ -705,24 +800,230 @@ define([
         isEnd.should.equal(true);
       });
 
-      it("getLatestVersion returns the last accessible PID", async () => {
-        state.sandbox.stub(state.vt, "getAllVersionsOneDirection").resolves({
-          versions: ["pid.2", "pid.3"],
-          completedSteps: 2,
-        });
+      it("getLatestVersion returns the latest PID when the chain ends at the hop limit", async () => {
+        state.vt.MAX_CHAIN_HOPS = 2;
+        state.service.download
+          .withArgs("pid.1")
+          .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+        state.service.download
+          .withArgs("pid.2")
+          .resolves(makeIdentifiedSysMeta("pid.2", "pid.3", "pid.1"));
+        state.service.download
+          .withArgs("pid.3")
+          .resolves(makeIdentifiedSysMeta("pid.3", null, "pid.2"));
 
         const latest = await state.vt.getLatestVersion("pid.1");
         latest.should.equal("pid.3");
       });
 
       it("returns self when no newer versions exist", async () => {
-        state.sandbox.stub(state.vt, "getAllVersionsOneDirection").resolves({
-          versions: [],
-          completedSteps: 0,
-        });
+        state.service.download.resolves(makeIdentifiedSysMeta("pid.1"));
 
         const latest = await state.vt.getLatestVersion("pid.1");
         latest.should.equal("pid.1");
+      });
+
+      it("returns the resolved sysmeta identifier when a series ID has no newer versions", async () => {
+        state.service.download.resolves(
+          makeIdentifiedSysMeta("pid.1", null, null),
+        );
+
+        const latest = await state.vt.getLatestVersion("seriesId.1");
+
+        latest.should.equal("pid.1");
+      });
+
+      it("returns the terminal PID when a transient 404 clears during traversal", async () => {
+        const missing = Object.assign(new Error("Not found"), { status: 404 });
+        state.sandbox.stub(state.vt, "notify").resolves();
+        const getAllVersions = state.sandbox.spy(
+          state.vt,
+          "getAllVersionsOneDirection",
+        );
+        state.service.download
+          .withArgs("pid.1")
+          .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+        state.service.download
+          .withArgs("pid.2")
+          .onFirstCall()
+          .rejects(missing)
+          .onSecondCall()
+          .resolves(makeIdentifiedSysMeta("pid.2", null, "pid.1"))
+          .onThirdCall()
+          .resolves(makeIdentifiedSysMeta("pid.2", null, "pid.1"));
+
+        const latest = await state.vt.getLatestVersion("pid.1", {
+          requireComplete: true,
+        });
+        const record = await getAllVersions.firstCall.returnValue;
+
+        latest.should.equal("pid.2");
+        record.latestAccessiblePid.should.equal("pid.2");
+      });
+
+      it("returns the latest accessible version when the hop limit stops the walk", async () => {
+        state.vt.MAX_CHAIN_HOPS = 1;
+        state.service.download
+          .withArgs("pid.1")
+          .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+        state.service.download
+          .withArgs("pid.2")
+          .resolves(makeIdentifiedSysMeta("pid.2", "pid.3", "pid.1"));
+
+        const latest = await state.vt.getLatestVersion("pid.1");
+
+        latest.should.equal("pid.2");
+      });
+
+      it("rejects an incomplete chain when a complete result is required", async () => {
+        state.vt.MAX_CHAIN_HOPS = 1;
+        state.service.download
+          .withArgs("pid.1")
+          .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+        state.service.download
+          .withArgs("pid.2")
+          .resolves(makeIdentifiedSysMeta("pid.2", "pid.3", "pid.1"));
+
+        let caught;
+        try {
+          await state.vt.getLatestVersion("pid.1", { requireComplete: true });
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught).to.be.instanceOf(Error);
+        caught.message.should.include("latest version");
+      });
+
+      [401, 403].forEach((status) => {
+        it(`preserves a ${status} denial for an inaccessible starting PID`, async () => {
+          const readError = Object.assign(new Error("Cannot read sysmeta"), {
+            status,
+          });
+          state.service.download.withArgs("pid.1").rejects(readError);
+
+          let caught;
+          try {
+            await state.vt.getLatestVersion("pid.1", {
+              requireComplete: true,
+            });
+          } catch (error) {
+            caught = error;
+          }
+
+          expect(caught).to.be.instanceOf(Error);
+          caught.status.should.equal(401);
+        });
+      });
+
+      [
+        { status: 401, failedPid: "pid.1", expected: null },
+        { status: 404, failedPid: "pid.1", expected: null },
+        { status: 401, failedPid: "pid.2", expected: "pid.1" },
+        { status: 404, failedPid: "pid.2", expected: "pid.1" },
+      ].forEach(({ status, failedPid, expected }) => {
+        it(`returns the latest accessible version when ${failedPid} returns ${status}`, async () => {
+          const readError = Object.assign(new Error("Cannot read sysmeta"), {
+            status,
+          });
+          state.service.download
+            .withArgs("pid.1")
+            .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+          state.service.download.withArgs(failedPid).rejects(readError);
+
+          const latest = await state.vt.getLatestVersion("pid.1");
+
+          expect(latest).to.equal(expected);
+        });
+
+        it(`rejects a required complete lookup when ${failedPid} returns ${status}`, async () => {
+          const readError = Object.assign(new Error("Cannot read sysmeta"), {
+            status,
+          });
+          state.service.download
+            .withArgs("pid.1")
+            .resolves(makeIdentifiedSysMeta("pid.1", "pid.2"));
+          state.service.download.withArgs(failedPid).rejects(readError);
+
+          let caught;
+          try {
+            await state.vt.getLatestVersion("pid.1", {
+              requireComplete: true,
+            });
+          } catch (error) {
+            caught = error;
+          }
+
+          expect(caught).to.be.instanceOf(Error);
+          caught.message.should.include("latest version");
+        });
+      });
+
+      it("gets conclusive latest versions with bounded concurrency", async () => {
+        const concurrency = trackConcurrency();
+        const getAllVersions = state.sandbox.stub(
+          state.vt,
+          "getAllVersionsOneDirection",
+        );
+        getAllVersions.callsFake(
+          concurrency.track((pid) => ({
+            versions: [`${pid}.latest`],
+            chainComplete: true,
+            latestAccessiblePid: `${pid}.latest`,
+          })),
+        );
+
+        const latest = await state.vt.getLatestVersions(
+          ["pid.1", "pid.2", "pid.3", "pid.4"],
+          { useCache: false, maxConcurrent: 2 },
+        );
+
+        latest.should.deep.equal([
+          "pid.1.latest",
+          "pid.2.latest",
+          "pid.3.latest",
+          "pid.4.latest",
+        ]);
+        concurrency.max.should.equal(2);
+        getAllVersions
+          .alwaysCalledWith(sinon.match.string, true, { useCache: false })
+          .should.equal(true);
+      });
+
+      it("rejects an incomplete latest-version chain", async () => {
+        state.sandbox.stub(state.vt, "getAllVersionsOneDirection").resolves({
+          versions: ["pid.2"],
+          chainComplete: false,
+        });
+
+        let caught;
+        try {
+          await state.vt.getLatestVersions(["pid.1"]);
+        } catch (error) {
+          caught = error;
+        }
+
+        caught.message.should.equal(
+          'Cannot determine the latest version of "pid.1"',
+        );
+      });
+
+      it("propagates aborts while getting latest versions", async () => {
+        const abortError = Object.assign(new Error("Aborted"), {
+          name: "AbortError",
+        });
+        state.sandbox
+          .stub(state.vt, "getAllVersionsOneDirection")
+          .rejects(abortError);
+
+        let caught;
+        try {
+          await state.vt.getLatestVersions(["pid.1"]);
+        } catch (error) {
+          caught = error;
+        }
+
+        caught.should.equal(abortError);
       });
 
       it("clears cache via SysMetaService", async () => {
@@ -761,18 +1062,20 @@ define([
         sysMeta.errors.should.deep.equal([]);
       });
 
-      it("sets status for private or missing sysmeta", async () => {
-        const error = new Error("private");
-        error.status = 401;
-        state.sandbox.stub(state.vt, "getSysMeta").rejects(error);
-        const updateSpy = sinon.spy();
-        state.vt.events.on("versionFound", updateSpy);
+      [401, 403].forEach((status) => {
+        it(`sets status for ${status} sysmeta`, async () => {
+          const error = new Error("private");
+          error.status = status;
+          state.sandbox.stub(state.vt, "getSysMeta").rejects(error);
+          const updateSpy = sinon.spy();
+          state.vt.events.on("versionFound", updateSpy);
 
-        await state.vt.notify("pid.1", "pid.2", 1);
-        const sysMeta = updateSpy.firstCall.args[0];
-        sysMeta.data.identifier.should.equal("pid.2");
-        sysMeta.errors.should.deep.equal([401]);
-        sysMeta.versionHistory["pid.1"].should.equal(1);
+          await state.vt.notify("pid.1", "pid.2", 1);
+          const sysMeta = updateSpy.firstCall.args[0];
+          sysMeta.identifier.should.equal("pid.2");
+          sysMeta.errors.should.deep.equal([status]);
+          sysMeta.versionHistory["pid.1"].should.equal(1);
+        });
       });
 
       it("sets status for missing (404) sysmeta", async () => {
@@ -785,7 +1088,7 @@ define([
         await state.vt.notify("pid.1", "pid.2", -1);
 
         const sysMeta = updateSpy.firstCall.args[0];
-        sysMeta.data.identifier.should.equal("pid.2");
+        sysMeta.identifier.should.equal("pid.2");
         sysMeta.errors.should.deep.equal([404]);
         sysMeta.versionHistory["pid.1"].should.equal(-1);
       });

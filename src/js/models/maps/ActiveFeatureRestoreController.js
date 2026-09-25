@@ -8,7 +8,7 @@ define([
   /**
    * @param {unknown} value Candidate id.
    * @returns {string|null} Trimmed id string or null.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   function normalizeId(value) {
     if (typeof value !== "string") return null;
@@ -20,7 +20,7 @@ define([
    * Extract a feature id from either a Feature model or plain attrs object.
    * @param {Backbone.Model|object} feature Feature model or attrs object.
    * @returns {string|undefined} Stable feature id when present.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   function getFeatureId(feature) {
     if (feature instanceof Backbone.Model) {
@@ -33,7 +33,7 @@ define([
    * Extract map layer id from either a Feature model or plain attrs object.
    * @param {Backbone.Model|object} feature Feature model or attrs object.
    * @returns {string|null} Layer id if available.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   function getLayerId(feature) {
     const mapAsset =
@@ -48,7 +48,7 @@ define([
    * Build a stable key for a feature selection entry.
    * @param {{featureId: string, layerId: (string|null)}} featureState Entry.
    * @returns {string} Stable serialization key.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   function getFeatureStateKey(featureState) {
     return JSON.stringify(featureState);
@@ -58,7 +58,7 @@ define([
    * Normalize a single feature entry into feature/layer form.
    * @param {unknown} entry Candidate feature state entry.
    * @returns {{featureId: string, layerId: (string|null)}|null} Normalized entry.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   function normalizeFeatureStateEntry(entry) {
     if (typeof entry === "string") {
@@ -81,8 +81,8 @@ define([
   /**
    * Normalize and deduplicate feature state entries.
    * @param {unknown[]} entries Candidate entries.
-   * @returns {Array<{featureId: string, layerId: (string|null)}>} Normalized entries.
-   * @since 0.0.0
+   * @returns {Array.<{featureId: string, layerId: (string|null)}>} Normalized entries.
+   * @since 2.40.0
    */
   function normalizeFeatureState(entries) {
     if (!Array.isArray(entries)) return [];
@@ -107,7 +107,7 @@ define([
    * Create a feature state entry from a selected feature model/attrs object.
    * @param {Backbone.Model|object} feature Selected feature entry.
    * @returns {{featureId: string, layerId: (string|null)}|null} Feature state entry.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   function getFeatureStateFromSelection(feature) {
     const featureId = normalizeId(getFeatureId(feature));
@@ -122,8 +122,8 @@ define([
   /**
    * Convert selected features to normalized feature state entries.
    * @param {Array<Backbone.Model|object>} features Selected features.
-   * @returns {Array<{featureId: string, layerId: (string|null)}>} Normalized entries.
-   * @since 0.0.0
+   * @returns {Array.<{featureId: string, layerId: (string|null)}>} Normalized entries.
+   * @since 2.40.0
    */
   function getFeatureStateFromSelections(features = []) {
     return normalizeFeatureState(
@@ -138,7 +138,7 @@ define([
    * @param {{featureId: string, layerId: (string|null)}} requestedFeature Requested entry.
    * @param {{featureId: string, layerId: (string|null)}} resolvedFeature Resolved entry.
    * @returns {boolean} True when resolved entry satisfies request.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   function matchesRequestedFeature(requestedFeature, resolvedFeature) {
     if (!requestedFeature || !resolvedFeature) return false;
@@ -150,9 +150,9 @@ define([
   /**
    * Check whether a requested feature is resolved by any resolved entry.
    * @param {{featureId: string, layerId: (string|null)}} requestedFeature Requested entry.
-   * @param {Array<{featureId: string, layerId: (string|null)}>} resolvedFeatures Resolved entries.
+   * @param {Array.<{featureId: string, layerId: (string|null)}>} resolvedFeatures Resolved entries.
    * @returns {boolean} True when request is resolved.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   function isFeatureResolved(requestedFeature, resolvedFeatures = []) {
     return resolvedFeatures.some((resolvedFeature) =>
@@ -165,7 +165,7 @@ define([
    * @param {Array<Backbone.Model|object>} currentFeatures Currently selected features.
    * @param {Array<Backbone.Model|object>} newFeatures Newly resolved features.
    * @returns {Array<Backbone.Model|object>} Merged feature list.
-   * @since 0.0.0
+   * @since 2.40.0
    */
   function mergeFeatureSelections(currentFeatures = [], newFeatures = []) {
     const merged = [];
@@ -207,7 +207,7 @@ define([
    * @param {object} options Controller options.
    * @param {MapModel} options.mapModel Owning map model.
    * @class MapFeatureRestoreController
-   * @since 0.0.0
+   * @since 2.40.0
    */
   function MapFeatureRestoreController({ mapModel }) {
     this.mapModel = mapModel;
@@ -229,7 +229,7 @@ define([
     /**
      * Get the current restore session from the owning map.
      * @returns {object|null} Current restore session.
-     * @since 0.0.0
+     * @since 2.40.0
      */
     getSession() {
       return this.mapModel.featureRestoreSession || null;
@@ -239,7 +239,7 @@ define([
      * Set the current restore session on the owning map.
      * @param {object|null} session Restore session.
      * @returns {object|null} The assigned session.
-     * @since 0.0.0
+     * @since 2.40.0
      */
     setSession(session) {
       this.mapModel.featureRestoreSession = session;
@@ -248,11 +248,11 @@ define([
 
     /**
      * Merge selected features with in-flight restore entries for URL sync.
-     * @param {Array<{featureId: string, layerId: (string|null)}>} selectedFeatures
+     * @param {Array.<{featureId: string, layerId: (string|null)}>} selectedFeatures
      * Currently selected feature state entries.
-     * @returns {Array<{featureId: string, layerId: (string|null)}>}
+     * @returns {Array.<{featureId: string, layerId: (string|null)}>}
      * Feature state entries to write to URL.
-     * @since 0.0.0
+     * @since 2.40.0
      */
     getRequestedFeaturesForUrlSync(selectedFeatures = []) {
       const normalizedSelected = normalizeFeatureState(selectedFeatures);
@@ -292,7 +292,7 @@ define([
 
     /**
      * Cancel and clear any in-flight asynchronous feature restore waiters.
-     * @since 0.0.0
+     * @since 2.40.0
      */
     clearSession() {
       const session = this.getSession();
@@ -355,11 +355,11 @@ define([
 
     /**
      * Start a new feature restore session, canceling any previous one.
-     * @param {Array<{featureId: string, layerId: (string|null)}>} activeFeatures
+     * @param {Array.<{featureId: string, layerId: (string|null)}>} activeFeatures
      * The features being restored.
      * @param {string[]} [searchableLayerIds] Current searchable visible layers.
      * @returns {object} The active restore session.
-     * @since 0.0.0
+     * @since 2.40.0
      */
     beginSession(activeFeatures, searchableLayerIds = []) {
       const normalizedFeatures = normalizeFeatureState(activeFeatures);
@@ -395,7 +395,7 @@ define([
      * Track a cancel function for in-flight feature restore waiting.
      * @param {Function} cancel Cancel function returned by a waiter.
      * @param {object} session The restore session that owns the waiter.
-     * @since 0.0.0
+     * @since 2.40.0
      */
     addWaiter(cancel, session = this.getSession()) {
       if (typeof cancel !== "function" || !session) return;
@@ -411,7 +411,7 @@ define([
      * Check whether a restore session is still active.
      * @param {object} session The restore session to check.
      * @returns {boolean} True if the session is still current.
-     * @since 0.0.0
+     * @since 2.40.0
      */
     isActiveSession(session) {
       return this.getSession() === session;
@@ -420,11 +420,11 @@ define([
     /**
      * Search layers for features matching the given feature state and return
      * feature attribute objects ready to be passed to selectFeatures().
-     * @param {Array<{featureId: string, layerId: (string|null)}>} features
+     * @param {Array.<{featureId: string, layerId: (string|null)}>} features
      * Feature state entries to search for.
      * @param {Array<object>} [layers] Layers to search within.
      * @returns {object[]} Matching feature attribute objects.
-     * @since 0.0.0
+     * @since 2.40.0
      */
     findFeatureAttributes(features, layers = this.mapModel.getAllLayers()) {
       const normalizedFeatures = normalizeFeatureState(features);
@@ -455,8 +455,8 @@ define([
 
     /**
      * Read normalized feature state from restoreState.
-     * @returns {Array<{featureId: string, layerId: (string|null)}>} Restore entries.
-     * @since 0.0.0
+     * @returns {Array.<{featureId: string, layerId: (string|null)}>} Restore entries.
+     * @since 2.40.0
      */
     getRestoreFeatures() {
       const restoreState = this.mapModel.get("restoreState") || {};
@@ -470,7 +470,7 @@ define([
      * Searches all map layers for a matching feature and selects it directly
      * without simulating a user click. If entities are not yet loaded,
      * waits for each layer's status to become 'ready' before retrying.
-     * @since 0.0.0
+     * @since 2.40.0
      */
     applyRestoreState() {
       const { mapModel } = this;

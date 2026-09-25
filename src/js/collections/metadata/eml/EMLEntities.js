@@ -8,7 +8,15 @@ define([
   "models/metadata/eml211/EMLDataTable",
   "models/metadata/eml211/EMLOtherEntity",
   "models/DataONEObject",
-], (Backbone, EMLEntity, EMLDataTable, EMLOtherEntity, DataONEObject) => {
+  "common/XMLUtilities",
+], (
+  Backbone,
+  EMLEntity,
+  EMLDataTable,
+  EMLOtherEntity,
+  DataONEObject,
+  XMLUtilities,
+) => {
   // The names of the nodes that are considered entities in EML
   const ENTITY_NODE_NAMES = [
     "otherEntity",
@@ -18,6 +26,52 @@ define([
     "storedProcedure",
     "view",
   ];
+  const DEFAULT_FORMAT_ID = "application/octet-stream";
+
+  /**
+   * Snapshot the fields needed to match an EML entity. The source may be a
+   * legacy Backbone DataONEObject or a property-based package member.
+   * @param {DataONEObject|object} obj The data object
+   * @returns {object} Stable values used by the EML models
+   */
+  const getObjectDescriptor = (obj) => {
+    if (!obj) return {};
+    const isBackboneModel = typeof obj.get === "function";
+    const id = isBackboneModel
+      ? obj.get("id")
+      : obj.pid || obj.id || obj.identifier;
+    const fileName = isBackboneModel
+      ? obj.get("fileName")
+      : obj.getFileName?.() || obj.fileName || obj.filename;
+    const formatId = isBackboneModel
+      ? obj.get("formatId") || obj.get("mediaType")
+      : obj.getFormatId?.() ||
+        obj.formatId ||
+        obj.mediaType ||
+        obj.sysMeta?.formatId;
+
+    return {
+      id,
+      fileName,
+      formatId,
+      xmlID: XMLUtilities.getXMLSafeID(id),
+      checksum: isBackboneModel
+        ? obj.get("checksum")
+        : obj.checksum || obj.sysMeta?.checksum?.value || obj.sysMeta?.checksum,
+      checksumAlgorithm: isBackboneModel
+        ? obj.get("checksumAlgorithm")
+        : obj.checksumAlgorithm ||
+          obj.sysMeta?.checksum?.algorithm ||
+          obj.sysMeta?.checksumAlgorithm,
+      metadataEntity: isBackboneModel ? obj.get("metadataEntity") : null,
+      previousFileName: isBackboneModel
+        ? obj.previous("fileName")
+        : obj.remoteSysMeta?.fileName,
+      previousFormatId: isBackboneModel
+        ? obj.previous("formatId") || obj.previous("mediaType")
+        : obj.remoteSysMeta?.formatId,
+    };
+  };
 
   /**
    * @class InvalidAttributeListError
@@ -79,7 +133,7 @@ define([
           default:
             return new EMLEntity(
               {
-                entityType: "application/octet-stream",
+                entityType: DEFAULT_FORMAT_ID,
                 type,
                 ...modifiedAttrs,
               },
@@ -150,69 +204,74 @@ define([
       },
 
       /**
-       * Add a new entity to the collection using info from a DataONE object.
-       * Sets listeners to remove the entity if the DataONE object fails to
+       * Add a new entity using a data object or package member descriptor.
+       * Sets listeners to remove the entity if a legacy DataONE object fails to
        * save, and to add it back if it later saves successfully.
-       * @param {DataONEObject} dataONEObject DataONE object model
+       * @param {DataONEObject|object} dataObject Data object or member descriptor
        * @param {object} options Options for the entity
        * @param {EMLModel} options.parentModel The parent model of the entity
        * @returns {EMLEntity} The new entity that was added to the collection
        */
-      addFromDataONEObject(dataONEObject, options = {}) {
+      addFromDataONEObject(dataObject, options = {}) {
+        const descriptor = getObjectDescriptor(dataObject);
         const entity = this.add({
-          entityName: dataONEObject.get("fileName"),
-          entityType:
-            dataONEObject.get("formatId") ||
-            dataONEObject.get("mediaType") ||
-            "application/octet-stream",
-          dataONEObject,
+          entityName: descriptor.fileName,
+          entityType: descriptor.formatId || DEFAULT_FORMAT_ID,
+          downloadID: descriptor.id || null,
+          fileName: descriptor.fileName || null,
+          formatId: descriptor.formatId || null,
           parentModel: options.parentModel || this.getParentModel(),
-          xmlID: dataONEObject.getXMLSafeID(),
+          xmlID: options.xmlID || descriptor.xmlID || null,
           // Important: Adding as a generic entity creates invalid EML
           type: "otherEntity",
         });
-        this.stopListening(dataONEObject);
-        this.listenTo(dataONEObject, "errorSaving", () => {
-          this.remove(entity);
-          // Listen for a successful save so the entity can be added back
-          this.listenToOnce(dataONEObject, "successSaving", () => {
-            this.add(entity);
+        if (
+          typeof dataObject?.on === "function" &&
+          typeof dataObject?.off === "function"
+        ) {
+          this.stopListening(dataObject);
+          this.listenTo(dataObject, "errorSaving", () => {
+            this.remove(entity);
+            // Listen for a successful save so the entity can be added back
+            this.listenToOnce(dataObject, "successSaving", () => {
+              this.add(entity);
+            });
           });
-        });
+        }
         return entity;
       },
 
       /**
-       * Search the collection for an entity that matches the given DataONE
-       * object. Matches are made based on the DataONE object's identifier,
+       * Search the collection for an entity that matches a data object or
+       * package member. Matches are made based on its identifier,
        * checksum, file name, or format type. Optionally, a DataPackage
        * collection can be provided to assess whether the entity is the only one
-       * in the package, and therefore must be the entity for the given DataONE
-       * object.
-       * @param {DataONEObject} dataONEObject The DataONE object to match
+       * in the package, and therefore must be the entity for the given object.
+       * @param {DataONEObject|object} dataObject Data object or member descriptor
        * @param {DataPackage} [dataPackage] The DataPackage collection to check
        * @returns {EMLEntity|boolean} The matching EMLEntity model or false if
        * no match is found
        */
-      getByDataONEObject(dataONEObject, dataPackage) {
+      getByDataONEObject(dataObject, dataPackage) {
+        const descriptor = getObjectDescriptor(dataObject);
+
         // If an EMLEntity model has been found for this object before, consider
         // it a match.
+        const objID = descriptor.id;
+        const objXMLID = descriptor.xmlID;
+        const objFileName = descriptor.fileName;
         let foundEntity =
-          dataONEObject.get("metadataEntity") ||
-          this.find((ent) => ent.get("dataONEObject") === dataONEObject);
+          descriptor.metadataEntity ||
+          (objID ? this.find((ent) => ent.getDataPid() === objID) : null);
 
-        const objFormatName =
-          dataONEObject.get("formatId")?.toLowerCase() ||
-          dataONEObject.get("mediaType")?.toLowerCase();
+        const objFormatName = descriptor.formatId?.toLowerCase();
 
         if (!foundEntity) {
           // Gather information about the DataONE object
-          const objID = dataONEObject.get("id");
-          const objXMLID = dataONEObject.getXMLSafeID();
-          const objCheckSum = dataONEObject.get("checksum");
+          const objCheckSum = descriptor.checksum;
           const objCheckSumIsMD5 =
-            dataONEObject.get("checksumAlgorithm")?.toUpperCase() === "MD5";
-          const objFileName = dataONEObject.get("fileName")?.toLowerCase();
+            descriptor.checksumAlgorithm?.toUpperCase() === "MD5";
+          const standardFileName = objFileName?.toLowerCase();
 
           foundEntity = this.find((ent) => {
             // Matches of the checksum or identifier are definite matches
@@ -227,8 +286,8 @@ define([
             // If this entity name matches the dataone object file name, AND no
             // other dataone object file name matches, then we can assume this
             // is the entity element for this file.
-            if (objFileName) {
-              const fileNameMatches = this.getByFileName(objFileName);
+            if (standardFileName) {
+              const fileNameMatches = this.getByFileName(standardFileName);
               if (fileNameMatches?.length === 1 && fileNameMatches[0] === ent) {
                 return true;
               }
@@ -251,31 +310,28 @@ define([
           !foundEntity &&
           this.length === 1 &&
           dataPackage?.length === 2 &&
-          dataPackage.models.includes(dataONEObject)
+          dataPackage.models.includes(dataObject)
         ) {
           foundEntity = this.at(0);
           // TODO: Should we ensure that the entity is in this collection?
         }
 
-        // If this entity has been matched to a different DataONEObject already,
-        // then don't match it again. i.e. We will not override existing
-        // entity<->DataONEObject pairings
-        const entityDataONEObj = foundEntity?.get("dataONEObject");
-        if (entityDataONEObj && entityDataONEObj !== dataONEObject) {
+        // Do not replace an existing entity-to-member PID match.
+        const entityDataPid = foundEntity?.getDataPid();
+        if (entityDataPid && objID && entityDataPid !== objID) {
           foundEntity = false;
         }
 
         if (foundEntity) {
-          foundEntity.set("dataONEObject", dataONEObject);
-          // TODO: why are we setting an xmlID here? Should we check if it's
-          // already set?
-          const xmlID =
-            this.getParentModel()?.getUniqueEntityId(dataONEObject) ||
-            dataONEObject.getXMLSafeID();
-          // TODO: should we check if these attrs are already set before
-          // replacing?
-          foundEntity.set("xmlID", xmlID);
-          dataONEObject.set("metadataEntity", foundEntity);
+          if (!foundEntity.get("xmlID")) {
+            descriptor.xmlID =
+              this.getParentModel()?.getUniqueEntityId(descriptor) ||
+              descriptor.xmlID;
+          }
+          foundEntity.setMemberDescriptor(descriptor);
+          if (typeof dataObject.set === "function") {
+            dataObject.set("metadataEntity", foundEntity);
+          }
         }
 
         return foundEntity || false;

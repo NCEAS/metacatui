@@ -1,7 +1,8 @@
-define(["views/searchSelect/SearchSelectView", "collections/ObjectFormats"], (
-  SearchSelect,
-  ObjectFormats,
-) => {
+define([
+  "views/searchSelect/SearchSelectView",
+  "collections/ObjectFormats",
+  "common/Utilities",
+], (SearchSelect, ObjectFormats, Utilities) => {
   /**
    * @class ObjectFormatSelect
    * @classdesc A select interface that allows the user to search for and
@@ -40,28 +41,18 @@ define(["views/searchSelect/SearchSelectView", "collections/ObjectFormats"], (
        * select options on the model
        * @since 2.31.0
        */
-      getObjectFormats() {
-        const view = this;
-        // Ensure the object formats are cached
-        if (!MetacatUI.objectFormats)
-          MetacatUI.objectFormats = new ObjectFormats();
-
-        // eslint-disable-next-line no-underscore-dangle
-        const events = MetacatUI.objectFormats._events;
-
-        if (!MetacatUI.objectFormats.length && !(events && events.sync)) {
-          view.listenToOnce(
-            MetacatUI.objectFormats,
-            "sync error",
-            view.getObjectFormats,
-          );
-          MetacatUI.objectFormats.fetch();
-          return;
+      async getObjectFormats() {
+        let formats = [];
+        try {
+          const objectFormats = await Utilities.awaitObjectFormats();
+          formats = objectFormats?.toJSON() || [];
+        } catch {
+          // Use the built-in formats when the remote request fails.
+          const objectFormats = new ObjectFormats();
+          formats = objectFormats?.toJSON() || [];
         }
 
-        const formatIds = MetacatUI.objectFormats.toJSON();
-
-        const options = formatIds
+        const options = formats
           // Query Rules automatically include a rule for formatType="METADATA"
           // so subset to only METADATA formats
           .filter((format) => format.formatType === "METADATA")
@@ -72,7 +63,7 @@ define(["views/searchSelect/SearchSelectView", "collections/ObjectFormats"], (
             description: format.formatId,
           }));
 
-        view.updateOptions(options);
+        this.updateOptions(options);
       },
     },
   );

@@ -1,3 +1,7 @@
+<!--
+  @deprecated Legacy package table template. Use the MetadataView/FileTableView
+  rendering path. This file will be removed soon.
+-->
 <!-- Icon column -->
 <% if ( viewType === "edit" && typeof type !== "undefined" && type !== null && type == "Metadata" ) { %>
     <% var indentFolder = nodeLevel * 40; %>
@@ -78,7 +82,7 @@
 	<!-- Privacy/Sharing column -->
 	<% if( MetacatUI.appModel.get("allowAccessPolicyChanges")){ %>
 		<td class="sharing">
-			<button type="button" class="btn access-policy-control"><i class="icon-group"></i> Share</button>
+			<button type="button" class="btn access-policy-control"><i class="icon icon-group icon-on-left"></i> Share</button>
 		</td>
 	<% } %>
 

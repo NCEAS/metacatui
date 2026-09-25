@@ -1,9 +1,14 @@
-define(["jquery", "underscore", "backbone", "common/QueryService"], (
-  $,
-  _,
-  Backbone,
-  QueryService,
-) => {
+define([
+  "jquery",
+  "underscore",
+  "backbone",
+  "common/QueryService",
+  "collections/ObjectFormats",
+], ($, _, Backbone, QueryService, ObjectFormats) => {
+  const FALLBACK_OBJECT_FORMATS = new ObjectFormats();
+  const getObjectFormats = () =>
+    globalThis.MetacatUI?.objectFormats || FALLBACK_OBJECT_FORMATS;
+
   const DEFAULT_INFO_FIELDS = [
     "abstract",
     "id",
@@ -151,58 +156,12 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
       },
 
       /**
-       * Returns a plain-english version of the general format - either image,
-       * program, metadata, PDF, annotation or data
+       * Return the general display type for this object.
        * @returns {string} The type of this object, such as "image", "program",
        * "metadata", "PDF", "annotation" or "data"
        */
       getType() {
-        // The list of formatIds that are images
-        const imageIds = [
-          "image/gif",
-          "image/jp2",
-          "image/jpeg",
-          "image/png",
-          "image/svg xml",
-          "image/svg+xml",
-          "image/bmp",
-        ];
-        // The list of formatIds that are images
-        const pdfIds = ["application/pdf"];
-        const annotationIds = [
-          "http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html",
-        ];
-        const collectionIds = [
-          "https://purl.dataone.org/collections-1.0.0",
-          "https://purl.dataone.org/collections-1.1.0",
-        ];
-        const portalIds = [
-          "https://purl.dataone.org/portals-1.0.0",
-          "https://purl.dataone.org/portals-1.1.0",
-        ];
-
-        // Determine the type via provONE
-        const instanceOfClass = this.get("prov_instanceOfClass");
-        if (typeof instanceOfClass !== "undefined") {
-          const programClass = _.filter(
-            instanceOfClass,
-            (className) => className.indexOf("#Program") > -1,
-          );
-          if (typeof programClass !== "undefined" && programClass.length)
-            return "program";
-        } else if (this.get("prov_generated") || this.get("prov_used"))
-          return "program";
-
-        // Determine the type via file format
-        if (_.contains(collectionIds, this.get("formatId")))
-          return "collection";
-        if (_.contains(portalIds, this.get("formatId"))) return "portal";
-        if (this.get("formatType") === "METADATA") return "metadata";
-        if (_.contains(imageIds, this.get("formatId"))) return "image";
-        if (_.contains(pdfIds, this.get("formatId"))) return "PDF";
-        if (_.contains(annotationIds, this.get("formatId")))
-          return "annotation";
-        return "data";
+        return getObjectFormats().getType(this.toJSON());
       },
 
       /**
@@ -211,62 +170,7 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
        * @returns {string} The specific format of this object
        */
       getFormat() {
-        const formatMap = {
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-            "Microsoft Excel OpenXML",
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-            "Microsoft Word OpenXML",
-          "application/vnd.ms-excel.sheet.binary.macroEnabled.12":
-            "Microsoft Office Excel 2007 binary workbooks",
-          "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-            "Microsoft Office OpenXML Presentation",
-          "application/vnd.ms-excel": "Microsoft Excel",
-          "application/msword": "Microsoft Word",
-          "application/vnd.ms-powerpoint": "Microsoft Powerpoint",
-          "text/html": "HTML",
-          "text/plain": "plain text (.txt)",
-          "video/avi": "Microsoft AVI file",
-          "video/x-ms-wmv": "Windows Media Video (.wmv)",
-          "audio/x-ms-wma": "Windows Media Audio (.wma)",
-          "application/vnd.google-earth.kml xml":
-            "Google Earth Keyhole Markup Language (KML)",
-          "http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html":
-            "annotation",
-          "application/mathematica": "Mathematica Notebook",
-          "application/postscript": "Postscript",
-          "application/rtf": "Rich Text Format (RTF)",
-          "application/xml": "XML Application",
-          "text/xml": "XML",
-          "application/x-fasta": "FASTA sequence file",
-          "nexus/1997": "NEXUS File Format for Systematic Information",
-          "anvl/erc-v02":
-            "Kernel Metadata and Electronic Resource Citations (ERCs), 2010.05.13",
-          "http://purl.org/dryad/terms/":
-            "Dryad Metadata Application Profile Version 3.0",
-          "http://datadryad.org/profile/v3.1":
-            "Dryad Metadata Application Profile Version 3.1",
-          "application/pdf": "PDF",
-          "application/zip": "ZIP file",
-          "http://www.w3.org/TR/rdf-syntax-grammar": "RDF/XML",
-          "http://www.w3.org/TR/rdfa-syntax": "RDFa",
-          "application/rdf xml": "RDF",
-          "text/turtle": "TURTLE",
-          "text/n3": "N3",
-          "application/x-gzip": "GZIP Format",
-          "application/x-python": "Python script",
-          "http://www.w3.org/2005/Atom": "ATOM-1.0",
-          "application/octet-stream": "octet stream (application file)",
-          "http://digir.net/schema/conceptual/darwin/2003/1.0/darwin2.xsd":
-            "Darwin Core, v2.0",
-          "http://rs.tdwg.org/dwc/xsd/simpledarwincore/": "Simple Darwin Core",
-          "eml://ecoinformatics.org/eml-2.1.0": "EML v2.1.0",
-          "eml://ecoinformatics.org/eml-2.1.1": "EML v2.1.1",
-          "eml://ecoinformatics.org/eml-2.0.1": "EML v2.0.1",
-          "eml://ecoinformatics.org/eml-2.0.0": "EML v2.0.0",
-          "https://eml.ecoinformatics.org/eml-2.2.0": "EML v2.2.0",
-        };
-
-        return formatMap[this.get("formatId")] || this.get("formatId");
+        return ObjectFormats.getFriendlyFormat(this.get("formatId"));
       },
 
       /**
@@ -358,6 +262,7 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
        * in the request. The data can then be downloaded or displayed in the
        * browser
        * @returns {Promise} A promise that resolves when the data is fetched
+       * @throws {Error} When the request fails; HTTP errors include `status`
        * @since 2.32.0
        */
       fetchDataObjectWithCredentials() {
@@ -365,22 +270,18 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
         const token = MetacatUI.appUserModel.get("token") || "";
         const method = "GET";
 
-        return new Promise((resolve, reject) => {
-          const headers = {};
-          if (token) {
-            headers.Authorization = `Bearer ${token}`;
-          }
+        const headers = {};
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
 
-          fetch(url, { method, headers })
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error(`Failed to fetch: ${response.statusText}`);
-              }
-              resolve(response);
-            })
-            .catch((error) => {
-              reject(error);
-            });
+        return fetch(url, { method, headers }).then((response) => {
+          if (!response.ok) {
+            const error = new Error(`Failed to fetch: ${response.statusText}`);
+            error.status = response.status;
+            throw error;
+          }
+          return response;
         });
       },
 
@@ -453,7 +354,7 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
        */
       handleDownloadError(e) {
         const model = this;
-        model.trigger("downloadError");
+        model.trigger("downloadError", e);
         // Track the error
         MetacatUI.analytics?.trackException(
           `Download DataONEObject error: ${e || ""}`,
@@ -492,6 +393,7 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
       },
 
       handleGetInfoError(error) {
+        // eslint-disable-next-line no-console
         console.error(`Error getting info for ${this.get("id")}`, error);
         const status = error.status || error.cause?.status;
         const message = error.message || error.cause?.statusText || error;
@@ -642,25 +544,9 @@ define(["jquery", "underscore", "backbone", "common/QueryService"], (
             // Check if this is a metadata doc
             const formatId = $(data).find("formatid").text() || "";
             model.set("formatId", formatId);
-            if (
-              formatId.indexOf("ecoinformatics.org") > -1 ||
-              formatId.indexOf("FGDC") > -1 ||
-              formatId.indexOf("INCITS") > -1 ||
-              formatId.indexOf("namespaces/netcdf") > -1 ||
-              formatId.indexOf("waterML") > -1 ||
-              formatId.indexOf("darwin") > -1 ||
-              formatId.indexOf("dryad") > -1 ||
-              formatId.indexOf("http://www.loc.gov/METS") > -1 ||
-              formatId.indexOf("ddi:codebook:2_5") > -1 ||
-              formatId.indexOf("http://www.icpsr.umich.edu/DDI") > -1 ||
-              formatId.indexOf(
-                "http://purl.org/ornl/schema/mercury/terms/v1.0",
-              ) > -1 ||
-              formatId.indexOf("datacite") > -1 ||
-              formatId.indexOf("isotc211") > -1 ||
-              formatId.indexOf("metadata") > -1
-            )
+            if (getObjectFormats().isMetadata({ formatId })) {
               model.set("formatType", "METADATA");
+            }
 
             // Trigger the sync event so the app knows we found the model info
             model.trigger("sync");

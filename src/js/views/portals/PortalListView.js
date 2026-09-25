@@ -490,7 +490,8 @@ define([
               reachedLimitWithoutBookkeeper =
                 !MetacatUI.appModel.get("enableBookkeeperServices") &&
                 MetacatUI.appModel.get("portalLimit") <=
-                  this.searchResults.length;
+                  this.searchResults.length &&
+                MetacatUI.appModel.get("portalLimit") >= 0;
 
             //If creating portals is disabled in the entire app, or is only limited to certain groups,
             // then don't show the Create button.
