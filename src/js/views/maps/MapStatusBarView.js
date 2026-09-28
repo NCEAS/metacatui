@@ -50,6 +50,7 @@ define([
    * @classcategory Views/Maps
    * @name MapStatusBarView
    * @augments Backbone.View
+   * @screenshot views/maps/MapStatusBarView.png
    * @since 0.0.0
    * @constructs
    */
