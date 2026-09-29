@@ -213,18 +213,21 @@ define([
                     }
                   },
                 );
-              } else if (
-                typeof sectionData.limiter === "number" ||
-                sectionData.limiter instanceof Number
-              ) {
-                this.stopListening(this.model, "change:sections");
-                this.listenTo(this.model, "change:sections", () => {
-                  this.toggleDisableSectionOption(sectionType);
-                });
               }
             },
             this,
           );
+
+          // Listen for changes to the sections attribute and update section
+          // availability accordingly.
+          this.stopListening(this.model, "change:sections");
+          this.listenTo(this.model, "change:sections", () => {
+            _.each(this.sectionsOptions, ({ limiter }, sectionType) => {
+              if (typeof limiter === "number" || limiter instanceof Number) {
+                this.toggleDisableSectionOption(sectionType);
+              }
+            });
+          });
 
           // Save a reference to this view
           this.$el.data("view", this);
