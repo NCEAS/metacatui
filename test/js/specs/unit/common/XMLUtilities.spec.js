@@ -585,9 +585,7 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
 
         const serialized = new XMLSerializer().serializeToString(doc);
         const reparsed = XMLUtilities.parseXmlString(serialized);
-        expect(reparsed.documentElement.firstChild.textContent).to.equal(
-          value,
-        );
+        expect(reparsed.documentElement.firstChild.textContent).to.equal(value);
       });
     });
 

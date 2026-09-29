@@ -836,8 +836,6 @@ define([
           const view = this;
 
           const newLink = this.createSectionLink(sectionView, menuOptions);
-          const isMarkdownSection =
-            $(newLink).data("view").type === "PortEditorMdSection";
           const isContentSection = Object.prototype.isPrototypeOf.call(
             PortalSection.prototype,
             sectionView.model,
@@ -887,7 +885,7 @@ define([
               this.$(this.sectionLinksContainer).prepend(newLink);
             }
             // If there is already some user-defined page ordering, or if not a
-            // markdown section and not the Settings section, and if there is
+            // content section and not the Settings section, and if there is
             // already a "+" link, add new link before the "+" link
           } else if (
             addSectionEl &&
@@ -900,10 +898,8 @@ define([
             this.$(this.sectionLinksContainer).append(newLink);
           }
 
-          // If this is a newly added markdown section, highlight the section
-          // name and make it content editable. Currently only markdown sections
-          // labels are editable.
-          if (shouldFocus && isMarkdownSection) {
+          // Select a new content section's name so it can be edited immediately.
+          if (shouldFocus && isContentSection) {
             const newSectionLink = $(newLink).children(".portal-section-link");
             newSectionLink.attr("contenteditable", true);
             newSectionLink.focus();

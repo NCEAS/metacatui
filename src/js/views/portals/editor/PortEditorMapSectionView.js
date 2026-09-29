@@ -2,8 +2,9 @@ define([
   "views/portals/editor/PortEditorSectionView",
   "views/maps/mapEditor/MapEditorView",
 ], (PortEditorSectionView, MapEditorView) => {
+  const BASE_CLASS = "port-editor-map";
   const CLASS_NAMES = {
-    mapContainer: "port-editor-map__map-container",
+    mapContainer: `${BASE_CLASS}__map-container`,
   };
 
   /**
@@ -27,7 +28,7 @@ define([
        * The HTML classes to use for this view's element.
        * @type {string}
        */
-      className: `${PortEditorSectionView.prototype.className} ${CLASS_NAMES.mapContainer}`,
+      className: `${PortEditorSectionView.prototype.className} ${BASE_CLASS}`,
 
       /** @inheritdoc */
       attributes: {
