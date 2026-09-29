@@ -62,6 +62,14 @@ define([
         const mapContainer = this.el.querySelector(
           `.${CLASS_NAMES.mapContainer}`,
         );
+        const mapConfigError = this.model.get("mapConfigError");
+        if (mapConfigError) {
+          const message = document.createElement("p");
+          message.className = "alert alert-warning";
+          message.textContent = `${mapConfigError} The map editor is disabled. You can still edit the rest of the portal. Please contact support for assistance.`;
+          mapContainer.appendChild(message);
+          return this;
+        }
         this.mapEditorView = new MapEditorView({
           model: this.model.get("mapModel"),
           el: mapContainer,

@@ -2,7 +2,6 @@
 define([
   "jquery",
   "underscore",
-  "backbone",
   "gmaps",
   "common/ValueUtilities",
   "models/filters/Filter",
@@ -19,7 +18,6 @@ define([
 ], (
   $,
   _,
-  Backbone,
   gmaps,
   ValueUtilities,
   FilterModel,
@@ -412,7 +410,10 @@ define([
           }
         }
 
-        let requestSettings = {
+        // Record whether this fetch uses authentication for private portals.
+        this.set("fetchedWithAuth", MetacatUI.appUserModel.get("loggedIn"));
+
+        const requestSettings = {
           dataType: "xml",
           success: (response) => {
             let attributes;
@@ -429,22 +430,12 @@ define([
           error: (response) => {
             this.trigger("error", this, response);
 
-            if (response && response.status === 404) {
+            if (response?.status === 404) {
               this.trigger("notFound");
             }
           },
+          ...MetacatUI.appUserModel.createAjaxSettings(),
         };
-
-        // Save a boolean flag for whether or not this fetch was done with user
-        // authentication. This is helpful when the app is dealing with
-        // potentially private data
-        this.set("fetchedWithAuth", MetacatUI.appUserModel.get("loggedIn"));
-
-        // Add the user settings to the fetch settings
-        requestSettings = _.extend(
-          requestSettings,
-          MetacatUI.appUserModel.createAjaxSettings(),
-        );
 
         // Parse before setting attributes or emitting sync so a failed load
         // cannot open the editor with incomplete data.

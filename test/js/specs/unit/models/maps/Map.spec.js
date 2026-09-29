@@ -507,6 +507,8 @@ define([
         });
 
         map.getAllLayers = () => [layer];
+        // Replacing the layer list bypasses the map's loading-state listeners.
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
         map.set("restoreState", {
           activeFeatures: [{ featureId: "building-42", layerId: null }],
         });
@@ -987,13 +989,15 @@ define([
         }, 0);
       });
 
-      it("clears the loading state when no layer can continue the restore asynchronously", () => {
+      it("keeps loading clear when no layer can continue the restore asynchronously", () => {
         const map = new Map({ showShareUrl: true });
         const layer = makeLayer({
           getFeatureById: () => null,
         });
 
         map.getAllLayers = () => [layer];
+        // Replacing the layer list bypasses the map's loading-state listeners.
+        LayerLoadingCoordinator.updateLayerLoadingState(map);
         map.set("restoreState", {
           activeFeatures: [{ featureId: "missing-feature", layerId: null }],
         });

@@ -23,6 +23,7 @@ define([
           sectionType: "visualization",
           visualizationType: "",
           supportedVisualizationTypes: ["fever", "cesium"],
+          mapConfigError: null,
         };
       },
 
@@ -37,14 +38,13 @@ define([
       initialize(attributes = {}, options = {}) {
         PortalSectionModel.prototype.initialize.call(this, attributes, options);
 
-        // If this is a Cesium map section, initialize the map model
-        const isCesium =
-          this.get("visualizationType") === "cesium" ||
-          attributes?.visualizationType === "cesium";
-        const mapConfig = attributes?.mapConfig || this.get("mapConfig");
-        const mapModel = attributes?.mapModel || this.get("mapModel");
-        if (isCesium) {
-          this.initializeCesiumMap(mapConfig || mapModel);
+        if (
+          this.get("visualizationType") === "cesium" &&
+          !this.get("mapConfigError")
+        ) {
+          this.initializeCesiumMap(
+            this.get("mapConfig") || this.get("mapModel"),
+          );
         }
       },
 
@@ -65,6 +65,7 @@ define([
           this,
           objectDOM,
         );
+        modelJSON.mapConfigError = null;
 
         const vizTypeOption = PortalOption.findDirectChild(
           objectDOM,
@@ -92,11 +93,11 @@ define([
                 PortalOption.fromElement(mapConfigOption).optionValue[0];
               try {
                 mapConfig = JSON.parse(mapConfigJSON);
-              } catch (error) {
-                throw new SyntaxError(
-                  "The portal could not be loaded because its map configuration contains invalid JSON.",
-                  { cause: error },
-                );
+              } catch {
+                modelJSON.mapConfigError =
+                  "The map configuration contains invalid JSON.";
+                modelJSON.mapModel = null;
+                return modelJSON;
               }
             }
             this.initializeCesiumMap(mapConfig);
@@ -211,7 +212,11 @@ define([
           }
         }
 
-        if (this.get("visualizationType") === "cesium") {
+        // Keep the original map option when its JSON could not be parsed.
+        if (
+          this.get("visualizationType") === "cesium" &&
+          !this.get("mapConfigError")
+        ) {
           this.updateCesiumMapDOM(objectDOM);
         }
 
@@ -261,7 +266,7 @@ define([
        * this portal section model.
        */
       reportSectionChange(isActive) {
-        if (isActive) {
+        if (isActive && !this.get("mapConfigError")) {
           this.get("mapModel").trigger("change:searchparams");
         }
       },

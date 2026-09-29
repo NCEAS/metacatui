@@ -92,6 +92,14 @@ define([
        * Renders a {@link MapView} and inserts into this view
        */
       renderMap: function () {
+        const mapConfigError = this.model.get("mapConfigError");
+        if (mapConfigError) {
+          const message = document.createElement("p");
+          message.className = "alert alert-warning";
+          message.textContent = mapConfigError;
+          this.$el.html(message);
+          return;
+        }
         //Exit if Cesium is disabled
         if (!MetacatUI.appModel.get("enableCesium")) {
           return;

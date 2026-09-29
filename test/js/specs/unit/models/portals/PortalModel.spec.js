@@ -39,17 +39,18 @@ define(["jquery", "models/portals/PortalModel", "models/portals/PortalImage"], (
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       portal = new PortalModel({ id: "test-load-error", label: "Original" });
-      ajax = sandbox.stub($, "ajax").returns({});
-      // Invalid XML response
+      ajax = sandbox.stub($, "ajax");
+      // Valid XML containing invalid map JSON.
       xml = new DOMParser().parseFromString(
         `<por:portal xmlns:por="https://purl.dataone.org/portals-1.1.0">
           <label>Loaded portal</label>
+          <definition><filter><field>formatType</field><value>METADATA</value></filter></definition>
           <section>
             <label>Map</label>
             <content><markdown>Visualization</markdown></content>
             <option><optionName>sectionType</optionName><optionValue>visualization</optionValue></option>
             <option><optionName>visualizationType</optionName><optionValue>cesium</optionValue></option>
-            <option><optionName>mapConfig</optionName><optionValue>{invalid}</optionValue></option>
+            <option><optionName>mapConfig</optionName><optionValue><![CDATA[{invalid}]]></optionValue><optionValue>keep this value</optionValue></option>
           </section>
         </por:portal>`,
         "application/xml",
@@ -64,30 +65,49 @@ define(["jquery", "models/portals/PortalModel", "models/portals/PortalImage"], (
       sandbox.restore();
     });
 
-    it("reports malformed map JSON without applying the response or syncing", () => {
+    it("loads the portal with only the malformed map disabled", () => {
       const error = sandbox.spy();
       const sync = sandbox.spy();
-      const sections = portal.get("sections");
       portal.on("error", error);
       portal.on("sync", sync);
       portal.fetch({ objectOnly: true });
 
-      // Simulate a successful XML response. Invalid map JSON is reported via
-      // the error event.
+      // Simulate a successful XML response containing invalid map JSON.
       expect(() => ajax.firstCall.args[0].success(xml)).not.to.throw();
+      delete window.filterXML;
 
-      expect(error.calledOnce).to.equal(true);
-      expect(error.firstCall.args[0]).to.equal(portal);
-      expect(error.firstCall.args[1]).to.match(
+      expect(error.called).to.equal(false);
+      expect(sync.calledOnce).to.equal(true);
+      expect(portal.get("label")).to.equal("Loaded portal");
+      const section = portal.get("sections")[0];
+      expect(section.get("mapConfigError")).to.match(
         /map configuration.*invalid JSON/i,
       );
-      expect(sync.called).to.equal(false);
-      expect(portal.get("label")).to.equal("Original");
-      expect(portal.get("sections")).to.equal(sections);
-      expect(portal.get("objectXML")).not.to.equal(xml);
-      expect(xml.getElementsByTagName("optionValue")[2].textContent).to.equal(
-        "{invalid}",
+      expect(section.get("mapModel")).to.equal(null);
+      expect(() => section.reportSectionChange(true)).not.to.throw();
+    });
+
+    it("preserves the invalid map option when saving other portal edits", () => {
+      portal.fetch({ objectOnly: true });
+      ajax.firstCall.args[0].success(xml);
+      delete window.filterXML;
+      portal.set("name", "Updated portal title");
+
+      const serialized = portal.serialize();
+      expect(serialized, portal.get("errorMessage")).to.be.a("string");
+      const saved = new DOMParser().parseFromString(
+        serialized,
+        "application/xml",
       );
+      expect(saved.getElementsByTagName("name")[0].textContent).to.equal(
+        "Updated portal title",
+      );
+      const savedOption = saved
+        .getElementsByTagName("section")[0]
+        .getElementsByTagName("option")[2];
+      expect(
+        savedOption.isEqualNode(xml.getElementsByTagName("option")[2]),
+      ).to.equal(true);
     });
 
     it("loads a valid map config and fires sync event", () => {
@@ -100,6 +120,7 @@ define(["jquery", "models/portals/PortalModel", "models/portals/PortalImage"], (
       portal.fetch({ objectOnly: true });
 
       ajax.firstCall.args[0].success(xml);
+      delete window.filterXML;
 
       expect(error.called).to.equal(false);
       expect(sync.calledOnce).to.equal(true);
@@ -107,7 +128,21 @@ define(["jquery", "models/portals/PortalModel", "models/portals/PortalImage"], (
       expect(
         portal.get("sections")[0].get("mapModel").get("showToolbar"),
       ).to.equal(false);
-      expect(portal.get("objectXML")).to.equal(xml);
+    });
+
+    it("clears the map error when a corrected configuration is loaded", () => {
+      portal.fetch({ objectOnly: true });
+      ajax.firstCall.args[0].success(xml);
+      delete window.filterXML;
+      expect(portal.get("sections")[0].get("mapConfigError")).to.be.a("string");
+
+      xml.getElementsByTagName("optionValue")[2].textContent =
+        '{"showToolbar":false}';
+      const section = portal.get("sections")[0];
+      section.set(section.parse(xml.getElementsByTagName("section")[0]));
+
+      expect(section.get("mapConfigError")).to.equal(null);
+      expect(section.get("mapModel").get("showToolbar")).to.equal(false);
     });
 
     it("reports missing portal responses", () => {
