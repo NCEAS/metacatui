@@ -662,6 +662,29 @@ define([], () => {
     },
 
     /**
+     * Append a child element containing CDATA. Split `]]>` across CDATA nodes
+     * because it cannot appear within a single CDATA section.
+     * @param {XMLDocument} doc XML document used to create elements.
+     * @param {Element} parent Parent element that receives the child.
+     * @param {string} name Child element name.
+     * @param {string} value Text value to append.
+     * @returns {Element} The appended child element.
+     */
+    appendCdataElement(doc, parent, name, value) {
+      const element = doc.createElement(name);
+      const text = this.removeInvalidXmlCharacters(value);
+      const parts = text.split("]]>");
+
+      parts.forEach((part, index) => {
+        const content = `${index ? ">" : ""}${part}${index < parts.length - 1 ? "]]" : ""}`;
+        element.appendChild(doc.createCDATASection(content));
+      });
+
+      parent.appendChild(element);
+      return element;
+    },
+
+    /**
      * Extract the XML declaration from raw XML text, if present.
      * @param {string|null|undefined} xmlString XML text to inspect.
      * @returns {string|null} XML declaration text.

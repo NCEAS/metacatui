@@ -193,6 +193,19 @@ define([
               // When an existing model has been synced render the results
               view.stopListening(view.model, "sync", view.renderPortalEditor);
               view.listenToOnce(view.model, "sync", view.renderPortalEditor);
+              view.listenToOnce(view.model, "error", (_model, response) => {
+                view.stopListening(view.model, "sync", view.renderPortalEditor);
+                view.hideLoading();
+                const message =
+                  typeof response === "string"
+                    ? response
+                    : "The portal could not be loaded. Please try again.";
+                MetacatUI.appView.showAlert({
+                  message: $("<p></p>").text(message)[0],
+                  classes: "alert-error non-fixed",
+                  container: view.el,
+                });
+              });
 
               // If the portal model already exists - fetch it.
               view.model.fetch();
@@ -309,6 +322,7 @@ define([
        */
       renderPortalEditor: function () {
         var view = this;
+        this.stopListening(this.model, "error");
 
         //Check if this is a plus portal
         if (MetacatUI.appModel.get("dataonePlusPreviewMode")) {

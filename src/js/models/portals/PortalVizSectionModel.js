@@ -1,8 +1,9 @@
-define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
-  $,
-  PortalSectionModel,
-  Map,
-) => {
+define([
+  "jquery",
+  "models/portals/PortalSectionModel",
+  "models/portals/PortalOption",
+  "models/maps/Map",
+], ($, PortalSectionModel, PortalOption, Map) => {
   /**
    * @class PortalVizSectionModel
    * @classdesc A Portal Section for Data Visualizations. This is still an
@@ -22,7 +23,29 @@ define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
           sectionType: "visualization",
           visualizationType: "",
           supportedVisualizationTypes: ["fever", "cesium"],
+          mapConfigError: null,
         };
+      },
+
+      /**
+       * Initializes a PortalVizSectionModel instance.
+       * @param {object} [attributes] - The attributes to set on the model
+       * @param {object} [attributes.mapConfig] - The map configuration to
+       * initialize the map model with
+       * @param {object} [options] - Options to pass to the model
+       * @since 0.0.0
+       */
+      initialize(attributes = {}, options = {}) {
+        PortalSectionModel.prototype.initialize.call(this, attributes, options);
+
+        if (
+          this.get("visualizationType") === "cesium" &&
+          !this.get("mapConfigError")
+        ) {
+          this.initializeCesiumMap(
+            this.get("mapConfig") || this.get("mapModel"),
+          );
+        }
       },
 
       /**
@@ -37,23 +60,20 @@ define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
           return {};
         }
 
-        // Create a jQuery object of the XML DOM
-        const $objectDOM = $(objectDOM);
         // Parse the XML using the parent class, PortalSectionModel.parse()
         const modelJSON = PortalSectionModel.prototype.parse.call(
           this,
           objectDOM,
         );
+        modelJSON.mapConfigError = null;
 
-        // Parse the visualization type
-        const allOptions = $objectDOM.children("option");
-        let vizType = "";
-
-        const vizTypeNode = allOptions.find(
-          "optionName:contains(visualizationType)",
+        const vizTypeOption = PortalOption.findDirectChild(
+          objectDOM,
+          "visualizationType",
         );
-        if (vizTypeNode.length) {
-          vizType = vizTypeNode.first().siblings("optionValue").text();
+        if (vizTypeOption) {
+          const vizType =
+            PortalOption.fromElement(vizTypeOption).optionValue[0];
 
           const vizTypes = this.get("supportedVisualizationTypes");
           if (Array.isArray(vizTypes) && vizTypes.includes(vizType)) {
@@ -63,17 +83,24 @@ define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
           // Find the map configuration JSON in the section option, if there is
           // one.
           if (vizType === "cesium") {
-            const mapConfigNode = allOptions.find(
-              "optionName:contains(mapConfig)",
+            const mapConfigOption = PortalOption.findDirectChild(
+              objectDOM,
+              "mapConfig",
             );
             let mapConfig = {};
-            if (mapConfigNode.length) {
-              mapConfig = mapConfigNode.first().siblings("optionValue").text();
-              if (mapConfig && mapConfig.length) {
-                mapConfig = JSON.parse(mapConfig);
+            if (mapConfigOption) {
+              const mapConfigJSON =
+                PortalOption.fromElement(mapConfigOption).optionValue[0];
+              try {
+                mapConfig = JSON.parse(mapConfigJSON);
+              } catch {
+                modelJSON.mapConfigError =
+                  "The map configuration contains invalid JSON.";
+                modelJSON.mapModel = null;
+                return modelJSON;
               }
             }
-            modelJSON.mapModel = new Map(mapConfig);
+            this.initializeCesiumMap(mapConfig);
           }
         }
 
@@ -81,10 +108,54 @@ define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
       },
 
       /**
-       *  Makes a copy of the original XML DOM and updates it with the new
-       *  values from the model. For now, this function only updates the label.
-       *  All other parts of Viz sections are not editable in MetacatUI, since
-       *  this is still an experimental feature.
+       * Initializes a Cesium map model for this portal section.
+       * @param {object|Map} [mapConfigOrModel] The map to initialize the map
+       * model with
+       * @since 0.0.0
+       */
+      initializeCesiumMap(mapConfigOrModel = {}) {
+        const mapModel =
+          mapConfigOrModel instanceof Map
+            ? mapConfigOrModel
+            : new Map(mapConfigOrModel || {});
+        this.set("mapModel", mapModel);
+      },
+
+      /**
+       * Write the map's exported configuration into this section's XML.
+       * @param {Element} objectDOM Section element to update
+       * @returns {undefined} No return value
+       * @throws {Error} When the existing map option is invalid
+       * @since 0.0.0
+       */
+      updateCesiumMapDOM(objectDOM) {
+        const mapConfig = JSON.stringify(this.get("mapModel").toConfig());
+        const existing = PortalOption.findDirectChild(objectDOM, "mapConfig");
+        const option = existing
+          ? PortalOption.fromElement(existing)
+          : new PortalOption({
+              optionName: "mapConfig",
+              optionValue: [mapConfig],
+            });
+        if (existing) option.optionValue[0] = mapConfig;
+        const element = option.toElement(objectDOM.ownerDocument);
+
+        if (existing) {
+          existing.replaceWith(element);
+        } else {
+          const insertAfter = this.getXMLPosition(objectDOM, "option");
+          if (insertAfter) {
+            insertAfter.after(element);
+          } else {
+            objectDOM.appendChild(element);
+          }
+        }
+      },
+
+      /**
+       *  Makes a copy of the original XML DOM and updates its label and map
+       *  configuration from the model. Other visualization settings are not
+       *  editable in MetacatUI.
        *  @returns {(XMLElement|string)} An updated ContentSectionType XML
        *  element, or an empty string when nothing is serialized
        */
@@ -97,14 +168,23 @@ define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
           // Or create a new DOM
         } else {
           // create an XML section element from scratch
-          const xmlText =
-            "<section>  <content>FEVer visualization</content><option><optionName>sectionType</optionName><optionValue>visualization</optionValue>" +
-            "</option><option><optionName>visualizationType</optionName><optionValue>fever</optionValue></option></section>";
+          const xmlText = `
+            <section>
+              <label></label>
+                <content>Visualization</content>
+                <option>
+                  <optionName>sectionType</optionName>
+                  <optionValue>visualization</optionValue>
+                </option>
+                <option>
+                  <optionName>visualizationType</optionName>
+                  <optionValue>${this.get("visualizationType")}</optionValue>
+                </option></section>`;
           const xmlDocument = new DOMParser().parseFromString(
             xmlText,
             "text/xml",
           );
-          [objectDOM] = $(xmlDocument).children();
+          [objectDOM] = $(xmlDocument).children().toArray();
         }
 
         // Update the required label
@@ -130,6 +210,14 @@ define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
               );
             }
           }
+        }
+
+        // Keep the original map option when its JSON could not be parsed.
+        if (
+          this.get("visualizationType") === "cesium" &&
+          !this.get("mapConfigError")
+        ) {
+          this.updateCesiumMapDOM(objectDOM);
         }
 
         // If nothing was serialized, return an empty string
@@ -178,7 +266,7 @@ define(["jquery", "models/portals/PortalSectionModel", "models/maps/Map"], (
        * this portal section model.
        */
       reportSectionChange(isActive) {
-        if (isActive) {
+        if (isActive && !this.get("mapConfigError")) {
           this.get("mapModel").trigger("change:searchparams");
         }
       },

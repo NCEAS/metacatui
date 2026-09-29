@@ -2,8 +2,15 @@ define([
   "models/portals/PortalModel",
   "models/portals/PortalSectionModel",
   "models/portals/PortalVizSectionModel",
+  "models/portals/PortalOption",
   "models/maps/Map",
-], (PortalModel, PortalSectionModel, PortalVizSectionModel, Map) => {
+], (
+  PortalModel,
+  PortalSectionModel,
+  PortalVizSectionModel,
+  PortalOption,
+  Map,
+) => {
   const expect = chai.expect;
 
   const mixedMapConfig = {
@@ -70,12 +77,33 @@ define([
               <optionValue>${JSON.stringify(mixedMapConfig)}</optionValue>
             </option>
           </section>
+          <option><optionName>hideData</optionName><optionValue>true</optionValue></option>
+          <option><optionName>customRoot</optionName><optionValue>keep root</optionValue></option>
         </por:portal>`,
         "application/xml",
       ),
     );
 
   describe("PortalVizSectionModel Test Suite", () => {
+    it("selects a visualization section by the exact sectionType option", () => {
+      const portal = parsePortal(
+        `<por:portal xmlns:por="https://purl.dataone.org/portals-1.1.0">
+          <label>Test portal</label>
+          <definition><filter><field>formatType</field><value>METADATA</value></filter></definition>
+          <section>
+            <label>Map</label>
+            <content><markdown>Visualization</markdown></content>
+            <option><optionName>othersectionType</optionName><optionValue>freeform</optionValue></option>
+            <option><optionName>sectionType</optionName><optionValue>visualization</optionValue></option>
+            <option><optionName>visualizationType</optionName><optionValue>cesium</optionValue></option>
+            <option><optionName>mapConfig</optionName><optionValue>{"showToolbar":false}</optionValue></option>
+          </section>
+        </por:portal>`,
+      );
+
+      expect(portal.get("sections")[0]).to.be.instanceof(PortalVizSectionModel);
+    });
+
     it("preserves Cesium options when an existing section is renamed", () => {
       const mapConfig = {
         homePosition: {
@@ -96,12 +124,22 @@ define([
               <optionValue>visualization</optionValue>
             </option>
             <option>
+              <optionName>visualizationTypeExtra</optionName>
+              <optionValue>fever</optionValue>
+            </option>
+            <option>
               <optionName>visualizationType</optionName>
               <optionValue>cesium</optionValue>
+              <optionValue>keep visualization extra</optionValue>
+            </option>
+            <option>
+              <optionName>mapConfigExtra</optionName>
+              <optionValue>leave me</optionValue>
             </option>
             <option>
               <optionName>mapConfig</optionName>
               <optionValue>${JSON.stringify(mapConfig)}</optionValue>
+              <optionValue>keep map extra</optionValue>
             </option>
           </section>
         </por:portal>`,
@@ -137,6 +175,11 @@ define([
       expect(getOptionValue(updatedDOM, "visualizationType")).to.equal(
         "cesium",
       );
+      expect(
+        PortalOption.fromElement(
+          PortalOption.findDirectChild(updatedDOM, "visualizationType"),
+        ).optionValue,
+      ).to.deep.equal(["cesium", "keep visualization extra"]);
       const updatedMapConfig = JSON.parse(
         getOptionValue(updatedDOM, "mapConfig"),
       );
@@ -144,6 +187,17 @@ define([
         mapConfig.homePosition,
       );
       expect(updatedMapConfig.showToolbar).to.equal(false);
+      const mapOptions = Array.from(updatedDOM.children).filter(
+        (child) =>
+          child.localName === "option" &&
+          child.firstElementChild?.textContent === "mapConfig",
+      );
+      expect(mapOptions).to.have.length(1);
+      expect(mapOptions[0].children[1].firstChild.nodeType).to.equal(4);
+      expect(PortalOption.fromElement(mapOptions[0]).optionValue[1]).to.equal(
+        "keep map extra",
+      );
+      expect(getOptionValue(updatedDOM, "mapConfigExtra")).to.equal("leave me");
     });
 
     it("adds and removes a visualization section instance", () => {
@@ -159,15 +213,69 @@ define([
       expect(portal.get("sections")[0]).to.equal(sectionToKeep);
     });
 
+    it("creates a Cesium section by type", () => {
+      const portal = new PortalModel({});
+      const section = portal.addSection("cesium");
+
+      expect(section).to.be.instanceof(PortalVizSectionModel);
+      expect(section.get("visualizationType")).to.equal("cesium");
+      expect(section.get("mapModel")).to.be.instanceof(Map);
+      expect(portal.sectionIsDefault(section)).to.equal(false);
+
+      section.set("label", "Map");
+      const sectionDOM = section.updateDOM();
+      expect(sectionDOM.getElementsByTagName("label")[0].textContent).to.equal(
+        "Map",
+      );
+      expect(sectionDOM.firstElementChild.tagName).to.equal("label");
+      expect(getOptionValue(sectionDOM, "visualizationType")).to.equal(
+        "cesium",
+      );
+      const mapConfig = PortalOption.findDirectChild(sectionDOM, "mapConfig");
+      expect(mapConfig).to.exist;
+      expect(mapConfig.children[1].firstChild.nodeType).to.equal(4);
+      expect(JSON.parse(mapConfig.children[1].textContent)).to.deep.equal({});
+    });
+
     it("round-trips freeform and Cesium sections through serialization", () => {
       const portal = createMixedPortal();
+      portal.set("hideData", false);
+      portal.set("theme", "ocean");
       const serializedPortal = portal.serialize();
 
       expect(serializedPortal).to.be.a("string").and.not.empty;
+      const serializedXML = new DOMParser().parseFromString(
+        serializedPortal,
+        "application/xml",
+      );
+      const root = serializedXML.documentElement;
+      const mapSectionElement = Array.from(root.children).find(
+        (child) =>
+          child.localName === "section" &&
+          child.firstElementChild?.textContent === "Map",
+      );
+      const mapOption = PortalOption.findDirectChild(
+        mapSectionElement,
+        "mapConfig",
+      );
+
+      expect(root.namespaceURI).to.equal(
+        "https://purl.dataone.org/portals-1.1.0",
+      );
+      expect(mapOption.children[1].firstChild.nodeType).to.equal(4);
+      expect(
+        JSON.parse(mapOption.children[1].textContent).showToolbar,
+      ).to.equal(false);
+      expect(
+        PortalOption.findDirectChild(root, "customRoot").children[1]
+          .textContent,
+      ).to.equal("keep root");
 
       const reloadedPortal = parsePortal(serializedPortal);
       const [freeformSection, mapSection] = reloadedPortal.get("sections");
 
+      expect(reloadedPortal.get("hideData")).to.equal(false);
+      expect(reloadedPortal.get("theme")).to.equal("ocean");
       expect(reloadedPortal.get("sections")).to.have.length(2);
       expect(
         reloadedPortal.get("sections").map((section) => section.get("label")),
@@ -185,6 +293,47 @@ define([
         mixedMapConfig.homePosition,
       );
       expect(mapSection.get("mapModel").get("showToolbar")).to.equal(false);
+    });
+
+    it("serializes and reparses a new portal with root and Cesium options", () => {
+      const portal = new PortalModel({});
+      portal.set("label", "New portal");
+      portal.set("hideMetrics", true);
+      portal.get("definitionFilters").add({
+        fields: ["formatType"],
+        values: ["METADATA"],
+      });
+      const section = portal.addSection("cesium");
+      section.set("label", "Map");
+
+      const serialized = portal.serialize();
+      expect(serialized).to.be.a("string").and.not.empty;
+      const xml = new DOMParser().parseFromString(
+        serialized,
+        "application/xml",
+      );
+      const root = xml.documentElement;
+      const sectionElement = Array.from(root.children).find(
+        (child) => child.localName === "section",
+      );
+      const mapOption = PortalOption.findDirectChild(
+        sectionElement,
+        "mapConfig",
+      );
+
+      expect(root.namespaceURI).to.equal(
+        "https://purl.dataone.org/portals-1.1.0",
+      );
+      expect(PortalOption.findDirectChild(root, "hideMetrics")).to.exist;
+      expect(mapOption.children[1].firstChild.nodeType).to.equal(4);
+      expect(JSON.parse(mapOption.children[1].textContent)).to.deep.equal({});
+
+      const reloaded = parsePortal(xml);
+      expect(reloaded.get("hideMetrics")).to.equal(true);
+      expect(reloaded.get("sections")[0]).to.be.instanceof(
+        PortalVizSectionModel,
+      );
+      expect(reloaded.get("sections")[0].get("mapModel")).to.be.instanceof(Map);
     });
 
     it("persists Cesium section removal without dropping freeform content", () => {
@@ -210,6 +359,7 @@ define([
       expect(remainingSection.get("content").get("markdown")).to.equal(
         "Regular body",
       );
+      expect(reloadedPortal.get("hideData")).to.equal(true);
     });
   });
 });

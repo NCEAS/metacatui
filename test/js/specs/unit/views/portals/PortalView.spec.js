@@ -72,5 +72,22 @@ define([
 
       expect(state.renderMap.calledOnce).to.equal(true);
     });
+
+    it("shows an invalid map error without constructing a replacement map", () => {
+      state.renderMap.restore();
+      const section = new PortalVizSectionModel({
+        label: "Map",
+        visualizationType: "cesium",
+        mapModel: null,
+        mapConfigError: "The map configuration contains invalid JSON.",
+      });
+      const view = new PortalVisualizationsView({ model: section });
+
+      view.renderMap();
+
+      expect(view.$el.text()).to.contain("invalid JSON");
+      expect(section.get("mapModel")).to.equal(null);
+      view.remove();
+    });
   });
 });
