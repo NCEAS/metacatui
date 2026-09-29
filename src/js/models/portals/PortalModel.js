@@ -414,11 +414,23 @@ define([
 
         let requestSettings = {
           dataType: "xml",
-          error(model, response) {
-            model.trigger("error", model, response);
+          success: (response) => {
+            let attributes;
+            try {
+              attributes = this.parse(response);
+            } catch (error) {
+              this.trigger("error", this, error.message);
+              return;
+            }
+
+            this.set(attributes);
+            this.trigger("sync", this, response, requestSettings);
+          },
+          error: (response) => {
+            this.trigger("error", this, response);
 
             if (response && response.status === 404) {
-              model.trigger("notFound");
+              this.trigger("notFound");
             }
           },
         };
@@ -434,8 +446,9 @@ define([
           MetacatUI.appUserModel.createAjaxSettings(),
         );
 
-        // Call Backbone.Model.fetch()
-        return Backbone.Model.prototype.fetch.call(this, requestSettings);
+        // Parse before setting attributes or emitting sync so a failed load
+        // cannot open the editor with incomplete data.
+        return this.sync("read", this, requestSettings);
       },
 
       /**

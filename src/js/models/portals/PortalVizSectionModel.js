@@ -88,9 +88,16 @@ define([
             );
             let mapConfig = {};
             if (mapConfigOption) {
-              mapConfig = JSON.parse(
-                PortalOption.fromElement(mapConfigOption).optionValue[0],
-              );
+              const mapConfigJSON =
+                PortalOption.fromElement(mapConfigOption).optionValue[0];
+              try {
+                mapConfig = JSON.parse(mapConfigJSON);
+              } catch (error) {
+                throw new SyntaxError(
+                  "The portal could not be loaded because its map configuration contains invalid JSON.",
+                  { cause: error },
+                );
+              }
             }
             this.initializeCesiumMap(mapConfig);
           }

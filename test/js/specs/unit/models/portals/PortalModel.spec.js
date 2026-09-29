@@ -1,4 +1,5 @@
-define(["models/portals/PortalModel", "models/portals/PortalImage"], (
+define(["jquery", "models/portals/PortalModel", "models/portals/PortalImage"], (
+  $,
   PortalModel,
   PortalImage,
 ) => {
@@ -28,6 +29,101 @@ define(["models/portals/PortalModel", "models/portals/PortalImage"], (
       (child) => child.localName === "option",
     );
   };
+
+  describe("PortalModel fetch", () => {
+    let sandbox;
+    let portal;
+    let ajax;
+    let xml;
+
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+      portal = new PortalModel({ id: "test-load-error", label: "Original" });
+      ajax = sandbox.stub($, "ajax").returns({});
+      // Invalid XML response
+      xml = new DOMParser().parseFromString(
+        `<por:portal xmlns:por="https://purl.dataone.org/portals-1.1.0">
+          <label>Loaded portal</label>
+          <section>
+            <label>Map</label>
+            <content><markdown>Visualization</markdown></content>
+            <option><optionName>sectionType</optionName><optionValue>visualization</optionValue></option>
+            <option><optionName>visualizationType</optionName><optionValue>cesium</optionValue></option>
+            <option><optionName>mapConfig</optionName><optionValue>{invalid}</optionValue></option>
+          </section>
+        </por:portal>`,
+        "application/xml",
+      );
+    });
+
+    afterEach(() => {
+      portal.stopListening();
+      portal.off();
+      delete MetacatUI.portals["test-load-error"];
+      delete window.filterXML;
+      sandbox.restore();
+    });
+
+    it("reports malformed map JSON without applying the response or syncing", () => {
+      const error = sandbox.spy();
+      const sync = sandbox.spy();
+      const sections = portal.get("sections");
+      portal.on("error", error);
+      portal.on("sync", sync);
+      portal.fetch({ objectOnly: true });
+
+      // Simulate a successful XML response. Invalid map JSON is reported via
+      // the error event.
+      expect(() => ajax.firstCall.args[0].success(xml)).not.to.throw();
+
+      expect(error.calledOnce).to.equal(true);
+      expect(error.firstCall.args[0]).to.equal(portal);
+      expect(error.firstCall.args[1]).to.match(
+        /map configuration.*invalid JSON/i,
+      );
+      expect(sync.called).to.equal(false);
+      expect(portal.get("label")).to.equal("Original");
+      expect(portal.get("sections")).to.equal(sections);
+      expect(portal.get("objectXML")).not.to.equal(xml);
+      expect(xml.getElementsByTagName("optionValue")[2].textContent).to.equal(
+        "{invalid}",
+      );
+    });
+
+    it("loads a valid map config and fires sync event", () => {
+      xml.getElementsByTagName("optionValue")[2].textContent =
+        '{"showToolbar":false}';
+      const sync = sandbox.spy();
+      const error = sandbox.spy();
+      portal.on("sync", sync);
+      portal.on("error", error);
+      portal.fetch({ objectOnly: true });
+
+      ajax.firstCall.args[0].success(xml);
+
+      expect(error.called).to.equal(false);
+      expect(sync.calledOnce).to.equal(true);
+      expect(portal.get("label")).to.equal("Loaded portal");
+      expect(
+        portal.get("sections")[0].get("mapModel").get("showToolbar"),
+      ).to.equal(false);
+      expect(portal.get("objectXML")).to.equal(xml);
+    });
+
+    it("reports missing portal responses", () => {
+      const error = sandbox.spy();
+      const notFound = sandbox.spy();
+      const response = { status: 404 };
+      portal.on("error", error);
+      portal.on("notFound", notFound);
+      portal.fetch({ objectOnly: true });
+
+      ajax.firstCall.args[0].error(response);
+
+      expect(error.calledWith(portal, response)).to.equal(true);
+      expect(notFound.calledOnce).to.equal(true);
+    });
+  });
 
   describe("PortalModel root options", () => {
     it("projects the first value, booleans, and page order from direct root options", () => {
