@@ -358,18 +358,18 @@ define([
         }
       },
 
-      validateTimeFormat: function (timeString) {
-        //If the last character is a "Z", then remove it for now
-        if (
-          timeString.substring(timeString.length - 1, timeString.length) == "Z"
-        ) {
-          timeString = timeString.replace("Z", "", "g");
-        }
+      validateTimeFormat(time) {
+        // xs:time allows fractional seconds and a time zone designator
+        // (Z, +hh:mm or -hh:mm), so remove them before checking HH:MM:SS
+        const timeString = time.replace(
+          /(\.\d+)?(Z|[+-](?:(?:0\d|1[0-3]):[0-5]\d|14:00))?$/,
+          "",
+        );
 
-        if (timeString.length == 8) {
-          var timeParts = timeString.split(":");
+        if (timeString.length === 8) {
+          const timeParts = timeString.split(":");
 
-          if (timeParts.length != 3) {
+          if (timeParts.length !== 3) {
             return "Time must be formatted as HH:MM:SS";
           }
 
