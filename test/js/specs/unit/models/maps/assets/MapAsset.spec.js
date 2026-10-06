@@ -46,9 +46,7 @@ define([
     });
 
     it("preserves imagery aliases and their configured options", () => {
-      // These map config names are shortcuts. CesiumImagery replaces them with
-      // provider types and adds options for the live map. Saving should keep
-      // the shortcut and the options from the config.
+      // Provider creation expands these shortcuts without changing the source.
       ["NaturalEarthII", "USGSImageryTopo"].forEach((type) => {
         const options = { parameters: { custom: "configured" } };
         const asset = new CesiumImagery({
@@ -58,12 +56,42 @@ define([
           cesiumOptions: options,
         });
 
+        expect(asset.get("type")).to.equal(type);
+        expect(options).to.deep.equal({
+          parameters: { custom: "configured" },
+        });
         expect(asset.toConfig().type).to.equal(type);
         expect(asset.toConfig().cesiumOptions).to.deep.equal({
           parameters: { custom: "configured" },
         });
         expect(asset.toConfig().cesiumOptions).not.to.equal(options);
       });
+    });
+
+    it("exports imagery source edits during the normal model change event", () => {
+      const asset = new CesiumImagery({
+        type: "OpenStreetMapImageryProvider",
+        visible: false,
+      });
+      let exported;
+      asset.on("change", () => {
+        exported = asset.toConfig();
+      });
+
+      asset.set(
+        {
+          type: "IonImageryProvider",
+          cesiumOptions: { ionAssetId: "2" },
+        },
+        { validate: true },
+      );
+
+      expect(exported.type).to.equal("IonImageryProvider");
+      expect(exported.cesiumOptions).to.deep.equal({ ionAssetId: "2" });
+      exported.cesiumOptions.ionAssetId = "3";
+      expect(asset.get("cesiumOptions").ionAssetId).to.equal("2");
+      expect(asset.toConfig().cesiumOptions.ionAssetId).to.equal("2");
+      asset.stopListening();
     });
 
     it("keeps an icon PID after the SVG is fetched", () => {

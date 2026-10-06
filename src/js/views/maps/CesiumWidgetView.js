@@ -100,6 +100,8 @@ define([
             "WebMapTileServiceImageryProvider",
             "WebMapServiceImageryProvider",
             "OpenStreetMapImageryProvider",
+            "NaturalEarthII",
+            "USGSImageryTopo",
           ],
           renderFunction: "addImagery",
           removeFunction: "removeImagery",

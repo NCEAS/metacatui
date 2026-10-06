@@ -250,6 +250,19 @@ define([
             this.set("content", "visualization");
           }
 
+          if (
+            this.get("visualizationType") === "cesium" &&
+            !this.get("mapConfigError")
+          ) {
+            this.get("mapModel")
+              .getAllLayers()
+              .forEach((layer) => {
+                if (!layer.isValid()) {
+                  errors.map = "Please correct the invalid layer settings.";
+                }
+              });
+          }
+
           // Return the errors object
           if (Object.keys(errors).length) return errors;
           return undefined;

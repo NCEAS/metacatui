@@ -42,6 +42,12 @@ define([
           function (model) {
             const rect = model.get("cesiumModel").rectangle;
             expect(rect.constructor.name).to.equal("Rectangle");
+            expect(model.get("cesiumOptions").rectangle).to.deep.equal(
+              boundingBox,
+            );
+            expect(model.toConfig().cesiumOptions.tilingScheme).to.equal(
+              "GeographicTilingScheme",
+            );
             done();
           },
           function (error) {
@@ -61,6 +67,79 @@ define([
           },
         );
       });
+    });
+  });
+
+  describe("CesiumImagery source shortcuts", () => {
+    const state = cleanState(() => {
+      const sandbox = sinon.createSandbox();
+      sandbox.stub(CesiumImagery.prototype, "getThumbnail");
+      return { sandbox };
+    }, beforeEach);
+
+    afterEach(() => {
+      state.model?.stopListening();
+      state.sandbox.restore();
+    });
+
+    it("expands Natural Earth only for the provider constructor", async () => {
+      state.sandbox
+        .stub(Cesium, "buildModuleUrl")
+        .returns("/src/components/cesium/Assets/Textures/NaturalEarthII");
+      const cesiumOptions = { minimumLevel: 1 };
+      state.model = new CesiumImagery({
+        type: "NaturalEarthII",
+        visible: false,
+        cesiumOptions,
+      });
+      const ready = new Promise((resolve) => {
+        state.model.once("change:cesiumModel", resolve);
+      });
+      state.model.createCesiumModel();
+      await ready;
+
+      const provider = state.model.get("cesiumModel").imageryProvider;
+      expect(provider).to.be.instanceof(Cesium.TileMapServiceImageryProvider);
+      expect(provider.url).to.contain(
+        "/src/components/cesium/Assets/Textures/NaturalEarthII",
+      );
+      expect(state.model.get("type")).to.equal("NaturalEarthII");
+      expect(cesiumOptions).to.deep.equal({ minimumLevel: 1 });
+      expect(state.model.toConfig().cesiumOptions).to.deep.equal(cesiumOptions);
+    });
+
+    it("expands USGS only for the provider and retains its metadata defaults", async () => {
+      const createProvider = state.sandbox.spy(
+        Cesium,
+        "WebMapServiceImageryProvider",
+      );
+      const cesiumOptions = { parameters: { custom: "configured" } };
+      state.model = new CesiumImagery({
+        type: "USGSImageryTopo",
+        visible: false,
+        cesiumOptions,
+      });
+      state.model.createCesiumModel();
+      await state.model.whenReady();
+
+      expect(createProvider.calledOnce).to.equal(true);
+      expect(createProvider.firstCall.args[0]).to.deep.equal({
+        url: "https://basemap.nationalmap.gov:443/arcgis/services/USGSImageryTopo/MapServer/WmsServer",
+        layers: "0",
+        parameters: { transparent: true, format: "image/png" },
+      });
+      expect(state.model.get("type")).to.equal("USGSImageryTopo");
+      expect(cesiumOptions).to.deep.equal({
+        parameters: { custom: "configured" },
+      });
+      const config = state.model.toConfig();
+      expect(config.cesiumOptions).to.deep.equal(cesiumOptions);
+      expect(config.label).to.equal("USGS Imagery Topo");
+      expect(config.attribution).to.contain("USGS The National Map");
+      expect(config.description).to.contain("USGS Imagery Topo");
+      expect(config.moreInfoLink).to.equal(
+        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer",
+      );
     });
   });
 

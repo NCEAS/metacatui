@@ -2,10 +2,19 @@ define([
   "views/maps/CesiumWidgetView",
   "collections/maps/MapAssets",
   "collections/maps/AssetCategories",
+  "models/maps/assets/MapAsset",
   "cesium",
   "/test/js/specs/shared/clean-state.js",
-], (CesiumWidgetView, MapAssets, AssetCategories, Cesium, cleanState) => {
+], (
+  CesiumWidgetView,
+  MapAssets,
+  AssetCategories,
+  MapAsset,
+  Cesium,
+  cleanState,
+) => {
   const expect = chai.expect;
+  chai.should();
   const spy = sinon.spy();
 
   describe("CesiumWidgetView Test Suite", () => {
@@ -28,6 +37,30 @@ define([
     });
 
     describe("render", () => {
+      it("adds and removes imagery layers whose source retains a shortcut type", () => {
+        const addImagery = sinon.spy();
+        const removeImagery = sinon.spy();
+        state.view.addImagery = addImagery;
+        state.view.removeImagery = removeImagery;
+
+        ["NaturalEarthII", "USGSImageryTopo"].forEach((type) => {
+          const cesiumModel = {};
+          const asset = new MapAsset({
+            type,
+            visible: true,
+            status: "ready",
+            cesiumModel,
+          });
+
+          state.view.addAsset(asset);
+          expect(addImagery.calledWith(cesiumModel)).to.equal(true);
+          state.view.removeAsset(asset);
+          expect(removeImagery.calledWith(cesiumModel)).to.equal(true);
+        });
+        expect(addImagery.callCount).to.equal(2);
+        expect(removeImagery.callCount).to.equal(2);
+      });
+
       it("adds layers in reverse orders", () => {
         state.view.model.set(
           "layers",
