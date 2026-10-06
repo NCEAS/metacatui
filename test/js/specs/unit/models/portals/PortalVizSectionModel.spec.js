@@ -4,12 +4,14 @@ define([
   "models/portals/PortalVizSectionModel",
   "models/portals/PortalOption",
   "models/maps/Map",
+  "models/maps/assets/CesiumImagery",
 ], (
   PortalModel,
   PortalSectionModel,
   PortalVizSectionModel,
   PortalOption,
   Map,
+  CesiumImagery,
 ) => {
   const expect = chai.expect;
 
@@ -91,6 +93,58 @@ define([
     );
 
   describe("PortalVizSectionModel Test Suite", () => {
+    it("blocks portal Save when any categorized imagery layer is incomplete", () => {
+      const sandbox = sinon.createSandbox();
+      sandbox.stub(CesiumImagery.prototype, "createCesiumModelWhenVisible");
+      sandbox.stub(CesiumImagery.prototype, "getThumbnail");
+      const portal = parsePortal(`
+        <por:portal xmlns:por="https://purl.dataone.org/portals-1.1.0">
+          <label>map-portal</label>
+          <name>Map portal</name>
+          <definition><filter><field>formatType</field><value>METADATA</value></filter></definition>
+        </por:portal>`);
+      const section = portal.addSection("cesium");
+      section.set(
+        "mapModel",
+        new Map({
+          layerCategories: [
+            {
+              label: "Imagery",
+              layers: [
+                {
+                  type: "WebMapTileServiceImageryProvider",
+                  cesiumOptions: { url: "/incomplete" },
+                },
+                {
+                  type: "IonImageryProvider",
+                  cesiumOptions: { ionAssetId: "0" },
+                },
+              ],
+            },
+          ],
+        }),
+      );
+      const layers = section.get("mapModel").getAllLayers();
+      try {
+        expect(section.validate()).to.have.property("map");
+        expect(layers[0].validationError).to.have.property("cesiumOptions.url");
+        expect(layers[1].validationError).to.have.property(
+          "cesiumOptions.ionAssetId",
+        );
+        expect(portal.save()).to.equal(false);
+        expect(portal.validationError).to.have.property("sections");
+        layers[0].set("cesiumOptions", {
+          url: "/tiles/{TileMatrix}/{TileCol}/{TileRow}",
+        });
+        layers[1].set("cesiumOptions", { ionAssetId: "2" });
+        expect(section.validate()).to.equal(undefined);
+      } finally {
+        layers.forEach((layer) => layer.stopListening());
+        portal.stopListening();
+        sandbox.restore();
+      }
+    });
+
     it("selects a visualization section by the exact sectionType option", () => {
       const portal = parsePortal(
         `<por:portal xmlns:por="https://purl.dataone.org/portals-1.1.0">

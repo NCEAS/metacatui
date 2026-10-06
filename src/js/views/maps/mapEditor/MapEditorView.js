@@ -1,9 +1,21 @@
 "use strict";
 
-define(["backbone", "models/maps/Map"], (Backbone, Map) => {
+define([
+  "backbone",
+  "models/maps/Map",
+  "models/maps/assets/CesiumImagery",
+  "views/maps/mapEditor/MapAssetEditorView",
+  `text!${MetacatUI.root}/css/map-view.css`,
+], (Backbone, Map, CesiumImagery, MapAssetEditorView, MapCSS) => {
   const BASE_CLASS = "map-editor";
   const CLASS_NAMES = {
     BASE: BASE_CLASS,
+    WORKSPACE: `${BASE_CLASS}__workspace`,
+    LAYERS: `${BASE_CLASS}__layers`,
+    LIST: `${BASE_CLASS}__list`,
+    LAYER: `${BASE_CLASS}__layer`,
+    PANEL: `${BASE_CLASS}__panel`,
+    HELP: `${BASE_CLASS}__help`,
   };
 
   /**
@@ -22,6 +34,12 @@ define(["backbone", "models/maps/Map"], (Backbone, Map) => {
        */
       model: null,
 
+      /**
+       * The mounted editor for the asset being edited.
+       * @type {MapAssetEditorView|null}
+       */
+      assetEditorView: null,
+
       /** @inheritdoc */
       className: CLASS_NAMES.BASE,
 
@@ -30,41 +48,146 @@ define(["backbone", "models/maps/Map"], (Backbone, Map) => {
         "data-category": "map",
       },
 
+      /** @inheritdoc */
+      events: {
+        "click [data-asset]": "editAsset",
+      },
+
       /**
        * Create the HTML for this view.
-       * @param {object} variables The variables to use in the template.
        * @returns {string} The HTML for this view.
        */
-      template(variables) {
-        const { layerNames } = variables;
-        const layerItems = layerNames
-          .map((name) => `<li>${name}</li>`)
-          .join("");
+      template() {
         return `
-          <h3>The Map is not yet editable. The following layers are present:</h3>
-          <ul>${layerItems}</ul>
+          <h3>Map configuration</h3>
+          <div class="${CLASS_NAMES.WORKSPACE}">
+            <section class="${CLASS_NAMES.LAYERS}" aria-label="Layers">
+              <h4>Layers</h4>
+            </section>
+            <section id="${this.cid}-asset-panel" class="${CLASS_NAMES.PANEL}" aria-label="Layer settings">
+              <p>Select a layer to edit its settings.</p>
+            </section>
+          </div>
+          <p class="${CLASS_NAMES.HELP}">Save the portal to keep your changes.</p>
         `;
       },
 
       /** @inheritdoc */
       initialize(options = {}) {
         this.model = options.model || new Map();
+        MetacatUI.appModel.addCSS(MapCSS, "mapView");
       },
 
       /**
-       * Displays the map configuration as JSON.
+       * Display all configured layers and a panel for editing one asset.
        * @returns {MapEditorView} This view
        */
       render() {
-        const layers = this.model.getAllLayers();
-        const layerNames = layers.map((layer) => layer.get("label"));
-        this.el.innerHTML = this.template({ layerNames });
+        this.onClose();
+        this.el.classList.add(CLASS_NAMES.BASE);
+        this.el.innerHTML = this.template();
+        const container = this.el.querySelector(`.${CLASS_NAMES.LAYERS}`);
+        const categories = this.model.get("layerCategories");
+        this.model.getLayerGroups().forEach((layers, index) => {
+          const category = categories?.at(index);
+          if (category) {
+            const heading = document.createElement("h5");
+            heading.textContent = category.get("label");
+            container.append(heading);
+          }
+          const list = document.createElement("ul");
+          list.className = CLASS_NAMES.LIST;
+          layers.each((asset) => {
+            const item = document.createElement("li");
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = CLASS_NAMES.LAYER;
+            button.dataset.asset = asset.cid;
+            button.setAttribute("aria-pressed", "false");
+            button.setAttribute("aria-controls", `${this.cid}-asset-panel`);
+            button.textContent = asset.get("label") || "Untitled layer";
+            item.append(button);
+            list.append(item);
+          });
+          container.append(list);
+          this.listenTo(layers, "update reset", this.render);
+          this.listenTo(layers, "change:label", (asset) => {
+            this.el.querySelector(`[data-asset="${asset.cid}"]`).textContent =
+              asset.get("label") || "Untitled layer";
+          });
+        });
+        if (!this.model.getAllLayers().length) {
+          const message = document.createElement("p");
+          message.textContent = "No layers configured.";
+          container.append(message);
+        }
         return this;
       },
 
-      /** Cleans up the view and stops listening to events */
+      /**
+       * Open settings for an existing asset without changing live map selection.
+       * @param {Event} event The layer button click
+       */
+      editAsset(event) {
+        const button = event.currentTarget;
+        if (button.getAttribute("aria-pressed") === "true") return;
+        this.assetEditorView?.remove();
+        this.assetEditorView = null;
+        this.el.querySelectorAll("[data-asset]").forEach((row) => {
+          row.setAttribute("aria-pressed", String(row === button));
+        });
+        const asset = this.model
+          .getAllLayers()
+          .find((layer) => layer.cid === button.dataset.asset);
+        const panel = this.el.querySelector(`.${CLASS_NAMES.PANEL}`);
+        panel.replaceChildren();
+        if (
+          asset instanceof CesiumImagery &&
+          MapAssetEditorView.SUPPORTED_TYPES.includes(asset.get("type"))
+        ) {
+          this.assetEditorView = new MapAssetEditorView({ model: asset });
+          panel.append(this.assetEditorView.render().el);
+        } else {
+          const message = document.createElement("p");
+          message.textContent = "Editing this layer is not supported yet.";
+          panel.append(message);
+        }
+      },
+
+      /** Open the first invalid layer and focus its source settings. */
+      showValidation() {
+        const asset = this.model
+          .getAllLayers()
+          .find((layer) => layer.validationError);
+        if (!asset) return;
+        const button = this.el.querySelector(`[data-asset="${asset.cid}"]`);
+        button.click();
+        if (!this.assetEditorView) {
+          button.focus();
+          return;
+        }
+        this.assetEditorView.showValidation();
+        const input = this.assetEditorView.el.querySelector(
+          '[aria-invalid="true"]',
+        );
+        if (input) {
+          const details = input.closest("details");
+          if (details) details.open = true;
+          input.focus();
+        }
+      },
+
+      /** Remove the child editor and stop listening to layer changes. */
       onClose() {
+        this.assetEditorView?.remove();
+        this.assetEditorView = null;
         this.stopListening();
+      },
+
+      /** @inheritdoc */
+      remove() {
+        this.onClose();
+        return Backbone.View.prototype.remove.call(this);
       },
     },
   );

@@ -2,8 +2,12 @@ define([
   "jquery",
   "backbone",
   "models/maps/Map",
+  "models/maps/assets/CesiumImagery",
   "models/portals/PortalSectionModel",
   "models/portals/PortalVizSectionModel",
+  "models/portals/PortalModel",
+  "views/EditorView",
+  "views/portals/editor/PortalEditorView",
   "views/portals/editor/PortEditorMapSectionView",
   "views/portals/editor/PortEditorMdSectionView",
   "views/portals/editor/PortEditorSectionsView",
@@ -12,8 +16,12 @@ define([
   $,
   Backbone,
   Map,
+  CesiumImagery,
   PortalSectionModel,
   PortalVizSectionModel,
+  PortalModel,
+  EditorView,
+  PortalEditorView,
   PortEditorMapSectionView,
   PortEditorMdSectionView,
   PortEditorSectionsView,
@@ -121,6 +129,164 @@ define([
       expect(state.view.removeSectionLink.calledWith(sectionView)).to.equal(
         true,
       );
+    });
+
+    it("closes a previous map editor before rerendering its section", () => {
+      const section = new PortalVizSectionModel({
+        label: "Map",
+        visualizationType: "cesium",
+      });
+      const sectionView = new PortEditorMapSectionView({
+        model: section,
+      }).render();
+      const previous = sectionView.mapEditorView;
+      const stopListening = state.sandbox.spy(previous, "stopListening");
+      sectionView.render();
+      expect(stopListening.called).to.equal(true);
+      expect(sectionView.mapEditorView).not.to.equal(previous);
+      sectionView.remove();
+    });
+
+    it("cleans up a map editor when its portal section is deleted", () => {
+      const section = new PortalVizSectionModel({
+        label: "Map",
+        visualizationType: "cesium",
+      });
+      state.model.set("sections", [section]);
+      state.view.renderContentSection(section);
+      const sectionView = state.view.getSectionByModel(section);
+      const sectionLink = $("<li></li>")
+        .data("model", section)
+        .data("view", sectionView)
+        .data("section-type", "cesium");
+      state.view.removeSection(null, sectionLink);
+      expect(sectionView.mapEditorView).to.equal(null);
+      expect(state.view.el.contains(sectionView.el)).to.equal(false);
+    });
+
+    it("shows portal save controls after a field change without requiring a keypress", () => {
+      state.sandbox.stub(
+        CesiumImagery.prototype,
+        "createCesiumModelWhenVisible",
+      );
+      state.sandbox.stub(CesiumImagery.prototype, "getThumbnail");
+      const mapModel = new Map({
+        layers: [
+          {
+            label: "Imagery",
+            type: "WebMapTileServiceImageryProvider",
+            cesiumOptions: { url: "/tiles/{TileMatrix}/{TileCol}/{TileRow}" },
+          },
+        ],
+      });
+      const section = new PortalVizSectionModel({
+        label: "Map",
+        visualizationType: "cesium",
+        mapModel,
+      });
+      const editorView = new EditorView({ el: document.createElement("div") });
+      editorView.el.innerHTML = '<div class="editor-controls hidden"></div>';
+      state.view.editorView = editorView;
+      const controls = editorView.el.querySelector(".editor-controls");
+      state.view.renderContentSection(section);
+      const sectionView = state.view.getSectionByModel(section);
+      sectionView.el.querySelector("[data-asset]").click();
+      const provider = sectionView.el.querySelector('[name="type"]');
+      provider.value = "IonImageryProvider";
+      provider.dispatchEvent(new Event("change", { bubbles: true }));
+      expect(controls.classList.contains("hidden")).to.equal(false);
+      sectionView.el.querySelector('[name="ionAssetId"]').value = "0";
+      sectionView.el
+        .querySelector('[name="ionAssetId"]')
+        .dispatchEvent(new Event("change", { bubbles: true }));
+      expect(
+        mapModel.getAllLayers()[0].get("cesiumOptions").ionAssetId,
+      ).to.equal("0");
+
+      provider.value = "OpenStreetMapImageryProvider";
+      provider.dispatchEvent(new Event("change", { bubbles: true }));
+      expect(controls.classList.contains("hidden")).to.equal(false);
+      editorView.remove();
+      mapModel.getAllLayers().forEach((asset) => asset.stopListening());
+    });
+
+    it("opens the invalid layer and focuses its field during portal validation", () => {
+      state.view.switchSection.restore();
+      state.sandbox.stub(state.view, "updatePath");
+      state.sandbox.stub(
+        CesiumImagery.prototype,
+        "createCesiumModelWhenVisible",
+      );
+      state.sandbox.stub(CesiumImagery.prototype, "getThumbnail");
+      state.sandbox.stub(MetacatUI.appView, "showAlert");
+      const portal = new PortalModel({
+        label: "map-portal",
+        name: "Map portal",
+      });
+      portal
+        .get("definitionFilters")
+        .add({ fields: ["formatType"], values: ["METADATA"] });
+      const section = portal.addSection("cesium");
+      const mapModel = new Map({
+        layers: [
+          { label: "Basemap", type: "OpenStreetMapImageryProvider" },
+          {
+            label: "Incomplete",
+            type: "IonImageryProvider",
+            cesiumOptions: { ionAssetId: "0" },
+          },
+        ],
+      });
+      section.set("mapModel", mapModel);
+      const editorView = new PortalEditorView({
+        el: document.createElement("div"),
+        model: portal,
+      });
+      editorView.sectionsView = state.view;
+      state.view.editorView = editorView;
+      state.view.model = portal;
+      editorView.el.append(state.view.el);
+      document.body.append(editorView.el);
+      state.view.renderContentSection(section);
+      const sectionView = state.view.getSectionByModel(section);
+      sectionView.el.querySelector("[data-asset]").click();
+      try {
+        portal.isValid();
+        editorView.showValidation();
+        expect(state.view.activeSection).to.equal(sectionView);
+        expect(sectionView.mapEditorView.assetEditorView.model).to.equal(
+          mapModel.getAllLayers()[1],
+        );
+        const field = sectionView.el.querySelector('[name="ionAssetId"]');
+        expect(document.activeElement).to.equal(field);
+        expect(field.getAttribute("aria-invalid")).to.equal("true");
+        expect(
+          sectionView.el.querySelector(
+            '[data-error="cesiumOptions.ionAssetId"]',
+          ).textContent,
+        ).not.to.equal("");
+
+        const provider = sectionView.el.querySelector('[name="type"]');
+        provider.value = "WebMapTileServiceImageryProvider";
+        provider.dispatchEvent(new Event("change", { bubbles: true }));
+        const tileURL = sectionView.el.querySelector("textarea[name=url]");
+        tileURL.value = "/tiles/{TileMatrix}/{TileCol}/{TileRow}";
+        tileURL.dispatchEvent(new Event("change", { bubbles: true }));
+        const west = sectionView.el.querySelector('[name="west"]');
+        west.value = "-143.9";
+        west.dispatchEvent(new Event("change", { bubbles: true }));
+        const details = sectionView.el.querySelector("details");
+        expect(details.open).to.equal(false);
+        portal.isValid();
+        editorView.showValidation();
+        expect(details.open).to.equal(true);
+        expect(document.activeElement).to.equal(west);
+        expect(west.getAttribute("aria-invalid")).to.equal("true");
+      } finally {
+        editorView.remove();
+        mapModel.getAllLayers().forEach((asset) => asset.stopListening());
+        portal.stopListening();
+      }
     });
 
     it("places a Cesium section before non-content pages by default", () => {

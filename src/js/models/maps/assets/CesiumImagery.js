@@ -95,9 +95,7 @@ define([
         try {
           MapAsset.prototype.initialize.call(this, assetConfig);
 
-          if (assetConfig.type == "NaturalEarthII") {
-            this.initNaturalEarthII(assetConfig);
-          } else if (assetConfig.type == "USGSImageryTopo") {
+          if (this.get("type") === "USGSImageryTopo") {
             this.initUSGSImageryTopo(assetConfig);
           }
 
@@ -110,55 +108,26 @@ define([
       },
 
       /**
-       * Initializes a CesiumImagery model for the Natural Earth II asset.
-       * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of the
-       * attributes, which will be set on the model.
+       * Save the current imagery source. Provider creation expands shortcuts
+       * and converts options on a copy, leaving these attributes as config.
+       * @returns {MapConfig#MapAssetConfig} A detached object of settings to save.
+       * @since 0.0.0
        */
-      initNaturalEarthII: function (assetConfig) {
-        try {
-          if (
-            !assetConfig.cesiumOptions ||
-            typeof assetConfig.cesiumOptions !== "object"
-          ) {
-            assetConfig.cesiumOptions = {};
-          }
-
-          assetConfig.cesiumOptions.url = Cesium.buildModuleUrl(
-            "Assets/Textures/NaturalEarthII",
-          );
-          this.set("type", "TileMapServiceImageryProvider");
-          this.set("cesiumOptions", assetConfig.cesiumOptions);
-        } catch (error) {
-          console.log(
-            "There was an error initializing NaturalEarthII in a CesiumImagery" +
-              ". Error details: " +
-              error,
-          );
-        }
+      toConfig() {
+        return {
+          ...MapAsset.prototype.toConfig.call(this),
+          type: this.get("type"),
+          cesiumOptions: this.getCesiumOptions(),
+        };
       },
 
       /**
-       * Initializes a CesiumImagery model for the USGS Imagery Topo asset.
+       * Set default metadata for the USGS Imagery Topo asset.
        * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of the
        * attributes, which will be set on the model.
        */
       initUSGSImageryTopo: function (assetConfig) {
         try {
-          if (
-            !assetConfig.cesiumOptions ||
-            typeof assetConfig.cesiumOptions !== "object"
-          ) {
-            assetConfig.cesiumOptions = {};
-          }
-          this.set("type", "WebMapServiceImageryProvider");
-          assetConfig.cesiumOptions.url =
-            "https://basemap.nationalmap.gov:443/arcgis/services/USGSImageryTopo/MapServer/WmsServer";
-          assetConfig.cesiumOptions.layers = "0";
-          assetConfig.cesiumOptions.parameters = {
-            transparent: true,
-            format: "image/png",
-          };
-          this.set("cesiumOptions", assetConfig.cesiumOptions);
           if (!assetConfig.moreInfoLink) {
             this.set(
               "moreInfoLink",
@@ -199,9 +168,8 @@ define([
        */
       createCesiumModel: function (recreate = false) {
         var model = this;
-        const cesiumOptions = this.getCesiumOptions();
-        var type = this.get("type");
-        var providerFunction = Cesium[type];
+        const cesiumOptions = this.getCesiumOptions() || {};
+        let type = this.get("type");
 
         // If the cesium model already exists, don't create it again unless specified
         if (!recreate && this.get("cesiumModel")) {
@@ -218,7 +186,21 @@ define([
           // TODO: brightness, contrast, gamma, etc.
         };
 
-        if (type === "BingMapsImageryProvider") {
+        if (type === "NaturalEarthII") {
+          type = "TileMapServiceImageryProvider";
+          cesiumOptions.url = Cesium.buildModuleUrl(
+            "Assets/Textures/NaturalEarthII",
+          );
+        } else if (type === "USGSImageryTopo") {
+          type = "WebMapServiceImageryProvider";
+          cesiumOptions.url =
+            "https://basemap.nationalmap.gov:443/arcgis/services/USGSImageryTopo/MapServer/WmsServer";
+          cesiumOptions.layers = "0";
+          cesiumOptions.parameters = {
+            transparent: true,
+            format: "image/png",
+          };
+        } else if (type === "BingMapsImageryProvider") {
           cesiumOptions.key =
             cesiumOptions.key || MetacatUI.AppConfig.bingMapsKey;
         } else if (type === "IonImageryProvider") {
@@ -251,6 +233,7 @@ define([
           );
         }
 
+        const providerFunction = Cesium[type];
         if (providerFunction && typeof providerFunction === "function") {
           let provider = new providerFunction(cesiumOptions);
           provider.readyPromise

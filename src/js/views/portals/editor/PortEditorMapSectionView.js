@@ -12,7 +12,7 @@ define([
    * @classdesc A Portal Editor section representing a Cesium map page.
    * @classcategory Views/Maps/MapEditor
    * @augments PortEditorSectionView
-   * @screenshot views/maps/mapEditor/PortEditorMapSectionView.png // TODO
+   * @screenshot views/maps/mapEditor/PortEditorMapSectionView.png
    * @since 0.0.0
    */
   const PortEditorMapSectionView = PortEditorSectionView.extend(
@@ -58,6 +58,7 @@ define([
        * @returns {PortEditorMapSectionView} This view
        */
       render() {
+        this.onClose();
         this.$el.data("view", this);
         this.$el.html(this.template());
         const mapContainer = this.el.querySelector(
@@ -76,13 +77,33 @@ define([
           el: mapContainer,
         });
         this.mapEditorView.render();
+        this.model
+          .get("mapModel")
+          .getLayerGroups()
+          .forEach((layers) => {
+            this.listenTo(layers, "change", (asset) => {
+              if (
+                ["label", "description", "type", "cesiumOptions"].some(
+                  (field) => asset.hasChanged(field),
+                )
+              ) {
+                this.editorView?.showControls();
+              }
+            });
+          });
         return this;
+      },
+
+      /** Open the map page and display invalid layer settings on portal Save. */
+      showValidation() {
+        if (!this.model.validate()?.map) return;
+        this.editorView?.sectionsView?.switchSection(this);
+        this.mapEditorView.showValidation();
       },
 
       /** Cleans up the map editor view and stops listening to events. */
       onClose() {
         if (this.mapEditorView) {
-          this.mapEditorView.onClose();
           this.mapEditorView.remove();
           this.mapEditorView = null;
         }

@@ -11,7 +11,6 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
     SOURCE: `${BASE_CLASS}__source`,
     EXTENT: `${BASE_CLASS}__extent`,
     ERROR: `${BASE_CLASS}__error`,
-    APPLY: `${BASE_CLASS}__apply`,
   };
   const PROVIDER_TYPES = {
     WMTS: "WebMapTileServiceImageryProvider",
@@ -25,7 +24,7 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
 
   /**
    * @class MapAssetEditorView
-   * @classdesc Edits an existing Cesium imagery asset through Apply.
+   * @classdesc Edits an existing Cesium imagery asset for portal Save.
    * @classcategory Views/Maps/MapEditor
    * @augments Backbone.View
    * @screenshot views/maps/mapEditor/MapAssetEditorView.png
@@ -46,7 +45,8 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
       events() {
         return {
           'change [name="type"]': "changeProvider",
-          [`click .${CLASS_NAMES.APPLY}`]: "apply",
+          "change input, textarea, select": "updateModel",
+          [`focusout .${CLASS_NAMES.EXTENT}`]: "validateExtent",
         };
       },
 
@@ -59,7 +59,6 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
         const sourceClass = CLASS_NAMES.SOURCE;
         const extentClass = CLASS_NAMES.EXTENT;
         const errorClass = CLASS_NAMES.ERROR;
-        const applyClass = CLASS_NAMES.APPLY;
         const wmtsType = PROVIDER_TYPES.WMTS;
         const ionType = PROVIDER_TYPES.ION;
         const osmType = PROVIDER_TYPES.OSM;
@@ -136,8 +135,6 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
           </section>
 
           <p class="${errorClass}" data-error="${generalErrorKey}" role="alert"></p>
-          <button type="button" class="btn btn-primary ${applyClass}"
-            data-action="apply">Apply</button>
         `;
       },
 
@@ -192,10 +189,22 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
         this.el.querySelectorAll(`.${CLASS_NAMES.ERROR}`).forEach((message) => {
           message.replaceChildren();
         });
+        this.el.querySelectorAll("[aria-invalid]").forEach((input) => {
+          input.removeAttribute("aria-invalid");
+        });
       },
 
-      /** Submit the draft and display model validation messages */
-      apply() {
+      /**
+       * Keep field edits in the model, including incomplete source settings.
+       * Portal Save validates them before writing the configuration.
+       * @param {Event} event The changed field
+       */
+      updateModel(event) {
+        const { name, value } = event.target;
+        if (name === "label" || name === "description") {
+          this.model.set(name, value);
+          return;
+        }
         const type = this.el.querySelector('[name="type"]').value;
         const controls = this.el.querySelector(`[data-provider="${type}"]`);
         const cesiumOptions =
@@ -225,36 +234,66 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
             delete cesiumOptions.rectangle;
           } else {
             cesiumOptions.rectangle = rectangle.map((value) =>
-              value === "" ? NaN : Number(value),
+              value === "" ? null : Number(value),
             );
           }
         }
 
-        const result = this.model.set(
-          {
-            label: this.el.querySelector('[name="label"]').value,
-            description: this.el.querySelector('[name="description"]').value,
-            type,
-            cesiumOptions,
-          },
-          { validate: true },
+        this.model.set({ type, cesiumOptions });
+        if (name === "url" || name === "ionAssetId") {
+          this.showValidation(`cesiumOptions.${name}`);
+        }
+      },
+
+      /**
+       * Validate coordinates once focus leaves the extent group.
+       * @param {FocusEvent} event The coordinate focus change
+       */
+      validateExtent(event) {
+        if (event.currentTarget.contains(event.relatedTarget)) return;
+        this.showValidation("cesiumOptions.rectangle");
+      },
+
+      /**
+       * Display source errors for one edited field, or all fields on Save.
+       * @param {string} [field] The source field to check
+       */
+      showValidation(field) {
+        const errors = this.model.validate(this.model.attributes) || {};
+        const controls = this.el.querySelector(
+          `[data-provider="${this.model.get("type")}"]`,
         );
         this.el.querySelectorAll(`.${CLASS_NAMES.ERROR}`).forEach((message) => {
+          if (field && message.dataset.error !== field) return;
           message.replaceChildren();
+          this.el
+            .querySelectorAll(`[aria-describedby~="${message.id}"]`)
+            .forEach((input) => {
+              input.removeAttribute("aria-invalid");
+            });
         });
-        if (result === false) {
-          Object.entries(this.model.validationError).forEach(
-            ([field, message]) => {
-              const error =
-                controls.querySelector(`[data-error="${field}"]`) ||
-                this.el.querySelector(`[data-error="${GENERAL_ERROR_KEY}"]`);
-              error.textContent = message;
-            },
-          );
-        }
+        Object.entries(errors).forEach(([name, message]) => {
+          if (field && name !== field) return;
+          const error =
+            controls.querySelector(`[data-error="${name}"]`) ||
+            this.el.querySelector(`[data-error="${GENERAL_ERROR_KEY}"]`);
+          error.textContent = message;
+          controls
+            .querySelectorAll(`[aria-describedby~="${error.id}"]`)
+            .forEach((input) => {
+              input.setAttribute("aria-invalid", "true");
+            });
+        });
       },
     },
   );
+
+  /**
+   * Imagery provider types this editor can display.
+   * @type {string[]}
+   * @since 0.0.0
+   */
+  MapAssetEditorView.SUPPORTED_TYPES = Object.values(PROVIDER_TYPES);
 
   return MapAssetEditorView;
 });
