@@ -35,6 +35,8 @@ define([
       state.view.el.querySelectorAll("[data-asset]")[index];
     const field = (name) =>
       state.view.el.querySelector(`.map-asset-editor [name="${name}"]`);
+    const removeButton = (index) =>
+      state.view.el.querySelectorAll("[data-remove-asset]")[index];
 
     afterEach(() => {
       state.view.remove();
@@ -102,6 +104,143 @@ define([
       expect(firstEditor.el.isConnected).to.equal(false);
       expect(state.view.el.querySelector(".map-asset-editor")).to.equal(null);
       expect(state.view.el.textContent).to.include("not supported yet");
+    });
+
+    it("immediately removes the selected hidden layer and clears its settings", () => {
+      const asset = state.model.getAllLayers()[0];
+      row(0).click();
+      const editor = state.view.assetEditorView;
+      removeButton(0).click();
+
+      expect(state.model.getAllLayers()).not.to.include(asset);
+      expect(
+        state.model.toConfig().layers.map((layer) => layer.label),
+      ).to.deep.equal(["Basemap", "Other layer"]);
+      expect(editor.el.isConnected).to.equal(false);
+      expect(state.view.assetEditorView).to.equal(null);
+      expect(state.view.el.textContent).to.include("Select a layer");
+      expect(document.activeElement).to.equal(row(0));
+    });
+
+    it("removes an unsupported layer while retaining the current selection", () => {
+      const asset = state.model.getAllLayers()[0];
+      row(0).click();
+      field("label").value = "Edited imagery";
+      field("label").dispatchEvent(new Event("change", { bubbles: true }));
+      removeButton(2).click();
+
+      expect(state.model.getAllLayers()).to.have.length(2);
+      expect(state.view.assetEditorView.model).to.equal(asset);
+      expect(field("label").value).to.equal("Edited imagery");
+      expect(row(0).getAttribute("aria-pressed")).to.equal("true");
+      expect(document.activeElement).to.equal(row(1));
+    });
+
+    it("previews removal on hover and focus without changing the asset", () => {
+      const asset = state.model.getAllLayers()[0];
+      const config = asset.toConfig();
+      const button = removeButton(0);
+      const item = button.closest("li");
+      expect(button.getAttribute("aria-label")).to.equal(
+        "Remove Imagery <b>one</b>",
+      );
+      button.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
+      expect(item.classList.contains("remove-preview")).to.equal(true);
+      expect(
+        row(1).closest("li").classList.contains("remove-preview"),
+      ).to.equal(false);
+      button.dispatchEvent(new MouseEvent("mouseout", { bubbles: true }));
+      expect(item.classList.contains("remove-preview")).to.equal(false);
+      button.focus();
+      expect(item.classList.contains("remove-preview")).to.equal(true);
+      button.dispatchEvent(new MouseEvent("mouseout", { bubbles: true }));
+      expect(item.classList.contains("remove-preview")).to.equal(true);
+      button.blur();
+      expect(item.classList.contains("remove-preview")).to.equal(false);
+      expect(asset.toConfig()).to.deep.equal(config);
+
+      asset.set("label", "Renamed layer");
+      expect(button.getAttribute("aria-label")).to.equal(
+        "Remove Renamed layer",
+      );
+    });
+
+    it("retains an empty category after removing its only layer", () => {
+      state.view.remove();
+      state.model = new Map({
+        layerCategories: [
+          { label: "Base maps", layers: [{ label: "OSM", type: OSM }] },
+          { label: "Overlays", layers: [{ label: "Other", type: "Unknown" }] },
+        ],
+      });
+      state.view = new MapEditorView({ model: state.model }).render();
+      document.body.append(state.view.el);
+      removeButton(1).click();
+
+      const categories = state.model.toConfig().layerCategories;
+      expect(categories).to.have.length(2);
+      expect(categories[0].layers.map((layer) => layer.label)).to.deep.equal([
+        "OSM",
+      ]);
+      expect(categories[1].layers).to.deep.equal([]);
+      expect(state.view.el.textContent).to.include("Overlays");
+      expect(document.activeElement).to.equal(row(0));
+    });
+
+    [
+      {
+        name: "flat",
+        config: { layers: [{ label: "Only layer", type: OSM }] },
+      },
+      {
+        name: "categorized",
+        config: {
+          layerCategories: [
+            {
+              label: "Base maps",
+              layers: [{ label: "Only layer", type: OSM }],
+            },
+          ],
+        },
+      },
+    ].forEach(({ name, config }) => {
+      it(`saves removal of the final ${name} layer through portal XML`, () => {
+        state.view.remove();
+        state.model = new Map(config);
+        state.view = new MapEditorView({ model: state.model }).render();
+        document.body.append(state.view.el);
+        const portal = new PortalModel({ label: "Map portal" });
+        portal
+          .get("definitionFilters")
+          .add({ fields: ["formatType"], values: ["METADATA"] });
+        portal
+          .addSection("cesium")
+          .set({ label: "Map", mapModel: state.model });
+        removeButton(0).click();
+
+        expect(state.model.getAllLayers()).to.have.length(0);
+        expect(document.activeElement.textContent).to.equal(
+          "No layers configured.",
+        );
+        expect(state.view.el.contains(document.activeElement)).to.equal(true);
+        const xml = new DOMParser().parseFromString(
+          portal.serialize(),
+          "application/xml",
+        );
+        expect(xml.querySelector("parsererror")).to.equal(null);
+        const reloaded = new PortalModel({});
+        reloaded.set(reloaded.parse(xml));
+        delete window.filterXML;
+        const map = reloaded.get("sections")[0].get("mapModel");
+        expect(map.getAllLayers()).to.have.length(0);
+        if (name === "categorized") {
+          expect(map.toConfig().layerCategories).to.have.length(1);
+          expect(map.toConfig().layerCategories[0].layers).to.deep.equal([]);
+        } else {
+          expect(map.toConfig().layers).to.deep.equal([]);
+        }
+        map.stopListening();
+      });
     });
 
     it("cleans up the editor on rerender, asset removal, and view removal", () => {

@@ -210,6 +210,52 @@ define([
       mapModel.getAllLayers().forEach((asset) => asset.stopListening());
     });
 
+    it("shows portal save controls after removing a categorized layer", () => {
+      state.sandbox.stub(
+        CesiumImagery.prototype,
+        "createCesiumModelWhenVisible",
+      );
+      state.sandbox.stub(CesiumImagery.prototype, "getThumbnail");
+      const mapModel = new Map({
+        layerCategories: [
+          {
+            label: "Base maps",
+            layers: [{ label: "Base", type: "OpenStreetMapImageryProvider" }],
+          },
+          {
+            label: "Overlays",
+            layers: [
+              { label: "Overlay", type: "OpenStreetMapImageryProvider" },
+            ],
+          },
+        ],
+      });
+      const section = new PortalVizSectionModel({
+        label: "Map",
+        visualizationType: "cesium",
+        mapModel,
+      });
+      const editorView = new EditorView({ el: document.createElement("div") });
+      editorView.el.innerHTML = '<div class="editor-controls hidden"></div>';
+      state.view.editorView = editorView;
+      state.view.renderContentSection(section);
+      const sectionView = state.view.getSectionByModel(section);
+      const buttons = sectionView.el.querySelectorAll("[data-remove-asset]");
+      expect(buttons).to.have.length(2);
+      buttons[1].click();
+      expect(
+        editorView.el
+          .querySelector(".editor-controls")
+          .classList.contains("hidden"),
+      ).to.equal(false);
+      expect(
+        mapModel.getAllLayers().map((asset) => asset.get("label")),
+      ).to.deep.equal(["Base"]);
+      editorView.remove();
+      mapModel.getAllLayers().forEach((asset) => asset.stopListening());
+      mapModel.stopListening();
+    });
+
     it("opens the invalid layer and focuses its field during portal validation", () => {
       state.view.switchSection.restore();
       state.sandbox.stub(state.view, "updatePath");

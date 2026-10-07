@@ -81,6 +81,9 @@ define([
           .get("mapModel")
           .getLayerGroups()
           .forEach((layers) => {
+            this.listenTo(layers, "remove", () => {
+              this.editorView?.showControls();
+            });
             this.listenTo(layers, "change", (asset) => {
               if (
                 ["label", "description", "type", "cesiumOptions"].some(
