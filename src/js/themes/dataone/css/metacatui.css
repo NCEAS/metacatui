@@ -657,6 +657,19 @@ input[type="text"][disabled="disabled"] {
   box-shadow: none;
 }
 
+.map-editor__add {
+  color: var(--c-major-accent-7);
+  border-color: var(--c-major-accent-7);
+}
+
+.map-editor__add:hover,
+.map-editor__add:focus,
+.map-editor__add:active {
+  color: white;
+  background-color: var(--c-major-accent-7);
+  border-color: var(--c-major-accent-7);
+}
+
 .btn-primary,
 .annotator-editor a.annotator-focus,
 .annotator-editor a.annotator-save {

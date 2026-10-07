@@ -14,6 +14,7 @@ define([
     LAYERS: `${BASE_CLASS}__layers`,
     LIST: `${BASE_CLASS}__list`,
     LAYER: `${BASE_CLASS}__layer`,
+    ADD: `${BASE_CLASS}__add`,
     REMOVE: `${BASE_CLASS}__remove`,
     EMPTY: `${BASE_CLASS}__empty`,
     PANEL: `${BASE_CLASS}__panel`,
@@ -53,11 +54,8 @@ define([
       /** @inheritdoc */
       events: {
         "click [data-asset]": "editAsset",
+        "click [data-add-layer]": "addAsset",
         "click [data-remove-asset]": "removeAsset",
-        "mouseenter [data-remove-asset]": "previewRemove",
-        "mouseleave [data-remove-asset]": "previewRemove",
-        "focusin [data-remove-asset]": "previewRemove",
-        "focusout [data-remove-asset]": "previewRemove",
       },
 
       /**
@@ -124,7 +122,18 @@ define([
             item.append(button, remove);
             list.append(item);
           });
-          container.append(list);
+          const add = document.createElement("button");
+          add.type = "button";
+          add.className = `btn ${CLASS_NAMES.ADD}`;
+          add.dataset.addLayer = index;
+          add.textContent = "Add layer";
+          if (category) {
+            add.setAttribute(
+              "aria-label",
+              `Add layer to ${category.get("label")}`,
+            );
+          }
+          container.append(list, add);
           this.listenTo(layers, "update reset", this.render);
           this.listenTo(layers, "change:label", (asset) => {
             const label = asset.get("label") || "Untitled layer";
@@ -151,28 +160,55 @@ define([
        */
       editAsset(event) {
         const button = event.currentTarget;
-        if (button.getAttribute("aria-pressed") === "true") return;
-        this.assetEditorView?.remove();
-        this.assetEditorView = null;
-        this.el.querySelectorAll("[data-asset]").forEach((row) => {
-          row.setAttribute("aria-pressed", String(row === button));
-        });
-        const asset = this.model
-          .getAllLayers()
-          .find((layer) => layer.cid === button.dataset.asset);
-        const panel = this.el.querySelector(`.${CLASS_NAMES.PANEL}`);
-        panel.replaceChildren();
-        if (
-          asset instanceof CesiumImagery &&
-          MapAssetEditorView.SUPPORTED_TYPES.includes(asset.get("type"))
-        ) {
-          this.assetEditorView = new MapAssetEditorView({ model: asset });
-          panel.append(this.assetEditorView.render().el);
-        } else {
-          const message = document.createElement("p");
-          message.textContent = "Editing this layer is not supported yet.";
-          panel.append(message);
+        if (button.getAttribute("aria-pressed") !== "true") {
+          this.assetEditorView?.remove();
+          this.assetEditorView = null;
+          this.el.querySelectorAll("[data-asset]").forEach((row) => {
+            row.setAttribute("aria-pressed", String(row === button));
+          });
+          const asset = this.model
+            .getAllLayers()
+            .find((layer) => layer.cid === button.dataset.asset);
+          const panel = this.el.querySelector(`.${CLASS_NAMES.PANEL}`);
+          panel.replaceChildren();
+          if (
+            asset instanceof CesiumImagery &&
+            MapAssetEditorView.SUPPORTED_TYPES.includes(asset.get("type"))
+          ) {
+            this.assetEditorView = new MapAssetEditorView({ model: asset });
+            panel.append(this.assetEditorView.render().el);
+          } else {
+            const message = document.createElement("p");
+            message.textContent = "Editing this layer is not supported yet.";
+            panel.append(message);
+          }
         }
+        // Keyboard and assistive technology clicks have no pointer click count.
+        if (event.originalEvent?.detail === 0 && this.assetEditorView) {
+          this.assetEditorView.el.querySelector('[name="label"]').focus();
+        }
+      },
+
+      /**
+       * Add a WMTS layer to the chosen group and focus its label for editing.
+       * @param {Event} event The add button click
+       * @since 0.0.0
+       */
+      addAsset(event) {
+        const layers =
+          this.model.getLayerGroups()[event.currentTarget.dataset.addLayer];
+        const asset = layers.addAsset(
+          {
+            label: "New layer",
+            type: "WebMapTileServiceImageryProvider",
+            cesiumOptions: { url: "" },
+          },
+          this.model,
+        );
+        this.el.querySelector(`[data-asset="${asset.cid}"]`).click();
+        const label = this.assetEditorView.el.querySelector('[name="label"]');
+        label.focus();
+        label.select();
       },
 
       /**
@@ -198,24 +234,6 @@ define([
           rows[Math.min(index, rows.length - 1)] ||
           this.el.querySelector(`.${CLASS_NAMES.EMPTY}`);
         focusTarget.focus();
-      },
-
-      /**
-       * Fade the row while its remove button is hovered or focused.
-       * @param {Event} event The pointer or focus change
-       * @returns {void}
-       * @since 0.0.0
-       */
-      previewRemove(event) {
-        const button = event.currentTarget;
-        button
-          .closest("li")
-          .classList.toggle(
-            "remove-preview",
-            event.type === "mouseenter" ||
-              event.type === "focusin" ||
-              button.matches(":hover, :focus"),
-          );
       },
 
       /** Open the first invalid layer and focus its source settings. */
