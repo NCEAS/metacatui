@@ -2884,7 +2884,7 @@ other class: .ui-slider-range */
 
 /* Map configuration editor */
 .map-editor {
-  --map-editor-layer-highlight: rgba(0, 0, 0, 0.05);
+  container-type: inline-size;
 }
 
 .map-editor__workspace {
@@ -2895,8 +2895,44 @@ other class: .ui-slider-range */
 }
 
 .map-editor__layers {
+  /* Keep the editor readable independently of the portal's map theme. */
+  --portal-col-primary-1: #ecf8fc;
+  --portal-col-primary-6: #136682;
+  --portal-col-neutral-1: #f8f9fa;
+  --portal-col-neutral-2: #e8eaed;
+  --portal-col-neutral-6: #5f6368;
+  --portal-col-neutral-7: #3c4043;
   flex: 1 1 14rem;
   min-width: 0;
+  background: white;
+  color: var(--portal-col-neutral-7);
+}
+
+.map-editor__layers .expansion-panel > h5 {
+  margin: 0;
+}
+
+.map-editor__layers .expansion-panel__toggle {
+  width: 100%;
+  grid-template-columns: min-content minmax(0, 1fr) min-content;
+  padding: 0 0.75rem;
+  background: transparent;
+  font-family: inherit;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.map-editor__layers .expansion-panel__title {
+  overflow-wrap: anywhere;
+}
+
+.map-editor__layers .expansion-panel__content {
+  animation: none;
+}
+
+.map-editor__layers button:focus-visible {
+  outline: 2px solid var(--portal-col-primary-6);
+  outline-offset: 2px;
 }
 
 .map-editor__panel {
@@ -2904,50 +2940,71 @@ other class: .ui-slider-range */
   min-width: 0;
 }
 
-.map-editor__list {
+/* Match the width needed by the two flex bases and their gap. */
+@container (min-width: 42rem) {
+  .map-editor__layers,
+  .map-editor__panel {
+    box-sizing: border-box;
+    max-height: 70vh;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    padding: 0.25rem;
+    scroll-padding: 0.25rem;
+  }
+}
+
+.map-editor__layers .layer-list {
   list-style: none;
-  margin: 0 0 1rem;
+  margin: 0 0 0.5rem;
   padding: 0;
 }
 
-.map-editor__list > li {
-  display: flex;
+.map-editor__layers .list-item {
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 0 0.75rem;
 }
 
-.map-editor__layer,
+.map-editor__layers .expansion-panel .list-item {
+  padding-left: 3rem;
+}
+
+.map-editor__layers .list-item__label,
 .map-editor__remove {
-  padding: 0.65rem 0.75rem;
+  padding: 0.25rem 0.75rem;
   background: transparent;
   color: inherit;
   cursor: pointer;
-  font: inherit;
+  font-family: inherit;
+  min-height: 2.5rem;
+  line-height: 1.5;
 }
 
-.map-editor__layer {
-  display: block;
-  flex: 1;
-  min-width: 0;
+.map-editor__layers .list-item__label {
+  margin: 0;
   border: 1px solid transparent;
   border-radius: var(--map-border-radius-small);
   text-align: left;
   overflow-wrap: anywhere;
+  white-space: normal;
 }
 
-.map-editor__layer:hover,
-.map-editor__layer[aria-pressed="true"] {
-  background: var(--map-editor-layer-highlight);
+.map-editor__layers .list-item__label:hover,
+.map-editor__layers .list-item__label[aria-pressed="true"] {
+  background: var(--portal-col-primary-1);
 }
 
-.map-editor__layer[aria-pressed="true"] {
-  border-color: currentColor;
+.map-editor__layers .list-item__label[aria-pressed="true"] {
+  border-color: var(--portal-col-primary-6);
 }
 
-.map-editor__item--removing .map-editor__layer {
+.map-editor__item--removing .list-item__label {
   text-decoration: line-through;
 }
 
 .map-editor__remove {
-  flex-shrink: 0;
+  /* Keep at least 3:1 contrast against white and the row hover background. */
+  color: #909090;
+  min-width: 2.5rem;
   border: 0;
 }
 
@@ -2956,10 +3013,8 @@ other class: .ui-slider-range */
   color: var(--color-error);
 }
 
-.map-editor__add {
-  margin-bottom: 1rem;
-}
-
-.map-editor__help {
-  margin-top: 1.5rem;
+.map-editor__layers .map-editor__add {
+  color: var(--portal-col-primary-6);
+  font-weight: 600;
+  gap: 0.5rem;
 }

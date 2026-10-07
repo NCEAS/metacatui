@@ -34,15 +34,9 @@ define([
       state.sandbox.restore();
     });
 
-    it("composes the assets workspace with the shared map and save guidance", () => {
+    it("composes the assets workspace with the shared map", () => {
       expect(state.view.el.classList.contains("map-editor")).to.equal(true);
       expect(state.view.assetsEditorView.model).to.equal(state.model);
-      expect(state.view.el.querySelector("h3").textContent).to.equal(
-        "Map configuration",
-      );
-      expect(
-        state.view.el.querySelector(".map-editor__help").textContent,
-      ).to.include("Save the portal");
       expect(state.view.el.contains(state.view.assetsEditorView.el)).to.equal(
         true,
       );

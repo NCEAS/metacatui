@@ -8,7 +8,6 @@ define([
 ], (Backbone, Map, MapAssetsEditorView, MapCSS) => {
   const CLASS_NAMES = {
     BASE: "map-editor",
-    HELP: "map-editor__help",
   };
 
   /**
@@ -48,19 +47,14 @@ define([
       },
 
       /**
-       * Render the heading, assets workspace, and portal save guidance.
+       * Render the assets workspace.
        * @returns {MapEditorView} This view
        */
       render() {
         this.onClose();
         this.el.classList.add(CLASS_NAMES.BASE);
-        this.el.innerHTML = "<h3>Map configuration</h3>";
         this.assetsEditorView = new MapAssetsEditorView({ model: this.model });
         this.el.append(this.assetsEditorView.render().el);
-        const guidance = document.createElement("p");
-        guidance.className = CLASS_NAMES.HELP;
-        guidance.textContent = "Save the portal to keep your changes.";
-        this.el.append(guidance);
         return this;
       },
 
