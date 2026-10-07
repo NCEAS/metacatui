@@ -14,6 +14,8 @@ define([
     LAYERS: `${BASE_CLASS}__layers`,
     LIST: `${BASE_CLASS}__list`,
     LAYER: `${BASE_CLASS}__layer`,
+    REMOVE: `${BASE_CLASS}__remove`,
+    EMPTY: `${BASE_CLASS}__empty`,
     PANEL: `${BASE_CLASS}__panel`,
     HELP: `${BASE_CLASS}__help`,
   };
@@ -51,6 +53,11 @@ define([
       /** @inheritdoc */
       events: {
         "click [data-asset]": "editAsset",
+        "click [data-remove-asset]": "removeAsset",
+        "mouseenter [data-remove-asset]": "previewRemove",
+        "mouseleave [data-remove-asset]": "previewRemove",
+        "focusin [data-remove-asset]": "previewRemove",
+        "focusout [data-remove-asset]": "previewRemove",
       },
 
       /**
@@ -98,6 +105,7 @@ define([
           const list = document.createElement("ul");
           list.className = CLASS_NAMES.LIST;
           layers.each((asset) => {
+            const label = asset.get("label") || "Untitled layer";
             const item = document.createElement("li");
             const button = document.createElement("button");
             button.type = "button";
@@ -105,19 +113,32 @@ define([
             button.dataset.asset = asset.cid;
             button.setAttribute("aria-pressed", "false");
             button.setAttribute("aria-controls", `${this.cid}-asset-panel`);
-            button.textContent = asset.get("label") || "Untitled layer";
-            item.append(button);
+            button.textContent = label;
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = CLASS_NAMES.REMOVE;
+            remove.dataset.removeAsset = asset.cid;
+            remove.setAttribute("aria-label", `Remove ${label}`);
+            remove.innerHTML =
+              '<i class="icon icon-remove" aria-hidden="true"></i>';
+            item.append(button, remove);
             list.append(item);
           });
           container.append(list);
           this.listenTo(layers, "update reset", this.render);
           this.listenTo(layers, "change:label", (asset) => {
+            const label = asset.get("label") || "Untitled layer";
             this.el.querySelector(`[data-asset="${asset.cid}"]`).textContent =
-              asset.get("label") || "Untitled layer";
+              label;
+            this.el
+              .querySelector(`[data-remove-asset="${asset.cid}"]`)
+              .setAttribute("aria-label", `Remove ${label}`);
           });
         });
         if (!this.model.getAllLayers().length) {
           const message = document.createElement("p");
+          message.className = CLASS_NAMES.EMPTY;
+          message.tabIndex = -1;
           message.textContent = "No layers configured.";
           container.append(message);
         }
@@ -152,6 +173,49 @@ define([
           message.textContent = "Editing this layer is not supported yet.";
           panel.append(message);
         }
+      },
+
+      /**
+       * Remove a layer immediately, retain any other selection, and move focus
+       * to a remaining row or the empty list message.
+       * @param {Event} event The remove button click
+       * @returns {void}
+       * @since 0.0.0
+       */
+      removeAsset(event) {
+        const assetId = event.currentTarget.dataset.removeAsset;
+        const assets = this.model.getAllLayers();
+        const index = assets.findIndex((asset) => asset.cid === assetId);
+        const selectedId = this.el.querySelector(
+          '[data-asset][aria-pressed="true"]',
+        )?.dataset.asset;
+        this.model.removeAsset(assets[index]);
+        if (selectedId && selectedId !== assetId) {
+          this.el.querySelector(`[data-asset="${selectedId}"]`).click();
+        }
+        const rows = this.el.querySelectorAll("[data-asset]");
+        const focusTarget =
+          rows[Math.min(index, rows.length - 1)] ||
+          this.el.querySelector(`.${CLASS_NAMES.EMPTY}`);
+        focusTarget.focus();
+      },
+
+      /**
+       * Fade the row while its remove button is hovered or focused.
+       * @param {Event} event The pointer or focus change
+       * @returns {void}
+       * @since 0.0.0
+       */
+      previewRemove(event) {
+        const button = event.currentTarget;
+        button
+          .closest("li")
+          .classList.toggle(
+            "remove-preview",
+            event.type === "mouseenter" ||
+              event.type === "focusin" ||
+              button.matches(":hover, :focus"),
+          );
       },
 
       /** Open the first invalid layer and focus its source settings. */

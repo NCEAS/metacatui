@@ -2900,16 +2900,29 @@ other class: .ui-slider-range */
   padding: 0;
 }
 
-.map-editor__layer {
-  display: block;
-  width: 100%;
+.map-editor__list > li {
+  display: flex;
+}
+
+.map-editor__list > li.remove-preview {
+  opacity: 0.3;
+}
+
+.map-editor__layer,
+.map-editor__remove {
   padding: 0.65rem 0.75rem;
-  border: 1px solid transparent;
-  border-radius: var(--map-border-radius-small);
   background: transparent;
   color: inherit;
   cursor: pointer;
   font: inherit;
+}
+
+.map-editor__layer {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: var(--map-border-radius-small);
   text-align: left;
   overflow-wrap: anywhere;
 }
@@ -2921,6 +2934,16 @@ other class: .ui-slider-range */
 
 .map-editor__layer[aria-pressed="true"] {
   border-color: currentColor;
+}
+
+.map-editor__remove {
+  flex-shrink: 0;
+  border: 0;
+}
+
+.map-editor__remove:hover,
+.map-editor__remove:focus-visible {
+  color: var(--color-error);
 }
 
 .map-editor__help {
