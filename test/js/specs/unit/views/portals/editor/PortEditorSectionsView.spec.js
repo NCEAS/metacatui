@@ -256,6 +256,73 @@ define([
       mapModel.stopListening();
     });
 
+    it("shows save controls and validates a new layer in an empty category", () => {
+      state.view.switchSection.restore();
+      state.sandbox.stub(state.view, "updatePath");
+      state.sandbox.stub(
+        CesiumImagery.prototype,
+        "createCesiumModelWhenVisible",
+      );
+      state.sandbox.stub(CesiumImagery.prototype, "getThumbnail");
+      state.sandbox.stub(MetacatUI.appView, "showAlert");
+      const portal = new PortalModel({
+        label: "map-portal",
+        name: "Map portal",
+      });
+      portal
+        .get("definitionFilters")
+        .add({ fields: ["formatType"], values: ["METADATA"] });
+      const mapModel = new Map({
+        layerCategories: [
+          {
+            label: "Base maps",
+            layers: [{ label: "Base", type: "OpenStreetMapImageryProvider" }],
+          },
+          { label: "Overlays", layers: [] },
+        ],
+      });
+      const section = portal.addSection("cesium");
+      section.set("mapModel", mapModel);
+      const editorView = new PortalEditorView({
+        el: document.createElement("div"),
+        model: portal,
+      });
+      editorView.sectionsView = state.view;
+      state.view.editorView = editorView;
+      state.view.model = portal;
+      editorView.el.innerHTML = '<div class="editor-controls hidden"></div>';
+      editorView.el.append(state.view.el);
+      document.body.append(editorView.el);
+      state.view.renderContentSection(section);
+      const sectionView = state.view.getSectionByModel(section);
+      try {
+        sectionView.el.querySelectorAll("[data-add-layer]")[1].click();
+        expect(
+          editorView.el
+            .querySelector(".editor-controls")
+            .classList.contains("hidden"),
+        ).to.equal(false);
+        sectionView.el.querySelector("[data-asset]").click();
+        expect(portal.isValid()).to.equal(false);
+        editorView.showValidation();
+        expect(state.view.activeSection).to.equal(sectionView);
+        expect(sectionView.mapEditorView.assetEditorView.model).to.equal(
+          mapModel.getAllLayers()[1],
+        );
+        const url = sectionView.el.querySelector('textarea[name="url"]');
+        expect(document.activeElement).to.equal(url);
+        expect(url.getAttribute("aria-invalid")).to.equal("true");
+        url.value = "/tiles/{TileMatrix}/{TileCol}/{TileRow}";
+        url.dispatchEvent(new Event("change", { bubbles: true }));
+        expect(portal.isValid()).to.equal(true);
+      } finally {
+        editorView.remove();
+        mapModel.getAllLayers().forEach((asset) => asset.stopListening());
+        mapModel.stopListening();
+        portal.stopListening();
+      }
+    });
+
     it("opens the invalid layer and focuses its field during portal validation", () => {
       state.view.switchSection.restore();
       state.sandbox.stub(state.view, "updatePath");

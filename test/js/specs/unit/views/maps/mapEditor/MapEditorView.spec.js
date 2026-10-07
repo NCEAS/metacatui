@@ -64,6 +64,186 @@ define([
       expect(asset.get("visible")).to.equal(visible);
     });
 
+    it("focuses the title on keyboard activation, including the selected layer", () => {
+      const button = row(0);
+      button.focus();
+      expect(state.view.assetEditorView).to.equal(null);
+      button.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, detail: 0 }),
+      );
+      expect(document.activeElement).to.equal(field("label"));
+      const editor = state.view.assetEditorView;
+
+      button.focus();
+      button.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, detail: 0 }),
+      );
+      expect(state.view.assetEditorView).to.equal(editor);
+      expect(document.activeElement).to.equal(field("label"));
+    });
+
+    it("keeps focus on the layer button after pointer activation", () => {
+      const button = row(0);
+      button.focus();
+      button.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, detail: 1 }),
+      );
+      expect(state.view.assetEditorView.model).to.equal(
+        state.model.getAllLayers()[0],
+      );
+      expect(document.activeElement).to.equal(button);
+    });
+
+    it("adds a WMTS layer and opens its settings with the label selected", () => {
+      const originalLayers = state.model.toConfig().layers;
+      row(0).click();
+      const previousEditor = state.view.assetEditorView;
+      const buttons = state.view.el.querySelectorAll("[data-add-layer]");
+      expect(buttons).to.have.length(1);
+      buttons[0].click();
+
+      const asset = state.model.getAllLayers()[3];
+      expect(asset.get("mapModel")).to.equal(state.model);
+      expect(state.model.get("allLayers").models).to.include(asset);
+      expect(asset.get("type")).to.equal(WMTS);
+      expect(asset.get("cesiumOptions")).to.deep.equal({ url: "" });
+      expect(state.model.toConfig().layers.slice(0, 3)).to.deep.equal(
+        originalLayers,
+      );
+      expect(previousEditor.el.isConnected).to.equal(false);
+      expect(state.view.assetEditorView.model).to.equal(asset);
+      expect(row(3).getAttribute("aria-pressed")).to.equal("true");
+      expect(row(0).getAttribute("aria-pressed")).to.equal("false");
+      expect(field("url").value).to.equal("");
+      expect(field("url").hasAttribute("aria-invalid")).to.equal(false);
+      expect(document.activeElement).to.equal(field("label"));
+      expect(field("label").value).to.equal("New layer");
+      expect(field("label").selectionStart).to.equal(0);
+      expect(field("label").selectionEnd).to.equal(9);
+    });
+
+    it("retains new layer edits across additions and ordinary selection", () => {
+      state.view.el.querySelector("[data-add-layer]").click();
+      field("label").value = "First new layer";
+      field("label").dispatchEvent(new Event("change", { bubbles: true }));
+      state.view.el.querySelector("[data-add-layer]").click();
+
+      expect(state.model.getAllLayers()).to.have.length(5);
+      expect(row(3).textContent).to.equal("First new layer");
+      expect(row(4).getAttribute("aria-pressed")).to.equal("true");
+      row(3).focus();
+      row(3).dispatchEvent(
+        new MouseEvent("click", { bubbles: true, detail: 1 }),
+      );
+      expect(document.activeElement).to.equal(row(3));
+      expect(field("label").value).to.equal("First new layer");
+    });
+
+    it("adds to the chosen empty category and retains the other categories", () => {
+      state.view.remove();
+      state.model = new Map({
+        layerCategories: [
+          { label: "Base <b>maps</b>", layers: [{ label: "OSM", type: OSM }] },
+          { label: "Overlays", layers: [] },
+        ],
+      });
+      state.view = new MapEditorView({ model: state.model }).render();
+      document.body.append(state.view.el);
+      const buttons = state.view.el.querySelectorAll("[data-add-layer]");
+      expect(buttons).to.have.length(2);
+      expect(buttons[0].getAttribute("aria-label")).to.equal(
+        "Add layer to Base <b>maps</b>",
+      );
+      expect(buttons[1].getAttribute("aria-label")).to.equal(
+        "Add layer to Overlays",
+      );
+      buttons[1].click();
+
+      const categories = state.model.toConfig().layerCategories;
+      expect(categories[0].layers.map((layer) => layer.label)).to.deep.equal([
+        "OSM",
+      ]);
+      expect(categories[1].layers.map((layer) => layer.label)).to.deep.equal([
+        "New layer",
+      ]);
+      expect(state.view.assetEditorView.model).to.equal(
+        state.model.get("layerCategories").at(1).get("mapAssets").at(0),
+      );
+      expect(document.activeElement).to.equal(field("label"));
+    });
+
+    [
+      {
+        name: "WMTS",
+        type: WMTS,
+        fieldName: "url",
+        value: "/tiles/{TileMatrix}/{TileCol}/{TileRow}",
+        options: { url: "/tiles/{TileMatrix}/{TileCol}/{TileRow}" },
+      },
+      {
+        name: "Cesium Ion",
+        type: "IonImageryProvider",
+        fieldName: "ionAssetId",
+        value: "2",
+        options: { ionAssetId: "2" },
+      },
+      {
+        name: "OpenStreetMap",
+        type: OSM,
+        options: { url: "https://tile.openstreetmap.org/" },
+      },
+    ].forEach(({ name, type, fieldName, value, options }) => {
+      it(`saves a new ${name} layer through portal XML and reloads it`, () => {
+        state.view.remove();
+        state.model = new Map({ layers: [] });
+        state.view = new MapEditorView({ model: state.model }).render();
+        document.body.append(state.view.el);
+        const portal = new PortalModel({
+          label: "map-portal",
+          name: "Map portal",
+        });
+        portal
+          .get("definitionFilters")
+          .add({ fields: ["formatType"], values: ["METADATA"] });
+        portal
+          .addSection("cesium")
+          .set({ label: "Map", mapModel: state.model });
+        state.view.el.querySelector("[data-add-layer]").click();
+        expect(state.view.el.querySelector(".map-editor__empty")).to.equal(
+          null,
+        );
+        expect(portal.isValid()).to.equal(false);
+        field("type").value = type;
+        field("type").dispatchEvent(new Event("change", { bubbles: true }));
+        if (fieldName) {
+          field(fieldName).value = value;
+          field(fieldName).dispatchEvent(
+            new Event("change", { bubbles: true }),
+          );
+        }
+        expect(portal.isValid()).to.equal(true);
+
+        const xml = new DOMParser().parseFromString(
+          portal.serialize(),
+          "application/xml",
+        );
+        expect(xml.querySelector("parsererror")).to.equal(null);
+        const reloaded = new PortalModel({});
+        reloaded.set(reloaded.parse(xml));
+        delete window.filterXML;
+        const map = reloaded.get("sections")[0].get("mapModel");
+        const asset = map.getAllLayers()[0];
+        expect(map.getAllLayers()).to.have.length(1);
+        expect(asset.get("label")).to.equal("New layer");
+        expect(asset.get("type")).to.equal(type);
+        expect(asset.get("cesiumOptions")).to.deep.equal(options);
+        map.getAllLayers().forEach((layer) => layer.stopListening());
+        map.stopListening();
+        portal.stopListening();
+        reloaded.stopListening();
+      });
+    });
+
     it("retains field changes when selecting another layer", () => {
       row(0).click();
       const firstEditor = state.view.assetEditorView;
@@ -136,28 +316,12 @@ define([
       expect(document.activeElement).to.equal(row(1));
     });
 
-    it("previews removal on hover and focus without changing the asset", () => {
+    it("updates the remove button's accessible name when the layer label changes", () => {
       const asset = state.model.getAllLayers()[0];
-      const config = asset.toConfig();
       const button = removeButton(0);
-      const item = button.closest("li");
       expect(button.getAttribute("aria-label")).to.equal(
         "Remove Imagery <b>one</b>",
       );
-      button.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
-      expect(item.classList.contains("remove-preview")).to.equal(true);
-      expect(
-        row(1).closest("li").classList.contains("remove-preview"),
-      ).to.equal(false);
-      button.dispatchEvent(new MouseEvent("mouseout", { bubbles: true }));
-      expect(item.classList.contains("remove-preview")).to.equal(false);
-      button.focus();
-      expect(item.classList.contains("remove-preview")).to.equal(true);
-      button.dispatchEvent(new MouseEvent("mouseout", { bubbles: true }));
-      expect(item.classList.contains("remove-preview")).to.equal(true);
-      button.blur();
-      expect(item.classList.contains("remove-preview")).to.equal(false);
-      expect(asset.toConfig()).to.deep.equal(config);
 
       asset.set("label", "Renamed layer");
       expect(button.getAttribute("aria-label")).to.equal(

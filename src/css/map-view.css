@@ -2844,8 +2844,18 @@ other class: .ui-slider-range */
 .map-asset-editor textarea,
 .map-asset-editor select {
   box-sizing: border-box;
+  border-color: var(--color-neutral-6);
   min-width: 0;
   width: 100%;
+}
+
+.map-asset-editor input:focus,
+.map-asset-editor textarea:focus,
+.map-asset-editor select:focus {
+  border-color: var(--color-neutral-6);
+  outline: 2px solid var(--color-neutral-6);
+  outline-offset: 2px;
+  box-shadow: none;
 }
 
 .map-asset-editor textarea {
@@ -2904,10 +2914,6 @@ other class: .ui-slider-range */
   display: flex;
 }
 
-.map-editor__list > li.remove-preview {
-  opacity: 0.3;
-}
-
 .map-editor__layer,
 .map-editor__remove {
   padding: 0.65rem 0.75rem;
@@ -2944,6 +2950,10 @@ other class: .ui-slider-range */
 .map-editor__remove:hover,
 .map-editor__remove:focus-visible {
   color: var(--color-error);
+}
+
+.map-editor__add {
+  margin-bottom: 1rem;
 }
 
 .map-editor__help {
