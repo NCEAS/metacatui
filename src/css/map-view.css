@@ -2942,6 +2942,10 @@ other class: .ui-slider-range */
   border-color: currentColor;
 }
 
+.map-editor__item--removing .map-editor__layer {
+  text-decoration: line-through;
+}
+
 .map-editor__remove {
   flex-shrink: 0;
   border: 0;

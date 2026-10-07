@@ -61,6 +61,38 @@ define([
       state.sandbox.restore();
     });
 
+    it("focuses and selects the label through the form interface", () => {
+      state.view.focusLabel();
+      expect(document.activeElement).to.equal(field("label"));
+      expect(field("label").selectionStart).to.equal(0);
+      expect(field("label").selectionEnd).to.equal(field("label").value.length);
+    });
+
+    it("focuses the first invalid field on full validation", () => {
+      change("url", "/incomplete", source(WMTS));
+      field("label").focus();
+      state.view.showValidation();
+      expect(document.activeElement).to.equal(field("url", source(WMTS)));
+    });
+
+    it("opens a collapsed invalid extent before focusing its first field", () => {
+      change("south", "");
+      field("label").focus();
+      state.view.showValidation();
+      expect(state.view.el.querySelector("details").open).to.equal(true);
+      expect(document.activeElement).to.equal(field("west"));
+    });
+
+    it("retains focus during field validation", () => {
+      change("url", "/incomplete", source(WMTS));
+      field("label").focus();
+      state.view.showValidation("cesiumOptions.url");
+      expect(document.activeElement).to.equal(field("label"));
+      expect(field("url", source(WMTS)).getAttribute("aria-invalid")).to.equal(
+        "true",
+      );
+    });
+
     it("keeps incomplete source edits in the model without an Apply action", () => {
       field("url", source(WMTS)).value = "/incomplete";
       field("url", source(WMTS)).dispatchEvent(

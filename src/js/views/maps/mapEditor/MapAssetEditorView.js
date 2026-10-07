@@ -172,6 +172,17 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
         return this;
       },
 
+      /**
+       * Focus and select the label for editing.
+       * @returns {void}
+       * @since 0.0.0
+       */
+      focusLabel() {
+        const label = this.el.querySelector('[name="label"]');
+        label.focus();
+        label.select();
+      },
+
       /** Show fresh source controls for the selected provider */
       changeProvider() {
         const type = this.el.querySelector('[name="type"]').value;
@@ -228,13 +239,14 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
           else delete cesiumOptions.tilingScheme;
 
           const rectangle = ["west", "south", "east", "north"].map(
-            (name) => controls.querySelector(`[name="${name}"]`).value,
+            (coordinate) =>
+              controls.querySelector(`[name="${coordinate}"]`).value,
           );
-          if (rectangle.every((value) => value === "")) {
+          if (rectangle.every((coordinate) => coordinate === "")) {
             delete cesiumOptions.rectangle;
           } else {
-            cesiumOptions.rectangle = rectangle.map((value) =>
-              value === "" ? null : Number(value),
+            cesiumOptions.rectangle = rectangle.map((coordinate) =>
+              coordinate === "" ? null : Number(coordinate),
             );
           }
         }
@@ -284,6 +296,14 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
               input.setAttribute("aria-invalid", "true");
             });
         });
+        if (!field) {
+          const input = this.el.querySelector('[aria-invalid="true"]');
+          if (input) {
+            const details = input.closest("details");
+            if (details) details.open = true;
+            input.focus();
+          }
+        }
       },
     },
   );

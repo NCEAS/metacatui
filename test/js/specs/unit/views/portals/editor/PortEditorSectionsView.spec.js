@@ -306,9 +306,9 @@ define([
         expect(portal.isValid()).to.equal(false);
         editorView.showValidation();
         expect(state.view.activeSection).to.equal(sectionView);
-        expect(sectionView.mapEditorView.assetEditorView.model).to.equal(
-          mapModel.getAllLayers()[1],
-        );
+        expect(
+          sectionView.mapEditorView.assetsEditorView.assetEditorView.model,
+        ).to.equal(mapModel.getAllLayers()[1]);
         const url = sectionView.el.querySelector('textarea[name="url"]');
         expect(document.activeElement).to.equal(url);
         expect(url.getAttribute("aria-invalid")).to.equal("true");
@@ -367,9 +367,9 @@ define([
         portal.isValid();
         editorView.showValidation();
         expect(state.view.activeSection).to.equal(sectionView);
-        expect(sectionView.mapEditorView.assetEditorView.model).to.equal(
-          mapModel.getAllLayers()[1],
-        );
+        expect(
+          sectionView.mapEditorView.assetsEditorView.assetEditorView.model,
+        ).to.equal(mapModel.getAllLayers()[1]);
         const field = sectionView.el.querySelector('[name="ionAssetId"]');
         expect(document.activeElement).to.equal(field);
         expect(field.getAttribute("aria-invalid")).to.equal("true");
