@@ -92,6 +92,20 @@ define([
       expect(row(0).getAttribute("aria-pressed")).to.equal("true");
     });
 
+    it("starts a newly selected layer's form at the top", () => {
+      const [first, second] = state.model.getAllLayers();
+      second.set("type", WMTS);
+      const panel = state.view.el.querySelector(".map-editor__panel");
+      panel.style.cssText = "height: 100px; overflow: auto";
+      state.view.selectAsset(first);
+      panel.scrollTop = 150;
+      expect(panel.scrollTop).to.be.greaterThan(0);
+
+      state.view.selectAsset(second);
+      expect(panel.scrollTop).to.equal(0);
+      expect(field("label").value).to.equal(second.get("label"));
+    });
+
     it("accepts row selection requests containing only the asset model", () => {
       const asset = state.model.getAllLayers()[0];
       state.view.assetItemViews[0].trigger("select:asset", asset);
@@ -498,6 +512,127 @@ define([
       expect(state.view.assetEditorView.model).to.equal(
         state.model.get("layerCategories").at(0).get("mapAssets").at(0),
       );
+    });
+
+    describe("category disclosures", () => {
+      const toggle = (index) =>
+        state.view.el.querySelectorAll("[data-toggle-category]")[index];
+      const content = (index) =>
+        state.view.el.querySelectorAll(".expansion-panel__content")[index];
+
+      beforeEach(() => {
+        state.view.remove();
+        state.model = new Map({
+          layerCategories: [
+            {
+              label: "Water <b>layers</b>",
+              expanded: false,
+              layers: [
+                {
+                  label: "Surface water",
+                  type: WMTS,
+                  cesiumOptions: {
+                    url: "/tiles/{TileMatrix}/{TileCol}/{TileRow}",
+                  },
+                },
+              ],
+            },
+            {
+              label: "Base maps",
+              expanded: true,
+              layers: [{ label: "OSM", type: OSM }],
+            },
+          ],
+        });
+        state.view = new MapAssetsEditorView({ model: state.model }).render();
+        document.body.append(state.view.el);
+      });
+
+      it("starts all categories expanded with named disclosure buttons", () => {
+        expect(
+          state.view.el.querySelectorAll("[data-toggle-category]"),
+        ).to.have.length(2);
+        [0, 1].forEach((index) => {
+          expect(toggle(index).tagName).to.equal("BUTTON");
+          expect(toggle(index).getAttribute("aria-expanded")).to.equal("true");
+          expect(toggle(index).getAttribute("aria-controls")).to.equal(
+            content(index).id,
+          );
+          expect(content(index).hidden).to.equal(false);
+        });
+        expect(toggle(0).textContent).to.include("Water <b>layers</b>");
+        expect(toggle(0).querySelector("b")).to.equal(null);
+      });
+
+      it("collapses independently without replacing settings or saving state", () => {
+        const config = state.model.toConfig();
+        row(0).click();
+        const editor = state.view.assetEditorView;
+        toggle(0).focus();
+        toggle(0).click();
+        expect(toggle(0).getAttribute("aria-expanded")).to.equal("false");
+        expect(content(0).hidden).to.equal(true);
+        expect(content(0).querySelector("[data-add-layer]")).not.to.equal(null);
+        expect(toggle(1).getAttribute("aria-expanded")).to.equal("true");
+        expect(document.activeElement).to.equal(toggle(0));
+        expect(state.view.assetEditorView).to.equal(editor);
+        expect(editor.el.isConnected).to.equal(true);
+        expect(state.model.toConfig()).to.deep.equal(config);
+        toggle(0).click();
+        expect(content(0).hidden).to.equal(false);
+      });
+
+      it("retains collapsed categories across additions and removals", () => {
+        toggle(0).click();
+        state.view.el.querySelectorAll("[data-add-layer]")[1].click();
+        expect(toggle(0).getAttribute("aria-expanded")).to.equal("false");
+        expect(content(0).hidden).to.equal(true);
+        removeButton(2).click();
+        expect(content(0).hidden).to.equal(true);
+        expect(toggle(1).getAttribute("aria-expanded")).to.equal("true");
+      });
+
+      it("opens a collapsed category when validation reveals its layer", () => {
+        row(0).click();
+        const editor = state.view.assetEditorView;
+        field("url").value = "/incomplete";
+        field("url").dispatchEvent(new Event("change", { bubbles: true }));
+        toggle(0).click();
+        expect(state.model.getAllLayers()[0].isValid()).to.equal(false);
+        state.view.showValidation();
+        expect(content(0).hidden).to.equal(false);
+        expect(toggle(0).getAttribute("aria-expanded")).to.equal("true");
+        expect(state.view.assetEditorView).to.equal(editor);
+        expect(document.activeElement).to.equal(field("url"));
+        expect(field("url").getAttribute("aria-invalid")).to.equal("true");
+      });
+
+      it("opens a collapsed category before focusing the next row after removal", () => {
+        toggle(1).click();
+        removeButton(0).click();
+        expect(content(1).hidden).to.equal(false);
+        expect(toggle(1).getAttribute("aria-expanded")).to.equal("true");
+        expect(document.activeElement).to.equal(row(0));
+      });
+
+      it("updates a loaded category icon without replacing focused controls", () => {
+        expect(toggle(0)).not.to.equal(undefined);
+        const category = state.model.get("layerCategories").at(0);
+        const button = toggle(0);
+        button.focus();
+        category.updateIcon(
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z"/></svg>',
+        );
+        expect(button.querySelector("svg path").getAttribute("d")).to.equal(
+          "M0 0h24v24H0z",
+        );
+        expect(
+          button
+            .querySelector(".expansion-panel__icon")
+            .getAttribute("aria-hidden"),
+        ).to.equal("true");
+        expect(document.activeElement).to.equal(button);
+      });
     });
 
     it("saves provider field changes through portal XML and reloads them", () => {

@@ -2,7 +2,6 @@
 
 define(["backbone"], (Backbone) => {
   const CLASS_NAMES = {
-    LAYER: "map-editor__layer",
     REMOVE: "map-editor__remove",
     REMOVING: "map-editor__item--removing",
   };
@@ -19,6 +18,9 @@ define(["backbone"], (Backbone) => {
     /** @lends MapAssetItemView.prototype */ {
       /** @inheritdoc */
       tagName: "li",
+
+      /** @inheritdoc */
+      className: "list-item",
 
       /** @inheritdoc */
       events: {
@@ -48,7 +50,7 @@ define(["backbone"], (Backbone) => {
        */
       template() {
         return `
-          <button type="button" class="${CLASS_NAMES.LAYER}" data-asset="${this.model.cid}"
+          <button type="button" class="list-item__label" data-asset="${this.model.cid}"
             aria-pressed="false" aria-controls="${this.panelId}"></button>
           <button type="button" class="${CLASS_NAMES.REMOVE}" data-remove-asset="${this.model.cid}">
             <i class="icon icon-remove" aria-hidden="true"></i>
