@@ -179,6 +179,7 @@
     "./js/specs/unit/views/portals/PortalView.spec.js",
     "./js/specs/unit/views/portals/editor/PortalEditorView.spec.js",
     "./js/specs/unit/views/portals/editor/PortEditorSectionView.spec.js",
+    "./js/specs/unit/views/portals/editor/PortEditorMapSectionView.spec.js",
     "./js/specs/unit/views/portals/editor/PortEditorSectionsView.spec.js",
     "./js/specs/unit/models/UserModel.spec.js",
     "./js/specs/unit/collections/ObjectFormats.spec.js",

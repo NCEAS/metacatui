@@ -17,8 +17,41 @@ define([
     }, beforeEach);
     const select = () => state.view.el.querySelector("[data-asset]");
     const remove = () => state.view.el.querySelector("[data-remove-asset]");
+    const move = () => state.view.el.querySelector("[data-move-asset]");
 
     afterEach(() => state.view.remove());
+
+    it("names the Move button after its layer and updates it when renamed", () => {
+      expect(move().tagName).to.equal("BUTTON");
+      expect(move().type).to.equal("button");
+      expect(move().querySelectorAll(".icon-ellipsis-vertical")).to.have.length(
+        2,
+      );
+      expect(move().getAttribute("aria-expanded")).to.equal("false");
+      expect(move().getAttribute("aria-label")).to.equal(
+        "Move Layer <b>one</b>",
+      );
+      const newName = "Renamed!";
+      state.model.set("label", newName);
+      expect(move().getAttribute("aria-label")).to.equal(`Move ${newName}`);
+      state.view.focusMove();
+      expect(document.activeElement).to.equal(move());
+    });
+
+    it("requests movement with the exact layer and grip without selecting it", () => {
+      let requested;
+      let selected = false;
+      state.view.on("move:asset", (asset, button) => {
+        requested = { asset, button };
+      });
+      state.view.on("select:asset", () => {
+        selected = true;
+      });
+      move().click();
+      expect(requested.asset).to.equal(state.model);
+      expect(requested.button).to.equal(move());
+      expect(selected).to.equal(false);
+    });
 
     it("renders literal labels and updates the removal accessible name", () => {
       expect(state.view.el.tagName).to.equal("LI");
