@@ -7,6 +7,15 @@ define([
   "cesium",
   "models/maps/assets/MapAsset",
 ], function ($, _, Backbone, Cesium, MapAsset) {
+  const OSM_DEFAULT_URL = "https://tile.openstreetmap.org/";
+  const VALIDATION_MESSAGES = {
+    WMTS_URL:
+      "Enter a tile URL containing {TileMatrix}, {TileCol}, and {TileRow}.",
+    ION_ID: "Enter a positive integer Ion asset ID.",
+    RECTANGLE:
+      "Enter all four coordinates: longitude from -180 to 180, latitude from -90 to 90, and south no greater than north.",
+  };
+
   /**
    * @classdesc A CesiumImagery Model contains the information required for Cesium to
    * request and draw high-resolution image tiles using several standards (Cesium
@@ -86,9 +95,7 @@ define([
         try {
           MapAsset.prototype.initialize.call(this, assetConfig);
 
-          if (assetConfig.type == "NaturalEarthII") {
-            this.initNaturalEarthII(assetConfig);
-          } else if (assetConfig.type == "USGSImageryTopo") {
+          if (this.get("type") === "USGSImageryTopo") {
             this.initUSGSImageryTopo(assetConfig);
           }
 
@@ -101,55 +108,26 @@ define([
       },
 
       /**
-       * Initializes a CesiumImagery model for the Natural Earth II asset.
-       * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of the
-       * attributes, which will be set on the model.
+       * Save the current imagery source. Provider creation expands shortcuts
+       * and converts options on a copy, leaving these attributes as config.
+       * @returns {MapConfig#MapAssetConfig} A detached object of settings to save.
+       * @since 0.0.0
        */
-      initNaturalEarthII: function (assetConfig) {
-        try {
-          if (
-            !assetConfig.cesiumOptions ||
-            typeof assetConfig.cesiumOptions !== "object"
-          ) {
-            assetConfig.cesiumOptions = {};
-          }
-
-          assetConfig.cesiumOptions.url = Cesium.buildModuleUrl(
-            "Assets/Textures/NaturalEarthII",
-          );
-          this.set("type", "TileMapServiceImageryProvider");
-          this.set("cesiumOptions", assetConfig.cesiumOptions);
-        } catch (error) {
-          console.log(
-            "There was an error initializing NaturalEarthII in a CesiumImagery" +
-              ". Error details: " +
-              error,
-          );
-        }
+      toConfig() {
+        return {
+          ...MapAsset.prototype.toConfig.call(this),
+          type: this.get("type"),
+          cesiumOptions: this.getCesiumOptions(),
+        };
       },
 
       /**
-       * Initializes a CesiumImagery model for the USGS Imagery Topo asset.
+       * Set default metadata for the USGS Imagery Topo asset.
        * @param {MapConfig#MapAssetConfig} [assetConfig] The initial values of the
        * attributes, which will be set on the model.
        */
       initUSGSImageryTopo: function (assetConfig) {
         try {
-          if (
-            !assetConfig.cesiumOptions ||
-            typeof assetConfig.cesiumOptions !== "object"
-          ) {
-            assetConfig.cesiumOptions = {};
-          }
-          this.set("type", "WebMapServiceImageryProvider");
-          assetConfig.cesiumOptions.url =
-            "https://basemap.nationalmap.gov:443/arcgis/services/USGSImageryTopo/MapServer/WmsServer";
-          assetConfig.cesiumOptions.layers = "0";
-          assetConfig.cesiumOptions.parameters = {
-            transparent: true,
-            format: "image/png",
-          };
-          this.set("cesiumOptions", assetConfig.cesiumOptions);
           if (!assetConfig.moreInfoLink) {
             this.set(
               "moreInfoLink",
@@ -190,9 +168,8 @@ define([
        */
       createCesiumModel: function (recreate = false) {
         var model = this;
-        const cesiumOptions = this.getCesiumOptions();
-        var type = this.get("type");
-        var providerFunction = Cesium[type];
+        const cesiumOptions = this.getCesiumOptions() || {};
+        let type = this.get("type");
 
         // If the cesium model already exists, don't create it again unless specified
         if (!recreate && this.get("cesiumModel")) {
@@ -209,7 +186,21 @@ define([
           // TODO: brightness, contrast, gamma, etc.
         };
 
-        if (type === "BingMapsImageryProvider") {
+        if (type === "NaturalEarthII") {
+          type = "TileMapServiceImageryProvider";
+          cesiumOptions.url = Cesium.buildModuleUrl(
+            "Assets/Textures/NaturalEarthII",
+          );
+        } else if (type === "USGSImageryTopo") {
+          type = "WebMapServiceImageryProvider";
+          cesiumOptions.url =
+            "https://basemap.nationalmap.gov:443/arcgis/services/USGSImageryTopo/MapServer/WmsServer";
+          cesiumOptions.layers = "0";
+          cesiumOptions.parameters = {
+            transparent: true,
+            format: "image/png",
+          };
+        } else if (type === "BingMapsImageryProvider") {
           cesiumOptions.key =
             cesiumOptions.key || MetacatUI.AppConfig.bingMapsKey;
         } else if (type === "IonImageryProvider") {
@@ -218,8 +209,7 @@ define([
           cesiumOptions.accessToken =
             cesiumOptions.cesiumToken || MetacatUI.appModel.get("cesiumToken");
         } else if (type === "OpenStreetMapImageryProvider") {
-          cesiumOptions.url =
-            cesiumOptions.url || "https://tile.openstreetmap.org/";
+          cesiumOptions.url = cesiumOptions.url || OSM_DEFAULT_URL;
         }
         if (cesiumOptions && cesiumOptions.tilingScheme) {
           const ts = cesiumOptions.tilingScheme;
@@ -243,6 +233,7 @@ define([
           );
         }
 
+        const providerFunction = Cesium[type];
         if (providerFunction && typeof providerFunction === "function") {
           let provider = new providerFunction(cesiumOptions);
           provider.readyPromise
@@ -599,64 +590,66 @@ define([
         }
       },
 
-      // /**
-      //  * Parses the given input into a JSON object to be set on the model.
-      //  *
-      //  * @param {TODO} input - The raw response object
-      //  * @return {TODO} - The JSON object of all the Imagery attributes
-      //    */
-      // parse: function (input) {
+      /**
+       * Validate candidate imagery source options without changing them.
+       * @param {object} attrs The candidate model attributes
+       * @returns {object|undefined} Field messages, or no error when valid
+       * @since 0.0.0
+       */
+      validate(attrs) {
+        const source = attrs.cesiumOptions || {};
+        const errors = {};
 
-      //   try {
+        if (attrs.type === "WebMapTileServiceImageryProvider") {
+          if (
+            typeof source.url !== "string" ||
+            !["{TileMatrix}", "{TileCol}", "{TileRow}"].every((placeholder) =>
+              source.url.includes(placeholder),
+            )
+          ) {
+            errors["cesiumOptions.url"] = VALIDATION_MESSAGES.WMTS_URL;
+          }
+        }
 
-      //     var modelJSON = {};
+        if (attrs.type === "IonImageryProvider") {
+          const id =
+            typeof source.ionAssetId === "number" ||
+            typeof source.ionAssetId === "string"
+              ? Number(source.ionAssetId)
+              : NaN;
+          if (!Number.isInteger(id) || id <= 0) {
+            errors["cesiumOptions.ionAssetId"] = VALIDATION_MESSAGES.ION_ID;
+          }
+        }
 
-      //     return modelJSON
+        const { rectangle } = source;
+        if (
+          rectangle !== undefined &&
+          !(
+            Array.isArray(rectangle) &&
+            rectangle.length === 4 &&
+            rectangle.every(Number.isFinite) &&
+            Math.abs(rectangle[0]) <= 180 &&
+            Math.abs(rectangle[1]) <= 90 &&
+            Math.abs(rectangle[2]) <= 180 &&
+            Math.abs(rectangle[3]) <= 90 &&
+            rectangle[1] <= rectangle[3]
+          )
+        ) {
+          errors["cesiumOptions.rectangle"] = VALIDATION_MESSAGES.RECTANGLE;
+        }
 
-      //   }
-      //   catch (error) {console.log('There was an error parsing a Imagery model' + '.
-      //     Error details: ' + error
-      //     );
-      //   }
-
-      // },
-
-      // /**
-      //  * Overrides the default Backbone.Model.validate.function() to check if this if
-      //  * the values set on this model are valid.
-      //  *
-      //  * @param {Object} [attrs] - A literal object of model attributes to validate.
-      //  * @param {Object} [options] - A literal object of options for this validation
-      //  * process
-      //  *
-      //  * @return {Object} - Returns a literal object with the invalid attributes and
-      //  * their corresponding error message, if there are any. If there are no errors,
-      //  * returns nothing.
-      //    */
-      // validate: function (attrs, options) {try {
-
-      //   }
-      //   catch (error) {console.log('There was an error validating a CesiumImagery
-      //     model' + '. Error details: ' + error
-      //     );
-      //   }
-      // },
-
-      // /**
-      //  * Creates a string using the values set on this model's attributes.
-      //  * @return {string} The Imagery string
-      //    */
-      // serialize: function () {try {var serializedImagery = "";
-
-      //     return serializedImagery;
-      //   }
-      //   catch (error) {console.log('There was an error serializing a CesiumImagery
-      //     model' + '. Error details: ' + error
-      //     );
-      //   }
-      // },
+        return Object.keys(errors).length ? errors : undefined;
+      },
     },
   );
+
+  /**
+   * Standard OpenStreetMap tile server URL shared by the model and editor.
+   * @type {string}
+   * @since 0.0.0
+   */
+  CesiumImagery.OSM_DEFAULT_URL = OSM_DEFAULT_URL;
 
   return CesiumImagery;
 });

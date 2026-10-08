@@ -2817,3 +2817,281 @@ other class: .ui-slider-range */
   box-sizing: border-box;
   background-color: var(--map-col-background);
 }
+
+/* Standalone Map Asset Editor View */
+.map-asset-editor,
+.map-asset-editor [data-provider] {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.map-asset-editor {
+  font-family: var(--map-body-font);
+}
+
+.map-asset-editor [data-provider][hidden] {
+  display: none;
+}
+
+.map-asset-editor__field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.map-asset-editor input,
+.map-asset-editor textarea,
+.map-asset-editor select {
+  box-sizing: border-box;
+  border-color: var(--color-neutral-6);
+  min-width: 0;
+  width: 100%;
+}
+
+.map-asset-editor input:focus,
+.map-asset-editor textarea:focus,
+.map-asset-editor select:focus {
+  border-color: var(--color-neutral-6);
+  outline: 2px solid var(--color-neutral-6);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.map-asset-editor textarea {
+  resize: vertical;
+}
+
+.map-asset-editor input {
+  min-height: 30px;
+}
+
+.map-asset-editor__extent {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.map-asset-editor__error {
+  color: var(--color-error);
+  margin: 0;
+}
+
+.map-asset-editor__error:empty {
+  display: none;
+}
+
+/* Map configuration editor */
+.map-editor {
+  container-type: inline-size;
+}
+
+.map-editor__workspace {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.map-editor__layers {
+  /* Keep the editor readable independently of the portal's map theme. */
+  --portal-col-primary-1: #ecf8fc;
+  --portal-col-primary-6: #136682;
+  --portal-col-neutral-1: #f8f9fa;
+  --portal-col-neutral-2: #e8eaed;
+  --portal-col-neutral-6: #5f6368;
+  --portal-col-neutral-7: #3c4043;
+  flex: 1 1 14rem;
+  min-width: 0;
+  background: white;
+  color: var(--portal-col-neutral-7);
+}
+
+.map-editor__layers .expansion-panel > h5 {
+  margin: 0;
+}
+
+.map-editor__layers .expansion-panel__toggle {
+  width: 100%;
+  grid-template-columns: min-content minmax(0, 1fr) min-content;
+  padding: 0 0.75rem;
+  background: transparent;
+  font-family: inherit;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.map-editor__layers .expansion-panel__title {
+  overflow-wrap: anywhere;
+}
+
+.map-editor__layers .expansion-panel__content {
+  animation: none;
+}
+
+.map-editor__layers button:focus-visible,
+.map-editor__move-controls select:focus-visible {
+  outline: 2px solid var(--portal-col-primary-6);
+  outline-offset: 2px;
+}
+
+.map-editor__panel {
+  flex: 3 1 26rem;
+  min-width: 0;
+}
+
+/* Match the width needed by the two flex bases and their gap. */
+@container (min-width: 42rem) {
+  .map-editor__layers,
+  .map-editor__panel {
+    box-sizing: border-box;
+    max-height: 70vh;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    padding: 0.25rem;
+    scroll-padding: 0.25rem;
+  }
+}
+
+.map-editor__layers .layer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.map-editor__layers .layer-list:empty {
+  min-height: 2.5rem;
+  box-sizing: border-box;
+  border: 1px dashed var(--portal-col-neutral-6);
+}
+
+.map-editor__layers .map-editor__drop-placeholder {
+  border: 1px solid var(--portal-col-primary-6);
+  background: var(--portal-col-primary-1);
+}
+
+.map-editor__layers .list-item {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 0 0.75rem;
+}
+
+.map-editor__layers .map-editor__add-row {
+  grid-template-columns: minmax(0, 1fr);
+  margin-bottom: 0.5rem;
+}
+
+.map-editor__layers .expansion-panel .list-item {
+  padding-left: 3rem;
+}
+
+.map-editor__layers .list-item__label,
+.map-editor__move,
+.map-editor__remove {
+  padding: 0.25rem 0.75rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 2.5rem;
+  line-height: 1.5;
+}
+
+.map-editor__layers .list-item__label {
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: var(--map-border-radius-small);
+  text-align: left;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.map-editor__layers .list-item__label:hover,
+.map-editor__layers .list-item__label[aria-pressed="true"] {
+  background: var(--portal-col-primary-1);
+}
+
+.map-editor__layers .list-item__label[aria-pressed="true"] {
+  border-color: var(--portal-col-primary-6);
+}
+
+.map-editor__item--removing .list-item__label {
+  text-decoration: line-through;
+}
+
+.map-editor__remove {
+  /* Keep at least 3:1 contrast against white and the row hover background. */
+  color: #909090;
+  min-width: 2.5rem;
+  border: 0;
+}
+
+.map-editor__remove:hover,
+.map-editor__remove:focus-visible {
+  color: var(--color-error);
+}
+
+.map-editor__move {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  min-width: 2.5rem;
+  border: 0;
+  color: var(--portal-col-primary-6);
+  font-size: 1rem;
+  cursor: grab;
+}
+
+.map-editor__move .icon {
+  opacity: 0.7;
+}
+
+.map-editor__move:active,
+.map-editor__layers .sortable-chosen .map-editor__move {
+  cursor: grabbing;
+}
+
+.map-editor__move:hover {
+  background: var(--portal-col-primary-1);
+}
+
+.map-editor__move-controls,
+.map-editor__move-controls [data-move-category-controls] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.map-editor__move-controls {
+  grid-column: 1 / -1;
+  padding: 0.5rem 0;
+}
+
+.map-editor__move-controls[hidden],
+.map-editor__move-controls [hidden] {
+  display: none;
+}
+
+.map-editor__move-controls select {
+  max-width: 100%;
+}
+
+.map-editor__move-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.map-editor__layers .map-editor__add {
+  color: var(--portal-col-primary-6);
+  font-weight: 600;
+  gap: 0.5rem;
+}

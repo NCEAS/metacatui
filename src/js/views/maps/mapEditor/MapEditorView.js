@@ -1,14 +1,18 @@
 "use strict";
 
-define(["backbone", "models/maps/Map"], (Backbone, Map) => {
-  const BASE_CLASS = "map-editor";
+define([
+  "backbone",
+  "models/maps/Map",
+  "views/maps/mapEditor/MapAssetsEditorView",
+  `text!${MetacatUI.root}/css/map-view.css`,
+], (Backbone, Map, MapAssetsEditorView, MapCSS) => {
   const CLASS_NAMES = {
-    BASE: BASE_CLASS,
+    BASE: "map-editor",
   };
 
   /**
    * @class MapEditorView
-   * @classdesc Displays a map configuration for editing.
+   * @classdesc Composes editing sections for a map configuration.
    * @classcategory Views/Maps/MapEditor
    * @augments Backbone.View
    * @screenshot views/maps/mapEditor/MapEditorView.png
@@ -17,10 +21,16 @@ define(["backbone", "models/maps/Map"], (Backbone, Map) => {
   const MapEditorView = Backbone.View.extend(
     /** @lends MapEditorView.prototype */ {
       /**
-       * The map configuration model.
+       * The map configuration model shared by editing sections.
        * @type {Map}
        */
       model: null,
+
+      /**
+       * The layers workspace owned by this view.
+       * @type {MapAssetsEditorView|null}
+       */
+      assetsEditorView: null,
 
       /** @inheritdoc */
       className: CLASS_NAMES.BASE,
@@ -30,41 +40,40 @@ define(["backbone", "models/maps/Map"], (Backbone, Map) => {
         "data-category": "map",
       },
 
-      /**
-       * Create the HTML for this view.
-       * @param {object} variables The variables to use in the template.
-       * @returns {string} The HTML for this view.
-       */
-      template(variables) {
-        const { layerNames } = variables;
-        const layerItems = layerNames
-          .map((name) => `<li>${name}</li>`)
-          .join("");
-        return `
-          <h3>The Map is not yet editable. The following layers are present:</h3>
-          <ul>${layerItems}</ul>
-        `;
-      },
-
       /** @inheritdoc */
       initialize(options = {}) {
         this.model = options.model || new Map();
+        MetacatUI.appModel.addCSS(MapCSS, "mapView");
       },
 
       /**
-       * Displays the map configuration as JSON.
+       * Render the assets workspace.
        * @returns {MapEditorView} This view
        */
       render() {
-        const layers = this.model.getAllLayers();
-        const layerNames = layers.map((layer) => layer.get("label"));
-        this.el.innerHTML = this.template({ layerNames });
+        this.onClose();
+        this.el.classList.add(CLASS_NAMES.BASE);
+        this.assetsEditorView = new MapAssetsEditorView({ model: this.model });
+        this.el.append(this.assetsEditorView.render().el);
         return this;
       },
 
-      /** Cleans up the view and stops listening to events */
+      /** Delegate portal validation feedback to the assets workspace */
+      showValidation() {
+        this.assetsEditorView.showValidation();
+      },
+
+      /** Remove the workspace before replacing the shell or closing */
       onClose() {
+        this.assetsEditorView?.remove();
+        this.assetsEditorView = null;
         this.stopListening();
+      },
+
+      /** @inheritdoc */
+      remove() {
+        this.onClose();
+        return Backbone.View.prototype.remove.call(this);
       },
     },
   );
