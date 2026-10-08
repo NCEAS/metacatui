@@ -100,6 +100,7 @@
     "./js/specs/unit/models/maps/ExpansionPanelsModel.spec.js",
     "./js/specs/unit/models/maps/assets/MapAsset.spec.js",
     "./js/specs/unit/models/maps/assets/CesiumImagery.spec.js",
+    "./js/specs/unit/views/maps/mapEditor/MapAssetCategoryView.spec.js",
     "./js/specs/unit/views/maps/mapEditor/MapAssetEditorView.spec.js",
     "./js/specs/unit/views/maps/mapEditor/MapAssetItemView.spec.js",
     "./js/specs/unit/views/maps/mapEditor/MapAssetsEditorView.spec.js",

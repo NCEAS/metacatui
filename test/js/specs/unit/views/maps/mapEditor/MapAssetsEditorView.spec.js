@@ -64,11 +64,31 @@ define([
       expect(state.view.selectedAsset).to.equal(selected);
       expect(state.view.assetEditorView).to.equal(editor);
       expect(editor.el.isConnected).to.equal(true);
-      expect(oldItem.el.isConnected).to.equal(false);
+      expect(oldItem.el.isConnected).to.equal(true);
       expect(row(0).getAttribute("aria-pressed")).to.equal("true");
       selected.set("label", "Updated after reset");
       expect(row(0).textContent).to.equal("Updated after reset");
-      expect(oldItem.el.textContent).to.include("Imagery <b>one</b>");
+      expect(oldItem.el.textContent).to.include("Updated after reset");
+    });
+
+    it("preserves existing rows and focus across unrelated additions and removals", () => {
+      const first = state.view.assetItemViews[0];
+      const second = state.view.assetItemViews[1];
+      const list = second.el.parentElement;
+      const add = state.view.el.querySelector("[data-add-layer]");
+      second.focus();
+      const added = state.model
+        .get("layers")
+        .addAsset({ label: "Extra", type: OSM }, state.model);
+      expect(state.view.assetItemViews[0] === first).to.equal(true);
+      expect(state.view.assetItemViews[1] === second).to.equal(true);
+      expect(second.el.parentElement).to.equal(list);
+      expect(state.view.el.querySelector("[data-add-layer]")).to.equal(add);
+      expect(list.contains(add)).to.equal(false);
+      expect(document.activeElement).to.equal(row(1));
+      state.model.removeAsset(added);
+      expect(state.view.assetItemViews[1] === second).to.equal(true);
+      expect(document.activeElement).to.equal(row(1));
     });
 
     it("clears selection when the selected asset leaves the collection", () => {
@@ -277,9 +297,9 @@ define([
           .addSection("cesium")
           .set({ label: "Map", mapModel: state.model });
         state.view.el.querySelector("[data-add-layer]").click();
-        expect(state.view.el.querySelector(".map-editor__empty")).to.equal(
-          null,
-        );
+        expect(
+          state.view.el.querySelector(".map-editor__empty").hidden,
+        ).to.equal(true);
         expect(portal.isValid()).to.equal(false);
         field("type").value = type;
         field("type").dispatchEvent(new Event("change", { bubbles: true }));
@@ -564,7 +584,7 @@ define([
         expect(toggle(0).querySelector("b")).to.equal(null);
       });
 
-      it("collapses independently without replacing settings or saving state", () => {
+      it("collapses in the editor without replacing settings or changing map config", () => {
         const config = state.model.toConfig();
         row(0).click();
         const editor = state.view.assetEditorView;
@@ -590,6 +610,43 @@ define([
         removeButton(2).click();
         expect(content(0).hidden).to.equal(true);
         expect(toggle(1).getAttribute("aria-expanded")).to.equal("true");
+      });
+
+      it("preserves a category header and focus while another category changes", () => {
+        const button = toggle(0);
+        const categoryContent = content(0);
+        button.focus();
+        const layers = state.model
+          .get("layerCategories")
+          .at(1)
+          .get("mapAssets");
+        const added = layers.addAsset(
+          { label: "Extra", type: OSM },
+          state.model,
+        );
+        expect(toggle(0)).to.equal(button);
+        expect(content(0)).to.equal(categoryContent);
+        expect(document.activeElement).to.equal(button);
+        state.model.removeAsset(added);
+        expect(toggle(0)).to.equal(button);
+        expect(document.activeElement).to.equal(button);
+      });
+
+      it("updates category and Add labels without replacing their controls", () => {
+        const button = toggle(0);
+        const add = content(0).querySelector("[data-add-layer]");
+        add.focus();
+        state.model
+          .get("layerCategories")
+          .at(0)
+          .set("label", "New <b>label</b>");
+        expect(toggle(0)).to.equal(button);
+        expect(button.textContent).to.include("New <b>label</b>");
+        expect(button.querySelector("b")).to.equal(null);
+        expect(add.getAttribute("aria-label")).to.equal(
+          "Add layer to New <b>label</b>",
+        );
+        expect(document.activeElement).to.equal(add);
       });
 
       it("opens a collapsed category when validation reveals its layer", () => {

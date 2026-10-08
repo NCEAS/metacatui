@@ -2955,13 +2955,18 @@ other class: .ui-slider-range */
 
 .map-editor__layers .layer-list {
   list-style: none;
-  margin: 0 0 0.5rem;
+  margin: 0;
   padding: 0;
 }
 
 .map-editor__layers .list-item {
   grid-template-columns: minmax(0, 1fr) auto;
   padding: 0 0.75rem;
+}
+
+.map-editor__layers .map-editor__add-row {
+  grid-template-columns: minmax(0, 1fr);
+  margin-bottom: 0.5rem;
 }
 
 .map-editor__layers .expansion-panel .list-item {
