@@ -1119,6 +1119,51 @@ define([
       },
 
       /**
+       * Move a layer within its list or to another category.
+       * @param {MapAsset} asset An existing layer in this map
+       * @param {MapAssets} targetLayers An existing layer collection in this map
+       * @param {number} index The final zero-based position in the destination
+       * @returns {boolean} Whether the layer moved
+       * @since 0.0.0
+       */
+      moveAsset(asset, targetLayers, index) {
+        // Get the assets collection that currently contains the asset.
+        const source = this.getLayerGroups().find((layers) =>
+          layers.get(asset),
+        );
+        if (!source) {
+          throw new Error("Asset not found in any layer group.");
+        }
+        // If the asset already at desired position do nothing
+        if (source === targetLayers && source.indexOf(asset) === index)
+          return false;
+        const previousSource = source.models.slice();
+        const previousTarget =
+          source === targetLayers
+            ? previousSource
+            : targetLayers.models.slice();
+        const targetModels = previousTarget.filter((model) => model !== asset);
+        targetModels.splice(index, 0, asset);
+        if (source !== targetLayers) {
+          source.reset(
+            previousSource.filter((model) => model !== asset),
+            { silent: true },
+          );
+        }
+        targetLayers.reset(targetModels, { silent: true });
+        // MapAssets' model factory can leave collection pointing to allLayers.
+        Object.assign(asset, { collection: targetLayers });
+        // Notify only after both collections contain their completed state.
+        if (source !== targetLayers) {
+          source.trigger("reset", source, { previousModels: previousSource });
+        }
+        targetLayers.trigger("reset", targetLayers, {
+          previousModels: previousTarget,
+        });
+        return true;
+      },
+
+      /**
        * Add a layer or other asset to the map. This is the best way to add a
        * layer to the map because it will ensure that this map model is set on
        * the layer model. If the map is using layer categories, the layer

@@ -81,7 +81,7 @@ define([
           .get("mapModel")
           .getLayerGroups()
           .forEach((layers) => {
-            this.listenTo(layers, "add remove", () => {
+            this.listenTo(layers, "add remove reset", () => {
               this.editorView?.showControls();
             });
             this.listenTo(layers, "change", (asset) => {
