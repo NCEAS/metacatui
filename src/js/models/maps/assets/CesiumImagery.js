@@ -7,11 +7,24 @@ define([
   "cesium",
   "models/maps/assets/MapAsset",
 ], function ($, _, Backbone, Cesium, MapAsset) {
+  const PROVIDER_TYPES = {
+    WMTS: "WebMapTileServiceImageryProvider",
+    WMS: "WebMapServiceImageryProvider",
+    TMS: "TileMapServiceImageryProvider",
+    ION: "IonImageryProvider",
+    OSM: "OpenStreetMapImageryProvider",
+    BING: "BingMapsImageryProvider",
+    NATURAL_EARTH: "NaturalEarthII",
+    USGS: "USGSImageryTopo",
+  };
   const OSM_DEFAULT_URL = "https://tile.openstreetmap.org/";
+  const BING_DEFAULT_URL = "https://dev.virtualearth.net";
   const VALIDATION_MESSAGES = {
     WMTS_URL:
       "Enter a tile URL containing {TileMatrix}, {TileCol}, and {TileRow}.",
     ION_ID: "Enter a positive integer Ion asset ID.",
+    SERVICE_URL: "Enter a service URL.",
+    WMS_LAYERS: "Enter at least one WMS layer name, separated by commas.",
     RECTANGLE:
       "Enter all four coordinates: longitude from -180 to 180, latitude from -90 to 90, and south no greater than north.",
   };
@@ -95,7 +108,7 @@ define([
         try {
           MapAsset.prototype.initialize.call(this, assetConfig);
 
-          if (this.get("type") === "USGSImageryTopo") {
+          if (this.get("type") === PROVIDER_TYPES.USGS) {
             this.initUSGSImageryTopo(assetConfig);
           }
 
@@ -186,13 +199,13 @@ define([
           // TODO: brightness, contrast, gamma, etc.
         };
 
-        if (type === "NaturalEarthII") {
-          type = "TileMapServiceImageryProvider";
+        if (type === PROVIDER_TYPES.NATURAL_EARTH) {
+          type = PROVIDER_TYPES.TMS;
           cesiumOptions.url = Cesium.buildModuleUrl(
             "Assets/Textures/NaturalEarthII",
           );
-        } else if (type === "USGSImageryTopo") {
-          type = "WebMapServiceImageryProvider";
+        } else if (type === PROVIDER_TYPES.USGS) {
+          type = PROVIDER_TYPES.WMS;
           cesiumOptions.url =
             "https://basemap.nationalmap.gov:443/arcgis/services/USGSImageryTopo/MapServer/WmsServer";
           cesiumOptions.layers = "0";
@@ -200,15 +213,16 @@ define([
             transparent: true,
             format: "image/png",
           };
-        } else if (type === "BingMapsImageryProvider") {
+        } else if (type === PROVIDER_TYPES.BING) {
+          cesiumOptions.url = cesiumOptions.url || BING_DEFAULT_URL;
           cesiumOptions.key =
             cesiumOptions.key || MetacatUI.AppConfig.bingMapsKey;
-        } else if (type === "IonImageryProvider") {
+        } else if (type === PROVIDER_TYPES.ION) {
           cesiumOptions.assetId = Number(cesiumOptions.ionAssetId);
           delete cesiumOptions.ionAssetId;
           cesiumOptions.accessToken =
             cesiumOptions.cesiumToken || MetacatUI.appModel.get("cesiumToken");
-        } else if (type === "OpenStreetMapImageryProvider") {
+        } else if (type === PROVIDER_TYPES.OSM) {
           cesiumOptions.url = cesiumOptions.url || OSM_DEFAULT_URL;
         }
         if (cesiumOptions && cesiumOptions.tilingScheme) {
@@ -600,7 +614,7 @@ define([
         const source = attrs.cesiumOptions || {};
         const errors = {};
 
-        if (attrs.type === "WebMapTileServiceImageryProvider") {
+        if (attrs.type === PROVIDER_TYPES.WMTS) {
           if (
             typeof source.url !== "string" ||
             !["{TileMatrix}", "{TileCol}", "{TileRow}"].every((placeholder) =>
@@ -611,7 +625,7 @@ define([
           }
         }
 
-        if (attrs.type === "IonImageryProvider") {
+        if (attrs.type === PROVIDER_TYPES.ION) {
           const id =
             typeof source.ionAssetId === "number" ||
             typeof source.ionAssetId === "string"
@@ -620,6 +634,28 @@ define([
           if (!Number.isInteger(id) || id <= 0) {
             errors["cesiumOptions.ionAssetId"] = VALIDATION_MESSAGES.ION_ID;
           }
+        }
+
+        const url =
+          attrs.type === PROVIDER_TYPES.BING
+            ? source.url || BING_DEFAULT_URL
+            : source.url;
+        if (
+          [
+            PROVIDER_TYPES.WMS,
+            PROVIDER_TYPES.TMS,
+            PROVIDER_TYPES.BING,
+          ].includes(attrs.type) &&
+          (typeof url !== "string" || !url.trim())
+        ) {
+          errors["cesiumOptions.url"] = VALIDATION_MESSAGES.SERVICE_URL;
+        }
+
+        if (
+          attrs.type === PROVIDER_TYPES.WMS &&
+          (typeof source.layers !== "string" || !source.layers.trim())
+        ) {
+          errors["cesiumOptions.layers"] = VALIDATION_MESSAGES.WMS_LAYERS;
         }
 
         const { rectangle } = source;
@@ -645,11 +681,25 @@ define([
   );
 
   /**
+   * Imagery source type identifiers shared by the model and editor.
+   * @type {Object<string, string>}
+   * @since 0.0.0
+   */
+  CesiumImagery.PROVIDER_TYPES = PROVIDER_TYPES;
+
+  /**
    * Standard OpenStreetMap tile server URL shared by the model and editor.
    * @type {string}
    * @since 0.0.0
    */
   CesiumImagery.OSM_DEFAULT_URL = OSM_DEFAULT_URL;
+
+  /**
+   * Standard Bing Maps service URL shared by the model and editor.
+   * @type {string}
+   * @since 0.0.0
+   */
+  CesiumImagery.BING_DEFAULT_URL = BING_DEFAULT_URL;
 
   return CesiumImagery;
 });

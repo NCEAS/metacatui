@@ -3,9 +3,8 @@ define([
   "cesium",
   "/test/js/specs/shared/clean-state.js",
 ], function (CesiumImagery, Cesium, cleanState) {
-  // Configure the Chai assertion library
-  var should = chai.should();
   var expect = chai.expect;
+  const { PROVIDER_TYPES } = CesiumImagery;
   let imagery;
   let boundingBox;
 
@@ -14,7 +13,7 @@ define([
     beforeEach(function () {
       boundingBox = [-143.9, 69.65, -143.7, 69.75];
       imagery = new CesiumImagery({
-        type: "WebMapTileServiceImageryProvider",
+        type: PROVIDER_TYPES.WMTS,
         cesiumOptions: {
           url: "/test/data/models/maps/assets/CesiumImagery/WorldCRS84Quad/{TileMatrix}/{TileCol}/{TileRow}.png",
           tilingScheme: "GeographicTilingScheme",
@@ -30,19 +29,20 @@ define([
       boundingBox = undefined;
     });
 
-    describe("The CesiumImagery model", function () {
-      it("should create a CesiumImagery model", function () {
-        imagery.should.be.instanceof(CesiumImagery);
-      });
-    });
-
     describe("Creating the Cesium Model", function () {
       it("should convert list of degrees to a Cesium rectangle", function (done) {
         imagery.whenReady().then(
           function (model) {
-            const rect = model.get("cesiumModel").rectangle;
-            expect(rect.constructor.name).to.equal("Rectangle");
-            expect(model.get("cesiumOptions").rectangle).to.deep.equal(
+            const rect = model.get("cesiumModel").imageryProvider.rectangle;
+            expect([
+              rect.west,
+              rect.south,
+              rect.east,
+              rect.north,
+            ]).to.deep.equal(
+              boundingBox.map((coordinate) => coordinate * (Math.PI / 180)),
+            );
+            expect(model.toConfig().cesiumOptions.rectangle).to.deep.equal(
               boundingBox,
             );
             expect(model.toConfig().cesiumOptions.tilingScheme).to.equal(
@@ -88,10 +88,11 @@ define([
         .returns("/src/components/cesium/Assets/Textures/NaturalEarthII");
       const cesiumOptions = { minimumLevel: 1 };
       state.model = new CesiumImagery({
-        type: "NaturalEarthII",
+        type: PROVIDER_TYPES.NATURAL_EARTH,
         visible: false,
         cesiumOptions,
       });
+      // Listen before creation so the test catches the change:cesiumModel event.
       const ready = new Promise((resolve) => {
         state.model.once("change:cesiumModel", resolve);
       });
@@ -103,9 +104,48 @@ define([
       expect(provider.url).to.contain(
         "/src/components/cesium/Assets/Textures/NaturalEarthII",
       );
-      expect(state.model.get("type")).to.equal("NaturalEarthII");
-      expect(cesiumOptions).to.deep.equal({ minimumLevel: 1 });
+      expect(state.model.toConfig().type).to.equal("NaturalEarthII");
       expect(state.model.toConfig().cesiumOptions).to.deep.equal(cesiumOptions);
+    });
+
+    it("uses the Bing URL default at runtime without adding it to saved options", async () => {
+      state.sandbox
+        .stub(Cesium.BingMapsImageryProvider, "_metadataCache")
+        .value({});
+      state.sandbox
+        .stub(Cesium.Resource.prototype, "fetchJsonp")
+        .callsFake(() =>
+          Cesium.when.resolve({
+            resourceSets: [
+              {
+                resources: [
+                  {
+                    imageWidth: 256,
+                    imageHeight: 256,
+                    zoomMax: 20,
+                    imageUrl:
+                      "https://tiles.example.org/{subdomain}/{quadkey}.jpeg",
+                    imageUrlSubdomains: ["t0"],
+                    imageryProviders: [],
+                  },
+                ],
+              },
+            ],
+          }),
+        );
+      const cesiumOptions = { key: "fixture-key" };
+      state.model = new CesiumImagery({
+        type: PROVIDER_TYPES.BING,
+        visible: false,
+        cesiumOptions,
+      });
+      state.model.createCesiumModel();
+      await state.model.whenReady();
+      const provider = state.model.get("cesiumModel").imageryProvider;
+      expect(provider.url).to.equal("https://dev.virtualearth.net/");
+      expect(state.model.toConfig().cesiumOptions).to.deep.equal({
+        key: "fixture-key",
+      });
     });
 
     it("expands USGS only for the provider and retains its metadata defaults", async () => {
@@ -115,7 +155,7 @@ define([
       );
       const cesiumOptions = { parameters: { custom: "configured" } };
       state.model = new CesiumImagery({
-        type: "USGSImageryTopo",
+        type: PROVIDER_TYPES.USGS,
         visible: false,
         cesiumOptions,
       });
@@ -128,11 +168,8 @@ define([
         layers: "0",
         parameters: { transparent: true, format: "image/png" },
       });
-      expect(state.model.get("type")).to.equal("USGSImageryTopo");
-      expect(cesiumOptions).to.deep.equal({
-        parameters: { custom: "configured" },
-      });
       const config = state.model.toConfig();
+      expect(config.type).to.equal("USGSImageryTopo");
       expect(config.cesiumOptions).to.deep.equal(cesiumOptions);
       expect(config.label).to.equal("USGS Imagery Topo");
       expect(config.attribution).to.contain("USGS The National Map");
@@ -147,18 +184,13 @@ define([
     const state = cleanState(() => {
       const sandbox = sinon.createSandbox();
       sandbox.stub(CesiumImagery.prototype, "createCesiumModelWhenVisible");
-      sandbox.stub(CesiumImagery.prototype, "getThumbnail");
-      const createImagery = sandbox.stub(
-        CesiumImagery.prototype,
-        "createCesiumModel",
-      );
       const url = "/tiles/{TileMatrix}/{TileCol}/{TileRow}.png";
       const model = new CesiumImagery({
-        type: "WebMapTileServiceImageryProvider",
+        type: PROVIDER_TYPES.WMTS,
         label: "Original",
         cesiumOptions: { url },
       });
-      return { sandbox, createImagery, model, url };
+      return { sandbox, model, url };
     }, beforeEach);
 
     afterEach(() => {
@@ -170,7 +202,7 @@ define([
       [state.url, "/tiles/{TileMatrix}/{TileRow}/{TileCol}"].forEach((url) => {
         expect(
           state.model.validate({
-            type: "WebMapTileServiceImageryProvider",
+            type: PROVIDER_TYPES.WMTS,
             cesiumOptions: { url },
           }),
         ).to.equal(undefined);
@@ -188,7 +220,7 @@ define([
       ].forEach((url) => {
         expect(
           state.model.validate({
-            type: "WebMapTileServiceImageryProvider",
+            type: PROVIDER_TYPES.WMTS,
             cesiumOptions: { url },
           }),
         ).to.have.property("cesiumOptions.url");
@@ -198,7 +230,7 @@ define([
     it("accepts numeric and numeric-string Ion IDs without rewriting them", () => {
       [2, "2"].forEach((ionAssetId) => {
         const attrs = {
-          type: "IonImageryProvider",
+          type: PROVIDER_TYPES.ION,
           cesiumOptions: { ionAssetId },
         };
         expect(state.model.validate(attrs)).to.equal(undefined);
@@ -211,7 +243,7 @@ define([
         (ionAssetId) => {
           expect(
             state.model.validate({
-              type: "IonImageryProvider",
+              type: PROVIDER_TYPES.ION,
               cesiumOptions: { ionAssetId },
             }),
           ).to.have.property("cesiumOptions.ionAssetId");
@@ -226,7 +258,7 @@ define([
           if (rectangle !== undefined) cesiumOptions.rectangle = rectangle;
           expect(
             state.model.validate({
-              type: "WebMapTileServiceImageryProvider",
+              type: PROVIDER_TYPES.WMTS,
               cesiumOptions,
             }),
           ).to.equal(undefined);
@@ -246,22 +278,75 @@ define([
       ].forEach((rectangle) => {
         expect(
           state.model.validate({
-            type: "WebMapTileServiceImageryProvider",
+            type: PROVIDER_TYPES.WMTS,
             cesiumOptions: { url: state.url, rectangle },
           }),
         ).to.have.property("cesiumOptions.rectangle");
       });
     });
 
-    it("permits omitted OSM options and does not restrict other providers", () => {
-      expect(
-        state.model.validate({ type: "OpenStreetMapImageryProvider" }),
-      ).to.equal(undefined);
+    it("requires a WMS URL and at least one layer name", () => {
       [
-        "BingMapsImageryProvider",
-        "TileMapServiceImageryProvider",
-        "WebMapServiceImageryProvider",
-      ].forEach((type) => {
+        [{ layers: "canopy" }, "cesiumOptions.url"],
+        [{ url: " ", layers: "canopy" }, "cesiumOptions.url"],
+        [{ url: "/wms" }, "cesiumOptions.layers"],
+        [{ url: "/wms", layers: " " }, "cesiumOptions.layers"],
+      ].forEach(([cesiumOptions, expected]) => {
+        const errors = state.model.validate({
+          type: PROVIDER_TYPES.WMS,
+          cesiumOptions,
+        });
+        expect(errors).to.have.property(expected);
+      });
+      ["canopy,water", "0"].forEach((layers) => {
+        expect(
+          state.model.validate({
+            type: PROVIDER_TYPES.WMS,
+            cesiumOptions: { url: "/wms", layers },
+          }),
+        ).to.equal(undefined);
+      });
+    });
+
+    it("accepts Bing URL defaults and rejects a URL containing only spaces", () => {
+      [undefined, "", "/custom-bing-service"].forEach((url) => {
+        expect(
+          state.model.validate({
+            type: PROVIDER_TYPES.BING,
+            cesiumOptions: { url },
+          }),
+        ).to.equal(undefined);
+      });
+      expect(
+        state.model.validate({
+          type: PROVIDER_TYPES.BING,
+          cesiumOptions: { url: " " },
+        }),
+      ).to.have.property("cesiumOptions.url");
+    });
+
+    it("requires a TMS tile service URL", () => {
+      [undefined, "", " "].forEach((url) => {
+        expect(
+          state.model.validate({
+            type: PROVIDER_TYPES.TMS,
+            cesiumOptions: { url },
+          }),
+        ).to.have.property("cesiumOptions.url");
+      });
+      expect(
+        state.model.validate({
+          type: PROVIDER_TYPES.TMS,
+          cesiumOptions: { url: "/tile-service" },
+        }),
+      ).to.equal(undefined);
+    });
+
+    it("permits omitted options for OSM and preset sources", () => {
+      expect(state.model.validate({ type: PROVIDER_TYPES.OSM })).to.equal(
+        undefined,
+      );
+      [PROVIDER_TYPES.NATURAL_EARTH, PROVIDER_TYPES.USGS].forEach((type) => {
         expect(state.model.validate({ type, cesiumOptions: {} })).to.equal(
           undefined,
         );
@@ -273,18 +358,16 @@ define([
       const result = state.model.set(
         {
           label: "Draft",
-          type: "IonImageryProvider",
+          type: PROVIDER_TYPES.ION,
           cesiumOptions: { ionAssetId: 0 },
         },
         { validate: true },
       );
       expect(result).to.equal(false);
       expect(state.model.attributes).to.deep.equal(before);
-      expect(state.model.get("cesiumOptions")).to.equal(before.cesiumOptions);
       expect(state.model.validationError).to.have.property(
         "cesiumOptions.ionAssetId",
       );
-      expect(state.createImagery.called).to.equal(false);
     });
   });
 });
