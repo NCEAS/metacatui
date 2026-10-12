@@ -49,6 +49,8 @@ define([
     LAYERS: "Layers",
     SETTINGS: "Layer settings",
     SELECT_LAYER: "Select a layer to edit its settings.",
+    ADD_FIRST_LAYER:
+      "Use Add layer to add your first map layer, then configure its settings here.",
     NO_LAYERS: "No layers configured.",
     ADD_LAYER: "Add layer",
     NEW_LAYER: "New layer",
@@ -69,7 +71,7 @@ define([
    * @screenshot views/maps/mapEditor/MapAssetsEditorView.png
    * @since 0.0.0
    */
-  return Backbone.View.extend(
+  const MapAssetsEditorView = Backbone.View.extend(
     /** @lends MapAssetsEditorView.prototype */ {
       /** @inheritdoc */
       className: CLASS_NAMES.WORKSPACE,
@@ -269,6 +271,10 @@ define([
           orderedItems.length > 0;
         if (this.selectedAsset && !assets.includes(this.selectedAsset)) {
           this.selectAsset(null);
+        }
+        if (!this.selectedAsset) {
+          this.el.querySelector(`.${CLASS_NAMES.PANEL} p`).textContent =
+            assets.length ? MESSAGES.SELECT_LAYER : MESSAGES.ADD_FIRST_LAYER;
         }
       },
 
@@ -532,4 +538,12 @@ define([
       },
     },
   );
+
+  /**
+   * CSS class names used by the assets workspace.
+   * @type {Object<string, string>}
+   */
+  MapAssetsEditorView.CLASS_NAMES = CLASS_NAMES;
+
+  return MapAssetsEditorView;
 });
