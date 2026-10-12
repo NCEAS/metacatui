@@ -46,6 +46,24 @@ define([
       state.sandbox.restore();
     });
 
+    it("shows Save when a generic layer's Label or Description changes", () => {
+      const asset = state.model
+        .get("layers")
+        .addAsset({ type: "UnknownAsset", label: "Other layer" }, state.model);
+      const workspace = state.view.mapEditorView.assetsEditorView;
+      workspace.selectAsset(asset);
+      ["label", "description"].forEach((name) => {
+        state.showControls.resetHistory();
+        const input = workspace.assetEditorView.el.querySelector(
+          `[name="${name}"]`,
+        );
+        input.value = `Edited ${name}`;
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+        expect(asset.get(name)).to.equal(`Edited ${name}`);
+        expect(state.showControls.calledOnce).to.equal(true);
+      });
+    });
+
     it("reveals Save for a reorder but not an unchanged move", () => {
       const layers = state.model.get("layers");
       const asset = layers.at(0);

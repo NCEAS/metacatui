@@ -2828,6 +2828,7 @@ other class: .ui-slider-range */
 
 /* Standalone Map Asset Editor View */
 .map-asset-editor,
+.map-imagery-editor,
 .map-asset-editor [data-provider] {
   display: grid;
   gap: 1rem;

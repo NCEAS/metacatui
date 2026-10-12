@@ -102,6 +102,7 @@
     "./js/specs/unit/models/maps/assets/CesiumImagery.spec.js",
     "./js/specs/unit/views/maps/mapEditor/MapAssetCategoryView.spec.js",
     "./js/specs/unit/views/maps/mapEditor/MapAssetEditorView.spec.js",
+    "./js/specs/unit/views/maps/mapEditor/MapImageryEditorView.spec.js",
     "./js/specs/unit/views/maps/mapEditor/MapAssetItemView.spec.js",
     "./js/specs/unit/views/maps/mapEditor/MapAssetsEditorView.spec.js",
     "./js/specs/unit/views/maps/mapEditor/MapEditorView.spec.js",
