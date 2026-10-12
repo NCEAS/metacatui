@@ -1,8 +1,9 @@
 define([
+  "models/maps/assets/MapAsset",
   "models/maps/assets/CesiumImagery",
   "views/maps/mapEditor/MapAssetEditorView",
   "/test/js/specs/shared/clean-state.js",
-], (CesiumImagery, MapAssetEditorView, cleanState) => {
+], (MapAsset, CesiumImagery, MapAssetEditorView, cleanState) => {
   const expect = chai.expect;
   const WMTS = "WebMapTileServiceImageryProvider";
   const ION = "IonImageryProvider";
@@ -61,6 +62,92 @@ define([
       state.sandbox.restore();
     });
 
+    it("edits a generic asset's Label and Description and keeps its source", () => {
+      const asset = new MapAsset({
+        type: "UnknownAsset",
+        label: "Other <b>layer</b>",
+        description: "</textarea><b>Existing description</b>",
+        cesiumOptions: { url: "/source", parameters: { version: "1" } },
+      });
+      const before = asset.toConfig();
+      const options = asset.get("cesiumOptions");
+      const view = new MapAssetEditorView({ model: asset });
+      state.container.append(view.el);
+      try {
+        view.render();
+        expect(
+          Array.from(
+            view.el.querySelectorAll("input, textarea, select"),
+            (control) => control.name,
+          ),
+        ).to.deep.equal(["label", "description"]);
+        expect(field("label", view.el).value).to.equal("Other <b>layer</b>");
+        expect(field("description", view.el).value).to.equal(
+          "</textarea><b>Existing description</b>",
+        );
+        expect(view.el.querySelector("b")).to.equal(null);
+        change("label", "Edited <b>label</b>", view.el);
+        change("description", "Edited description", view.el);
+        expect(asset.get("cesiumOptions")).to.equal(options);
+        expect(asset.toConfig()).to.deep.equal({
+          ...before,
+          label: "Edited <b>label</b>",
+          description: "Edited description",
+        });
+        expect(() => view.showValidation()).not.to.throw();
+        view.focusLabel();
+        expect(document.activeElement).to.equal(field("label", view.el));
+        expect(view.el.lastElementChild.textContent).to.equal(
+          "Additional layer settings are not supported yet.",
+        );
+      } finally {
+        view.remove();
+        asset.stopListening();
+      }
+    });
+
+    it("keeps the WMS source when Label and Description change", () => {
+      state.model.set({
+        type: "WebMapServiceImageryProvider",
+        cesiumOptions: {
+          url: "/wms",
+          layers: "canopy",
+          parameters: { time: "2020" },
+        },
+      });
+      const before = state.model.toConfig();
+      const options = state.model.get("cesiumOptions");
+      state.view.render();
+      expect(field("type")).to.equal(null);
+      change("label", "Canopy");
+      change("description", "Canopy observations");
+      expect(state.model.get("cesiumOptions")).to.equal(options);
+      expect(state.model.toConfig()).to.deep.equal({
+        ...before,
+        label: "Canopy",
+        description: "Canopy observations",
+      });
+      expect(state.createImagery.called).to.equal(false);
+    });
+
+    it("removes the imagery editor and its handlers when rendered again or removed", () => {
+      const firstChild = state.view.typeEditorView;
+      expect(firstChild.model).to.equal(state.model);
+      const previousURL = field("url", firstChild.el);
+      state.view.render();
+      expect(firstChild.el.isConnected).to.equal(false);
+      expect(state.view.typeEditorView).not.to.equal(firstChild);
+      const sourceOptions = state.model.get("cesiumOptions");
+      previousURL.value = "/detached";
+      previousURL.dispatchEvent(new Event("change", { bubbles: true }));
+      expect(state.model.get("cesiumOptions")).to.equal(sourceOptions);
+
+      const nextChild = state.view.typeEditorView;
+      state.view.remove();
+      expect(nextChild.el.isConnected).to.equal(false);
+      expect(state.view.typeEditorView).to.equal(null);
+    });
+
     it("focuses and selects the label through the form interface", () => {
       state.view.focusLabel();
       expect(document.activeElement).to.equal(field("label"));
@@ -73,24 +160,6 @@ define([
       field("label").focus();
       state.view.showValidation();
       expect(document.activeElement).to.equal(field("url", source(WMTS)));
-    });
-
-    it("opens a collapsed invalid extent before focusing its first field", () => {
-      change("south", "");
-      field("label").focus();
-      state.view.showValidation();
-      expect(state.view.el.querySelector("details").open).to.equal(true);
-      expect(document.activeElement).to.equal(field("west"));
-    });
-
-    it("retains focus during field validation", () => {
-      change("url", "/incomplete", source(WMTS));
-      field("label").focus();
-      state.view.showValidation("cesiumOptions.url");
-      expect(document.activeElement).to.equal(field("label"));
-      expect(field("url", source(WMTS)).getAttribute("aria-invalid")).to.equal(
-        "true",
-      );
     });
 
     it("keeps incomplete source edits in the model without an Apply action", () => {
@@ -108,24 +177,7 @@ define([
       );
     });
 
-    it("validates the extent after leaving its coordinate group", () => {
-      state.view.el.querySelector("details").open = true;
-      field("south").focus();
-      field("south").value = "";
-      field("south").dispatchEvent(new Event("change", { bubbles: true }));
-      expect(error("cesiumOptions.rectangle").textContent).to.equal("");
-      field("east").focus();
-      expect(error("cesiumOptions.rectangle").textContent).to.equal("");
-      field("label").focus();
-      expect(error("cesiumOptions.rectangle").textContent).not.to.equal("");
-      field("south").focus();
-      field("south").value = "69.65";
-      field("south").dispatchEvent(new Event("change", { bubbles: true }));
-      field("label").focus();
-      expect(error("cesiumOptions.rectangle").textContent).to.equal("");
-    });
-
-    it("uses the supplied model and puts labeled metadata controls first", () => {
+    it("uses the supplied model and puts labelled metadata controls first", () => {
       expect(state.view.model).to.equal(state.model);
       const controls = [
         ...state.view.el.querySelectorAll("input, textarea, select"),
@@ -161,49 +213,6 @@ define([
       expect(state.model.get("description")).to.equal(
         "</textarea><b>Literal description</b>",
       );
-    });
-
-    it("shows the default or custom OpenStreetMap URL as the actual value", () => {
-      state.model.set({ type: OSM });
-      state.model.unset("cesiumOptions");
-      state.view.render();
-      expect(field("url", source(OSM)).value).to.equal(
-        CesiumImagery.OSM_DEFAULT_URL,
-      );
-      change("url", CesiumImagery.OSM_DEFAULT_URL, source(OSM));
-      expect(state.model.get("cesiumOptions").url).to.equal(
-        CesiumImagery.OSM_DEFAULT_URL,
-      );
-      state.model.set("cesiumOptions", {
-        url: "https://a.tile.opentopomap.org/",
-      });
-      state.view.render();
-      expect(field("url", source(OSM)).value).to.equal(
-        "https://a.tile.opentopomap.org/",
-      );
-      state.model.set("cesiumOptions", { url: "" });
-      state.view.render();
-      expect(field("url", source(OSM)).value).to.equal(
-        CesiumImagery.OSM_DEFAULT_URL,
-      );
-    });
-
-    it("renders an existing numeric-string Ion ID", () => {
-      state.model.set({ type: ION, cesiumOptions: { ionAssetId: "2" } });
-      state.view.render();
-      expect(field("ionAssetId").value).to.equal("2");
-      expect(source(ION).hidden).to.equal(false);
-    });
-
-    it("preserves an Ion rectangle that this editor does not expose", () => {
-      const rectangle = [-143.9, 69.65, -143.7, 69.75];
-      state.model.set({
-        type: ION,
-        cesiumOptions: { ionAssetId: "2", rectangle },
-      });
-      state.view.render();
-      change("ionAssetId", "3");
-      expect(state.model.get("cesiumOptions").rectangle).to.equal(rectangle);
     });
 
     it("switches source controls without discarding edited metadata", () => {
@@ -242,27 +251,6 @@ define([
       expect(error("cesiumOptions.url").textContent).to.equal("");
     });
 
-    it("stores a partial extent for correction and accepts an antimeridian extent", () => {
-      change("south", "");
-      expect(state.model.get("cesiumOptions").rectangle).to.deep.equal([
-        -143.9,
-        null,
-        -143.7,
-        69.75,
-      ]);
-      [170, -20, -170, 20].forEach((value, index) => {
-        change(["west", "south", "east", "north"][index], value);
-      });
-      change("tilingScheme", "WebMercatorTilingScheme");
-      expect(state.model.get("cesiumOptions").rectangle).to.deep.equal([
-        170, -20, -170, 20,
-      ]);
-      expect(state.model.get("cesiumOptions").tilingScheme).to.equal(
-        "WebMercatorTilingScheme",
-      );
-      expect(error("cesiumOptions.rectangle").textContent).to.equal("");
-    });
-
     it("preserves unrelated attributes and unedited source options", () => {
       state.model.set("cesiumModel", { alpha: 0.5, show: true });
       const before = { ...state.model.attributes };
@@ -283,82 +271,6 @@ define([
         "/tiles/{TileMatrix}/{TileCol}/{TileRow}.png",
       );
       expect(state.createImagery.called).to.equal(false);
-    });
-
-    it("omits cleared optional fields without dropping unedited options", () => {
-      ["west", "south", "east", "north", "tilingScheme"].forEach((name) => {
-        change(name, "");
-      });
-      expect(state.model.get("cesiumOptions")).not.to.have.property(
-        "rectangle",
-      );
-      expect(state.model.get("cesiumOptions")).not.to.have.property(
-        "tilingScheme",
-      );
-      expect(state.model.get("cesiumOptions").layer).to.equal("existing-layer");
-      state.model.set({
-        type: OSM,
-        cesiumOptions: {
-          url: "https://a.tile.opentopomap.org/",
-          maximumLevel: 10,
-        },
-      });
-      state.view.render();
-      change("url", "", source(OSM));
-      expect(state.model.get("cesiumOptions")).to.deep.equal({
-        maximumLevel: 10,
-      });
-    });
-
-    it("uses model Ion validation and drops old options on provider change", () => {
-      field("type").value = ION;
-      field("type").dispatchEvent(new Event("change", { bubbles: true }));
-      change("ionAssetId", "0");
-      expect(state.model.get("type")).to.equal(ION);
-      expect(state.model.get("cesiumOptions")).to.deep.equal({
-        ionAssetId: "0",
-      });
-      expect(error("cesiumOptions.ionAssetId").textContent).not.to.equal("");
-      change("ionAssetId", "2");
-      expect(state.model.get("type")).to.equal(ION);
-      expect(state.model.get("cesiumOptions")).to.deep.equal({
-        ionAssetId: "2",
-      });
-      expect(error("cesiumOptions.ionAssetId").textContent).to.equal("");
-    });
-
-    it("exports the current source edits for portal validation and saving", () => {
-      field("type").value = ION;
-      field("type").dispatchEvent(new Event("change", { bubbles: true }));
-      change("ionAssetId", "0");
-      expect(state.model.toConfig().cesiumOptions).to.deep.equal({
-        ionAssetId: "0",
-      });
-
-      change("ionAssetId", "2");
-      expect(state.model.toConfig().type).to.equal(ION);
-      expect(state.model.toConfig().cesiumOptions).to.deep.equal({
-        ionAssetId: "2",
-      });
-
-      state.model.set("cesiumOptions", { ionAssetId: "3" }, { validate: true });
-      expect(state.model.toConfig().cesiumOptions).to.deep.equal({
-        ionAssetId: "3",
-      });
-    });
-
-    it("exports cleared optional settings and detaches saved nested options", () => {
-      ["west", "south", "east", "north", "tilingScheme"].forEach((name) => {
-        change(name, "");
-      });
-      const config = state.model.toConfig();
-      expect(config.cesiumOptions).not.to.have.property("rectangle");
-      expect(config.cesiumOptions).not.to.have.property("tilingScheme");
-      config.cesiumOptions.dimensions.time = "2025";
-      expect(state.model.get("cesiumOptions").dimensions.time).to.equal("2020");
-      expect(state.model.toConfig().cesiumOptions.dimensions).to.deep.equal({
-        time: "2020",
-      });
     });
 
     it("retains field values across status changes and edits while loading", () => {

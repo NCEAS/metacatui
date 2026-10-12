@@ -551,13 +551,74 @@ define([
       );
     });
 
-    it("shows unsupported layers without mounting an imagery editor", () => {
-      row(0).click();
-      const firstEditor = state.view.assetEditorView;
-      row(2).click();
-      expect(firstEditor.el.isConnected).to.equal(false);
-      expect(field("label")).to.equal(null);
-      expect(state.view.el.textContent).to.include("not supported yet");
+    [
+      { type: "UnknownAsset", cesiumOptions: { url: "/custom" } },
+      {
+        type: "WebMapServiceImageryProvider",
+        cesiumOptions: { url: "/wms", layers: "canopy" },
+      },
+      {
+        type: "GeoJsonDataSource",
+        cesiumOptions: { data: { type: "FeatureCollection", features: [] } },
+      },
+      {
+        type: "Cesium3DTileset",
+        cesiumOptions: { url: "/tiles/tileset.json" },
+      },
+    ].forEach((config) => {
+      it(`edits Label and Description for ${config.type} in the workspace`, () => {
+        renderMap({
+          layers: [
+            {
+              ...config,
+              label: "Original",
+              description: "Description",
+              visible: false,
+            },
+            { type: OSM, label: "Basemap" },
+          ],
+        });
+        const asset = state.model.getAllLayers()[0];
+        const before = asset.toConfig();
+        row(0).dispatchEvent(
+          new MouseEvent("click", { bubbles: true, detail: 0 }),
+        );
+        const editor = state.view.assetEditorView;
+        expect(editor.model).to.equal(asset);
+        expect(document.activeElement).to.equal(field("label"));
+        expect(field("type")).to.equal(null);
+        changeField("label", "Updated <b>label</b>");
+        changeField("description", "Updated description");
+        expect(row(0).textContent).to.equal("Updated <b>label</b>");
+        expect(row(0).querySelector("b")).to.equal(null);
+        expect(state.view.assetEditorView).to.equal(editor);
+        expect(asset.toConfig()).to.deep.equal({
+          ...before,
+          label: "Updated <b>label</b>",
+          description: "Updated description",
+        });
+        state.view.selectAsset(state.model.getAllLayers()[1]);
+        expect(editor.el.isConnected).to.equal(false);
+        state.view.selectAsset(asset);
+        expect(field("label").value).to.equal("Updated <b>label</b>");
+      });
+    });
+
+    it("keeps row focus for a source error without editable source controls", () => {
+      renderMap({
+        layers: [
+          {
+            type: "WebMapServiceImageryProvider",
+            label: "WMS",
+            visible: false,
+            cesiumOptions: { url: "/wms", rectangle: [null, 0, 1, 1] },
+          },
+        ],
+      });
+      expect(state.model.getAllLayers()[0].isValid()).to.equal(false);
+      expect(() => state.view.showValidation()).not.to.throw();
+      expect(field("label").value).to.equal("WMS");
+      expect(document.activeElement).to.equal(row(0));
     });
 
     it("immediately removes the selected hidden layer and clears its settings", () => {
@@ -1011,6 +1072,60 @@ define([
         expect(content(1).hidden).to.equal(false);
         expect(toggle(1).getAttribute("aria-expanded")).to.equal("true");
         expect(document.activeElement).to.equal(row(0));
+      });
+    });
+
+    [false, true].forEach((categorized) => {
+      it(`saves Label and Description for a layer ${categorized ? "with" : "without"} a category`, () => {
+        const layer = {
+          type: "UnknownAsset",
+          label: "Original",
+          description: "Description",
+          cesiumOptions: { url: "/custom", parameters: { version: "1" } },
+        };
+        renderMap(
+          categorized
+            ? { layerCategories: [{ label: "Other layers", layers: [layer] }] }
+            : { layers: [layer] },
+        );
+        const before = state.model.getAllLayers()[0].toConfig();
+        const portal = new PortalModel({
+          label: "map-portal",
+          name: "Map portal",
+        });
+        portal
+          .get("definitionFilters")
+          .add({ fields: ["formatType"], values: ["METADATA"] });
+        portal
+          .addSection("cesium")
+          .set({ label: "Map", mapModel: state.model });
+        const reloaded = new PortalModel({});
+        try {
+          row(0).click();
+          changeField("label", "Updated <b>label</b>");
+          changeField("description", "Updated description");
+          expect(portal.isValid()).to.equal(true);
+          const xml = new DOMParser().parseFromString(
+            portal.serialize(),
+            "application/xml",
+          );
+          expect(xml.querySelector("parsererror")).to.equal(null);
+          reloaded.set(reloaded.parse(xml));
+          const map = reloaded.get("sections")[0].get("mapModel");
+          expect(map.getAllLayers()[0].toConfig()).to.deep.equal({
+            ...before,
+            label: "Updated <b>label</b>",
+            description: "Updated description",
+          });
+          expect(map.has("layerCategories")).to.equal(categorized);
+        } finally {
+          delete window.filterXML;
+          const map = reloaded.get("sections")[0]?.get("mapModel");
+          map?.getAllLayers().forEach((asset) => asset.stopListening());
+          map?.stopListening();
+          portal.stopListening();
+          reloaded.stopListening();
+        }
       });
     });
 

@@ -3,7 +3,6 @@
 define([
   "backbone",
   "sortable",
-  "models/maps/assets/CesiumImagery",
   "views/maps/LayerListView",
   "views/maps/LayerItemView",
   "views/maps/mapEditor/MapAssetItemView",
@@ -12,7 +11,6 @@ define([
 ], (
   Backbone,
   Sortable,
-  CesiumImagery,
   LayerListView,
   LayerItemView,
   MapAssetItemView,
@@ -58,7 +56,6 @@ define([
     NO_LAYERS: "No layers configured.",
     ADD_LAYER: "Add layer",
     NEW_LAYER: "New layer",
-    UNSUPPORTED_LAYER: "Editing this layer is not supported yet.",
     UNTITLED_LAYER: "Untitled layer",
     MOVE: "Move",
     MOVE_UP: "Move up",
@@ -446,17 +443,12 @@ define([
         const panel = this.el.querySelector(`.${CLASS_NAMES.DETAILS}`);
         panel.replaceChildren();
         panel.scrollTop = 0;
-        if (
-          asset instanceof CesiumImagery &&
-          MapAssetEditorView.SUPPORTED_TYPES.includes(asset.get("type"))
-        ) {
+        if (asset) {
           this.assetEditorView = new MapAssetEditorView({ model: asset });
           panel.append(this.assetEditorView.render().el);
         } else {
           const message = document.createElement("p");
-          message.textContent = asset
-            ? MESSAGES.UNSUPPORTED_LAYER
-            : MESSAGES.SELECT_LAYER;
+          message.textContent = MESSAGES.SELECT_LAYER;
           panel.append(message);
         }
       },
@@ -513,8 +505,8 @@ define([
         );
         if (!invalidItem) return;
         this.selectAsset(invalidItem.model);
-        if (this.assetEditorView) this.assetEditorView.showValidation();
-        else invalidItem.focus();
+        invalidItem.focus();
+        this.assetEditorView.showValidation();
       },
 
       /**
