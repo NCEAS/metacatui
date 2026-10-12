@@ -11,11 +11,7 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
     EXTENT: "map-asset-editor__extent",
     ERROR: "map-asset-editor__error",
   };
-  const PROVIDER_TYPES = {
-    WMTS: "WebMapTileServiceImageryProvider",
-    ION: "IonImageryProvider",
-    OSM: "OpenStreetMapImageryProvider",
-  };
+  const { PROVIDER_TYPES } = CesiumImagery;
   const TILING_SCHEMES = {
     GEOGRAPHIC: "GeographicTilingScheme",
     WEB_MERCATOR: "WebMercatorTilingScheme",
@@ -30,12 +26,23 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
     EXTENT_ERROR: "extent-error",
     ION_ERROR: "ion-error",
     OSM_ERROR: "osm-error",
+    WMS_ERROR: "wms-error",
+    TMS_ERROR: "tms-error",
+    WMS_LAYERS_HELP: "wms-layers-help",
+    WMS_LAYERS_ERROR: "wms-layers-error",
+    BING_ERROR: "bing-error",
+    BING_KEY_HELP: "bing-key-help",
   };
   const LABELS = {
     PROVIDER: "Imagery provider",
     WMTS: "Web Map Tile Service (WMTS)",
+    WMS: "Web Map Service (WMS)",
+    TMS: "Tile Map Service (TMS)",
     ION: "Cesium Ion",
     OSM: "OpenStreetMap",
+    BING: "Bing Maps",
+    NATURAL_EARTH: "Natural Earth II",
+    USGS: "USGS Imagery Topo",
     TILE_URL: "Tile URL template",
     TILING_SCHEME: "Tiling scheme",
     PROVIDER_DEFAULT: "Provider default",
@@ -48,9 +55,17 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
     NORTH: "North latitude (degrees)",
     ION_ASSET_ID: "Ion asset ID",
     TILE_SERVER_URL: "Tile server URL",
+    SERVICE_URL: "Service URL",
+    TILE_SERVICE_URL: "Tile service URL",
+    LAYERS: "Layer names",
+    BING_KEY: "Bing Maps API key (optional)",
   };
   const HELP_TEXT = {
     WMTS_URL: "Include {TileMatrix}, {TileCol}, and {TileRow}.",
+    WMS_LAYERS: "Separate multiple layer names with commas.",
+    BING_KEY: "Leave empty to use the key configured for this site.",
+    NATURAL_EARTH: "Uses the bundled Natural Earth II imagery.",
+    USGS: "Uses the USGS Imagery Topo service.",
   };
   const GENERAL_ERROR_KEY = "general";
 
@@ -83,39 +98,41 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
       },
 
       /**
-       * Build native controls for the three supported imagery providers.
-       * @returns {string} Markup containing no model-supplied values
+       * Build native controls for the supported imagery providers.
+       * @returns {string} Markup containing no values from the model
        */
       template() {
         const fieldClass = CLASS_NAMES.FIELD;
         const sourceClass = CLASS_NAMES.SOURCE;
         const extentClass = CLASS_NAMES.EXTENT;
         const errorClass = CLASS_NAMES.ERROR;
-        const wmtsType = PROVIDER_TYPES.WMTS;
-        const ionType = PROVIDER_TYPES.ION;
-        const osmType = PROVIDER_TYPES.OSM;
         const id = this.cid;
 
-        const coordinates = ["west", "south", "east", "north"];
-        let extentHTML = ``;
-        coordinates.forEach((coord) => {
-          extentHTML += `
+        const extentHTML = ["west", "south", "east", "north"]
+          .map(
+            (coord) => `
             <label class="${fieldClass}">${LABELS[coord.toUpperCase()]}
               <input name="${coord}" type="number" step="any" aria-describedby="${id}-${ID_SUFFIXES.EXTENT_ERROR}" />
             </label>
-          `;
-        });
+          `,
+          )
+          .join("");
 
         return `
           <label class="${fieldClass}">${LABELS.PROVIDER}
             <select name="type">
-              <option value="${wmtsType}">${LABELS.WMTS}</option>
-              <option value="${ionType}">${LABELS.ION}</option>
-              <option value="${osmType}">${LABELS.OSM}</option>
+              <option value="${PROVIDER_TYPES.WMTS}">${LABELS.WMTS}</option>
+              <option value="${PROVIDER_TYPES.WMS}">${LABELS.WMS}</option>
+              <option value="${PROVIDER_TYPES.TMS}">${LABELS.TMS}</option>
+              <option value="${PROVIDER_TYPES.ION}">${LABELS.ION}</option>
+              <option value="${PROVIDER_TYPES.OSM}">${LABELS.OSM}</option>
+              <option value="${PROVIDER_TYPES.BING}">${LABELS.BING}</option>
+              <option value="${PROVIDER_TYPES.NATURAL_EARTH}">${LABELS.NATURAL_EARTH}</option>
+              <option value="${PROVIDER_TYPES.USGS}">${LABELS.USGS}</option>
             </select>
           </label>
 
-          <section class="${sourceClass}" ${ATTRIBUTES.PROVIDER}="${wmtsType}" hidden>
+          <section class="${sourceClass}" ${ATTRIBUTES.PROVIDER}="${PROVIDER_TYPES.WMTS}" hidden>
             <label class="${fieldClass}">${LABELS.TILE_URL}
               <textarea name="url" rows="3" aria-describedby="${id}-${ID_SUFFIXES.WMTS_HELP} ${id}-${ID_SUFFIXES.WMTS_ERROR}"></textarea>
               <small id="${id}-${ID_SUFFIXES.WMTS_HELP}">${HELP_TEXT.WMTS_URL}</small>
@@ -137,7 +154,32 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
               ${ATTRIBUTES.ERROR}="cesiumOptions.rectangle" role="alert"></p>
           </section>
 
-          <section class="${sourceClass}" ${ATTRIBUTES.PROVIDER}="${ionType}" hidden>
+          <section class="${sourceClass}" ${ATTRIBUTES.PROVIDER}="${PROVIDER_TYPES.WMS}" hidden>
+            <label class="${fieldClass}">${LABELS.SERVICE_URL}
+              <input name="url" type="text" inputmode="url" aria-required="true"
+                aria-describedby="${id}-${ID_SUFFIXES.WMS_ERROR}" />
+              <span id="${id}-${ID_SUFFIXES.WMS_ERROR}" class="${errorClass}"
+                ${ATTRIBUTES.ERROR}="cesiumOptions.url" role="alert"></span>
+            </label>
+            <label class="${fieldClass}">${LABELS.LAYERS}
+              <input name="layers" type="text" aria-required="true"
+                aria-describedby="${id}-${ID_SUFFIXES.WMS_LAYERS_HELP} ${id}-${ID_SUFFIXES.WMS_LAYERS_ERROR}" />
+              <small id="${id}-${ID_SUFFIXES.WMS_LAYERS_HELP}">${HELP_TEXT.WMS_LAYERS}</small>
+              <span id="${id}-${ID_SUFFIXES.WMS_LAYERS_ERROR}" class="${errorClass}"
+                ${ATTRIBUTES.ERROR}="cesiumOptions.layers" role="alert"></span>
+            </label>
+          </section>
+
+          <section class="${sourceClass}" ${ATTRIBUTES.PROVIDER}="${PROVIDER_TYPES.TMS}" hidden>
+            <label class="${fieldClass}">${LABELS.TILE_SERVICE_URL}
+              <input name="url" type="text" inputmode="url" aria-required="true"
+                aria-describedby="${id}-${ID_SUFFIXES.TMS_ERROR}" />
+              <span id="${id}-${ID_SUFFIXES.TMS_ERROR}" class="${errorClass}"
+                ${ATTRIBUTES.ERROR}="cesiumOptions.url" role="alert"></span>
+            </label>
+          </section>
+
+          <section class="${sourceClass}" ${ATTRIBUTES.PROVIDER}="${PROVIDER_TYPES.ION}" hidden>
             <label class="${fieldClass}">${LABELS.ION_ASSET_ID}
               <input name="ionAssetId" type="text" inputmode="numeric"
                 aria-describedby="${id}-${ID_SUFFIXES.ION_ERROR}" />
@@ -146,13 +188,35 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
             </label>
           </section>
 
-          <section class="${sourceClass}" ${ATTRIBUTES.PROVIDER}="${osmType}" hidden>
+          <section class="${sourceClass}" ${ATTRIBUTES.PROVIDER}="${PROVIDER_TYPES.OSM}" hidden>
             <label class="${fieldClass}">${LABELS.TILE_SERVER_URL}
               <input name="url" type="text" inputmode="url"
                 aria-describedby="${id}-${ID_SUFFIXES.OSM_ERROR}" />
               <span id="${id}-${ID_SUFFIXES.OSM_ERROR}" class="${errorClass}"
                 ${ATTRIBUTES.ERROR}="cesiumOptions.url" role="alert"></span>
             </label>
+          </section>
+
+          <section class="${sourceClass}" ${ATTRIBUTES.PROVIDER}="${PROVIDER_TYPES.BING}" hidden>
+            <label class="${fieldClass}">${LABELS.SERVICE_URL}
+              <input name="url" type="text" inputmode="url"
+                aria-describedby="${id}-${ID_SUFFIXES.BING_ERROR}" />
+              <span id="${id}-${ID_SUFFIXES.BING_ERROR}" class="${errorClass}"
+                ${ATTRIBUTES.ERROR}="cesiumOptions.url" role="alert"></span>
+            </label>
+            <label class="${fieldClass}">${LABELS.BING_KEY}
+              <input name="key" type="password" autocomplete="off"
+                aria-describedby="${id}-${ID_SUFFIXES.BING_KEY_HELP}" />
+              <small id="${id}-${ID_SUFFIXES.BING_KEY_HELP}">${HELP_TEXT.BING_KEY}</small>
+            </label>
+          </section>
+
+          <section class="${sourceClass}" ${ATTRIBUTES.PROVIDER}="${PROVIDER_TYPES.NATURAL_EARTH}" hidden>
+            <p>${HELP_TEXT.NATURAL_EARTH}</p>
+          </section>
+
+          <section class="${sourceClass}" ${ATTRIBUTES.PROVIDER}="${PROVIDER_TYPES.USGS}" hidden>
+            <p>${HELP_TEXT.USGS}</p>
           </section>
 
           <p class="${errorClass}" ${ATTRIBUTES.ERROR}="${GENERAL_ERROR_KEY}" role="alert"></p>
@@ -174,13 +238,12 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
         );
         const options = this.model.get("cesiumOptions") || {};
         const url = controls.querySelector('[name="url"]');
-        if (url) {
-          url.value =
-            options.url ||
-            (type === PROVIDER_TYPES.OSM ? CesiumImagery.OSM_DEFAULT_URL : "");
-        }
-        const ionId = controls.querySelector('[name="ionAssetId"]');
-        if (ionId) ionId.value = options.ionAssetId ?? "";
+        // Keep the default URL from changeProvider when the model has no URL.
+        if (url) url.value = options.url || url.value;
+        ["ionAssetId", "layers", "key"].forEach((name) => {
+          const input = controls.querySelector(`[name="${name}"]`);
+          if (input) input.value = options[name] ?? "";
+        });
         const tilingScheme = controls.querySelector('[name="tilingScheme"]');
         if (tilingScheme) tilingScheme.value = options.tilingScheme || "";
         if (type === PROVIDER_TYPES.WMTS && options.rectangle) {
@@ -210,6 +273,9 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
         this.el.querySelector(
           `[${ATTRIBUTES.PROVIDER}="${PROVIDER_TYPES.OSM}"] [name="url"]`,
         ).value = CesiumImagery.OSM_DEFAULT_URL;
+        this.el.querySelector(
+          `[${ATTRIBUTES.PROVIDER}="${PROVIDER_TYPES.BING}"] [name="url"]`,
+        ).value = CesiumImagery.BING_DEFAULT_URL;
         this.el.querySelector("details").open = false;
         this.el.querySelectorAll(`.${CLASS_NAMES.ERROR}`).forEach((message) => {
           message.replaceChildren();
@@ -235,14 +301,27 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
             ? { ...this.model.get("cesiumOptions") }
             : {};
 
+        const url = controls.querySelector('[name="url"]');
+        if (url) {
+          if (url.value) cesiumOptions.url = url.value;
+          else delete cesiumOptions.url;
+        }
+
         if (type === PROVIDER_TYPES.ION) {
           cesiumOptions.ionAssetId = controls.querySelector(
             '[name="ionAssetId"]',
           ).value;
-        } else {
-          const url = controls.querySelector('[name="url"]').value;
-          if (url) cesiumOptions.url = url;
-          else delete cesiumOptions.url;
+        }
+
+        if (type === PROVIDER_TYPES.WMS) {
+          cesiumOptions.layers =
+            controls.querySelector('[name="layers"]').value;
+        }
+
+        if (type === PROVIDER_TYPES.BING) {
+          const key = controls.querySelector('[name="key"]').value;
+          if (key) cesiumOptions.key = key;
+          else delete cesiumOptions.key;
         }
 
         if (type === PROVIDER_TYPES.WMTS) {
@@ -264,7 +343,7 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
         }
 
         this.model.set({ type, cesiumOptions });
-        if (name === "url" || name === "ionAssetId") {
+        if (["url", "ionAssetId", "layers"].includes(name)) {
           this.showValidation(`cesiumOptions.${name}`);
         }
       },
