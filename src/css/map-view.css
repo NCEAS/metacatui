@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap");
+
 /**
  * Map View
  *
@@ -1051,7 +1053,8 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
   cursor: pointer;
 
   .list-item__visibility-toggle,
-  .list-item__filter-icon {
+  .list-item__filter-icon,
+  .assets-editor__move {
     opacity: var(--map-no-brightness-or-opacity-tweaks, 0.85);
     padding: 0;
     margin: 0.25rem;
@@ -2810,7 +2813,12 @@ other class: .ui-slider-range */
 }
 
 /* Map Editor View */
+.port-editor-section.port-editor-map {
+  padding-inline: 0;
+}
+
 .map-editor {
+  --map-body-font: var(--portal-body-font, Barlow);
   font-family: var(--map-body-font);
   display: grid;
   position: relative;
@@ -2887,14 +2895,14 @@ other class: .ui-slider-range */
   container-type: inline-size;
 }
 
-.map-editor__workspace {
+.assets-editor {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 2rem;
 }
 
-.map-editor__layers {
+.assets-editor__list {
   /* Keep the editor readable independently of the portal's map theme. */
   --portal-col-primary-1: #ecf8fc;
   --portal-col-primary-6: #136682;
@@ -2902,49 +2910,45 @@ other class: .ui-slider-range */
   --portal-col-neutral-2: #e8eaed;
   --portal-col-neutral-6: #5f6368;
   --portal-col-neutral-7: #3c4043;
-  flex: 1 1 14rem;
+  flex: 1 1 25rem;
   min-width: 0;
+  max-width: 25rem;
   background: white;
   color: var(--portal-col-neutral-7);
 }
 
-.map-editor__layers .expansion-panel > h5 {
+.assets-editor__list .expansion-panel > h5 {
   margin: 0;
 }
 
-.map-editor__layers .expansion-panel__toggle {
+.assets-editor__list .expansion-panel__toggle {
   width: 100%;
   grid-template-columns: min-content minmax(0, 1fr) min-content;
-  padding: 0 0.75rem;
   background: transparent;
   font-family: inherit;
   line-height: 1.5;
   text-align: left;
 }
 
-.map-editor__layers .expansion-panel__title {
-  overflow-wrap: anywhere;
-}
-
-.map-editor__layers .expansion-panel__content {
+.assets-editor__list .expansion-panel__content {
   animation: none;
 }
 
-.map-editor__layers button:focus-visible,
-.map-editor__move-controls select:focus-visible {
+.assets-editor__list button:focus-visible,
+.assets-editor__move-controls select:focus-visible {
   outline: 2px solid var(--portal-col-primary-6);
   outline-offset: 2px;
 }
 
-.map-editor__panel {
+.assets-editor__details {
   flex: 3 1 26rem;
   min-width: 0;
 }
 
 /* Match the width needed by the two flex bases and their gap. */
-@container (min-width: 42rem) {
-  .map-editor__layers,
-  .map-editor__panel {
+@container (min-width: 53rem) {
+  .assets-editor__list,
+  .assets-editor__details {
     box-sizing: border-box;
     max-height: 70vh;
     overflow-y: auto;
@@ -2954,131 +2958,135 @@ other class: .ui-slider-range */
   }
 }
 
-.map-editor__layers .layer-list {
+.assets-editor__list .layer-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.map-editor__layers .layer-list:empty {
+.assets-editor__list .layer-list:empty {
   min-height: 2.5rem;
   box-sizing: border-box;
   border: 1px dashed var(--portal-col-neutral-6);
 }
 
-.map-editor__layers .map-editor__drop-placeholder {
+.assets-editor__list .assets-editor__drop-placeholder {
   border: 1px solid var(--portal-col-primary-6);
   background: var(--portal-col-primary-1);
 }
 
-.map-editor__layers .list-item {
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  padding: 0 0.75rem;
+.assets-editor__list .list-item {
+  grid-template-columns: min-content minmax(0, 1fr) max-content;
 }
 
-.map-editor__layers .map-editor__add-row {
+.assets-editor__list .assets-editor__add-row {
   grid-template-columns: minmax(0, 1fr);
-  margin-bottom: 0.5rem;
 }
 
-.map-editor__layers .expansion-panel .list-item {
-  padding-left: 3rem;
-}
-
-.map-editor__layers .list-item__label,
-.map-editor__move,
-.map-editor__remove {
-  padding: 0.25rem 0.75rem;
+.assets-editor__list .list-item__label {
+  padding: 0 0.5rem;
+  margin-left: 0;
   background: transparent;
   color: inherit;
   cursor: pointer;
   font-family: inherit;
-  min-height: 2.5rem;
+  min-height: calc(2rem + 2px);
   line-height: 1.5;
-}
-
-.map-editor__layers .list-item__label {
-  margin: 0;
   border: 1px solid transparent;
   border-radius: var(--map-border-radius-small);
   text-align: left;
-  overflow-wrap: anywhere;
-  white-space: normal;
 }
 
-.map-editor__layers .list-item__label:hover,
-.map-editor__layers .list-item__label[aria-pressed="true"] {
+.assets-editor__list .list-item__label-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assets-editor__list .list-item__label[aria-pressed="true"] {
   background: var(--portal-col-primary-1);
-}
-
-.map-editor__layers .list-item__label[aria-pressed="true"] {
   border-color: var(--portal-col-primary-6);
 }
 
-.map-editor__item--removing .list-item__label {
+.assets-editor__item--removing .list-item__label {
   text-decoration: line-through;
 }
 
-.map-editor__remove {
+.assets-editor__remove {
   /* Keep at least 3:1 contrast against white and the row hover background. */
   color: #909090;
-  min-width: 2.5rem;
-  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
 }
 
-.map-editor__remove:hover,
-.map-editor__remove:focus-visible {
+.assets-editor__list
+  .list-item
+  .assets-editor__remove
+  .list-item__settings-toggle {
+  color: inherit;
+}
+
+.assets-editor__list .list-item:is(:hover, :focus-within) .list-item__settings,
+.assets-editor__list
+  .list-item__label[aria-pressed="true"]
+  + .list-item__settings {
+  visibility: visible;
+  border-color: currentColor;
+}
+
+.assets-editor__list .list-item .assets-editor__remove:hover,
+.assets-editor__list .list-item .assets-editor__remove:focus-visible {
+  background: transparent;
   color: var(--color-error);
 }
 
-.map-editor__move {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+@media (hover: none) {
+  .assets-editor__list .list-item__settings {
+    visibility: visible;
+    border-color: currentColor;
+  }
+}
+
+.assets-editor__list .assets-editor__move {
   gap: 2px;
-  min-width: 2.5rem;
-  border: 0;
   color: var(--portal-col-primary-6);
-  font-size: 1rem;
+  opacity: 1;
+  font-family: inherit;
   cursor: grab;
 }
 
-.map-editor__move .icon {
+.assets-editor__move .icon {
   opacity: 0.7;
 }
 
-.map-editor__move:active,
-.map-editor__layers .sortable-chosen .map-editor__move {
+.assets-editor__move:active,
+.assets-editor__list .sortable-chosen .assets-editor__move {
   cursor: grabbing;
 }
 
-.map-editor__move:hover {
-  background: var(--portal-col-primary-1);
-}
-
-.map-editor__move-controls,
-.map-editor__move-controls [data-move-category-controls] {
+.assets-editor__move-controls,
+.assets-editor__move-controls [data-move-category-controls] {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
 
-.map-editor__move-controls {
+.assets-editor__move-controls {
   grid-column: 1 / -1;
   padding: 0.5rem 0;
 }
 
-.map-editor__move-controls[hidden],
-.map-editor__move-controls [hidden] {
+.assets-editor__move-controls[hidden],
+.assets-editor__move-controls [hidden] {
   display: none;
 }
 
-.map-editor__move-controls select {
+.assets-editor__move-controls select {
   max-width: 100%;
 }
 
-.map-editor__move-status {
+.assets-editor__move-status {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -3090,8 +3098,16 @@ other class: .ui-slider-range */
   border: 0;
 }
 
-.map-editor__layers .map-editor__add {
+.assets-editor__list .assets-editor__add {
+  padding: 0;
+  min-height: 2.5rem;
   color: var(--portal-col-primary-6);
   font-weight: 600;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  margin: 0 0.25rem;
+}
+
+.assets-editor__add .icon {
+  width: 2rem;
+  text-align: center;
 }

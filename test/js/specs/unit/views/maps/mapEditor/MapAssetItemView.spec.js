@@ -4,6 +4,7 @@ define([
   "/test/js/specs/shared/clean-state.js",
 ], (Backbone, MapAssetItemView, cleanState) => {
   const expect = chai.expect;
+  const { CLASS_NAMES } = MapAssetItemView;
 
   describe("MapAssetItemView", () => {
     const state = cleanState(() => {
@@ -24,9 +25,9 @@ define([
     it("names the Move button after its layer and updates it when renamed", () => {
       expect(move().tagName).to.equal("BUTTON");
       expect(move().type).to.equal("button");
-      expect(move().querySelectorAll(".icon-ellipsis-vertical")).to.have.length(
-        2,
-      );
+      expect(
+        move().querySelectorAll(`.${CLASS_NAMES.MOVE_ICON}`),
+      ).to.have.length(2);
       expect(move().getAttribute("aria-expanded")).to.equal("false");
       expect(move().getAttribute("aria-label")).to.equal(
         "Move Layer <b>one</b>",
@@ -66,7 +67,9 @@ define([
       expect(remove().getAttribute("aria-label")).to.equal(
         "Remove Renamed <i>layer</i>",
       );
-      expect(state.view.el.querySelector("i:not(.icon)")).to.equal(null);
+      expect(
+        state.view.el.querySelector(`i:not(.${CLASS_NAMES.ICON})`),
+      ).to.equal(null);
     });
 
     it("presents editor selection without changing the asset model", () => {
@@ -103,25 +106,25 @@ define([
 
     it("previews removal while hovering or focusing the remove control", () => {
       remove().dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
-      expect(
-        state.view.el.classList.contains("map-editor__item--removing"),
-      ).to.equal(true);
+      expect(state.view.el.classList.contains(CLASS_NAMES.REMOVING)).to.equal(
+        true,
+      );
       remove().dispatchEvent(new MouseEvent("mouseout", { bubbles: true }));
-      expect(
-        state.view.el.classList.contains("map-editor__item--removing"),
-      ).to.equal(false);
+      expect(state.view.el.classList.contains(CLASS_NAMES.REMOVING)).to.equal(
+        false,
+      );
       remove().focus();
-      expect(
-        state.view.el.classList.contains("map-editor__item--removing"),
-      ).to.equal(true);
+      expect(state.view.el.classList.contains(CLASS_NAMES.REMOVING)).to.equal(
+        true,
+      );
       remove().dispatchEvent(new MouseEvent("mouseout", { bubbles: true }));
-      expect(
-        state.view.el.classList.contains("map-editor__item--removing"),
-      ).to.equal(true);
+      expect(state.view.el.classList.contains(CLASS_NAMES.REMOVING)).to.equal(
+        true,
+      );
       state.view.focus();
-      expect(
-        state.view.el.classList.contains("map-editor__item--removing"),
-      ).to.equal(false);
+      expect(state.view.el.classList.contains(CLASS_NAMES.REMOVING)).to.equal(
+        false,
+      );
     });
 
     it("releases model listeners when removed", () => {

@@ -9,11 +9,16 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
   const BASE_CLASS = "expansion-panel";
   // The HTML classes to use for this view's HTML elements.
   const CLASS_NAMES = {
-    title: `${BASE_CLASS}__title`,
-    content: `${BASE_CLASS}__content`,
-    toggle: `${BASE_CLASS}__toggle`,
-    icon: `${BASE_CLASS}__icon`,
-    iconToggle: `${BASE_CLASS}__icon-toggle`,
+    BASE: BASE_CLASS,
+    TITLE: `${BASE_CLASS}__title`,
+    CONTENT: `${BASE_CLASS}__content`,
+    TOGGLE: `${BASE_CLASS}__toggle`,
+    ICON: `${BASE_CLASS}__icon`,
+    ICON_TOGGLE: `${BASE_CLASS}__icon-toggle`,
+    EXPANDED: "show-content",
+    ICON_FONT: "icon",
+    CARET_DOWN: "icon-caret-down",
+    CARET_UP: "icon-caret-up",
   };
 
   /**
@@ -35,7 +40,7 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
       type: "ExpansionPanelView",
 
       /** @inheritdoc */
-      className: BASE_CLASS,
+      className: CLASS_NAMES.BASE,
 
       /**
        * The events this view will listen to and the associated function to call.
@@ -43,7 +48,7 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
        */
       events() {
         return {
-          [`click .${CLASS_NAMES.toggle}`]: "toggle",
+          [`click .${CLASS_NAMES.TOGGLE}`]: "toggle",
         };
       },
 
@@ -93,23 +98,23 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
        * @returns {HTMLDivElement} Returns the content element.
        */
       getContent() {
-        return this.$el.find(`.${CLASS_NAMES.content}`);
+        return this.$el.find(`.${CLASS_NAMES.CONTENT}`);
       },
 
       /** Force the panel's content to be hidden. */
       collapse() {
-        this.$el.removeClass("show-content");
+        this.$el.removeClass(CLASS_NAMES.EXPANDED);
       },
 
       /** Force the panel's content to be shown. */
       open() {
-        this.$el.addClass("show-content");
+        this.$el.addClass(CLASS_NAMES.EXPANDED);
         this.panelsModel?.maybeCollapseOthers(this);
       },
 
       /** Toggle the visibility of the panel's content. */
       toggle() {
-        if (this.$el.hasClass("show-content")) {
+        if (this.$el.hasClass(CLASS_NAMES.EXPANDED)) {
           this.collapse();
         } else {
           this.open();
@@ -135,6 +140,13 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
       },
     },
   );
+
+  /**
+   * CSS class names used by expansion panels.
+   * @type {Object<string, string>}
+   * @since 0.0.0
+   */
+  ExpansionPanelView.CLASS_NAMES = CLASS_NAMES;
 
   return ExpansionPanelView;
 });

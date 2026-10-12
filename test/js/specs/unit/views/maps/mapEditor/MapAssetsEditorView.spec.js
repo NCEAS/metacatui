@@ -54,7 +54,7 @@ define([
     const status = () =>
       state.view.el.querySelector(`.${CLASS_NAMES.MOVE_STATUS}`);
     const layerList = (index = 0) =>
-      state.view.el.querySelectorAll(`.${CLASS_NAMES.LIST}`)[index];
+      state.view.el.querySelectorAll(`.${CLASS_NAMES.LAYER_LIST}`)[index];
 
     const renderMap = (config) => {
       state.view.remove();
@@ -733,8 +733,8 @@ define([
         document.body.append(second.el);
         try {
           const groups = [
-            ...state.view.el.querySelectorAll(`.${CLASS_NAMES.LIST}`),
-            ...second.el.querySelectorAll(`.${CLASS_NAMES.LIST}`),
+            ...state.view.el.querySelectorAll(`.${CLASS_NAMES.LAYER_LIST}`),
+            ...second.el.querySelectorAll(`.${CLASS_NAMES.LAYER_LIST}`),
           ].map((list) => Sortable.get(list).option("group").name);
           expect(groups).to.have.length(4);
           expect(groups[0]).to.equal(groups[1]);
@@ -748,7 +748,7 @@ define([
       ["render", "remove"].forEach((method) => {
         it(`releases every Sortable instance on ${method}`, () => {
           const lists = Array.from(
-            state.view.el.querySelectorAll(`.${CLASS_NAMES.LIST}`),
+            state.view.el.querySelectorAll(`.${CLASS_NAMES.LAYER_LIST}`),
           );
           state.view[method]();
           lists.forEach((list) => {

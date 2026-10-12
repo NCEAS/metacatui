@@ -15,6 +15,10 @@ define([
   // Sub-views
   LayerItemView,
 ) {
+  const CLASS_NAMES = {
+    BASE: "layer-list",
+  };
+
   /**
    * @class LayerListView
    * @classdesc A Layer List shows a collection of Map Assets, like imagery and vector
@@ -39,7 +43,7 @@ define([
        * The HTML classes to use for this view's element
        * @type {string}
        */
-      className: "layer-list",
+      className: CLASS_NAMES.BASE,
 
       /**
        * The collection of layers to display in the list
@@ -161,6 +165,13 @@ define([
       },
     },
   );
+
+  /**
+   * CSS class names used by layer lists.
+   * @type {Object<string, string>}
+   * @since 0.0.0
+   */
+  LayerListView.CLASS_NAMES = CLASS_NAMES;
 
   return LayerListView;
 });
