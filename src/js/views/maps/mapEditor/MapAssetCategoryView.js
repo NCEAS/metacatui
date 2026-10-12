@@ -1,19 +1,10 @@
 "use strict";
 
-define(["backbone"], (Backbone) => {
-  const BASE_CLASS = "expansion-panel";
-  const CLASS_NAMES = {
-    BASE: BASE_CLASS,
-    TOGGLE: `${BASE_CLASS}__toggle`,
-    ICON: `${BASE_CLASS}__icon`,
-    TITLE: `${BASE_CLASS}__title`,
-    ICON_TOGGLE: `${BASE_CLASS}__icon-toggle`,
-    CONTENT: `${BASE_CLASS}__content`,
-    EXPANDED: "show-content",
-    ICON_FONT: "icon",
-    CARET_DOWN: "icon-caret-down",
-    CARET_UP: "icon-caret-up",
-  };
+define(["backbone", "views/maps/ExpansionPanelView"], (
+  Backbone,
+  ExpansionPanelView,
+) => {
+  const { CLASS_NAMES } = ExpansionPanelView;
   const TOGGLE_CATEGORY_ATTRIBUTE = "data-toggle-category";
   const CONTENT_ID_SUFFIX = "layers";
 

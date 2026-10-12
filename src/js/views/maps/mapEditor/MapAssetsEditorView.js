@@ -4,6 +4,8 @@ define([
   "backbone",
   "sortable",
   "models/maps/assets/CesiumImagery",
+  "views/maps/LayerListView",
+  "views/maps/LayerItemView",
   "views/maps/mapEditor/MapAssetItemView",
   "views/maps/mapEditor/MapAssetEditorView",
   "views/maps/mapEditor/MapAssetCategoryView",
@@ -11,25 +13,27 @@ define([
   Backbone,
   Sortable,
   CesiumImagery,
+  LayerListView,
+  LayerItemView,
   MapAssetItemView,
   MapAssetEditorView,
   MapAssetCategoryView,
 ) => {
   const CLASS_NAMES = {
-    WORKSPACE: "map-editor__workspace",
-    LAYERS: "map-editor__layers",
-    ADD: "map-editor__add",
-    EMPTY: "map-editor__empty",
-    PANEL: "map-editor__panel",
-    LIST: "layer-list",
-    ITEM: "list-item",
-    ITEM_LABEL: "list-item__label",
-    ADD_ROW: "map-editor__add-row",
-    ICON: "icon",
+    BASE: "assets-editor",
+    LIST: "assets-editor__list",
+    ADD: "assets-editor__add",
+    EMPTY: "assets-editor__empty",
+    DETAILS: "assets-editor__details",
+    LAYER_LIST: LayerListView.CLASS_NAMES.BASE,
+    ITEM: LayerItemView.CLASS_NAMES.BASE,
+    ITEM_LABEL: LayerItemView.CLASS_NAMES.LABEL,
+    ADD_ROW: "assets-editor__add-row",
+    ICON: LayerItemView.CLASS_NAMES.ICON_FONT,
     ADD_ICON: "icon-plus",
-    MOVE_CONTROLS: "map-editor__move-controls",
-    MOVE_STATUS: "map-editor__move-status",
-    DROP_PLACEHOLDER: "map-editor__drop-placeholder",
+    MOVE_CONTROLS: "assets-editor__move-controls",
+    MOVE_STATUS: "assets-editor__move-status",
+    DROP_PLACEHOLDER: "assets-editor__drop-placeholder",
   };
   const DRAG_GROUP_PREFIX = "map-editor";
   const ADD_LAYER_ATTRIBUTE = "data-add-layer";
@@ -74,7 +78,7 @@ define([
   const MapAssetsEditorView = Backbone.View.extend(
     /** @lends MapAssetsEditorView.prototype */ {
       /** @inheritdoc */
-      className: CLASS_NAMES.WORKSPACE,
+      className: CLASS_NAMES.BASE,
 
       /** @inheritdoc */
       events: {
@@ -107,12 +111,12 @@ define([
       render() {
         this.onClose();
         this.el.innerHTML = `
-          <section class="${CLASS_NAMES.LAYERS}" aria-label="${MESSAGES.LAYERS}"></section>
-          <section id="${this.cid}-${ASSET_PANEL_ID_SUFFIX}" class="${CLASS_NAMES.PANEL}" aria-label="${MESSAGES.SETTINGS}">
+          <section class="${CLASS_NAMES.LIST}" aria-label="${MESSAGES.LAYERS}"></section>
+          <section id="${this.cid}-${ASSET_PANEL_ID_SUFFIX}" class="${CLASS_NAMES.DETAILS}" aria-label="${MESSAGES.SETTINGS}">
             <p>${MESSAGES.SELECT_LAYER}</p>
           </section>
         `;
-        const container = this.el.querySelector(`.${CLASS_NAMES.LAYERS}`);
+        const container = this.el.querySelector(`.${CLASS_NAMES.LIST}`);
         const categories = this.model.get("layerCategories");
         this.model.getLayerGroups().forEach((layers, index) => {
           const category = categories?.at(index);
@@ -193,7 +197,7 @@ define([
       createLayerList(layers, host, categoryView) {
         const group = document.createElement("div");
         const list = document.createElement("ul");
-        list.className = CLASS_NAMES.LIST;
+        list.className = CLASS_NAMES.LAYER_LIST;
         const addRow = document.createElement("div");
         addRow.className = `${CLASS_NAMES.ITEM} ${CLASS_NAMES.ADD_ROW}`;
         const add = document.createElement("button");
@@ -273,7 +277,7 @@ define([
           this.selectAsset(null);
         }
         if (!this.selectedAsset) {
-          this.el.querySelector(`.${CLASS_NAMES.PANEL} p`).textContent =
+          this.el.querySelector(`.${CLASS_NAMES.DETAILS} p`).textContent =
             assets.length ? MESSAGES.SELECT_LAYER : MESSAGES.ADD_FIRST_LAYER;
         }
       },
@@ -345,9 +349,7 @@ define([
         this.moveContext = null;
         button.setAttribute("aria-expanded", "false");
         this.moveControls.hidden = true;
-        this.el
-          .querySelector(`.${CLASS_NAMES.LAYERS}`)
-          .append(this.moveControls);
+        this.el.querySelector(`.${CLASS_NAMES.LIST}`).append(this.moveControls);
         if (restoreFocus) button.focus();
       },
 
@@ -441,7 +443,7 @@ define([
         this.assetEditorView?.remove();
         this.assetEditorView = null;
         this.selectedAsset = asset;
-        const panel = this.el.querySelector(`.${CLASS_NAMES.PANEL}`);
+        const panel = this.el.querySelector(`.${CLASS_NAMES.DETAILS}`);
         panel.replaceChildren();
         panel.scrollTop = 0;
         if (

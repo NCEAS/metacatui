@@ -1,9 +1,11 @@
 define([
   "models/maps/AssetCategory",
+  "views/maps/ExpansionPanelView",
   "views/maps/mapEditor/MapAssetCategoryView",
   "/test/js/specs/shared/clean-state.js",
-], (AssetCategory, MapAssetCategoryView, cleanState) => {
+], (AssetCategory, ExpansionPanelView, MapAssetCategoryView, cleanState) => {
   const expect = chai.expect;
+  const { CLASS_NAMES } = ExpansionPanelView;
   const iconPath = "M0 0h24v24H0z";
   const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${iconPath}"/></svg>`;
 
@@ -41,7 +43,9 @@ define([
         button,
       );
       expect(button.textContent).to.include("Water <i>observations</i>");
-      expect(button.querySelector("i:not(.icon)")).to.equal(null);
+      expect(button.querySelector(`i:not(.${CLASS_NAMES.ICON_FONT})`)).to.equal(
+        null,
+      );
       expect(document.activeElement).to.equal(button);
     });
 

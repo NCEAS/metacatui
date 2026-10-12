@@ -78,5 +78,11 @@ define([
     },
   );
 
+  /**
+   * CSS class names used by the map editor shell.
+   * @type {Object<string, string>}
+   */
+  MapEditorView.CLASS_NAMES = CLASS_NAMES;
+
   return MapEditorView;
 });

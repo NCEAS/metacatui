@@ -1,18 +1,18 @@
-<div class="<%= classNames.toggle %>">
-  <div class="<%= classNames.icon %>">
+<div class="<%= classNames.TOGGLE %>">
+  <div class="<%= classNames.ICON %>">
     <%if(isSvgIcon) {%>
       <%= icon %>
     <%} else {%>
-      <i class="icon <%= icon %>"></i>
+      <i class="<%= classNames.ICON_FONT %> <%= icon %>"></i>
     <%}%>
   </div>
-  <div class="<%= classNames.title %>">
+  <div class="<%= classNames.TITLE %>">
     <%= title %>
   </div>
-  <div class="<%= classNames.iconToggle %>">
-    <i class="icon icon-caret-down"></i>
-    <i class="icon icon-caret-up"></i>
+  <div class="<%= classNames.ICON_TOGGLE %>">
+    <i class="<%= classNames.ICON_FONT %> <%= classNames.CARET_DOWN %>"></i>
+    <i class="<%= classNames.ICON_FONT %> <%= classNames.CARET_UP %>"></i>
   </div>
 </div>
 
-<div class="<%= classNames.content %>"></div>
+<div class="<%= classNames.CONTENT %>"></div>

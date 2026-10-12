@@ -8,6 +8,39 @@ define([
   "common/IconUtilities",
   "text!templates/maps/layer-item.html",
 ], ($, _, Backbone, MapAsset, IconUtilities, Template) => {
+  const CLASS_NAMES = {
+    BASE: "list-item",
+    LABEL: "list-item__label",
+    ICON: "list-item__icon",
+    ICON_FONT: "icon",
+    VISIBILITY_TOGGLE: "list-item__visibility-toggle",
+    SELECTED: "list-item--selected",
+    SHOWN: "list-item--shown",
+    LABEL_TEXT: "list-item__label-text",
+    HIGHLIGHTED_TEXT: "list-item__highlighted-text",
+    CATEGORIZED: "list-item__categorized",
+    SETTINGS: "list-item__settings",
+    SETTINGS_TOGGLE: "list-item__settings-toggle",
+    BADGE: "map-view__badge",
+    TOOLTIP: "map-tooltip",
+    BUTTON: "map-view__button",
+    FILTER_ICON: "list-item__filter-icon",
+    FILTER_ICON_ACTIVE: "list-item__filter-icon--active",
+    STATUS_ICON: "list-item__status-icon",
+    STATUS_ICON_VISIBLE: "list-item__status-icon--visible",
+    VISIBILITY_ICON: "icon-eye-open",
+    SETTINGS_ICON: "icon-gear",
+    FILTER_GLYPH: "icon-filter",
+    WARNING_ICON: "icon-warning-sign",
+    SPINNER_ICON: "icon-spinner",
+    SPINNING: "icon-spin",
+    SMALL_ICON: "icon-small",
+    LOADING: "loading",
+    TOOLTIP_CONTAINER: "tooltip",
+    TOOLTIP_ARROW: "tooltip-arrow",
+    TOOLTIP_INNER: "tooltip-inner",
+  };
+
   /**
    * @class LayerItemView
    * @classdesc One item in a Layer List: shows some basic information about the Map
@@ -34,7 +67,7 @@ define([
        * The HTML classes to use for this view's element
        * @type {string}
        */
-      className: "list-item",
+      className: CLASS_NAMES.BASE,
 
       /**
        * The model that this view uses
@@ -56,46 +89,6 @@ define([
       template: _.template(Template),
 
       /**
-       * Classes that are used to identify or create the HTML elements that comprise this
-       * view.
-       * @type {object}
-       * @property {string} label The element that contains the layer's name/label
-       * @property {string} icon The span element that contains the SVG icon
-       * @property {string} visibilityToggle The element that acts like a button to
-       * switch the Layer's visibility on and off
-       * @property {string} selected The class that gets added to the view when the Layer
-       * Item is selected
-       * @property {string} shown The class that gets added to the view when the Layer
-       * Item is visible
-       * @property {string} badge The class to add to the badge element that is shown
-       * when the layer has a notification message
-       * @property {string} tooltip Class added to tooltips used in this view
-       * @property {string} statusIcon The class for the reserved status icon slot
-       * (spinner/warning) that stays in the DOM at a fixed size so its
-       * appearance/disappearance never shifts sibling elements
-       * @property {string} statusIconVisible The class added to the status icon slot
-       * to reveal its current icon
-       */
-      classes: {
-        label: "list-item__label",
-        icon: "list-item__icon",
-        visibilityToggle: "list-item__visibility-toggle",
-        selected: "list-item--selected",
-        shown: "list-item--shown",
-        labelText: "list-item__label-text",
-        highlightedText: "list-item__highlighted-text",
-        categorized: "list-item__categorized",
-        settings: "list-item__settings",
-        badge: "map-view__badge",
-        tooltip: "map-tooltip",
-        button: "map-view__button",
-        filterIcon: "list-item__filter-icon",
-        filterIconActive: "list-item__filter-icon--active",
-        statusIcon: "list-item__status-icon",
-        statusIconVisible: "list-item__status-icon--visible",
-      },
-
-      /**
        * The text to show in a tooltip when the MapAsset's status is set to 'error'. If
        * the model also has a 'statusMessage', that will be appended to the end of this
        * error message.
@@ -111,7 +104,7 @@ define([
        */
       events() {
         const events = {};
-        events[`click .${this.classes.settings}`] = "toggleSelected";
+        events[`click .${CLASS_NAMES.SETTINGS}`] = "toggleSelected";
         events.click = "toggleVisibility";
         return events;
       },
@@ -137,11 +130,11 @@ define([
         this.$el.html(
           this.template({
             label: this.model.get("label"),
-            classes: this.classes,
+            classNames: CLASS_NAMES,
           }),
         );
         // Save a reference to the label element
-        this.labelEl = this.el.querySelector(`.${this.classes.label}`);
+        this.labelEl = this.el.querySelector(`.${CLASS_NAMES.LABEL}`);
 
         // Insert the icon on the left
         if (!this.isCategorized) {
@@ -214,10 +207,10 @@ define([
           icon = model.defaults().icon;
         }
         const iconContainer = document.createElement("span");
-        iconContainer.classList.add(this.classes.icon);
+        iconContainer.classList.add(CLASS_NAMES.ICON);
         iconContainer.innerHTML = icon;
         this.el
-          .querySelector(`.${this.classes.visibilityToggle}`)
+          .querySelector(`.${CLASS_NAMES.VISIBILITY_TOGGLE}`)
           .replaceChildren(iconContainer);
 
         const iconStatus = model.get("iconStatus");
@@ -236,11 +229,10 @@ define([
        */
       insertFilterIcon() {
         const filterIconEl = document.createElement("span");
-        const classes = [this.classes.icon, this.classes.filterIcon];
+        const classes = [CLASS_NAMES.ICON, CLASS_NAMES.FILTER_ICON];
         filterIconEl.classList.add(...classes);
         filterIconEl.title = "Filter by property"; // add tooltip
-        // filterIconEl.className = `${this.classes.button}`;
-        filterIconEl.innerHTML = `<i class="icon icon-filter"></i>`;
+        filterIconEl.innerHTML = `<i class="${CLASS_NAMES.ICON_FONT} ${CLASS_NAMES.FILTER_GLYPH}"></i>`;
         this.labelEl.appendChild(filterIconEl);
       },
 
@@ -252,7 +244,7 @@ define([
        */
       insertStatusIconSlot() {
         const statusIconEl = document.createElement("span");
-        statusIconEl.classList.add(this.classes.statusIcon);
+        statusIconEl.classList.add(CLASS_NAMES.STATUS_ICON);
         this.statusIconSlot = statusIconEl;
         this.labelEl.appendChild(statusIconEl);
       },
@@ -265,12 +257,12 @@ define([
        * @since 2.34.0
        */
       toggleFilterIconVisibility() {
-        const filterIconEl = this.$(`.${this.classes.filterIcon}`);
+        const filterIconEl = this.$(`.${CLASS_NAMES.FILTER_ICON}`);
         if (!filterIconEl?.length || !filterIconEl[0]) {
           return;
         }
 
-        const activeClass = this.classes.filterIconActive;
+        const activeClass = CLASS_NAMES.FILTER_ICON_ACTIVE;
         if (
           this.model.get("filters").hasActiveFilters() &&
           this.model.isVisible()
@@ -302,8 +294,8 @@ define([
        */
       toggleVisibility(event) {
         if (
-          this.$(`.${this.classes.settings}`).is(event.target) ||
-          this.$(`.${this.classes.settings}`).has(event.target).length > 0
+          this.$(`.${CLASS_NAMES.SETTINGS}`).is(event.target) ||
+          this.$(`.${CLASS_NAMES.SETTINGS}`).has(event.target).length > 0
         ) {
           return;
         }
@@ -329,11 +321,9 @@ define([
       showSelection() {
         const layerModel = this.model;
         if (layerModel.get("selected")) {
-          this.$(`.${this.classes.settings}`).addClass(this.classes.selected);
+          this.$(`.${CLASS_NAMES.SETTINGS}`).addClass(CLASS_NAMES.SELECTED);
         } else {
-          this.$(`.${this.classes.settings}`).removeClass(
-            this.classes.selected,
-          );
+          this.$(`.${CLASS_NAMES.SETTINGS}`).removeClass(CLASS_NAMES.SELECTED);
         }
       },
 
@@ -345,9 +335,9 @@ define([
       showVisibility() {
         const layerModel = this.model;
         if (layerModel.get("visible")) {
-          this.$el.addClass(this.classes.shown);
+          this.$el.addClass(CLASS_NAMES.SHOWN);
         } else {
-          this.$el.removeClass(this.classes.shown);
+          this.$el.removeClass(CLASS_NAMES.SHOWN);
         }
       },
 
@@ -413,7 +403,7 @@ define([
       removeStatuses() {
         if (this.statusIconSlot) {
           this.statusIconSlot.innerHTML = "";
-          this.statusIconSlot.classList.remove(this.classes.statusIconVisible);
+          this.statusIconSlot.classList.remove(CLASS_NAMES.STATUS_ICON_VISIBLE);
         }
         if (this.badge) {
           this.badge.remove();
@@ -434,11 +424,11 @@ define([
         }
         this.removeStatuses();
         this.badge = document.createElement("span");
-        this.badge.classList.add(this.classes.badge);
+        this.badge.classList.add(CLASS_NAMES.BADGE);
         this.badge.innerText = text;
         this.appendStatusElement(this.badge);
         if (style) {
-          const badgeClass = `${this.classes.badge}--${style}`;
+          const badgeClass = `${CLASS_NAMES.BADGE}--${style}`;
           this.badge.classList.add(badgeClass);
         }
       },
@@ -450,14 +440,12 @@ define([
        * @param {string} message The error message to show in the tooltip.
        */
       showError(message = "") {
-        const view = this;
-
         // Remove any style elements for other statuses
         this.removeStatuses();
 
         // Show a warning icon in the reserved status icon slot
-        this.statusIconSlot.innerHTML = `<i class="icon-warning-sign icon"></i>`;
-        this.statusIconSlot.classList.add(this.classes.statusIconVisible);
+        this.statusIconSlot.innerHTML = `<i class="${CLASS_NAMES.WARNING_ICON} ${CLASS_NAMES.ICON_FONT}"></i>`;
+        this.statusIconSlot.classList.add(CLASS_NAMES.STATUS_ICON_VISIBLE);
 
         // Show a tooltip with the error message
         let fullMessage = this.errorMessage;
@@ -470,7 +458,7 @@ define([
           title: fullMessage,
           container: "body",
           animation: false,
-          template: `<div class="tooltip ${view.classes.tooltip}"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>`,
+          template: `<div class="${CLASS_NAMES.TOOLTIP_CONTAINER} ${CLASS_NAMES.TOOLTIP}"><div class="${CLASS_NAMES.TOOLTIP_ARROW}"></div><div class="${CLASS_NAMES.TOOLTIP_INNER}"></div></div>`,
           delay: { show: 250, hide: 5 },
         });
       },
@@ -484,8 +472,8 @@ define([
         this.removeStatuses();
 
         // Show a spinner icon in the reserved status icon slot
-        this.statusIconSlot.innerHTML = `<i class="icon-spinner icon-spin icon-small loading icon"></i>`;
-        this.statusIconSlot.classList.add(this.classes.statusIconVisible);
+        this.statusIconSlot.innerHTML = `<i class="${CLASS_NAMES.SPINNER_ICON} ${CLASS_NAMES.SPINNING} ${CLASS_NAMES.SMALL_ICON} ${CLASS_NAMES.LOADING} ${CLASS_NAMES.ICON_FONT}"></i>`;
+        this.statusIconSlot.classList.add(CLASS_NAMES.STATUS_ICON_VISIBLE);
       },
 
       /**
@@ -502,7 +490,7 @@ define([
             .get("label")
             .replaceAll(regex, (matchedText) =>
               $("<span />")
-                .addClass(this.classes.highlightedText)
+                .addClass(CLASS_NAMES.HIGHLIGHTED_TEXT)
                 .html(matchedText)
                 .prop("outerHTML"),
             );
@@ -514,13 +502,20 @@ define([
           }
         }
 
-        this.labelEl.querySelector(`.${this.classes.labelText}`).innerHTML =
+        this.labelEl.querySelector(`.${CLASS_NAMES.LABEL_TEXT}`).innerHTML =
           newLabel;
         this.$el.show();
         return true;
       },
     },
   );
+
+  /**
+   * CSS class names used by layer items.
+   * @type {Object<string, string>}
+   * @since 0.0.0
+   */
+  LayerItemView.CLASS_NAMES = CLASS_NAMES;
 
   return LayerItemView;
 });

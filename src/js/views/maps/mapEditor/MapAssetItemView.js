@@ -1,14 +1,22 @@
 "use strict";
 
-define(["backbone"], (Backbone) => {
+define(["backbone", "views/maps/LayerItemView"], (Backbone, LayerItemView) => {
   const CLASS_NAMES = {
-    MOVE: "map-editor__move",
-    ICON: "icon",
+    BASE: LayerItemView.CLASS_NAMES.BASE,
+    MOVE: "assets-editor__move",
+    ICON: LayerItemView.CLASS_NAMES.ICON_FONT,
     MOVE_ICON: "icon-ellipsis-vertical",
-    REMOVE: "map-editor__remove",
-    REMOVING: "map-editor__item--removing",
+    REMOVE: "assets-editor__remove",
+    REMOVE_ICON: "icon-remove",
+    SETTINGS: LayerItemView.CLASS_NAMES.SETTINGS,
+    SETTINGS_TOGGLE: LayerItemView.CLASS_NAMES.SETTINGS_TOGGLE,
+    REMOVING: "assets-editor__item--removing",
+    LABEL: LayerItemView.CLASS_NAMES.LABEL,
+    LABEL_TEXT: LayerItemView.CLASS_NAMES.LABEL_TEXT,
   };
   const MOVE_ASSET_ATTRIBUTE = "data-move-asset";
+  const ASSET_ATTRIBUTE = "data-asset";
+  const REMOVE_ASSET_ATTRIBUTE = "data-remove-asset";
   const MESSAGES = {
     UNTITLED_LAYER: "Untitled layer",
     MOVE: "Move",
@@ -23,23 +31,23 @@ define(["backbone"], (Backbone) => {
    * @screenshot views/maps/mapEditor/MapAssetItemView.png
    * @since 0.0.0
    */
-  return Backbone.View.extend(
+  const MapAssetItemView = Backbone.View.extend(
     /** @lends MapAssetItemView.prototype */ {
       /** @inheritdoc */
       tagName: "li",
 
       /** @inheritdoc */
-      className: "list-item",
+      className: CLASS_NAMES.BASE,
 
       /** @inheritdoc */
       events: {
         [`click [${MOVE_ASSET_ATTRIBUTE}]`]: "moveAsset",
-        "click [data-asset]": "selectAsset",
-        "click [data-remove-asset]": "removeAsset",
-        "mouseenter [data-remove-asset]": "previewRemoval",
-        "mouseleave [data-remove-asset]": "previewRemoval",
-        "focusin [data-remove-asset]": "previewRemoval",
-        "focusout [data-remove-asset]": "previewRemoval",
+        [`click [${ASSET_ATTRIBUTE}]`]: "selectAsset",
+        [`click [${REMOVE_ASSET_ATTRIBUTE}]`]: "removeAsset",
+        [`mouseenter [${REMOVE_ASSET_ATTRIBUTE}]`]: "previewRemoval",
+        [`mouseleave [${REMOVE_ASSET_ATTRIBUTE}]`]: "previewRemoval",
+        [`focusin [${REMOVE_ASSET_ATTRIBUTE}]`]: "previewRemoval",
+        [`focusout [${REMOVE_ASSET_ATTRIBUTE}]`]: "previewRemoval",
       },
 
       /**
@@ -63,10 +71,10 @@ define(["backbone"], (Backbone) => {
             <i class="${CLASS_NAMES.ICON} ${CLASS_NAMES.MOVE_ICON}" aria-hidden="true"></i>
             <i class="${CLASS_NAMES.ICON} ${CLASS_NAMES.MOVE_ICON}" aria-hidden="true"></i>
           </button>
-          <button type="button" class="list-item__label" data-asset="${this.model.cid}"
-            aria-pressed="false" aria-controls="${this.panelId}"></button>
-          <button type="button" class="${CLASS_NAMES.REMOVE}" data-remove-asset="${this.model.cid}">
-            <i class="icon icon-remove" aria-hidden="true"></i>
+          <button type="button" class="${CLASS_NAMES.LABEL}" ${ASSET_ATTRIBUTE}="${this.model.cid}"
+            aria-pressed="false" aria-controls="${this.panelId}"><span class="${CLASS_NAMES.LABEL_TEXT}"></span></button>
+          <button type="button" class="${CLASS_NAMES.REMOVE} ${CLASS_NAMES.SETTINGS}" ${REMOVE_ASSET_ATTRIBUTE}="${this.model.cid}">
+            <i class="${CLASS_NAMES.ICON} ${CLASS_NAMES.REMOVE_ICON} ${CLASS_NAMES.SETTINGS_TOGGLE}" aria-hidden="true"></i>
           </button>
         `;
       },
@@ -84,12 +92,14 @@ define(["backbone"], (Backbone) => {
       /** Update the label and the Move and Remove buttons' accessible names */
       updateLabel() {
         const label = this.model.get("label") || MESSAGES.UNTITLED_LAYER;
-        this.el.querySelector("[data-asset]").textContent = label;
+        const labelText = this.el.querySelector(`.${CLASS_NAMES.LABEL_TEXT}`);
+        labelText.textContent = label;
+        labelText.title = label;
         this.el
           .querySelector(`[${MOVE_ASSET_ATTRIBUTE}]`)
           .setAttribute("aria-label", `${MESSAGES.MOVE} ${label}`);
         this.el
-          .querySelector("[data-remove-asset]")
+          .querySelector(`[${REMOVE_ASSET_ATTRIBUTE}]`)
           .setAttribute("aria-label", `${MESSAGES.REMOVE} ${label}`);
       },
 
@@ -99,13 +109,13 @@ define(["backbone"], (Backbone) => {
        */
       setSelected(selected) {
         this.el
-          .querySelector("[data-asset]")
+          .querySelector(`[${ASSET_ATTRIBUTE}]`)
           .setAttribute("aria-pressed", String(selected));
       },
 
       /** Focus the layer selection button */
       focus() {
-        this.el.querySelector("[data-asset]").focus();
+        this.el.querySelector(`[${ASSET_ATTRIBUTE}]`).focus();
       },
 
       /** Focus the layer's Move button */
@@ -147,4 +157,12 @@ define(["backbone"], (Backbone) => {
       },
     },
   );
+
+  /**
+   * CSS class names used by editor layer items.
+   * @type {Object<string, string>}
+   */
+  MapAssetItemView.CLASS_NAMES = CLASS_NAMES;
+
+  return MapAssetItemView;
 });

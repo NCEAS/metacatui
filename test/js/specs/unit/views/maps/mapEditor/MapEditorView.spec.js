@@ -5,6 +5,7 @@ define([
   "/test/js/specs/shared/clean-state.js",
 ], (Map, CesiumImagery, MapEditorView, cleanState) => {
   const expect = chai.expect;
+  const { CLASS_NAMES } = MapEditorView;
   describe("MapEditorView", () => {
     const state = cleanState(() => {
       const sandbox = sinon.createSandbox();
@@ -35,7 +36,7 @@ define([
     });
 
     it("composes the assets workspace with the shared map", () => {
-      expect(state.view.el.classList.contains("map-editor")).to.equal(true);
+      expect(state.view.el.classList.contains(CLASS_NAMES.BASE)).to.equal(true);
       expect(state.view.assetsEditorView.model).to.equal(state.model);
       expect(state.view.el.contains(state.view.assetsEditorView.el)).to.equal(
         true,
