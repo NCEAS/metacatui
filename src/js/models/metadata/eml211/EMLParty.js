@@ -150,7 +150,7 @@ define([
               "electronicmailaddress, electronicMailAddress",
             ),
             function (email) {
-              return $(email).text();
+              return $(email).text().trim();
             },
           );
         }

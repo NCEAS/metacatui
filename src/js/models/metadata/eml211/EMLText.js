@@ -140,6 +140,7 @@ define([
 
           return paragraphs;
         }
+        return [];
       },
 
       serialize: function () {
