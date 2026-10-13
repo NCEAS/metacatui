@@ -1,10 +1,7 @@
-define([
-  "jquery",
-  "underscore",
-  "backbone",
-  "text!templates/portals/portalVisualizations.html",
-  "views/portals/PortalSectionView",
-], function ($, _, Backbone, PortalVisualizationsTemplate, PortalSectionView) {
+define(["jquery", "views/portals/PortalSectionView"], (
+  $,
+  PortalSectionView,
+) => {
   /**
    * @class PortalVisualizationsView
    * @classdesc The PortalVisualizationsView is a view to render the
@@ -36,27 +33,11 @@ define([
       subviews: [], // Could be a literal object {}
 
       /**
-       * Renders the compiled template into HTML
-       * @type {Underscore.Template}
-       */
-      template: _.template(PortalVisualizationsTemplate),
-
-      /**
        * Construct a new instance of PortalVisualizationsView
        * @param {Object} options - A literal object with options to pass to the view
        */
       initialize: function (options) {
-        // Get all the options and apply them to this view
-        if (typeof options == "object") {
-          var optionKeys = Object.keys(options);
-          _.each(
-            optionKeys,
-            function (key, i) {
-              this[key] = options[key];
-            },
-            this,
-          );
-        }
+        PortalSectionView.prototype.initialize.call(this, options);
         this.adjustVizHeight = this.adjustVizHeight.bind(this);
       },
 
@@ -105,7 +86,7 @@ define([
           return;
         }
 
-        let thisView = this;
+        const thisView = this;
 
         //Create a MapView and render it in this view
         require(["views/maps/MapView", "models/maps/Map"], function (
@@ -117,7 +98,7 @@ define([
             mapModel = new Map();
             thisView.model.set("mapModel", mapModel);
           }
-          let mapView = new MapView({
+          const mapView = new MapView({
             model: mapModel,
             isPortalMap: true,
           });
@@ -167,7 +148,7 @@ define([
 
       adjustVizHeight: function () {
         // Get the heights of the header, navbar, and footer
-        var otherHeight = 0;
+        let otherHeight = 0;
         $(".auto-height-member").each(function (i, el) {
           if ($(el).css("display") != "none" && !$(el).is("#Footer")) {
             otherHeight += $(el).outerHeight(true);
@@ -175,7 +156,7 @@ define([
         });
 
         // Get the remaining height left based on the window size
-        var remainingHeight = $(window).outerHeight(true) - otherHeight;
+        let remainingHeight = $(window).outerHeight(true) - otherHeight;
         if (remainingHeight < 0) {
           remainingHeight = $(window).outerHeight(true) || 600;
         } else if (remainingHeight <= 120) {
