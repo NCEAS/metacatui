@@ -785,10 +785,20 @@ define([
         // same time in different panels. For now, the visualizations sections should
         // take up the full height of the viewport (minus the header elements), and the
         // footer should be hidden.
-        if (
+        const isPanelsVisualization =
           this.model.get("layout") === "panels" &&
-          sectionView instanceof PortalVisualizationsView
+          sectionView instanceof PortalVisualizationsView;
+
+        if (
+          isPanelsVisualization &&
+          sectionView.model.get("visualizationType") === "cesium"
         ) {
+          document.body.style.setProperty("height", "100%");
+        } else {
+          document.body.style.removeProperty("height");
+        }
+
+        if (isPanelsVisualization) {
           if (this.logosView) {
             this.logosView.el.style.setProperty("display", "none");
           }
@@ -932,6 +942,7 @@ define([
         //Create a new PortalSectionView
         const sectionView = new PortalVisualizationsView({
           model: sectionModel,
+          portalModel: this.model,
         });
 
         //Render the section
@@ -1193,6 +1204,7 @@ define([
         $(window).off("scroll", "", this.handleScroll);
 
         $("body").removeClass("PortalView");
+        document.body.style.removeProperty("height");
 
         // Make sure the footer is visible (hidden for dataViz sections + panels layout)
         MetacatUI.footerView.el.style.removeProperty("display");
