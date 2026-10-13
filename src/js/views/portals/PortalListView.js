@@ -3,10 +3,11 @@ define([
   "underscore",
   "backbone",
   "collections/Filters",
+  "models/filters/Filter",
   "collections/SolrResults",
   "views/PagerView",
   "text!templates/portals/portalList.html",
-], ($, _, Backbone, Filters, SearchResults, PagerView, Template) => {
+], ($, _, Backbone, Filters, Filter, SearchResults, PagerView, Template) => {
   /**
    * @class PortalListView
    * @classdesc A view that shows a list of Portals
@@ -23,6 +24,12 @@ define([
        * @type {Filter[]}
        */
       filters: null,
+
+      /**
+       * The general search term applied to the portal's indexed metadata.
+       * @type {string}
+       */
+      searchTerm: "",
 
       /**
        * A SolrResults collection that contains the results of the search for the portals
@@ -85,11 +92,14 @@ define([
       template: _.template(Template),
 
       /**
-       * Initializes a new view
+       * Creates the result collection and tracks its active request.
+       * @returns {void}
        */
       initialize() {
-        // Create a new SearchResults collection
         this.searchResults = new SearchResults();
+        this.listenTo(this.searchResults, "request", (_collection, request) => {
+          this.searchRequest = request;
+        });
       },
 
       /**
@@ -178,16 +188,24 @@ define([
        */
       getSearchResults() {
         try {
-          // Filter by the portal format ID
+          this.stopListening(this.searchResults, "reset", this.renderList);
+          this.stopListening(this.searchResults, "error", this.showError);
+          this.searchRequest?.abort();
+          this.pagerView?.remove();
+          this.$(this.listContainer).html(
+            $(this.template()).filter(this.listContainer).html(),
+          );
+
+          // Stable IDs keep these required filters from accumulating on resubmission.
           this.filters.add({
+            id: "portal-format",
             fields: ["formatId"],
             values: ["dataone.org/portals"],
             matchSubstring: true,
             exclude: false,
           });
-
-          // Filter datasets by their ownership
           this.filters.add({
+            id: "latest-portals",
             fields: ["obsoletedBy"],
             values: ["*"],
             matchSubstring: false,
@@ -221,7 +239,25 @@ define([
           }
 
           // Set the query on the SearchResults
-          this.searchResults.setQuery(this.filters.getQuery());
+          let query = this.filters.getQuery();
+          if (this.searchTerm) {
+            const searchFilter = new Filter({
+              fields: [
+                "title",
+                "abstract",
+                "label",
+                "investigator",
+                "funderName",
+                "funderIdentifier",
+                "awardNumber",
+                "collectionQuery",
+              ],
+              fieldsOperator: "OR",
+              values: [this.searchTerm],
+            });
+            query += `%20AND%20${searchFilter.getQuery()}`;
+          }
+          this.searchResults.setQuery(query);
 
           // Listen to the search results collection and render the results when the search is complete
           this.listenToOnce(this.searchResults, "reset", this.renderList);
@@ -245,6 +281,9 @@ define([
        */
       renderList() {
         try {
+          if (!this.searchTerm) {
+            this.unfilteredPortalCount = this.searchResults.length;
+          }
           // Get the list container element
           const listContainer = this.$(this.listContainer);
 
@@ -254,7 +293,10 @@ define([
             !this.additionalPortalsToDisplay.length
           ) {
             const row = this.createListItem();
-            row.html(`<div class='no-results'>${this.noResultsMessage}</div>`);
+            const message = this.searchTerm
+              ? `No matching ${MetacatUI.appModel.get("portalTermPlural")}.`
+              : this.noResultsMessage;
+            row.html(`<div class='no-results'>${message}</div>`);
             listContainer.html(row);
 
             // Add a "Create" button to create a new portal
@@ -278,12 +320,12 @@ define([
 
           // Create a pager for this list if there are many portals
           if (this.$(".portals-list-entry").length > this.numPortalsPerPage) {
-            const pager = new PagerView({
+            this.pagerView = new PagerView({
               pages: this.$(".portals-list-entry"),
               itemsPerPage: this.numPortalsPerPage,
             });
 
-            this.$el.append(pager.render().el);
+            this.$el.append(this.pagerView.render().el);
           }
         } catch (e) {
           // eslint-disable-next-line no-console
@@ -455,6 +497,8 @@ define([
        * Renders a "Create" button for the user to create a new portal
        */
       renderCreateButton() {
+        // Portal limits depend on the unfiltered count, including while authorization loads.
+        if (this.searchTerm && this.unfilteredPortalCount === undefined) return;
         try {
           // If the authorization hasn't been checked yet
           if (
@@ -488,7 +532,7 @@ define([
             const reachedLimitWithoutBookkeeper =
               !MetacatUI.appModel.get("enableBookkeeperServices") &&
               MetacatUI.appModel.get("portalLimit") <=
-                this.searchResults.length &&
+                (this.unfilteredPortalCount ?? this.searchResults.length) &&
               MetacatUI.appModel.get("portalLimit") >= 0;
 
             // If creating portals is disabled in the entire app, or is only limited to certain groups,
@@ -570,6 +614,18 @@ define([
           // eslint-disable-next-line no-console
           console.error(e);
         }
+      },
+
+      /**
+       * Cancels the request and removes the pager and list.
+       * @returns {PortalListView} This view
+       * @since 0.0.0
+       */
+      remove() {
+        this.stopListening();
+        this.searchRequest?.abort();
+        this.pagerView?.remove();
+        return Backbone.View.prototype.remove.call(this);
       },
 
       /**

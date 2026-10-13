@@ -17,14 +17,57 @@ define([
    * @screenshot views/portals/PortalsSearchView.png
    */
 
+  // CSS class names used within the view
+  const CLASS_NAMES = {
+    searchForm: "portal-search",
+    inputGroup: "input-append",
+    searchInput: "input-large",
+    searchButton: "btn",
+    searchIcon: "icon icon-search icon-on-left",
+  };
+
+  // The ID used for the search input field
+  const SEARCH_ID = "portal-search-input";
+
   const PortalsSearchView = Backbone.View.extend(
     /** @lends PortalsSearchView.prototype */ {
+      /** @returns {string} The HTML template for the view. */
+      template() {
+        return `
+        <div id="portals-list-container">
+          <form class="${CLASS_NAMES.searchForm}">
+            <label for="${SEARCH_ID}">Search <%- portalTermPlural %></label>
+            <div class="${CLASS_NAMES.inputGroup}">
+              <input
+                id="${SEARCH_ID}"
+                type="search"
+                value="<%- searchTerm %>"
+                class="${CLASS_NAMES.searchInput}"
+              />
+              <button type="submit" class="${CLASS_NAMES.searchButton}"><i class="${CLASS_NAMES.searchIcon}"></i>Search</button>
+            </div>
+          </form>
+          <div id="portals-list-user"></div>
+          <div id="portals-list-all"></div>
+        </div>`.trim();
+      },
+
       /**
-       * The template for this view.
+       * The submitted term shared by both portal lists.
+       * @type {string}
+       * @since 0.0.0
        */
-      template: _.template(
-        '<div id="portals-list-container"><div id="portals-list-user"/> <div id="portals-list-all"/> </div>',
-      ),
+      searchTerm: "",
+
+      /** @inheritdoc */
+      events: {
+        [`submit .${CLASS_NAMES.searchForm}`]: "search",
+      },
+
+      /** @inheritdoc */
+      initialize() {
+        this.subviews = [];
+      },
 
       /**
        * Renders the list of portals
@@ -35,7 +78,15 @@ define([
           MetacatUI.appModel.set("headerType", "default");
 
           // Insert the template
-          this.$el.html(this.template());
+          this.stopListening();
+          this.subviews.forEach((view) => view.remove());
+          this.subviews = [];
+          this.$el.html(
+            this.template({
+              portalTermPlural: MetacatUI.appModel.get("portalTermPlural"),
+              searchTerm: this.searchTerm,
+            }),
+          );
 
           // Render the view after the user's authentication has been checked
           if (!MetacatUI.appUserModel.get("checked")) {
@@ -48,6 +99,8 @@ define([
           }
 
           const allPortalsView = new PortalListView();
+          allPortalsView.filters = new Filters();
+          allPortalsView.searchTerm = this.searchTerm;
 
           // Create titles for the My Portals and All Portals sections
           const title = $(document.createElement("h4")).addClass(
@@ -67,6 +120,23 @@ define([
             myPortalsView.numPortals = 99999;
             myPortalsView.numPortalsPerPage = 5;
             myPortalsView.filters = filters;
+            this.subviews.push(myPortalsView);
+
+            // Let the initial owned count establish the creation limit before
+            // searching.
+            myPortalsView.initialSearchPending = true;
+            const initialSearchComplete = () => {
+              this.stopListening(
+                myPortalsView.searchResults,
+                "sync error",
+                initialSearchComplete,
+              );
+              myPortalsView.initialSearchPending = false;
+              if (myPortalsView.searchTerm !== this.searchTerm) {
+                myPortalsView.searchTerm = this.searchTerm;
+                myPortalsView.getSearchResults();
+              }
+            };
 
             // Create titles for the My Portals section
             const myPortalsTitle = title
@@ -79,6 +149,11 @@ define([
             );
 
             myPortalsView.render();
+            this.listenTo(
+              myPortalsView.searchResults,
+              "sync error",
+              initialSearchComplete,
+            );
 
             // Exclude portals the user is an owner of from the All portals list
             const allPortalsFilters = new Filters();
@@ -105,25 +180,68 @@ define([
             allPortalsView.el,
           );
 
+          this.subviews.push(allPortalsView);
           allPortalsView.render();
         } catch (e) {
-          console.error(e);
-          this.showError();
+          this.showError(e);
         }
       },
 
       /**
-       * Displays an error message when rendering this view has failed.
+       * Applies the submitted term to both portal lists.
+       * @param {Event} event The form submission
+       * @returns {void}
+       * @since 0.0.0
        */
-      showError() {
+      search(event) {
+        event.preventDefault();
+        this.searchTerm = this.$(`#${SEARCH_ID}`).val().trim();
+        this.subviews.forEach((view) => {
+          if (view.initialSearchPending) return;
+          Object.assign(view, { searchTerm: this.searchTerm });
+          view.getSearchResults();
+        });
+      },
+
+      /**
+       * Stops searches and listeners while retaining the shared content
+       * element.
+       * @returns {void}
+       * @since 0.0.0
+       */
+      onClose() {
+        this.undelegateEvents();
+        this.stopListening();
+        this.subviews.forEach((view) => view.remove());
+        this.subviews = [];
+      },
+
+      /**
+       * Closes the search views and removes this element.
+       * @returns {PortalsSearchView} This view
+       * @since 0.0.0
+       */
+      remove() {
+        this.onClose();
+        return Backbone.View.prototype.remove.call(this);
+      },
+
+      /**
+       * Displays an error message when rendering this view has failed.
+       * @param {Error} e The error that occurred while rendering the view.
+       */
+      showError(e) {
         // Remove the loading elements
         this.$(".loading").remove();
+
+        // See if the error has a message
+        const msg = e?.message || (e ? String(e) : "");
 
         // Show an error message
         MetacatUI.appView.showAlert(
           `Something went wrong while getting this list of ${MetacatUI.appModel.get(
             "portalTermPlural",
-          )}.`,
+          )}. ${msg}`,
           "alert-error",
           this.$el,
         );
