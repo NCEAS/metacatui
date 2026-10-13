@@ -4,20 +4,20 @@ define([
   "backbone",
   "collections/Filters",
   "views/portals/PortalListView",
-], function ($, _, Backbone, Filters, PortalListView) {
+], ($, _, Backbone, Filters, PortalListView) => {
   "use strict";
 
   /**
    * @class PortalsSearchView
    * @classdesc A view that shows a list of Portals in the main app window
    * @classcategory Views/Portals
-   * @extends Backbone.View
-   * @constructor
+   * @augments Backbone.View
+   * @class
    * @since 2.16.0
    * @screenshot views/portals/PortalsSearchView.png
    */
 
-  var PortalsSearchView = Backbone.View.extend(
+  const PortalsSearchView = Backbone.View.extend(
     /** @lends PortalsSearchView.prototype */ {
       /**
        * The template for this view.
@@ -29,15 +29,15 @@ define([
       /**
        * Renders the list of portals
        */
-      render: function () {
+      render() {
         try {
-          //Set the header type
+          // Set the header type
           MetacatUI.appModel.set("headerType", "default");
 
-          //Insert the template
+          // Insert the template
           this.$el.html(this.template());
 
-          //Render the view after the user's authentication has been checked
+          // Render the view after the user's authentication has been checked
           if (!MetacatUI.appUserModel.get("checked")) {
             this.listenToOnce(
               MetacatUI.appUserModel,
@@ -47,31 +47,31 @@ define([
             return;
           }
 
-          let allPortalsView = new PortalListView();
+          const allPortalsView = new PortalListView();
 
-          //Create titles for the My Portals and All Portals sections
-          var title = $(document.createElement("h4")).addClass(
-              "portals-list-title",
-            ),
-            allPortalsTitle = title
-              .clone()
-              .text("All " + MetacatUI.appModel.get("portalTermPlural"));
+          // Create titles for the My Portals and All Portals sections
+          const title = $(document.createElement("h4")).addClass(
+            "portals-list-title",
+          );
+          const allPortalsTitle = title
+            .clone()
+            .text(`All ${MetacatUI.appModel.get("portalTermPlural")}`);
 
           // Filter datasets that the user has ownership of
           if (MetacatUI.appUserModel.get("loggedIn")) {
-            let filters = new Filters();
+            const filters = new Filters();
             filters.addWritePermissionFilter();
 
-            //Render My Portals list
-            let myPortalsView = new PortalListView();
+            // Render My Portals list
+            const myPortalsView = new PortalListView();
             myPortalsView.numPortals = 99999;
             myPortalsView.numPortalsPerPage = 5;
             myPortalsView.filters = filters;
 
-            //Create titles for the My Portals section
-            var myPortalsTitle = title
+            // Create titles for the My Portals section
+            const myPortalsTitle = title
               .clone()
-              .text("My " + MetacatUI.appModel.get("portalTermPlural"));
+              .text(`My ${MetacatUI.appModel.get("portalTermPlural")}`);
 
             this.$("#portals-list-user").append(
               myPortalsTitle,
@@ -80,10 +80,10 @@ define([
 
             myPortalsView.render();
 
-            //Exclude portals the user is an owner of from the All portals list
-            let allPortalsFilters = new Filters();
+            // Exclude portals the user is an owner of from the All portals list
+            const allPortalsFilters = new Filters();
             allPortalsFilters.addWritePermissionFilter();
-            let permissionFilter = allPortalsFilters.at(
+            const permissionFilter = allPortalsFilters.at(
               allPortalsFilters.length - 1,
             );
             if (permissionFilter) {
@@ -92,14 +92,13 @@ define([
             }
           }
 
-          //Render All Portals
+          // Render All Portals
           allPortalsView.numPortals = 99999;
           allPortalsView.numPortalsPerPage = 10;
           allPortalsView.createBtnContainer = "#none";
-          allPortalsView.noResultsMessage =
-            "There are no " +
-            MetacatUI.appModel.get("portalTermPlural") +
-            " to show.";
+          allPortalsView.noResultsMessage = `There are no ${MetacatUI.appModel.get(
+            "portalTermPlural",
+          )} to show.`;
 
           this.$("#portals-list-all").append(
             allPortalsTitle,
@@ -116,15 +115,15 @@ define([
       /**
        * Displays an error message when rendering this view has failed.
        */
-      showError: function () {
-        //Remove the loading elements
+      showError() {
+        // Remove the loading elements
         this.$(".loading").remove();
 
-        //Show an error message
+        // Show an error message
         MetacatUI.appView.showAlert(
-          "Something went wrong while getting this list of " +
-            MetacatUI.appModel.get("portalTermPlural") +
-            ".",
+          `Something went wrong while getting this list of ${MetacatUI.appModel.get(
+            "portalTermPlural",
+          )}.`,
           "alert-error",
           this.$el,
         );
