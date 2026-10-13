@@ -56,7 +56,6 @@ define([
       return `alert-${type}`;
     },
     container: "container",
-    limitedMetadata: "limited-metadata",
     messageContainer: `${BASE_CLASS}__message`,
     metadataContainer: `${BASE_CLASS}__metadata`,
     gutters: "gutters",
@@ -73,7 +72,6 @@ define([
          accessibility may vary. It may provide additional context about the
          history and evolution of the dataset.
         `,
-    limitedMetadata: "There is limited metadata about this dataset.",
     loadingDatasetDetails: "Loading dataset details...",
     missingIdentifier: "No details to display. Identifier is missing.",
     viewServiceEmpty: "View service returned empty content.",
@@ -207,25 +205,15 @@ define([
         this.showMessage(MESSAGES.loadingDatasetDetails);
 
         let metadataViewDoc;
-        let usedIndexFallback = false;
         try {
           metadataViewDoc = await this.renderMetadataFromViewService();
           if (this.signal?.aborted) return this;
         } catch (error) {
           if (ErrorUtilities.isAbortError(error)) return this;
-          usedIndexFallback = true;
           metadataViewDoc = await this.renderMetadataFromIndex();
           if (this.signal?.aborted) return this;
         }
         this.renderMetadataDocument(metadataViewDoc);
-        if (usedIndexFallback) {
-          const messageContainer = this.showMessage(MESSAGES.limitedMetadata, {
-            type: "info",
-          });
-          messageContainer
-            .querySelector(".alert")
-            .classList.add(CLASS_NAMES.limitedMetadata);
-        }
 
         // Modify the markup:
         this.initializeAttributeListTables();

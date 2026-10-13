@@ -437,36 +437,6 @@ define([
         );
       });
 
-      it("keeps the limited metadata warning after index fallback renders", async () => {
-        const view = new MetadataDocumentView({
-          el: document.createElement("div"),
-          pid: "metadata.1",
-        });
-        view.dataPackage = {
-          addViewServiceEntities: sandbox.stub(),
-          getData: () => [],
-        };
-        sandbox
-          .stub(view.viewService, "download")
-          .rejects(new Error("offline"));
-        sandbox.stub(QueryService, "queryWithFetch").resolves({});
-        sandbox.stub(QueryService, "parseResponse").returns([]);
-        sandbox.stub(view, "initializeAttributeListTables");
-        sandbox.stub(view, "renderAltIdentifierHelpText");
-        sandbox.stub(view, "insertDataDetails");
-        sandbox.stub(view, "checkForProv");
-        sandbox.stub(view, "insertSpatialCoverageMap");
-        sandbox.stub(view, "insertCopiables");
-        sandbox.stub(view, "createAnnotationViews");
-        sandbox.stub(view, "insertMarkdownViews");
-
-        await view.render();
-
-        expect(view.messageContainer.textContent).to.contain(
-          "There is limited metadata about this dataset.",
-        );
-      });
-
       it("uses View Service metadata when rendering succeeds", async () => {
         const view = new MetadataDocumentView({
           el: document.createElement("div"),
