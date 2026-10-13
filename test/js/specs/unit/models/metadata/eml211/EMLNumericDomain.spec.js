@@ -39,6 +39,71 @@ define([
       });
     });
 
+    describe(".updateDOM() after changing the scale", function () {
+      for (const scale of ["ratio", "interval"]) {
+        it(`preserves a parsed bare ${scale} element`, function () {
+          const model = new EMLNumericDomain(
+            {
+              objectXML: scale === "ratio" ? ratioDomainXML : intervalDomainXML,
+            },
+            { parse: true },
+          );
+
+          expect(model.updateDOM().localName).to.equal(scale);
+        });
+      }
+
+      it("keeps the allowed value ranges unchanged when empty bounds are skipped", function () {
+        const model = new EMLNumericDomain(
+          {
+            objectXML: `<measurementScale><ratio><unit><standardUnit>meter</standardUnit></unit>
+            <numericDomain><numberType>real</numberType>
+              <bounds></bounds>
+              <bounds><minimum exclusive="true">0</minimum><maximum exclusive="false">100</maximum></bounds>
+              <bounds><minimum exclusive="false">200</minimum></bounds>
+              <bounds></bounds>
+              <bounds><maximum exclusive="true">300</maximum></bounds>
+            </numericDomain></ratio></measurementScale>`,
+          },
+          { parse: true },
+        );
+        model.set("measurementScale", "interval");
+
+        const bounds = Array.from(model.updateDOM().querySelectorAll("bounds"));
+        expect(bounds.map((bound) => bound.outerHTML)).to.deep.equal([
+          '<bounds><minimum exclusive="true">0</minimum><maximum exclusive="false">100</maximum></bounds>',
+          '<bounds><minimum exclusive="false">200</minimum></bounds>',
+          '<bounds><maximum exclusive="true">300</maximum></bounds>',
+        ]);
+      });
+
+      for (const [from, to] of [
+        ["ratio", "interval"],
+        ["interval", "ratio"],
+      ]) {
+        it(`serializes a parsed ${from} domain as ${to}`, function () {
+          const model = new EMLNumericDomain(
+            {
+              objectXML: `<measurementScale><${from}><unit><standardUnit>celsius</standardUnit></unit><precision>0.1</precision><numericDomain><numberType>real</numberType><bounds><minimum exclusive="true">-40</minimum></bounds></numericDomain></${from}></measurementScale>`,
+            },
+            { parse: true },
+          );
+          model.set("measurementScale", to);
+
+          const xml = model.updateDOM();
+
+          expect(xml.localName).to.equal(to);
+          expect(xml.querySelector("standardUnit").textContent).to.equal(
+            "celsius",
+          );
+          expect(xml.querySelector("precision").textContent).to.equal("0.1");
+          expect(
+            xml.querySelector("minimum").getAttribute("exclusive"),
+          ).to.equal("true");
+        });
+      }
+    });
+
     describe("For an interval scale, .parse()", function () {
       it("should return an attributes object", function () {
         intervalDomainAttrs.should.be.an("object");
