@@ -1,10 +1,7 @@
-define([
-  "jquery",
-  "underscore",
-  "backbone",
-  "text!templates/portals/portalVisualizations.html",
-  "views/portals/PortalSectionView",
-], function ($, _, Backbone, PortalVisualizationsTemplate, PortalSectionView) {
+define(["jquery", "views/portals/PortalSectionView"], (
+  $,
+  PortalSectionView,
+) => {
   /**
    * @class PortalVisualizationsView
    * @classdesc The PortalVisualizationsView is a view to render the
@@ -32,31 +29,21 @@ define([
        */
       model: null,
 
+      /**
+       * The portal containing this visualization
+       * @type {Portal}
+       */
+      portalModel: null,
+
       /* The list of subview instances contained in this view*/
       subviews: [], // Could be a literal object {}
-
-      /**
-       * Renders the compiled template into HTML
-       * @type {Underscore.Template}
-       */
-      template: _.template(PortalVisualizationsTemplate),
 
       /**
        * Construct a new instance of PortalVisualizationsView
        * @param {Object} options - A literal object with options to pass to the view
        */
       initialize: function (options) {
-        // Get all the options and apply them to this view
-        if (typeof options == "object") {
-          var optionKeys = Object.keys(options);
-          _.each(
-            optionKeys,
-            function (key, i) {
-              this[key] = options[key];
-            },
-            this,
-          );
-        }
+        PortalSectionView.prototype.initialize.call(this, options);
         this.adjustVizHeight = this.adjustVizHeight.bind(this);
       },
 
@@ -105,7 +92,8 @@ define([
           return;
         }
 
-        let thisView = this;
+        this.$el.addClass("portal-map-section-view");
+        const thisView = this;
 
         //Create a MapView and render it in this view
         require(["views/maps/MapView", "models/maps/Map"], function (
@@ -117,7 +105,7 @@ define([
             mapModel = new Map();
             thisView.model.set("mapModel", mapModel);
           }
-          let mapView = new MapView({
+          const mapView = new MapView({
             model: mapModel,
             isPortalMap: true,
           });
@@ -129,33 +117,31 @@ define([
       /**
        * Function called by the PortalView when the section that contains this
        * visualization becomes active (e.g. the user clicks on the section tab). Render
-       * the visualization and, if this is a fever viz, adjust the height.
+       * the visualization and size it to the available viewport height.
        */
       postRender: function () {
         try {
+          const vizType = this.model.get("visualizationType");
+          if (vizType !== "fever" && vizType !== "cesium") return;
+
           if (!this.hasRendered) {
-            if (this.model.get("visualizationType") == "fever") {
+            if (vizType === "fever") {
               this.renderFEVer();
-              this.hasRendered = true;
-            } else if (this.model.get("visualizationType") == "cesium") {
+            } else {
               this.renderMap();
-              this.hasRendered = true;
             }
+            this.hasRendered = true;
           }
 
-          if (this.model.get("visualizationType") == "cesium") {
-            document.body.style.setProperty("height", "100%");
-          } else {
-            document.body.style.removeProperty("height");
-          }
-
-          if (this.model.get("visualizationType") == "fever") {
+          if (!this.resizeObserver) {
             $(window).on("resize", this.adjustVizHeight);
-            $(".auto-height-member").on("resize", this.adjustVizHeight);
-
-            //Get the height of the visible part of the page for the iframe
-            this.adjustVizHeight();
+            this.resizeObserver = new ResizeObserver(this.adjustVizHeight);
+            $(".auto-height-member:not(#Footer)").each((i, el) => {
+              this.resizeObserver.observe(el);
+            });
           }
+
+          this.adjustVizHeight();
         } catch (error) {
           console.log(
             "Failed to render the visualization in the PortalVisualizationsView " +
@@ -165,9 +151,24 @@ define([
         }
       },
 
+      /** Adjusts height of the viz based on the available viewport height */
       adjustVizHeight: function () {
-        // Get the heights of the header, navbar, and footer
-        var otherHeight = 0;
+        if (this.model.get("visualizationType") === "cesium") {
+          if (this.portalModel.get("layout") === "panels") {
+            this.$el.css("min-height", "");
+            return;
+          }
+
+          const tabs = this.$el.parent().siblings(".section-links-container");
+          let height = $(window).outerHeight(true) - this.$el.offset().top;
+          height -=
+            tabs.css("position") === "fixed" ? tabs.outerHeight(true) : 0;
+          this.$el.css("min-height", Math.max(0, height));
+          return;
+        }
+
+        // Get the heights above the visualization, excluding the footer
+        let otherHeight = 0;
         $(".auto-height-member").each(function (i, el) {
           if ($(el).css("display") != "none" && !$(el).is("#Footer")) {
             otherHeight += $(el).outerHeight(true);
@@ -175,7 +176,7 @@ define([
         });
 
         // Get the remaining height left based on the window size
-        var remainingHeight = $(window).outerHeight(true) - otherHeight;
+        let remainingHeight = $(window).outerHeight(true) - otherHeight;
         if (remainingHeight < 0) {
           remainingHeight = $(window).outerHeight(true) || 600;
         } else if (remainingHeight <= 120) {
@@ -190,11 +191,8 @@ define([
        * Clean up
        */
       onClose: function () {
-        // Remove body height style tag
-        document.body.style.removeProperty("height");
-
         $(window).off("resize", this.adjustVizHeight);
-        $(".auto-height-member").off("resize", this.adjustVizHeight);
+        this.resizeObserver?.disconnect();
       },
     },
   );
