@@ -97,6 +97,31 @@ define([
         expect(m.validateTimeFormat("24:30:00-09:00")).to.be.a("string");
       });
 
+      it("should require zero fractional seconds when the hour is 24", function () {
+        var m = new EMLTemporalCoverage();
+        expect(m.validateTimeFormat("24:00:00.1")).to.be.a("string");
+        expect(m.validateTimeFormat("24:00:00.000Z")).to.equal(true);
+      });
+
+      it("should order times on the same day by their UTC time", function () {
+        var range = function (beginTime, endTime) {
+          var m = new EMLTemporalCoverage();
+          m.set({
+            beginDate: "2020-01-01",
+            endDate: "2020-01-01",
+            beginTime: beginTime,
+            endTime: endTime,
+          });
+          return m.isValid();
+        };
+        expect(range("11:50:00+02:00", "11:00:00+01:00")).to.equal(true);
+        expect(range("11:00:00+01:00", "11:50:00+02:00")).to.equal(false);
+        expect(range("11:50:00.1Z", "11:50:00.12Z")).to.equal(true);
+        expect(range("11:50:00.12Z", "11:50:00.1Z")).to.equal(false);
+        expect(range("11:00:00", "12:00:00")).to.equal(true);
+        expect(range("12:00:00", "11:00:00")).to.equal(false);
+      });
+
       it("should be valid when a parsed time has a time zone designator", function () {
         var m = new EMLTemporalCoverage({
           objectDOM: $(

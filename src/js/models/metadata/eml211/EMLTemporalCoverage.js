@@ -328,9 +328,9 @@ define([
           )
             return false;
 
-          dateYear = dateParts[0];
-          dateMonth = dateParts[1];
-          dateDay = dateParts[2];
+          const dateYear = dateParts[0];
+          const dateMonth = dateParts[1];
+          const dateDay = dateParts[2];
 
           // Validating the values for the date and month if in YYYY-MM-DD format.
           if (dateMonth < 1 || dateMonth > 12) return false;
@@ -361,10 +361,11 @@ define([
       validateTimeFormat(time) {
         // xs:time allows fractional seconds and a time zone designator
         // (Z, +hh:mm or -hh:mm), so remove them before checking HH:MM:SS
-        const timeString = time.replace(
+        const suffix = time.match(
           /(\.\d+)?(Z|[+-](?:(?:0\d|1[0-3]):[0-5]\d|14:00))?$/,
-          "",
         );
+        const timeString = time.slice(0, suffix.index);
+        const fraction = suffix[1] || "";
 
         if (timeString.length === 8) {
           const timeParts = timeString.split(":");
@@ -386,7 +387,9 @@ define([
           if (
             validTimePattern &&
             timeParts[0] == "24" &&
-            (timeParts[1] != "00" || timeParts[2] != "00")
+            (timeParts[1] != "00" ||
+              timeParts[2] != "00" ||
+              /[1-9]/.test(fraction))
           ) {
             return "The midnight hour starts at 00:00:00 and ends at 00:59:59.";
           } else if (!validTimePattern && parseInt(timeParts[0]) > "24") {
@@ -420,8 +423,8 @@ define([
 
         //Checking equality for either dateStrings that are greater than 4 characters
         else {
-          beginDateParts = beginDate.split("-");
-          endDateParts = endDate.split("-");
+          const beginDateParts = beginDate.split("-");
+          const endDateParts = endDate.split("-");
 
           if (beginDateParts.length == endDateParts.length) {
             if (beginDateParts[0] > endDateParts[0]) {
@@ -445,6 +448,35 @@ define([
       },
 
       /**
+       * Parses an HH:MM:SS time with optional fractional seconds and time zone
+       * designator.
+       * @param {string} time the time string
+       * @returns {{seconds: number, offset: number|null}|null} seconds since
+       * midnight and the time zone offset in seconds (null if there is none),
+       * or null if the time can't be parsed
+       */
+      parseTime(time) {
+        const match = time.match(
+          /^(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)(Z|([+-])(\d{2}):(\d{2}))?$/,
+        );
+        if (!match) return null;
+
+        const [, hours, minutes, seconds, zone, sign, offHours, offMinutes] =
+          match;
+        let offset = null;
+        if (zone === "Z") offset = 0;
+        else if (zone) {
+          offset =
+            (sign === "-" ? -1 : 1) * (offHours * 3600 + offMinutes * 60);
+        }
+
+        return {
+          seconds: hours * 3600 + minutes * 60 + parseFloat(seconds),
+          offset,
+        };
+      },
+
+      /**
        * This function checks whether the begin time is greater than the end time.
        *
        * @param {string} beginDate the begin date string
@@ -464,8 +496,8 @@ define([
             equalDates = true;
           }
         } else {
-          beginDateParts = beginDate.split("-");
-          endDateParts = endDate.split("-");
+          const beginDateParts = beginDate.split("-");
+          const endDateParts = endDate.split("-");
 
           if (beginDateParts.length == endDateParts.length) {
             if (beginDateParts[0] == endDateParts[0]) {
@@ -480,8 +512,18 @@ define([
 
         // If the dates are equal, check for validity of time frame.
         if (equalDates) {
-          beginTimeParts = beginTime.split(":");
-          endTimeParts = endTime.split(":");
+          const begin = this.parseTime(beginTime);
+          const end = this.parseTime(endTime);
+          if (begin && end) {
+            // Only shift to UTC when both times have a time zone designator
+            if (begin.offset !== null && end.offset !== null) {
+              return begin.seconds - begin.offset > end.seconds - end.offset;
+            }
+            return begin.seconds > end.seconds;
+          }
+
+          const beginTimeParts = beginTime.split(":");
+          const endTimeParts = endTime.split(":");
           if (beginTimeParts[0] > endTimeParts[0]) {
             return true;
           } else if (beginTimeParts[0] == endTimeParts[0]) {
