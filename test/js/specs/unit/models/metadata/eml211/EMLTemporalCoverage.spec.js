@@ -69,5 +69,69 @@ define([
         expect(m.isValid()).to.equal(false);
       });
     });
+
+    describe("validating times", function () {
+      it("should accept times with a time zone designator", function () {
+        var m = new EMLTemporalCoverage();
+        expect(m.validateTimeFormat("11:50:00-09:00")).to.equal(true);
+        expect(m.validateTimeFormat("14:06:09+08:00")).to.equal(true);
+        expect(m.validateTimeFormat("08:31:22Z")).to.equal(true);
+        expect(m.validateTimeFormat("11:50:00+14:00")).to.equal(true);
+        expect(m.validateTimeFormat("24:00:00-09:00")).to.equal(true);
+      });
+
+      it("should accept times with fractional seconds", function () {
+        var m = new EMLTemporalCoverage();
+        expect(m.validateTimeFormat("11:50:00.5")).to.equal(true);
+        expect(m.validateTimeFormat("11:50:00.123Z")).to.equal(true);
+        expect(m.validateTimeFormat("11:50:00.5-09:00")).to.equal(true);
+      });
+
+      it("should reject malformed time zone designators", function () {
+        var m = new EMLTemporalCoverage();
+        expect(m.validateTimeFormat("11:50:00-9:00")).to.be.a("string");
+        expect(m.validateTimeFormat("11:50:00-09")).to.be.a("string");
+        expect(m.validateTimeFormat("11:50:00-15:00")).to.be.a("string");
+        expect(m.validateTimeFormat("11:50:00x09:00")).to.be.a("string");
+        expect(m.validateTimeFormat("11:50:00.Z")).to.be.a("string");
+        expect(m.validateTimeFormat("24:30:00-09:00")).to.be.a("string");
+      });
+
+      it("should require zero fractional seconds when the hour is 24", function () {
+        var m = new EMLTemporalCoverage();
+        expect(m.validateTimeFormat("24:00:00.1")).to.be.a("string");
+        expect(m.validateTimeFormat("24:00:00.000Z")).to.equal(true);
+      });
+
+      it("should order times on the same day by their UTC time", function () {
+        var range = function (beginTime, endTime) {
+          var m = new EMLTemporalCoverage();
+          m.set({
+            beginDate: "2020-01-01",
+            endDate: "2020-01-01",
+            beginTime: beginTime,
+            endTime: endTime,
+          });
+          return m.isValid();
+        };
+        expect(range("11:50:00+02:00", "11:00:00+01:00")).to.equal(true);
+        expect(range("11:00:00+01:00", "11:50:00+02:00")).to.equal(false);
+        expect(range("11:50:00.1Z", "11:50:00.12Z")).to.equal(true);
+        expect(range("11:50:00.12Z", "11:50:00.1Z")).to.equal(false);
+        expect(range("11:00:00", "12:00:00")).to.equal(true);
+        expect(range("12:00:00", "11:00:00")).to.equal(false);
+      });
+
+      it("should be valid when a parsed time has a time zone designator", function () {
+        var m = new EMLTemporalCoverage({
+          objectDOM: $(
+            "<temporalcoverage><singledatetime><calendardate>2020</calendardate><time>11:50:00-09:00</time></singledatetime></temporalcoverage>",
+          ).get(0),
+        });
+
+        expect(m.get("beginTime")).to.equal("11:50:00-09:00");
+        expect(m.isValid()).to.equal(true);
+      });
+    });
   });
 });
