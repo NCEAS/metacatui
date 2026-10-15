@@ -1,18 +1,16 @@
 <article class="editor-view portal-editor">
   <header id="editor-header">
-    <div class="logo-editor-container" data-category="logo">
-      <h5>Logo
-        <i class="required-icon hidden" data-category="logo"></i>
-      </h5>
+    <div class="logo-editor-container" data-category="logo" role="group" aria-label="Logo">
+      <i class="required-icon hidden" data-category="logo"></i>
       <span class="notification" data-category="logo"></span>
     </div>
     <div class="title-container">
-      <h5>
+      <label for="portal-title">
         Title
         <i class="required-icon hidden" data-category="name"></i>
         <span class="notification" data-category="name"></span>
-      </h5>
-      <textarea type="text" data-category="name" class="basic-text portal-title auto-resize" placeholder="Choose a <%=MetacatUI.appModel.get('portalTermSingular')%> title"><%=name%></textarea>
+      </label>
+      <textarea id="portal-title" type="text" data-category="name" class="basic-text portal-title auto-resize" placeholder="Choose a <%=MetacatUI.appModel.get('portalTermSingular')%> title"><%=name%></textarea>
     </div>
     <!-- <div class="editor-controls"> -->
       <!-- Uncomment out this access-policy-control-container element to show the AccessPolicyView as a modal window
