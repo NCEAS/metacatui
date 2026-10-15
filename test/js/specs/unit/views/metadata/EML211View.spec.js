@@ -18,6 +18,27 @@ define(["backbone", "views/metadata/EML211View"], function (
       view.remove();
     });
 
+    it("shows and clears publication date errors, allowing an empty date", function () {
+      view.setElement(document.createElement("div"));
+      view.$el.html(
+        '<div class="pubDate"><input><span class="notification"></span></div>',
+      );
+      const input = view.$("input");
+      const message = view.$(".notification");
+
+      ["2024", ""].forEach((date) => {
+        input.val("2023-02-29");
+        view.showPubDateValidation({ target: input[0] });
+        chai.expect(input.hasClass("error")).to.equal(true);
+        chai.expect(message.text()).to.contain("not a valid value");
+
+        input.val(date);
+        view.showPubDateValidation({ target: input[0] });
+        chai.expect(input.hasClass("error"), date).to.equal(false);
+        chai.expect(message.text(), date).to.equal("");
+      });
+    });
+
     describe("data package events", function () {
       it("refreshes an entity descriptor when the new package changes", function () {
         const events = { ...Backbone.Events };
