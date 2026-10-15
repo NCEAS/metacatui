@@ -383,6 +383,7 @@ define([
           label: "Your Polygon",
           description: "The polygon that you are drawing on the map",
           hideInLayerList: true,
+          hideInLegend: true,
           excludeFromLoadingState: true,
           renderAboveOtherLayers: true,
           outlineColor: this.color,
@@ -434,6 +435,7 @@ define([
        */
       clearPoints() {
         this.points?.reset(null);
+        this.layer.set("hideInLegend", true);
       },
 
       /**
@@ -732,6 +734,7 @@ define([
 
         handler.listenTo(interactions, "change:previousAction", () => {
           if (interactions.get("previousAction") === "LEFT_DOUBLE_CLICK") {
+            view.layer.set("hideInLegend", view.points.length < 3);
             view.generatePreviewPanel();
           }
         });
