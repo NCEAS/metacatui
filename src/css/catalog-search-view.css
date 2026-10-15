@@ -104,6 +104,12 @@
     "results results";
 }
 
+.catalog__results .popover,
+.catalog__results .tooltip {
+  /* Escape the results panel's scroll clipping. */
+  position: fixed;
+}
+
 .catalog__summary {
   grid-area: summary;
   margin-left: var(--cs-padding-medium);
