@@ -75,6 +75,26 @@ define([
         expect(state.harness.getContent().children()).to.have.lengthOf(2);
       });
 
+      it("updates legend content when hideInLegend changes", () => {
+        state.view.render();
+        const layer = state.view.model.addAsset({
+          label: "layer 1",
+          visible: true,
+          hideInLegend: true,
+          colorPalette: { colors: COLORS_CONFIG },
+        });
+
+        // state.harness.getContent().children() is the list of legend items
+        // currently rendered
+        expect(state.harness.getContent().children()).to.have.lengthOf(0);
+
+        layer.set("hideInLegend", false);
+        expect(state.harness.getContent().children()).to.have.lengthOf(1);
+
+        layer.set("hideInLegend", true);
+        expect(state.harness.getContent().children()).to.have.lengthOf(0);
+      });
+
       it("ignores layers without a colorPalette", () => {
         const layers = new MapAssets([{ label: "layer 1", visible: false }]);
         state.view.model.set("layers", layers);
