@@ -5,6 +5,14 @@ define([
   "models/DataONEObject",
   "common/EMLUtilities",
 ], ($, _, Backbone, DataONEObject, EMLUtilities) => {
+  const MESSAGES = {
+    BEGIN_DATE_TIME_AFTER_END:
+      "The begin date and time must be before the end date and time.",
+    BEGIN_TIME_AFTER_END: "The begin time must be before the end time.",
+    INVALID_TIME_FORMAT:
+      "Enter a time like 12:44:55 or 12:44:55.34. You can add Z for UTC or a time zone offset, such as +02:00 or -08:00.",
+  };
+
   /**
    * @class EMLTemporalCoverage
    * @classcategory Models/Metadata/EML211
@@ -210,7 +218,8 @@ define([
       },
 
       serializeTime: function (time) {
-        return $(document.createElement("time")).html(time);
+        // Save the trimmed time accepted by parseTime, without its whitespace.
+        return $(document.createElement("time")).html(time.trim());
       },
 
       trickleUpChange() {
@@ -263,13 +272,13 @@ define([
         }
 
         //Check the validity of the date format
-        if (beginDate && !this.isDateFormatValid(beginDate)) {
+        if (beginDate && !EMLUtilities.isDateFormatValid(beginDate)) {
           errors.beginDate =
             "The begin date must be formatted as YYYY-MM-DD or YYYY.";
         }
 
         //Check the validity of the date format
-        if (endDate && !this.isDateFormatValid(endDate)) {
+        if (endDate && !EMLUtilities.isDateFormatValid(endDate)) {
           errors.endDate =
             "The end date must be formatted as YYYY-MM-DD or YYYY.";
         }
@@ -298,108 +307,53 @@ define([
             errors.endTime = timeErrorMessage;
         }
 
-        // Check if begin date greater than end date for the temporalCoverage
-        if (this.isGreaterDate(beginDate, endDate))
+        if (Object.keys(errors).length) return errors;
+
+        const begin = beginTime ? EMLUtilities.parseTime(beginTime) : null;
+        const end = endTime ? EMLUtilities.parseTime(endTime) : null;
+
+        // A UTC comparison needs full calendar dates and both time zone offsets.
+        // Dates with only a year and missing offsets do not identify exact instants.
+        const compareFullDateTimes =
+          beginDate.length === 10 &&
+          endDate?.length === 10 &&
+          begin &&
+          end &&
+          begin.offset !== null &&
+          end.offset !== null;
+        // Include the days between the dates before comparing the clock times.
+        // Offsets can reverse the order suggested by the calendar dates alone.
+        const dateDifferenceSeconds = compareFullDateTimes
+          ? (Date.parse(beginDate) - Date.parse(endDate)) / 1000
+          : 0;
+
+        if (!compareFullDateTimes && this.isGreaterDate(beginDate, endDate))
           errors.beginDate = "The begin date must be before the end date.";
 
-        // Check if begin time greater than end time for the temporalCoverage in case of equal dates.
-        if (this.isGreaterTime(beginDate, endDate, beginTime, endTime))
-          errors.beginTime = "The begin time must be before the end time.";
+        if (
+          begin &&
+          end &&
+          (compareFullDateTimes || beginDate === endDate) &&
+          this.isGreaterTime(begin, end, dateDifferenceSeconds)
+        ) {
+          errors.beginTime = compareFullDateTimes
+            ? MESSAGES.BEGIN_DATE_TIME_AFTER_END
+            : MESSAGES.BEGIN_TIME_AFTER_END;
+        }
 
         if (Object.keys(errors).length) return errors;
-        else return;
       },
 
-      isDateFormatValid: function (dateString) {
-        //Date strings that are four characters should be a full year. Make sure all characters are numbers
-        if (dateString.length == 4) {
-          var digits = dateString.match(/[0-9]/g);
-          return digits.length == 4;
-        }
-        //Date strings that are 10 characters long should be a valid date
-        else {
-          var dateParts = dateString.split("-");
-
-          if (
-            dateParts.length != 3 ||
-            dateParts[0].length != 4 ||
-            dateParts[1].length != 2 ||
-            dateParts[2].length != 2
-          )
-            return false;
-
-          const dateYear = dateParts[0];
-          const dateMonth = dateParts[1];
-          const dateDay = dateParts[2];
-
-          // Validating the values for the date and month if in YYYY-MM-DD format.
-          if (dateMonth < 1 || dateMonth > 12) return false;
-          else if (dateDay < 1 || dateDay > 31) return false;
-          else if (
-            (dateMonth == 4 ||
-              dateMonth == 6 ||
-              dateMonth == 9 ||
-              dateMonth == 11) &&
-            dateDay == 31
-          )
-            return false;
-          else if (dateMonth == 2) {
-            // Validation for leap year dates.
-            var isleap =
-              dateYear % 4 == 0 && (dateYear % 100 != 0 || dateYear % 400 == 0);
-            if (dateDay > 29 || (dateDay == 29 && !isleap)) return false;
-          }
-
-          var digits = _.filter(dateParts, function (part) {
-            return part.match(/[0-9]/g).length == part.length;
-          });
-
-          return digits.length == 3;
-        }
-      },
-
+      /**
+       * Check an EML time and return a message the editor can display.
+       * @param {string} time Time text to check
+       * @returns {boolean|string} True for a valid xs:time value, or an error
+       * message
+       */
       validateTimeFormat(time) {
-        // xs:time allows fractional seconds and a time zone designator
-        // (Z, +hh:mm or -hh:mm), so remove them before checking HH:MM:SS
-        const suffix = time.match(
-          /(\.\d+)?(Z|[+-](?:(?:0\d|1[0-3]):[0-5]\d|14:00))?$/,
-        );
-        const timeString = time.slice(0, suffix.index);
-        const fraction = suffix[1] || "";
-
-        if (timeString.length === 8) {
-          const timeParts = timeString.split(":");
-
-          if (timeParts.length !== 3) {
-            return "Time must be formatted as HH:MM:SS";
-          }
-
-          // Validation pattern for HH:MM:SS values.
-          // Range for HH validation : 00-24
-          // Range for MM validation : 00-59
-          // Range for SS validation : 00-59
-          // Leading 0's are must in case of single digit values.
-          var timePattern = /^(?:2[0-4]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/,
-            validTimePattern = timeString.match(timePattern);
-
-          //If the hour is 24, only accept 00:00 for MM:SS. Any minutes or seconds in the midnight hour should be
-          //formatted as 00:XX:XX not 24:XX:XX
-          if (
-            validTimePattern &&
-            timeParts[0] == "24" &&
-            (timeParts[1] != "00" ||
-              timeParts[2] != "00" ||
-              /[1-9]/.test(fraction))
-          ) {
-            return "The midnight hour starts at 00:00:00 and ends at 00:59:59.";
-          } else if (!validTimePattern && parseInt(timeParts[0]) > "24") {
-            return "Time of the day starts at 00:00 and ends at 23:59.";
-          } else if (!validTimePattern && parseInt(timeParts[1]) > "59") {
-            return "Minutes should be between 00 and 59.";
-          } else if (!validTimePattern && parseInt(timeParts[2]) > "59") {
-            return "Seconds should be between 00 and 59.";
-          } else return true;
-        } else return "Time must be formatted as HH:MM:SS";
+        return EMLUtilities.parseTime(time)
+          ? true
+          : MESSAGES.INVALID_TIME_FORMAT;
       },
 
       /**
@@ -448,95 +402,33 @@ define([
       },
 
       /**
-       * Parses an HH:MM:SS time with optional fractional seconds and time zone
-       * designator.
-       * @param {string} time the time string
-       * @returns {{seconds: number, offset: number|null}|null} seconds since
-       * midnight and the time zone offset in seconds (null if there is none),
-       * or null if the time can't be parsed
+       * Check whether the begin time is later than the end time.
+       * @param {object} begin Begin time returned by EMLUtilities.parseTime
+       * @param {object} end End time returned by EMLUtilities.parseTime
+       * @param {number} dateDifferenceSeconds Begin date minus end date, in
+       * seconds. Use 0 when comparing clock times without a date difference
+       * @returns {boolean} True if the begin time is later; equal times return
+       * false
        */
-      parseTime(time) {
-        const match = time.match(
-          /^(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)(Z|([+-])(\d{2}):(\d{2}))?$/,
+      isGreaterTime(begin, end, dateDifferenceSeconds) {
+        let beginSeconds = dateDifferenceSeconds + begin.seconds;
+        let endSeconds = end.seconds;
+
+        // Without both offsets, UTC order is unknown. Compare the written clock
+        // times without assigning a time zone to either value.
+        if (begin.offset !== null && end.offset !== null) {
+          beginSeconds -= begin.offset;
+          endSeconds -= end.offset;
+        }
+        // Adding fractions during date and offset arithmetic can round equal
+        // instants differently. Compare whole seconds first, then fractional
+        // digits; right-padding makes .1 and .10 compare as equal.
+        return (
+          beginSeconds > endSeconds ||
+          (beginSeconds === endSeconds &&
+            begin.fraction.padEnd(end.fraction.length, "0") >
+              end.fraction.padEnd(begin.fraction.length, "0"))
         );
-        if (!match) return null;
-
-        const [, hours, minutes, seconds, zone, sign, offHours, offMinutes] =
-          match;
-        let offset = null;
-        if (zone === "Z") offset = 0;
-        else if (zone) {
-          offset =
-            (sign === "-" ? -1 : 1) * (offHours * 3600 + offMinutes * 60);
-        }
-
-        return {
-          seconds: hours * 3600 + minutes * 60 + parseFloat(seconds),
-          offset,
-        };
-      },
-
-      /**
-       * This function checks whether the begin time is greater than the end time.
-       *
-       * @param {string} beginDate the begin date string
-       * @param {string} endDate the end date string
-       * @param {string} beginTime the begin time string
-       * @param {string} endTime the end time string
-       * @return {boolean}
-       */
-      isGreaterTime: function (beginDate, endDate, beginTime, endTime) {
-        if (!beginTime || !endTime) return false;
-
-        var equalDates = false;
-
-        //Making sure that beginDate year is smaller than endDate year
-        if (beginDate.length == 4 && endDate.length == 4) {
-          if (beginDate == endDate) {
-            equalDates = true;
-          }
-        } else {
-          const beginDateParts = beginDate.split("-");
-          const endDateParts = endDate.split("-");
-
-          if (beginDateParts.length == endDateParts.length) {
-            if (beginDateParts[0] == endDateParts[0]) {
-              if (beginDateParts[1] == endDateParts[1]) {
-                if (beginDateParts[2] == endDateParts[2]) {
-                  equalDates = true;
-                }
-              }
-            }
-          }
-        }
-
-        // If the dates are equal, check for validity of time frame.
-        if (equalDates) {
-          const begin = this.parseTime(beginTime);
-          const end = this.parseTime(endTime);
-          if (begin && end) {
-            // Only shift to UTC when both times have a time zone designator
-            if (begin.offset !== null && end.offset !== null) {
-              return begin.seconds - begin.offset > end.seconds - end.offset;
-            }
-            return begin.seconds > end.seconds;
-          }
-
-          const beginTimeParts = beginTime.split(":");
-          const endTimeParts = endTime.split(":");
-          if (beginTimeParts[0] > endTimeParts[0]) {
-            return true;
-          } else if (beginTimeParts[0] == endTimeParts[0]) {
-            if (beginTimeParts[1] > endTimeParts[1]) {
-              return true;
-            } else if (beginTimeParts[1] == endTimeParts[1]) {
-              if (beginTimeParts[2] > endTimeParts[2]) {
-                return true;
-              }
-            }
-          }
-        }
-        return false;
       },
 
       /**
