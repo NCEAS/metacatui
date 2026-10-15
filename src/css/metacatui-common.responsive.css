@@ -286,12 +286,10 @@
 
   /* Portal header */
 
-  .Portal.Editor #editor-header,
   .PortalView .portal-view #portal-header-container {
     padding: 0px;
   }
 
-  .Portal.Editor #editor-header,
   .PortalView #portal-header-container .row {
     text-align: center;
     display: flex;
@@ -307,38 +305,20 @@
   }
 
   .Portal.Editor #editor-header {
-    padding: 40px 5px 40px 5px;
+    column-gap: 12px;
+    padding: 10px;
   }
 
-  .Portal.Editor #editor-header .logo-editor-container,
   .PortalView #portal-header-container .row .portal-logo {
     max-width: 80px;
     max-height: 100%;
     margin: 0px 0px 25px 0px;
   }
 
-  .Portal.Editor #editor-header .logo-editor-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
   .PortalView #portal-header-container .portal-title {
     margin: 0px 3px 0px 3px;
     font-size: 35px;
     line-height: 1.2;
-  }
-
-  .Portal.Editor .title-container {
-    width: 100%;
-    padding-left: 5px;
-    padding-right: 5px;
-    box-sizing: border-box;
-  }
-
-  .Portal.Editor #editor-header h5 {
-    margin: 5px 0px;
-    text-align: left;
   }
 
   /* Portal & portal editor navigation ('tabs') */

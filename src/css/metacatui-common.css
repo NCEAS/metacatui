@@ -4022,14 +4022,16 @@ add font awesome close icon */
 
 .portal-editor #editor-header {
   display: flex;
-  padding-bottom: 20px;
-  flex-wrap: wrap;
-  width: 100%;
-  align-items: center;
+  column-gap: 16px;
+  padding: 25px 40px;
+  border-bottom: 0;
+  align-items: flex-end;
 }
 
-.logo-editor-container {
-  margin-right: 20px;
+.portal-editor .logo-editor-container > .required-icon {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 4px);
 }
 .logo-editor-container .dropzone .dz-message {
   font-size: 0.87em;
@@ -4037,7 +4039,6 @@ add font awesome close icon */
 }
 
 .logo-editor-container p.notification.error {
-  width: 100px;
   text-align: center;
   line-height: 102%;
   padding-top: 5px;
@@ -4046,26 +4047,24 @@ add font awesome close icon */
 .logo-editor-container p.notification.error:empty {
   display: none;
 }
-.portal-editor .logo-editor-container > h5,
-.portal-editor .title-container > h5 {
-  margin-top: 0px;
+.portal-editor .title-container > label {
+  font-weight: bold;
 }
 .portal-editor .title-container {
-  flex-grow: 2;
+  flex: 1;
 }
 .portal-editor textarea.portal-title {
   width: 100%;
+  box-sizing: border-box;
   padding: 0px;
   background: transparent;
   border: none;
-  border-radius: 0;
   border-bottom: 1px solid #ccc;
   box-shadow: none;
-  align-self: center;
   font-size: 28px;
   line-height: 40px;
   min-height: 40px;
-  margin-top: 20px;
+  margin: 0;
 }
 
 .portal-editor textarea.portal-title:focus {
@@ -4860,15 +4859,6 @@ add font awesome close icon */
   line-height: 2em;
   font-size: 1.1em;
 }
-.portal-editor #editor-header {
-  border-bottom: 0px;
-  padding: 20px 40px;
-  box-sizing: border-box;
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-}
-
 /* Top level app navigation in the PortalView and EditorView */
 .Portal.Editor #Navbar,
 .PortalView #Navbar {
