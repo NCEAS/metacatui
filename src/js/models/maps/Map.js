@@ -25,6 +25,28 @@ define([
   LayerLoadingCoordinator,
   { getIdFromProperties },
 ) => {
+  // Copy these map-wide config fields from the current model. Layers, terrains,
+  // and viewfinder input need separate handling below.
+  const MAP_CONFIG_FIELDS_TO_COPY = [
+    "homePosition",
+    "showToolbar",
+    "showLayerList",
+    "showHomeButton",
+    "showViewfinder",
+    "showShareUrl",
+    "toolbarOpen",
+    "showScaleBar",
+    "showFeatureInfo",
+    "showDownloadPanel",
+    "clickFeatureAction",
+    "showNavHelp",
+    "showFeedback",
+    "feedbackText",
+    "globeBaseColor",
+    "debug",
+    "show3DTilesInspector",
+  ];
+
   /**
    * Determine if array is empty.
    * @param {Array} a The array in question.
@@ -467,9 +489,6 @@ define([
       initialize(options = {}) {
         const config = options;
 
-        // Keep a copy of the original configuration for reference.
-        this.set("originalConfig", JSON.stringify(config));
-
         if (config && config instanceof Object) {
           const visibilityState = parseLayerVisibilityStateFromUrl();
           if (isNonEmptyArray(config.layerCategories)) {
@@ -489,7 +508,7 @@ define([
             assetCategories.setMapModel(this);
             this.set("layerCategories", assetCategories);
             this.unset("layers");
-          } else if (isNonEmptyArray(config.layers)) {
+          } else if (Array.isArray(config.layers)) {
             assertPlainLayerConfigs(config.layers, "layers");
             const normalizedLayers = normalizeLayerListVisibility(
               config.layers,
@@ -504,7 +523,7 @@ define([
           // Backward compatibility: keep legacy allLayers attribute populated.
           this.refreshAllLayers();
 
-          if (isNonEmptyArray(config.terrains)) {
+          if (Array.isArray(config.terrains)) {
             this.set("terrains", new MapAssets(config.terrains));
           }
 
@@ -525,8 +544,7 @@ define([
               label: "Zoom to...",
               icon: "plane",
               expanded: true,
-              // Use the legacy key so ViewfinderCardCategory can resolve it.
-              zoomPresets: simpleCards,
+              viewfinderCards: simpleCards,
             };
             categoryCards = [category];
           }
@@ -1154,18 +1172,37 @@ define([
       },
 
       /**
-       * Serialize the map model to JSON for saving, for example, into a portal
+       * Return the current map config for saving, for example, into a portal
        * document.
-       * @returns {string} The JSON representation of the map model as a string.
+       * @returns {MapConfig} A plain object of settings to save
        * @since 0.0.0
        */
       toConfig() {
-        // TODO: Build toConfig to convert map model abd sub models to a JSON
-        // representation suitable for saving.
+        const config = Object.fromEntries(
+          MAP_CONFIG_FIELDS_TO_COPY.map((field) => [
+            field,
+            this.get(field),
+          ]).filter(([, value]) => value != null),
+        );
 
-        // As an intermediate step in the iterative development, return the
-        // original, unchanged config
-        return JSON.parse(this.get("originalConfig"));
+        const categories = this.get("layerCategories");
+
+        if (categories?.length) {
+          config.layerCategories = categories.map((category) =>
+            category.toConfig(),
+          );
+        } else {
+          config.layers = categories ? [] : this.get("layers").toConfig();
+        }
+
+        config.terrains = this.get("terrains").toConfig();
+
+        config.viewfinderCardCategories =
+          this.get("viewfinderCardsCollection")?.map((category) =>
+            category.toConfig(),
+          ) || [];
+
+        return JSON.parse(JSON.stringify(config));
       },
     },
   );

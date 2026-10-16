@@ -3,11 +3,46 @@
 define([
   "underscore",
   "backbone",
-  "models/portals/PortalImage",
   "models/maps/AssetColorPalette",
   "common/IconUtilities",
   `${MetacatUI.root}/components/dayjs.min.js`,
-], (_, Backbone, PortalImage, AssetColorPalette, IconUtilities, dayjs) => {
+], (_, Backbone, AssetColorPalette, IconUtilities, dayjs) => {
+  // These settings stay the same while someone uses the map. Read them from
+  // the model so changes to a label or link appear in the saved config.
+  const CONFIG_FIELDS_FROM_MODEL = [
+    "label",
+    "layerId",
+    "description",
+    "attribution",
+    "moreInfoLink",
+    "downloadLink",
+    "id",
+    "featureTemplate",
+    "customProperties",
+    "notification",
+    "hideInLayerList",
+    "showOpacitySlider",
+    "showLabels",
+    "maxGeoHashes",
+  ];
+
+  // Some settings change when the map loads or when someone uses it. Keep the
+  // config values so saving uses the original name, icon ID, and chosen settings.
+  const CONFIG_FIELDS_FROM_INPUT = [
+    "type",
+    "cesiumOptions",
+    "icon",
+    "colorPalette",
+    "filters",
+    "opacity",
+    "saturation",
+    "visible",
+    "configuredVisibility",
+    "outlineColor",
+    "highlightColor",
+    "clickFeatureAction",
+  ];
+
   /**
    * @classdesc A MapAsset Model comprises information required to fetch source data for
    * some asset or resource that is displayed in a map, such as imagery (raster) tiles,
@@ -339,6 +374,35 @@ define([
         const assetConfigCopy =
           !assetConfig || typeof assetConfig !== "object" ? {} : assetConfig;
 
+        const defaults = this.defaults();
+        const configValues = {};
+        CONFIG_FIELDS_FROM_INPUT.forEach((field) => {
+          // Type may be normalized, and the URL may override live visibility.
+          // Save defaults for the other config fields before loading.
+          const defaultValue =
+            field === "type" ||
+            field === "visible" ||
+            field === "configuredVisibility"
+              ? undefined
+              : defaults[field];
+          const inputValue = assetConfigCopy[field];
+          const value = inputValue === undefined ? defaultValue : inputValue;
+
+          // Null is needed only when it overrides a non-null default.
+          if (value == null && defaultValue == null) return;
+
+          if (
+            inputValue === undefined &&
+            (field === "outlineColor" || field === "highlightColor") &&
+            value instanceof Backbone.Model
+          ) {
+            configValues[field] = value.get("color");
+          } else {
+            configValues[field] = value;
+          }
+        });
+        this._configValues = JSON.parse(JSON.stringify(configValues));
+
         // Set the color palette
         if (assetConfigCopy.colorPalette) {
           this.set(
@@ -366,6 +430,34 @@ define([
         }
 
         this.setListeners();
+      },
+
+      /**
+       * Return the asset settings to save in mapConfig. For settings the map
+       * changes while loading or in use, return the originally configured value
+       * rather than the live value.
+       * @returns {MapConfig#MapAssetConfig} A plain object of settings to save.
+       * @since 0.0.0
+       */
+      toConfig() {
+        const config = JSON.parse(
+          JSON.stringify({
+            ...this._configValues,
+            ...this.pick(...CONFIG_FIELDS_FROM_MODEL),
+          }),
+        );
+        config.type = config.type || this.get("type");
+        config.visible = Object.prototype.hasOwnProperty.call(
+          this._configValues,
+          "configuredVisibility",
+        )
+          ? this.get("configuredVisibility")
+          : this._configValues.visible ?? this.get("configuredVisibility");
+        delete config.configuredVisibility;
+        CONFIG_FIELDS_FROM_MODEL.forEach((field) => {
+          if (config[field] == null) delete config[field];
+        });
+        return config;
       },
 
       /**
