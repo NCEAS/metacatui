@@ -87,7 +87,10 @@
                 {
                   "type": "Feature",
                   "id": "site-1",
-                  "geometry": { "type": "Point", "coordinates": [-148.75, 64.83] },
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [-148.75, 64.83]
+                  },
                   "properties": {
                     "name": "Site One",
                     "region": "Interior",

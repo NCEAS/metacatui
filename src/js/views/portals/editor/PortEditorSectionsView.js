@@ -1264,7 +1264,10 @@ define([
               this.subviews.splice($.inArray(sectionView, this.subviews), 1);
 
               // Remove the view from the page
-              sectionView.$el.remove();
+              if (typeof sectionView.remove === "function") {
+                sectionView.remove();
+              }
+              sectionView?.$el?.remove();
 
               // Reset the active section, if the one that was removed is
               // currently active
