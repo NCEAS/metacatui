@@ -19,6 +19,11 @@ define([
   NonNumericDomainTemplate,
   TextDomainTemplate,
 ) {
+  const CLASS_NAMES = {
+    numericScale: "numeric-scale",
+  };
+  const UNIT_LABEL_ID_SUFFIX = "unit-label";
+
   /**
    * @class EMLMeasurementScaleView
    * @classdesc An EMLMeasurementScaleView displays the info about one the measurement scale or category of an eml attribute
@@ -48,6 +53,7 @@ define([
         "click .code-row .remove": "removeCodeRow",
         "mouseover .code-row .remove": "previewCodeRemove",
         "mouseout .code-row .remove": "previewCodeRemove",
+        [`change .${CLASS_NAMES.numericScale}`]: "updateModel",
         "change .units": "updateModel",
         "change .datetime": "updateModel",
         "change .codelist": "updateModel",
@@ -66,12 +72,20 @@ define([
 
       render: function () {
         //Render the template
-        var viewHTML = this.template(this.model.toJSON());
+        const viewHTML = this.template({
+          ...this.model.toJSON(),
+          classNames: CLASS_NAMES,
+          unitLabelId: `${this.cid}-${UNIT_LABEL_ID_SUFFIX}`,
+        });
 
         if (this.isNew) this.$el.addClass("new");
 
         //Insert the template HTML
         this.$el.html(viewHTML);
+        this.$(`.${CLASS_NAMES.numericScale}`).attr(
+          "name",
+          `${this.cid}-${CLASS_NAMES.numericScale}`,
+        );
 
         //Render any nonNumericDomain models
         this.$(".non-numeric-domain").append(
@@ -112,7 +126,7 @@ define([
 
       postRender: function () {
         //Determine which category to select
-        //Interval measurement scales will be displayed as ratio
+        // Ratio and interval share the Numeric category
         var selectedCategory =
           this.model.get("measurementScale") == "interval"
             ? "ratio"
@@ -302,15 +316,20 @@ define([
             this.updateCodeList();
           }
         }
+
+        this.$(`.${CLASS_NAMES.numericScale}`).val([
+          this.model.get("measurementScale"),
+        ]);
       },
 
       renderUnitDropdown: function () {
         if (this.$("select.units").length) return;
 
         //Create a dropdown menu
-        var select = $(document.createElement("select"))
+        const select = $(document.createElement("select"))
           .addClass("units full-width input")
-          .attr("data-category", "unit");
+          .attr("data-category", "unit")
+          .attr("aria-labelledby", `${this.cid}-${UNIT_LABEL_ID_SUFFIX}`);
 
         var eml = this.model.getParentEML();
 
@@ -353,12 +372,7 @@ define([
         //Select the unit from the EML, if there is one
         var currentUnit = this.model.get("unit");
         if (currentUnit && currentUnit.standardUnit) {
-          //Get the dropdown for this measurement scale
-          // (We default interval to ratio in the editor)
-          var currentDropdown = this.$(".ratio-options select");
-
-          //Select the unit from the EML
-          currentDropdown.val(currentUnit.standardUnit);
+          select.val(currentUnit.standardUnit);
         }
         //If this unit is a custom unit
         else if (currentUnit && currentUnit.customUnit) {
@@ -539,8 +553,13 @@ define([
 
         var emlModel = this.model.getParentEML();
 
+        // Ratio and interval use the same numeric domain and unit
+        if (updatedInput.is(`.${CLASS_NAMES.numericScale}`)) {
+          this.model.set("measurementScale", updatedInput.val());
+          this.model.trickleUpChange();
+        }
         //Update the standard unit
-        if (updatedInput.is(".units")) {
+        else if (updatedInput.is(".units")) {
           var chosenUnit = updatedInput.val(),
             chosenOption = updatedInput.children(
               "[value='" + chosenUnit + "']",
