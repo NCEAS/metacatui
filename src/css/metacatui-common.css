@@ -4044,7 +4044,7 @@ add font awesome close icon */
   padding-top: 5px;
   font-size: 0.9em;
 }
-.logo-editor-container p.notification.error:empty {
+.logo-editor-container p.notification:empty {
   display: none;
 }
 .portal-editor .title-container > label {
