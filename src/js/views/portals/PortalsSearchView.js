@@ -31,17 +31,23 @@ define([
 
   const PortalsSearchView = Backbone.View.extend(
     /** @lends PortalsSearchView.prototype */ {
-      /** @returns {string} The HTML template for the view. */
-      template() {
+      /**
+       * Create HTML string for the portals search view.
+       * @param {Object} options - The options for the template.
+       * @param {string} options.searchTerm - The current search term.
+       * @param {string} options.portalTermPlural - The plural term for portals.
+       * @returns {string} The HTML template for the view.
+       */
+      template({ searchTerm = "", portalTermPlural = "portals" }) {
         return `
         <div id="portals-list-container">
           <form class="${CLASS_NAMES.searchForm}">
-            <label for="${SEARCH_ID}">Search <%- portalTermPlural %></label>
+            <label for="${SEARCH_ID}">Search ${portalTermPlural}</label>
             <div class="${CLASS_NAMES.inputGroup}">
               <input
                 id="${SEARCH_ID}"
                 type="search"
-                value="<%- searchTerm %>"
+                value="${searchTerm}"
                 class="${CLASS_NAMES.searchInput}"
               />
               <button type="submit" class="${CLASS_NAMES.searchButton}"><i class="${CLASS_NAMES.searchIcon}"></i>Search</button>
