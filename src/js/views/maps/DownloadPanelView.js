@@ -734,6 +734,9 @@ define([
 
         handler.listenTo(interactions, "change:previousAction", () => {
           if (interactions.get("previousAction") === "LEFT_DOUBLE_CLICK") {
+            // MapInteraction's earlier listener updates clickedPosition first,
+            // triggering DownloadPanelView.handleClick to add the vertex before
+            // this listener checks points.length.
             view.layer.set("hideInLegend", view.points.length < 3);
             view.generatePreviewPanel();
           }
