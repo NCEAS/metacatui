@@ -52,6 +52,7 @@ define([
 
       /** @inheritdoc */
       render() {
+        this.stopListening();
         this.$el.html(
           this.template({
             classNames: CLASS_NAMES,
@@ -59,14 +60,18 @@ define([
         );
 
         this.updateLegend();
+        this.listenTo(this.model, "change:allLayers", this.render);
         const allLayers =
           typeof this.model.getAllLayers === "function"
             ? this.model.getAllLayers()
             : this.model.get("allLayers")?.models || [];
 
         allLayers.forEach((layer) => {
-          this.stopListening(layer, "change:visible");
-          this.listenTo(layer, "change:visible", this.updateLegend);
+          this.listenTo(
+            layer,
+            "change:visible change:hideInLegend",
+            this.updateLegend,
+          );
 
           // Updates the legend when the Filter model is updated (through the Filter by Property feature).
           const colorPaletteProperty = layer
@@ -130,6 +135,7 @@ define([
         allLayers.forEach((layer) => {
           if (
             !layer.get("visible") ||
+            layer.get("hideInLegend") ||
             !layer.get("colorPalette") ||
             layer.get("colorPalette").get("colors").isEmpty()
           ) {
