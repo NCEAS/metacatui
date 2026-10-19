@@ -2,6 +2,9 @@ define(["jquery", "views/portals/PortalSectionView"], (
   $,
   PortalSectionView,
 ) => {
+  const PANELS_LAYOUT = "panels";
+  const MIN_MAP_HEIGHT = "var(--max-map-toolbar-link-height)";
+
   /**
    * @class PortalVisualizationsView
    * @classdesc The PortalVisualizationsView is a view to render the
@@ -30,8 +33,8 @@ define(["jquery", "views/portals/PortalSectionView"], (
       model: null,
 
       /**
-       * The portal containing this visualization
-       * @type {Portal}
+       * The parent portal, if provided
+       * @type {Portal|null}
        */
       portalModel: null,
 
@@ -154,16 +157,14 @@ define(["jquery", "views/portals/PortalSectionView"], (
       /** Adjusts height of the viz based on the available viewport height */
       adjustVizHeight: function () {
         if (this.model.get("visualizationType") === "cesium") {
-          if (this.portalModel.get("layout") === "panels") {
-            this.$el.css("min-height", "");
-            return;
-          }
+          if (this.portalModel?.get("layout") === PANELS_LAYOUT) return;
 
           const tabs = this.$el.parent().siblings(".section-links-container");
           let height = $(window).outerHeight(true) - this.$el.offset().top;
           height -=
             tabs.css("position") === "fixed" ? tabs.outerHeight(true) : 0;
-          this.$el.css("min-height", Math.max(0, height));
+          // Keep room for map controls in short windows.
+          this.$el.css("min-height", `max(${height}px, ${MIN_MAP_HEIGHT})`);
           return;
         }
 

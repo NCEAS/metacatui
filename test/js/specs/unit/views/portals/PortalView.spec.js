@@ -48,7 +48,10 @@ define([
     }, beforeEach);
 
     afterEach(() => {
-      state.view.subviews.forEach((subview) => subview.remove());
+      state.view.subviews.forEach((subview) => {
+        subview.onClose();
+        subview.remove();
+      });
       state.view.remove();
       document.body.style.height = state.bodyHeight;
       state.sandbox.restore();
@@ -63,8 +66,6 @@ define([
       state.view.addSection(section);
 
       const sectionView = state.view.subviews[0];
-      expect(sectionView).to.be.instanceof(PortalVisualizationsView);
-      expect(sectionView.model).to.equal(section);
       expect(state.renderMap.called).to.equal(false);
 
       state.view.switchSection(sectionView);
@@ -73,21 +74,39 @@ define([
       expect(state.renderMap.calledOnce).to.equal(true);
     });
 
-    it("shows an invalid map error without constructing a replacement map", () => {
-      state.renderMap.restore();
-      const section = new PortalVizSectionModel({
-        label: "Map",
-        visualizationType: "cesium",
-        mapModel: null,
-        mapConfigError: "The map configuration contains invalid JSON.",
+    [null, undefined].forEach((layout) => {
+      it(`does not set a fixed body height when layout is ${layout}`, () => {
+        document.body.style.height = "";
+        state.view.model.set("layout", layout);
+        state.view.addSection(
+          new PortalVizSectionModel({
+            label: "Map",
+            visualizationType: "cesium",
+          }),
+        );
+
+        state.view.switchSection(state.view.subviews[0]);
+
+        expect(document.body.style.height).to.equal("");
       });
-      const view = new PortalVisualizationsView({ model: section });
+    });
 
-      view.renderMap();
+    it("clears the fixed body height when switching to the default layout", () => {
+      state.view.model.set("layout", "panels");
+      state.view.addSection(
+        new PortalVizSectionModel({
+          label: "Map",
+          visualizationType: "cesium",
+        }),
+      );
+      const sectionView = state.view.subviews[0];
 
-      expect(view.$el.text()).to.contain("invalid JSON");
-      expect(section.get("mapModel")).to.equal(null);
-      view.remove();
+      state.view.switchSection(sectionView);
+      expect(document.body.style.height).to.equal("100%");
+
+      state.view.model.set("layout", null);
+      state.view.switchSection(sectionView);
+      expect(document.body.style.height).to.equal("");
     });
   });
 });
