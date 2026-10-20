@@ -209,11 +209,37 @@ define([
       });
     });
 
+    it("accepts WMTS service URLs with complete KVP settings", () => {
+      const cesiumOptions = {
+        url: "/wmts",
+        layer: "canopy",
+        style: "",
+        tileMatrixSetID: "EPSG:3857",
+      };
+      const attrs = { type: PROVIDER_TYPES.WMTS, cesiumOptions };
+      ["/wmts", "https://{s}.example.test/wmts"].forEach((url) => {
+        expect(
+          state.model.validate({
+            ...attrs,
+            cesiumOptions: { ...cesiumOptions, url },
+          }),
+        ).to.equal(undefined);
+      });
+      ["layer", "style", "tileMatrixSetID"].forEach((key) => {
+        expect(
+          state.model.validate({
+            ...attrs,
+            cesiumOptions: { ...cesiumOptions, [key]: undefined },
+          }),
+        ).to.have.property("cesiumOptions.url");
+      });
+    });
+
     it("requires every WMTS tile placeholder", () => {
       [
         undefined,
         "",
-        "/tiles",
+        " ",
         ...["{TileMatrix}", "{TileCol}", "{TileRow}"].map((placeholder) =>
           state.url.replace(placeholder, ""),
         ),
@@ -221,7 +247,12 @@ define([
         expect(
           state.model.validate({
             type: PROVIDER_TYPES.WMTS,
-            cesiumOptions: { url },
+            cesiumOptions: {
+              url,
+              layer: "canopy",
+              style: "default",
+              tileMatrixSetID: "EPSG:3857",
+            },
           }),
         ).to.have.property("cesiumOptions.url");
       });

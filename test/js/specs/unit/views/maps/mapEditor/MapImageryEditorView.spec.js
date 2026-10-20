@@ -121,6 +121,14 @@ define([
 
     [
       {
+        type: PROVIDER_TYPES.WMTS,
+        options: {
+          layer: "canopy",
+          style: "default",
+          tileMatrixSetID: "EPSG:3857",
+        },
+      },
+      {
         type: PROVIDER_TYPES.WMS,
         options: { layers: "canopy,water" },
       },
@@ -149,6 +157,7 @@ define([
           url: "/edited-service",
         });
         expect(cesiumOptions.url).to.equal("/original-service");
+        expect(state.model.isValid()).to.equal(true);
       });
     });
 

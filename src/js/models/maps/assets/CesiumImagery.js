@@ -20,13 +20,13 @@ define([
   const OSM_DEFAULT_URL = "https://tile.openstreetmap.org/";
   const BING_DEFAULT_URL = "https://dev.virtualearth.net";
   const VALIDATION_MESSAGES = {
-    WMTS_URL:
-      "Enter a tile URL containing {TileMatrix}, {TileCol}, and {TileRow}.",
-    ION_ID: "Enter a positive integer Ion asset ID.",
-    SERVICE_URL: "Enter a service URL.",
-    WMS_LAYERS: "Enter at least one WMS layer name, separated by commas.",
+    WMTS_URL: "Enter a tile URL with {TileMatrix}, {TileCol}, and {TileRow}.",
+    ION_ID: "Enter a Cesium Ion asset ID as a whole number greater than 0.",
+    SERVICE_URL: "Enter the URL of the imagery service.",
+    WMS_LAYERS:
+      "Enter at least one layer name from the WMS service. Separate multiple names with commas.",
     RECTANGLE:
-      "Enter all four coordinates: longitude from -180 to 180, latitude from -90 to 90, and south no greater than north.",
+      "Enter all four coordinates in degrees, or leave all four blank. Longitudes must be between -180 and 180; latitudes between -90 and 90. South must be less than or equal to north.",
   };
 
   /**
@@ -615,12 +615,20 @@ define([
         const errors = {};
 
         if (attrs.type === PROVIDER_TYPES.WMTS) {
-          if (
-            typeof source.url !== "string" ||
-            !["{TileMatrix}", "{TileCol}", "{TileRow}"].every((placeholder) =>
+          const isTileTemplate =
+            typeof source.url === "string" &&
+            ["{TileMatrix}", "{TileCol}", "{TileRow}"].every((placeholder) =>
               source.url.includes(placeholder),
-            )
-          ) {
+            );
+          const isKvpService =
+            typeof source.url === "string" &&
+            source.url.trim() &&
+            // Cesium also supports a single {s} subdomain token in KVP URLs.
+            !source.url.replace("{s}", "").includes("{") &&
+            ["layer", "style", "tileMatrixSetID"].every(
+              (key) => typeof source[key] === "string",
+            );
+          if (!isTileTemplate && !isKvpService) {
             errors["cesiumOptions.url"] = VALIDATION_MESSAGES.WMTS_URL;
           }
         }

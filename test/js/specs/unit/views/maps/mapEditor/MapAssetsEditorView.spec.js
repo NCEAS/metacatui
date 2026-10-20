@@ -661,7 +661,11 @@ define([
         const editor = state.view.assetEditorView;
         expect(editor.model).to.equal(asset);
         expect(document.activeElement).to.equal(field("label"));
-        expect(field("type")).to.equal(null);
+        if (config.type === CesiumImagery.PROVIDER_TYPES.WMS) {
+          expect(field("type").value).to.equal(config.type);
+        } else {
+          expect(field("type")).to.equal(null);
+        }
         changeField("label", "Updated <b>label</b>");
         changeField("description", "Updated description");
         expect(row(0).textContent).to.equal("Updated <b>label</b>");
@@ -679,14 +683,18 @@ define([
       });
     });
 
-    it("keeps row focus for a source error without editable source controls", () => {
+    it("keeps row focus when an invalid WMS extent has no editable field", () => {
       renderMap({
         layers: [
           {
             type: "WebMapServiceImageryProvider",
             label: "WMS",
             visible: false,
-            cesiumOptions: { url: "/wms", rectangle: [null, 0, 1, 1] },
+            cesiumOptions: {
+              url: "/wms",
+              layers: "canopy",
+              rectangle: [null, 0, 1, 1],
+            },
           },
         ],
       });

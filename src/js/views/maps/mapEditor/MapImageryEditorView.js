@@ -26,6 +26,7 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
     EXTENT_ERROR: "extent-error",
     ION_ERROR: "ion-error",
     OSM_ERROR: "osm-error",
+    WMS_HELP: "wms-help",
     WMS_ERROR: "wms-error",
     TMS_ERROR: "tms-error",
     WMS_LAYERS_HELP: "wms-layers-help",
@@ -43,7 +44,7 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
     BING: "Bing Maps",
     NATURAL_EARTH: "Natural Earth II",
     USGS: "USGS Imagery Topo",
-    TILE_URL: "Tile URL template",
+    TILE_URL: "Tile URL",
     TILING_SCHEME: "Tiling scheme",
     PROVIDER_DEFAULT: "Provider default",
     GEOGRAPHIC: "Geographic",
@@ -61,11 +62,17 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
     BING_KEY: "Bing Maps API key (optional)",
   };
   const HELP_TEXT = {
-    WMTS_URL: "Include {TileMatrix}, {TileCol}, and {TileRow}.",
-    WMS_LAYERS: "Separate multiple layer names with commas.",
-    BING_KEY: "Leave empty to use the key configured for this site.",
-    NATURAL_EARTH: "Uses the bundled Natural Earth II imagery.",
-    USGS: "Uses the USGS Imagery Topo service.",
+    WMTS_URL:
+      "Tile URL example: https://example.com/wmts/{TileMatrix}/{TileCol}/{TileRow}.png. Include all three placeholders.",
+    WMS_URL:
+      "Service URL example: https://example.com/geoserver/wms. Enter the layer names below.",
+    WMS_LAYERS:
+      "Use the layer names provided by the WMS service. Separate multiple names with commas.",
+    BING_KEY:
+      "Leave blank to use this site's Bing Maps API key, if configured.",
+    NATURAL_EARTH:
+      "Displays a world basemap with shaded terrain. No source settings are needed.",
+    USGS: "Displays USGS aerial imagery with topographic map details. No source settings are needed.",
   };
   const GENERAL_ERROR_KEY = "general";
 
@@ -157,7 +164,8 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
           <section class="${sourceClass}" ${ATTRIBUTES.PROVIDER}="${PROVIDER_TYPES.WMS}" hidden>
             <label class="${fieldClass}">${LABELS.SERVICE_URL}
               <input name="url" type="text" inputmode="url" aria-required="true"
-                aria-describedby="${id}-${ID_SUFFIXES.WMS_ERROR}" />
+                aria-describedby="${id}-${ID_SUFFIXES.WMS_HELP} ${id}-${ID_SUFFIXES.WMS_ERROR}" />
+              <small id="${id}-${ID_SUFFIXES.WMS_HELP}">${HELP_TEXT.WMS_URL}</small>
               <span id="${id}-${ID_SUFFIXES.WMS_ERROR}" class="${errorClass}"
                 ${ATTRIBUTES.ERROR}="cesiumOptions.url" role="alert"></span>
             </label>
