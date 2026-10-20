@@ -905,5 +905,15 @@ define(["common/ValueUtilities", "common/UrlUtilities", "md5"], function (
         ).to.match(/^[\w-]+$/);
       });
     });
+
+    describe("makeShortId", function () {
+      it("generates a hexadecimal ID with 12 characters", function () {
+        expect(ValueUtilities.makeShortId()).to.match(/^[0-9a-f]{12}$/);
+      });
+
+      it("uses the requested hexadecimal ID length", function () {
+        expect(ValueUtilities.makeShortId(13)).to.match(/^[0-9a-f]{13}$/);
+      });
+    });
   });
 });

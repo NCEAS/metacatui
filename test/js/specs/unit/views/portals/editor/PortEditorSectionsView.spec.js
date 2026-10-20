@@ -173,6 +173,7 @@ define([
       const mapModel = new Map({
         layers: [
           {
+            layerId: "imagery",
             label: "Imagery",
             type: "WebMapTileServiceImageryProvider",
             cesiumOptions: { url: "/tiles/{TileMatrix}/{TileCol}/{TileRow}" },
@@ -220,12 +221,22 @@ define([
         layerCategories: [
           {
             label: "Base maps",
-            layers: [{ label: "Base", type: "OpenStreetMapImageryProvider" }],
+            layers: [
+              {
+                layerId: "base",
+                label: "Base",
+                type: "OpenStreetMapImageryProvider",
+              },
+            ],
           },
           {
             label: "Overlays",
             layers: [
-              { label: "Overlay", type: "OpenStreetMapImageryProvider" },
+              {
+                layerId: "overlay",
+                label: "Overlay",
+                type: "OpenStreetMapImageryProvider",
+              },
             ],
           },
         ],
@@ -276,7 +287,13 @@ define([
         layerCategories: [
           {
             label: "Base maps",
-            layers: [{ label: "Base", type: "OpenStreetMapImageryProvider" }],
+            layers: [
+              {
+                layerId: "base",
+                label: "Base",
+                type: "OpenStreetMapImageryProvider",
+              },
+            ],
           },
           { label: "Overlays", layers: [] },
         ],

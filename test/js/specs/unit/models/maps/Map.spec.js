@@ -298,6 +298,32 @@ define([
         expect(map.get("show3DTilesInspector")).to.equal(true);
       });
 
+      it("leaves viewer layers without IDs out of shared URLs and keeps their visibility on reload", () => {
+        const config = {
+          showShareUrl: true,
+          layers: [
+            { label: "Water", visible: true },
+            { label: "Roads", visible: false },
+            { layerId: "sites", visible: true },
+            { layerId: "buildings", visible: false },
+          ],
+        };
+        state.model = new Map(config);
+
+        state.model.updateSearchParams();
+        expect(SearchParams.parseStateFromUrl().enabledLayerIds).to.deep.equal([
+          "sites",
+        ]);
+        const reloaded = new Map(config);
+
+        expect(reloaded.get("layers").pluck("visible")).to.deep.equal([
+          true,
+          false,
+          true,
+          false,
+        ]);
+      });
+
       it("writes camera position and enabled layers to the URL", () => {
         const map = new Map({
           showShareUrl: true,

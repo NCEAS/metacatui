@@ -76,7 +76,6 @@ define([
           model: this.model.get("mapModel"),
           el: mapContainer,
         });
-        this.mapEditorView.render();
         this.model
           .get("mapModel")
           .getLayerGroups()
@@ -86,14 +85,19 @@ define([
             });
             this.listenTo(layers, "change", (asset) => {
               if (
-                ["label", "description", "type", "cesiumOptions"].some(
-                  (field) => asset.hasChanged(field),
-                )
+                [
+                  "layerId",
+                  "label",
+                  "description",
+                  "type",
+                  "cesiumOptions",
+                ].some((field) => asset.hasChanged(field))
               ) {
                 this.editorView?.showControls();
               }
             });
           });
+        this.mapEditorView.render();
         return this;
       },
 

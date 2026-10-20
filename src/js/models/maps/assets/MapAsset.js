@@ -66,6 +66,13 @@ define([
       type: "MapAsset",
 
       /**
+       * Use layerId as Backbone identity; id remains the DataONE package ID.
+       * @type {string}
+       * @since 0.0.0
+       */
+      idAttribute: "layerId",
+
+      /**
        * Default attributes for MapAsset models
        * @name MapAsset#defaults
        * @type {object}
@@ -73,6 +80,8 @@ define([
        * The format of the data. Must be one of the supported types.
        * @property {string} label A user friendly name for this asset, to be displayed
        * in a map.
+       * @property {string} [layerId] A unique layer identifier, preserved in the
+       * saved map config. The map editor assigns one when missing.
        * @property {string} [icon] A PID for an SVG saved as a dataObject, or an SVG
        * string. The SVG will be used as an icon that will be displayed next to the label
        * in the layers list. It should be an SVG file that has no fills, borders, or styles
@@ -196,6 +205,8 @@ define([
        * asset. For details, see documentation for each of the types.
        * @property {string} label - A user friendly name for this asset, to be displayed
        * in a map.
+       * @property {string} [layerId] A unique layer identifier, preserved in the
+       * saved map config. The map editor assigns one when missing.
        * @property {string} [icon] - A PID for an SVG saved as a dataObject, or an SVG
        * string. The SVG will be used as an icon that will be displayed next to the
        * label in the layers list. It should be an SVG file that has no fills, borders,

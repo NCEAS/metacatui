@@ -78,6 +78,47 @@ define([
       state.sandbox.restore();
     });
 
+    it("assigns stable IDs to layers with blank IDs and preserves configured IDs", () => {
+      const configuredId = "urn:uuid:2bdd1d81-f1fd-499c-9b3f-1869dca5ed9a";
+      renderMap({
+        layers: [
+          { label: "Water", layerId: "", id: "same-package" },
+          { label: "Roads", layerId: "", id: "same-package" },
+          { label: "Basemap", layerId: configuredId },
+        ],
+      });
+      const layers = state.model.get("layers");
+      const ids = layers.pluck("layerId");
+
+      expect(ids[0]).to.match(/^[0-9a-f]{12}$/);
+      expect(ids[1]).to.match(/^[0-9a-f]{12}$/);
+      expect(ids[0]).not.to.equal(ids[1]);
+      expect(ids[2]).to.equal(configuredId);
+      expect(layers.get(ids[0])).to.equal(layers.at(0));
+      state.view.render();
+      expect(layers.pluck("layerId")).to.deep.equal(ids);
+
+      const reloaded = new Map(state.model.toConfig());
+      expect(reloaded.get("layers").pluck("layerId")).to.deep.equal(ids);
+      expect(reloaded.get("layers").pluck("id").slice(0, 2)).to.deep.equal([
+        "same-package",
+        "same-package",
+      ]);
+    });
+
+    it("assigns an ID to a layer imported into an existing editor collection", () => {
+      const asset = new CesiumImagery({ type: OSM, visible: false });
+      expect(asset.get("layerId")).to.equal(undefined);
+      const layers = state.model.get("layers");
+
+      layers.reset([asset]);
+
+      const id = asset.get("layerId");
+      expect(id).to.match(/^[0-9a-f]{12}$/);
+      expect(layers.get(id)).to.equal(asset);
+      expect(state.model.get("allLayers").get(id)).to.equal(asset);
+    });
+
     describe("dragging", () => {
       [
         { from: 0, to: 2, order: [1, 2, 0] },
@@ -460,6 +501,10 @@ define([
       expect(asset.get("mapModel")).to.equal(state.model);
       expect(state.model.get("allLayers").models).to.include(asset);
       expect(asset.get("type")).to.equal(WMTS);
+      expect(asset.get("layerId")).to.match(/^[0-9a-f]{12}$/);
+      expect(state.model.get("layers").get(asset.get("layerId"))).to.equal(
+        asset,
+      );
       expect(asset.get("cesiumOptions")).to.deep.equal({ url: "" });
       expect(state.model.toConfig().layers.slice(0, 3)).to.deep.equal(
         originalLayers,
@@ -520,6 +565,36 @@ define([
         state.model.get("layerCategories").at(1).get("mapAssets").at(0),
       );
       expect(document.activeElement).to.equal(field("label"));
+    });
+
+    it("selects and moves the correct layer when categories share a package ID", () => {
+      renderMap({
+        layerCategories: [
+          {
+            label: "Water",
+            layers: [{ id: "same-package", label: "Water", visible: false }],
+          },
+          {
+            label: "Roads",
+            layers: [{ id: "same-package", label: "Roads", visible: false }],
+          },
+        ],
+      });
+      const [first, second] = state.view.layerLists;
+      const asset = second.layers.at(0);
+      first.categoryView.setExpanded(false);
+      second.categoryView.setExpanded(false);
+
+      state.view.selectAsset(asset);
+
+      expect(first.categoryView.expanded).to.equal(false);
+      expect(second.categoryView.expanded).to.equal(true);
+      expect(field("label").value).to.equal("Roads");
+      grip(1).click();
+      moveControls().querySelector("[data-move-to-category]").click();
+
+      expect(first.layers.pluck("label")).to.deep.equal(["Water", "Roads"]);
+      expect(second.layers.pluck("label")).to.deep.equal([]);
     });
 
     it("retains field changes when selecting another layer", () => {

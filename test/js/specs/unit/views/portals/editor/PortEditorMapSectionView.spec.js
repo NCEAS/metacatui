@@ -46,6 +46,15 @@ define([
       state.sandbox.restore();
     });
 
+    it("shows Save for assigned layer IDs but not unchanged rerenders", () => {
+      expect(state.showControls.called).to.equal(true);
+      state.showControls.resetHistory();
+
+      state.view.render();
+
+      expect(state.showControls.called).to.equal(false);
+    });
+
     it("shows Save when a generic layer's Label or Description changes", () => {
       const asset = state.model
         .get("layers")

@@ -3,6 +3,7 @@
 define([
   "backbone",
   "sortable",
+  "common/ValueUtilities",
   "views/maps/LayerListView",
   "views/maps/LayerItemView",
   "views/maps/mapEditor/MapAssetItemView",
@@ -11,6 +12,7 @@ define([
 ], (
   Backbone,
   Sortable,
+  ValueUtilities,
   LayerListView,
   LayerItemView,
   MapAssetItemView,
@@ -219,11 +221,16 @@ define([
       },
 
       /**
-       * Create a row and listen for editing, movement, and removal requests.
+       * Assign a missing ID as the layer enters the editor, then create its row
+       * and listen for editing, movement, and removal requests.
        * @param {MapAsset} asset The layer represented by the row
        * @returns {MapAssetItemView} The rendered row
        */
       createAssetItem(asset) {
+        if (!asset.get("layerId")) {
+          asset.set("layerId", ValueUtilities.makeShortId());
+        }
+
         const item = new MapAssetItemView({
           model: asset,
           panelId: `${this.cid}-${ASSET_PANEL_ID_SUFFIX}`,

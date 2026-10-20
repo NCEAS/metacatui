@@ -16,6 +16,16 @@ define([
   const expect = chai.expect;
 
   describe("MapAsset toConfig", () => {
+    it("uses the configured layer ID as model identity and preserves the package ID", () => {
+      const asset = new MapAsset({ layerId: "water", id: "package-id" });
+
+      expect(asset.id).to.equal("water");
+      expect(asset.toConfig()).to.include({
+        layerId: "water",
+        id: "package-id",
+      });
+    });
+
     it("uses edited config fields and excludes live objects", () => {
       const asset = new MapAsset({ type: "UnknownAsset", label: "Before" });
       const cesiumModel = new Cesium.Entity();
