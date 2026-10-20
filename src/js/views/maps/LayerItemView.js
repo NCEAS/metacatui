@@ -6,8 +6,9 @@ define([
   "backbone",
   "models/maps/assets/MapAsset",
   "common/IconUtilities",
+  "showdownXssFilter",
   "text!templates/maps/layer-item.html",
-], ($, _, Backbone, MapAsset, IconUtilities, Template) => {
+], ($, _, Backbone, MapAsset, IconUtilities, sanitizeHTML, Template) => {
   const CLASS_NAMES = {
     BASE: "list-item",
     LABEL: "list-item__label",
@@ -129,7 +130,7 @@ define([
         // Insert the template into the view
         this.$el.html(
           this.template({
-            label: this.model.get("label"),
+            label: sanitizeHTML(this.model.get("label")),
             classNames: CLASS_NAMES,
           }),
         );
@@ -483,27 +484,33 @@ define([
        * @returns {boolean} - True if a layer label matches the text
        */
       search(text) {
-        let newLabel = this.model.get("label");
+        const label = this.labelEl.querySelector(`.${CLASS_NAMES.LABEL_TEXT}`);
+        label.innerHTML = sanitizeHTML(this.model.get("label"));
         if (text) {
           const regex = new RegExp(text, "ig");
-          newLabel = this.model
-            .get("label")
-            .replaceAll(regex, (matchedText) =>
-              $("<span />")
-                .addClass(CLASS_NAMES.HIGHLIGHTED_TEXT)
-                .html(matchedText)
-                .prop("outerHTML"),
-            );
-
-          // Label is unchanged.
-          if (newLabel === this.model.get("label")) {
+          const walker = document.createTreeWalker(label, NodeFilter.SHOW_TEXT);
+          const nodes = [];
+          while (walker.nextNode()) nodes.push(walker.currentNode);
+          let matched = false;
+          // Highlight text nodes so tags and attributes stay unchanged.
+          nodes.forEach((node) => {
+            const matches = Array.from(node.textContent.matchAll(regex));
+            if (matches.length) matched = true;
+            matches.reverse().forEach((match) => {
+              const range = document.createRange();
+              range.setStart(node, match.index);
+              range.setEnd(node, match.index + match[0].length);
+              const highlight = document.createElement("span");
+              highlight.className = CLASS_NAMES.HIGHLIGHTED_TEXT;
+              range.surroundContents(highlight);
+            });
+          });
+          if (!matched) {
             this.$el.hide();
             return false;
           }
         }
 
-        this.labelEl.querySelector(`.${CLASS_NAMES.LABEL_TEXT}`).innerHTML =
-          newLabel;
         this.$el.show();
         return true;
       },

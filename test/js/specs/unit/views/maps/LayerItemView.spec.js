@@ -5,6 +5,7 @@ define([
   "/test/js/specs/shared/clean-state.js",
 ], (LayerItemView, MapAsset, LayerItemViewHarness, cleanState) => {
   const expect = chai.expect;
+  const { CLASS_NAMES } = LayerItemView;
 
   describe("LayerItemView Test Suite", () => {
     const state = cleanState(() => {
@@ -61,6 +62,30 @@ define([
 
         const matchedSpan = state.harness.getLabelText().find("span");
         expect(matchedSpan).to.have.lengthOf(0);
+      });
+
+      it("highlights repeated label text and skips HTML attributes", () => {
+        state.view.model.set(
+          "label",
+          'CO<sub>2</sub> and CO<sub>2</sub><img alt="attribute-only">',
+        );
+        state.view.render();
+
+        expect(state.view.search("CO")).to.equal(true);
+        expect(
+          state.view.el.querySelectorAll(`.${CLASS_NAMES.HIGHLIGHTED_TEXT}`),
+        ).to.have.lengthOf(2);
+        expect(state.view.el.querySelectorAll("sub")).to.have.lengthOf(2);
+        expect(state.view.search("2")).to.equal(true);
+        expect(
+          state.view.el.querySelectorAll(
+            `sub .${CLASS_NAMES.HIGHLIGHTED_TEXT}`,
+          ),
+        ).to.have.lengthOf(2);
+        expect(state.view.search("attribute-only")).to.equal(false);
+        expect(state.view.el.querySelector("img").alt).to.equal(
+          "attribute-only",
+        );
       });
     });
 

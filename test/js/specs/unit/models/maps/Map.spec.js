@@ -1005,6 +1005,55 @@ define([
         });
       });
 
+      it("stops old layer collections from receiving changes after moves and removal", () => {
+        state.model = new Map({
+          layerCategories: [
+            {
+              label: "Overlays",
+              layers: [
+                { label: "Water", visible: false },
+                { label: "Roads", visible: false },
+              ],
+            },
+            { label: "Base maps", layers: [] },
+          ],
+        });
+        const [source, target] = state.model.getLayerGroups();
+        const water = source.at(0);
+        const retiredCollections = [];
+        const retiredChanges = [];
+        state.model.on("change:allLayers", (model) => {
+          const previous = model.previous("allLayers");
+          retiredCollections.push(previous);
+          previous.on("change:label", (asset) => {
+            retiredChanges.push(asset.get("label"));
+          });
+        });
+
+        state.model.moveAsset(water, source, 1);
+        state.model.moveAsset(water, target, 0);
+        state.model.moveAsset(water, source, 0);
+        state.model.moveAsset(water, source, 1);
+        state.model.removeAsset(water);
+        water.set("label", "Removed water");
+
+        expect(retiredChanges).to.deep.equal([]);
+        expect(retiredCollections.length).to.be.greaterThan(0);
+        retiredCollections.forEach((collection) => {
+          expect(collection).to.have.lengthOf(0);
+        });
+        const current = state.model.get("allLayers");
+        const currentChanges = [];
+        current.on("change:label", (asset) => {
+          currentChanges.push(asset.get("label"));
+        });
+        source.at(0).set("label", "Updated roads");
+        expect(currentChanges).to.deep.equal(["Updated roads"]);
+        expect(current.pluck("label")).to.deep.equal(["Updated roads"]);
+        expect(retiredChanges).to.deep.equal([]);
+        water.stopListening();
+      });
+
       it("does not reset or change config for an unchanged position", () => {
         state.model = new Map({ layers: [{ label: "Water", visible: false }] });
         const layers = state.model.get("layers");
@@ -2035,6 +2084,32 @@ define([
         expect(map.get("loadingLayersMessage")).to.equal(
           "Loading Habitat roads and 2 other layers",
         );
+      });
+
+      it("removes unsafe attributes from short and truncated loading messages", () => {
+        [
+          {
+            label:
+              'CO<sub onclick="void 0">2</sub> m<sup onmouseover="void 0">2</sup>',
+            message: "Loading CO<sub>2</sub> m<sup>2</sup>",
+          },
+          {
+            label:
+              'CO<sub onclick="void 0">2</sub> m<sup onmouseover="void 0">2</sup> 12345678901234567890123456789012345678901234567890',
+            message:
+              "Loading CO<sub>2</sub> m<sup>2</sup> 1234567890123456789012345678901234567890123…",
+          },
+        ].forEach(({ label, message }) => {
+          const map = new Map({
+            showShareUrl: false,
+            layers: [{ label, status: "loading", visible: true }],
+          });
+
+          expect(map.get("isLoadingLayers")).to.equal(true);
+          expect(map.get("loadingLayersMessage")).to.equal(message);
+          map.getAllLayers().forEach((layer) => layer.stopListening());
+          map.stopListening();
+        });
       });
 
       it("preserves sub/sup markup in the label so it renders like the menu", () => {

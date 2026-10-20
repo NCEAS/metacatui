@@ -4,6 +4,7 @@ define([
   "backbone",
   "underscore",
   "models/maps/AssetColorPalette",
+  "showdownXssFilter",
   "views/maps/legend/CategoricalSwatchView",
   "views/maps/legend/ContinuousSwatchView",
   "text!templates/maps/legend/layer-legend.html",
@@ -11,6 +12,7 @@ define([
   Backbone,
   _,
   AssetColorPalette,
+  sanitizeHTML,
   CategoricalSwatchView,
   ContinuousSwatchView,
   Template,
@@ -86,7 +88,7 @@ define([
         this.$el.html(
           this.template({
             classNames: CLASS_NAMES,
-            name,
+            name: sanitizeHTML(name),
           }),
         );
 

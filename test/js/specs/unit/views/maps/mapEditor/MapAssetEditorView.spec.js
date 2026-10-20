@@ -2,10 +2,20 @@ define([
   "models/maps/assets/MapAsset",
   "models/maps/assets/CesiumImagery",
   "views/maps/mapEditor/MapAssetEditorView",
+  "views/maps/LayerItemView",
+  "views/maps/LayerDetailsView",
   "/test/js/specs/shared/clean-state.js",
-], (MapAsset, CesiumImagery, MapAssetEditorView, cleanState) => {
+], (
+  MapAsset,
+  CesiumImagery,
+  MapAssetEditorView,
+  LayerItemView,
+  LayerDetailsView,
+  cleanState,
+) => {
   const expect = chai.expect;
   const { PROVIDER_TYPES } = CesiumImagery;
+  const { CLASS_NAMES } = LayerItemView;
 
   describe("MapAssetEditorView", () => {
     const state = cleanState(() => {
@@ -91,6 +101,63 @@ define([
         label: "Canopy",
         description: "Canopy observations",
       });
+    });
+
+    it("removes unsafe attributes after layer reload and keeps scientific markup", () => {
+      change(
+        "label",
+        'CO<sub>2</sub> *raw_label* <img src="/missing-label" onerror="void(0)">',
+      );
+      change(
+        "description",
+        '<p>Values per m<sup>2</sup><img src="/missing-description" onerror="void(0)"></p>',
+      );
+      const model = new CesiumImagery(
+        JSON.parse(JSON.stringify(state.model.toConfig())),
+      );
+      const row = new LayerItemView({ model });
+      const details = new LayerDetailsView({ model });
+      try {
+        row.render();
+        details.render();
+        expect(row.el.querySelector("[onerror]")).to.equal(null);
+        expect(details.el.querySelector("[onerror]")).to.equal(null);
+        expect(row.el.querySelector("sub").textContent).to.equal("2");
+        expect(row.el.textContent).to.include("*raw_label*");
+        expect(
+          details.el.querySelector(`.${details.classes.label} sub`).textContent,
+        ).to.equal("2");
+        expect(
+          details.el.querySelector(".layer-info__description sup").textContent,
+        ).to.equal("2");
+
+        row.search("CO");
+        expect(row.el.querySelector("[onerror]")).to.equal(null);
+        expect(
+          row.el.querySelector(`.${CLASS_NAMES.HIGHLIGHTED_TEXT}`).textContent,
+        ).to.equal("CO");
+        row.search("");
+        expect(row.el.querySelector("[onerror]")).to.equal(null);
+        expect(row.el.querySelector("sub").textContent).to.equal("2");
+      } finally {
+        row.remove();
+        details.remove();
+        model.stopListening();
+      }
+    });
+
+    it("keeps quotes in layer labels from creating HTML attributes", () => {
+      const label = 'A " onmouseover="void(0)';
+      change("label", label);
+      const row = new LayerItemView({ model: state.model });
+      try {
+        row.render();
+        const text = row.el.querySelector(`.${CLASS_NAMES.LABEL_TEXT}`);
+        expect(text.getAttribute("onmouseover")).to.equal(null);
+        expect(text.title).to.equal(label);
+      } finally {
+        row.remove();
+      }
     });
 
     it("removes the old imagery form and its handlers", () => {

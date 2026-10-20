@@ -1,9 +1,16 @@
 define([
   "models/maps/AssetCategory",
+  "common/IconUtilities",
   "views/maps/ExpansionPanelView",
   "views/maps/mapEditor/MapAssetCategoryView",
   "/test/js/specs/shared/clean-state.js",
-], (AssetCategory, ExpansionPanelView, MapAssetCategoryView, cleanState) => {
+], (
+  AssetCategory,
+  IconUtilities,
+  ExpansionPanelView,
+  MapAssetCategoryView,
+  cleanState,
+) => {
   const expect = chai.expect;
   const { CLASS_NAMES } = ExpansionPanelView;
   const iconPath = "M0 0h24v24H0z";
@@ -60,6 +67,40 @@ define([
         iconPath,
       );
       expect(document.activeElement).to.equal(button);
+    });
+
+    it("uses the default icon until fetched SVG has been sanitized", async () => {
+      const configuredIcon = '<img src="/missing-icon" onerror="void(0)">';
+      let finishFetch;
+      const fetchIcon = sinon.stub(IconUtilities, "fetchIcon").returns(
+        new Promise((resolve) => {
+          finishFetch = resolve;
+        }),
+      );
+      const model = new AssetCategory({
+        label: "Category",
+        icon: configuredIcon,
+        layers: [],
+      });
+      const view = new MapAssetCategoryView({ model });
+      try {
+        view.render();
+        expect(view.el.querySelector("img")).to.equal(null);
+        expect(view.el.querySelector("svg")).not.to.equal(null);
+        expect(model.toConfig().icon).to.equal(configuredIcon);
+
+        finishFetch(icon.replace("<svg ", '<svg onload="void(0)" '));
+        await Promise.resolve();
+        expect(view.el.querySelector("[onload]")).to.equal(null);
+        expect(view.el.querySelector("svg path").getAttribute("d")).to.equal(
+          iconPath,
+        );
+        expect(model.toConfig().icon).to.equal(configuredIcon);
+      } finally {
+        fetchIcon.restore();
+        view.remove();
+        model.stopListening();
+      }
     });
 
     it("stops updating its header after removal", () => {

@@ -3068,6 +3068,7 @@ other class: .ui-slider-range */
 
 .assets-editor__move-controls,
 .assets-editor__move-controls [data-move-category-controls] {
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;

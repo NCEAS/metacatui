@@ -5,8 +5,9 @@
  *  2015, Visionist, Inc.
  */
 define(['showdown', 'xss'], function (showdown, xss) {
+  var sanitizeHTML;
 
-  return showdown.extension('xssfilter', function () {
+  showdown.extension('xssfilter', function () {
 
     // custom rules
     var options = {
@@ -101,8 +102,10 @@ define(['showdown', 'xss'], function (showdown, xss) {
       }
     };
 
+    sanitizeHTML = extensions.filter;
     return extensions;
 
   });
 
+  return sanitizeHTML;
 });

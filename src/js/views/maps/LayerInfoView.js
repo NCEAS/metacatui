@@ -5,8 +5,9 @@ define([
   "underscore",
   "backbone",
   "models/maps/assets/MapAsset",
+  "showdownXssFilter",
   "text!templates/maps/layer-info.html",
-], function ($, _, Backbone, MapAsset, Template) {
+], ($, _, Backbone, MapAsset, sanitizeHTML, Template) => {
   /**
    * @class LayerInfoView
    * @classdesc A view that shows some of the basic info from a MapAsset model, like the
@@ -85,6 +86,9 @@ define([
 
           // Insert the template into the view
           var templateOptions = this.model ? this.model.toJSON() : {};
+          templateOptions.description = sanitizeHTML(
+            templateOptions.description,
+          );
           this.$el.html(this.template(templateOptions));
 
           return this;

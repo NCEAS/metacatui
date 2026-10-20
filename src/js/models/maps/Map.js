@@ -588,6 +588,11 @@ define([
        * @since 2.38.0
        */
       refreshAllLayers() {
+        // Remove the old collection's layer listeners before replacing it.
+        const previousLayers = this.get("allLayers");
+        if (previousLayers instanceof MapAssets) {
+          previousLayers.reset([], { silent: true });
+        }
         const allLayers = new MapAssets(this.getAllLayers());
         this.set("allLayers", allLayers);
         return allLayers;
