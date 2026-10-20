@@ -5667,9 +5667,70 @@ i.toc-sub-item {
   background-color: black;
   height: 100%;
 }
+.portal-map-section-view.active {
+  display: grid;
+}
 .portal-viz-section-view iframe {
   box-sizing: border-box;
   border: 0px;
+}
+
+/* The "panels" layout already has its own height:100% CSS chain (see
+   portal-layouts/panels.css); this class is just a direct swap for the old
+   `document.body.style.height = "100%"` inline style toggle. */
+body.PortalView.portal-panels-map-active {
+  height: 100%;
+}
+
+/* Default (non-panels) layout: let the active map section fill whatever
+   viewport space is left below the header/tabs, purely via CSS flexbox, so
+   no JS has to measure/recompute pixel heights on resize or when the mobile
+   nav expands/collapses. `min-height` (not `height`) is used throughout so
+   the page can still grow taller than the viewport and scroll normally if
+   the header/tabs/logos/footer need more room than that. */
+body.PortalView.portal-map-active {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+/* #Content gets its own viewport-based floor (rather than relying only on
+   flex-grow shared with sibling flex items like #Footer) so the map still
+   fills the full viewport even when a theme's footer is a large, static,
+   in-flow element (e.g. the arctic theme's multi-hundred-pixel footer).
+   Without this, #Content, #Footer, and #Navbar all compete for the same
+   `100dvh` flex budget, and once their combined natural content exceeds the
+   viewport height there's no free space left to grow the map into, so it
+   collapses to its bare minimum height instead. Giving #Content its own
+   `100dvh` floor guarantees the map always has a full viewport to fill,
+   while the page simply grows taller (and scrolls) past that point if the
+   footer needs more room below. */
+body.PortalView.portal-map-active > #Content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+body.PortalView.portal-map-active .portal-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+body.PortalView.portal-map-active #portal-header-container,
+body.PortalView.portal-map-active .section-links-container {
+  flex: 0 0 auto;
+}
+body.PortalView.portal-map-active #portal-sections {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+body.PortalView.portal-map-active .portal-map-section-view.active {
+  flex: 1 1 auto;
+  min-height: var(--max-map-toolbar-link-height);
 }
 
 /******************************************
