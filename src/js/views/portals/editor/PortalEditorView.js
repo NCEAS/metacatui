@@ -713,9 +713,9 @@ define([
           // Add the image view (incl. uploader) for the portal logo
           this.logoEdit = new ImageEdit({
             model: this.model.get("logo"),
-            imageUploadInstructions: "Drag & drop a logo or click to upload",
-            imageWidth: 100,
-            imageHeight: 100,
+            imageUploadInstructions: "Upload logo",
+            imageWidth: 70,
+            imageHeight: 70,
             minWidth: 64,
             minHeight: 64,
             maxHeight: 300,
