@@ -346,12 +346,20 @@
   .Editor.Portal .section-links-toggle-container,
   .PortalView .section-links-container {
     width: 100%;
+    left: 0;
+    right: 0;
     background: var(--portal-primary-color);
     color: white;
     position: fixed;
     box-shadow: 0px 1px 12px 3px rgba(0, 0, 0, 0.3);
     z-index: 12; /* so it stays above footer and editor dropzone elements*/
-    transition: bottom 0.3s;
+    transition: bottom 0.3s, transform 0.3s;
+  }
+
+  /* Hide/show the nav on scroll via a transform (no JS height measurement
+     needed, unlike animating a pixel "bottom" offset). */
+  .PortalView .section-links-container--hidden {
+    transform: translateY(100%);
   }
 
   /* Default position of portal pages nav on mobile. */
