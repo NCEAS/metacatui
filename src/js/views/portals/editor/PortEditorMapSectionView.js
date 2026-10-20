@@ -10,9 +10,9 @@ define([
   /**
    * @class PortEditorMapSectionView
    * @classdesc A Portal Editor section representing a Cesium map page.
-   * @classcategory Views/Maps/MapEditor
+   * @classcategory Views/Portals/Editor
    * @augments PortEditorSectionView
-   * @screenshot views/maps/mapEditor/PortEditorMapSectionView.png
+   * @screenshot views/portals/editor/PortEditorMapSectionView.png
    * @since 0.0.0
    */
   const PortEditorMapSectionView = PortEditorSectionView.extend(

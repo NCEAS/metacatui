@@ -2815,6 +2815,7 @@ other class: .ui-slider-range */
 /* Map Editor View */
 .port-editor-section.port-editor-map {
   padding-inline: 0;
+  margin: 0 1rem 0 0;
 }
 
 .map-editor {
