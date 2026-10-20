@@ -3852,6 +3852,11 @@ add font awesome close icon */
   max-width: 230px; /* for firefox */
 }
 
+.portal-search .btn {
+  /* overwrite overwrites and revert to bootstrap defaults */
+  padding: 4px 12px;
+}
+
 #portals-list-container .portals-list-title {
   color: #999;
 }

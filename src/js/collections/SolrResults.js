@@ -111,12 +111,14 @@ define([
       },
 
       parse: function (solr) {
+        // GET treats unescaped plus signs as spaces. POST preserves them.
+        const query = decodeURIComponent(
+          this.usePOST
+            ? this.currentquery
+            : this.currentquery.replace(/\+/g, " "),
+        );
         //Is this our latest query? If not, use our last set of docs from the latest query
-        if (
-          decodeURIComponent(this.currentquery).replace(/\+/g, " ") !=
-            solr.responseHeader.params.q &&
-          this.docsCache
-        )
+        if (query !== solr.responseHeader.params.q && this.docsCache)
           return this.docsCache;
 
         if (!solr.response) {
