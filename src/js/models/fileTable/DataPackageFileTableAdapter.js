@@ -22,14 +22,17 @@ define([
   const CLASS_NAMES = {
     downloadAction: "btn download btn-rounded action downloadAction",
     downloadIcon: "icon icon-large icon-cloud-download",
+    packageDownloadWarningIcon: "icon icon-warning-sign icon-on-left",
+    packageDownloadAction: "btn btn-primary downloadAction",
   };
 
   /** Download availability messages shared with the metadata viewer */
   const MESSAGES = {
     fileDownloadReadDenied:
       "This file is not publicly accessible. Sign in with an account that has access.",
+    packageDownloadLabel: "Download All",
     packageDownloadMissing:
-      "Download All is unavailable because one or more dataset files are missing.",
+      "Some dataset files are missing and will be omitted from this download.",
     packageDownloadReadDenied:
       "Download All is unavailable because you do not have permission to read the entire package.",
     packageDownloadTooLarge:
@@ -852,6 +855,7 @@ define([
    * @param {string} options.packageDownloadUrl Whole package download URL
    * @param {string} options.packageDownloadUnavailableReason Explanation shown
    * when whole package download is unavailable
+   * @param {boolean} options.hasMissingMembers Whether any package files are missing
    * @param {string} options.mode "viewer" or "editor"
    * @param {boolean} options.showMetrics Whether metrics are shown
    * @param {boolean} options.showShare Whether sharing controls are shown
@@ -865,6 +869,7 @@ define([
     packageId,
     packageDownloadUrl,
     packageDownloadUnavailableReason,
+    hasMissingMembers,
     mode,
     showMetrics,
     showShare = true,
@@ -875,6 +880,10 @@ define([
       ? packageTitle[0] || ""
       : packageTitle;
     const label = title || packageId || "Dataset";
+    const warning =
+      hasMissingMembers && !packageDownloadUnavailableReason
+        ? MESSAGES.packageDownloadMissing
+        : "";
     const shareEnabled = mode === "editor" && showShare !== false;
     const actions = [];
     if (mode === "editor") {
@@ -893,11 +902,16 @@ define([
       actions.push(
         action(
           "download",
-          "Download All",
-          packageDownloadUnavailableReason || `Download all files in ${label}`,
-          "",
+          MESSAGES.packageDownloadLabel,
+          packageDownloadUnavailableReason ||
+            warning ||
+            `Download all files in ${label}`,
+          warning ? CLASS_NAMES.packageDownloadWarningIcon : "",
           {
-            className: "btn btn-primary downloadAction",
+            className: CLASS_NAMES.packageDownloadAction,
+            ...(warning && {
+              ariaLabel: `${MESSAGES.packageDownloadLabel}. ${warning}`,
+            }),
             isDisabled: Boolean(packageDownloadUnavailableReason),
           },
         ),
@@ -1070,6 +1084,9 @@ define([
         packageId,
         packageDownloadUrl,
         packageDownloadUnavailableReason,
+        hasMissingMembers: allMembers.some(
+          (member) => member.sysMetaMissing === true,
+        ),
         mode,
         showMetrics,
         showShare,

@@ -2074,12 +2074,6 @@ define([
             FILE_TABLE_MESSAGES.packageDownloadReadDenied;
           return;
         }
-        if (members.some((member) => member.sysMetaMissing === true)) {
-          this.packageDownloadUnavailableReason =
-            FILE_TABLE_MESSAGES.packageDownloadMissing;
-          return;
-        }
-
         const maxDownloadSize = Number(
           MetacatUI.appModel.get("maxDownloadSize"),
         );

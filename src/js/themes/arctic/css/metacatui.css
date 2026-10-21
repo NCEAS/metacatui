@@ -520,18 +520,16 @@ button.btn-primary a {
   text-decoration: none;
 }
 
-.btn-primary:hover,
 .btn-primary:focus,
 .btn-primary:active,
 .btn-primary.active {
   background-color: #1f254f;
-  border: 0px;
 }
 
 .btn-primary:hover,
 .nav > li > a.btn-primary:hover {
   background-color: #146660;
-  transition: background-color 0.5s;
+  transition: all 0.1s;
   color: #fdfdfd;
   background-image: none;
   background-repeat: none;
@@ -690,6 +688,7 @@ button.btn-primary a {
 .data-package-item .btn:focus {
   background-color: #ddd;
   border-color: #999;
+  color: #555;
 }
 .data-package-item .btn.edit:hover,
 .data-package-item .btn.edit:focus {
