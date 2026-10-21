@@ -182,7 +182,7 @@ define([
       updateDOM: function () {
         var objectDOM;
 
-        if (!this.isValid()) {
+        if (this.isEmpty() || !this.isValid()) {
           return "";
         }
 
@@ -375,6 +375,8 @@ define([
        * @return {string} The error messages that the user will see
        */
       validate: function () {
+        if (this.isEmpty()) return false;
+
         var errors = {};
 
         if (!this.get("description")) {
@@ -443,6 +445,19 @@ define([
 
         if (Object.keys(errors).length) return errors;
         else return false;
+      },
+
+      /**
+       * Check whether the description and all coordinates are empty.
+       * @returns {boolean} True when the location has no values
+       */
+      isEmpty() {
+        return ["description", "north", "east", "south", "west"].every(
+          (attribute) => {
+            const value = this.get(attribute);
+            return value === null || value === undefined || value === "";
+          },
+        );
       },
 
       /**

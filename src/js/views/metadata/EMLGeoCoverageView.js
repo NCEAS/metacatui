@@ -291,6 +291,8 @@ define([
         this.$(".notification").empty();
 
         const errorObj = this.model.validationError;
+        if (!errorObj) return;
+
         // Get all of the field keys
         const fields = Object.keys(errorObj);
         // Get all of the error messages (values). Remove duplicates.

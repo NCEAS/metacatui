@@ -5,7 +5,8 @@ define([
   "models/metadata/eml211/EML211",
   "models/metadata/eml211/EMLParty",
   "models/metadata/eml211/EMLTaxonCoverage",
-], function (cleanState, EML, EMLParty, EMLTaxonCoverage) {
+  "models/metadata/eml211/EMLGeoCoverage",
+], function (cleanState, EML, EMLParty, EMLTaxonCoverage, EMLGeoCoverage) {
   // Configure the Chai assertion library
   var should = chai.should();
   var expect = chai.expect;
@@ -192,6 +193,89 @@ define([
         sinon.assert.calledTwice(entityChangeSpy);
         sinon.assert.calledTwice(attributeListChangeSpy);
         sinon.assert.calledTwice(recordUserEdit);
+      });
+    });
+
+    describe("Geographic coverage", function () {
+      let requiredFields;
+
+      beforeEach(function () {
+        requiredFields = MetacatUI.appModel.get("emlEditorRequiredFields");
+        MetacatUI.appModel.set("emlEditorRequiredFields", {
+          geoCoverage: false,
+        });
+        state.eml.set("title", ["Sampling locations"]);
+        state.eml.addTaxonomicCoverage();
+      });
+
+      afterEach(function () {
+        MetacatUI.appModel.set("emlEditorRequiredFields", requiredFields);
+      });
+
+      it("keeps the remaining location after clearing and removing rows", function () {
+        const valid = new EMLGeoCoverage({
+          description: "Sampling site",
+          north: 0,
+          east: 0,
+          south: 0,
+          west: 0,
+        });
+        const cleared = new EMLGeoCoverage({
+          description: "Second site",
+          north: 10,
+          east: 20,
+          south: 10,
+          west: 20,
+        });
+        state.eml.set("creator", [
+          new EMLParty({ type: "creator", organizationName: "Sampling team" }),
+        ]);
+        state.eml.set("geoCoverage", [valid, cleared, valid]);
+        state.eml.set("objectXML", state.eml.serialize());
+        cleared.set({
+          description: null,
+          north: null,
+          east: null,
+          south: null,
+          west: null,
+        });
+        state.eml.set("geoCoverage", [valid, cleared]);
+
+        expect(state.eml.isValid()).to.equal(true);
+        const xml = state.eml.serialize();
+        expect((xml.match(/<geographicCoverage>/g) || []).length).to.equal(1);
+        expect(xml).to.include(
+          "<geographicDescription>Sampling site</geographicDescription>",
+        );
+        expect(xml).to.include(
+          "<northBoundingCoordinate>0</northBoundingCoordinate>",
+        );
+      });
+
+      it("requires a location when every row is empty", function () {
+        MetacatUI.appModel.set("emlEditorRequiredFields", {
+          geoCoverage: true,
+        });
+        state.eml.set("geoCoverage", [
+          new EMLGeoCoverage(),
+          new EMLGeoCoverage({ description: "" }),
+        ]);
+
+        expect(state.eml.isValid()).to.equal(false);
+        expect(state.eml.validationError).to.have.property("geoCoverage");
+      });
+
+      it("reports location errors only for the incomplete row", function () {
+        state.eml.set("geoCoverage", [
+          new EMLGeoCoverage(),
+          new EMLGeoCoverage({ north: 0 }),
+        ]);
+
+        expect(state.eml.isValid()).to.equal(false);
+        expect(state.eml.validationError.geoCoverage).to.have.lengthOf(1);
+        expect(state.eml.validationError.geoCoverage[0]).to.have.property(
+          "description",
+        );
       });
     });
 
