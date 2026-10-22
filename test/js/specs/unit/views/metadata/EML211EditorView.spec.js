@@ -2637,15 +2637,13 @@ define([
       );
     });
 
-    it("refreshes the title-based metadata filename before upload", async function () {
+    it("preserves the existing metadata filename before upload", async function () {
       model.set({
         id: "metadata.1",
         fileName: "urn_uuid_metadata_1.xml",
         title: "Title",
       });
-      model.setFileName = sandbox
-        .stub()
-        .callsFake(() => model.set("fileName", "Title.xml"));
+      model.setFileName = EML211.prototype.setFileName;
       const metadataMember = {
         pid: "metadata.1",
         documents: [],
@@ -2670,10 +2668,9 @@ define([
 
       await view.save({ target: $("<button></button>")[0] });
 
-      metadataMember.fileName.should.equal("Title.xml");
-      metadataMember.sysMeta.fileName.should.equal("Title.xml");
+      metadataMember.fileName.should.equal("urn_uuid_metadata_1.xml");
+      metadataMember.sysMeta.fileName.should.equal("urn_uuid_metadata_1.xml");
       sinon.assert.notCalled(view.emlView.triggerChanges);
-      sinon.assert.calledOnce(model.setFileName);
       sinon.assert.calledOnceWithExactly(
         rootDataPackage.markMemberContentDirty,
         "metadata.1",

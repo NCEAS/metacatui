@@ -16,6 +16,22 @@ define([
       return { eml };
     }, beforeEach);
 
+    describe("setFileName", function () {
+      it("preserves an existing filename when the title changes", function () {
+        state.eml.set({ fileName: "original-EML.xml", title: ["New title"] });
+        state.eml.setFileName();
+        expect(state.eml.get("fileName")).to.equal("original-EML.xml");
+      });
+
+      it("generates a title-based filename only when one is absent", function () {
+        for (const title of ["Dataset", ["Dataset"]]) {
+          state.eml.set({ fileName: null, title });
+          state.eml.setFileName();
+          expect(state.eml.get("fileName")).to.equal("Dataset.xml");
+        }
+      });
+    });
+
     describe("editable loading", function () {
       let originalMetacatUI;
 

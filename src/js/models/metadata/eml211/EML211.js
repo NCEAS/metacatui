@@ -2427,8 +2427,10 @@ define([
         return new XMLSerializer().serializeToString(xmlDOM);
       },
 
-      /** Uses the EML `title` to set the `fileName` attribute on this model */
+      /** Generate a filename from the title when this model has none */
       setFileName() {
+        if (this.get("fileName")) return;
+
         let title = "";
 
         // Get the title from the metadata
