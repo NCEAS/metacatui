@@ -1424,15 +1424,15 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            */
           enableCreatePortals: true,
           /**
-           * Limits only the following people or groups to create new portals. If this is left as an empty array,
-           * then any logged-in user can create a portal.
+           * Limit portal creation to these user or group subjects. An empty
+           * array allows any signed in user to create portals. This is not
+           * enforced by the backend, it's only a UI restriction.
            * @type {string[]}
+           * @default []
            */
           limitPortalsToSubjects: [],
-
           /**
-           * This message will display when a user tries to create a new Portal in the PortalEditor
-           * when they are not associated with a whitelisted subject in the `limitPortalsToSubjects` list
+           * The portal editor shows this message when the user can't create portals.
            * @type {string}
            */
           portalEditNotAuthCreateMessage:
@@ -1445,13 +1445,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            */
           portalEditNotAuthEditMessage:
             "The portal owner has not granted you permission to edit this portal. Please contact the owner to be given edit permission.",
-
-          /**
-           * This message will display when a user tries to create a new portal when they have exceeded their DataONE portal quota
-           * @type {string}
-           */
-          portalEditNoQuotaMessage:
-            "You have already reached the maximum number of portals for your membership level.",
 
           /**
            * This message will display when there is any non-specific error during the save process of the PortalEditor.
@@ -1676,13 +1669,14 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           ],
 
           /**
-           * Limit users to a certain number of portals. This limit will be ignored if {@link AppConfig#enableBookkeeperServices}
-           * is set to true, because the limit will be enforced by Bookkeeper Quotas instead.
-           * @type {number}
-           * @default 100
+           * Limit portal creation by the number of portals the user can edit.
+           * A finite number of 0 or more sets the limit. Other values allow
+           * unlimited portals. The backend doesn't enforce this limit.
+           * @type {number|boolean|string|null|undefined}
+           * @default false
            * @since 2.14.0
            */
-          portalLimit: 100,
+          portalLimit: false,
 
           /**
            * The default values to use in portals. Default sections are applied when a portal is new.
@@ -2313,9 +2307,8 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           defaultAlternateRepositoryId: null,
 
           /**
-           * Enable or disable the DataONE Bookkeeper services. If enabled, Portal Views will use the DataONE Plus
-           * paid features for active subscriptions. If disabled, the Portal Views will assume
-           * all portals are in inactive/free, and will only render free features.
+           * Enable or disable the DataONE Bookkeeper services.
+           * Portal creation and access do not depend on these services.
            * @type {boolean}
            * @since 2.14.0
            */
@@ -2419,18 +2412,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             // },
           ],
 
-          /**
-           * The name of the DataONE Plus membership plan, which is used in messaging throughout the UI.
-           * This is only used if the enableBookkeeperServices setting is set to true.
-           * @type {string}
-           * @default "DataONE Plus"
-           */
-          dataonePlusName: "DataONE Plus",
-
-          //These two DataONE Plus Preview attributes are for a special DataONE Plus tag of MetacatUI
-          // and won't be released in an offical MetacatUI version, since they will be replaced by bookkeeper
-          dataonePlusPreviewMode: false,
-          dataonePlusPreviewPortals: [],
           /*
            * List of Repositories that are DataONE Hosted Repos.
            * DataONE Hosted Repo features are displayed only for these members.
@@ -2459,15 +2440,6 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             "urn:node:ESA",
             "urn:node:GOA",
           ],
-
-          /**
-           * The length of random portal label generated during preview/trial mode of DataONE Plus
-           * @readonly
-           * @type {number}
-           * @default 7
-           * @since 2.14.0
-           */
-          randomLabelNumericLength: 7,
 
           /**
            * If enabled (by setting to true), Cesium maps will be used in the interface.

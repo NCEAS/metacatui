@@ -1196,30 +1196,19 @@ define([
         }
 
         const view = this;
+        const container = this.$(this.portalListContainer)[0];
 
-        // If Bookkeeper services are enabled, render the Portals via a PortalUsagesView,
-        // which queries Bookkeeper for portal Usages
-        if (MetacatUI.appModel.get("enableBookkeeperServices")) {
-          // eslint-disable-next-line import/no-dynamic-require
-          require(["views/portals/PortalUsagesView"], (PortalUsagesView) => {
-            const portalListView = new PortalUsagesView();
-            // Render the Portal list view and insert it in the page
-            portalListView.render();
-            view.$(view.portalListContainer).html(portalListView.el);
-          });
-        }
-        // If Bookkeeper services are disabled, render the Portals via a PortalListView,
-        // which queries Solr for portal docs
-        else {
-          // eslint-disable-next-line import/no-dynamic-require
-          require(["views/portals/PortalListView"], (PortalListView) => {
-            // Create a PortalListView
-            const portalListView = new PortalListView();
-            // Render the Portal list view and insert it in the page
-            portalListView.render();
-            view.$(view.portalListContainer).html(portalListView.el);
-          });
-        }
+        // eslint-disable-next-line import/no-dynamic-require
+        require(["views/portals/PortalListView"], (PortalListView) => {
+          if (!container || view.$(view.portalListContainer)[0] !== container) {
+            return;
+          }
+          view.portalListView?.remove();
+          const portalListView = new PortalListView();
+          view.portalListView = portalListView;
+          portalListView.render();
+          view.$(view.portalListContainer).html(portalListView.el);
+        });
       },
 
       // ---------------------------------- Misc. and Utilities -----------------------------------------//
@@ -1258,6 +1247,9 @@ define([
       },
 
       onClose() {
+        this.portalListView?.remove();
+        this.portalListView = null;
+
         // Clear the template
         this.$el.html("");
 

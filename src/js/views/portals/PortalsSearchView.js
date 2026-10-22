@@ -126,23 +126,8 @@ define([
             myPortalsView.numPortals = 99999;
             myPortalsView.numPortalsPerPage = 5;
             myPortalsView.filters = filters;
+            myPortalsView.searchTerm = this.searchTerm;
             this.subviews.push(myPortalsView);
-
-            // Let the initial owned count establish the creation limit before
-            // searching.
-            myPortalsView.initialSearchPending = true;
-            const initialSearchComplete = () => {
-              this.stopListening(
-                myPortalsView.searchResults,
-                "sync error",
-                initialSearchComplete,
-              );
-              myPortalsView.initialSearchPending = false;
-              if (myPortalsView.searchTerm !== this.searchTerm) {
-                myPortalsView.searchTerm = this.searchTerm;
-                myPortalsView.getSearchResults();
-              }
-            };
 
             // Create titles for the My Portals section
             const myPortalsTitle = title
@@ -155,11 +140,6 @@ define([
             );
 
             myPortalsView.render();
-            this.listenTo(
-              myPortalsView.searchResults,
-              "sync error",
-              initialSearchComplete,
-            );
 
             // Exclude portals the user is an owner of from the All portals list
             const allPortalsFilters = new Filters();
@@ -196,14 +176,12 @@ define([
       /**
        * Applies the submitted term to both portal lists.
        * @param {Event} event The form submission
-       * @returns {void}
        * @since 0.0.0
        */
       search(event) {
         event.preventDefault();
         this.searchTerm = this.$(`#${SEARCH_ID}`).val().trim();
         this.subviews.forEach((view) => {
-          if (view.initialSearchPending) return;
           Object.assign(view, { searchTerm: this.searchTerm });
           view.getSearchResults();
         });

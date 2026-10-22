@@ -6,7 +6,7 @@
 <h3><span class="icon icon-cog"></span> Settings</h3>
 
 <div class="row-fluid">
-  <h4>
+  <h4 id="portal-url-label">
     <%=portalTermCapitalized%> URL
     <i class="required-icon hidden" data-category="label"></i>
   </h4>
@@ -24,7 +24,7 @@
     <div class="label-container hide">
         <div class="control-group">
           <span class="muted"><%=MetacatUI.appModel.get('baseUrl') + MetacatUI.root%>/<%=portalTermPlural%>/</span>
-          <input type="text" value="<%=label%>" data-category="label" class="basic-text label-input-text"></input>
+          <input type="text" value="<%=label%>" aria-labelledby="portal-url-label" data-category="label" class="basic-text label-input-text"></input>
           <span class="notification help-inline" data-category="label"></span>
         </div>
         <div>
