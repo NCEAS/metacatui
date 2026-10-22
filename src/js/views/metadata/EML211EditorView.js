@@ -8,6 +8,7 @@ define([
   "models/metadata/eml211/EMLOtherEntity",
   "models/metadata/ScienceMetadata",
   "models/resourceMap/ResourceMap",
+  "models/sysmeta/AccessPolicy",
   "models/dataPackage/DataPackageRecovery",
   "models/dataONEServices/ObjectService",
   "models/dataONEServices/SysMetaService",
@@ -32,6 +33,7 @@ define([
   EMLOtherEntity,
   ScienceMetadata,
   ResourceMap,
+  AccessPolicy,
   DataPackageRecovery,
   ObjectService,
   SysMetaService,
@@ -2558,6 +2560,18 @@ ${supportDetails}`;
        */
       buildAccessPolicyModalOptions(member, { packageLevel = false } = {}) {
         const sysMeta = member.sysMeta || member.remoteSysMeta;
+        let initialPolicy = sysMeta?.accessPolicy || [];
+        // Use upload defaults for new objects with no chosen policy.
+        if (
+          !member.remotePid &&
+          !member.aggregatedPid &&
+          !member.accessPolicyDirty &&
+          !initialPolicy.length
+        ) {
+          initialPolicy = AccessPolicy.fromValue(
+            MetacatUI.appModel.get("defaultAccessPolicy"),
+          );
+        }
 
         let type = "DataONEObject";
         if (member.isResourceMap()) type = "DataPackage";
@@ -2565,7 +2579,7 @@ ${supportDetails}`;
 
         return {
           packageLevel,
-          policy: sysMeta?.accessPolicy || [],
+          policy: initialPolicy,
           policyContext: {
             fileName: member.getFileName(),
             rightsHolder: sysMeta?.rightsHolder || null,
