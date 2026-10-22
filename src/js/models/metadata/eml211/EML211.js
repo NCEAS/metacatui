@@ -936,9 +936,8 @@ define([
           typeof this.get("geoCoverage") !== "undefined" &&
           this.get("geoCoverage").length > 0
         ) {
-          // Don't serialize if geoCoverage is invalid
-          const validCoverages = _.filter(this.get("geoCoverage"), (cov) =>
-            cov.isValid(),
+          const validCoverages = this.get("geoCoverage").filter(
+            (cov) => !cov.isEmpty() && cov.isValid(),
           );
 
           // Get the existing geo coverage nodes from the EML
@@ -1734,7 +1733,9 @@ define([
                 errors.generalTaxonomicCoverage =
                   "Provide a description of the general taxonomic coverage of this data set.";
             } else if (field === "geoCoverage") {
-              if (!this.get("geoCoverage").length)
+              if (
+                this.get("geoCoverage").every((coverage) => coverage.isEmpty())
+              )
                 errors.geoCoverage = "At least one location is required.";
             } else if (field === "intellectualRights") {
               if (!this.get("intellectualRights"))

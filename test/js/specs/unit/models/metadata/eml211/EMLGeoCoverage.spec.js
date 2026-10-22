@@ -62,6 +62,36 @@ define([
     });
 
     describe("validation", function () {
+      it("accepts a cleared location and omits it from XML", function () {
+        const coverage = new EMLGeoCoverage({
+          description: "Sampling site",
+          north: 10,
+          west: 20,
+        });
+        coverage.set({ description: "", north: null, west: "" });
+
+        expect(coverage.isValid()).to.equal(true);
+        expect(coverage.serialize()).to.equal("");
+      });
+
+      ["north", "east", "south", "west"].forEach(function (coordinate) {
+        it(`doesn't ignore a zero in ${coordinate}`, function () {
+          [0, "0"].forEach(function (value) {
+            const coverage = new EMLGeoCoverage({ [coordinate]: value });
+
+            expect(coverage.isValid()).to.equal(false);
+            expect(coverage.validationError).to.have.property("description");
+          });
+        });
+      });
+
+      it("requires coordinates when only a description is set", function () {
+        const coverage = new EMLGeoCoverage({ description: "Sampling site" });
+
+        expect(coverage.isValid()).to.equal(false);
+        expect(coverage.validationError).to.have.property("north");
+      });
+
       it("should get the status of the coordinates", function () {
         var emlGeoCoverage = new EMLGeoCoverage(
           { objectDOM: this.testEML },
