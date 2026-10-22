@@ -1424,7 +1424,15 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            */
           enableCreatePortals: true,
           /**
-           * The portal editor shows this message when portal creation is disabled.
+           * Limit portal creation to these user or group subjects. An empty
+           * array allows any signed in user to create portals. This is not
+           * enforced by the backend, it's only a UI restriction.
+           * @type {string[]}
+           * @default []
+           */
+          limitPortalsToSubjects: [],
+          /**
+           * The portal editor shows this message when the user can't create portals.
            * @type {string}
            */
           portalEditNotAuthCreateMessage:
@@ -1659,6 +1667,16 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
             "TNC_DANGERMOND",
             "dangermondpreserve",
           ],
+
+          /**
+           * Limit portal creation by the number of portals the user can edit.
+           * A finite number of 0 or more sets the limit. Other values allow
+           * unlimited portals. The backend doesn't enforce this limit.
+           * @type {number|boolean|string|null|undefined}
+           * @default false
+           * @since 2.14.0
+           */
+          portalLimit: false,
 
           /**
            * The default values to use in portals. Default sections are applied when a portal is new.

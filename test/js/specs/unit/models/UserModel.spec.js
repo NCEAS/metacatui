@@ -1,7 +1,8 @@
-define(["/test/js/specs/shared/clean-state.js", "models/UserModel"], (
-  cleanState,
-  UserModel,
-) => {
+define([
+  "/test/js/specs/shared/clean-state.js",
+  "models/UserModel",
+  "common/QueryService",
+], (cleanState, UserModel, QueryService) => {
   const should = chai.should();
   const expect = chai.expect;
 
@@ -16,26 +17,186 @@ define(["/test/js/specs/shared/clean-state.js", "models/UserModel"], (
       state.sandbox.restore();
     });
 
-    it("allows portal creation only for signed-in users when enabled", () => {
-      const originalSetting = MetacatUI.appModel.get("enableCreatePortals");
-      try {
-        for (const [loggedIn, enableCreatePortals, authorized] of [
-          [true, true, true],
-          [false, true, false],
-          [true, false, false],
-        ]) {
-          MetacatUI.appModel.set("enableCreatePortals", enableCreatePortals);
-          state.user.set("loggedIn", loggedIn);
+    describe("portal creation", () => {
+      let config;
+      let query;
+
+      beforeEach(() => {
+        config = MetacatUI.appModel.toJSON();
+        MetacatUI.appModel.set({
+          enableCreatePortals: true,
+          limitPortalsToSubjects: [],
+          portalLimit: -1,
+        });
+        state.user.set(
+          {
+            loggedIn: true,
+            allIdentitiesAndGroups: ["portal-owner"],
+          },
+          { silent: true },
+        );
+        query = state.sandbox
+          .stub(QueryService, "queryWithFetch")
+          .resolves({ response: { numFound: 2 } });
+      });
+
+      afterEach(() => {
+        state.user.off(
+          "change:allIdentitiesAndGroups change:checked",
+          state.user.isAuthorizedCreatePortal,
+        );
+        MetacatUI.appModel.clear({ silent: true });
+        MetacatUI.appModel.set(config, { silent: true });
+      });
+
+      function checkPermission() {
+        return new Promise((resolve) => {
+          state.user.once("change:isAuthorizedCreatePortal", () => {
+            resolve(state.user.get("isAuthorizedCreatePortal"));
+          });
           state.user.isAuthorizedCreatePortal();
-          expect(state.user.get("isAuthorizedCreatePortal")).to.equal(
-            authorized,
-          );
-        }
-      } finally {
-        MetacatUI.appModel.set("enableCreatePortals", originalSetting, {
-          silent: true,
         });
       }
+
+      it("checks portal creation settings", async () => {
+        for (const [
+          loggedIn,
+          enableCreatePortals,
+          subjects,
+          identities,
+          authorized,
+        ] of [
+          [true, true, [], [], true],
+          [false, true, [], [], false],
+          [true, false, [], [], false],
+          [true, true, ["allowed-group"], ["another-user"], false],
+          [true, true, ["allowed-group"], ["allowed-group"], true],
+          [true, true, ["allowed-user"], ["allowed-user"], true],
+        ]) {
+          MetacatUI.appModel.set({
+            enableCreatePortals,
+            limitPortalsToSubjects: subjects,
+          });
+          state.user.set(
+            { loggedIn, allIdentitiesAndGroups: identities },
+            { silent: true },
+          );
+          expect(await checkPermission()).to.equal(authorized);
+        }
+        expect(query.called).to.equal(false);
+      });
+
+      it("waits for user identities before counting portals", async () => {
+        MetacatUI.appModel.set({
+          limitPortalsToSubjects: ["allowed-group"],
+          portalLimit: 3,
+        });
+        state.user.set("allIdentitiesAndGroups", []);
+        const permission = checkPermission();
+        expect(state.user.get("isAuthorizedCreatePortal")).to.equal(null);
+        expect(query.called).to.equal(false);
+
+        state.user.set("allIdentitiesAndGroups", ["allowed-group"]);
+        state.user.set("checked", true);
+        expect(await permission).to.equal(true);
+        expect(query.calledOnce).to.equal(true);
+      });
+
+      it("denies portal creation when identity loading has already finished without identities", async () => {
+        state.user.set({ checked: true, allIdentitiesAndGroups: [] });
+
+        for (const settings of [
+          { limitPortalsToSubjects: ["allowed-group"], portalLimit: -1 },
+          { limitPortalsToSubjects: [], portalLimit: 3 },
+        ]) {
+          MetacatUI.appModel.set(settings);
+          // check permission to create portal
+          expect(await checkPermission()).to.equal(false);
+        }
+        expect(query.called).to.equal(false);
+      });
+
+      it("denies portal creation when both identity lookup requests fail", async () => {
+        MetacatUI.appModel.set({
+          accountsUrl: "https://accounts.example/",
+          portalLimit: 3,
+        });
+        state.user.set({
+          username: "portal-owner",
+          checked: false,
+          allIdentitiesAndGroups: [],
+        });
+        const ajax = state.sandbox.stub($, "ajax").callsFake(({ error }) => {
+          error({ status: 500 });
+        });
+        // check permission to create portal
+        const permission = checkPermission();
+        expect(state.user.get("isAuthorizedCreatePortal")).to.equal(null);
+
+        state.user.getInfo();
+
+        expect(await permission).to.equal(false);
+        expect(state.user.get("checked")).to.equal(true);
+        expect(ajax.calledTwice).to.equal(true);
+        expect(query.called).to.equal(false);
+      });
+
+      it("skips the count for unlimited settings or a zero limit", async () => {
+        for (const portalLimit of [undefined, null, false, "", NaN, -1, 0]) {
+          MetacatUI.appModel.set("portalLimit", portalLimit);
+          expect(await checkPermission()).to.equal(portalLimit !== 0);
+        }
+        expect(query.called).to.equal(false);
+      });
+
+      it("checks portal limits with a count query", async () => {
+        for (const [portalLimit, authorized] of [
+          [1, false],
+          [2, false],
+          [3, true],
+        ]) {
+          MetacatUI.appModel.set("portalLimit", portalLimit);
+          expect(await checkPermission()).to.equal(authorized);
+        }
+        expect(query.callCount).to.equal(3);
+        const options = query.firstCall.args[0];
+        expect(options.rows).to.equal(0);
+        expect(options.useAuth).to.equal(true);
+        expect(options.filterQueries).to.deep.equal([
+          "formatId:*dataone.org/portals*",
+          "-obsoletedBy:*",
+        ]);
+        const q = decodeURIComponent(options.q);
+        for (const field of [
+          "rightsHolder",
+          "writePermission",
+          "changePermission",
+        ]) {
+          expect(q).to.contain(`${field}:portal\\-owner`);
+        }
+      });
+
+      it("skips the count when the user isn't allowed to create portals", async () => {
+        MetacatUI.appModel.set({
+          portalLimit: 3,
+          limitPortalsToSubjects: ["another-user"],
+        });
+        expect(await checkPermission()).to.equal(false);
+        expect(query.called).to.equal(false);
+      });
+
+      it("denies portal creation when the count request fails", async () => {
+        MetacatUI.appModel.set("portalLimit", 3);
+        query.rejects(new Error("Query service unavailable"));
+        expect(await checkPermission()).to.equal(false);
+      });
+
+      it("keeps portal creation disabled if the user signs out during the count", async () => {
+        MetacatUI.appModel.set("portalLimit", 3);
+        const permission = checkPermission();
+        state.user.set("loggedIn", false, { silent: true });
+        expect(await permission).to.equal(false);
+      });
     });
 
     describe("getToken()", () => {

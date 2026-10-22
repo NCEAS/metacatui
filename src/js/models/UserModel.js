@@ -5,8 +5,15 @@ define([
   "jws",
   "models/Search",
   "collections/SolrResults",
-], ($, _, Backbone, JWS, SearchModel, SearchResults) => {
+  "models/filters/Filter",
+  "common/QueryService",
+], ($, _, Backbone, JWS, SearchModel, SearchResults, Filter, QueryService) => {
   "use strict";
+
+  const PORTAL_FILTER_QUERIES = [
+    "formatId:*dataone.org/portals*",
+    "-obsoletedBy:*",
+  ];
 
   /**
    * @class UserModel
@@ -1026,14 +1033,74 @@ define([
         };
       },
 
-      /** Check whether this user can create a portal */
+      /** Check portal creation settings and any configured portal limit */
       isAuthorizedCreatePortal() {
+        const authorizationCheck = {};
+        this.portalAuthorizationCheck = authorizationCheck;
+        const checkAuthOnIdentityLoad = [
+          this,
+          "change:allIdentitiesAndGroups change:checked",
+          this.isAuthorizedCreatePortal,
+        ];
+        this.stopListening(...checkAuthOnIdentityLoad);
         this.set("isAuthorizedCreatePortal", null, { silent: true });
-        this.set(
-          "isAuthorizedCreatePortal",
+        const portalLimit = MetacatUI.appModel.get("portalLimit");
+        const hasLimit = Number.isFinite(portalLimit) && portalLimit >= 0;
+        let authorized =
           this.get("loggedIn") &&
-            MetacatUI.appModel.get("enableCreatePortals") !== false,
-        );
+          MetacatUI.appModel.get("enableCreatePortals") !== false &&
+          portalLimit !== 0;
+        const subjects = MetacatUI.appModel.get("limitPortalsToSubjects");
+        const identities = this.get("allIdentitiesAndGroups");
+
+        if (authorized && (subjects.length || hasLimit) && !identities.length) {
+          if (this.get("checked")) {
+            this.set("isAuthorizedCreatePortal", false);
+          } else {
+            this.listenToOnce(...checkAuthOnIdentityLoad);
+          }
+          return;
+        }
+        if (authorized && subjects.length) {
+          authorized = Boolean(this.hasIdentityOverlap(subjects));
+        }
+
+        if (!authorized || !hasLimit) {
+          this.set("isAuthorizedCreatePortal", authorized);
+          return;
+        }
+
+        const permissionFilter = new Filter({
+          fields: ["rightsHolder", "writePermission", "changePermission"],
+          values: identities,
+          operator: "OR",
+          fieldsOperator: "OR",
+        });
+        const username = this.get("username");
+        QueryService.queryWithFetch({
+          q: decodeURIComponent(permissionFilter.getQuery()),
+          filterQueries: PORTAL_FILTER_QUERIES,
+          rows: 0,
+          useAuth: true,
+        })
+          .then(({ response }) => {
+            if (this.portalAuthorizationCheck !== authorizationCheck) return;
+            const currentIdentities = this.get("allIdentitiesAndGroups");
+            this.set(
+              "isAuthorizedCreatePortal",
+              this.get("loggedIn") &&
+                this.get("username") === username &&
+                identities.length === currentIdentities.length &&
+                identities.every(
+                  (identity, index) => identity === currentIdentities[index],
+                ) &&
+                response.numFound < portalLimit,
+            );
+          })
+          .catch(() => {
+            if (this.portalAuthorizationCheck !== authorizationCheck) return;
+            this.set("isAuthorizedCreatePortal", false);
+          });
       },
 
       /**

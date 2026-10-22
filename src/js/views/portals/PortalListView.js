@@ -9,8 +9,9 @@ define([
   "text!templates/portals/portalList.html",
 ], ($, _, Backbone, Filters, Filter, SearchResults, PagerView, Template) => {
   const CLASS_NAMES = {
-    CREATE: "btn btn-primary",
-    ICON: "icon icon-plus icon-on-left",
+    CREATE: ["btn", "btn-primary"],
+    ICON: ["icon", "icon-plus", "icon-on-left"],
+    LOADING: "loading",
   };
   const NEW_PORTAL_LABEL = "New ";
 
@@ -121,6 +122,12 @@ define([
           // Insert the template
           this.$el.html(this.template());
 
+          this.createBtnContainerEl = this.el.querySelector(
+            this.createBtnContainer,
+          );
+          this.listContainerEl = this.el.querySelector(this.listContainer);
+          this.$listContainerEl = $(this.listContainerEl);
+
           // If there are no given filters, create default ones
           if (!this.filters) {
             // Create search filters for finding the portals
@@ -159,15 +166,12 @@ define([
           _.each(
             this.additionalPortalsToDisplay,
             function renderAdditionalPortal(searchResult) {
-              // Get the list container element
-              const listContainer = this.$(this.listContainer);
-
               // Remove any 'loading' elements before adding items to the list
-              listContainer.find(".loading").remove();
+              this.hideLoading();
 
               // Create a list item element and add the search result element
               // to the list container
-              listContainer.append(this.createListItem(searchResult));
+              this.$listContainerEl.append(this.createListItem(searchResult));
             },
             this,
           );
@@ -181,11 +185,21 @@ define([
                 "portalTermPlural",
               )}...</td>`,
             );
-            this.$(this.listContainer).append(loadingListItem);
+            this.$listContainerEl.append(loadingListItem);
           }
         } catch (e) {
           // eslint-disable-next-line no-console
           console.error(e);
+        }
+      },
+
+      /** Remove loading indicators from the portal list */
+      hideLoading() {
+        if (this.listContainerEl) {
+          const loadingElements = this.listContainerEl.querySelectorAll(
+            `.${CLASS_NAMES.LOADING}`,
+          );
+          loadingElements.forEach((el) => el.remove());
         }
       },
 
@@ -198,7 +212,7 @@ define([
           this.stopListening(this.searchResults, "error", this.showError);
           this.searchRequest?.abort();
           this.pagerView?.remove();
-          this.$(this.listContainer).html(
+          this.$listContainerEl.html(
             $(this.template()).filter(this.listContainer).html(),
           );
 
@@ -267,8 +281,21 @@ define([
        */
       renderList() {
         try {
-          // Get the list container element
-          const listContainer = this.$(this.listContainer);
+          // Remove any 'loading' elements before adding items to the list
+          this.hideLoading();
+
+          if (this.createBtnContainerEl) {
+            // Update the creation link when permission changes.
+            const event = [
+              MetacatUI.appUserModel,
+              "change:isAuthorizedCreatePortal",
+              this.renderCreateButton,
+            ];
+            this.stopListening(...event);
+            this.listenTo(...event);
+            MetacatUI.appUserModel.isAuthorizedCreatePortal();
+            this.renderCreateButton();
+          }
 
           // If no search results were found, display a message
           if (
@@ -280,26 +307,17 @@ define([
               ? `No matching ${MetacatUI.appModel.get("portalTermPlural")}.`
               : this.noResultsMessage;
             row.html(`<div class='no-results'>${message}</div>`);
-            listContainer.html(row);
-
-            // Add a "Create" button to create a new portal
-            this.renderCreateButton();
+            this.$listContainerEl.html(row);
 
             return;
           }
-
-          // Remove any 'loading' elements before adding items to the list
-          listContainer.find(".loading").remove();
 
           // Iterate over each search result and render it
           this.searchResults.each(function renderPortal(searchResult) {
             // Create a list item element and add the search result element
             // to the list container
-            listContainer.append(this.createListItem(searchResult));
+            this.$listContainerEl.append(this.createListItem(searchResult));
           }, this);
-
-          // Add a "Create" button to create a new portal
-          this.renderCreateButton();
 
           // Create a pager for this list if there are many portals
           if (this.$(".portals-list-entry").length > this.numPortalsPerPage) {
@@ -313,7 +331,6 @@ define([
         } catch (e) {
           // eslint-disable-next-line no-console
           console.error(e);
-
           this.showError();
         }
       },
@@ -480,48 +497,32 @@ define([
        * Renders a "Create" button for the user to create a new portal
        */
       renderCreateButton() {
-        try {
-          // Check portal creation permission if it hasn't been checked yet
-          if (
-            MetacatUI.appUserModel.get("isAuthorizedCreatePortal") !== true &&
-            MetacatUI.appUserModel.get("isAuthorizedCreatePortal") !== false
-          ) {
-            this.listenToOnce(
-              MetacatUI.appUserModel,
-              "change:isAuthorizedCreatePortal",
-              this.renderCreateButton,
-            );
-            MetacatUI.appUserModel.isAuthorizedCreatePortal();
-          } else {
-            // Create the new portal link
-            const createButton = $(document.createElement("a"))
-              .addClass(CLASS_NAMES.CREATE)
-              .append(
-                $(document.createElement("i")).addClass(CLASS_NAMES.ICON),
-                NEW_PORTAL_LABEL + MetacatUI.appModel.get("portalTermSingular"),
-              );
-
-            if (
-              MetacatUI.appUserModel.get("isAuthorizedCreatePortal") === false
-            ) {
-              this.$(this.createBtnContainer).empty();
-            } else {
-              createButton.attr(
-                "href",
-                `${MetacatUI.root}/edit/${MetacatUI.appModel.get(
-                  "portalTermPlural",
-                )}`,
-              );
-              this.$(this.createBtnContainer).html(createButton);
-            }
-
-            // Check permission again when the create button is rendered next
-            MetacatUI.appUserModel.set("isAuthorizedCreatePortal", null);
-          }
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.error(e);
+        const container = this.createBtnContainerEl;
+        if (!container) return;
+        const authorized = MetacatUI.appUserModel.get(
+          "isAuthorizedCreatePortal",
+        );
+        if (authorized === null) return;
+        if (authorized !== true) {
+          container.replaceChildren();
+          return;
         }
+        const href = `${MetacatUI.root}/edit/${MetacatUI.appModel.get(
+          "portalTermPlural",
+        )}`;
+        if (container.querySelector("a")?.getAttribute("href") === href) return;
+        const button = document.createElement("a");
+        button.href = href;
+        button.classList.add(...CLASS_NAMES.CREATE);
+        const icon = document.createElement("i");
+        icon.classList.add(...CLASS_NAMES.ICON);
+        icon.setAttribute("aria-hidden", "true");
+        const label = document.createTextNode(
+          NEW_PORTAL_LABEL + MetacatUI.appModel.get("portalTermSingular"),
+        );
+        button.appendChild(icon);
+        button.appendChild(label);
+        container.replaceChildren(button);
       },
 
       /**
@@ -541,14 +542,14 @@ define([
        */
       showError() {
         // Remove the loading elements
-        this.$(this.listContainer).find(".loading").remove();
+        this.hideLoading();
 
-        if (this.$(this.listContainer).children("tr").length === 0) {
+        if (this.$listContainerEl.children("tr").length === 0) {
           // Show an error message
           MetacatUI.appView.showAlert(
             "Something went wrong while getting this list of portals.",
             "alert-error",
-            this.$(this.listContainer),
+            this.$listContainerEl,
           );
         }
       },

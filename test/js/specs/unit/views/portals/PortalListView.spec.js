@@ -14,6 +14,8 @@ define(["backbone", "views/portals/PortalListView"], (
       sandbox = sinon.createSandbox();
       config = MetacatUI.appModel.toJSON();
       authorization = MetacatUI.appUserModel.get("isAuthorizedCreatePortal");
+      MetacatUI.appModel.set("portalLimit", false);
+      MetacatUI.appModel.set("showMyPortals", true);
     });
 
     afterEach(() => {
@@ -50,8 +52,9 @@ define(["backbone", "views/portals/PortalListView"], (
     });
 
     it("shows the editor link only while portal creation is authorized", () => {
+      sandbox.stub(Backbone, "ajax").returns({ abort() {} });
       view = new PortalListView();
-      view.$el.html(view.template());
+      view.render();
       MetacatUI.appUserModel.set("isAuthorizedCreatePortal", true);
       view.renderCreateButton();
 
@@ -62,6 +65,28 @@ define(["backbone", "views/portals/PortalListView"], (
       MetacatUI.appUserModel.set("isAuthorizedCreatePortal", false);
       view.renderCreateButton();
 
+      expect(view.$(view.createBtnContainer).children()).to.have.length(0);
+    });
+
+    it("renders the creation link once authorization completes", () => {
+      sandbox.stub(Backbone, "ajax").returns({ abort() {} });
+      view = new PortalListView();
+      view.render();
+      MetacatUI.appUserModel.set("isAuthorizedCreatePortal", null);
+      const check = sandbox.stub(
+        MetacatUI.appUserModel,
+        "isAuthorizedCreatePortal",
+      );
+
+      view.renderList();
+      view.renderList();
+      expect(view.$(view.createBtnContainer).children()).to.have.length(0);
+
+      MetacatUI.appUserModel.set("isAuthorizedCreatePortal", true);
+      expect(view.$(`${view.createBtnContainer} a`)).to.have.length(1);
+      expect(check.calledTwice).to.equal(true);
+
+      MetacatUI.appUserModel.set("isAuthorizedCreatePortal", false);
       expect(view.$(view.createBtnContainer).children()).to.have.length(0);
     });
   });

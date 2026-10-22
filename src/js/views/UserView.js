@@ -1196,10 +1196,16 @@ define([
         }
 
         const view = this;
+        const container = this.$(this.portalListContainer)[0];
 
         // eslint-disable-next-line import/no-dynamic-require
         require(["views/portals/PortalListView"], (PortalListView) => {
+          if (!container || view.$(view.portalListContainer)[0] !== container) {
+            return;
+          }
+          view.portalListView?.remove();
           const portalListView = new PortalListView();
+          view.portalListView = portalListView;
           portalListView.render();
           view.$(view.portalListContainer).html(portalListView.el);
         });
@@ -1241,6 +1247,9 @@ define([
       },
 
       onClose() {
+        this.portalListView?.remove();
+        this.portalListView = null;
+
         // Clear the template
         this.$el.html("");
 
