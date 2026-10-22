@@ -356,27 +356,30 @@ define([
         if (!c1 && c2) return false;
         if (c1 && !c2) return false;
 
-        // stringify the two classifications for
         const stringKeys = ["taxonRankName", "taxonRankValue", "commonName"];
 
-        // Recursively stringify the nested classifications for comparison
-        stringifyClassification = function (c) {
-          const stringified = {};
-          for (let key of stringKeys) {
-            if (c[key]) stringified[key] = c[key];
+        const classificationValues = (c) => {
+          if (Array.isArray(c) && c.length) {
+            return c.map(classificationValues);
           }
-          if (c.taxonId) stringified.taxonId = c.taxonId;
-          if (c.taxonomicClassification) {
-            stringified.taxonomicClassification = stringifyClassification(
+          const values = {};
+          stringKeys.forEach((key) => {
+            if (c[key]) values[key] = c[key];
+          });
+          if (c.taxonId) values.taxonId = c.taxonId;
+          // Parsed leaves use {}; treat missing or empty children alike.
+          if (c.taxonomicClassification?.length) {
+            values.taxonomicClassification = classificationValues(
               c.taxonomicClassification,
             );
           }
-          const st = JSON.stringify(stringified);
-          // convert all to uppercase for comparison
-          return st.toUpperCase();
+          return values;
         };
 
-        return stringifyClassification(c1) === stringifyClassification(c2);
+        return (
+          JSON.stringify(classificationValues(c1)).toUpperCase() ===
+          JSON.stringify(classificationValues(c2)).toUpperCase()
+        );
       },
 
       /**
