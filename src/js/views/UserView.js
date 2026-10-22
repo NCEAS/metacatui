@@ -1197,29 +1197,12 @@ define([
 
         const view = this;
 
-        // If Bookkeeper services are enabled, render the Portals via a PortalUsagesView,
-        // which queries Bookkeeper for portal Usages
-        if (MetacatUI.appModel.get("enableBookkeeperServices")) {
-          // eslint-disable-next-line import/no-dynamic-require
-          require(["views/portals/PortalUsagesView"], (PortalUsagesView) => {
-            const portalListView = new PortalUsagesView();
-            // Render the Portal list view and insert it in the page
-            portalListView.render();
-            view.$(view.portalListContainer).html(portalListView.el);
-          });
-        }
-        // If Bookkeeper services are disabled, render the Portals via a PortalListView,
-        // which queries Solr for portal docs
-        else {
-          // eslint-disable-next-line import/no-dynamic-require
-          require(["views/portals/PortalListView"], (PortalListView) => {
-            // Create a PortalListView
-            const portalListView = new PortalListView();
-            // Render the Portal list view and insert it in the page
-            portalListView.render();
-            view.$(view.portalListContainer).html(portalListView.el);
-          });
-        }
+        // eslint-disable-next-line import/no-dynamic-require
+        require(["views/portals/PortalListView"], (PortalListView) => {
+          const portalListView = new PortalListView();
+          portalListView.render();
+          view.$(view.portalListContainer).html(portalListView.el);
+        });
       },
 
       // ---------------------------------- Misc. and Utilities -----------------------------------------//

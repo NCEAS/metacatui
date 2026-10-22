@@ -46,7 +46,6 @@ define([
           expires: null,
           timeoutId: null,
           rawData: null,
-          portalQuota: -1,
           isAuthorizedCreatePortal: null,
           dataoneQuotas: null,
           dataoneSubscription: null,
@@ -1027,116 +1026,14 @@ define([
         };
       },
 
-      /**
-       * Checks if this user has the quota to perform the given action
-       * @param {string} action - The action to be performed
-       * @param {string} customerGroup - The subject or identifier of the customer/membership group
-       * to use this quota against
-       */
-      checkQuota(action, customerGroup) {
-        // Temporarily reset the quota so a trigger event is changed when the XHR is complete
-        this.set("portalQuota", -1, { silent: true });
-
-        // Start of temporary code
-        // TODO: Replace this function with real code once the quota service is working
-        this.set("portalQuota", 999);
-
-        // End of temporary code
-
-        /*  var model = this;
-
-      var requestSettings = {
-        url: "",
-        type: "GET",
-        success: function(data, textStatus, xhr) {
-          model.set("portalQuota", data.remainingQuota);
-        },
-        error: function(xhr, textStatus, errorThrown) {
-          model.set("portalQuota", 0);
-        }
-      }
-
-      $.ajax(_.extend(requestSettings, this.createAjaxSettings()));
-*/
-      },
-
-      /**
-       * Checks if the user has authorization to perform the given action.
-       */
+      /** Check whether this user can create a portal */
       isAuthorizedCreatePortal() {
-        // Reset the isAuthorized attribute silently so a change event is always triggered
         this.set("isAuthorizedCreatePortal", null, { silent: true });
-
-        // If the user isn't logged in, set authorization to false
-        if (!this.get("loggedIn")) {
-          this.set("isAuthorizedCreatePortal", false);
-          return;
-        }
-
-        // If creating portals has been disabled app-wide, then set to false
-        if (MetacatUI.appModel.get("enableCreatePortals") === false) {
-          this.set("isAuthorizedCreatePortal", false);
-        }
-        // If creating portals has been limited to only certain subjects, check if this user is one of them
-        else if (MetacatUI.appModel.get("limitPortalsToSubjects").length) {
-          if (!this.get("allIdentitiesAndGroups").length) {
-            this.on(
-              "change:allIdentitiesAndGroups",
-              this.isAuthorizedCreatePortal,
-            );
-            return;
-          }
-
-          // Find the subjects that have access to create portals. Could be specific users or groups.
-          const subjectsThatHaveAccess = _.intersection(
-            MetacatUI.appModel.get("limitPortalsToSubjects"),
-            this.get("allIdentitiesAndGroups"),
-          );
-          if (!subjectsThatHaveAccess.length) {
-            // If this user is not in the whitelist, set to false
-            this.set("isAuthorizedCreatePortal", false);
-          } else {
-            // If this user is in the whitelist, set to true
-            this.set("isAuthorizedCreatePortal", true);
-          }
-        }
-        // If anyone is allowed to create a portal, check if they have the quota to create a portal
-        else if (MetacatUI.appModel.get("enableBookkeeperServices")) {
-          // Get the Quotas for this user
-          const quotas = this.get("dataoneQuotas");
-
-          // If the Quotas are still being fetched,
-          if (quotas == this.defaults().dataoneQuotas && !quotas) {
-            this.on("change:dataoneQuotas", this.isAuthorizedCreatePortal);
-            return;
-          }
-          const portalQuotas = quotas.where({ quotaType: "portal" });
-
-          // If this user has no portal Quota at all, they are not auth to create a portal
-          if (!portalQuotas) {
-            this.set("isAuthorizedCreatePortal", false);
-          } else {
-            // Check that there is at least one Quota where the totalUsage < softLimit
-            const hasRemainingUsage = _.some(
-              portalQuotas,
-              (quota) => quota.get("totalUsage") < quota.get("softLimit"),
-            );
-
-            // If there is remaining usage left in at least one Quota, then the user can create a portal
-            if (hasRemainingUsage) {
-              this.set("isAuthorizedCreatePortal", true);
-            }
-            // Otherwise they cannot create a new portal
-            else {
-              this.set("isAuthorizedCreatePortal", false);
-            }
-          }
-
-          // @todoGet the admin group and force admins to have at least one quota left
-        } else {
-          // Default to letting people create portals
-          this.set("isAuthorizedCreatePortal", true);
-        }
+        this.set(
+          "isAuthorizedCreatePortal",
+          this.get("loggedIn") &&
+            MetacatUI.appModel.get("enableCreatePortals") !== false,
+        );
       },
 
       /**
@@ -1187,42 +1084,21 @@ define([
             // Create a Subscription model
             const subscription = new Subscription();
 
-            if (MetacatUI.appModel.get("dataonePlusPreviewMode")) {
-              // Create Quota models for preview mode
-              quotas.add({
-                softLimit: MetacatUI.appModel.get("portalLimit"),
-                hardLimit: MetacatUI.appModel.get("portalLimit"),
-                quotaType: "portal",
-                unit: "portal",
-                subject: thisUser.get("username"),
-                subscription,
-              });
-
-              // Default to all people being in trial mode
-              subscription.set("status", "trialing");
-
+            thisUser.listenToOnce(quotas, "reset", () => {
               // Save a reference to the Quotas on this UserModel
               thisUser.set("dataoneQuotas", quotas);
+            });
 
-              // Save a reference to the Subscriptioin on this UserModel
+            thisUser.listenToOnce(subscription, "sync", () => {
+              // Save the subscription on this user
               thisUser.set("dataoneSubscription", subscription);
-            } else {
-              thisUser.listenToOnce(quotas, "reset", () => {
-                // Save a reference to the Quotas on this UserModel
-                thisUser.set("dataoneQuotas", quotas);
-              });
+            });
 
-              thisUser.listenToOnce(subscription, "sync", () => {
-                // Save a reference to the Subscriptioin on this UserModel
-                thisUser.set("dataoneSubscription", subscription);
-              });
+            // Fetch the Quotas
+            quotas.fetch({ subscriber: thisUser.get("username") });
 
-              // Fetch the Quotas
-              quotas.fetch({ subscriber: thisUser.get("username") });
-
-              // Fetch the Subscriptioin
-              subscription.fetch();
-            }
+            // Fetch the subscription
+            subscription.fetch();
           });
         } catch (e) {
           console.error(

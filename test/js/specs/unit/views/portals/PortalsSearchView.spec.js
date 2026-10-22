@@ -1,9 +1,7 @@
-define([
-  "backbone",
-  "views/portals/PortalsSearchView",
-  "views/portals/PortalUsagesView",
-  "collections/bookkeeper/Usages",
-], (Backbone, PortalsSearchView, PortalUsagesView, Usages) => {
+define(["backbone", "views/portals/PortalsSearchView"], (
+  Backbone,
+  PortalsSearchView,
+) => {
   const expect = chai.expect;
 
   describe("PortalsSearchView Test Suite", () => {
@@ -23,8 +21,6 @@ define([
           showMyPortals: true,
           portalTermPlural: "portals",
           portalTermSingular: "portal",
-          portalLimit: -1,
-          enableBookkeeperServices: false,
           defaultAlternateRepositoryId: null,
           disableQueryPOSTs: false,
         },
@@ -152,26 +148,6 @@ define([
 
       expect(view.$(".portals-list-entry")).to.have.lengthOf(1);
       expect(view.$(".portal-title").text()).to.equal("latest 0");
-    });
-
-    it("adds the required usage search filters and keeps the sync signal", () => {
-      const usagesView = new PortalUsagesView();
-      usagesView.usagesCollection = new Usages([{ instanceId: "portal-1" }]);
-      const results = usagesView.searchResults;
-      const synced = sandbox.spy();
-      usagesView.listenTo(results, "sync", synced);
-
-      usagesView.getSearchResultsForUsages();
-
-      expect(requests[0].query).to.contain('seriesId:"portal\\-1"');
-      expect(requests[0].query).to.contain("formatId:*dataone.org\\/portals*");
-      expect(requests[0].query).to.contain("-obsoletedBy:*");
-
-      respond(requests[0], portals(1, "usage"));
-
-      expect(usagesView.searchResults).to.equal(results);
-      expect(synced.calledOnce).to.equal(true);
-      usagesView.remove();
     });
   });
 });

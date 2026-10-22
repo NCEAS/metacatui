@@ -16,6 +16,28 @@ define(["/test/js/specs/shared/clean-state.js", "models/UserModel"], (
       state.sandbox.restore();
     });
 
+    it("allows portal creation only for signed-in users when enabled", () => {
+      const originalSetting = MetacatUI.appModel.get("enableCreatePortals");
+      try {
+        for (const [loggedIn, enableCreatePortals, authorized] of [
+          [true, true, true],
+          [false, true, false],
+          [true, false, false],
+        ]) {
+          MetacatUI.appModel.set("enableCreatePortals", enableCreatePortals);
+          state.user.set("loggedIn", loggedIn);
+          state.user.isAuthorizedCreatePortal();
+          expect(state.user.get("isAuthorizedCreatePortal")).to.equal(
+            authorized,
+          );
+        }
+      } finally {
+        MetacatUI.appModel.set("enableCreatePortals", originalSetting, {
+          silent: true,
+        });
+      }
+    });
+
     describe("getToken()", () => {
       it("does not leave authentication checks incomplete after a custom callback succeeds", () => {
         const { sandbox, user } = state;

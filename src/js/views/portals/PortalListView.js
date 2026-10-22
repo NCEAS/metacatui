@@ -8,6 +8,12 @@ define([
   "views/PagerView",
   "text!templates/portals/portalList.html",
 ], ($, _, Backbone, Filters, Filter, SearchResults, PagerView, Template) => {
+  const CLASS_NAMES = {
+    CREATE: "btn btn-primary",
+    ICON: "icon icon-plus icon-on-left",
+  };
+  const NEW_PORTAL_LABEL = "New ";
+
   /**
    * @class PortalListView
    * @classdesc A view that shows a list of Portals
@@ -218,26 +224,6 @@ define([
           // The fields to return
           this.searchResults.fields = this.searchFields;
 
-          // Set the query service URL
-          try {
-            if (MetacatUI.appModel.get("defaultAlternateRepositoryId")) {
-              const mnToQuery = _.findWhere(
-                MetacatUI.appModel.get("alternateRepositories"),
-                {
-                  identifier: MetacatUI.appModel.get(
-                    "defaultAlternateRepositoryId",
-                  ),
-                },
-              );
-              if (mnToQuery) {
-                this.searchResults.queryServiceUrl = mnToQuery.queryServiceUrl;
-              }
-            }
-          } catch (e) {
-            // eslint-disable-next-line no-console
-            console.error("Could not get active alt repo. ", e);
-          }
-
           // Set the query on the SearchResults
           let query = this.filters.getQuery();
           if (this.searchTerm) {
@@ -281,9 +267,6 @@ define([
        */
       renderList() {
         try {
-          if (!this.searchTerm) {
-            this.unfilteredPortalCount = this.searchResults.length;
-          }
           // Get the list container element
           const listContainer = this.$(this.listContainer);
 
@@ -497,15 +480,12 @@ define([
        * Renders a "Create" button for the user to create a new portal
        */
       renderCreateButton() {
-        // Portal limits depend on the unfiltered count, including while authorization loads.
-        if (this.searchTerm && this.unfilteredPortalCount === undefined) return;
         try {
-          // If the authorization hasn't been checked yet
+          // Check portal creation permission if it hasn't been checked yet
           if (
             MetacatUI.appUserModel.get("isAuthorizedCreatePortal") !== true &&
             MetacatUI.appUserModel.get("isAuthorizedCreatePortal") !== false
           ) {
-            // Check is this user is authorized to create a new portal
             this.listenToOnce(
               MetacatUI.appUserModel,
               "change:isAuthorizedCreatePortal",
@@ -513,101 +493,29 @@ define([
             );
             MetacatUI.appUserModel.isAuthorizedCreatePortal();
           } else {
-            // Create a New portal buttton
+            // Create the new portal link
             const createButton = $(document.createElement("a"))
-              .addClass("btn btn-primary")
+              .addClass(CLASS_NAMES.CREATE)
               .append(
-                $(document.createElement("i")).addClass(
-                  "icon icon-plus icon-on-left",
-                ),
-                `New ${MetacatUI.appModel.get("portalTermSingular")}`,
+                $(document.createElement("i")).addClass(CLASS_NAMES.ICON),
+                NEW_PORTAL_LABEL + MetacatUI.appModel.get("portalTermSingular"),
               );
 
-            const isNotAuthorizedNoBookkeeper =
-              !MetacatUI.appModel.get("enableBookkeeperServices") &&
-              MetacatUI.appUserModel.get("isAuthorizedCreatePortal") === false;
-            const reachedLimitWithBookkeeper =
-              MetacatUI.appModel.get("enableBookkeeperServices") &&
-              MetacatUI.appUserModel.get("isAuthorizedCreatePortal") === false;
-            const reachedLimitWithoutBookkeeper =
-              !MetacatUI.appModel.get("enableBookkeeperServices") &&
-              MetacatUI.appModel.get("portalLimit") <=
-                (this.unfilteredPortalCount ?? this.searchResults.length) &&
-              MetacatUI.appModel.get("portalLimit") >= 0;
-
-            // If creating portals is disabled in the entire app, or is only limited to certain groups,
-            // then don't show the Create button.
-            if (isNotAuthorizedNoBookkeeper) {
-              return;
-            }
-            // If creating portals is enabled, but this person is unauthorized because of Bookkeeper info,
-            // then show the Create button as disabled.
-            if (reachedLimitWithBookkeeper || reachedLimitWithoutBookkeeper) {
-              // Disable the button
-              createButton.addClass("disabled");
-
-              // Add the create button to the view
-              this.$(this.createBtnContainer).html(createButton);
-
-              let message = `You've already reached the ${MetacatUI.appModel.get(
-                "portalTermSingular",
-              )} limit for your `;
-
-              if (MetacatUI.appModel.get("enableBookkeeperServices")) {
-                message += MetacatUI.appModel.get("dataonePlusName");
-
-                if (MetacatUI.appModel.get("dataonePlusPreviewMode")) {
-                  message += " free preview. ";
-                } else {
-                  message += " subscription. ";
-                }
-
-                const portalQuotas = MetacatUI.appUserModel.getQuotas("portal");
-                if (portalQuotas.length) {
-                  message += `(${portalQuotas[0].get("softLimit")} ${
-                    portalQuotas[0].get("softLimit") > 1
-                      ? MetacatUI.appModel.get("portalTermPlural")
-                      : MetacatUI.appModel.get("portalTermSingular")
-                  })`;
-                }
-
-                message += " Contact us to upgrade your subscription.";
-              } else {
-                message += " account. ";
-
-                const portalLimit = MetacatUI.appModel.get("portalLimit");
-                if (portalLimit > 0) {
-                  message += `(${portalLimit} ${
-                    portalLimit > 1
-                      ? MetacatUI.appModel.get("portalTermPlural")
-                      : MetacatUI.appModel.get("portalTermSingular")
-                  })`;
-                }
-              }
-
-              // Add the tooltip to the button
-              createButton.tooltip({
-                placement: "top",
-                trigger: "hover click focus",
-                delay: {
-                  show: 500,
-                },
-                title: message,
-              });
+            if (
+              MetacatUI.appUserModel.get("isAuthorizedCreatePortal") === false
+            ) {
+              this.$(this.createBtnContainer).empty();
             } else {
-              // Add the link URL to the button
               createButton.attr(
                 "href",
                 `${MetacatUI.root}/edit/${MetacatUI.appModel.get(
                   "portalTermPlural",
                 )}`,
               );
-
-              // Add the create button to the view
               this.$(this.createBtnContainer).html(createButton);
             }
 
-            // Reset the isAuthorizedCreatePortal attribute
+            // Check permission again when the create button is rendered next
             MetacatUI.appUserModel.set("isAuthorizedCreatePortal", null);
           }
         } catch (e) {

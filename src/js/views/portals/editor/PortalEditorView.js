@@ -243,7 +243,7 @@ define([
           ) {
             this.showSignIn();
           } else {
-            //Check the user's quota to create a new Portal
+            // Check whether the user can create a portal
             this.listenToOnce(
               MetacatUI.appUserModel,
               "change:isAuthorizedCreatePortal",
@@ -255,18 +255,9 @@ define([
                   // Render the default model if the portal is new
                   this.renderPortalEditor();
                 } else {
-                  //If the user doesn't have quota left, display this message
-                  if (MetacatUI.appUserModel.get("portalQuota") == 0) {
-                    var errorMessage = MetacatUI.appModel.get(
-                      "portalEditNoQuotaMessage",
-                    );
-                  }
-                  //Otherwise, display a more generic error message
-                  else {
-                    var errorMessage = MetacatUI.appModel.get(
-                      "portalEditNotAuthCreateMessage",
-                    );
-                  }
+                  const errorMessage = MetacatUI.appModel.get(
+                    "portalEditNotAuthCreateMessage",
+                  );
 
                   //Hide the loading icon
                   this.hideLoading();
@@ -323,81 +314,6 @@ define([
       renderPortalEditor: function () {
         var view = this;
         this.stopListening(this.model, "error");
-
-        //Check if this is a plus portal
-        if (MetacatUI.appModel.get("dataonePlusPreviewMode")) {
-          var sourceMN = this.model.get("datasource");
-
-          //Check if the portal source node is from the active alt repo OR is
-          // configured as a Plus portal.
-          if (
-            !this.model.isNew() &&
-            (typeof sourceMN != "string" ||
-              (sourceMN !=
-                MetacatUI.appModel.get("defaultAlternateRepositoryId") &&
-                !_.findWhere(
-                  MetacatUI.appModel.get("dataonePlusPreviewPortals"),
-                  {
-                    datasource: sourceMN,
-                    seriesId: this.model.get("seriesId"),
-                  },
-                )))
-          ) {
-            //Get the name of the source member node
-            var sourceMNName = "original data repository",
-              mnURL = "";
-            if (typeof sourceMN == "string") {
-              var sourceMNObject = MetacatUI.nodeModel.getMember(sourceMN);
-              if (sourceMNObject) {
-                sourceMNName = sourceMNObject.name;
-
-                //If there is a baseURL string
-                if (sourceMNObject.baseURL) {
-                  //Parse out the origin of the baseURL string. We want to crop out the /metacat/d1/mn parts.
-                  mnURL =
-                    sourceMNObject.baseURL.substring(
-                      0,
-                      sourceMNObject.baseURL.lastIndexOf("."),
-                    ) +
-                    sourceMNObject.baseURL.substring(
-                      sourceMNObject.baseURL.lastIndexOf("."),
-                      sourceMNObject.baseURL.indexOf(
-                        "/",
-                        sourceMNObject.baseURL.lastIndexOf("."),
-                      ),
-                    );
-                }
-              }
-            }
-
-            //Show a message that the portal can be found on the repository website.
-            var message = $(document.createElement("h3")).addClass(
-              "center stripe",
-            );
-            message.text(
-              "The " +
-                this.model.get("name") +
-                " " +
-                MetacatUI.appModel.get("portalTermSingular") +
-                " can be edited in the ",
-            );
-
-            if (mnURL) {
-              message.append(
-                $(document.createElement("a"))
-                  .attr("href", mnURL)
-                  .attr("target", "_blank")
-                  .text(sourceMNName),
-              );
-            } else {
-              message.append(sourceMNName);
-            }
-
-            this.$el.html(message);
-
-            return;
-          }
-        }
 
         // Add the template to the view and give the body the "Editor" class
         this.$el.html(
@@ -478,9 +394,6 @@ define([
 
         //Render the sections view
         this.sectionsView.render();
-
-        //If this portal is a free trial DataONE Plus portal, then display some messaging
-        this.renderSubscriptionInfo();
 
         //Show the required fields for this editor
         this.renderRequiredIcons(
@@ -962,106 +875,6 @@ define([
               "Screen shot of a portal data page for a climate research lab. The page shows a search bar, customized filters, and a map of the the geographic area the data covers.",
           }),
         );
-      },
-
-      /**
-       * The DataONE Plus Subscription if fetched from Bookkeeper and the status of the
-       * Subscription is rendered on the page.
-       * Subviews in this view should have their own renderSubscriptionInfo() function
-       * that inserts subscription details into the subview.
-       */
-      renderSubscriptionInfo: function () {
-        if (MetacatUI.appModel.get("enableBookkeeperServices")) {
-          if (
-            MetacatUI.appUserModel.get("loggedIn") &&
-            MetacatUI.appUserModel.get("dataoneSubscription")
-          ) {
-            //Show the free trial message for this portal, if the subscription is in a free trial
-            var subscription = MetacatUI.appUserModel.get(
-                "dataoneSubscription",
-              ),
-              isFreeTrial = false;
-
-            //If the Subscription is in free trial mode
-            if (subscription && subscription.isTrialing()) {
-              if (MetacatUI.appModel.get("dataonePlusPreviewMode")) {
-                //If this portal is not in the configured list of Plus portals
-                var trialExceptions = MetacatUI.appModel.get(
-                  "dataonePlusPreviewPortals",
-                );
-                isFreeTrial = !_.findWhere(trialExceptions, {
-                  seriesId: this.model.get("seriesId"),
-                });
-              } else {
-                isFreeTrial = true;
-              }
-
-              if (isFreeTrial) {
-                //Show a free trial message in the editor footer
-                var freeTrialMessage =
-                  "This " +
-                  MetacatUI.appModel.get("portalTermSingular") +
-                  " is a free preview of " +
-                  MetacatUI.appModel.get("dataonePlusName");
-                var messageEl = $(document.createElement("span"))
-                  .addClass("free-trial-message")
-                  .text(freeTrialMessage)
-                  .prepend(
-                    $(document.createElement("i")).addClass(
-                      "dataone-plus-icon-container",
-                    ),
-                  );
-                this.$("#editor-footer").prepend(messageEl);
-
-                // Update the label element to randomly generated label
-                // And disable the input
-                var labelEL = $(".label-input-text");
-                labelEL.val(this.model.get("label"));
-
-                //When the Portal Model label is changed, update the input
-                this.listenTo(this.model, "change:label", function () {
-                  $(".label-input-text").val(this.model.get("label"));
-                });
-
-                labelEL.attr("disabled", "disabled");
-                //Remove the "Change URL" button that toggles the label input
-                this.$(".btn.change-label").remove();
-
-                // Show edit label message if the edit button is disabled
-                var editLabelMessage =
-                  "Create a custom " +
-                  MetacatUI.appModel.get("portalTermSingular") +
-                  " name for the URL when your free preview of " +
-                  "<i class='dataone-plus-icon-container'></i>" +
-                  MetacatUI.appModel.get("dataonePlusName") +
-                  " ends.";
-                var messageContainer = this.$(".label-container .notification")
-                  .html(editLabelMessage)
-                  .addClass("free-trial");
-
-                if (!messageContainer.is(":visible")) {
-                  messageContainer
-                    .detach()
-                    .appendTo(this.$(".change-label-container"));
-                }
-
-                //Insert the DataONE Plus icon
-                var viewRef = this;
-                require(["text!templates/dataonePlusIcon.html"], function (
-                  iconTemplate,
-                ) {
-                  viewRef.$(".dataone-plus-icon-container").html(iconTemplate);
-                });
-              }
-            }
-          } else {
-            this.listenTo(
-              MetacatUI.appUserModel,
-              "change:dataoneSubscription",
-              this.renderSubscriptionInfo,
-            );
-          }
-        }
       },
 
       /**
