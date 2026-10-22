@@ -212,6 +212,117 @@ define([
     });
 
     describe("Taxonomic Coverage", function () {
+      it("keeps distinct nested branches when validating and serializing coverage", function () {
+        const branches = [
+          ["Sphyraena barracuda", "Megalops atlanticus"],
+          ["Sphyraena barracuda", "Lutjanus campechanus"],
+          ["Sphyraena barracuda"],
+        ];
+        const coverage = new EMLTaxonCoverage({
+          taxonomicClassification: branches.map((species) => ({
+            taxonRankName: "kingdom",
+            taxonRankValue: "Animalia",
+            taxonomicClassification: [
+              {
+                taxonRankName: "phylum",
+                taxonRankValue: "Chordata",
+                taxonomicClassification: species.map((name) => ({
+                  taxonRankName: "species",
+                  taxonRankValue: name,
+                })),
+              },
+            ],
+          })),
+        });
+
+        expect(coverage.isValid()).to.equal(true);
+
+        const saved = new EMLTaxonCoverage({
+          objectDOM: $(coverage.serialize()).get(0),
+        });
+        expect(
+          saved
+            .get("taxonomicClassification")
+            .map((kingdom) =>
+              kingdom.taxonomicClassification[0].taxonomicClassification.map(
+                (species) => species.taxonRankValue,
+              ),
+            ),
+        ).to.deep.equal(branches);
+      });
+
+      it("compares nested ranks, values, common names, and identifiers", function () {
+        const coverage = new EMLTaxonCoverage({});
+        const classification = {
+          taxonRankName: "kingdom",
+          taxonRankValue: "Animalia",
+          taxonomicClassification: [
+            {
+              taxonRankName: "species",
+              taxonRankValue: "Megalops atlanticus",
+              commonName: ["Tarpon"],
+              taxonId: [{ provider: "https://www.itis.gov", value: "161113" }],
+            },
+          ],
+        };
+        const changes = [
+          ["taxonRankName", "genus"],
+          ["taxonRankValue", "Sphyraena barracuda"],
+          ["commonName", ["Atlantic tarpon"]],
+          ["taxonId", [{ provider: "https://example.org", value: "161113" }]],
+          ["taxonId", [{ provider: "https://www.itis.gov", value: "123" }]],
+        ];
+
+        changes.forEach(([key, value]) => {
+          const different = structuredClone(classification);
+          different.taxonomicClassification[0][key] = value;
+          expect(
+            coverage.classificationsAreEqual(classification, different),
+            key,
+          ).to.equal(false);
+        });
+      });
+
+      it("removes duplicate branches with different case and XML IDs", function () {
+        const first = {
+          id: "first",
+          taxonRankName: "kingdom",
+          taxonRankValue: "Animalia",
+          taxonomicClassification: [
+            {
+              id: "first-child",
+              taxonRankName: "species",
+              taxonRankValue: "Megalops atlanticus",
+              commonName: ["Tarpon"],
+              taxonId: [{ provider: "https://www.itis.gov", value: "161113" }],
+              taxonomicClassification: {},
+            },
+          ],
+        };
+        const duplicate = structuredClone(first);
+        duplicate.id = "last";
+        duplicate.taxonRankName = "KINGDOM";
+        duplicate.taxonomicClassification[0].id = "last-child";
+        duplicate.taxonomicClassification[0].taxonomicClassification = [];
+        duplicate.taxonomicClassification[0].taxonRankValue =
+          "MEGALOPS ATLANTICUS";
+        const withoutChildren = structuredClone(duplicate);
+        delete withoutChildren.taxonomicClassification[0]
+          .taxonomicClassification;
+        const coverage = new EMLTaxonCoverage({
+          taxonomicClassification: [first, duplicate, withoutChildren],
+        });
+        const removed = sinon.spy();
+        coverage.on("duplicateClassificationsRemoved", removed);
+
+        coverage.removeDuplicateClassifications();
+
+        expect(coverage.get("taxonomicClassification")).to.deep.equal([
+          withoutChildren,
+        ]);
+        sinon.assert.calledOnceWithExactly(removed, [first, duplicate]);
+      });
+
       it("should detect when there is not a taxonomic coverage model", function () {
         state.eml.set("taxonCoverage", []);
         state.eml.hasTaxonomicCoverage().should.be.false;
