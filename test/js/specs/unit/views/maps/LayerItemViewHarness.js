@@ -1,23 +1,23 @@
 "use strict";
 
-define([], function () {
+define(["views/maps/LayerItemView"], function (LayerItemView) {
+  const { CLASS_NAMES } = LayerItemView;
+
   return class LayerItemViewHarness {
     constructor(view) {
       this.view = view;
     }
 
     getLabelText() {
-      return this.view.$(`.${this.view.classes.labelText}`);
+      return this.view.$(`.${CLASS_NAMES.LABEL_TEXT}`);
     }
 
     getVisibilityToggle() {
-      return this.view.$(`.${this.view.classes.visibilityToggle}`);
+      return this.view.$(`.${CLASS_NAMES.VISIBILITY_TOGGLE}`);
     }
 
     getLayerIconVisibilityToggle() {
-      return this.getVisibilityToggle().children(
-        `.${this.view.classes.icon}`,
-      )[0];
+      return this.getVisibilityToggle().children(`.${CLASS_NAMES.ICON}`)[0];
     }
   };
 });

@@ -1002,6 +1002,18 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
     },
 
     /**
+     * Generate a random hexadecimal ID.
+     * @param {number} [digits] Number of hexadecimal digits (default: 12)
+     * @returns {string} The generated ID
+     * @since 0.0.0
+     */
+    makeShortId(digits = 12) {
+      return Array.from({ length: digits }, () =>
+        Math.floor(Math.random() * 16).toString(16),
+      ).join("");
+    },
+
+    /**
      * Extract the file extension from a filename, returning it in lowercase.
      * @param {string} filename Filename string.
      * @returns {string} File extension in lowercase, or empty string if none

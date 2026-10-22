@@ -35,6 +35,22 @@ define([
   var MapAssets = Backbone.Collection.extend(
     /** @lends MapAssets.prototype */ {
       /**
+       * Identify layers by layerId, independently of their DataONE package ID.
+       *
+       * Backbone's default modelId reads this.model.prototype.idAttribute,
+       * not each instance's model.id. Here this.model is a factory, so it does
+       * not inherit MapAsset's idAttribute and falls back to attrs.id (the
+       * DataONE package ID). Read layerId explicitly so distinct layers can
+       * share a package ID.
+       * @param {object} attrs The asset attributes
+       * @returns {string|undefined} The layer identifier, if assigned
+       * @since 0.0.0
+       */
+      modelId(attrs) {
+        return attrs.layerId || undefined;
+      },
+
+      /**
        * Creates the type of Map Asset based on the given type. This function is
        * typically not called directly. It is used by Backbone.js when adding a
        * new model to the collection.

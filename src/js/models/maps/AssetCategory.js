@@ -85,6 +85,7 @@ define([
             if (IconUtilities.isSVG(categoryConfig.icon)) {
               this.updateIcon(categoryConfig.icon);
             } else {
+              this.set("icon", this.defaults().icon);
               IconUtilities.fetchIcon(categoryConfig.icon).then((icon) =>
                 this.updateIcon(icon),
               );

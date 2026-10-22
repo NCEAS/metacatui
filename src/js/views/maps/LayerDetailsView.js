@@ -5,6 +5,7 @@ define([
   "underscore",
   "backbone",
   "models/maps/assets/MapAsset",
+  "showdownXssFilter",
   "text!templates/maps/layer-details.html",
   // Sub-Views
   "views/maps/LayerDetailView",
@@ -17,6 +18,7 @@ define([
   _,
   Backbone,
   MapAsset,
+  sanitizeHTML,
   Template,
   // Sub-Views
   LayerDetailView,
@@ -190,7 +192,7 @@ define([
         // Insert the template into the view
         this.$el.html(
           this.template({
-            label: model ? model.get("label") || "" : "",
+            label: sanitizeHTML(model ? model.get("label") || "" : ""),
           }),
         );
 
