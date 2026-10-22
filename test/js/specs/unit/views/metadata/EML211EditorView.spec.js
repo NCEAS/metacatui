@@ -3458,6 +3458,69 @@ define([
       sinon.assert.calledOnce(rootDataPackage.upload);
     });
 
+    describe("initial sharing policy", function () {
+      const admin = "CN=arctic-data-admins,DC=dataone,DC=org";
+      let member;
+
+      beforeEach(function () {
+        member = createEditorRootDataPackage().getMember("data_1");
+        globalThis.MetacatUI = {
+          ...originalMetacatUI,
+          appModel: new AppModel({
+            defaultAccessPolicy: [
+              {
+                subject: admin,
+                read: true,
+                write: true,
+                changePermission: true,
+              },
+            ],
+          }),
+        };
+      });
+
+      it("uses configured defaults for new objects with no chosen policy", function () {
+        for (const state of [{}, { sysMeta: { accessPolicy: [] } }]) {
+          member.initializeEditableState(state);
+
+          const { policy } = view.buildAccessPolicyModalOptions(member);
+          policy.should.deep.equal([
+            {
+              subjects: [admin],
+              permissions: ["read", "write", "changePermission"],
+            },
+          ]);
+        }
+      });
+
+      it("keeps existing and deliberately cleared policies empty", function () {
+        for (const state of [
+          { remotePid: "data_1" },
+          { aggregatedPid: "data_1" },
+          { accessPolicyDirty: true },
+        ]) {
+          member.initializeEditableState({
+            sysMeta: { accessPolicy: [] },
+            ...state,
+          });
+
+          const { policy } = view.buildAccessPolicyModalOptions(member);
+          policy.should.have.length(0);
+        }
+      });
+
+      it("keeps a new object's custom policy", function () {
+        const policy = [
+          { subjects: ["uid=collaborator"], permissions: ["read"] },
+        ];
+        member.setSystemMetadata({ accessPolicy: policy });
+
+        view
+          .buildAccessPolicyModalOptions(member)
+          .policy.should.deep.equal(policy);
+      });
+    });
+
     it("renders a data member's access policy through a Backbone facade", async function () {
       const member = {
         pid: "data.1",
