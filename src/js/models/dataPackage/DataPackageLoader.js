@@ -44,6 +44,7 @@ define([
     "formatId",
     "datasource",
     "rightsHolder",
+    "pubDate",
     "dateUploaded",
     "archived",
     "isPublic",
