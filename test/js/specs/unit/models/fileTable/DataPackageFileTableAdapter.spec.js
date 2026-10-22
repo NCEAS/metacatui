@@ -788,10 +788,12 @@ define([
         member({ pid: "meta.1", formatType: "METADATA", title: "EML doc" }),
       ];
 
-      it("adds a dataset root row and nests members beneath it", () => {
+      it("nests index placeholders beneath a dataset root without a warning", () => {
+        const members = datasetMembers();
+        members[1].isPlaceHolder_b = true;
         const rows = Adapter.buildRows(null, {
           mode: "viewer",
-          members: datasetMembers(),
+          members,
           packageId: "resource_map_1",
           packageTitle: "My Dataset",
           packageDownloadUrl: "https://cn.test/packages/resource_map_1",
@@ -805,7 +807,15 @@ define([
         root.isContainer.should.equal(true);
         root.isExpanded.should.equal(true);
         root.actions.map((a) => a.id).should.deep.equal(["download"]);
-        root.actions[0].label.should.equal("Download All");
+        root.actions[0].should.include({
+          label: "Download All",
+          title: "Download all files in My Dataset",
+          iconClass: "",
+          isDisabled: false,
+        });
+        root.downloadUrl.should.equal(
+          "https://cn.test/packages/resource_map_1",
+        );
 
         // Every other row nests under the root.
         rows
@@ -814,8 +824,37 @@ define([
           .should.equal(true);
       });
 
+      it("warns about missing files outside the displayed member limit", () => {
+        const rows = Adapter.buildRows(null, {
+          mode: "viewer",
+          members: [
+            member({ pid: "data.1", formatType: "DATA", fileName: "a.csv" }),
+            member({
+              pid: "missing.1",
+              formatType: "DATA",
+              sysMetaMissing: true,
+            }),
+          ],
+          maxMembers: 1,
+          packageId: "resource_map_1",
+          packageDownloadUrl: "https://cn.test/packages/resource_map_1",
+        });
+        const root = rows[0];
+        const action = root.actions[0];
+
+        root.downloadUrl.should.equal(
+          "https://cn.test/packages/resource_map_1",
+        );
+        action.isDisabled.should.equal(false);
+        action.iconClass.should.include("icon-warning-sign");
+        action.title.should.match(/missing.*omitted/);
+        action.ariaLabel.should.include("Download All");
+        action.ariaLabel.should.include(action.title);
+        rows.some((row) => row.id === "missing.1").should.equal(false);
+      });
+
       it("renders a disabled Download All action for a known unavailable package", () => {
-        const reason = MESSAGES.packageDownloadMissing;
+        const reason = MESSAGES.packageDownloadReadDenied;
         const rows = Adapter.buildRows(null, {
           mode: "viewer",
           members: datasetMembers(),

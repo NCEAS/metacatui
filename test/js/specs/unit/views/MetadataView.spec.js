@@ -1452,45 +1452,38 @@ define([
         );
       });
 
-      [
-        {
-          flag: "sysMetaReadDenied",
-          reason: FILE_TABLE_MESSAGES.packageDownloadReadDenied,
-        },
-        {
-          flag: "sysMetaMissing",
-          reason: FILE_TABLE_MESSAGES.packageDownloadMissing,
-        },
-      ].forEach(({ flag, reason }) => {
-        it(`disables Download All for ${flag} even without package size`, () => {
-          const dataPackage = createViewerDataPackage();
-          dataPackage.getMember("data.1")[flag] = true;
-          dataPackage.getMember("data.1").size = null;
-          setPackageAppModel({ maxDownloadSize: 100 });
-          const context = {
-            dataPackage,
-            packageDownloadUrl: "",
-            packageDownloadUnavailableReason: "",
-            getFileTableRows: MetadataView.prototype.getFileTableRows,
-          };
+      it("disables Download All when an inaccessible file has no size", () => {
+        const dataPackage = createViewerDataPackage();
+        dataPackage.getMember("data.1").sysMetaReadDenied = true;
+        dataPackage.getMember("data.1").size = null;
+        setPackageAppModel({ maxDownloadSize: 100 });
+        const context = {};
 
-          MetadataView.prototype.confirmPackageDownloadAll.call(
-            context,
-            dataPackage,
-          );
-          const rootRow = context
-            .getFileTableRows()
-            .find((row) => row.id === "dataset:rm.1");
+        MetadataView.prototype.confirmPackageDownloadAll.call(
+          context,
+          dataPackage,
+        );
 
-          context.packageDownloadUrl.should.equal("");
-          context.packageDownloadUnavailableReason.should.equal(reason);
-          rootRow.actions.should.have.length(1);
-          rootRow.actions[0].should.include({
-            id: "download",
-            title: reason,
-            isDisabled: true,
-          });
-        });
+        context.packageDownloadUrl.should.equal("");
+        context.packageDownloadUnavailableReason.should.equal(
+          FILE_TABLE_MESSAGES.packageDownloadReadDenied,
+        );
+      });
+
+      it("allows Download All when a missing file has no size", () => {
+        const dataPackage = createViewerDataPackage();
+        dataPackage.getMember("data.1").sysMetaMissing = true;
+        dataPackage.getMember("data.1").size = null;
+        setPackageAppModel({ maxDownloadSize: 100 });
+        const context = {};
+
+        MetadataView.prototype.confirmPackageDownloadAll.call(
+          context,
+          dataPackage,
+        );
+
+        context.packageDownloadUrl.should.equal("https://cn.test/package/rm.1");
+        context.packageDownloadUnavailableReason.should.equal("");
       });
 
       it("clears a stale URL when package downloads are unconfigured", () => {
