@@ -49,7 +49,8 @@ define([
       /**
        * Parse the incoming measurementScale's XML elements
        */
-      parse: function (attributes, options) {
+      parse(inputAttributes, _options) {
+        const attributes = inputAttributes;
         var $objectDOM;
         var measurementScale;
         var rootNodeName;
@@ -83,7 +84,7 @@ define([
             .first()[0].localName;
           $objectDOM = $objectDOM.children().first();
         } else {
-          attributes.measurementScale = $objectDOM.localName;
+          attributes.measurementScale = $objectDOM[0].localName;
         }
 
         // Add the unit
@@ -182,7 +183,8 @@ define([
       },
 
       /* Copy the original XML DOM and update it with new values from the model */
-      updateDOM: function (objectDOM) {
+      updateDOM(existingDOM) {
+        let objectDOM = existingDOM;
         var nodeToInsertAfter;
         var type = this.get("measurementScale");
         if (typeof type === "undefined") {
@@ -205,6 +207,13 @@ define([
           // This is new, create it
         } else {
           objectDOM = document.createElement(type);
+        }
+
+        // Changing the scale must also change the cached XML element name.
+        if (objectDOM.localName !== type) {
+          const updatedDOM = document.createElement(type);
+          $(updatedDOM).append($(objectDOM).contents());
+          objectDOM = updatedDOM;
         }
 
         // Update the unit
@@ -279,11 +288,6 @@ define([
         var numericDomainNode = $(objectDOM).find("numericdomain")[0];
         var numberType;
         var numberTypeNode;
-        var minBound;
-        var maxBound;
-        var boundsNode;
-        var minBoundNode;
-        var maxBoundNode;
         if (numericDomain) {
           var oldNumericDomainNode = $(numericDomainNode).clone();
 
@@ -307,12 +311,23 @@ define([
             typeof numericDomain.bounds !== "undefined" &&
             numericDomain.bounds.length
           ) {
-            _.each(numericDomain.bounds, function (bound) {
-              minBound = bound.minimum;
-              maxBound = bound.maximum;
-              boundsNode = document.createElement("bounds");
+            // Match parse(), which omits bounds without either endpoint.
+            const oldBoundsNodes = oldNumericDomainNode
+              .children("bounds")
+              .filter(
+                (_index, bound) =>
+                  $(bound).children("minimum").text() ||
+                  $(bound).children("maximum").text(),
+              );
+            _.each(numericDomain.bounds, (bound, index) => {
+              const oldBounds = oldBoundsNodes.eq(index);
+              const minBound = bound.minimum;
+              const maxBound = bound.maximum;
+              const boundsNode = document.createElement("bounds");
+              let minBoundNode;
+              let maxBoundNode;
 
-              var hasBounds =
+              const hasBounds =
                 typeof minBound !== "undefined" ||
                 typeof maxBound !== "undefined";
 
@@ -322,7 +337,7 @@ define([
                   minBoundNode = $(document.createElement("minimum"));
                   minBoundNode.text(minBound);
 
-                  var existingExclusive = oldNumericDomainNode
+                  const existingExclusive = oldBounds
                     .find("minimum")
                     .attr("exclusive");
 
@@ -336,7 +351,7 @@ define([
                   maxBoundNode = $(document.createElement("maximum"));
                   maxBoundNode.text(maxBound);
 
-                  var existingExclusive = oldNumericDomainNode
+                  const existingExclusive = oldBounds
                     .find("maximum")
                     .attr("exclusive");
 
