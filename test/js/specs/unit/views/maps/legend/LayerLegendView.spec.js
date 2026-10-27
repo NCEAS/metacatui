@@ -45,6 +45,16 @@ define([
         expect(state.view.$el.children()).to.not.have.lengthOf(0);
       });
 
+      it("removes unsafe attributes from legend names and keeps subscripts", () => {
+        state.view.layerName =
+          'CO<sub>2</sub><img src="/missing-legend" onerror="void(0)">';
+        state.view.render();
+
+        const name = state.view.el.querySelector(".layer-legend__layer-name");
+        expect(name.querySelector("[onerror]")).to.equal(null);
+        expect(name.querySelector("sub").textContent).to.equal("2");
+      });
+
       it("does not render if paletteType is unrecognized", () => {
         state.view.model = new AssetColorPalette({
           label: "layer",

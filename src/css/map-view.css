@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap");
+
 /**
  * Map View
  *
@@ -1051,7 +1053,8 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
   cursor: pointer;
 
   .list-item__visibility-toggle,
-  .list-item__filter-icon {
+  .list-item__filter-icon,
+  .assets-editor__move {
     opacity: var(--map-no-brightness-or-opacity-tweaks, 0.85);
     padding: 0;
     margin: 0.25rem;
@@ -2810,10 +2813,303 @@ other class: .ui-slider-range */
 }
 
 /* Map Editor View */
+.port-editor-section.port-editor-map {
+  padding-inline: 0;
+  margin: 0 1rem 0 0;
+}
+
 .map-editor {
+  --map-body-font: var(--portal-body-font, Barlow);
   font-family: var(--map-body-font);
   display: grid;
   position: relative;
   box-sizing: border-box;
   background-color: var(--map-col-background);
+}
+
+/* Standalone Map Asset Editor View */
+.map-asset-editor,
+.map-imagery-editor,
+.map-asset-editor [data-provider] {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.map-asset-editor {
+  font-family: var(--map-body-font);
+}
+
+.map-asset-editor [data-provider][hidden] {
+  display: none;
+}
+
+.map-asset-editor__field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.map-asset-editor input,
+.map-asset-editor textarea,
+.map-asset-editor select {
+  box-sizing: border-box;
+  border-color: var(--color-neutral-6);
+  min-width: 0;
+  width: 100%;
+}
+
+.map-asset-editor input:focus,
+.map-asset-editor textarea:focus,
+.map-asset-editor select:focus {
+  border-color: var(--color-neutral-6);
+  outline: 2px solid var(--color-neutral-6);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.map-asset-editor textarea {
+  resize: vertical;
+}
+
+.map-asset-editor input {
+  min-height: 30px;
+}
+
+.map-asset-editor__extent {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.map-asset-editor__error {
+  color: var(--color-error);
+  margin: 0;
+}
+
+.map-asset-editor__error:empty {
+  display: none;
+}
+
+/* Map configuration editor */
+.map-editor {
+  container-type: inline-size;
+}
+
+.assets-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.assets-editor__list {
+  /* Keep the editor readable independently of the portal's map theme. */
+  --portal-col-primary-1: #ecf8fc;
+  --portal-col-primary-6: #136682;
+  --portal-col-neutral-1: #f8f9fa;
+  --portal-col-neutral-2: #e8eaed;
+  --portal-col-neutral-6: #5f6368;
+  --portal-col-neutral-7: #3c4043;
+  flex: 1 1 25rem;
+  min-width: 0;
+  max-width: 25rem;
+  background: white;
+  color: var(--portal-col-neutral-7);
+}
+
+.assets-editor__list .expansion-panel > h5 {
+  margin: 0;
+}
+
+.assets-editor__list .expansion-panel__toggle {
+  width: 100%;
+  grid-template-columns: min-content minmax(0, 1fr) min-content;
+  background: transparent;
+  font-family: inherit;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.assets-editor__list .expansion-panel__content {
+  animation: none;
+}
+
+.assets-editor__list button:focus-visible,
+.assets-editor__move-controls select:focus-visible {
+  outline: 2px solid var(--portal-col-primary-6);
+  outline-offset: 2px;
+}
+
+.assets-editor__details {
+  flex: 3 1 26rem;
+  min-width: 0;
+}
+
+/* Match the width needed by the two flex bases and their gap. */
+@container (min-width: 53rem) {
+  .assets-editor__list,
+  .assets-editor__details {
+    box-sizing: border-box;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 0.25rem;
+    scroll-padding: 0.25rem;
+  }
+}
+
+.assets-editor__list .layer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.assets-editor__list .layer-list:empty {
+  min-height: 2.5rem;
+  box-sizing: border-box;
+  border: 1px dashed var(--portal-col-neutral-6);
+}
+
+.assets-editor__list .assets-editor__drop-placeholder {
+  border: 1px solid var(--portal-col-primary-6);
+  background: var(--portal-col-primary-1);
+}
+
+.assets-editor__list .list-item {
+  grid-template-columns: min-content minmax(0, 1fr) max-content;
+}
+
+.assets-editor__list .assets-editor__add-row {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.assets-editor__list .list-item__label {
+  padding: 0 0.5rem;
+  margin-left: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: calc(2rem + 2px);
+  line-height: 1.5;
+  border: 1px solid transparent;
+  border-radius: var(--map-border-radius-small);
+  text-align: left;
+}
+
+.assets-editor__list .list-item__label-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assets-editor__list .list-item__label[aria-pressed="true"] {
+  background: var(--portal-col-primary-1);
+  border-color: var(--portal-col-primary-6);
+}
+
+.assets-editor__item--removing .list-item__label {
+  text-decoration: line-through;
+}
+
+.assets-editor__remove {
+  /* Keep at least 3:1 contrast against white and the row hover background. */
+  color: #909090;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.assets-editor__list
+  .list-item
+  .assets-editor__remove
+  .list-item__settings-toggle {
+  color: inherit;
+}
+
+.assets-editor__list .list-item:is(:hover, :focus-within) .list-item__settings,
+.assets-editor__list
+  .list-item__label[aria-pressed="true"]
+  + .list-item__settings {
+  visibility: visible;
+  border-color: currentColor;
+}
+
+.assets-editor__list .list-item .assets-editor__remove:hover,
+.assets-editor__list .list-item .assets-editor__remove:focus-visible {
+  background: transparent;
+  color: var(--color-error);
+}
+
+@media (hover: none) {
+  .assets-editor__list .list-item__settings {
+    visibility: visible;
+    border-color: currentColor;
+  }
+}
+
+.assets-editor__list .assets-editor__move {
+  gap: 2px;
+  color: var(--portal-col-primary-6);
+  opacity: 1;
+  font-family: inherit;
+  cursor: grab;
+}
+
+.assets-editor__move .icon {
+  opacity: 0.7;
+}
+
+.assets-editor__move:active,
+.assets-editor__list .sortable-chosen .assets-editor__move {
+  cursor: grabbing;
+}
+
+.assets-editor__move-controls,
+.assets-editor__move-controls [data-move-category-controls] {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.assets-editor__move-controls {
+  grid-column: 1 / -1;
+  padding: 0.5rem 0;
+}
+
+.assets-editor__move-controls[hidden],
+.assets-editor__move-controls [hidden] {
+  display: none;
+}
+
+.assets-editor__move-controls select {
+  max-width: 100%;
+}
+
+.assets-editor__move-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.assets-editor__list .assets-editor__add {
+  padding: 0;
+  min-height: 2.5rem;
+  color: var(--portal-col-primary-6);
+  font-weight: 600;
+  gap: 0.75rem;
+  margin: 0 0.25rem;
+}
+
+.assets-editor__add .icon {
+  width: 2rem;
+  text-align: center;
 }

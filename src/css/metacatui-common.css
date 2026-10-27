@@ -8456,6 +8456,9 @@ textarea.medium {
   -webkit-border-radius: 0px;
   z-index: 999;
 }
+.Portal.Editor #Content > .alert-container .alert:not(.non-fixed) {
+  top: var(--portal-editor-nav-height, 0px);
+}
 .Editor #Content > .alert-container .alert .container {
   width: auto;
   max-width: 940px;

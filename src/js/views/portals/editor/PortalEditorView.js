@@ -429,10 +429,11 @@ define([
         // show again when the user scrolls up.
         MetacatUI.appView.prevScrollpos = window.pageYOffset;
         $(window).off("scroll");
-        $(window).scroll(_.throttle(view.handleScroll, 400));
+        $(window).scroll(_.throttle(view.handleScroll.bind(view), 60));
 
         // Functions to perform when the window is resized
         var onResize = function () {
+          view.updateAlertOffset();
           // Auto-resize the portal title
           $("textarea.portal-title").trigger("windowResize");
           // Ensure that the menu is always shown when switching from mobile to full width
@@ -533,6 +534,8 @@ define([
           //Remove the href attribute and hide the link
           this.$(this.viewPortalLinks).attr("href", "").hide();
         }
+
+        onResize();
       },
 
       /**
@@ -1117,10 +1120,20 @@ define([
         );
       },
 
+      /** Keep fixed alerts below the visible part of the theme navigation. */
+      updateAlertOffset() {
+        const navbar = document.getElementById("Navbar");
+        this.el.style.setProperty(
+          "--portal-editor-nav-height",
+          `${Math.max(0, navbar?.getBoundingClientRect().bottom || 0)}px`,
+        );
+      },
+
       /**
        * This function is called whenever the window is scrolled.
        */
       handleScroll: function () {
+        this.updateAlertOffset();
         try {
           var menu = $(".section-links-toggle-container")[0],
             editorFooter = this.$("#editor-footer")[0],
@@ -1152,6 +1165,8 @@ define([
        * @inheritdoc
        */
       onClose: function () {
+        this.el.style.removeProperty("--portal-editor-nav-height");
+
         //Call the superclass onClose() function
         EditorView.prototype.onClose.call(this);
 

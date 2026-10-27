@@ -1,6 +1,6 @@
 "use strict";
 
-define([], () => {
+define(["showdownXssFilter"], (sanitizeHTML) => {
   /**
    * Labels longer than this are truncated with an ellipsis so a single very long
    * layer name can't dominate the loading message width.
@@ -57,7 +57,7 @@ define([], () => {
   function getLoadingLayerLabel(layer) {
     const label = layer?.get("label");
     if (typeof label !== "string" || !label.trim().length) return null;
-    return truncateLabel(label.trim());
+    return truncateLabel(sanitizeHTML(label.trim()));
   }
 
   /**

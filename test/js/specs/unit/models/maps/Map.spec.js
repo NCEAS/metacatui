@@ -298,6 +298,32 @@ define([
         expect(map.get("show3DTilesInspector")).to.equal(true);
       });
 
+      it("leaves viewer layers without IDs out of shared URLs and keeps their visibility on reload", () => {
+        const config = {
+          showShareUrl: true,
+          layers: [
+            { label: "Water", visible: true },
+            { label: "Roads", visible: false },
+            { layerId: "sites", visible: true },
+            { layerId: "buildings", visible: false },
+          ],
+        };
+        state.model = new Map(config);
+
+        state.model.updateSearchParams();
+        expect(SearchParams.parseStateFromUrl().enabledLayerIds).to.deep.equal([
+          "sites",
+        ]);
+        const reloaded = new Map(config);
+
+        expect(reloaded.get("layers").pluck("visible")).to.deep.equal([
+          true,
+          false,
+          true,
+          false,
+        ]);
+      });
+
       it("writes camera position and enabled layers to the URL", () => {
         const map = new Map({
           showShareUrl: true,
@@ -855,6 +881,190 @@ define([
         );
 
         expect(state.model.getLayerGroups()).to.have.lengthOf(2);
+      });
+    });
+
+    describe("moveAsset", () => {
+      const state = cleanState(() => ({}), beforeEach);
+
+      afterEach(() => {
+        state.model.getAllLayers().forEach((asset) => asset.stopListening());
+        state.model.stopListening();
+      });
+
+      [
+        { from: 0, to: 2, order: [1, 2, 0] },
+        { from: 2, to: 0, order: [2, 0, 1] },
+      ].forEach(({ from, to, order }) => {
+        it(`moves a flat layer from position ${from + 1} to ${to + 1}`, () => {
+          state.model = new Map({
+            layers: [
+              { label: "Water", visible: false },
+              { label: "Roads", visible: false },
+              { label: "Basemap", visible: false },
+            ],
+          });
+          const layers = state.model.get("layers");
+          const previous = layers.models.slice();
+          const asset = previous[from];
+          const reset = sinon.spy();
+          const granular = sinon.spy();
+          layers.on("reset", reset);
+          layers.on("add remove", granular);
+
+          expect(state.model.moveAsset(asset, layers, to)).to.equal(true);
+
+          const expected = order.map((index) => previous[index].cid);
+          expect(layers.models.map((model) => model.cid)).to.deep.equal(
+            expected,
+          );
+          expect(
+            state.model.getAllLayers().map((model) => model.cid),
+          ).to.deep.equal(expected);
+          expect(
+            state.model.get("allLayers").models.map((model) => model.cid),
+          ).to.deep.equal(expected);
+          expect(asset.collection === layers).to.equal(true);
+          expect(reset.calledOnce).to.equal(true);
+          expect(reset.firstCall.args[0] === layers).to.equal(true);
+          expect(
+            reset.firstCall.args[1].previousModels.map((model) => model.cid),
+          ).to.deep.equal(previous.map((model) => model.cid));
+          expect(granular.called).to.equal(false);
+        });
+      });
+
+      [
+        {
+          name: "moving into an empty category",
+          emptySource: false,
+          sourceLabels: ["Roads"],
+          targetLabels: ["Water"],
+        },
+        {
+          name: "moving its source's last layer",
+          emptySource: true,
+          sourceLabels: [],
+          targetLabels: ["Roads", "Water"],
+        },
+      ].forEach(({ name, emptySource, sourceLabels, targetLabels }) => {
+        it(`notifies both collections after ${name}`, () => {
+          state.model = new Map({
+            layerCategories: [
+              {
+                label: "Overlays",
+                layers: [
+                  { label: "Water", visible: false },
+                  { label: "Roads", visible: false },
+                ],
+              },
+              { label: "Base maps", layers: [] },
+            ],
+          });
+          const [source, target] = state.model.getLayerGroups();
+          if (emptySource) state.model.moveAsset(source.at(0), target, 0);
+          const asset = source.at(0);
+          const previousSource = source.pluck("label");
+          const previousTarget = target.pluck("label");
+          const resets = sinon.spy();
+          const granular = sinon.spy();
+          [source, target].forEach((layers) => {
+            layers.on("add remove", granular);
+            layers.on("reset", (collection, options) => {
+              resets(collection, options);
+              expect(source.pluck("label")).to.deep.equal(sourceLabels);
+              expect(target.pluck("label")).to.deep.equal(targetLabels);
+              expect(asset.collection === target).to.equal(true);
+              expect(state.model.get("allLayers").pluck("label")).to.deep.equal(
+                ["Roads", "Water"],
+              );
+            });
+          });
+
+          expect(state.model.moveAsset(asset, target, 0)).to.equal(true);
+
+          expect(target.at(0) === asset).to.equal(true);
+          expect(asset.get("mapModel") === state.model).to.equal(true);
+          expect(
+            state.model.getAllLayers().map((model) => model.get("label")),
+          ).to.deep.equal(["Roads", "Water"]);
+          expect(resets.calledTwice).to.equal(true);
+          expect(resets.firstCall.args[0] === source).to.equal(true);
+          expect(resets.secondCall.args[0] === target).to.equal(true);
+          expect(
+            resets.firstCall.args[1].previousModels.map((model) =>
+              model.get("label"),
+            ),
+          ).to.deep.equal(previousSource);
+          expect(
+            resets.secondCall.args[1].previousModels.map((model) =>
+              model.get("label"),
+            ),
+          ).to.deep.equal(previousTarget);
+          expect(granular.called).to.equal(false);
+        });
+      });
+
+      it("stops old layer collections from receiving changes after moves and removal", () => {
+        state.model = new Map({
+          layerCategories: [
+            {
+              label: "Overlays",
+              layers: [
+                { label: "Water", visible: false },
+                { label: "Roads", visible: false },
+              ],
+            },
+            { label: "Base maps", layers: [] },
+          ],
+        });
+        const [source, target] = state.model.getLayerGroups();
+        const water = source.at(0);
+        const retiredCollections = [];
+        const retiredChanges = [];
+        state.model.on("change:allLayers", (model) => {
+          const previous = model.previous("allLayers");
+          retiredCollections.push(previous);
+          previous.on("change:label", (asset) => {
+            retiredChanges.push(asset.get("label"));
+          });
+        });
+
+        state.model.moveAsset(water, source, 1);
+        state.model.moveAsset(water, target, 0);
+        state.model.moveAsset(water, source, 0);
+        state.model.moveAsset(water, source, 1);
+        state.model.removeAsset(water);
+        water.set("label", "Removed water");
+
+        expect(retiredChanges).to.deep.equal([]);
+        expect(retiredCollections.length).to.be.greaterThan(0);
+        retiredCollections.forEach((collection) => {
+          expect(collection).to.have.lengthOf(0);
+        });
+        const current = state.model.get("allLayers");
+        const currentChanges = [];
+        current.on("change:label", (asset) => {
+          currentChanges.push(asset.get("label"));
+        });
+        source.at(0).set("label", "Updated roads");
+        expect(currentChanges).to.deep.equal(["Updated roads"]);
+        expect(current.pluck("label")).to.deep.equal(["Updated roads"]);
+        expect(retiredChanges).to.deep.equal([]);
+        water.stopListening();
+      });
+
+      it("does not reset or change config for an unchanged position", () => {
+        state.model = new Map({ layers: [{ label: "Water", visible: false }] });
+        const layers = state.model.get("layers");
+        const config = state.model.toConfig();
+        const reset = sinon.spy();
+        layers.on("reset", reset);
+
+        expect(state.model.moveAsset(layers.at(0), layers, 0)).to.equal(false);
+
+        expect(reset.called).to.equal(false);
+        expect(state.model.toConfig()).to.deep.equal(config);
       });
     });
 
@@ -1874,6 +2084,32 @@ define([
         expect(map.get("loadingLayersMessage")).to.equal(
           "Loading Habitat roads and 2 other layers",
         );
+      });
+
+      it("removes unsafe attributes from short and truncated loading messages", () => {
+        [
+          {
+            label:
+              'CO<sub onclick="void 0">2</sub> m<sup onmouseover="void 0">2</sup>',
+            message: "Loading CO<sub>2</sub> m<sup>2</sup>",
+          },
+          {
+            label:
+              'CO<sub onclick="void 0">2</sub> m<sup onmouseover="void 0">2</sup> 12345678901234567890123456789012345678901234567890',
+            message:
+              "Loading CO<sub>2</sub> m<sup>2</sup> 1234567890123456789012345678901234567890123…",
+          },
+        ].forEach(({ label, message }) => {
+          const map = new Map({
+            showShareUrl: false,
+            layers: [{ label, status: "loading", visible: true }],
+          });
+
+          expect(map.get("isLoadingLayers")).to.equal(true);
+          expect(map.get("loadingLayersMessage")).to.equal(message);
+          map.getAllLayers().forEach((layer) => layer.stopListening());
+          map.stopListening();
+        });
       });
 
       it("preserves sub/sup markup in the label so it renders like the menu", () => {

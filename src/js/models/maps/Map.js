@@ -85,31 +85,30 @@ define([
 
   /**
    * Apply URL visibility override for a layer when the `el` state is present.
-   * @param {Backbone.Model|object} layer A layer model/object.
-   * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} visibilityState
-   * Parsed URL visibility state.
-   * @returns {boolean|undefined} The overridden visible value, if applicable.
+   * @param {object} layer A layer config object
+   * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} [visibilityState]
+   * Parsed URL visibility
+   * @returns {boolean|undefined} The overridden visible value, if applicable
    * @since 2.38.0
    */
   function getUrlVisibilityOverride(layer, visibilityState) {
     if (!visibilityState?.enabledLayerStateProvided) return undefined;
-    const layerId =
-      layer instanceof Backbone.Model ? layer.get("layerId") : layer.layerId;
-    if (!layerId) return undefined;
-    return visibilityState.enabledLayerIds.includes(layerId);
+    if (!layer.layerId) return undefined;
+    return visibilityState.enabledLayerIds.includes(layer.layerId);
   }
 
   /**
-   * Normalize configured and runtime visibility for a layer model/object.
-   * configuredVisibility tracks the portal-configured value, while visible
+   * Normalize configured and runtime visibility for a layer config.
+   * configuredVisibility tracks the value configured in the portal. Visible
    * tracks the current runtime value (which may be overridden from URL state).
-   * The function is idempotent to protect against calls where both visible
-   * and configuredVisibility are already set. If only one of the two is set,
-   * the other is inferred from it. If neither is set, the default is visible.
-   * @param {object} layer A layer config object.
-   * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}} [visibilityState]
-   * Parsed URL visibility state used to override runtime visible state.
-   * @returns {object} The normalized layer config.
+   * The function is idempotent to protect against calls where both visible and
+   * configuredVisibility are already set. If only one of the two is set, the
+   * other is inferred from it. If neither is set, the default is visible.
+   * @param {object} layer A layer config object
+   * @param {{enabledLayerIds: string[], enabledLayerStateProvided: boolean}}
+   * [visibilityState] Parsed URL visibility state used to override runtime
+   * visible state
+   * @returns {object} The normalized layer config
    * @since 2.38.0
    */
   function normalizeLayerVisibility(layer, visibilityState) {
@@ -382,9 +381,9 @@ define([
        * navigate to when clicked.
        * @property {MapAssets} [terrains = new MapAssets()] - The terrain
        * options to show in the map.
-       * @property {MapAssets} [layers = new MapAssets()] - The imagery and
-       * vector data to render in the map. When layerCategories exist, this
-       * property will be ignored.
+       * @property {MapConfig#MapAssetConfig[]} layers Default layer configs,
+       * converted to a MapAssets collection during initialization. Ignored
+       * when layerCategories exist.
        * @property {AssetCategories} [layerCategories = new AssetCategories()] -
        * A collection of layer categories to display in the tool bar. Categories
        * will be displayed in the order they appear. The array of the
@@ -447,12 +446,12 @@ define([
             pitch: -90,
             roll: 0,
           },
-          layers: new MapAssets([
+          layers: [
             {
               type: "OpenStreetMapImageryProvider",
               label: "Base layer",
             },
-          ]),
+          ],
           terrains: new MapAssets(),
           showToolbar: true,
           showLayerList: true,
@@ -481,15 +480,14 @@ define([
       },
 
       /**
-       * Run when a new Map is created.
-       * @param {MapConfig} options - An object specifying configuration options
-       * for the map. If any config option is not specified, the default will be
-       * used instead (see {@link MapModel#defaults}).
+       * Build layer collections and restore map state.
+       * @param {MapConfig|null} [options] Map config, or null to use defaults
+       * @throws {Error} When a layer config contains a Backbone model
        */
       initialize(options = {}) {
-        const config = options;
+        const config = options || {};
 
-        if (config && config instanceof Object) {
+        if (config instanceof Object) {
           const visibilityState = parseLayerVisibilityStateFromUrl();
           if (isNonEmptyArray(config.layerCategories)) {
             config.layerCategories.forEach((category) => {
@@ -508,10 +506,11 @@ define([
             assetCategories.setMapModel(this);
             this.set("layerCategories", assetCategories);
             this.unset("layers");
-          } else if (Array.isArray(config.layers)) {
-            assertPlainLayerConfigs(config.layers, "layers");
+          } else {
+            const layerConfigs = this.get("layers");
+            assertPlainLayerConfigs(layerConfigs, "layers");
             const normalizedLayers = normalizeLayerListVisibility(
-              config.layers,
+              layerConfigs,
               visibilityState,
             );
             const layers = new MapAssets(normalizedLayers);
@@ -589,6 +588,11 @@ define([
        * @since 2.38.0
        */
       refreshAllLayers() {
+        // Remove the old collection's layer listeners before replacing it.
+        const previousLayers = this.get("allLayers");
+        if (previousLayers instanceof MapAssets) {
+          previousLayers.reset([], { silent: true });
+        }
         const allLayers = new MapAssets(this.getAllLayers());
         this.set("allLayers", allLayers);
         return allLayers;
@@ -1082,13 +1086,12 @@ define([
       },
 
       /**
-       * Reset the layers to the default layers. This will set a new MapAssets
-       * collection on the layer attribute.
-       * @returns {MapAssets} The new layers collection.
+       * Restore the default layers in a new collection.
+       * @returns {MapAssets} The new layers collection
        * @since 2.25.0
        */
       resetLayers() {
-        const newLayers = this.defaults()?.layers || new MapAssets();
+        const newLayers = new MapAssets(this.defaults().layers);
         this.set("layers", newLayers);
         this.refreshAllLayers();
         return newLayers;
@@ -1116,6 +1119,51 @@ define([
        */
       getAllLayers() {
         return this.getLayerGroups().flatMap((group) => group?.models || []);
+      },
+
+      /**
+       * Move a layer within its list or to another category.
+       * @param {MapAsset} asset An existing layer in this map
+       * @param {MapAssets} targetLayers An existing layer collection in this map
+       * @param {number} index The final zero-based position in the destination
+       * @returns {boolean} Whether the layer moved
+       * @since 0.0.0
+       */
+      moveAsset(asset, targetLayers, index) {
+        // Get the assets collection that currently contains the asset.
+        const source = this.getLayerGroups().find((layers) =>
+          layers.get(asset),
+        );
+        if (!source) {
+          throw new Error("Asset not found in any layer group.");
+        }
+        // If the asset already at desired position do nothing
+        if (source === targetLayers && source.indexOf(asset) === index)
+          return false;
+        const previousSource = source.models.slice();
+        const previousTarget =
+          source === targetLayers
+            ? previousSource
+            : targetLayers.models.slice();
+        const targetModels = previousTarget.filter((model) => model !== asset);
+        targetModels.splice(index, 0, asset);
+        if (source !== targetLayers) {
+          source.reset(
+            previousSource.filter((model) => model !== asset),
+            { silent: true },
+          );
+        }
+        targetLayers.reset(targetModels, { silent: true });
+        // MapAssets' model factory can leave collection pointing to allLayers.
+        Object.assign(asset, { collection: targetLayers });
+        // Notify only after both collections contain their completed state.
+        if (source !== targetLayers) {
+          source.trigger("reset", source, { previousModels: previousSource });
+        }
+        targetLayers.trigger("reset", targetLayers, {
+          previousModels: previousTarget,
+        });
+        return true;
       },
 
       /**

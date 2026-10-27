@@ -1,14 +1,19 @@
-<button class="<%= classes.visibilityToggle %> map-view__button" title="Toggle layer visibility">
-  <i class="icon-eye-open"></i>
+<button
+  class="<%= classNames.VISIBILITY_TOGGLE %> <%= classNames.BUTTON %>"
+  title="Toggle layer visibility"
+>
+  <i class="<%= classNames.VISIBILITY_ICON %>"></i>
 </button>
 
-<span class="<%= classes.label %>">
+<span class="<%= classNames.LABEL %>">
   <!-- Title needed for when label overflows -->
-  <span class="<%= classes.labelText %>" title="<%= label %>">
+  <span class="<%= classNames.LABEL_TEXT %>" title="<%- label %>">
     <%= label %>
   </span>
 </span>
 
-<span class="<%= classes.settings %>">
-  <i class="icon-gear list-item__settings-toggle"></i>
+<span class="<%= classNames.SETTINGS %>">
+  <i
+    class="<%= classNames.SETTINGS_ICON %> <%= classNames.SETTINGS_TOGGLE %>"
+  ></i>
 </span>
