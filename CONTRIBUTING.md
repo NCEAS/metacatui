@@ -13,6 +13,7 @@
   - [🖋 Formatting](#-formatting)
   - [🔍 Linting](#-linting)
 - [🔬 Testing](#-testing)
+- [♿ Accessibility](#-accessibility)
 - [📚 Documentation](#-documentation)
 - [📐 Key Quality Checks for Contributions](#-key-quality-checks-for-contributions)
 - [🚀 Development Workflow](#-development-workflow)
@@ -197,6 +198,27 @@ Status](https://github.com/NCEAS/metacatui/actions/workflows/test.js.yml/badge.s
 
 Read more documentation about how tests are run and viewed in
 [/test/README.md](/test/README.md)
+
+## ♿ Accessibility
+
+New or updated UI must meet WCAG 2.2 Level AA. Use the [WCAG quick
+reference](https://www.w3.org/WAI/WCAG22/quickref/) for the full requirements.
+For UI changes, check that:
+
+- Every action works with a keyboard, with visible focus and a logical tab
+  order. Move focus into dialogues when they open and back to the opening
+  control when they close.
+- The UI uses semantic HTML and form controls with clear names. Inputs have
+  persistent labels, and screen readers can announce selected and expanded
+  states.
+- Field errors explain what to correct and are associated with their inputs.
+  Screen readers announce errors and status updates without unnecessarily moving
+  focus.
+- Text and controls meet WCAG contrast requirements. Don't rely on colour alone.
+  Keep content and controls usable at 200% text size and 400% browser zoom.
+
+[Automated tools](https://www.w3.org/WAI/test-evaluate/tools/list/) are useful
+for identifying common issues, but don't replace manual checks.
 
 ## 📚 Documentation
 
