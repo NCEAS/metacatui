@@ -1612,7 +1612,7 @@ define([
         // Check existing blockList before making a Solr call (case insensitive)
         const blockList = this.get("labelBlockList") || [];
         if (blockList.find((b) => b.toLowerCase() === label.toLowerCase())) {
-          this.labelAvailable();
+          this.labelTaken(label);
           return;
         }
 

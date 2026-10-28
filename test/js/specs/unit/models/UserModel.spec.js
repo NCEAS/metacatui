@@ -150,6 +150,12 @@ define([
       });
 
       it("checks portal limits with a count query", async () => {
+        const ampersandIdentity = "CN=Smith & Co,DC=dataone,DC=org";
+        state.user.set(
+          "allIdentitiesAndGroups",
+          ["portal-owner", ampersandIdentity],
+          { silent: true },
+        );
         for (const [portalLimit, authorized] of [
           [1, false],
           [2, false],
@@ -166,13 +172,14 @@ define([
           "formatId:*dataone.org/portals*",
           "-obsoletedBy:*",
         ]);
-        const q = decodeURIComponent(options.q);
+        const { q } = options;
         for (const field of [
           "rightsHolder",
           "writePermission",
           "changePermission",
         ]) {
-          expect(q).to.contain(`${field}:portal\\-owner`);
+          expect(q).to.contain(`${field}:"portal\\-owner"`);
+          expect(q).to.contain(`${field}:"${ampersandIdentity}"`);
         }
       });
 

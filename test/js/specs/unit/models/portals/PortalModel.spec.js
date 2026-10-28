@@ -31,6 +31,22 @@ define(["jquery", "models/portals/PortalModel", "models/portals/PortalImage"], (
   };
 
   describe("PortalModel custom URLs", () => {
+    it("reports a blocked URL as taken regardless of case", () => {
+      const portal = new PortalModel({
+        checkedNodeLabels: true,
+        labelBlockList: ["KNB"],
+      });
+      const labelTaken = sinon.spy();
+      const labelAvailable = sinon.spy();
+      portal.on("labelTaken", labelTaken);
+      portal.on("labelAvailable", labelAvailable);
+
+      portal.checkLabelAvailability("knb");
+
+      expect(labelTaken.calledOnce).to.equal(true);
+      expect(labelAvailable.called).to.equal(false);
+    });
+
     it("rechecks a taken URL and cancels each save attempt", () => {
       const sandbox = sinon.createSandbox();
       const portal = new PortalModel({ isNew: true, label: "taken-url" });

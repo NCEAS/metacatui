@@ -5,9 +5,8 @@ define([
   "jws",
   "models/Search",
   "collections/SolrResults",
-  "models/filters/Filter",
   "common/QueryService",
-], ($, _, Backbone, JWS, SearchModel, SearchResults, Filter, QueryService) => {
+], ($, _, Backbone, JWS, SearchModel, SearchResults, QueryService) => {
   "use strict";
 
   const PORTAL_FILTER_QUERIES = [
@@ -1070,15 +1069,20 @@ define([
           return;
         }
 
-        const permissionFilter = new Filter({
-          fields: ["rightsHolder", "writePermission", "changePermission"],
-          values: identities,
-          operator: "OR",
-          fieldsOperator: "OR",
-        });
+        const permissionQuery = [
+          "rightsHolder",
+          "writePermission",
+          "changePermission",
+        ]
+          .flatMap((field) =>
+            identities.map((identity) =>
+              QueryService.getQueryPart(field, identity),
+            ),
+          )
+          .join(" OR ");
         const username = this.get("username");
         QueryService.queryWithFetch({
-          q: decodeURIComponent(permissionFilter.getQuery()),
+          q: `(${permissionQuery})`,
           filterQueries: PORTAL_FILTER_QUERIES,
           rows: 0,
           useAuth: true,
