@@ -291,6 +291,45 @@ define(["rdflib", "models/resourceMap/RDFGraph"], (rdf, RDFGraph) => {
         .length.should.equal(1);
     });
 
+    it("keeps location URLs while replacing subjects and other references", () => {
+      const graph = new RDFGraph();
+      const oldUri = "https://mn.example/mn/v2/object/data.1";
+      const newUri = "https://cn.example/cn/v2/resolve/data.1";
+      const location = rdf.sym("http://www.w3.org/ns/prov#atLocation");
+      const related = rdf.sym("https://example.org/related");
+      // Use the same old URL for the file and its download location. Replacing
+      // the file's RDF URL must preserve the URL used to download its bytes.
+      graph.addStatement({
+        subject: rdf.sym(oldUri),
+        predicate: location,
+        object: rdf.sym(oldUri),
+      });
+      graph.addStatement({
+        subject: rdf.sym(oldUri),
+        predicate: related,
+        object: rdf.sym(oldUri),
+      });
+
+      graph.replaceNodeValues(new Map([[oldUri, newUri]]), {
+        preserveObjectPredicates: [location.value],
+      });
+
+      graph
+        .hasStatement({
+          subject: rdf.sym(newUri),
+          predicate: location,
+          object: rdf.sym(oldUri),
+        })
+        .should.equal(true);
+      graph
+        .hasStatement({
+          subject: rdf.sym(newUri),
+          predicate: related,
+          object: rdf.sym(newUri),
+        })
+        .should.equal(true);
+    });
+
     it("does not rewrite blank nodes whose values collide with a replaced URI", () => {
       const graph = new RDFGraph();
       const oldUri = "https://example.org/old-node";

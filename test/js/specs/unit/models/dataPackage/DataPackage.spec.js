@@ -802,28 +802,51 @@ define([
         pkg.resourceManifestIsFetched.should.equal(true);
       });
 
-      it("uses the package ObjectService to download the Resource Map", async () => {
+      it("uses the package resolver URL while downloading the Resource Map from the MN", async () => {
+        const resolveServiceUrl = "https://cn.example/cn/v2/resolve";
+        const readBaseUrl = "https://mn.example/mn/v2/object";
         const resourceMap = ResourceMap.create({
           resourceMapPid: "resource_map_1",
-          resolveServiceUrl: "https://cn.example/cn/v2/resolve",
+          resolveServiceUrl,
+          memberPids: ["meta.1"],
         });
-        const pkg = packageWithResourceMapModel(null);
-        const objectService = { download: sandbox.stub() };
+        const pkg = new DataPackage({
+          rootResourceMapPid: "resource_map_1",
+          members: [
+            {
+              pid: "resource_map_1",
+              formatId: RESOURCE_MAP_FORMAT_ID,
+              formatType: "RESOURCE",
+            },
+          ],
+          resolverOptions: { resolveServiceUrl },
+          objectServiceOptions: { readBaseUrl },
+        });
+        const objectService = pkg.getObjectService();
+        sandbox
+          .stub(objectService, "download")
+          .resolves(new Blob([resourceMap.serialize()]));
         const controller = new AbortController();
-        sandbox.stub(pkg, "getObjectService").returns(objectService);
-        const fetchObject = sandbox
-          .stub(pkg.getRootResourceMapMember(), "fetchObject")
-          .resolves(resourceMap);
 
         const result = await pkg.getManifestFromResourceMap({
           signal: controller.signal,
+          requireEditable: true,
         });
 
         result.ok.should.equal(true);
-        sinon.assert.calledOnceWithExactly(fetchObject, {
-          signal: controller.signal,
-          objectService,
-        });
+        const model = pkg.getRootResourceMapMember().objectModel;
+        model.setResourceMapPid("resource_map_2");
+        model.resourceMapUri.should.equal(
+          `${resolveServiceUrl}/resource_map_2`,
+        );
+        objectService
+          .getReadUrl("resource_map_1")
+          .should.equal(`${readBaseUrl}/resource_map_1`);
+        sinon.assert.calledOnceWithExactly(
+          objectService.download,
+          "resource_map_1",
+          { signal: controller.signal },
+        );
       });
 
       it("preserves structured ownership issues when parsing fails", async () => {

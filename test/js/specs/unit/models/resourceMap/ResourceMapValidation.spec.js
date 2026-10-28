@@ -132,8 +132,10 @@ define([
     it("blocks equivalent duplicate identifiers added after construction", () => {
       const resourceMap = createBaseResourceMap();
       const memberNode = rdf.sym(resourceMap.getNodeUriForPid("data.1"));
-      const equivalentIdentifier = "https://foreign.example/resolve/data.1";
+      const equivalentIdentifier = `${TEST_RESOLVE_BASE}/data.1`;
 
+      // Import repairs this duplicate, but a direct graph edit must fail save
+      // validation until data.1 has only one identifier value again.
       resourceMap.mutateGraph(() => {
         resourceMap.graph.addStatement({
           subject: memberNode,

@@ -27,30 +27,6 @@ define([
     ResourceMapCommon;
 
   /**
-   * Read PID claims only when the node URI exactly matches a configured DataONE
-   * resolve or object service.
-   * @param {ResourceMap} resourceMap Resource Map being inspected
-   * @param {NamedNode} node Managed node
-   * @returns {string[]} Distinct PIDs read from configured service URLs
-   */
-  function configuredEndpointPids(resourceMap, node) {
-    return Array.from(
-      new Set(
-        [
-          ResourceMapCommon.configuredEndpointPid(
-            node.value,
-            resourceMap.resolveServiceUrl,
-          ),
-          ResourceMapCommon.configuredEndpointPid(
-            node.value,
-            resourceMap.objectServiceUrl,
-          ),
-        ].filter(isNonEmptyString),
-      ),
-    );
-  }
-
-  /**
    * Collect every original identifier statement and PID claim for one Resource
    * Map or package member node.
    * @param {ResourceMap} resourceMap Resource Map being inspected
@@ -68,23 +44,33 @@ define([
     const literalValues = literalStatements.map(({ object }) =>
       RDFGraph.getLiteralValue(object),
     );
+    // Read identifier text against the PID from the node URL or caller.
+    // Keep an exact match when the PID itself is a full URL.
+    const endpointPids = ResourceMapCommon.configuredEndpointPids(
+      node.value,
+      resourceMap,
+    );
+    let expectedPid = endpointPids.length === 1 ? endpointPids[0] : null;
+    if (node.value === resourceMap.resourceMapUri) {
+      expectedPid = resourceMap.resourceMapPid;
+    }
+    const literalClaims = literalStatements.map(({ object }) => ({
+      object,
+      pid: identifierLiteralPid(object, expectedPid, resourceMap),
+    }));
     return {
       statements,
       literalValues,
       literalPids: Array.from(
-        new Set(
-          literalStatements
-            .map(({ object }) => identifierLiteralPid(object))
-            .filter(isNonEmptyString),
-        ),
+        new Set(literalClaims.map(({ pid }) => pid).filter(isNonEmptyString)),
       ),
-      invalidLiteralValues: literalStatements
-        .filter(({ object }) => !isNonEmptyString(identifierLiteralPid(object)))
+      invalidLiteralValues: literalClaims
+        .filter(({ pid }) => !isNonEmptyString(pid))
         .map(({ object }) => describeTerm(object)),
       resourceValues: statements
         .filter(({ object }) => !RDFGraph.isLiteral(object))
         .map(({ object }) => describeTerm(object)),
-      endpointPids: configuredEndpointPids(resourceMap, node),
+      endpointPids,
     };
   }
 
@@ -339,7 +325,7 @@ define([
    * MetacatUI edits to have exactly one identifier literal equal to its PID.
    *
    * The loader is allowed to turn equivalent imported values, such as `data.1`
-   * and a resolver URL ending in `data.1`, into one literal containing
+   * and a configured resolver URL ending in `data.1`, into one literal containing
    * `data.1`. That repair happens only after the original statements have been
    * checked for contradictions. A later custom graph edit can add the resolver
    * form again. Both literals still claim the same PID, so the contradiction
@@ -610,6 +596,7 @@ define([
       ResourceMapNormalization.selectImportedRoot(
         resourceMap.graph,
         resourceMap.resourceMapPid,
+        resourceMap,
       );
     } catch (error) {
       if (error.code === "ambiguousResourceMapRoot") return error.issues;

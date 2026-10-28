@@ -109,6 +109,270 @@ define([
   }
 
   describe("Provenance", () => {
+    describe("configured endpoint source edits", () => {
+      const objectServiceUrl = "https://mn.example/mn/v2/object";
+      const sourceNode = rdf.sym(`${objectServiceUrl}/source.1`);
+      const resolveNode = rdf.sym(`${TEST_RESOLVE_BASE}/source.1`);
+
+      function importSource({ conflictingDestination = false } = {}) {
+        const resourceMap = createBaseResourceMap({
+          memberPids: ["meta.1", "data.1", "derived.1"],
+          objectServiceUrl,
+        });
+        const { ns } = resourceMap;
+        const dataNode = rdf.sym(resourceMap.getNodeUriForPid("data.1"));
+        resourceMap.mutateGraph(() => {
+          resourceMap.graph.addStatement({
+            subject: dataNode,
+            predicate: ns.PROV("wasDerivedFrom"),
+            object: sourceNode,
+          });
+          resourceMap.graph.addStatement({
+            subject: sourceNode,
+            predicate: ns.PROV("atLocation"),
+            object: sourceNode,
+          });
+          if (conflictingDestination) {
+            resourceMap.graph.addStatement({
+              subject: resolveNode,
+              predicate: ns.DCTERMS("identifier"),
+              object: rdf.literal("different.1"),
+            });
+          }
+        });
+        return resourceMap.constructor.fromXml(
+          resourceMap.resourceMapPid,
+          resourceMap.serialize({ validate: false }),
+          { resolveServiceUrl: TEST_RESOLVE_BASE, objectServiceUrl },
+        );
+      }
+
+      it("reuses an imported source and merges its matching CN node in one grouped edit", () => {
+        const resourceMap = importSource();
+        const { ns } = resourceMap;
+        resourceMap.getNodeUriForPid("source.1").should.equal(sourceNode.value);
+
+        resourceMap.provenance.mutateGraph(() => {
+          resourceMap.graph.addStatement({
+            subject: resolveNode,
+            predicate: ns.DCTERMS("identifier"),
+            object: rdf.literal(resolveNode.value),
+          });
+          resourceMap.provenance.addWasDerivedFrom("derived.1", "source.1");
+          resourceMap.provenance.addWasDerivedFrom("meta.1", "source.1");
+        });
+
+        resourceMap
+          .getMemberPids()
+          .should.have.members(["meta.1", "data.1", "derived.1"]);
+        const raw = new RDFGraph().parseXml(resourceMap.serialize(), "");
+        raw
+          .findStatements({ predicate: ns.PROV("wasDerivedFrom") })
+          .map(({ subject, object }) => [subject.value, object.value])
+          .should.have.deep.members(
+            ["data.1", "derived.1", "meta.1"].map((pid) => [
+              resourceMap.pidToUri(pid),
+              resolveNode.value,
+            ]),
+          );
+        raw.hasStatement({ subject: sourceNode }).should.equal(false);
+        raw
+          .hasStatement({
+            subject: resolveNode,
+            predicate: ns.PROV("atLocation"),
+            object: sourceNode,
+          })
+          .should.equal(true);
+        raw
+          .findStatements({
+            subject: resolveNode,
+            predicate: ns.DCTERMS("identifier"),
+          })
+          .map(({ object }) => object.value)
+          .should.deep.equal(["source.1"]);
+        resourceMap
+          .getNodeUriForPid("source.1")
+          .should.equal(resolveNode.value);
+      });
+
+      ["provenance", "resourceMap"].forEach((grouping) => {
+        it(`removes the old source link after adding a link in a ${grouping} group`, () => {
+          const resourceMap = importSource();
+          const { graph, graphState, ns, provenance } = resourceMap;
+          graphState.getIndex();
+          const owner = grouping === "provenance" ? provenance : resourceMap;
+
+          owner.mutateGraph(() => {
+            provenance.addWasDerivedFrom("derived.1", "source.1");
+            provenance.removeWasDerivedFrom("data.1", "source.1");
+          });
+
+          const raw = new RDFGraph().parseXml(resourceMap.serialize(), "");
+          raw
+            .findStatements({ predicate: ns.PROV("wasDerivedFrom") })
+            .map(({ subject, object }) => [subject.value, object.value])
+            .should.deep.equal([
+              [`${TEST_RESOLVE_BASE}/derived.1`, resolveNode.value],
+            ]);
+          graph.hasStatement({ subject: sourceNode }).should.equal(false);
+          resourceMap
+            .getNodeUriForPid("source.1")
+            .should.equal(resolveNode.value);
+          resourceMap.hasUnsavedChanges().should.equal(true);
+        });
+      });
+
+      [
+        ["used", "addUsedByProgram", "removeUsedByProgram"],
+        ["wasGeneratedBy", "addGeneratedByProgram", "removeGeneratedByProgram"],
+      ].forEach(([predicate, addMethod, removeMethod]) => {
+        it(`removes an imported ${predicate} link after identifying its source in a group`, () => {
+          const resourceMap = importSource();
+          const { graph, ns, provenance } = resourceMap;
+          const { executionNode } = addExecutionScaffold(resourceMap, {
+            executionId: "urn:uuid:imported.run.1",
+            programPid: "meta.1",
+          });
+          resourceMap.mutateGraph(() => {
+            graph.addStatement({
+              subject: predicate === "used" ? executionNode : sourceNode,
+              predicate: ns.PROV(predicate),
+              object: predicate === "used" ? sourceNode : executionNode,
+            });
+          });
+
+          provenance.mutateGraph(() => {
+            provenance.addWasDerivedFrom("derived.1", "source.1");
+            provenance[addMethod]("data.1", "meta.1");
+            provenance[removeMethod]("source.1", "meta.1");
+          });
+
+          const raw = new RDFGraph().parseXml(resourceMap.serialize(), "");
+          raw
+            .findStatements({ predicate: ns.PROV(predicate) })
+            .map(({ subject, object }) => [subject.value, object.value])
+            .should.deep.equal([
+              predicate === "used"
+                ? [executionNode.value, `${TEST_RESOLVE_BASE}/data.1`]
+                : [`${TEST_RESOLVE_BASE}/data.1`, executionNode.value],
+            ]);
+        });
+      });
+
+      it("does not recreate a source removed later in the group", () => {
+        const resourceMap = importSource();
+        resourceMap.provenance.mutateGraph(() => {
+          resourceMap.provenance.addWasDerivedFrom("derived.1", "source.1");
+          resourceMap.graph.removeNodeReferences(sourceNode);
+        });
+
+        const raw = new RDFGraph().parseXml(resourceMap.serialize(), "");
+        assertNodeRemoved({ graph: raw }, sourceNode);
+        assertNodeRemoved({ graph: raw }, resolveNode);
+        raw
+          .findStatements({ predicate: resourceMap.ns.PROV("wasDerivedFrom") })
+          .should.deep.equal([]);
+      });
+
+      it("preserves a conflicting CN destination while editing the MN source", () => {
+        const resourceMap = importSource({ conflictingDestination: true });
+
+        resourceMap.provenance.addWasDerivedFrom("derived.1", "source.1");
+
+        const raw = new RDFGraph().parseXml(resourceMap.serialize(), "");
+        raw
+          .hasStatement({
+            subject: rdf.sym(resourceMap.pidToUri("derived.1")),
+            predicate: resourceMap.ns.PROV("wasDerivedFrom"),
+            object: sourceNode,
+          })
+          .should.equal(true);
+        raw
+          .findStatements({
+            subject: resolveNode,
+            predicate: resourceMap.ns.DCTERMS("identifier"),
+          })
+          .map(({ object }) => object.value)
+          .should.deep.equal(["different.1"]);
+        resourceMap.getNodeUriForPid("source.1").should.equal(sourceNode.value);
+      });
+
+      it("rolls back source conversion when the grouped edit fails", () => {
+        const resourceMap = importSource();
+        const before = resourceMap.serialize({ validate: false });
+        const summary = resourceMap.getSummary();
+        resourceMap.hasUnsavedChanges().should.equal(false);
+
+        chai
+          .expect(() =>
+            resourceMap.provenance.mutateGraph(() => {
+              resourceMap.provenance.addWasDerivedFrom("derived.1", "source.1");
+              resourceMap.graph
+                .hasStatement({ subject: sourceNode })
+                .should.equal(true);
+              resourceMap.graph
+                .hasStatement({ subject: resolveNode })
+                .should.equal(false);
+              throw new Error("Grouped edit failed");
+            }),
+          )
+          .to.throw("Grouped edit failed");
+
+        resourceMap.serialize({ validate: false }).should.equal(before);
+        resourceMap.getSummary().should.deep.equal(summary);
+        resourceMap.hasUnsavedChanges().should.equal(false);
+        resourceMap.getNodeUriForPid("source.1").should.equal(sourceNode.value);
+
+        resourceMap.provenance.addWasDerivedFrom("derived.1", "data.1");
+        const raw = new RDFGraph().parseXml(resourceMap.serialize(), "");
+        raw.hasStatement({ subject: resolveNode }).should.equal(false);
+        raw
+          .hasStatement({
+            subject: rdf.sym(`${TEST_RESOLVE_BASE}/data.1`),
+            predicate: resourceMap.ns.PROV("wasDerivedFrom"),
+            object: sourceNode,
+          })
+          .should.equal(true);
+      });
+
+      it("restores the graph when URL conversion fails after the edit", () => {
+        const resourceMap = importSource();
+        const before = resourceMap.serialize({ validate: false });
+        const summary = resourceMap.getSummary();
+        const { normalization } = resourceMap;
+        const normalize = normalization.normalizeEndpointUrls;
+        let callbackCompleted = false;
+        normalization.normalizeEndpointUrls = function (nodes) {
+          normalize.call(this, nodes);
+          throw new Error("Source conversion failed");
+        };
+        try {
+          chai
+            .expect(() =>
+              resourceMap.provenance.mutateGraph(() => {
+                resourceMap.provenance.addWasDerivedFrom(
+                  "derived.1",
+                  "source.1",
+                );
+                callbackCompleted = true;
+              }),
+            )
+            .to.throw("Source conversion failed");
+        } finally {
+          normalization.normalizeEndpointUrls = normalize;
+        }
+
+        callbackCompleted.should.equal(true);
+        resourceMap.serialize({ validate: false }).should.equal(before);
+        resourceMap.getSummary().should.deep.equal(summary);
+        resourceMap.hasUnsavedChanges().should.equal(false);
+        resourceMap.provenance.addWasDerivedFrom("derived.1", "data.1");
+        const raw = new RDFGraph().parseXml(resourceMap.serialize(), "");
+        raw.hasStatement({ subject: resolveNode }).should.equal(false);
+        resourceMap.getNodeUriForPid("source.1").should.equal(sourceNode.value);
+      });
+    });
+
     it("keeps provenance projections stable until a mutation completes", () => {
       const resourceMap = createBaseResourceMap({
         resourceMapPid: "resource_map_urn:uuid:prov.live.roles.1",
@@ -1767,6 +2031,32 @@ define([
         })
         .length.should.equal(1);
     });
+
+    for (const sourceUri of [
+      "https://archive.example/resolve/data.1",
+      "https://archive.example/mn/v1/object/data.1",
+      "https://archive.example/mn/v2/object/data.1",
+    ]) {
+      it(`preserves derivation from ${sourceUri} when deleting local data.1`, () => {
+        const resourceMap = createBaseResourceMap({
+          memberPids: ["meta.1", "data.1", "data.2"],
+        });
+        const derivation = {
+          subject: rdf.sym(resourceMap.getNodeUriForPid("data.2")),
+          predicate: resourceMap.ns.PROV("wasDerivedFrom"),
+          object: rdf.sym(sourceUri),
+        };
+        resourceMap.mutateGraph(() => {
+          resourceMap.graph.addStatement(derivation);
+        });
+        resourceMap.graph.hasStatement(derivation).should.equal(true);
+
+        resourceMap.removeMembers(["data.1"]);
+
+        resourceMap.graph.hasStatement(derivation).should.equal(true);
+        resourceMap.getMemberPids().should.have.members(["meta.1", "data.2"]);
+      });
+    }
 
     it("removes deleted data references while preserving unrelated provenance", () => {
       const resourceMap = createBaseResourceMap({

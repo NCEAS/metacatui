@@ -458,11 +458,15 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
     }
 
     /**
-     * Replace all references to URI nodes from a replacement map.
-     * @param {Map<string, string>} replacements Old URI to new URI.
+     * Replace URI subjects and objects, including collection entries, from a
+     * replacement map. Predicate URIs stay unchanged.
+     * @param {Map<string, string>} replacements Old URI to new URI
+     * @param {object} [options] Replacement options
+     * @param {string[]} [options.preserveObjectPredicates] Predicate URIs whose
+     * objects stay unchanged, e.g. prov:atLocation. Subjects are still replaced
      * @returns {RDFGraph} This graph
      */
-    replaceNodeValues(replacements) {
+    replaceNodeValues(replacements, { preserveObjectPredicates = [] } = {}) {
       if (!replacements || replacements.size === 0) {
         return this;
       }
@@ -487,15 +491,41 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
         return this;
       }
 
+      /**
+       * Replace matching URI nodes in an object or RDF collection.
+       * @param {object} object RDF term
+       * @returns {object} Original term or its replacement
+       */
+      const replaceObject = (object) => {
+        if (RDFGraph.isNamedNode(object)) {
+          return normalizedReplacements.get(object.value) || object;
+        }
+        if (object.termType !== "collection") return object;
+
+        const elements = object.elements.map(replaceObject);
+        if (
+          elements.every((element, index) => element === object.elements[index])
+        ) {
+          return object;
+        }
+        // Rollback snapshots share the original terms, so rebuild changed lists.
+        const collection = new rdf.Collection(elements);
+        collection.id = object.id;
+        collection.closed = object.closed;
+        return collection;
+      };
+
       this.getStatements({ copy: true }).forEach((statement) => {
         const subjectReplacement = RDFGraph.isNamedNode(statement.subject)
           ? normalizedReplacements.get(statement.subject.value)
           : null;
-        const objectReplacement = RDFGraph.isNamedNode(statement.object)
-          ? normalizedReplacements.get(statement.object.value)
-          : null;
+        const object = preserveObjectPredicates.includes(
+          statement.predicate.value,
+        )
+          ? statement.object
+          : replaceObject(statement.object);
 
-        if (!subjectReplacement && !objectReplacement) {
+        if (!subjectReplacement && object === statement.object) {
           return;
         }
 
@@ -503,7 +533,7 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
         this.addStatementIfMissing({
           subject: subjectReplacement || statement.subject,
           predicate: statement.predicate,
-          object: objectReplacement || statement.object,
+          object,
         });
       });
 

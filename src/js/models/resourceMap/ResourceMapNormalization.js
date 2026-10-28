@@ -267,10 +267,12 @@ define([
    * `aggregation --isDescribedBy--> ResourceMap` statement.
    * @param {RDFGraph} graph Imported RDF graph
    * @param {string} resourceMapPid Outer Resource Map PID
+   * @param {object} endpoints Configured service URLs used to recognize map
+   * identifiers written as resolver or object URLs
    * @returns {{resourceMapUri:string, aggregationUri:string,
    * recoveredFromInverse:boolean}} Selected Resource Map and aggregation
    */
-  function selectInverseRoot(graph, resourceMapPid) {
+  function selectInverseRoot(graph, resourceMapPid, endpoints) {
     // Use an inverse `ore:isDescribedBy` statement only when there is no
     // `ore:describes` statement. Count exact inverse pairs before checking
     // types or PIDs so a more complete candidate cannot silently win.
@@ -303,6 +305,7 @@ define([
       subject: selected.object,
       predicate: NS.DCTERMS("identifier"),
     });
+    // Preserve URL-shaped PIDs when comparing configured identifier URLs.
     const passesGuards =
       graph.hasStatement({
         subject: selected.subject,
@@ -317,7 +320,9 @@ define([
       rootIdentifiers.every(({ object }) => RDFGraph.isLiteral(object)) &&
       rootIdentifiers.length > 0 &&
       rootIdentifiers.every(
-        ({ object }) => identifierLiteralPid(object) === resourceMapPid,
+        ({ object }) =>
+          identifierLiteralPid(object, resourceMapPid, endpoints) ===
+          resourceMapPid,
       );
 
     if (!passesGuards) {
@@ -333,8 +338,8 @@ define([
 
   /**
    * Find the Resource Map document and package aggregation in imported RDF,
-   * then apply only repairs whose values are certain.
-   * These repairs never choose between RDF nodes or replace an imported URI.
+   * then apply only repairs whose values are certain. Configured endpoint URIs
+   * are converted only when their identifier claims agree.
    * @class ResourceMapNormalization
    * @classcategory Models/ResourceMap
    * @since 2.39.0
@@ -346,17 +351,19 @@ define([
      * graph.
      * @param {RDFGraph} graph Imported RDF graph
      * @param {string} resourceMapPid Outer Resource Map PID
+     * @param {object} [endpoints] Configured resolve and object service URLs used
+     * to read URL-valued map identifiers when checking the reverse link
      * @returns {{resourceMapUri:string, aggregationUri:string,
      * recoveredFromInverse:boolean}} Selected Resource Map and aggregation
      */
-    static selectImportedRoot(graph, resourceMapPid) {
+    static selectImportedRoot(graph, resourceMapPid, endpoints) {
       const forwardStatements = graph.findStatements({
         predicate: NS.ORE("describes"),
       });
       if (forwardStatements.length) {
         return selectForwardRoot(graph, resourceMapPid, forwardStatements);
       }
-      return selectInverseRoot(graph, resourceMapPid);
+      return selectInverseRoot(graph, resourceMapPid, endpoints);
     }
 
     /**
@@ -370,7 +377,8 @@ define([
 
     /**
      * After all original PID claims have been validated, add only missing or
-     * equivalent statements whose intended values are certain.
+     * equivalent statements whose intended values are certain. Convert eligible
+     * configured endpoint URIs to CN resolver URLs.
      * @param {object} identity Raw identity inspection from validation
      * @param {boolean} [recoveredFromInverse] Whether the Resource Map and
      * aggregation were found through one exact `ore:isDescribedBy` statement
@@ -402,6 +410,7 @@ define([
         ResourceMapNormalization.selectImportedRoot(
           resourceMap.graph,
           resourceMap.resourceMapPid,
+          resourceMap,
         );
       }
 
@@ -412,13 +421,112 @@ define([
       );
       repairMalformedMembershipArtifact(resourceMap, rawForwardMemberKeys);
       repairMembershipReciprocity(resourceMap, identity.members);
+      const replacements = this.normalizeEndpointUrls();
+      // Merging a member with another node can bring in documentation links.
+      // Add missing inverse links using the converted member URLs.
       repairDocumentationReciprocity(
         resourceMap,
         new Set(
-          identity.members.map(({ node }) => RDFGraph.buildTermKey(node)),
+          identity.members.map(({ node }) =>
+            RDFGraph.buildTermKey(
+              RDFGraph.createNamedNode(
+                replacements.get(node.value) || node.value,
+              ),
+            ),
+          ),
         ),
       );
       resourceMap.graph.dedupeStatements();
+    }
+
+    /**
+     * Use configured CN resolve URLs for identified MN/CN nodes. For example,
+     * `/object/urn%3Auuid%3Aabc` becomes `/resolve/urn:uuid:abc`; the PID stays
+     * `urn:uuid:abc`. Include nodes outside the package and merge matching PIDs.
+     * @param {NamedNode[]} [nodes] Limit conversion to these nodes. By default,
+     * inspect every node with an identifier statement
+     * @returns {Map<string, string>} Old node URLs mapped to resolver URLs
+     * @since 0.0.0
+     */
+    normalizeEndpointUrls(nodes) {
+      const { resourceMap } = this;
+      const replacements = new Map();
+      const identifiersToNormalize = new Map();
+
+      const candidates =
+        nodes ||
+        resourceMap.graph
+          .findStatements({ predicate: NS.DCTERMS("identifier") })
+          .map(({ subject }) => subject);
+      // Check each source and its destination before changing identifiers.
+      RDFGraph.dedupeTerms(candidates).forEach((subject) => {
+        const pid = this.getEndpointPidForNormalization(subject);
+        if (!pid) return;
+        identifiersToNormalize.set(subject.value, pid);
+
+        // Moving MN /object/data.1 to CN /resolve/data.1 can combine two nodes.
+        // Skip if the CN node's identifier says different.1.
+        const resolveUri = resourceMap.pidToUri(pid);
+        const destination = RDFGraph.createNamedNode(resolveUri);
+        if (this.getEndpointPidForNormalization(destination) === pid) {
+          replacements.set(subject.value, resolveUri);
+          identifiersToNormalize.set(resolveUri, pid);
+        }
+      });
+
+      // Replace matching URL identifiers with PID text, e.g. data.1, before merging.
+      // This keeps one identifier after merging. The identifier can still be
+      // corrected when a destination conflict prevents renaming the URI.
+      identifiersToNormalize.forEach((pid, uri) => {
+        canonicalizeIdentifier(resourceMap, RDFGraph.createNamedNode(uri), pid);
+      });
+      // Update rdf:about and rdf:resource links together. Keep prov:atLocation
+      // link targets: recorded file locations may still use the old MN URL.
+      resourceMap.graph.replaceNodeValues(replacements, {
+        preserveObjectPredicates: [NS.PROV("atLocation").value],
+      });
+      return replacements;
+    }
+
+    /**
+     * Read a configured URL's PID when all its identifiers match.
+     * A destination node may have no identifiers.
+     * @param {NamedNode|BlankNode} subject RDF node to check
+     * @returns {string|null} PID if the node can be used, otherwise null
+     * @since 0.0.0
+     */
+    getEndpointPidForNormalization(subject) {
+      const { resourceMap } = this;
+      // Keep map/aggregation URLs; setResourceMapPid() updates them during save.
+      if (
+        !RDFGraph.isNamedNode(subject) ||
+        subject.value === resourceMap.resourceMapUri ||
+        subject.value === resourceMap.aggregationUri
+      ) {
+        return null;
+      }
+      // Use only configured service paths. Elsewhere, /object/data.1 may be
+      // part of a full URL identifier rather than an endpoint for PID data.1.
+      const [pid] = ResourceMapCommon.configuredEndpointPids(
+        subject.value,
+        resourceMap,
+      );
+      if (!pid) {
+        return null;
+      }
+
+      // Require every identifier to claim this PID; resource-valued ones fail.
+      const identifierStatements = resourceMap.graph.findStatements({
+        subject,
+        predicate: NS.DCTERMS("identifier"),
+      });
+      // A destination may have no identifier; the checked source identifies
+      // the merged node.
+      const identifiersMatchPid = identifierStatements.every(
+        ({ object: identifier }) =>
+          identifierLiteralPid(identifier, pid, resourceMap) === pid,
+      );
+      return identifiersMatchPid ? pid : null;
     }
 
     /**
@@ -461,8 +569,8 @@ define([
       });
 
       memberDescriptors.forEach(({ pid, uri }) => {
-        // Keep exact imported member URIs. Use the configured Coordinating Node
-        // only when a new member has no RDF node yet.
+        // Keep each member's current RDF URI. Use the configured Coordinating
+        // Node only when a new member has no RDF node yet.
         resourceMap.structureMutation.addAggregationTriples(pid, uri);
       });
     }

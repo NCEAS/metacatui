@@ -872,8 +872,6 @@ define([
       await this.dataPackage.ensureResourceMapUploadPid(rmMember);
       resourceMap.setModified?.(new Date().toISOString());
       throwIfAborted(signal);
-      // Imported member URLs are RDF identities, not endpoints to migrate.
-      // Normalize locally and let graph validation check PID consistency.
       resourceMap.normalize({ markDirty: false });
 
       let xml;

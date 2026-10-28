@@ -705,7 +705,11 @@ define([
         graphState.findNodeUriForPid(normalizedPid) ||
         this.resourceMap.pidToUri(normalizedPid);
       this.resourceMap.ensureIdentifierForUri(uri, normalizedPid);
-      return RDFGraph.createNamedNode(uri);
+      // Defer URL conversion until the grouped edit finishes. Later operations
+      // may still look up an imported MN URL in the cached index.
+      const node = RDFGraph.createNamedNode(uri);
+      this.resourceMap.pendingEndpointNodes.push(node);
+      return node;
     }
   }
 

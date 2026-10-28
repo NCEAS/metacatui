@@ -977,6 +977,7 @@ define([
           resourceMap = await resourceMapMember.fetchObject({
             signal,
             objectService: dataPackage.getObjectService(),
+            resolveServiceUrl: dataPackage.resolverOptions.resolveServiceUrl,
           });
           throwIfAborted(signal, "Resource map manifest load cancelled");
         } catch (error) {

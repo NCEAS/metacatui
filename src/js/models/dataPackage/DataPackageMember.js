@@ -168,6 +168,8 @@ define([
      * @param {AbortSignal} [options.signal] Signal used to cancel downloads
      * @param {ObjectService} [options.objectService] Service used to download a
      * Resource Map
+     * @param {string} [options.resolveServiceUrl] Resolver URL for Resource Map
+     * identities, overriding the ObjectService setting
      * @returns {Promise<object|null>} The parsed object model, or null
      */
     async fetchObject(options = {}) {
@@ -184,8 +186,10 @@ define([
         if (options.signal) downloadOptions.signal = options.signal;
         const blob = await objectService.download(pid, downloadOptions);
         this.rawData = await blob.text();
+        // Keep the MN download URL separate from the CN URLs used in RDF.
         this.objectModel = ResourceMap.fromXml(pid, this.rawData, {
-          resolveServiceUrl: objectService.readBaseUrl,
+          resolveServiceUrl:
+            options.resolveServiceUrl ?? objectService.resolveServiceUrl,
           objectServiceUrl: objectService.readBaseUrl,
         });
         return this.objectModel;

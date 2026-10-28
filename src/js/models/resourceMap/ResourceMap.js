@@ -85,8 +85,8 @@ define([
    * document.
    * @property {string} aggregationUri Exact RDF URI for the package described by
    * the Resource Map.
-   * @property {string} resolveServiceUrl Resolve service base URL used to
-   * create object URIs
+   * @property {string} resolveServiceUrl CN resolve service base URL used for
+   * new RDF nodes and for replacing matching endpoint URLs during import.
    * @property {ResourceMapMember[]} members Package members.
    * @property {ResMapDocLink[]} documentationLinks Links from metadata to the
    * data it documents.
@@ -102,26 +102,31 @@ define([
    * is an RDF document that lists a package's members and describes
    * relationships among them.
    *
-   * This class stores the original RDF graph, including membership, links from
+   * This class stores the normalized RDF graph, including membership, links from
    * metadata to data, locations, creator and modified values, and package
    * history. Callers should edit through ResourceMap methods so cached package
    * summaries stay in sync. Imported graphs are repaired only when the graph
    * determines the intended statement without guessing. The graph remains the
    * source of truth. `getSummary()` gives the UI a simpler view that cannot
    * change the graph.
+   *
+   * Import converts configured endpoint URLs to CN resolver URLs when their
+   * identifiers agree. Foreign URLs, conflicting destinations, and
+   * `prov:atLocation` targets are preserved. Map and aggregation identities
+   * change only when `setResourceMapPid()` assigns a new version.
    * @class
    * @classcategory Models/ResourceMap
    * @since 2.39.0
    */
   class ResourceMap {
     /**
-     * @param {object} options Constructor options.
+     * @param {object} options Constructor options
      * @param {string} options.resourceMapPid DataONE PID for the resource map
-     * object.
-     * @param {string} options.resolveServiceUrl Resolve service base URL used
-     * to create URIs for new nodes
-     * @param {string} [options.objectServiceUrl] Object service base used only
-     * to recognize exact managed Resource Map and member URLs
+     * object
+     * @param {string} options.resolveServiceUrl CN resolve endpoint for new
+     * nodes and URLs converted during import
+     * @param {string} [options.objectServiceUrl] Object service base used to
+     * recognize managed endpoint URLs during import
      * @param {IndexedFormula|RDFGraph} [options.graph] Existing RDF graph to
      * adopt. Used when constructing a ResourceMap from parsed RDF/XML
      */
@@ -157,6 +162,7 @@ define([
         ? ResourceMapNormalization.selectImportedRoot(
             this.graph,
             this.resourceMapPid,
+            this,
           )
         : null;
       if (selectedRoot) {
@@ -170,6 +176,12 @@ define([
       }
       this.graphState = new ResourceMapState({ resourceMap: this });
       this.graphMutationDepth = 0;
+      /**
+       * Identified endpoint nodes waiting for the grouped edit to finish.
+       * @type {NamedNode[]}
+       * @since 0.0.0
+       */
+      this.pendingEndpointNodes = [];
       this.unsavedChanges = false;
 
       this.provenance = new Provenance({ resourceMap: this });
@@ -294,15 +306,16 @@ define([
     }
 
     /**
-     * Parse an RDF/XML Resource Map and preserve its exact RDF identities.
-     * @param {string} resourceMapPid PID expected for the resource map object.
-     * @param {string} resourceMapXml RDF/XML serialization.
+     * Parse RDF/XML and repair unambiguous package statements and configured
+     * endpoint URLs. Import repairs do not mark the model unsaved.
+     * @param {string} resourceMapPid PID expected for the resource map object
+     * @param {string} resourceMapXml RDF/XML serialization
      * @param {object} options Parse options
-     * @param {string} options.resolveServiceUrl Current DataONE resolve service
-     * base used to create new nodes
+     * @param {string} options.resolveServiceUrl CN resolve endpoint for new
+     * nodes and URLs converted during import
      * @param {string} [options.objectServiceUrl] Current object service base used
      * only to recognize exact managed URLs
-     * @returns {ResourceMap} Parsed resource map instance.
+     * @returns {ResourceMap} Parsed resource map instance
      * @throws {Error} When required input is missing or the RDF/XML is invalid
      */
     static fromXml(resourceMapPid, resourceMapXml, options = {}) {
@@ -727,6 +740,7 @@ define([
       const selectedRoot = ResourceMapNormalization.selectImportedRoot(
         this.graph,
         this.resourceMapPid,
+        this,
       );
       if (
         selectedRoot.resourceMapUri !== this.resourceMapUri ||
@@ -925,6 +939,16 @@ define([
         mutator();
 
         if (isOuterMutation) {
+          // Normalize endpoints once after the group finishes. A later edit
+          // may have removed or renamed a queued node.
+          this.normalization.normalizeEndpointUrls(
+            this.pendingEndpointNodes.filter((subject) =>
+              this.graph.hasStatement({
+                subject,
+                predicate: this.ns.DCTERMS("identifier"),
+              }),
+            ),
+          );
           this.unsavedChanges = markDirty ? true : previous.unsavedChanges;
         }
       } catch (error) {
@@ -940,6 +964,7 @@ define([
         throw error;
       } finally {
         if (isOuterMutation) {
+          this.pendingEndpointNodes = [];
           this.graphState.invalidate();
         }
         this.graphMutationDepth -= 1;
@@ -954,7 +979,7 @@ define([
      * @private
      */
     normalizeGraph() {
-      // Keep each imported member's exact RDF URI. Rebuilding every URI from
+      // Keep each member's current RDF URI. Rebuilding every URI from
       // its PID would move valid members that came from another Coordinating
       // Node. pidToUri() creates URIs only for new members.
       const memberDescriptors = this.graphState.getMemberDescriptors();
