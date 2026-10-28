@@ -2,6 +2,7 @@
 </div>
 <div class="row-fluid party-details">
 	<div class="span4">
+		<h5>Name <i class="required-icon" aria-hidden="true"></i></h5>
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-givenName">First Name</label>
 			<input type="text" id="<%=uniqueId%>-givenName" class="span6 tooltip-this" name="first name" data-attribute="givenName" placeholder="First name" />
@@ -19,9 +20,9 @@
 	</div>
 	<div class="span4">
 		<div class="row-fluid">
-			<label class="hidden" for="<%=uniqueId%>-email">E-mail</label>
+			<label class="subtle" for="<%=uniqueId%>-email">Email <% if(emailRequired){ %><i class="required-icon" aria-hidden="true"></i><% } %></label>
 			<input type="email" id="<%=uniqueId%>-email" name="E-mail" class="span12
-			tooltip-this" data-attribute="email" placeholder="Email" pattern="[^@]+@[^@]+\.[a-zA-Z]{2,6}" />
+			tooltip-this" data-attribute="email" aria-required="<%=emailRequired%>" placeholder="Email" pattern="[^@]+@[^@]+\.[a-zA-Z]{2,6}" />
 		</div>
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-website">Website</label>

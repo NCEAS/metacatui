@@ -93,7 +93,7 @@ define([
           "Southeast latitude out of range, must be >-90 and <90. Please correct the latitude.",
         west: "Northwest longitude out of range (-180 to 180). Check and correct the longitude.",
         missing:
-          "Latitude and longitude are required for each coordinate. Please complete all fields.",
+          "Complete both latitude and longitude for each coordinate pair you enter. One complete pair is enough for a single location.",
         description:
           "Missing location description. Please add a brief description.",
         needPair:

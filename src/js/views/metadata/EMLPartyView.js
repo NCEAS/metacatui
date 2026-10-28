@@ -60,10 +60,22 @@ define([
 
         //Use the template with the editing elements if this view has the "edit" flag on
         if (this.edit) {
+          const roles =
+            this.model.get("type") === "associatedParty"
+              ? this.model.get("roles")
+              : [this.model.get("type")];
+          const requiredFields = MetacatUI.appModel.get(
+            "emlEditorRequiredFields_EMLParty",
+          );
+          const emailRequired = roles.some((role) =>
+            requiredFields[role]?.includes("email"),
+          );
+
           //Send all the EMLParty info to the template
           this.$el.html(
             this.editTemplate({
               uniqueId: this.model.cid,
+              emailRequired,
             }),
           );
 
