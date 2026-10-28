@@ -85,7 +85,7 @@ define([
   /**
    * Build a real ResourceMap with the given membership and documentation links.
    * @param {object} [options] ResourceMap options
-   * @returns {ResourceMap} A parsed, in memory ResourceMap
+   * @returns {ResourceMap} Newly created ResourceMap
    */
   function makeResourceMap({
     pid = "resource_map_1",
@@ -476,9 +476,9 @@ define([
 
       const result = await pkg.resolveFromPid("meta.1");
       result.isMetadata.should.equal(true);
-      const rmResult = await pkg.getManifestFromResourceMap({ merge: true });
+      const rmResult = await pkg.getManifestFromResourceMap();
       rmResult.ok.should.equal(true);
-      await pkg.getManifestFromIndex({ merge: true });
+      await pkg.getManifestFromIndex();
 
       pkg.getRootResourceMapMember().pid.should.equal("resource_map_1");
       pkg.getPrimaryMetadataMember().pid.should.equal("meta.1");
@@ -521,7 +521,7 @@ define([
 
       const result = await pkg.resolveFromPid("data.1");
       result.isData.should.equal(true);
-      await pkg.getManifest({ index: false });
+      await pkg.getManifestFromResourceMap();
 
       sinon.assert.notCalled(network.indexStub);
       should.exist(pkg.getMember("data.1"));
@@ -559,8 +559,8 @@ define([
 
       const result = await pkg.resolveFromPid(bareRmPid);
       result.isResourceMap.should.equal(true);
-      await pkg.getManifestFromResourceMap({ merge: true });
-      await pkg.getManifestFromIndex({ merge: true });
+      await pkg.getManifestFromResourceMap();
+      await pkg.getManifestFromIndex();
 
       // The unprefixed PID is still recognized as the root ResourceMap by its
       // format ID, not by any naming convention.
@@ -603,8 +603,8 @@ define([
       });
 
       await pkg.resolveFromPid("meta.1");
-      await pkg.getManifestFromResourceMap({ merge: true });
-      await pkg.getManifestFromIndex({ merge: true });
+      await pkg.getManifestFromResourceMap();
+      await pkg.getManifestFromIndex();
 
       pkg.getRootResourceMapMember().pid.should.equal("resource_map_1");
       pkg
@@ -681,11 +681,13 @@ define([
       });
 
       await pkg.resolveFromPid("meta.1");
-      await pkg.getManifestFromResourceMap({ merge: true });
-      await pkg.getManifestFromIndex({ merge: true, onlyExisting: true });
+      await pkg.getManifestFromResourceMap();
+      const result = await pkg.getManifestFromIndex({
+        onlyExisting: true,
+      });
 
       pkg.members.getFromSource("index").should.have.length(1000);
-      pkg.indexManifestTotal.should.equal(memberPids.length + 1);
+      result.details.total.should.equal(memberPids.length + 1);
       network.indexStub.calledOnce.should.equal(true);
     });
   });
@@ -1343,7 +1345,6 @@ define([
         savedRecord.rmPid,
       );
       savedRecord.should.not.have.property("verifications");
-      savedRecord.should.not.have.property("version");
       // ...and cleared once the ResourceMap write is confirmed.
       store.remove.calledWith("meta.new").should.equal(true);
     });

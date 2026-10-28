@@ -38,6 +38,12 @@ define([], () => {
       this.dataPackage = dataPackage;
       this.actionStatus = new Map();
       this.actionErrors = new Map();
+      /**
+       * Errors for members whose upload actions could not be prepared.
+       * @type {Map<string, Error>}
+       * @since 0.0.0
+       */
+      this.preparationErrors = new Map();
       actions.forEach((action) => {
         this.actionStatus.set(action.id, STATUSES.PENDING);
       });
@@ -155,6 +161,7 @@ define([], () => {
         if (message) messages.add(message);
       };
       this.actionErrors.forEach((error) => add(error));
+      this.preparationErrors.forEach((error) => add(error));
       const members = this.dataPackage?.members?.toArray?.() || [];
       members.forEach((member) => add(member?.lastUploadError));
       return [...messages];
@@ -180,13 +187,16 @@ define([], () => {
       this.retryable = false;
       this.reloadRequired = false;
       const statuses = [...this.actionStatus.values()];
-      const anyFailed = statuses.some(
-        (status) => status === STATUSES.FAILED || status === STATUSES.AMBIGUOUS,
-      );
+      const anyFailed =
+        this.preparationErrors.size > 0 ||
+        statuses.some(
+          (status) =>
+            status === STATUSES.FAILED || status === STATUSES.AMBIGUOUS,
+        );
       const anySkipped = statuses.includes(STATUSES.SKIPPED);
-      const allCommitted = statuses.every(
-        (status) => status === STATUSES.SUCCEEDED,
-      );
+      const allCommitted =
+        this.preparationErrors.size === 0 &&
+        statuses.every((status) => status === STATUSES.SUCCEEDED);
 
       if (this.staleRemote) {
         this.outcome = OUTCOMES.STALE_REMOTE;

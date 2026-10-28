@@ -14,8 +14,8 @@
  * created by MetacatUI are removed too; imported nodes with extra information
  * are preserved.
  *
- * During a grouped edit, reads use the state captured before editing began and
- * writes go directly to `resourceMap.graph`.
+ * During a grouped edit, execution selection reads the current graph so each
+ * operation sees the program links created or removed by earlier operations.
  * @since 2.39.0
  */
 
@@ -45,20 +45,20 @@ define([
   }
 
   /**
-   * Find a program run created earlier in the current grouped edit. Cached state
-   * describes the graph before editing began, so this direct graph lookup is
-   * needed only when that cache has no matching run.
+   * Find the current program run, including changes made earlier in the same
+   * grouped edit. Plan URIs may differ while identifying the same program PID.
    * @param {Provenance} provenance Provenance instance whose graph is inspected
    * @param {{pid: string, node: NamedNode}} programMember Exact program package
    * member
-   * @returns {NamedNode|BlankNode|null} Pending execution node when found
-   * @throws {Error} When multiple pending executions make editing unsafe
+   * @returns {NamedNode|BlankNode|null} Current execution node when found
+   * @throws {Error} When multiple executions make editing unsafe
    */
-  function resolvePendingExecution(provenance, programMember) {
-    const { graph } = provenance.resourceMap;
-    const { node: programNode, pid: programPid } = programMember;
+  function resolveExecution(provenance, programMember) {
+    const { graph, graphState } = provenance.resourceMap;
+    const { pid: programPid } = programMember;
     const associationNodes = graph
-      .findStatements({ predicate: NS.PROV("hadPlan"), object: programNode })
+      .findStatements({ predicate: NS.PROV("hadPlan") })
+      .filter(({ object }) => graphState.pidFromNode(object) === programPid)
       .map(({ subject }) => subject);
     const executionNodes = RDFGraph.dedupeTerms(
       associationNodes.flatMap((associationNode) =>
@@ -69,12 +69,10 @@ define([
           })
           .map(({ subject }) => subject),
       ),
-    ).filter((executionNode) =>
-      graph.hasStatement({
-        subject: executionNode,
-        predicate: NS.RDF("type"),
-        object: NS.PROVONE("Execution"),
-      }),
+    ).filter(
+      (executionNode) =>
+        RDFGraph.isNamedNode(executionNode) ||
+        RDFGraph.isBlankNode(executionNode),
     );
     if (executionNodes.length > 1) {
       throw programProvenanceReadOnlyError(programPid);
@@ -212,21 +210,14 @@ define([
       ) {
         throw programProvenanceReadOnlyError(normalizedProgramPid);
       }
-      const executionNode =
-        graphState.getExecutionNodesForProgram(normalizedProgramPid)[0] ||
-        resolvePendingExecution(provenance, programMember);
+      const executionNode = resolveExecution(provenance, programMember);
 
       if (executionNode) {
         const inspection = graphState.getExecutionSummary(executionNode);
-        if (!inspection) {
-          ensureAssociationForExecution(
-            provenance,
-            executionNode,
-            programMember,
-          );
-          return executionNode;
+        if (inspection) {
+          ensureExecutionIdentity(provenance, executionNode, inspection);
         }
-        ensureExecutionIdentity(provenance, executionNode, inspection);
+        ensureAssociationForExecution(provenance, executionNode, programMember);
         return executionNode;
       }
 
@@ -301,11 +292,14 @@ define([
         dataPid,
         "Data PID required",
       );
-      const { pid: normalizedProgramPid } =
-        provenance.resourceMap.resolveMemberNode(programPid, {
+      const programMember = provenance.resourceMap.resolveMemberNode(
+        programPid,
+        {
           required: true,
           message: "Program PID required",
-        });
+        },
+      );
+      const normalizedProgramPid = programMember.pid;
       const { graph, graphState } = provenance.resourceMap;
       if (
         !ProvenanceValidation.isProgramExecutionEditable(
@@ -315,8 +309,7 @@ define([
       ) {
         throw programProvenanceReadOnlyError(normalizedProgramPid);
       }
-      const [executionNode] =
-        graphState.getExecutionNodesForProgram(normalizedProgramPid);
+      const executionNode = resolveExecution(provenance, programMember);
       if (!executionNode) return provenance;
 
       const statementsToRemove = graph

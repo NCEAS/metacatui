@@ -172,34 +172,6 @@ define([
   }
 
   /**
-   * Ensure each exact membership relationship is stored in both directions:
-   * `package --aggregates--> member` and
-   * `member --isAggregatedBy--> package`. No member is chosen by PID.
-   * @param {ResourceMap} resourceMap Resource Map being repaired
-   * @param {Array<{node:NamedNode}>} members Exact imported package members
-   */
-  function repairMembershipReciprocity(resourceMap, members) {
-    const aggregationNode = RDFGraph.createNamedNode(
-      resourceMap.aggregationUri,
-    );
-
-    members.forEach(({ node }) => {
-      resourceMap.graph.addStatementIfMissing({
-        subject: node,
-        predicate: NS.ORE("isAggregatedBy"),
-        object: aggregationNode,
-      });
-      // An exact inverse already asserts membership. Relative inverse members
-      // are blocked before repair and never receive a configured URI.
-      resourceMap.graph.addStatementIfMissing({
-        subject: aggregationNode,
-        predicate: NS.ORE("aggregates"),
-        object: node,
-      });
-    });
-  }
-
-  /**
    * Store both RDF directions of a link from metadata to documented data, but
    * only when both exact RDF nodes are package members.
    * @param {ResourceMap} resourceMap Resource Map being repaired
@@ -420,7 +392,6 @@ define([
           .map(({ node }) => RDFGraph.buildTermKey(node)),
       );
       repairMalformedMembershipArtifact(resourceMap, rawForwardMemberKeys);
-      repairMembershipReciprocity(resourceMap, identity.members);
       const replacements = this.normalizeEndpointUrls();
       // Merging a member with another node can bring in documentation links.
       // Add missing inverse links using the converted member URLs.

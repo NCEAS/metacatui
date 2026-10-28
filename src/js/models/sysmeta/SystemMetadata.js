@@ -131,7 +131,9 @@ define([
         // Parse simple text, integer, boolean, and date fields with simple parsers.
         SIMPLE_FIELD_DEFINITIONS.forEach(({ field }) => {
           const el = XMLUtilities.findLastDirectChildElement(root, field);
-          parsedValues[field] = el?.textContent?.trim() || null;
+          const text = el?.textContent;
+          parsedValues[field] =
+            (field === "fileName" ? text : text?.trim()) || null;
         });
 
         // Parse complex fields
@@ -313,6 +315,14 @@ define([
 
       NODE_ORDER.forEach((field) => {
         switch (field) {
+          case "fileName":
+            XMLUtilities.appendTextElement(
+              doc,
+              root,
+              field,
+              normalized.fileName,
+            );
+            return;
           case "checksum":
           case "mediaType":
           case "replicationPolicy":
@@ -432,6 +442,11 @@ define([
             ? source[field]
             : DEFAULT_SIMPLE_FIELD_VALUES[field];
 
+        // Filenames identify exact uploaded names; whitespace is significant.
+        if (field === "fileName" && typeof rawValue === "string") {
+          normalized[field] = rawValue;
+          return;
+        }
         const normalizer = XMLTypes[type]?.normalize;
         normalized[field] =
           typeof normalizer === "function" ? normalizer(rawValue) : rawValue;

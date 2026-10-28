@@ -275,6 +275,7 @@ define([
       this._rebaseSystemMetadata(sysMeta);
       const sysMetaMember = new DataPackageMember({
         ...sysMeta.toJSON(),
+        fileName: this.sysMeta.fileName,
         sources: ["sysMeta"],
       });
       if (this.pid === sysMetaMember.pid) {
@@ -991,10 +992,7 @@ define([
       ) {
         return null;
       }
-      // Prefer the injected format list (needed to derive a type from a
-      // formatId/extension). Without it, trust an explicit formatType.
-      if (this.objectFormats) return this.objectFormats.getFormatType(props);
-      return props.formatType || null;
+      return this.objectFormats.getFormatType(props);
     }
 
     /**
@@ -1003,8 +1001,7 @@ define([
      */
     getFormatId() {
       const props = this.getFormatProperties();
-      if (this.objectFormats) return this.objectFormats.getFormatId(props);
-      return props.formatId || null;
+      return this.objectFormats.getFormatId(props);
     }
 
     /**

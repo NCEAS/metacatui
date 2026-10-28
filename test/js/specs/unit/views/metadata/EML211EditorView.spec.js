@@ -3106,6 +3106,15 @@ define([
 
     it("retries a save without failed file replacements", async function () {
       model.validationError = null;
+      const removedReplacement = {
+        pid: "data.removed.2",
+        remotePid: "data.removed.1",
+        removed: true,
+        remoteState: "failed",
+        fileName: "removed.csv",
+        lastUploadError: new Error("replacement rejected"),
+        isData: sandbox.stub().returns(true),
+      };
       const failedReplacement = {
         pid: "data.2",
         remotePid: "data.1",
@@ -3115,7 +3124,9 @@ define([
         isData: sandbox.stub().returns(true),
       };
       const rootDataPackage = {
-        toArray: sandbox.stub().returns([failedReplacement]),
+        toArray: sandbox
+          .stub()
+          .returns([removedReplacement, failedReplacement]),
         hasMetadataContentEdits: sandbox.stub().returns(false),
         getChangedMembers: sandbox.stub().returns([]),
         getPrimaryMetadataMember: sandbox.stub().returns({
@@ -3141,6 +3152,7 @@ define([
       sandbox.stub(view, "showSaving");
       sandbox.stub(view, "refreshFileTable");
       sandbox.stub(view, "saveSuccess");
+      sandbox.stub(view, "saveError");
 
       await view.save({ target: $("<button></button>")[0] });
 

@@ -86,9 +86,8 @@ define([
      */
     mutateGraph(mutator, { markDirty = true, rollbackOnError = true } = {}) {
       if (!this.resourceMap.isGraphMutating()) {
-        // Provenance mutations resolve PIDs, roles, and executions from the
-        // state recorded before the edit. Build that state before changing the
-        // graph.
+        // Import ambiguity checks use the state before the edit. Endpoint PID
+        // resolution and execution selection read the current graph.
         this.resourceMap.graphState.getIndex();
       }
       this.resourceMap.mutateGraph(mutator, { markDirty, rollbackOnError });

@@ -386,6 +386,126 @@ define(["rdflib", "models/resourceMap/RDFGraph"], (rdf, RDFGraph) => {
       graph.hasStatement({ object: subjectNode }).should.equal(false);
     });
 
+    it("keeps each URL's statements when owl:sameAs links two URLs", () => {
+      const a = rdf.sym("https://example.org/a");
+      const b = rdf.sym("https://example.org/b");
+      const predicate = rdf.sym("https://example.org/p");
+      const sameAs = rdf.sym("http://www.w3.org/2002/07/owl#sameAs");
+      const linkUri = rdf.sym("http://www.w3.org/2007/ont/link#uri");
+      const xml = [
+        '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"',
+        '  xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:ex="https://example.org/">',
+        '  <rdf:Description rdf:about="https://example.org/a">',
+        '    <owl:sameAs rdf:resource="https://example.org/b"/>',
+        "    <ex:p>shared</ex:p>",
+        "  </rdf:Description>",
+        '  <rdf:Description rdf:about="https://example.org/b">',
+        "    <ex:p>shared</ex:p>",
+        "  </rdf:Description>",
+        "</rdf:RDF>",
+      ].join("\n");
+      const graph = new RDFGraph().parseXml(xml, "");
+      const reparsed = new RDFGraph().parseXml(
+        graph.serializeStatementsToXml(graph.getStatements()),
+        "",
+      );
+
+      [graph, reparsed].forEach((current) => {
+        current
+          .findStatements({ predicate })
+          .map(({ subject }) => subject.value)
+          .sort()
+          .should.deep.equal([a.value, b.value]);
+        [a, b].forEach((subject) => {
+          const statement = current.findStatements({ subject, predicate })[0];
+          statement.subject.equals(subject).should.equal(true);
+          statement.object.value.should.equal("shared");
+        });
+        current
+          .hasStatement({ subject: a, predicate: sameAs, object: b })
+          .should.equal(true);
+        current.findStatements({ predicate: linkUri }).should.have.lengthOf(0);
+      });
+    });
+
+    it("keeps records linked to themselves or each other after saving", () => {
+      const graph = new RDFGraph();
+      const root = rdf.sym("https://example.org/root");
+      const label = rdf.sym("https://example.org/label");
+      const related = rdf.sym("https://example.org/related");
+      const names = ["connected", "a", "b", "tail", "end"];
+      const links = [
+        ["connected", "connected"],
+        ["a", "b"],
+        ["b", "a"],
+        ["b", "tail"],
+        ["a", "tail"],
+        ["tail", "end"],
+      ];
+      const terms = new Map(names.map((name) => [name, rdf.blankNode()]));
+      graph.addStatement({
+        subject: root,
+        predicate: label,
+        object: rdf.literal("root"),
+      });
+      graph.addStatement({
+        subject: root,
+        predicate: related,
+        object: terms.get("connected"),
+      });
+      terms.forEach((subject, name) => {
+        graph.addStatement({
+          subject,
+          predicate: label,
+          object: rdf.literal(name),
+        });
+      });
+      links.forEach(([from, to]) => {
+        graph.addStatement({
+          subject: terms.get(from),
+          predicate: related,
+          object: terms.get(to),
+        });
+      });
+
+      const reparsed = new RDFGraph().parseXml(
+        graph.serializeStatementsToXml(graph.getStatements()),
+        "",
+      );
+
+      reparsed
+        .getStatements()
+        .should.have.lengthOf(graph.getStatements().length);
+      names.forEach((name) => {
+        const matches = reparsed.findStatements({
+          predicate: label,
+          object: rdf.literal(name),
+        });
+        matches.should.have.lengthOf(1);
+        RDFGraph.isBlankNode(matches[0].subject).should.equal(true);
+        terms.set(name, matches[0].subject);
+      });
+      new Set(
+        Array.from(terms.values(), RDFGraph.buildTermKey),
+      ).size.should.equal(names.length);
+      links.forEach(([from, to]) => {
+        reparsed
+          .hasStatement({
+            subject: terms.get(from),
+            predicate: related,
+            object: terms.get(to),
+          })
+          .should.equal(true);
+      });
+      reparsed
+        .hasStatement({
+          subject: root,
+          predicate: related,
+          object: terms.get("connected"),
+        })
+        .should.equal(true);
+    });
+
     it("round-trips URI-only RDF collection items", () => {
       const root = rdf.sym("urn:example:root");
       const predicate = rdf.sym("https://example.org/vocab#related");

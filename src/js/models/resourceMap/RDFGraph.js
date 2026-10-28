@@ -137,7 +137,7 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
 
       return RDFGraph.buildKey([
         term.termType || "",
-        term.value || "",
+        term.termType === "collection" ? term.id : term.value || "",
         RDFGraph.isLiteral(term) ? term.lang || "" : "",
         RDFGraph.isLiteral(term) ? term.datatype?.value || "" : "",
       ]);
@@ -207,7 +207,8 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
      * @param {object} [store] An rdflib graph store
      * @throws {Error} When store does not implement the required graph methods
      */
-    constructor(store = rdf.graph()) {
+    constructor(store = new rdf.IndexedFormula([])) {
+      // Preserve asserted identities without automatic OWL merging.
       if (
         !store ||
         typeof store.add !== "function" ||
@@ -273,22 +274,52 @@ define(["rdflib", "common/ValueUtilities"], (rdf, ValueUtilities) => {
         }
       });
 
-      if (namedCollectionElementKeys.size) {
-        const getRootSubjects = serializer.rootSubjects.bind(serializer);
-        serializer.rootSubjects = (currentStatements) => {
-          const rootSubjects = getRootSubjects(currentStatements);
-          namedCollectionElementKeys.forEach((key) => {
-            if (!rootSubjects.subjects[key]) {
-              // rdflib descends into collection items as subjects, but valid
-              // empty URI descriptions have no subject statements. An empty
-              // serializer-only bucket emits rdf:Description without changing
-              // the graph.
-              rootSubjects.subjects[key] = [];
+      const getRootSubjects = serializer.rootSubjects.bind(serializer);
+      serializer.rootSubjects = (currentStatements) => {
+        const rootSubjects = getRootSubjects(currentStatements);
+        namedCollectionElementKeys.forEach((key) => {
+          if (!rootSubjects.subjects[key]) {
+            // rdflib descends into collection items as subjects, but valid
+            // empty URI descriptions have no subject statements. An empty
+            // entry lets rdflib emit rdf:Description for these items without
+            // changing the graph.
+            rootSubjects.subjects[key] = [];
+          }
+        });
+
+        const reachable = new Set();
+        const pending = rootSubjects.roots.slice();
+        while (pending.length) {
+          const term = pending.pop();
+          if (term.termType === "collection") {
+            pending.push(...term.elements);
+          } else {
+            const key = serializer.toStr(term);
+            if (!reachable.has(key)) {
+              reachable.add(key);
+              (rootSubjects.subjects[key] || []).forEach(({ object }) => {
+                if (
+                  RDFGraph.isBlankNode(object) ||
+                  object.termType === "collection"
+                ) {
+                  pending.push(object);
+                }
+              });
             }
-          });
-          return rootSubjects;
-        };
-      }
+          }
+        }
+        currentStatements.forEach(({ subject }) => {
+          const key = serializer.toStr(subject);
+          if (RDFGraph.isBlankNode(subject) && !reachable.has(key)) {
+            // rdflib omits disconnected blank-node cycles. Emit every missing
+            // subject explicitly, with nodeID references instead of recursion.
+            rootSubjects.roots.push(subject);
+            rootSubjects.incoming[subject] = [];
+            reachable.add(key);
+          }
+        });
+        return rootSubjects;
+      };
 
       return serializer.statementsToXML(serializableStatements);
     }

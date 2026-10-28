@@ -435,6 +435,37 @@ define([
       member.sysMeta.accessPolicy.should.have.lengthOf(0);
     });
 
+    it("keeps an unsaved filename change when fetching System Metadata", async () => {
+      const remoteSysMeta = new SystemMetadata({
+        ...SYSTEM_METADATA_DEFAULTS,
+        identifier: "data.1",
+        fileName: "original.csv",
+      });
+      const desiredSysMeta = remoteSysMeta.clone();
+      desiredSysMeta.fileName = "renamed.csv";
+      const member = new DataPackageMember({
+        pid: "data.1",
+        fileName: "renamed.csv",
+        remotePid: "data.1",
+        aggregatedPid: "data.1",
+        sysMeta: desiredSysMeta,
+        remoteSysMeta,
+        sysMetaDirty: true,
+      });
+
+      await member.fetchSysMeta({
+        sysMetaService: {
+          download: sinon.stub().resolves(remoteSysMeta),
+        },
+        useCache: false,
+      });
+
+      member.sysMeta.fileName.should.equal("renamed.csv");
+      member.remoteSysMeta.fileName.should.equal("original.csv");
+      member.fileName.should.equal("renamed.csv");
+      member.sysMetaDirty.should.equal(true);
+    });
+
     it("distinguishes private from unknown public status fetch failures", async () => {
       const member = new DataPackageMember({ pid: "private.1" });
       const errorStub = sinon.stub(console, "error");

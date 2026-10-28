@@ -74,20 +74,26 @@ define([
 
       const resourceMap = construct(resourceMapPid, graph);
 
-      resourceMap.graph
-        .hasStatement({
-          subject: forwardMember,
-          predicate: NS.ORE("isAggregatedBy"),
-          object: aggregation,
-        })
-        .should.equal(true);
-      resourceMap.graph
-        .hasStatement({
-          subject: aggregation,
-          predicate: NS.ORE("aggregates"),
-          object: inverseMember,
-        })
-        .should.equal(true);
+      resourceMap
+        .getMemberPids()
+        .should.have.members(["forward.1", "inverse.1"]);
+      const raw = new RDFGraph().parseXml(resourceMap.serialize(), "");
+      for (const member of [forwardMember, inverseMember]) {
+        raw
+          .hasStatement({
+            subject: aggregation,
+            predicate: NS.ORE("aggregates"),
+            object: member,
+          })
+          .should.equal(true);
+        raw
+          .hasStatement({
+            subject: member,
+            predicate: NS.ORE("isAggregatedBy"),
+            object: aggregation,
+          })
+          .should.equal(true);
+      }
       resourceMap.hasUnsavedChanges().should.equal(false);
     });
 

@@ -789,7 +789,6 @@ define([
           .should.equal(true);
         expect(context.dataPackage.getMember("stale.1")).to.equal(null);
         sinon.assert.calledOnceWithExactly(getManifestFromIndex, {
-          merge: true,
           onlyExisting: true,
           rows: 3000,
           signal: context.renderAbortController.signal,
@@ -829,7 +828,6 @@ define([
           );
 
           sinon.assert.calledOnceWithExactly(getManifestFromIndex, {
-            merge: true,
             onlyExisting: true,
             rows: maxRows,
             signal: undefined,
@@ -932,7 +930,6 @@ define([
 
           if (loadsIndex) {
             sinon.assert.calledOnceWithExactly(getManifestFromIndex, {
-              merge: true,
               rows: maxRows,
               signal: context.renderAbortController.signal,
             });
@@ -1047,7 +1044,6 @@ define([
               },
               { sources: ["index"] },
             );
-            this.indexManifestFetched = true;
             return { ok: true };
           });
 
@@ -1089,7 +1085,6 @@ define([
           .getMember("nested.rm")
           .sources.should.contain("index");
         sinon.assert.calledOnceWithExactly(getManifestFromIndex, {
-          merge: true,
           rows: 3000,
           signal: context.renderAbortController.signal,
         });
@@ -1108,7 +1103,7 @@ define([
         const context = withRenderContext({
           pid: "data.1",
           dataPackage: {
-            getManifest: sandbox.stub().resolves(),
+            getManifestFromResourceMap: sandbox.stub().resolves(),
             getPrimaryMetadataMember: sandbox.stub().returns({ pid: "meta.1" }),
             getRootResourceMapMember: sandbox.stub().returns({ pid: "rm.1" }),
           },
@@ -1132,10 +1127,12 @@ define([
         navigateWithFragment
           .calledOnceWith("meta.1", "data.1")
           .should.equal(true);
-        sinon.assert.calledOnceWithExactly(context.dataPackage.getManifest, {
-          index: false,
-          signal,
-        });
+        sinon.assert.calledOnceWithExactly(
+          context.dataPackage.getManifestFromResourceMap,
+          {
+            signal,
+          },
+        );
         context.renderNoMetadata.called.should.equal(false);
       });
 
@@ -1145,7 +1142,9 @@ define([
         const showMultipleResourceMaps = sandbox.stub();
         const context = withRenderContext({
           pid: "data.1",
-          dataPackage: { getManifest: sandbox.stub().resolves() },
+          dataPackage: {
+            getManifestFromResourceMap: sandbox.stub().resolves(),
+          },
           navigateWithFragment,
           showMultipleDocumentingDatasets,
           showMultipleResourceMaps,
@@ -1166,7 +1165,7 @@ define([
         const showMultipleResourceMaps = sandbox.stub();
         const showMultipleDocumentingDatasets = sandbox.stub();
         const navigateWithFragment = sandbox.stub();
-        const getManifest = sandbox.stub().resolves();
+        const getManifestFromResourceMap = sandbox.stub().resolves();
         const result = {
           isData: true,
           multipleRMs: true,
@@ -1179,7 +1178,7 @@ define([
         };
         const context = withRenderContext({
           pid: "data.1",
-          dataPackage: { getManifest },
+          dataPackage: { getManifestFromResourceMap },
           showMultipleResourceMaps,
           showMultipleDocumentingDatasets,
           navigateWithFragment,
@@ -1192,7 +1191,7 @@ define([
         });
         showMultipleDocumentingDatasets.called.should.equal(false);
         navigateWithFragment.called.should.equal(false);
-        getManifest.called.should.equal(false);
+        getManifestFromResourceMap.called.should.equal(false);
       });
 
       it("renders a no-metadata view when no documenting metadata exists", async () => {
@@ -1201,7 +1200,7 @@ define([
         const context = withRenderContext({
           pid: "data.1",
           dataPackage: {
-            getManifest: sandbox.stub().resolves(),
+            getManifestFromResourceMap: sandbox.stub().resolves(),
             getPrimaryMetadataMember: sandbox.stub().returns(null),
             getRootResourceMapMember: sandbox.stub().returns({ pid: "rm.1" }),
           },
@@ -1235,8 +1234,8 @@ define([
           ],
           rootResourceMapPid: null,
         });
-        const getManifest = sandbox
-          .stub(dataPackage, "getManifest")
+        const getManifestFromResourceMap = sandbox
+          .stub(dataPackage, "getManifestFromResourceMap")
           .callsFake(async function getManifestFromResourceMap() {
             this.members.add([
               {
@@ -1282,8 +1281,7 @@ define([
           { renderId: "render-test" },
         );
 
-        sinon.assert.calledOnceWithExactly(getManifest, {
-          index: false,
+        sinon.assert.calledOnceWithExactly(getManifestFromResourceMap, {
           signal: undefined,
         });
         view.fileTableView.viewModel
@@ -1301,7 +1299,9 @@ define([
         error.status = 500;
         const context = withRenderContext({
           pid: "data.1",
-          dataPackage: { getManifest: sandbox.stub().rejects(error) },
+          dataPackage: {
+            getManifestFromResourceMap: sandbox.stub().rejects(error),
+          },
           onModelError,
           navigateWithFragment: sandbox.stub(),
           showMultipleDocumentingDatasets: sandbox.stub(),
@@ -3554,7 +3554,6 @@ define([
             .toArray()
             .forEach((member) => member.addSources(["resourceMap"]));
           dataPackage.resourceManifestIsFetched = true;
-          dataPackage.indexManifestTotal = 2;
           dataPackage.getMember("meta.1").addSources(["index"]);
           sandbox
             .stub(dataPackage, "getManifestFromIndex")
@@ -3604,7 +3603,6 @@ define([
 
           sinon.assert.calledOnce(context.mergeCurrentFileTableRows);
           sinon.assert.notCalled(dataPackage.getManifestFromIndex);
-          dataPackage.indexManifestTotal.should.equal(2);
         });
 
         it("does not schedule a final count check for inaccessible members", async () => {
@@ -3706,7 +3704,6 @@ define([
         dataPackage.getManifestFromIndex.calledTwice.should.equal(true);
         dataPackage.getManifestFromIndex.getCalls().forEach((call) => {
           call.args[0].should.include({
-            merge: true,
             onlyExisting: true,
             rows: 7,
           });

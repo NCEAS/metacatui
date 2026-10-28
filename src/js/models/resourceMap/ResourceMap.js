@@ -459,11 +459,11 @@ define([
     /**
      * Change a package member's PID wherever managed package relationships use
      * it.
-     * @param {string} oldPid Existing member PID.
-     * @param {string} newPid Replacement member PID.
-     * @returns {ResourceMap} Updated resource map.
-     * @throws {ResourceMapConflictError} When a different package member already
-     * uses the replacement PID.
+     * @param {string} oldPid Existing member PID
+     * @param {string} newPid Replacement member PID
+     * @returns {ResourceMap} Updated resource map
+     * @throws {ResourceMapConflictError} When the replacement PID is already
+     * aggregated or its destination node has conflicting identity.
      */
     replaceMember(oldPid, newPid) {
       this.resolveMemberNode(oldPid);
@@ -537,9 +537,10 @@ define([
           }
           updatesByPid.set(member.pid, {
             node: member.node,
-            atLocations: atLocations.map((path) =>
-              requireNonEmptyString(path, "Path required"),
-            ),
+            atLocations: atLocations.map((path) => {
+              requireNonEmptyString(path, "Path required");
+              return path;
+            }),
           });
         },
       );
@@ -593,14 +594,14 @@ define([
         required: true,
         message: "Member PID required",
       });
-      const rawPath = requireNonEmptyString(path, "Path required");
+      requireNonEmptyString(path, "Path required");
 
       return this.mutateGraph(() => {
         this.ensureIdentifierForUri(member.uri, member.pid);
         this.graph.addStatementIfMissing({
           subject: member.node,
           predicate: this.ns.PROV("atLocation"),
-          object: RDFGraph.createLiteral(rawPath),
+          object: RDFGraph.createLiteral(path),
         });
       });
     }
@@ -616,13 +617,13 @@ define([
         required: true,
         message: "Member PID required",
       });
-      const normalizedPath =
-        path === undefined || path === null
-          ? null
-          : requireNonEmptyString(path, "Path required");
+      const rawPath = path ?? null;
+      if (rawPath !== null) {
+        requireNonEmptyString(rawPath, "Path required");
+      }
 
       return this.mutateGraph(() => {
-        if (normalizedPath) {
+        if (rawPath !== null) {
           this.graph
             .findStatements({
               subject: memberNode,
@@ -630,8 +631,7 @@ define([
             })
             .filter(
               (statement) =>
-                normalizeText(RDFGraph.getLiteralValue(statement.object)) ===
-                normalizedPath,
+                RDFGraph.getLiteralValue(statement.object) === rawPath,
             )
             .forEach((statement) => {
               this.graph.removeStatement(statement);
@@ -809,9 +809,11 @@ define([
       const memberDescriptors = this.graphState.getMemberDescriptors();
       if (validate && memberDescriptors.length === 1) {
         const memberNode = RDFGraph.createNamedNode(memberDescriptors[0].uri);
-        // DataONE's Solr indexer needs a package with one member to say that
-        // the member documents itself. Add either missing direction only to
-        // validated output, without changing the graph being edited.
+        // DataONE's Solr indexer expects a singleton package to say that its
+        // member documents itself, even when the user added no documentation
+        // links. This is an indexer compatibility requirement. Add either
+        // missing direction only to validated output, without changing the
+        // graph being edited.
         [this.ns.CITO("documents"), this.ns.CITO("isDocumentedBy")].forEach(
           (predicate) => {
             if (

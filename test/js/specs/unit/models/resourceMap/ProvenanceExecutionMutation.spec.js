@@ -271,6 +271,108 @@ define([
       resourceMap.provenance.getUsedByPrograms().should.have.lengthOf(1);
     });
 
+    [
+      [
+        "generated",
+        "addGeneratedByProgram",
+        "removeGeneratedByProgram",
+        "getGeneratedByPrograms",
+      ],
+      [
+        "consumed",
+        "addUsedByProgram",
+        "removeUsedByProgram",
+        "getUsedByPrograms",
+      ],
+    ].forEach(([direction, add, remove, get]) => {
+      it(`switches the program's ${direction === "generated" ? "output" : "input"} from one file to another in one edit`, () => {
+        const resourceMap = createBaseResourceMap({
+          memberPids: ["meta.1", "data.1", "data.2", "program.1"],
+        });
+        const { provenance } = resourceMap;
+        provenance[add]("data.1", "program.1");
+
+        resourceMap.provenance.mutateGraph(() => {
+          provenance[remove]("data.1", "program.1");
+          provenance[add]("data.2", "program.1");
+        });
+
+        const relationships = provenance[get]();
+        relationships.should.have.lengthOf(1);
+        expect(relationships[0].dataPid).to.equal("data.2");
+        expect(relationships[0].programPid).to.equal("program.1");
+        resourceMap.graphState
+          .getExecutionNodesForProgram("program.1")
+          .should.have.lengthOf(1);
+      });
+
+      it(`removes a program's ${direction === "generated" ? "output" : "input"} link added earlier in the same edit`, () => {
+        const resourceMap = createBaseResourceMap({
+          memberPids: ["meta.1", "data.1", "program.1"],
+        });
+        const { provenance } = resourceMap;
+
+        resourceMap.provenance.mutateGraph(() => {
+          provenance[add]("data.1", "program.1");
+          provenance[remove]("data.1", "program.1");
+        });
+
+        provenance[get]().should.deep.equal([]);
+        resourceMap.graphState.getExecutionNodes().should.deep.equal([]);
+        resourceMap.graph
+          .findStatements({ predicate: resourceMap.ns.PROV("hadPlan") })
+          .should.deep.equal([]);
+      });
+    });
+
+    it("reuses a newly added run linked to another URL for the same program", () => {
+      const resourceMap = createBaseResourceMap({
+        memberPids: ["meta.1", "data.1", "program.1"],
+      });
+      const programAlias = rdf.sym("https://example.test/program");
+      resourceMap.mutateGraph(() => {
+        resourceMap.graph.addStatement({
+          subject: programAlias,
+          predicate: resourceMap.ns.DCTERMS("identifier"),
+          object: rdf.literal("program.1"),
+        });
+      });
+      const executionNode = rdf.sym("urn:uuid:exec.inferred.grouped.1");
+      const associationNode = rdf.blankNode();
+
+      resourceMap.provenance.mutateGraph(() => {
+        resourceMap.graph.addStatement({
+          subject: executionNode,
+          predicate: resourceMap.ns.PROV("qualifiedAssociation"),
+          object: associationNode,
+        });
+        resourceMap.graph.addStatement({
+          subject: associationNode,
+          predicate: resourceMap.ns.PROV("hadPlan"),
+          object: programAlias,
+        });
+        resourceMap.provenance.addGeneratedByProgram("data.1", "program.1");
+      });
+
+      resourceMap.provenance.getGeneratedByPrograms().should.deep.equal([
+        {
+          dataPid: "data.1",
+          programPid: "program.1",
+          executionId: "urn:uuid:exec.inferred.grouped.1",
+        },
+      ]);
+      resourceMap.graphState
+        .getExecutionNodesForProgram("program.1")
+        .should.deep.equal([executionNode]);
+      resourceMap.graph
+        .findStatements({
+          subject: associationNode,
+          predicate: resourceMap.ns.PROV("hadPlan"),
+          object: programAlias,
+        })
+        .should.have.lengthOf(1);
+    });
+
     it("keeps one anonymous execution editable", () => {
       const resourceMap = createBaseResourceMap({
         resourceMapPid: "resource_map_urn:uuid:exec.anonymous.1",

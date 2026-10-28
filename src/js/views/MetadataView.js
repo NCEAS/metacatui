@@ -624,7 +624,6 @@ define([
         let useIndexFallback = false;
         try {
           const rmResult = await dataPackage.getManifestFromResourceMap({
-            merge: true,
             signal,
           });
           if (!this.isCurrentRender(renderId)) return null;
@@ -633,7 +632,6 @@ define([
             useIndexFallback = rmResult.reason !== "unauthorized";
           } else {
             indexResult = await dataPackage.getManifestFromIndex({
-              merge: true,
               onlyExisting: true,
               rows: maxMembers,
               signal,
@@ -659,7 +657,6 @@ define([
         if (useIndexFallback) {
           try {
             indexResult = await dataPackage.getManifestFromIndex({
-              merge: true,
               rows: maxMembers,
               signal,
             });
@@ -782,7 +779,7 @@ define([
         // Routing needs authoritative ResourceMap relationships, not optional index enrichment.
         const { dataPackage } = this;
         try {
-          await dataPackage.getManifest({ index: false, signal });
+          await dataPackage.getManifestFromResourceMap({ signal });
         } catch (error) {
           if (isAbortError(error) || !this.isCurrentRender(renderId)) {
             return this;
@@ -2248,7 +2245,6 @@ define([
               }
             } else {
               await dataPackage.getManifestFromIndex({
-                merge: true,
                 onlyExisting: true,
                 rows: MetacatUI.appModel.get("maxViewerPackageMembers"),
                 signal,

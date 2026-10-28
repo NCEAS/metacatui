@@ -259,7 +259,7 @@ define([
         break;
       }
       case PREDICATE_URIS.provAtLocation: {
-        const rawPath = normalizeText(RDFGraph.getLiteralValue(object));
+        const rawPath = RDFGraph.getLiteralValue(object);
         if (isNonEmptyString(rawPath)) {
           atLocationStatements.push({
             subjectNode: subject,
@@ -501,9 +501,9 @@ define([
       }
     });
     const descriptorsWithLocations = memberDescriptors.map((descriptor) => {
-      const atLocations = sortStrings(
-        dedupeStrings(atLocationsByMemberUri.get(descriptor.uri) || []),
-      );
+      const atLocations = sortStrings([
+        ...new Set(atLocationsByMemberUri.get(descriptor.uri) || []),
+      ]);
       return {
         ...descriptor,
         atLocations,

@@ -1718,6 +1718,36 @@ define([
       });
     });
 
+    it("keeps spaces at the ends of file paths when saving and reloading", () => {
+      const resourceMap = createResourceMap({
+        resourceMapPid: "resource_map_locations_whitespace",
+        members: [{ pid: "data.1", atLocations: [" old.csv"] }],
+      });
+      resourceMap.graphState
+        .getMember("data.1")
+        .atLocations.should.deep.equal([" old.csv"]);
+
+      resourceMap.setLocation("data.1", "folder/old.csv ");
+      resourceMap.addLocation("data.1", " folder/old.csv");
+      resourceMap.graphState
+        .getMember("data.1")
+        .atLocations.should.have.members([
+          "folder/old.csv ",
+          " folder/old.csv",
+        ]);
+
+      resourceMap.addLocation("data.1", "folder/old.csv");
+      resourceMap.removeLocation("data.1", "folder/old.csv ");
+
+      const reloaded = parseResourceMap(
+        "resource_map_locations_whitespace",
+        resourceMap.serialize(),
+      );
+      reloaded.graphState
+        .getMember("data.1")
+        .atLocations.should.have.members(["folder/old.csv", " folder/old.csv"]);
+    });
+
     it("stores root-escaping prov:atLocation values without rewriting them", () => {
       const resourceMap = createBaseResourceMap({
         resourceMapPid: "resource_map_urn:uuid:rm.atlocation.escape.write.1",
@@ -2438,6 +2468,36 @@ define([
       resourceMap
         .getMemberPids()
         .should.have.members(["meta.1", "data.1", "data.2"]);
+    });
+
+    it("rejects a replacement whose URL is already assigned a different identifier", () => {
+      const resourceMap = createBaseResourceMap({ memberPids: ["data.1"] });
+      const destination = rdf.sym(resourceMap.pidToUri("replacement.1"));
+      resourceMap.mutateGraph(() => {
+        resourceMap.graph.addStatement({
+          subject: destination,
+          predicate: resourceMap.ns.DCTERMS("identifier"),
+          object: rdf.literal("external.1"),
+        });
+      });
+      resourceMap.markSaved();
+      const before = resourceMap.graph
+        .getStatements()
+        .map((statement) => statement.toNT())
+        .sort();
+
+      expect(() =>
+        resourceMap.replaceMember("data.1", "replacement.1"),
+      ).to.throw(ResourceMapCommon.ResourceMapConflictError);
+
+      resourceMap.getMemberPids().should.deep.equal(["data.1"]);
+      resourceMap.graph
+        .getStatements()
+        .map((statement) => statement.toNT())
+        .sort()
+        .should.deep.equal(before);
+      resourceMap.hasUnsavedChanges().should.equal(false);
+      resourceMap.serialize();
     });
 
     it("refuses member mutations before choosing between duplicate URIs", () => {
