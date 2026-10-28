@@ -192,24 +192,6 @@ define([
           }
         }
 
-        // check for info received from Bookkeeper
-        if (MetacatUI.appModel.get("enableBookkeeperServices")) {
-          this.listenTo(
-            MetacatUI.appUserModel,
-            "change:dataoneSubscription",
-            function setTrialPortalLabel() {
-              if (
-                MetacatUI.appUserModel.get("dataoneSubscription").isTrialing()
-              ) {
-                this.setRandomLabel();
-              }
-            },
-          );
-
-          // Fetch the user subscription info
-          MetacatUI.appUserModel.fetchSubscription();
-        }
-
         // Cache this model for later use
         this.cachePortal();
       },
@@ -1630,7 +1612,7 @@ define([
         // Check existing blockList before making a Solr call (case insensitive)
         const blockList = this.get("labelBlockList") || [];
         if (blockList.find((b) => b.toLowerCase() === label.toLowerCase())) {
-          this.labelAvailable();
+          this.labelTaken(label);
           return;
         }
 
@@ -1849,40 +1831,23 @@ define([
           !this.get("labelDoubleChecked")
         ) {
           // If the label is taken
-          this.once("labelTaken", function handleLabelTaken() {
+          this.listenToOnce(this, "labelTaken", function handleLabelTaken() {
             // Stop listening to the label availability
-            this.stopListening("labelAvailable");
+            this.stopListening(this, "labelAvailable");
 
-            // Set that the label has been double-checked
-            this.set("labelDoubleChecked", true);
-
-            // If this portal is in a free trial of DataONE Plus, generate a new
-            // random label and start the save process again
-            if (MetacatUI.appModel.get("enableBookkeeperServices")) {
-              const subscription = MetacatUI.appUserModel.get(
-                "dataoneSubscription",
-              );
-              if (subscription && subscription.isTrialing()) {
-                this.setRandomLabel();
-
-                this.set("labelDoubleChecked", true);
-
-                // Start the save process again
-                this.save();
-              }
-            } else {
-              // If the label is taken, trigger an invalid event
-              this.trigger("invalid");
-              // Trigger a cancellation of the save event
-              this.trigger("cancelSave");
-            }
+            this.trigger("invalid");
+            this.trigger("cancelSave");
           });
 
-          this.once("labelAvailable", function handleLabelAvailable() {
-            this.stopListening("labelTaken");
-            this.set("labelDoubleChecked", true);
-            this.save();
-          });
+          this.listenToOnce(
+            this,
+            "labelAvailable",
+            function handleLabelAvailable() {
+              this.stopListening(this, "labelTaken");
+              this.set("labelDoubleChecked", true);
+              this.save();
+            },
+          );
 
           // Check label availability
           this.checkLabelAvailability(this.get("label"));
@@ -2178,25 +2143,6 @@ define([
         cleanText = cleanText.replace(invalidCharsRegEx, "");
 
         return cleanText;
-      },
-
-      /**
-       * Generates a random portal label for free trial portals
-       * Triggers the `change:label` event.
-       * @since 2.14.0
-       */
-      setRandomLabel() {
-        if (this.isNew()) {
-          const labelLength = MetacatUI.appModel.get(
-            "randomLabelNumericLength",
-          );
-          let randomGeneratedLabel = Math.floor(
-            10 ** (labelLength - 1) +
-              Math.random() * (9 * 10 ** (labelLength - 1)),
-          );
-          randomGeneratedLabel = randomGeneratedLabel.toString();
-          this.set("label", randomGeneratedLabel);
-        }
       },
 
       /**

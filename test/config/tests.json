@@ -180,6 +180,7 @@
     "./js/specs/unit/views/metadata/EMLGeoCoverageView.spec.js",
     "./js/specs/unit/models/CollectionModel.spec.js",
     "./js/specs/unit/views/portals/PortalView.spec.js",
+    "./js/specs/unit/views/portals/PortalListView.spec.js",
     "./js/specs/unit/views/portals/PortalsSearchView.spec.js",
     "./js/specs/unit/views/portals/PortalVisualizationsView.spec.js",
     "./js/specs/unit/views/portals/editor/PortalEditorView.spec.js",

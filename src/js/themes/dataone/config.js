@@ -68,9 +68,7 @@ MetacatUI.AppConfig = Object.assign(
     hideSummaryMetadataAssessment: false,
     hideSummaryViewsChart: false,
     enableCreatePortals: true,
-    enableBookkeeperServices: true,
-    dataonePlusPreviewMode: true,
-    portalLimit: 1000,
+    enableBookkeeperServices: false,
     portalInfoURL: "https://dataone.org/plus",
     portalSearchFiltersInfoURL: "https://dataone.org/custom-search",
     portalDefaults: {
@@ -109,49 +107,6 @@ MetacatUI.AppConfig = Object.assign(
         baseURL: "https://knb.ecoinformatics.org/knb/d1/mn",
       },
     ],
-    dataonePlusPreviewPortals: [
-      {
-        seriesId: "urn:uuid:a9fccce6-80f7-4937-b3dc-3cf76280d4f7",
-        datasource: "urn:node:KNB",
-        label: "SASAP",
-      },
-      {
-        seriesId: "urn:uuid:d6d8fc1f-a4d9-4c44-8305-a8c0c35f387e",
-        datasource: "urn:node:ARCTIC",
-        label: "toolik",
-      },
-      {
-        seriesId: "urn:uuid:8cdb22c6-cb33-4553-93ca-acb6f5d53ee4",
-        datasource: "urn:node:ARCTIC",
-        label: "dbo",
-      },
-      {
-        seriesId: "urn:uuid:06a249da-f9c8-4946-8be4-ac80883bbd22",
-        datasource: "urn:node:KNB",
-        label: "ecoblender",
-      },
-      {
-        seriesId: "urn:uuid:2de4fa60-1a6f-4c59-b393-79f63bbcb62d",
-        datasource: "urn:node:mnUCSB1",
-        label: "dangermond",
-      },
-      {
-        seriesId: "urn:uuid:138ff35b-f1e7-4b12-88e2-3a57bbaab073",
-        datasource: "urn:node:mnUCSB1",
-        label: "polderdemo",
-      },
-      {
-        seriesId: "urn:uuid:5f4c470c-fcf8-481e-8ddb-3b08108504b0",
-        datasource: "urn:node:mnUCSB1",
-        label: "9434702",
-      },
-      {
-        seriesId: "urn:uuid:dfbfc37d-e907-45e8-913f-acb88f1b2e64",
-        datasource: "urn:node:ARCTIC",
-        label: "QGreenland",
-      },
-    ],
-
     googleAnalyticsKey: "G-CR31GM016V",
 
     //Dataset landing pages
