@@ -26,14 +26,14 @@
           </a>
         </li>
         <% } %>
-        <% if(menuOptions.includes("Delete") && sectionType == "freeform"){ %>
+        <% if(menuOptions.includes("Delete") && requiresDeleteConfirmation){ %>
         <li>
           <a href="#" class="remove-section" title="Permanently delete this page">
             <i class="icon icon-on-left icon-remove"></i> Delete
           </a>
         </li>
         <% } %>
-        <% if(menuOptions.includes("Delete") && sectionType != "freeform"){ %>
+        <% if(menuOptions.includes("Delete") && !requiresDeleteConfirmation){ %>
         <li>
           <a href="#" class="remove-section confirmed-section-removal" title="Permanently delete this page">
             <i class="icon icon-on-left icon-remove"></i> Delete

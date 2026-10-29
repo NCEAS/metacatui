@@ -31,6 +31,13 @@ define([
   SectionLinkTemplate,
   MetricsSVG,
 ) => {
+  const CLASS_NAMES = {
+    DISABLED: "disabled",
+    REMOVE_SECTION: "remove-section",
+  };
+  const DELETE_CONFIRMATION_TYPES = ["freeform", "cesium"];
+  const DELETE_OPTION = "Delete";
+
   /**
    * @class PortEditorSectionsView
    * @classdesc A view of one or more Portal Editor sections
@@ -999,6 +1006,9 @@ define([
        * @returns {Element} The rendered section link element
        */
       createSectionLink(sectionView, menuOptions) {
+        const requiresDeleteConfirmation = DELETE_CONFIRMATION_TYPES.includes(
+          sectionView.sectionType,
+        );
         let classes = "";
         if (Array.isArray(menuOptions) && menuOptions.includes("Show")) {
           classes = "hidden-section";
@@ -1023,6 +1033,7 @@ define([
               : sectionView.uniqueSectionLabel,
             sectionURL: `${this.model.get("label")}/${sectionView.uniqueSectionLabel}`,
             sectionType: sectionView.sectionType,
+            requiresDeleteConfirmation,
             classes,
             handleClass: this.handleClass,
             sortable,
@@ -1035,10 +1046,7 @@ define([
           view: sectionView,
         });
 
-        if (
-          sectionView.sectionType === "freeform" &&
-          menuOptions.includes("Delete")
-        ) {
+        if (requiresDeleteConfirmation && menuOptions.includes(DELETE_OPTION)) {
           const content = $(document.createElement("div")).append(
             $(document.createElement("div")).append(
               $(document.createElement("p")).text(
@@ -1206,7 +1214,8 @@ define([
        */
       removeSection(event, sectionLink) {
         try {
-          if (event && $(event.currentTarget).hasClass("disabled")) return;
+          if (event && $(event.currentTarget).hasClass(CLASS_NAMES.DISABLED))
+            return;
 
           let resolvedSectionLink = sectionLink;
           if (!resolvedSectionLink || !resolvedSectionLink.length) {
@@ -1221,6 +1230,15 @@ define([
             if (!resolvedSectionLink || !resolvedSectionLink.length) {
               return;
             }
+          }
+
+          if (
+            event &&
+            resolvedSectionLink
+              .find(`.${CLASS_NAMES.REMOVE_SECTION}`)
+              .hasClass(CLASS_NAMES.DISABLED)
+          ) {
+            return;
           }
 
           // Get the section model and view
