@@ -49,11 +49,6 @@ define([
   // Matches a DataONE resolve service URI and captures the final PID path
   // segment after percent encoding.
   const RESOLVE_URI_PATTERN = /^https?:\/\/.+\/resolve\/(?:.+\/)?([^/?#]+)$/i;
-  const PHYSICAL_URI_PATTERN = /^https?:\/\/.+\/v[12]\/object\/([^/?#]+)$/i;
-  const MANAGED_IDENTIFIER_URI_PATTERNS = [
-    /^https?:\/\/[^/?#]+(?:\/[^/?#]+)*\/resolve\/([^/?#]+)$/i,
-    /^https?:\/\/[^/?#]+(?:\/[^/?#]+)*\/v[12]\/object\/([^/?#]+)$/i,
-  ];
 
   /**
    * Namespace URIs used by ResourceMap and helper modules.
@@ -153,18 +148,26 @@ define([
     },
 
     /**
-     * Read the PID claimed by one identifier literal, including supported
-     * DataONE URL forms.
+     * Read the PID claimed by one identifier literal, recognizing only
+     * configured DataONE URL forms.
      * @param {Literal} literal Identifier literal
-     * @returns {string|null} PID claim
+     * @param {string} [expectedPid] Already known PID to keep if the text matches
+     * it exactly, even when that PID is itself a complete URL
+     * @param {object} [endpoints] Resolve and object service URLs configured for
+     * this Resource Map
+     * @returns {string|null} PID claim, or null for nonliterals or empty text
      * @example
      * ResourceMapCommon.identifierLiteralPid(
      *   RDFGraph.createLiteral("https://cn.example/resolve/data.1"),
+     *   null,
+     *   { resolveServiceUrl: "https://cn.example/resolve" },
      * ); // => "data.1"
      */
-    identifierLiteralPid(literal) {
+    identifierLiteralPid(literal, expectedPid, endpoints) {
       return ResourceMapCommon.managedIdentifierValuePid(
         RDFGraph.getLiteralValue(literal),
+        expectedPid,
+        endpoints,
       );
     },
 
@@ -198,31 +201,52 @@ define([
 
     /**
      * Read the PID claimed by an identifier value. A bare PID is returned
-     * unchanged. A recognized DataONE resolve or object URL is decoded only when
-     * its final path segment is a correctly encoded PID; other values are
-     * preserved exactly.
+     * unchanged. URL prefixes are removed only for configured DataONE services.
+     * An exact expected PID is preserved first, even when it is a complete URL.
      * @param {string} value Identifier literal value
+     * @param {string} [expectedPid] Already known PID, which may itself be a URL
+     * @param {object} [endpoints] DataONE service URLs configured for this map
+     * @param {string} [endpoints.resolveServiceUrl] Resolve service base URL
+     * @param {string} [endpoints.objectServiceUrl] Object service base URL
      * @returns {string|null} PID claim
      */
-    managedIdentifierValuePid(value) {
+    managedIdentifierValuePid(value, expectedPid, endpoints) {
       const literalValue = normalizeText(value);
       if (!isNonEmptyString(literalValue)) return null;
 
-      // Imported maps may use a foreign DataONE resolve or object URL as the
-      // identifier instead of the bare PID. Match the DataONE URL shape rather
-      // than the configured host so that equivalent form can be replaced once
-      // during import. This method cannot distinguish that URL from an opaque
-      // PID with the same text, so the DataONE URL interpretation wins.
-      const encodedPid = MANAGED_IDENTIFIER_URI_PATTERNS.map((pattern) =>
-        literalValue.match(pattern),
-      ).find(Boolean)?.[1];
-      if (!encodedPid) return literalValue;
+      // The PID may itself be a URL; preserve an exact known value first.
+      if (literalValue === expectedPid) return literalValue;
 
-      const pid = UrlUtilities.decodeDataONEPidFromPath(encodedPid);
-      return isNonEmptyString(pid) &&
-        UrlUtilities.encodeDataONEPidForPath(pid) === encodedPid
-        ? pid
-        : literalValue;
+      // An unconfigured URL may itself be a PID.
+      return (
+        ResourceMapCommon.configuredEndpointPids(literalValue, endpoints)[0] ||
+        literalValue
+      );
+    },
+
+    /**
+     * Read distinct PIDs from the configured endpoint URLs.
+     * Return an empty array for URLs outside those endpoints.
+     * @param {string} value Candidate node or identifier URL
+     * @param {object} [endpoints] Configured DataONE services
+     * @param {string} [endpoints.resolveServiceUrl] CN resolve service URL
+     * @param {string} [endpoints.objectServiceUrl] Object read service URL
+     * @returns {string[]} Distinct endpoint PIDs, decoded once
+     * @since 0.0.0
+     */
+    configuredEndpointPids(
+      value,
+      { resolveServiceUrl, objectServiceUrl } = {},
+    ) {
+      return Array.from(
+        new Set(
+          [resolveServiceUrl, objectServiceUrl]
+            .map((serviceUrl) =>
+              ResourceMapCommon.configuredEndpointPid(value, serviceUrl),
+            )
+            .filter(isNonEmptyString),
+        ),
+      );
     },
 
     /**
@@ -241,7 +265,7 @@ define([
      * from being mistaken for a managed PID.
      * @param {string} value Candidate absolute endpoint URI
      * @param {string} serviceUrl Configured resolver or object service base
-     * @returns {string|null} Exact decoded PID, or `null` when unrecognized
+     * @returns {string|null} PID decoded once, or null if the URL does not match
      */
     configuredEndpointPid(value, serviceUrl) {
       const uri = normalizeText(value);
@@ -261,11 +285,14 @@ define([
         return null;
       }
 
-      const pid = UrlUtilities.decodeDataONEPidFromPath(encodedPid);
-      return isNonEmptyString(pid) &&
-        UrlUtilities.encodeDataONEPidForPath(pid) === encodedPid
-        ? pid
-        : null;
+      try {
+        // Accept both urn:uuid:abc and urn%3Auuid%3Aabc. Decode only once:
+        // literal%252Fpid means PID "literal%2Fpid", not "literal/pid".
+        const pid = decodeURIComponent(encodedPid);
+        return isNonEmptyString(pid) ? pid : null;
+      } catch {
+        return null;
+      }
     },
 
     /**
@@ -291,37 +318,16 @@ define([
     },
 
     /**
-     * Extract a DataONE PID from a physical Member Node object URI.
-     * @param {string} value Candidate URI
-     * @returns {string|null} Decoded PID when the URI matches a DataONE object
-     * endpoint
-     */
-    physicalUriToPid(value) {
-      const normalized = normalizeText(value);
-      if (!isNonEmptyString(normalized) || normalized.startsWith("_:")) {
-        return null;
-      }
-
-      const physicalMatch = normalized.match(PHYSICAL_URI_PATTERN);
-      if (!physicalMatch?.[1]) return null;
-
-      // DataONE defines the final segment of an object URL as the PID. An
-      // arbitrary URL has no such guarantee, so this conversion is limited to
-      // the DataONE object URL shape.
-      const decoded = UrlUtilities.decodeDataONEPidFromPath(physicalMatch[1]);
-      return isNonEmptyString(decoded)
-        ? decoded
-        : normalizeText(physicalMatch[1]);
-    },
-
-    /**
-     * Test whether an identifier is either the expected bare PID or a supported
+     * Test whether an identifier is either the expected PID or a configured
      * DataONE URL for that PID.
      * @param {string} value Candidate identifier value
      * @param {string} pid Expected PID
+     * @param {object} [endpoints] Configured DataONE services
+     * @param {string} [endpoints.resolveServiceUrl] CN resolve service URL
+     * @param {string} [endpoints.objectServiceUrl] Object read service URL
      * @returns {boolean} `true` when the value and PID are equivalent
      */
-    identifierMatchesPid(value, pid) {
+    identifierMatchesPid(value, pid, endpoints) {
       const normalizedValue = normalizeText(value);
       const normalizedPid = normalizeText(pid);
       if (
@@ -333,7 +339,8 @@ define([
 
       return (
         normalizedValue === normalizedPid ||
-        ResourceMapCommon.recoverPidFromUri(normalizedValue) === normalizedPid
+        ResourceMapCommon.recoverPidFromUri(normalizedValue, endpoints) ===
+          normalizedPid
       );
     },
 
@@ -400,17 +407,24 @@ define([
 
     /**
      * Find the PID represented by an RDF resource URI. Prefer its declared
-     * identifier, then supported DataONE URL forms, and optionally a bare value.
-     * @param {string} uri Named node URI or value.
-     * @param {object} [options] Recovery options.
+     * identifier, then configured DataONE endpoints, and optionally a bare value.
+     * @param {string} uri Named node URI or value
+     * @param {object} [options] Recovery options
      * @param {Map<string, string>} [options.identifierForUri] Identifier lookup
      * by URI
-     * @param {boolean} [options.allowBareValue] Whether bare values may be PIDs.
-     * @returns {string|null} Recovered PID.
+     * @param {boolean} [options.allowBareValue] Whether bare values may be PIDs
+     * @param {string} [options.resolveServiceUrl] Configured CN resolve URL
+     * @param {string} [options.objectServiceUrl] Configured object read URL
+     * @returns {string|null} Recovered PID
      */
     recoverPidFromUri(
       uri,
-      { identifierForUri = null, allowBareValue = false } = {},
+      {
+        identifierForUri = null,
+        allowBareValue = false,
+        resolveServiceUrl,
+        objectServiceUrl,
+      } = {},
     ) {
       if (!isNonEmptyString(uri)) {
         return null;
@@ -418,8 +432,10 @@ define([
 
       const directPid =
         identifierForUri?.get(uri) ||
-        ResourceMapCommon.uriToPid(uri) ||
-        ResourceMapCommon.physicalUriToPid(uri);
+        ResourceMapCommon.configuredEndpointPids(uri, {
+          resolveServiceUrl,
+          objectServiceUrl,
+        })[0];
       if (isNonEmptyString(directPid)) {
         return directPid;
       }

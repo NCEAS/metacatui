@@ -31,6 +31,8 @@ define([
   const RESOURCE_MAP_FORMAT_ID =
     ObjectFormats.prototype.FORMAT_IDS.RESOURCE_MAP;
   const UPLOAD_CANCELLED_MESSAGE = "Upload cancelled";
+  const ARCHIVED_SOURCE_ERROR_CODE = "archived_source";
+  const STALE_REMOTE_ERROR_CODE = "stale_remote";
   const UPLOAD_PHASES = Object.freeze({
     DATA: "data",
     METADATA: "metadata",
@@ -193,6 +195,25 @@ define([
   }
 
   /**
+   * Reject content versioning of an archived source. Its System Metadata may
+   * still be updated.
+   * @param {string} pid Source object PID
+   * @param {SystemMetadata} [sysMeta] Fresh source System Metadata
+   * @throws {Error} When the source is archived
+   * @private
+   * @since 0.0.0
+   */
+  function assertContentSourceNotArchived(pid, sysMeta) {
+    if (sysMeta?.archived !== true) return;
+    const error = new Error(
+      `Cannot upload: source "${pid}" is archived and cannot be updated`,
+    );
+    error.code = ARCHIVED_SOURCE_ERROR_CODE;
+    error.pid = pid;
+    throw error;
+  }
+
+  /**
    * Coordinates upload preparation, execution, retry, cancellation, and recovery
    * persistence for one {@link DataPackage} instance.
    * @class DataPackageUploader
@@ -263,12 +284,15 @@ define([
       );
       if (errors.length) throw errors[0].error;
       const defaults = this.buildSysMetaDefaults();
-      const actions = await this.buildUploadActions(members, defaults, {
-        signal,
-        maxConcurrent,
-        isolateMemberFailures: true,
-        freshSysMetaByPid,
-      });
+      const actions = await DataPackageUploader.buildUploadActions(
+        members,
+        defaults,
+        {
+          signal,
+          isolateMemberFailures: true,
+          freshSysMetaByPid,
+        },
+      );
       throwIfAborted(signal, UPLOAD_CANCELLED_MESSAGE);
       return actions;
     }
@@ -299,6 +323,18 @@ define([
             signal: controller.signal,
             maxConcurrent,
           });
+          const result = new UploadResult(actions, {
+            draftRevision,
+            dataPackage: this.dataPackage,
+          });
+          const preparedPids = new Set(
+            actions.map((action) => action.memberPid),
+          );
+          uploadMembers.forEach((member) => {
+            if (!preparedPids.has(member.pid) && member.lastUploadError) {
+              result.preparationErrors.set(member.pid, member.lastUploadError);
+            }
+          });
           // Confirm write access before eagerly versioning any existing remote
           // object (e.g. a file replacement). New objects carry no sourcePid, so
           // this is a no-op for added files.
@@ -306,15 +342,14 @@ define([
             signal: controller.signal,
             maxConcurrent,
           });
-          const result = await this._executeUploadActions(actions, {
+          return await this._executeUploadActions(actions, {
             draftRevision,
-            checkSourceLatestBeforeWrite: true,
             markPackageSaved: false,
             maxConcurrent,
             signal: controller.signal,
             stopOnError: false,
+            result,
           });
-          return result;
         } finally {
           detachSignal();
         }
@@ -611,49 +646,31 @@ define([
      * processed sequentially to bound concurrent checksum work.
      * @param {DataPackageMember[]} changedMembers Changed members
      * @param {object} defaults System Metadata defaults
-     * @param {object} [options] Build options
+     * @param {object} options Build options
      * @param {AbortSignal} [options.signal] Abort signal for checksums
-     * @param {number} [options.maxConcurrent] Fetch concurrency
      * @param {boolean} [options.isolateMemberFailures] Mark member failures and
      * continue preparing the rest of the upload
-     * @param {Map<string, SystemMetadata>} [options.freshSysMetaByPid]
+     * @param {Map<string, SystemMetadata>} options.freshSysMetaByPid
      * Fresh preflight System Metadata by source PID
-     * @param {Function} [options.onSystemMetadataProgress] SysMeta progress
      * @param {Function} [options.onBuildProgress] Action build progress
      * @returns {Promise<object[]>} Raw upload actions
      * @private
      * @throws {Error} When package state cannot produce valid actions
+     * @since 0.0.0
      */
-    async buildUploadActions(
+    static async buildUploadActions(
       changedMembers,
       defaults,
       {
         signal,
-        maxConcurrent = DEFAULT_MAX_CONCURRENT,
         isolateMemberFailures = false,
-        freshSysMetaByPid = new Map(),
-        onSystemMetadataProgress,
+        freshSysMetaByPid,
         onBuildProgress,
-      } = {},
+      },
     ) {
       const buildable = changedMembers.filter(
         (member) => !member.isResourceMap(),
       );
-      const { UPDATE, UPDATE_SYSTEM_METADATA } =
-        DataPackageMember.RequiredOperation;
-      const needsSysMetaBaseline = buildable.filter((member) => {
-        const operation = member.getRequiredOperation();
-        const sourcePid = member._replacementSourcePid || member.remotePid;
-        return (
-          [UPDATE, UPDATE_SYSTEM_METADATA].includes(operation) &&
-          !freshSysMetaByPid.has(sourcePid)
-        );
-      });
-      await this.dataPackage._ensureSystemMetadata(needsSysMetaBaseline, {
-        signal,
-        maxConcurrent,
-        onProgress: onSystemMetadataProgress,
-      });
       const actions = [];
       let completed = 0;
       if (buildable.length && typeof onBuildProgress === "function") {
@@ -722,6 +739,9 @@ define([
       }
 
       const sourcePid = member._replacementSourcePid || member.remotePid;
+      if (operation === UPDATE) {
+        assertContentSourceNotArchived(sourcePid, freshSysMeta);
+      }
       const retargetedReplacement =
         member._replacementSourcePid &&
         member._replacementSourcePid !== member.remotePid;
@@ -813,10 +833,9 @@ define([
      * (such as unsupported provenance) do not block.
      * @param {object[]} objectActions Object write actions already built
      * @param {object} defaults System Metadata defaults
-     * @param {object} [options] Preparation options
+     * @param {object} options Preparation options
      * @param {AbortSignal} [options.signal] Abort signal
-     * @param {number} [options.maxConcurrent] Fetch concurrency
-     * @param {Map<string, SystemMetadata>} [options.freshSysMetaByPid]
+     * @param {Map<string, SystemMetadata>} options.freshSysMetaByPid
      * Fresh preflight System Metadata by source PID
      * @returns {Promise<object|null>} ResourceMap action, or null
      * @private
@@ -825,11 +844,7 @@ define([
     async prepareResourceMapAction(
       objectActions,
       defaults,
-      {
-        signal,
-        maxConcurrent = DEFAULT_MAX_CONCURRENT,
-        freshSysMetaByPid = new Map(),
-      } = {},
+      { signal, freshSysMetaByPid },
     ) {
       const resourceMap = this.dataPackage.requireResourceMapModel();
       const hasObjectWrites = objectActions.some(
@@ -847,12 +862,6 @@ define([
           DataPackageMember.RequiredOperation.UPDATE_SYSTEM_METADATA
         ) {
           const freshSysMeta = freshSysMetaByPid.get(rmMember.remotePid);
-          if (!freshSysMeta) {
-            await this.dataPackage._ensureSystemMetadata([rmMember], {
-              signal,
-              maxConcurrent,
-            });
-          }
           return DataPackageUploader.buildSystemMetadataAction(
             rmMember,
             freshSysMeta,
@@ -863,17 +872,10 @@ define([
 
       const sourcePid = rmMember.remotePid || null;
       const freshSysMeta = sourcePid ? freshSysMetaByPid.get(sourcePid) : null;
-      if (sourcePid && !freshSysMeta) {
-        await this.dataPackage._ensureSystemMetadata([rmMember], {
-          signal,
-          maxConcurrent,
-        });
-      }
+      assertContentSourceNotArchived(sourcePid, freshSysMeta);
       await this.dataPackage.ensureResourceMapUploadPid(rmMember);
       resourceMap.setModified?.(new Date().toISOString());
       throwIfAborted(signal);
-      // Imported member URLs are RDF identities, not endpoints to migrate.
-      // Normalize locally and let graph validation check PID consistency.
       resourceMap.normalize({ markDirty: false });
 
       let xml;
@@ -1009,21 +1011,12 @@ define([
       await this.allocateUploadPids(changedMembers);
 
       const defaults = this.buildSysMetaDefaults();
-      const objectActions = await this.buildUploadActions(
+      const objectActions = await DataPackageUploader.buildUploadActions(
         changedMembers,
         defaults,
         {
           signal,
-          maxConcurrent,
           freshSysMetaByPid,
-          onSystemMetadataProgress: ({ completed, total }) => {
-            this._emitUploadPrepareProgress(
-              "loadingSystemMetadata",
-              completed,
-              total,
-              `Downloading system metadata ${completed}/${total}...`,
-            );
-          },
           onBuildProgress: ({ completed, total, member }) => {
             this._emitUploadPrepareProgress(
               "buildingActions",
@@ -1041,7 +1034,7 @@ define([
       const resourceMapAction = await this.prepareResourceMapAction(
         objectActions,
         defaults,
-        { signal, maxConcurrent, freshSysMetaByPid },
+        { signal, freshSysMetaByPid },
       );
       const actions = resourceMapAction
         ? [...objectActions, resourceMapAction]
@@ -1154,8 +1147,6 @@ define([
      * @param {object[]} actions Upload actions
      * @param {object} options Execution context
      * @param {number} options.draftRevision Prepared draft revision
-     * @param {boolean} [options.checkSourceLatestBeforeWrite] Whether to confirm
-     * each update source is still latest immediately before writing
      * @param {boolean} options.markPackageSaved Whether success saves the draft
      * @param {number} options.maxConcurrent Per phase concurrency
      * @param {AbortSignal} options.signal Abort signal
@@ -1168,7 +1159,6 @@ define([
       actions,
       {
         draftRevision,
-        checkSourceLatestBeforeWrite = false,
         markPackageSaved,
         maxConcurrent,
         signal,
@@ -1191,7 +1181,6 @@ define([
           result,
           UPLOAD_PHASE_ORDER[index],
           {
-            checkSourceLatestBeforeWrite,
             maxConcurrent,
             signal,
             stopOnError,
@@ -1330,7 +1319,8 @@ define([
         );
         if (
           previousResult.draftRevision === this.dataPackage.draftRevision &&
-          !pendingSystemMetadata
+          !pendingSystemMetadata &&
+          !previousResult.preparationErrors.size
         ) {
           // Await inside this try so activeUpload remains set until execution
           // and successful-finalization side effects have both completed.
@@ -1363,8 +1353,6 @@ define([
      * @param {AbortSignal} [options.signal] Abort signal
      * @param {boolean} [options.stopOnError] Whether to stop scheduling after
      * the first item error
-     * @param {boolean} [options.checkSourceLatestBeforeWrite] Whether to
-     * confirm update sources are latest before writing
      * @returns {Promise<boolean>} True when the phase had no errors
      * @private
      */
@@ -1376,7 +1364,6 @@ define([
         maxConcurrent = DEFAULT_MAX_CONCURRENT,
         signal,
         stopOnError = true,
-        checkSourceLatestBeforeWrite = false,
       } = {},
     ) {
       const actions = allActions.filter(
@@ -1388,10 +1375,7 @@ define([
 
       const { errors } = await processConcurrently(
         actions,
-        (action) =>
-          this._executeUploadAction(action, result, signal, {
-            checkSourceLatestBeforeWrite,
-          }),
+        (action) => this._executeUploadAction(action, result, signal),
         { maxConcurrent, signal, stopOnError },
       );
 
@@ -1529,6 +1513,21 @@ define([
             signal,
             UPLOAD_CANCELLED_MESSAGE,
           );
+          if (
+            action.operation === UPLOAD_OPERATIONS.UPDATE &&
+            action.sourcePid
+          ) {
+            try {
+              const sourceSysMeta = await this.dataPackage
+                .getVersionTracker()
+                .getSysMeta(action.sourcePid, { useCache: false, signal });
+              assertContentSourceNotArchived(action.sourcePid, sourceSysMeta);
+            } catch (retryError) {
+              // This read did not write, but an earlier attempt may have committed.
+              retryError.writeMayHaveCommitted = writeMayHaveCommitted;
+              throw retryError;
+            }
+          }
         }
       }
     }
@@ -1538,19 +1537,11 @@ define([
      * @param {object} action Upload action
      * @param {UploadResult} result Mutable result
      * @param {AbortSignal} signal Abort signal
-     * @param {object} [options] Action options
-     * @param {boolean} [options.checkSourceLatestBeforeWrite] Whether to confirm
-     * update sources are latest before writing
      * @returns {Promise<void>} Resolves after action state is recorded
      * @private
      * @throws {Error} When the action fails
      */
-    async _executeUploadAction(
-      action,
-      result,
-      signal,
-      { checkSourceLatestBeforeWrite = false } = {},
-    ) {
+    async _executeUploadAction(action, result, signal) {
       const member = this.dataPackage.requireMember(
         action.memberPid || action.targetPid,
       );
@@ -1566,17 +1557,34 @@ define([
 
       try {
         if (
-          checkSourceLatestBeforeWrite &&
-          action.operation === UPLOAD_OPERATIONS.UPDATE &&
+          [
+            UPLOAD_OPERATIONS.UPDATE,
+            UPLOAD_OPERATIONS.UPDATE_SYSTEM_METADATA,
+          ].includes(action.operation) &&
           action.sourcePid
         ) {
-          await this.assertLatestVersion(
+          const sourceSysMeta = await this.assertLatestVersion(
             action.sourcePid,
             "upload source",
             signal,
           );
+          if (action.operation === UPLOAD_OPERATIONS.UPDATE) {
+            assertContentSourceNotArchived(action.sourcePid, sourceSysMeta);
+          }
         }
+      } catch (error) {
+        // A failed source check must not be treated as an ambiguous write.
+        member.markRemoteFailure(error);
+        if (error.code === STALE_REMOTE_ERROR_CODE) {
+          result.markStaleRemote(action.id, error);
+        } else {
+          result.markFailed(action.id, error);
+        }
+        this._emitUploadProgress(action, {}, result);
+        throw error;
+      }
 
+      try {
         member.markRemoteUploading();
         this._emitUploadProgress(action, { loaded: 0 }, result);
 
@@ -1626,14 +1634,14 @@ define([
         return false;
       }
 
-      // An earlier write had an ambiguous response, its immediate verification
-      // returned 404, the uploader replayed it, and that replay then conflicted
-      // with the target. Verify the target before treating it as failed.
+      // An earlier ambiguous write may have committed even when a retry is
+      // blocked by its source recheck or conflicts with the target.
       const retriedWriteMayHaveCommitted =
         error?.writeMayHaveCommitted === true;
       const shouldVerifyWrite =
         retriedWriteMayHaveCommitted ||
-        DataONEService.isAmbiguousWriteError(error);
+        (error?.writeMayHaveCommitted !== false &&
+          DataONEService.isAmbiguousWriteError(error));
       if (!shouldVerifyWrite) {
         member.markRemoteFailure(error);
         result.markFailed(action.id, error);

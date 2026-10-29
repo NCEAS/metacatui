@@ -259,7 +259,7 @@ define([
         break;
       }
       case PREDICATE_URIS.provAtLocation: {
-        const rawPath = normalizeText(RDFGraph.getLiteralValue(object));
+        const rawPath = RDFGraph.getLiteralValue(object);
         if (isNonEmptyString(rawPath)) {
           atLocationStatements.push({
             subjectNode: subject,
@@ -349,11 +349,42 @@ define([
   }
 
   /**
+   * Prefer an identifier matching the node's URI, or use its only identifier.
+   * @param {ResourceMap} resourceMap Resource Map whose endpoints are used
+   * @param {NamedNode|BlankNode} node Node declaring the identifiers
+   * @param {string[]} identifiers Distinct nonempty identifier values
+   * @returns {string|null} Preferred identifier, or null when ambiguous
+   */
+  function selectNodeIdentifier(resourceMap, node, identifiers) {
+    const isNamedNode = RDFGraph.isNamedNode(node);
+    const uriPid = isNamedNode
+      ? ResourceMapCommon.recoverPidFromUri(node.value, {
+          allowBareValue: true,
+          resolveServiceUrl: resourceMap.resolveServiceUrl,
+          objectServiceUrl: resourceMap.objectServiceUrl,
+        })
+      : null;
+    return (
+      identifiers.find(
+        (identifier) =>
+          isNamedNode &&
+          (ResourceMapCommon.identifierMatchesPid(
+            identifier,
+            uriPid,
+            resourceMap,
+          ) ||
+            identifier === node.value),
+      ) || (identifiers.length === 1 ? identifiers[0] : null)
+    );
+  }
+
+  /**
    * Build lookups between RDF nodes, declared identifiers, and DataONE PIDs.
+   * @param {ResourceMap} resourceMap Resource Map being indexed
    * @param {object} scan Collected statements and lookup inputs
    * @returns {object} Identity lookups and shared PID resolver
    */
-  function buildIdentityIndex(scan) {
+  function buildIdentityIndex(resourceMap, scan) {
     const { termByKey, namedNodeByUri, identifierValuesByTermKey } = scan;
     const identifiersByTermKey = new Map();
     const identifierForTermKey = new Map();
@@ -362,30 +393,35 @@ define([
       identifiersByTermKey.set(key, identifiers);
 
       const node = termByKey.get(key);
-      const isNamedNode = RDFGraph.isNamedNode(node);
-      const uriPid = isNamedNode
-        ? ResourceMapCommon.recoverPidFromUri(node.value, {
-            allowBareValue: true,
-          })
-        : null;
-      const preferredIdentifier =
-        identifiers.find(
-          (identifier) =>
-            isNamedNode &&
-            (ResourceMapCommon.identifierMatchesPid(identifier, uriPid) ||
-              identifier === node.value),
-        ) || (identifiers.length === 1 ? identifiers[0] : null);
+      const preferredIdentifier = selectNodeIdentifier(
+        resourceMap,
+        node,
+        identifiers,
+      );
       identifierForTermKey.set(key, preferredIdentifier);
     });
     const identifierForUri = new Map();
     identifierForTermKey.forEach((identifierValue, key) => {
       const node = termByKey.get(key);
       if (RDFGraph.isNamedNode(node) && isNonEmptyString(identifierValue)) {
-        // PID lookups collapse DataONE URL aliases, while the raw
+        // Read the expected PID from a configured endpoint URL.
+        // For the resource map, use the PID supplied by the caller.
+        const expectedPid =
+          node.value === resourceMap.resourceMapUri
+            ? resourceMap.resourceMapPid
+            : ResourceMapCommon.configuredEndpointPids(
+                node.value,
+                resourceMap,
+              )[0];
+        // PID lookups collapse configured DataONE URL aliases, while the raw
         // identifier indexes above preserve imported RDF literals exactly.
         identifierForUri.set(
           node.value,
-          ResourceMapCommon.managedIdentifierValuePid(identifierValue),
+          ResourceMapCommon.managedIdentifierValuePid(
+            identifierValue,
+            expectedPid,
+            resourceMap,
+          ),
         );
       }
     });
@@ -416,6 +452,8 @@ define([
           ? ResourceMapCommon.recoverPidFromUri(node.value, {
               identifierForUri,
               allowBareValue: true,
+              resolveServiceUrl: resourceMap.resolveServiceUrl,
+              objectServiceUrl: resourceMap.objectServiceUrl,
             })
           : null;
 
@@ -463,9 +501,9 @@ define([
       }
     });
     const descriptorsWithLocations = memberDescriptors.map((descriptor) => {
-      const atLocations = sortStrings(
-        dedupeStrings(atLocationsByMemberUri.get(descriptor.uri) || []),
-      );
+      const atLocations = sortStrings([
+        ...new Set(atLocationsByMemberUri.get(descriptor.uri) || []),
+      ]);
       return {
         ...descriptor,
         atLocations,
@@ -1033,7 +1071,7 @@ define([
     buildGraphIndex() {
       const { resourceMap } = this;
       const scan = scanStatements(resourceMap);
-      const identity = buildIdentityIndex(scan);
+      const identity = buildIdentityIndex(resourceMap, scan);
       const executionProjection = buildExecutionProjection(scan, identity);
 
       return {
@@ -1162,15 +1200,60 @@ define([
     }
 
     /**
-     * Return the PID represented by an RDF node when the index can determine it
-     * safely.
-     * @param {NamedNode|BlankNode|Literal} node RDF node.
-     * @returns {string|null} PID when resolvable.
+     * Resolve a node's PID from the current graph, including identifiers added
+     * earlier in a grouped edit. Cached summaries remain snapshots of the edit's
+     * starting state.
+     * @param {NamedNode|BlankNode|Literal} node RDF node
+     * @returns {string|null} PID when resolvable
      */
     pidFromNode(node) {
-      return (
-        this.getIndex().pidByTermKey.get(RDFGraph.buildTermKey(node)) || null
-      );
+      if (!RDFGraph.isNamedNode(node)) return null;
+      const { resourceMap } = this;
+      const identifierForUri = new Map();
+      // Also check identifiers on the URI without its fragment.
+      const uris = new Set([
+        node.value,
+        UrlUtilities.stripFragment(node.value),
+      ]);
+      let hasAmbiguousIdentifiers = false;
+      uris.forEach((uri) => {
+        const subject = RDFGraph.createNamedNode(uri);
+        const identifiers = dedupeStrings(
+          resourceMap.graph
+            .findStatements({ subject, predicate: NS.DCTERMS("identifier") })
+            .map(({ object }) => RDFGraph.getLiteralValue(object)),
+        );
+        const identifier = selectNodeIdentifier(
+          resourceMap,
+          subject,
+          identifiers,
+        );
+        if (uri === node.value && identifiers.length > 1 && !identifier) {
+          hasAmbiguousIdentifiers = true;
+          return;
+        }
+        if (identifier) {
+          const expectedPid =
+            uri === resourceMap.resourceMapUri
+              ? resourceMap.resourceMapPid
+              : ResourceMapCommon.configuredEndpointPids(uri, resourceMap)[0];
+          identifierForUri.set(
+            uri,
+            ResourceMapCommon.managedIdentifierValuePid(
+              identifier,
+              expectedPid,
+              resourceMap,
+            ),
+          );
+        }
+      });
+      if (hasAmbiguousIdentifiers) return null;
+      return ResourceMapCommon.recoverPidFromUri(node.value, {
+        identifierForUri,
+        allowBareValue: true,
+        resolveServiceUrl: resourceMap.resolveServiceUrl,
+        objectServiceUrl: resourceMap.objectServiceUrl,
+      });
     }
 
     /**

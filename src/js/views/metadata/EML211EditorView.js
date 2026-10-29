@@ -53,6 +53,7 @@ define([
   const DEFAULT_EDITOR_PACKAGE_MEMBER_LIMIT = 3000;
   const EDITOR_FILE_TABLE_ROOT_ROW_ID = "dataset:editor-root";
   const FALLBACK_OBJECT_FORMATS = new ObjectFormats();
+  const FAILED_UPLOAD_STATE = "failed";
   // A draft re-serializes the entire EML, which blocks the main thread
   // roughly linearly in document size. Coalesce bursts of change events into
   // one trailing save, and skip documents so large that producing the draft
@@ -3081,6 +3082,7 @@ ${supportDetails}`;
         return (MetacatUI.rootDataPackage?.toArray?.() || []).filter(
           (member) =>
             member?.isData?.() &&
+            !member.removed &&
             member.remotePid &&
             member.pid !== member.remotePid &&
             this.isDiscardableFileUploadFailure(member),
@@ -3200,7 +3202,8 @@ ${supportDetails}`;
         ) {
           const members = MetacatUI.rootDataPackage.toArray?.() || [];
           const failedMembers = members.filter(
-            (member) => member.remoteState === "failed",
+            (member) =>
+              !member.removed && member.remoteState === FAILED_UPLOAD_STATE,
           );
           const failedReplacements = this.getFailedFileReplacements();
           if (

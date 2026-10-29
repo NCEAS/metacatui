@@ -8,6 +8,7 @@ define([
   "models/dataONEServices/PackageService",
   "models/dataONEServices/PublishService",
   "models/dataONEServices/SysMetaService",
+  "models/resourceMap/RDFGraph",
   "models/resourceMap/ResourceMap",
   "models/resourceMap/ResourceMapResolver",
   "models/sysmeta/SystemMetadata",
@@ -23,6 +24,7 @@ define([
   PackageService,
   PublishService,
   SysMetaService,
+  RDFGraph,
   ResourceMap,
   ResourceMapResolver,
   SystemMetadata,
@@ -445,10 +447,13 @@ define([
         const membersBefore = pkg.toArray();
 
         try {
-          await pkg.getManifestFromIndex({ rows: 0, onlyExisting: true });
+          const result = await pkg.getManifestFromIndex({
+            rows: 0,
+            onlyExisting: true,
+          });
 
           query.firstCall.args[0].rows.should.equal(0);
-          pkg.indexManifestTotal.should.equal(3);
+          result.details.total.should.equal(3);
           pkg.toArray().should.deep.equal(membersBefore);
           pkg.getMember("data.1").getFileName().should.equal("data.csv");
         } finally {
@@ -468,7 +473,7 @@ define([
           ],
           "rm.1",
         );
-        const query = sandbox.stub(QueryService, "queryWithFetch").resolves({
+        sandbox.stub(QueryService, "queryWithFetch").resolves({
           response: {
             numFound: 1501,
             docs: [{ id: "rm.1" }, { id: "data.1" }],
@@ -480,7 +485,6 @@ define([
 
           result.details.count.should.equal(2);
           result.details.total.should.equal(1501);
-          pkg.indexManifestTotal.should.equal(1501);
         } finally {
           sandbox.restore();
         }
@@ -751,6 +755,40 @@ define([
         return pkg;
       }
 
+      it("keeps a metadata file's type when another document describes it", async () => {
+        const resourceMap = ResourceMap.create({
+          resourceMapPid: "resource_map_1",
+          resolveServiceUrl: RESOLVER_OPTIONS.resolveServiceUrl,
+          memberPids: ["metadata.requested", "metadata.documenter"],
+          documentationLinks: [
+            {
+              metadataPid: "metadata.documenter",
+              dataPid: "metadata.requested",
+            },
+          ],
+        });
+        const pkg = packageWithResourceMapModel(resourceMap);
+        const metadataDocs = ["metadata.requested", "metadata.documenter"].map(
+          (id) => ({
+            id,
+            formatType: "METADATA",
+            formatId: "https://eml.ecoinformatics.org/eml-2.2.0",
+          }),
+        );
+        pkg.primaryMetadataPid = "metadata.requested";
+        pkg.members.add({ pid: "metadata.requested", ...metadataDocs[0] });
+        sandbox.stub(QueryService, "queryWithFetch").resolves({
+          response: { numFound: 2, docs: metadataDocs },
+        });
+
+        await pkg.getManifestFromResourceMap();
+        pkg.getMember("metadata.requested").isMetadata().should.equal(true);
+        await pkg.getManifestFromIndex({ onlyExisting: true });
+
+        pkg.getMetadataMembers().should.have.length(2);
+        pkg.getPrimaryMetadataMember().pid.should.equal("metadata.requested");
+      });
+
       it("checks edit blockers before projecting or merging a summary", async () => {
         const issues = [
           {
@@ -802,28 +840,51 @@ define([
         pkg.resourceManifestIsFetched.should.equal(true);
       });
 
-      it("uses the package ObjectService to download the Resource Map", async () => {
+      it("uses the package resolver URL while downloading the Resource Map from the MN", async () => {
+        const resolveServiceUrl = "https://cn.example/cn/v2/resolve";
+        const readBaseUrl = "https://mn.example/mn/v2/object";
         const resourceMap = ResourceMap.create({
           resourceMapPid: "resource_map_1",
-          resolveServiceUrl: "https://cn.example/cn/v2/resolve",
+          resolveServiceUrl,
+          memberPids: ["meta.1"],
         });
-        const pkg = packageWithResourceMapModel(null);
-        const objectService = { download: sandbox.stub() };
+        const pkg = new DataPackage({
+          rootResourceMapPid: "resource_map_1",
+          members: [
+            {
+              pid: "resource_map_1",
+              formatId: RESOURCE_MAP_FORMAT_ID,
+              formatType: "RESOURCE",
+            },
+          ],
+          resolverOptions: { resolveServiceUrl },
+          objectServiceOptions: { readBaseUrl },
+        });
+        const objectService = pkg.getObjectService();
+        sandbox
+          .stub(objectService, "download")
+          .resolves(new Blob([resourceMap.serialize()]));
         const controller = new AbortController();
-        sandbox.stub(pkg, "getObjectService").returns(objectService);
-        const fetchObject = sandbox
-          .stub(pkg.getRootResourceMapMember(), "fetchObject")
-          .resolves(resourceMap);
 
         const result = await pkg.getManifestFromResourceMap({
           signal: controller.signal,
+          requireEditable: true,
         });
 
         result.ok.should.equal(true);
-        sinon.assert.calledOnceWithExactly(fetchObject, {
-          signal: controller.signal,
-          objectService,
-        });
+        const model = pkg.getRootResourceMapMember().objectModel;
+        model.setResourceMapPid("resource_map_2");
+        model.resourceMapUri.should.equal(
+          `${resolveServiceUrl}/resource_map_2`,
+        );
+        objectService
+          .getReadUrl("resource_map_1")
+          .should.equal(`${readBaseUrl}/resource_map_1`);
+        sinon.assert.calledOnceWithExactly(
+          objectService.download,
+          "resource_map_1",
+          { signal: controller.signal },
+        );
       });
 
       it("preserves structured ownership issues when parsing fails", async () => {
@@ -1243,10 +1304,7 @@ define([
         );
         // Index enrichment must be restricted to already-aggregated members.
         indexStub.calledOnce.should.equal(true);
-        indexStub.firstCall.args[0].should.deep.include({
-          merge: true,
-          onlyExisting: true,
-        });
+        indexStub.firstCall.args[0].onlyExisting.should.equal(true);
         // Only the root RM and primary metadata sysmeta are fetched up front.
         sysMetaStub.calledOnce.should.equal(true);
         sysMetaStub.firstCall.args[0].should.deep.equal([
@@ -1390,7 +1448,6 @@ define([
           await pkg.loadEditablePackage("resource_map_1", { maxMembers });
 
           indexStub.firstCall.args[0].should.deep.include({
-            merge: true,
             onlyExisting: true,
             rows: maxMembers + 1,
           });
@@ -1696,9 +1753,6 @@ define([
         pkg.recordUserEdit("metadata:changed", {});
         pkg.savedRevision = pkg.draftRevision;
         pkg.hasUnsavedChanges().should.equal(true);
-        pkg.primaryMetadataPid = "meta.1";
-        pkg.toJSON().primaryMetadataPid.should.equal("meta.1");
-        pkg.toJSON().savedRevision.should.equal(pkg.savedRevision);
       });
 
       it("rejects package mutations while a save is active", async () => {
@@ -2239,6 +2293,40 @@ define([
         pkg.draftRevision.should.equal(0);
       });
 
+      it("keeps spaces at both ends of an uploaded filename until it is renamed", async () => {
+        const { pkg } = buildEditablePackage();
+        sinon.stub(pkg._uploader, "uploadAddedMembers").resolves([]);
+        const fileName = " old.csv ";
+        const [member] = await pkg.stageLocalFiles([
+          new File(["data"], fileName, { type: "text/csv" }),
+        ]);
+        await pkg.linkStagedFiles([member], { atLocation: "folder" });
+        const sysMeta = await member.buildObjectSystemMetadata({
+          submitter: "uid=test",
+          rightsHolder: "uid=test",
+        });
+        sysMeta.fileName.should.equal(fileName);
+        member.atLocations.should.deep.equal(["folder/ old.csv "]);
+
+        await pkg.renameMemberFile(member.pid, "new.csv");
+
+        member.getFileName().should.equal("new.csv");
+        member.atLocations.should.deep.equal(["folder/new.csv"]);
+      });
+
+      it("keeps spaces at both ends of a supplied file path", () => {
+        const { pkg, resourceMap } = buildEditablePackage();
+
+        pkg.setMemberLocation("data.1", " folder/old.csv ");
+
+        pkg
+          .getMember("data.1")
+          .atLocations.should.deep.equal([" folder/old.csv "]);
+        resourceMap.graphState
+          .getMember("data.1")
+          .atLocations.should.deep.equal([" folder/old.csv "]);
+      });
+
       it("links staged files into the ResourceMap and starts eager upload", async () => {
         const { pkg, resourceMap } = buildEditablePackage();
         resourceMap.markSaved();
@@ -2513,6 +2601,88 @@ define([
           .getMember("data.1")
           .atLocations.should.deep.equal(["data/raw/new.csv"]);
         assertGraphFieldsMatchMember(pkg, resourceMap, "data.1");
+      });
+
+      it("leaves location URLs unchanged when renaming a file", async () => {
+        const { pkg, resourceMap } = buildEditablePackage();
+        const member = pkg.getMember("data.1");
+        member.fileName = "old.csv";
+        member.setSystemMetadata(
+          new SystemMetadata({ identifier: "data.1", fileName: "old.csv" }),
+          { markDirty: false },
+        );
+        resourceMap.setMemberLocations([
+          {
+            pid: "data.1",
+            atLocations: ["data/raw/old.csv", "data/other.csv"],
+          },
+        ]);
+        const uriLocation = {
+          subject: RDFGraph.createNamedNode(
+            resourceMap.getNodeUriForPid("data.1"),
+          ),
+          predicate: resourceMap.ns.PROV("atLocation"),
+          object: RDFGraph.createNamedNode("https://example.org/data/old.csv"),
+        };
+        resourceMap.mutateGraph(() => {
+          resourceMap.graph.addStatement(uriLocation);
+        });
+        pkg.refreshMemberGraphFields(resourceMap);
+
+        await pkg.renameMemberFile("data.1", "new.csv");
+
+        member.atLocations.should.deep.equal([
+          "data/other.csv",
+          "data/raw/new.csv",
+        ]);
+        assertGraphFieldsMatchMember(pkg, resourceMap, "data.1");
+        resourceMap.graph.hasStatement(uriLocation).should.equal(true);
+      });
+
+      it("restores the original filename and paths if renaming fails", async () => {
+        const { pkg, resourceMap } = buildEditablePackage();
+        const member = pkg.getMember("data.1");
+        member.fileName = "old.csv";
+        member.setSystemMetadata(
+          new SystemMetadata({
+            identifier: "data.1",
+            fileName: "old.csv",
+            rightsHolder: "uid=local-owner",
+          }),
+          { markDirty: true },
+        );
+        member.contentDirty = true;
+        member.remoteState = DataPackageMember.RemoteState.FAILED;
+        resourceMap.setMemberLocations([
+          { pid: "data.1", atLocations: ["old.csv", "data/raw/old.csv"] },
+        ]);
+        pkg.refreshMemberGraphFields(resourceMap);
+        resourceMap.markSaved();
+        const before = resourceMap.serialize();
+        const failure = new Error("location add failed");
+        const addLocation = sinon
+          .stub(resourceMap, "addLocation")
+          .callThrough();
+        addLocation.onSecondCall().throws(failure);
+        let caught;
+        try {
+          await pkg.renameMemberFile("data.1", "new.csv");
+        } catch (error) {
+          caught = error;
+        } finally {
+          addLocation.restore();
+        }
+
+        expect(caught).to.equal(failure);
+        member.getFileName().should.equal("old.csv");
+        member.sysMeta.fileName.should.equal("old.csv");
+        member.sysMeta.rightsHolder.should.equal("uid=local-owner");
+        member.sysMetaDirty.should.equal(true);
+        member.remoteState.should.equal(DataPackageMember.RemoteState.FAILED);
+        resourceMap.serialize().should.equal(before);
+        resourceMap.hasUnsavedChanges().should.equal(false);
+        assertGraphFieldsMatchMember(pkg, resourceMap, "data.1");
+        pkg.draftRevision.should.equal(0);
       });
 
       it("renames matching file name suffixes without changing other locations", async () => {
@@ -2846,6 +3016,7 @@ define([
         member._replacementDisplay.pid.should.equal("data.1");
         member._replacementDisplay.fileName.should.equal("original.csv");
         member._replacementDisplay.title.should.equal("Original title");
+        await member.buildObjectSystemMetadata();
         member.markRemoteFailure(new Error("already obsolete"));
 
         const restored = pkg.discardFileReplacement(replacementPid);
@@ -2855,6 +3026,8 @@ define([
         member.remotePid.should.equal("data.1");
         member.remoteState.should.equal(DataPackageMember.RemoteState.UPLOADED);
         member.contentDirty.should.equal(false);
+        member.sysMetaDirty.should.equal(false);
+        member.getRequiredOperation().should.equal("none");
         should.equal(member.lastUploadError, null);
         should.equal(member.uploadFile, null);
         should.equal(member._replacementDisplay, null);
@@ -2866,26 +3039,141 @@ define([
         assertGraphFieldsMatchMember(pkg, resourceMap, "data.1");
       });
 
-      it("clears retargeted replacement state when discarding a failed replacement", async () => {
+      it("keeps sharing and owner changes when a failed file replacement is discarded", async () => {
         const { pkg } = buildEditablePackage();
         sinon.stub(pkg._uploader, "uploadAddedMembers").resolves([]);
-
-        const member = await pkg.replaceFile(
+        const member = pkg.requireMember("data.1");
+        const remoteSysMeta = new SystemMetadata({
+          identifier: "data.1",
+          formatId: "text/csv",
+          size: 4,
+          checksum: "old-checksum",
+          checksumAlgorithm: "MD5",
+          submitter: "uid=test",
+          rightsHolder: "uid=test",
+          fileName: "original.csv",
+          archived: false,
+          accessPolicy: [{ subjects: ["public"], permissions: ["read"] }],
+        });
+        member.setSystemMetadata(remoteSysMeta, { markDirty: false });
+        member.fileName = "original.csv";
+        await pkg.setMemberAccessPolicy("data.1", [], {
+          rightsHolder: "uid=new-owner",
+        });
+        await pkg.replaceFile(
           "data.1",
-          new Blob(["replacement"]),
-          { replacementSourcePid: "data.2" },
+          new File(["replacement"], "replacement.csv", { type: "text/csv" }),
         );
-        const replacementPid = member.pid;
-        member._replacementSourcePid.should.equal("data.2");
-        member._replacementSourceSysMeta.identifier.should.equal("data.2");
-        member.markRemoteFailure(new Error("already obsolete"));
+        await member.buildObjectSystemMetadata();
+        member.markRemoteFailure(new Error("replacement rejected"));
 
-        pkg.discardFileReplacement(replacementPid);
+        pkg.discardFileReplacement(member.pid);
 
         member.pid.should.equal("data.1");
-        member.remotePid.should.equal("data.1");
-        should.equal(member._replacementSourcePid, null);
-        should.equal(member._replacementSourceSysMeta, null);
+        member.getRequiredOperation().should.equal("updateSystemMetadata");
+        member.fileName.should.equal("original.csv");
+        member.size.should.equal(4);
+        member.checksum.should.equal("old-checksum");
+        should.equal(member.uploadFile, null);
+        const expectedSysMeta = {
+          ...remoteSysMeta.toJSON(),
+          accessPolicy: [],
+          rightsHolder: "uid=new-owner",
+        };
+        member
+          .buildSystemMetadataUpdate()
+          .toJSON()
+          .should.deep.equal(expectedSysMeta);
+        member.remoteSysMeta.toJSON().should.deep.equal(remoteSysMeta.toJSON());
+      });
+
+      it("leaves a replacement out of the package if discarding it fails", async () => {
+        const { pkg, resourceMap } = buildEditablePackage();
+        sinon.stub(pkg._uploader, "uploadAddedMembers").resolves([]);
+        const member = await pkg.replaceFile(
+          "data.1",
+          new File(["replacement"], "replacement.csv"),
+        );
+        const replacementPid = member.pid;
+        const uploadError = new Error("replacement upload denied");
+        member.markRemoteFailure(uploadError);
+        await pkg.removeMembers(replacementPid);
+        const revision = pkg.draftRevision;
+
+        expect(() => pkg.discardFileReplacement(replacementPid)).to.throw(
+          "is not in this resource map",
+        );
+
+        member.pid.should.equal(replacementPid);
+        member.removed.should.equal(true);
+        member.getRequiredOperation().should.equal("remove");
+        member.remoteState.should.equal(DataPackageMember.RemoteState.FAILED);
+        member.lastUploadError.should.equal(uploadError);
+        pkg.members.getActiveMembers().should.not.include(member);
+        pkg.requireMember(replacementPid).should.equal(member);
+        should.equal(pkg.getMember("data.1"), null);
+        resourceMap.getMemberPids().should.deep.equal(["meta.1"]);
+        pkg.draftRevision.should.equal(revision);
+      });
+
+      [
+        ["none", "uid=test"],
+        ["between", "uid=source-owner"],
+      ].forEach(([ownerEdit, expectedOwner]) => {
+        it(`${ownerEdit === "none" ? "restores the original owner after two failed replacements" : "keeps the owner chosen between two failed replacements"}`, async () => {
+          const { pkg } = buildEditablePackage();
+          sinon.stub(pkg._uploader, "uploadAddedMembers").resolves([]);
+          const download = pkg.sysMetaService.download;
+          sinon.stub(pkg.sysMetaService, "download").callsFake(async (pid) => {
+            const sysMeta = await download(pid);
+            sysMeta.archived = false;
+            if (pid === "data.2") sysMeta.rightsHolder = "uid=source-owner";
+            if (pid === "data.3") sysMeta.rightsHolder = "uid=new-source-owner";
+            return sysMeta;
+          });
+          const member = await pkg.replaceFile(
+            "data.1",
+            new Blob(["replacement"]),
+            { replacementSourcePid: "data.2" },
+          );
+          await pkg._uploader.constructor.buildMemberAction(
+            member,
+            {},
+            {
+              freshSysMeta: member._replacementSourceSysMeta,
+            },
+          );
+          member.sysMeta.rightsHolder.should.equal("uid=source-owner");
+          member.markRemoteFailure(new Error("replacement rejected"));
+          if (ownerEdit === "between") {
+            await pkg.setMemberAccessPolicy(member.pid, [], {
+              rightsHolder: "uid=source-owner",
+            });
+          }
+          await pkg.replaceFile(member.pid, new Blob(["replacement retry"]), {
+            replacementSourcePid: "data.3",
+          });
+          await pkg._uploader.constructor.buildMemberAction(
+            member,
+            {},
+            {
+              freshSysMeta: member._replacementSourceSysMeta,
+            },
+          );
+          member.markRemoteFailure(new Error("replacement rejected again"));
+
+          pkg.discardFileReplacement(member.pid);
+
+          member.pid.should.equal("data.1");
+          member.remotePid.should.equal("data.1");
+          member.sysMeta.identifier.should.equal("data.1");
+          member.remoteSysMeta.identifier.should.equal("data.1");
+          expect(member.sysMeta.archived).to.equal(false);
+          member.sysMeta.rightsHolder.should.equal(expectedOwner);
+          member.sysMetaDirty.should.equal(ownerEdit !== "none");
+          should.equal(member._replacementSourcePid, null);
+          should.equal(member._replacementSourceSysMeta, null);
+        });
       });
 
       it("loads remote sysmeta before allocating replacement PIDs", async () => {
@@ -2975,9 +3263,10 @@ define([
             resourceMap,
             "setPackageStructure",
           );
-          sandbox.stub(pkg._uploader, "assertSourcesAreLatest").resolves();
+          sandbox
+            .stub(pkg._uploader, "assertSourcesAreLatest")
+            .resolves(new Map());
           sandbox.stub(pkg._uploader, "allocateUploadPids").resolves();
-          sandbox.stub(pkg._uploader, "buildUploadActions").resolves([]);
           sandbox
             .stub(pkg._uploader, "prepareResourceMapAction")
             .callsFake(async () => {

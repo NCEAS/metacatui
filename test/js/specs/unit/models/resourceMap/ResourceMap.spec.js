@@ -310,7 +310,7 @@ define([
         .should.equal(foreignMemberUri);
     });
 
-    it("parses raw XML that mixes object-service and resolve-service absolute URIs", () => {
+    it("normalizes current MN member URLs during import", () => {
       const physicalMemberUri =
         "https://mn-stage.test.dataone.org/mn/v2/object/data.1";
       const mixedAbsoluteUriXml = COMPREHENSIVE_XML.split(
@@ -320,10 +320,63 @@ define([
       const resourceMap = parseResourceMap(
         "resource_map_urn:uuid:rm.1",
         mixedAbsoluteUriXml,
+        {
+          objectServiceUrl: "https://mn-stage.test.dataone.org/mn/v2/object",
+        },
       );
 
       resourceMap.getMemberPids().should.include("data.1");
-      resourceMap.getNodeUriForPid("data.1").should.equal(physicalMemberUri);
+      resourceMap
+        .getNodeUriForPid("data.1")
+        .should.equal(`${TEST_RESOLVE_BASE}/data.1`);
+      hasNodeReferences(resourceMap, rdf.sym(physicalMemberUri)).should.equal(
+        false,
+      );
+      resourceMap.hasUnsavedChanges().should.equal(false);
+    });
+
+    it("imports an encoded MN object URL used as both member URI and identifier", () => {
+      const objectServiceUrl = "https://mn.example/mn/v2/object";
+      const memberUri = `${objectServiceUrl}/urn%3Auuid%3Aabc`;
+      const xml = COMPREHENSIVE_XML.split(`${TEST_RESOLVE_BASE}/data.1`)
+        .join(memberUri)
+        .replace(">data.1<", `>${memberUri}<`);
+
+      const resourceMap = parseResourceMap("resource_map_urn:uuid:rm.1", xml, {
+        objectServiceUrl,
+      });
+      const resolveUri = `${TEST_RESOLVE_BASE}/urn:uuid:abc`;
+
+      resourceMap.getEditBlockers().should.deep.equal([]);
+      resourceMap.getNodeUriForPid("urn:uuid:abc").should.equal(resolveUri);
+      resourceMap.graph
+        .findStatements({
+          subject: rdf.sym(resolveUri),
+          predicate: ns.DCTERMS("identifier"),
+        })
+        .map(({ object }) => object.value)
+        .should.deep.equal(["urn:uuid:abc"]);
+      resourceMap.serialize().should.be.a("string");
+    });
+
+    it("rejects an encoded MN object URL whose identifier names a different PID", () => {
+      const objectServiceUrl = "https://mn.example/mn/v2/object";
+      const memberUri = `${objectServiceUrl}/urn%3Auuid%3Aabc`;
+      const identifier = `${objectServiceUrl}/urn%3Auuid%3Adef`;
+      const xml = COMPREHENSIVE_XML.split(`${TEST_RESOLVE_BASE}/data.1`)
+        .join(memberUri)
+        .replace(">data.1<", `>${identifier}<`);
+
+      const resourceMap = parseResourceMap("resource_map_urn:uuid:rm.1", xml, {
+        objectServiceUrl,
+      });
+
+      getIssueCodes(resourceMap.getEditBlockers()).should.include(
+        "memberIdentifierMismatch",
+      );
+      expect(() => resourceMap.serialize()).to.throw(
+        "ResourceMap validation failed",
+      );
     });
 
     it("reports a baseless relative member without assigning a configured identity", () => {
@@ -707,6 +760,30 @@ define([
 
       resourceMap.markSaved();
       resourceMap.hasUnsavedChanges().should.equal(false);
+    });
+
+    it("preserves an imported MN root while normalizing member URLs", () => {
+      const objectServiceUrl = "https://mn-stage.test.dataone.org/mn/v2/object";
+      const objectUri = `${objectServiceUrl}/data.1`;
+      const resourceMapPid = "resource_map_urn:uuid:rm.1";
+      const rootUri = `${objectServiceUrl}/${resourceMapPid}`;
+      const xml = COMPREHENSIVE_XML.split(`${TEST_RESOLVE_BASE}/data.1`)
+        .join(objectUri)
+        .split(`${TEST_RESOLVE_BASE}/resource_map_urn%3Auuid%3Arm.1`)
+        .join(rootUri);
+      const resourceMap = parseResourceMap("resource_map_urn:uuid:rm.1", xml, {
+        objectServiceUrl,
+      });
+
+      resourceMap.resourceMapUri.should.equal(rootUri);
+      resourceMap.aggregationUri.should.equal(`${rootUri}#aggregation`);
+      resourceMap
+        .getNodeUriForPid("data.1")
+        .should.equal(`${TEST_RESOLVE_BASE}/data.1`);
+      hasNodeReferences(resourceMap, rdf.sym(objectUri)).should.equal(false);
+      resourceMap.hasUnsavedChanges().should.equal(false);
+      resourceMap.normalize();
+      resourceMap.validate().should.deep.equal([]);
     });
 
     it("does not mark normalization changes unsaved unless requested", () => {
@@ -1641,6 +1718,36 @@ define([
       });
     });
 
+    it("keeps spaces at the ends of file paths when saving and reloading", () => {
+      const resourceMap = createResourceMap({
+        resourceMapPid: "resource_map_locations_whitespace",
+        members: [{ pid: "data.1", atLocations: [" old.csv"] }],
+      });
+      resourceMap.graphState
+        .getMember("data.1")
+        .atLocations.should.deep.equal([" old.csv"]);
+
+      resourceMap.setLocation("data.1", "folder/old.csv ");
+      resourceMap.addLocation("data.1", " folder/old.csv");
+      resourceMap.graphState
+        .getMember("data.1")
+        .atLocations.should.have.members([
+          "folder/old.csv ",
+          " folder/old.csv",
+        ]);
+
+      resourceMap.addLocation("data.1", "folder/old.csv");
+      resourceMap.removeLocation("data.1", "folder/old.csv ");
+
+      const reloaded = parseResourceMap(
+        "resource_map_locations_whitespace",
+        resourceMap.serialize(),
+      );
+      reloaded.graphState
+        .getMember("data.1")
+        .atLocations.should.have.members(["folder/old.csv", " folder/old.csv"]);
+    });
+
     it("stores root-escaping prov:atLocation values without rewriting them", () => {
       const resourceMap = createBaseResourceMap({
         resourceMapPid: "resource_map_urn:uuid:rm.atlocation.escape.write.1",
@@ -2361,6 +2468,36 @@ define([
       resourceMap
         .getMemberPids()
         .should.have.members(["meta.1", "data.1", "data.2"]);
+    });
+
+    it("rejects a replacement whose URL is already assigned a different identifier", () => {
+      const resourceMap = createBaseResourceMap({ memberPids: ["data.1"] });
+      const destination = rdf.sym(resourceMap.pidToUri("replacement.1"));
+      resourceMap.mutateGraph(() => {
+        resourceMap.graph.addStatement({
+          subject: destination,
+          predicate: resourceMap.ns.DCTERMS("identifier"),
+          object: rdf.literal("external.1"),
+        });
+      });
+      resourceMap.markSaved();
+      const before = resourceMap.graph
+        .getStatements()
+        .map((statement) => statement.toNT())
+        .sort();
+
+      expect(() =>
+        resourceMap.replaceMember("data.1", "replacement.1"),
+      ).to.throw(ResourceMapCommon.ResourceMapConflictError);
+
+      resourceMap.getMemberPids().should.deep.equal(["data.1"]);
+      resourceMap.graph
+        .getStatements()
+        .map((statement) => statement.toNT())
+        .sort()
+        .should.deep.equal(before);
+      resourceMap.hasUnsavedChanges().should.equal(false);
+      resourceMap.serialize();
     });
 
     it("refuses member mutations before choosing between duplicate URIs", () => {

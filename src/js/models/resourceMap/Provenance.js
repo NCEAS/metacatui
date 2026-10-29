@@ -86,9 +86,8 @@ define([
      */
     mutateGraph(mutator, { markDirty = true, rollbackOnError = true } = {}) {
       if (!this.resourceMap.isGraphMutating()) {
-        // Provenance mutations resolve PIDs, roles, and executions from the
-        // state recorded before the edit. Build that state before changing the
-        // graph.
+        // Import ambiguity checks use the state before the edit. Endpoint PID
+        // resolution and execution selection read the current graph.
         this.resourceMap.graphState.getIndex();
       }
       this.resourceMap.mutateGraph(mutator, { markDirty, rollbackOnError });
@@ -705,7 +704,11 @@ define([
         graphState.findNodeUriForPid(normalizedPid) ||
         this.resourceMap.pidToUri(normalizedPid);
       this.resourceMap.ensureIdentifierForUri(uri, normalizedPid);
-      return RDFGraph.createNamedNode(uri);
+      // Defer URL conversion until the grouped edit finishes. Later operations
+      // may still look up an imported MN URL in the cached index.
+      const node = RDFGraph.createNamedNode(uri);
+      this.resourceMap.pendingEndpointNodes.push(node);
+      return node;
     }
   }
 

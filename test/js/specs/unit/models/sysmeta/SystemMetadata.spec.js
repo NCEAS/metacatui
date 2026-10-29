@@ -433,6 +433,20 @@ define(["models/sysmeta/SystemMetadata"], (SystemMetadata) => {
     });
 
     describe("serialize()", () => {
+      it("keeps spaces at both ends of a filename when saving and reloading XML", () => {
+        const sysMeta = new SystemMetadata({
+          ...SystemMetadata.fromXml(MINIMAL_XML).toJSON(),
+          fileName: " old.csv ",
+          rightsHolder: " userA ",
+        });
+
+        const xml = sysMeta.serialize();
+        expect(xml).to.contain("<fileName> old.csv </fileName>");
+        const reloaded = SystemMetadata.fromXml(xml);
+        expect(reloaded.fileName).to.equal(" old.csv ");
+        expect(reloaded.rightsHolder).to.equal("userA");
+      });
+
       it("validates and serializes normalized values without changing the model", () => {
         const sysMeta = SystemMetadata.fromXml(MINIMAL_XML);
         sysMeta.size = "1";

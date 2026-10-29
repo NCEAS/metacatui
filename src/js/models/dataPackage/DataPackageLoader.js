@@ -315,7 +315,6 @@ define([
         },
       );
       resourceMapResult = await dataPackage.getManifestFromResourceMap({
-        merge: true,
         requireEditable: true,
         signal,
       });
@@ -393,7 +392,6 @@ define([
     }
 
     await dataPackage.getManifestFromIndex({
-      merge: true,
       onlyExisting: true,
       // The index query also returns the root ResourceMap.
       rows: maxMembers ? maxMembers + 1 : DEFAULT_ROWS,
@@ -781,57 +779,17 @@ define([
     },
 
     /**
-     * Load package manifest data from configured sources.
-     * @param {DataPackage} dataPackage Package being loaded
-     * @param {object} [options] Manifest options
-     * @param {boolean} [options.sysMeta] Whether to fetch System Metadata
-     * @param {boolean} [options.resourceMap] Whether to load the ResourceMap
-     * @param {boolean} [options.index] Whether to load index enrichment
-     * @param {AbortSignal} [options.signal] Abort signal
-     * @returns {Promise<DataPackageMember[]>} Package members
-     */
-    async getManifest(
-      dataPackage,
-      { sysMeta = false, resourceMap = true, index = true, signal } = {},
-    ) {
-      if (index) {
-        await dataPackage.getManifestFromIndex({ signal });
-      }
-      if (resourceMap) {
-        await dataPackage.getManifestFromResourceMap({ signal });
-      }
-      if (sysMeta) {
-        await dataPackage.fetchSysMeta(null, { signal });
-      }
-      return dataPackage.members.toArray();
-    },
-
-    /**
      * Enrich package members from the Solr index.
      * @param {DataPackage} dataPackage Package being loaded
      * @param {object} [options] Index manifest options
-     * @param {boolean} [options.merge] Merge matching existing members
      * @param {boolean} [options.onlyExisting] Skip members not already present
-     * @param {string[]} [options.fields] Extra Solr fields to request
      * @param {number} [options.rows] Solr row limit
-     * @param {boolean} [options.archived] Whether to include archived rows
-     * @param {boolean} [options.usePost] Whether to use POST
-     * @param {string} [options.urlBase] Query service URL base
      * @param {AbortSignal} [options.signal] Abort signal
      * @returns {Promise<object>} Load result details
      */
     async getManifestFromIndex(
       dataPackage,
-      {
-        merge = true,
-        onlyExisting = false,
-        fields = [],
-        rows = DEFAULT_ROWS,
-        archived = true,
-        usePost = true,
-        urlBase = null,
-        signal,
-      } = {},
+      { onlyExisting = false, rows = DEFAULT_ROWS, signal } = {},
     ) {
       const resourceMapPid =
         dataPackage.rootResourceMapPid ||
@@ -857,30 +815,22 @@ define([
         QueryService.getQueryPart("resourceMap", resourceMapPid),
         QueryService.getQueryPart("id", resourceMapPid),
       ].join(" OR ");
-      const allFields = Values.dedupeArray([
-        ...SOLR_MANIFEST_FIELDS,
-        ...Values.listify(fields),
-      ]);
       const response = await QueryService.queryWithFetch({
         q: query,
-        fields: allFields,
+        fields: SOLR_MANIFEST_FIELDS,
         rows: rows ?? DEFAULT_ROWS,
-        archived,
-        usePost,
-        urlBase,
+        archived: true,
+        usePost: true,
         signal,
       });
       throwIfAborted(signal, "Package index manifest load cancelled");
       const results = QueryService.parseResponse(response);
       dataPackage.members.add(results, {
-        merge,
+        merge: true,
         onlyExisting,
         sources: ["index"],
       });
       const total = response?.response?.numFound ?? results.length;
-      // Record the total count (could be > than the number of rows fetched)
-      dataPackage.indexManifestTotal = total;
-      dataPackage.indexManifestFetched = true;
       return {
         ok: true,
         details: {
@@ -942,7 +892,6 @@ define([
      * Load and parse the authoritative ResourceMap manifest.
      * @param {DataPackage} dataPackage Package being loaded
      * @param {object} [options] ResourceMap manifest options
-     * @param {boolean} [options.merge] Merge matching existing members
      * @param {boolean} [options.requireEditable] Reject ResourceMaps with
      * blocking identity or relationship issues before projecting package
      * membership
@@ -952,7 +901,7 @@ define([
      */
     async getManifestFromResourceMap(
       dataPackage,
-      { merge = true, requireEditable = false, signal } = {},
+      { requireEditable = false, signal } = {},
     ) {
       const resourceMapMember = dataPackage.getRootResourceMapMember();
       const resourceMapPid =
@@ -978,6 +927,7 @@ define([
           resourceMap = await resourceMapMember.fetchObject({
             signal,
             objectService: dataPackage.getObjectService(),
+            resolveServiceUrl: dataPackage.resolverOptions.resolveServiceUrl,
           });
           throwIfAborted(signal, "Resource map manifest load cancelled");
         } catch (error) {
@@ -1029,11 +979,14 @@ define([
       const rootResourceMapPid = summary.resourceMapPid || resourceMapPid;
       dataPackage.rootResourceMapPid = rootResourceMapPid;
       const resourceMapMembers = summary.members.map((member) => {
-        let formatType;
-        if (member.documents?.length) {
-          formatType = FORMAT_TYPES.METADATA;
-        } else if (member.isDocumentedBy?.length) {
-          formatType = FORMAT_TYPES.DATA;
+        // Metadata can itself be documented, so known formats take precedence.
+        let formatType = dataPackage.getMember(member.pid)?.getFormatType();
+        if (!formatType) {
+          if (member.documents?.length) {
+            formatType = FORMAT_TYPES.METADATA;
+          } else if (member.isDocumentedBy?.length) {
+            formatType = FORMAT_TYPES.DATA;
+          }
         }
         return {
           ...member,
@@ -1064,7 +1017,7 @@ define([
       ];
 
       dataPackage.members.add(members, {
-        merge,
+        merge: true,
         sources: ["resourceMap"],
       });
       dataPackage.refreshMemberGraphFields(resourceMap);

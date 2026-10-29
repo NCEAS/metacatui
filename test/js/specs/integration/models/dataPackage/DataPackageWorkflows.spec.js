@@ -85,7 +85,7 @@ define([
   /**
    * Build a real ResourceMap with the given membership and documentation links.
    * @param {object} [options] ResourceMap options
-   * @returns {ResourceMap} A parsed, in memory ResourceMap
+   * @returns {ResourceMap} Newly created ResourceMap
    */
   function makeResourceMap({
     pid = "resource_map_1",
@@ -220,6 +220,9 @@ define([
     return {
       resolverOptions: RESOLVER_OPTIONS,
       objectService: overrides.objectService || {
+        // Downloads use the MN; URLs written into the map use the CN resolver.
+        readBaseUrl: OBJECT_BASE,
+        resolveServiceUrl: RESOLVE_BASE,
         create: state.sandbox
           .stub()
           .callsFake(async ({ pid }) => ({ data: { identifier: pid } })),
@@ -338,8 +341,9 @@ define([
       { metadataPid: "meta.1", dataPid: "data.1" },
     ],
     extraIndexDocs = [],
+    resourceMap = null,
   } = {}) {
-    const rm = makeResourceMap({ memberPids, links });
+    const rm = resourceMap || makeResourceMap({ memberPids, links });
     const network = stubNetwork({
       resolve: resolverResult({
         pid: "meta.1",
@@ -364,7 +368,6 @@ define([
     });
     const services = saveServices();
     services.objectService.download = network.downloadStub;
-    services.objectService.readBaseUrl = RESOLVE_BASE;
     const pkg = new DataPackage(services);
     await pkg.loadEditablePackage("meta.1");
     return { pkg, rm, services, network };
@@ -407,7 +410,10 @@ define([
         resourceMapXmlByPid: { resource_map_1: xml },
       });
       const pkg = new DataPackage({
-        objectServiceOptions: { readBaseUrl: OBJECT_BASE },
+        objectServiceOptions: {
+          readBaseUrl: OBJECT_BASE,
+          resolveServiceUrl: RESOLVE_BASE,
+        },
         resolverOptions: RESOLVER_OPTIONS,
         versionTracker: {
           getLatestVersions: state.sandbox.stub().resolves(["resource_map_1"]),
@@ -460,15 +466,19 @@ define([
         ],
       });
       const pkg = new DataPackage({
-        objectServiceOptions: { readBaseUrl: RESOLVE_BASE },
+        objectServiceOptions: {
+          readBaseUrl: RESOLVE_BASE,
+          resolveServiceUrl: RESOLVE_BASE,
+          metaServiceUrl: META_BASE,
+        },
         resolverOptions: RESOLVER_OPTIONS,
       });
 
       const result = await pkg.resolveFromPid("meta.1");
       result.isMetadata.should.equal(true);
-      const rmResult = await pkg.getManifestFromResourceMap({ merge: true });
+      const rmResult = await pkg.getManifestFromResourceMap();
       rmResult.ok.should.equal(true);
-      await pkg.getManifestFromIndex({ merge: true });
+      await pkg.getManifestFromIndex();
 
       pkg.getRootResourceMapMember().pid.should.equal("resource_map_1");
       pkg.getPrimaryMetadataMember().pid.should.equal("meta.1");
@@ -501,13 +511,17 @@ define([
       });
       network.indexStub.rejects(httpError(503, "index unavailable"));
       const pkg = new DataPackage({
-        objectServiceOptions: { readBaseUrl: RESOLVE_BASE },
+        objectServiceOptions: {
+          readBaseUrl: RESOLVE_BASE,
+          resolveServiceUrl: RESOLVE_BASE,
+          metaServiceUrl: META_BASE,
+        },
         resolverOptions: RESOLVER_OPTIONS,
       });
 
       const result = await pkg.resolveFromPid("data.1");
       result.isData.should.equal(true);
-      await pkg.getManifest({ index: false });
+      await pkg.getManifestFromResourceMap();
 
       sinon.assert.notCalled(network.indexStub);
       should.exist(pkg.getMember("data.1"));
@@ -535,14 +549,18 @@ define([
         ],
       });
       const pkg = new DataPackage({
-        objectServiceOptions: { readBaseUrl: RESOLVE_BASE },
+        objectServiceOptions: {
+          readBaseUrl: RESOLVE_BASE,
+          resolveServiceUrl: RESOLVE_BASE,
+          metaServiceUrl: META_BASE,
+        },
         resolverOptions: RESOLVER_OPTIONS,
       });
 
       const result = await pkg.resolveFromPid(bareRmPid);
       result.isResourceMap.should.equal(true);
-      await pkg.getManifestFromResourceMap({ merge: true });
-      await pkg.getManifestFromIndex({ merge: true });
+      await pkg.getManifestFromResourceMap();
+      await pkg.getManifestFromIndex();
 
       // The unprefixed PID is still recognized as the root ResourceMap by its
       // format ID, not by any naming convention.
@@ -576,13 +594,17 @@ define([
         ],
       });
       const pkg = new DataPackage({
-        objectServiceOptions: { readBaseUrl: RESOLVE_BASE },
+        objectServiceOptions: {
+          readBaseUrl: RESOLVE_BASE,
+          resolveServiceUrl: RESOLVE_BASE,
+          metaServiceUrl: META_BASE,
+        },
         resolverOptions: RESOLVER_OPTIONS,
       });
 
       await pkg.resolveFromPid("meta.1");
-      await pkg.getManifestFromResourceMap({ merge: true });
-      await pkg.getManifestFromIndex({ merge: true });
+      await pkg.getManifestFromResourceMap();
+      await pkg.getManifestFromIndex();
 
       pkg.getRootResourceMapMember().pid.should.equal("resource_map_1");
       pkg
@@ -650,16 +672,22 @@ define([
         response: { numFound: memberPids.length + 1, docs: broadDocs },
       });
       const pkg = new DataPackage({
-        objectServiceOptions: { readBaseUrl: RESOLVE_BASE },
+        objectServiceOptions: {
+          readBaseUrl: RESOLVE_BASE,
+          resolveServiceUrl: RESOLVE_BASE,
+          metaServiceUrl: META_BASE,
+        },
         resolverOptions: RESOLVER_OPTIONS,
       });
 
       await pkg.resolveFromPid("meta.1");
-      await pkg.getManifestFromResourceMap({ merge: true });
-      await pkg.getManifestFromIndex({ merge: true, onlyExisting: true });
+      await pkg.getManifestFromResourceMap();
+      const result = await pkg.getManifestFromIndex({
+        onlyExisting: true,
+      });
 
       pkg.members.getFromSource("index").should.have.length(1000);
-      pkg.indexManifestTotal.should.equal(memberPids.length + 1);
+      result.details.total.should.equal(memberPids.length + 1);
       network.indexStub.calledOnce.should.equal(true);
     });
   });
@@ -669,6 +697,255 @@ define([
   // --------------------------------------------------------------------------
 
   describe("DataPackage workflows: existing editor load/save", () => {
+    for (const edit of ["metadata", "files", "provenance"]) {
+      it(`saves CN resolve URLs after ${edit} edits to a map loaded from the MN`, async () => {
+        const resourceMap = makeResourceMap({
+          memberPids: [
+            "meta.1",
+            "data.1",
+            "script.1",
+            "foreign.1",
+            "resolved.1",
+          ],
+          links: [
+            { metadataPid: "meta.1", dataPid: "meta.1" },
+            { metadataPid: "meta.1", dataPid: "data.1" },
+            { metadataPid: "meta.1", dataPid: "script.1" },
+            { metadataPid: "meta.1", dataPid: "foreign.1" },
+            { metadataPid: "meta.1", dataPid: "resolved.1" },
+          ],
+        });
+        resourceMap.provenance.addWasDerivedFrom("data.1", "urn:uuid:source.1");
+        resourceMap.provenance.addUsedByProgram("data.1", "script.1");
+        // Keep the file's download location on the MN after its RDF URL moves.
+        resourceMap.setLocation("data.1", `${OBJECT_BASE}/data.1`);
+        // These other services are not configured here. Keep their URLs.
+        const foreignUri = "https://other-mn.example/mn/v2/object/foreign.1";
+        const resolvedUri = "https://other-cn.example/cn/v2/resolve/resolved.1";
+        const unrelatedPredicate = RDFGraph.createNamedNode(
+          "https://example.org/vocab#related",
+        );
+        resourceMap.mutateGraph(() => {
+          // Start data.1, its source, and its program at this MN's object URLs.
+          resourceMap.graph.replaceNodeValues(
+            new Map([
+              [`${RESOLVE_BASE}/data.1`, `${OBJECT_BASE}/data.1`],
+              [
+                `${RESOLVE_BASE}/urn:uuid:source.1`,
+                `${OBJECT_BASE}/urn%3Auuid%3Asource.1`,
+              ],
+              [`${RESOLVE_BASE}/script.1`, `${OBJECT_BASE}/script.1`],
+              [`${RESOLVE_BASE}/foreign.1`, foreignUri],
+              [`${RESOLVE_BASE}/resolved.1`, resolvedUri],
+            ]),
+          );
+          // This referenced node has no identifier statement. Leave its URL
+          // unchanged; the nonmember URL repair requires identifier text to check.
+          resourceMap.graph.addStatement({
+            subject: RDFGraph.createNamedNode(`${RESOLVE_BASE}/meta.1`),
+            predicate: unrelatedPredicate,
+            object: RDFGraph.createNamedNode(`${OBJECT_BASE}/unidentified.1`),
+          });
+          // The URL says urn:uuid:mismatch.1; the identifier says different.1.
+          // Keep both rather than choosing one PID over the other.
+          resourceMap.graph.addStatement({
+            subject: RDFGraph.createNamedNode(
+              `${OBJECT_BASE}/urn%3Auuid%3Amismatch.1`,
+            ),
+            predicate: resourceMap.ns.DCTERMS("identifier"),
+            object: RDFGraph.createLiteral("different.1"),
+          });
+          resourceMap.graph.addStatement({
+            subject: RDFGraph.createNamedNode(`${OBJECT_BASE}/data.1`),
+            predicate: resourceMap.ns.PROV("atLocation"),
+            object: RDFGraph.createNamedNode(`${OBJECT_BASE}/data.1`),
+          });
+        });
+        const { pkg, services } = await loadExistingPackage({
+          resourceMap,
+          extraIndexDocs: [
+            { id: "script.1", formatId: "text/plain", formatType: "DATA" },
+            { id: "foreign.1", formatId: "text/csv", formatType: "DATA" },
+            { id: "resolved.1", formatId: "text/csv", formatType: "DATA" },
+          ],
+        });
+        const imported = pkg.requireResourceMapModel();
+        for (const pid of ["data.1", "urn:uuid:source.1", "script.1"]) {
+          imported.getNodeUriForPid(pid).should.equal(`${RESOLVE_BASE}/${pid}`);
+        }
+        imported.graphState
+          .getMember("data.1")
+          .atLocations.should.deep.equal([`${OBJECT_BASE}/data.1`]);
+        const store = fakeRecoveryStore();
+        pkg.uploadRecoveryStore = store;
+        pkg.uploadDefaults = {
+          submitter: "uid=test",
+          rightsHolder: "uid=test",
+        };
+        pkg.getPrimaryMetadataMember().objectModel = {
+          set() {},
+          serialize: ({ packageId }) => `<eml packageId="${packageId}"/>`,
+          replaceMemberPid: () => 0,
+        };
+        if (edit === "metadata") {
+          await pkg.markMemberContentDirty("meta.1");
+        } else if (edit === "files") {
+          const members = await pkg.stageLocalFiles(
+            [new File(["new data"], "new.csv", { type: "text/csv" })],
+            { requestedPids: ["data.new"] },
+          );
+          await pkg.linkStagedFiles(members);
+        } else {
+          pkg.addWasDerivedFrom("data.1", "source.new");
+        }
+
+        const result = await pkg.upload({
+          resourceMapOnly: edit === "provenance",
+        });
+
+        result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+        const write = services.objectService.update
+          .getCalls()
+          .find(({ args }) => args[0].pid === "resource_map_1").args[0];
+        const xml = await write.object.text();
+        // Read uploaded XML directly. ResourceMap.fromXml would fix a leftover
+        // /object/data.1 URL and could hide a broken upload from these assertions.
+        const rawGraph = new RDFGraph().parseXml(xml, "");
+        for (const pid of ["data.1", "urn:uuid:source.1", "script.1"]) {
+          rawGraph
+            .hasStatement({
+              subject: RDFGraph.createNamedNode(`${RESOLVE_BASE}/${pid}`),
+            })
+            .should.equal(true);
+          const oldNode = RDFGraph.createNamedNode(
+            `${OBJECT_BASE}/${encodeURIComponent(pid)}`,
+          );
+          rawGraph.hasStatement({ subject: oldNode }).should.equal(false);
+          rawGraph
+            .findStatements({ object: oldNode })
+            .filter(
+              ({ predicate }) =>
+                predicate.value !== resourceMap.ns.PROV("atLocation").value,
+            )
+            .should.have.length(0);
+        }
+        rawGraph
+          .hasStatement({
+            subject: RDFGraph.createNamedNode(`${RESOLVE_BASE}/data.1`),
+            predicate: resourceMap.ns.PROV("atLocation"),
+            object: RDFGraph.createNamedNode(`${OBJECT_BASE}/data.1`),
+          })
+          .should.equal(true);
+        const aggregationNode = RDFGraph.createNamedNode(
+          `${RESOLVE_BASE}/${write.newPid}#aggregation`,
+        );
+        rawGraph
+          .hasStatement({
+            subject: RDFGraph.createNamedNode(
+              `${RESOLVE_BASE}/${write.newPid}`,
+            ),
+            predicate: resourceMap.ns.ORE("describes"),
+            object: aggregationNode,
+          })
+          .should.equal(true);
+        const metadataPid = pkg.getPrimaryMetadataMember().pid;
+        const memberUris = [
+          `${RESOLVE_BASE}/${metadataPid}`,
+          foreignUri,
+          resolvedUri,
+        ];
+        if (edit === "files") {
+          memberUris.push(`${RESOLVE_BASE}/data.new`);
+        }
+        for (const uri of memberUris) {
+          rawGraph
+            .hasStatement({
+              subject: aggregationNode,
+              predicate: resourceMap.ns.ORE("aggregates"),
+              object: RDFGraph.createNamedNode(uri),
+            })
+            .should.equal(true);
+        }
+        rawGraph
+          .hasStatement({
+            predicate: unrelatedPredicate,
+            object: RDFGraph.createNamedNode(`${OBJECT_BASE}/unidentified.1`),
+          })
+          .should.equal(true);
+        rawGraph
+          .hasStatement({
+            subject: RDFGraph.createNamedNode(
+              `${OBJECT_BASE}/urn%3Auuid%3Amismatch.1`,
+            ),
+            predicate: resourceMap.ns.DCTERMS("identifier"),
+            object: RDFGraph.createLiteral("different.1"),
+          })
+          .should.equal(true);
+        if (edit === "metadata") {
+          // A retry must resend the XML that was uploaded, including its URLs.
+          const record = store.save.firstCall.args[1];
+          record.rmXml.should.equal(xml);
+          record.rmSysMetaXml.should.equal(write.sysMetaXml);
+        }
+      });
+    }
+
+    it("saves CN provenance URLs when an edit identifies an imported MN source", async () => {
+      const resourceMap = makeResourceMap({
+        memberPids: ["meta.1", "data.1", "derived.1"],
+        links: [
+          { metadataPid: "meta.1", dataPid: "meta.1" },
+          { metadataPid: "meta.1", dataPid: "data.1" },
+          { metadataPid: "meta.1", dataPid: "derived.1" },
+        ],
+      });
+      const mnSource = RDFGraph.createNamedNode(`${OBJECT_BASE}/source.1`);
+      resourceMap.mutateGraph(() => {
+        resourceMap.graph.addStatement({
+          subject: RDFGraph.createNamedNode(`${RESOLVE_BASE}/data.1`),
+          predicate: resourceMap.ns.PROV("wasDerivedFrom"),
+          object: mnSource,
+        });
+        resourceMap.graph.addStatement({
+          subject: mnSource,
+          predicate: resourceMap.ns.PROV("atLocation"),
+          object: mnSource,
+        });
+      });
+      const { pkg, services } = await loadExistingPackage({
+        resourceMap,
+        extraIndexDocs: [
+          { id: "derived.1", formatId: "text/csv", formatType: "DATA" },
+        ],
+      });
+      pkg
+        .requireResourceMapModel()
+        .getNodeUriForPid("source.1")
+        .should.equal(mnSource.value);
+
+      pkg.addWasDerivedFrom("derived.1", "source.1");
+      const result = await pkg.upload({ resourceMapOnly: true });
+
+      result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+      const write = services.objectService.update
+        .getCalls()
+        .find(({ args }) => args[0].pid === "resource_map_1").args[0];
+      const rawGraph = new RDFGraph().parseXml(await write.object.text(), "");
+      const cnSource = RDFGraph.createNamedNode(`${RESOLVE_BASE}/source.1`);
+      rawGraph
+        .findStatements({ predicate: resourceMap.ns.PROV("wasDerivedFrom") })
+        .map(({ object }) => object.value)
+        .should.deep.equal([cnSource.value, cnSource.value]);
+      rawGraph.hasStatement({ subject: mnSource }).should.equal(false);
+      rawGraph
+        .hasStatement({
+          subject: cnSource,
+          predicate: resourceMap.ns.PROV("atLocation"),
+          object: mnSource,
+        })
+        .should.equal(true);
+    });
+
     it("loads an editable baseline from the network", async () => {
       const { pkg } = await loadExistingPackage();
 
@@ -1068,7 +1345,6 @@ define([
         savedRecord.rmPid,
       );
       savedRecord.should.not.have.property("verifications");
-      savedRecord.should.not.have.property("version");
       // ...and cleared once the ResourceMap write is confirmed.
       store.remove.calledWith("meta.new").should.equal(true);
     });
@@ -1214,6 +1490,8 @@ define([
 
     it("replays the resource map from a durable record (R1), preserving the version chain", async () => {
       const concurrency = trackConcurrency();
+      // R1 resends the saved XML exactly: /object/data.1 must stay as saved,
+      // even though importing it changes the in-memory URL to /resolve/data.1.
       const rmXml = makeResourceMap({
         pid: "resource_map_2",
         memberPids: [
@@ -1225,7 +1503,10 @@ define([
           "data.5",
         ],
         links: [{ metadataPid: "meta.orphan", dataPid: "data.1" }],
-      }).serialize({ validate: false });
+      })
+        .serialize({ validate: false })
+        .split(RESOLVE_BASE)
+        .join(OBJECT_BASE);
       const record = {
         metadataPid: "meta.orphan",
         rmPid: "resource_map_2",
@@ -1507,6 +1788,14 @@ define([
       });
       priorMap.setLocation("data.1", "tables/data.csv");
       priorMap.provenance.addWasDerivedFrom("data.1", "source.1");
+      // R2 builds new XML from the prior map. Its source URL must move from the
+      // configured MN's /object/source.1 to the CN's /resolve/source.1.
+      priorMap.mutateGraph(() =>
+        priorMap.graph.replaceNodeValue(
+          `${RESOLVE_BASE}/source.1`,
+          `${OBJECT_BASE}/source.1`,
+        ),
+      );
       const customPredicate = RDFGraph.createNamedNode(
         "https://example.org/vocab#recoveryNote",
       );
@@ -1597,14 +1886,32 @@ define([
       reconstructedSysMeta.accessPolicy
         .toJSON()
         .should.deep.equal([{ subjects: ["public"], permissions: ["read"] }]);
-      const recoveredMap = ResourceMap.fromXml(
-        result.resourceMapPid,
-        await writeArgs.object.text(),
-        {
-          resolveServiceUrl: RESOLVE_BASE,
-          objectServiceUrl: OBJECT_BASE,
-        },
-      );
+      const xml = await writeArgs.object.text();
+      // Read the uploaded XML directly; fromXml would fix /object/source.1 and
+      // could hide a failure to write /resolve/source.1 in the reconstructed map.
+      const rawGraph = new RDFGraph().parseXml(xml, "");
+      const sourceNode = RDFGraph.createNamedNode(`${RESOLVE_BASE}/source.1`);
+      const oldSourceNode = RDFGraph.createNamedNode(`${OBJECT_BASE}/source.1`);
+      rawGraph
+        .hasStatement({
+          subject: RDFGraph.createNamedNode(`${RESOLVE_BASE}/data.2`),
+          predicate: priorMap.ns.PROV("wasDerivedFrom"),
+          object: sourceNode,
+        })
+        .should.equal(true);
+      rawGraph.hasStatement({ subject: sourceNode }).should.equal(true);
+      rawGraph.hasStatement({ subject: oldSourceNode }).should.equal(false);
+      rawGraph
+        .findStatements({ object: oldSourceNode })
+        .filter(
+          ({ predicate }) =>
+            predicate.value !== priorMap.ns.PROV("atLocation").value,
+        )
+        .should.have.length(0);
+      const recoveredMap = ResourceMap.fromXml(result.resourceMapPid, xml, {
+        resolveServiceUrl: RESOLVE_BASE,
+        objectServiceUrl: OBJECT_BASE,
+      });
       recoveredMap
         .getMemberPids()
         .should.have.members(["meta.orphan", "data.2", "source.1"]);
@@ -1617,6 +1924,9 @@ define([
       recoveredMap.provenance
         .getWasDerivedFromLinks()
         .should.deep.equal([{ derivedPid: "data.2", sourcePid: "source.1" }]);
+      recoveredMap
+        .getNodeUriForPid("source.1")
+        .should.equal(`${RESOLVE_BASE}/source.1`);
       recoveredMap.graph
         .findStatements({
           subject: RDFGraph.createNamedNode(

@@ -15,6 +15,7 @@ define([
 ], (ValueUtilities, RDFGraph, ResourceMapCommon) => {
   const { dedupeArray, dedupeBy, requireNonEmptyString } = ValueUtilities;
   const { NS, ResourceMapConflictError } = ResourceMapCommon;
+  const REPLACEMENT_IDENTIFIER_CONFLICT_CODE = "replacementIdentifierConflict";
 
   /**
    * Record in both directions that a metadata member documents a data member.
@@ -342,8 +343,27 @@ define([
         );
       }
 
+      const nextMemberUri = resourceMap.pidToUri(normalizedNewPid);
+      if (
+        nextMemberUri !== oldMemberUri &&
+        resourceMap.normalization.getEndpointPidForNormalization(
+          RDFGraph.createNamedNode(nextMemberUri),
+        ) !== normalizedNewPid
+      ) {
+        throw new ResourceMapConflictError(
+          `Cannot replace member: destination for "${normalizedNewPid}" has conflicting identity`,
+          {
+            code: REPLACEMENT_IDENTIFIER_CONFLICT_CODE,
+            details: {
+              oldPid: normalizedOldPid,
+              newPid: normalizedNewPid,
+              uri: nextMemberUri,
+            },
+          },
+        );
+      }
+
       return resourceMap.mutateGraph(() => {
-        const nextMemberUri = resourceMap.pidToUri(normalizedNewPid);
         if (nextMemberUri !== oldMemberUri) {
           resourceMap.graph.replaceNodeValue(oldMemberUri, nextMemberUri);
         }

@@ -189,6 +189,9 @@ define([
       },
       sysMetaService: resolvedSysMetaService,
       versionTracker: {
+        getSysMeta: state.sandbox
+          .stub()
+          .callsFake(async (pid) => systemMetadata({ identifier: pid })),
         getLatestVersion: state.sandbox.stub().callsFake(async (pid) => pid),
         getAllVersionsOneDirection: state.sandbox
           .stub()
@@ -571,6 +574,190 @@ define([
       pkg.hasUnsavedChanges().should.equal(false);
     });
 
+    ["content", "System Metadata"].forEach((change) => {
+      it(`stops saving ${change} changes if a newer version appears before upload`, async () => {
+        const { pkg, dataMember, rmModel, objectService, sysMetaService } =
+          makeAccessPolicyPackage();
+        dataMember.remotePid = "data.1";
+        if (change === "content") {
+          pkg.members.replacePid("data.1", "data.2");
+          dataMember.setLocalFile(
+            new Blob(["replacement"], { type: "text/csv" }),
+          );
+          rmModel.memberPids = ["data.2"];
+        } else {
+          await pkg.setMemberAccessPolicy("data.1", []);
+        }
+        let prepared = false;
+        pkg.events.on("upload:prepare:progress", ({ phase }) => {
+          if (phase === "ready") prepared = true;
+        });
+        pkg.versionTracker.getSysMeta.callsFake(async (pid) =>
+          systemMetadata({
+            identifier: pid,
+            formatId: pid === "rm.1" ? RESOURCE_MAP_FORMAT_ID : "text/csv",
+            obsoletedBy: prepared && pid === "data.1" ? "data.latest" : null,
+          }),
+        );
+
+        const result = await pkg.upload();
+
+        const action = result.actions.find(
+          ({ sourcePid }) => sourcePid === "data.1",
+        );
+        action.operation.should.equal(
+          change === "content"
+            ? OPERATIONS.UPDATE
+            : OPERATIONS.UPDATE_SYSTEM_METADATA,
+        );
+        result.outcome.should.equal(UploadResult.Outcomes.STALE_REMOTE);
+        result.reloadRequired.should.equal(true);
+        result.getError(action.id).pid.should.equal("data.1");
+        result.getError(action.id).latestPid.should.equal("data.latest");
+        dataMember.remotePid.should.equal("data.1");
+        sinon.assert.notCalled(objectService.create);
+        sinon.assert.notCalled(objectService.update);
+        sinon.assert.notCalled(sysMetaService.update);
+      });
+    });
+
+    ["data.1", "rm.1"].forEach((sourcePid) => {
+      it(`rejects changes to an archived ${sourcePid === "rm.1" ? "Resource Map" : "data file"} before uploading`, async () => {
+        const { pkg, dataMember, rmModel, objectService, sysMetaService } =
+          makeAccessPolicyPackage();
+        dataMember.remotePid = "data.1";
+        if (sourcePid === "rm.1") {
+          rmModel.unsaved = true;
+        } else {
+          pkg.members.replacePid("data.1", "data.2");
+          dataMember.setLocalFile(
+            new Blob(["replacement"], { type: "text/csv" }),
+          );
+          rmModel.memberPids = ["data.2"];
+        }
+        pkg.versionTracker.getSysMeta.withArgs(sourcePid).resolves(
+          systemMetadata({
+            identifier: sourcePid,
+            formatId:
+              sourcePid === "rm.1" ? RESOURCE_MAP_FORMAT_ID : "text/csv",
+            archived: true,
+          }),
+        );
+
+        let caught;
+        try {
+          await pkg.upload();
+        } catch (error) {
+          caught = error;
+        }
+
+        expect(caught?.code).to.equal("archived_source");
+        caught.pid.should.equal(sourcePid);
+        sinon.assert.notCalled(objectService.create);
+        sinon.assert.notCalled(objectService.update);
+        sinon.assert.notCalled(sysMetaService.update);
+      });
+    });
+
+    it("stops replacing a file if the original is archived before upload", async () => {
+      const sourcePid = "data.1";
+      const { pkg, dataMember, rmModel, objectService, sysMetaService } =
+        makeAccessPolicyPackage();
+      dataMember.remotePid = "data.1";
+      pkg.members.replacePid("data.1", "data.2");
+      dataMember.setLocalFile(new Blob(["replacement"], { type: "text/csv" }));
+      rmModel.memberPids = ["data.2"];
+      let prepared = false;
+      pkg.events.on("upload:prepare:progress", ({ phase }) => {
+        if (phase === "ready") prepared = true;
+      });
+      pkg.versionTracker.getSysMeta.callsFake(async (pid) =>
+        systemMetadata({
+          identifier: pid,
+          formatId: pid === "rm.1" ? RESOURCE_MAP_FORMAT_ID : "text/csv",
+          archived: prepared && pid === sourcePid,
+        }),
+      );
+
+      const result = await pkg.upload();
+
+      result.outcome.should.equal(UploadResult.Outcomes.PARTIAL_FAILURE);
+      const action = result.actions.find(
+        (candidate) => candidate.sourcePid === sourcePid,
+      );
+      expect(result.getError(action.id)?.code).to.equal("archived_source");
+      result.getError(action.id).pid.should.equal(sourcePid);
+      sinon.assert.notCalled(objectService.create);
+      sinon.assert.notCalled(objectService.update);
+      sinon.assert.notCalled(sysMetaService.update);
+    });
+
+    it("allows sharing changes on an archived file", async () => {
+      const { pkg, objectService, sysMetaService } = makeAccessPolicyPackage();
+      pkg.versionTracker.getSysMeta
+        .withArgs("data.1")
+        .resolves(systemMetadata({ identifier: "data.1", archived: true }));
+      await pkg.setMemberAccessPolicy("data.1", []);
+
+      const result = await pkg.upload();
+
+      result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+      result.actions[0].operation.should.equal(
+        OPERATIONS.UPDATE_SYSTEM_METADATA,
+      );
+      sinon.assert.calledOnce(sysMetaService.update);
+      sinon.assert.notCalled(objectService.create);
+      sinon.assert.notCalled(objectService.update);
+    });
+
+    ["unavailable", "cancelled"].forEach((lookup) => {
+      it(`leaves sharing changes unsaved when the version check is ${lookup}`, async () => {
+        const downloadFromWriteTarget = state.sandbox
+          .stub()
+          .resolves(systemMetadata({ accessPolicy: [] }));
+        const { pkg, dataMember, objectService, sysMetaService } =
+          makeAccessPolicyPackage({ downloadFromWriteTarget });
+        let prepared = false;
+        pkg.events.on("upload:prepare:progress", ({ phase }) => {
+          if (phase === "ready") prepared = true;
+        });
+        const error =
+          lookup === "cancelled"
+            ? Object.assign(new Error("cancelled"), { name: "AbortError" })
+            : Object.assign(new Error("unavailable"), { status: 503 });
+        pkg.versionTracker.getSysMeta.callsFake(async (pid) => {
+          if (prepared && pid === "data.1") {
+            if (lookup === "cancelled") pkg.cancelUpload();
+            throw error;
+          }
+          return systemMetadata({
+            identifier: pid,
+            formatId: pid === "rm.1" ? RESOURCE_MAP_FORMAT_ID : "text/csv",
+          });
+        });
+        await pkg.setMemberAccessPolicy("data.1", []);
+
+        const result = await pkg.upload();
+
+        result.outcome.should.equal(
+          lookup === "cancelled"
+            ? UploadResult.Outcomes.CANCELLED
+            : UploadResult.Outcomes.PARTIAL_FAILURE,
+        );
+        result
+          .getStatus("updateSystemMetadata:data.1")
+          .should.equal(UploadResult.Statuses.FAILED);
+        result.getError("updateSystemMetadata:data.1").should.equal(error);
+        result.retryable.should.equal(true);
+        result.reloadRequired.should.equal(false);
+        dataMember.sysMetaDirty.should.equal(true);
+        sinon.assert.notCalled(downloadFromWriteTarget);
+        sinon.assert.notCalled(sysMetaService.update);
+        sinon.assert.notCalled(objectService.create);
+        sinon.assert.notCalled(objectService.update);
+      });
+    });
+
     it("rebases a planned policy onto fresh preflight System Metadata", async () => {
       const staleDate = new Date("2026-07-29T21:09:51.000Z");
       const freshDate = new Date("2026-07-29T21:22:30.457Z");
@@ -900,12 +1087,11 @@ define([
         rightsHolder: "uid=fresh-owner",
         accessPolicy: publicPolicy,
         replicationPolicy: { numberReplicas: 3 },
-        archived: true,
+        archived: false,
         fileName: "fresh.csv",
       });
 
-      const pkg = new DataPackage({ members: [member] });
-      const [action] = await pkg._uploader.buildUploadActions(
+      const [action] = await DataPackageUploader.buildUploadActions(
         [member],
         uploadDefaults(),
         { freshSysMetaByPid: new Map([["data.1", fresh]]) },
@@ -917,7 +1103,7 @@ define([
         .toJSON()
         .should.deep.equal([{ subjects: ["public"], permissions: ["read"] }]);
       outgoing.replicationPolicy.numberReplicas.should.equal(3);
-      outgoing.archived.should.equal(true);
+      expect(outgoing.archived).to.not.equal(true);
       outgoing.fileName.should.equal("fresh.csv");
       member.fileName.should.equal("fresh.csv");
     });
@@ -952,8 +1138,7 @@ define([
         fileName: "fresh.csv",
       });
 
-      const pkg = new DataPackage({ members: [member] });
-      const [action] = await pkg._uploader.buildUploadActions(
+      const [action] = await DataPackageUploader.buildUploadActions(
         [member],
         uploadDefaults(),
         { freshSysMetaByPid: new Map([["data.1", fresh]]) },
@@ -988,8 +1173,6 @@ define([
         identifier: "data.2",
         rightsHolder: "uid=stale-replacement-owner",
       });
-      const pkg = new DataPackage({ members: [member] });
-      state.sandbox.stub(pkg, "_ensureSystemMetadata").resolves();
       const freshSysMetaByPid = new Map([
         [
           "data.1",
@@ -1009,7 +1192,7 @@ define([
         ],
       ]);
 
-      const [action] = await pkg._uploader.buildUploadActions(
+      const [action] = await DataPackageUploader.buildUploadActions(
         [member],
         uploadDefaults(),
         { freshSysMetaByPid },
@@ -1034,7 +1217,7 @@ define([
         accessPolicy: [],
         fileName: "fresh-v2.csv",
       });
-      const [nextAction] = await pkg._uploader.buildUploadActions(
+      const [nextAction] = await DataPackageUploader.buildUploadActions(
         [member],
         uploadDefaults(),
         { freshSysMetaByPid: new Map([["data.2", newerFresh]]) },
@@ -1240,25 +1423,41 @@ define([
       sinon.assert.notCalled(objectService.create);
     });
 
-    it("loads many sysmeta-only baselines in one grouped preparation pass", async () => {
-      const { pkg, dataMembers, download } = makeSysMetaOnlyPackage(119);
-      const ensure = state.sandbox.spy(pkg, "_ensureSystemMetadata");
-
-      const actions = await pkg._uploader.buildUploadActions(
-        dataMembers,
-        pkg._uploader.buildSysMetaDefaults(),
-        { maxConcurrent: 4 },
+    it("keeps sharing edits while checking current metadata for at most four files at a time", async () => {
+      const { pkg, dataMembers } = makeSysMetaOnlyPackage(119);
+      dataMembers.forEach((member) => {
+        member.remoteSysMeta = member.sysMeta.clone();
+      });
+      const concurrency = trackConcurrency();
+      const getSysMeta = pkg.getVersionTracker().getSysMeta.callsFake(
+        concurrency.track((pid) =>
+          systemMetadata({
+            identifier: pid,
+            formatId: pid === "rm.1" ? RESOURCE_MAP_FORMAT_ID : "text/csv",
+            rightsHolder: "uid=fresh-owner",
+            fileName: `${pid}.csv`,
+            accessPolicy: [{ subjects: ["public"], permissions: ["read"] }],
+          }),
+        ),
       );
 
-      sinon.assert.calledOnce(ensure);
-      ensure.firstCall.args[0].should.have.lengthOf(119);
-      download.callCount.should.equal(119);
+      const actions = await pkg._uploader._prepareUploadActions({
+        maxConcurrent: 4,
+      });
+
+      getSysMeta.callCount.should.equal(120);
+      getSysMeta.getCalls().forEach((call) => {
+        call.args[1].useCache.should.equal(false);
+      });
+      concurrency.max.should.equal(4);
       actions.should.have.lengthOf(119);
-      actions
-        .every(
-          (action) => action.operation === OPERATIONS.UPDATE_SYSTEM_METADATA,
-        )
-        .should.equal(true);
+      actions.forEach((action) => {
+        action.operation.should.equal(OPERATIONS.UPDATE_SYSTEM_METADATA);
+        const outgoing = SystemMetadata.fromXml(action.sysMetaXml);
+        outgoing.rightsHolder.should.equal("uid=fresh-owner");
+        outgoing.fileName.should.equal(`${action.sourcePid}.csv`);
+        outgoing.accessPolicy.should.have.lengthOf(0);
+      });
     });
 
     it("bounds missing sysmeta downloads and reports prep progress", async () => {
@@ -1646,6 +1845,9 @@ define([
           invalidate: state.sandbox.stub().resolves(),
         },
         versionTracker: {
+          getSysMeta: state.sandbox
+            .stub()
+            .callsFake(async (pid) => systemMetadata({ identifier: pid })),
           getLatestVersion: state.sandbox.stub().callsFake(async (pid) => pid),
           getAllVersionsOneDirection: state.sandbox
             .stub()
@@ -1716,6 +1918,9 @@ define([
         objectService,
         sysMetaService: { invalidate: state.sandbox.stub().resolves() },
         versionTracker: {
+          getSysMeta: state.sandbox
+            .stub()
+            .callsFake(async (pid) => systemMetadata({ identifier: pid })),
           getLatestVersion: state.sandbox.stub().callsFake(async (pid) => pid),
           getAllVersionsOneDirection: state.sandbox
             .stub()
@@ -2169,6 +2374,82 @@ define([
       });
     });
 
+    it("stops retrying after a rate limit error if the original file is archived", async () => {
+      const clock = state.sandbox.useFakeTimers({ toFake: ["setTimeout"] });
+      const update = state.sandbox.stub();
+      update.onFirstCall().rejects({ status: 429 });
+      update.onSecondCall().resolves({ data: { identifier: "data.1" } });
+      const downloadFromWriteTarget = state.sandbox
+        .stub()
+        .resolves(systemMetadata({ identifier: "data.1" }));
+      const { pkg, dataMember } = makeExecutorPackage({
+        objectService: { update },
+        sysMetaService: { downloadFromWriteTarget },
+      });
+      dataMember.remotePid = "data.old";
+      pkg.versionTracker.getSysMeta.callsFake(async (pid) => {
+        return systemMetadata({ identifier: pid, archived: update.called });
+      });
+      const action = {
+        ...dataAndResourceMapActions()[0],
+        id: "update:data.1",
+        operation: OPERATIONS.UPDATE,
+        sourcePid: "data.old",
+      };
+
+      const uploading = executeActions(pkg, [action], {
+        markPackageSaved: false,
+      });
+      await clock.tickAsync(500);
+      const result = await uploading;
+
+      result.outcome.should.equal(UploadResult.Outcomes.PARTIAL_FAILURE);
+      result.getStatus(action.id).should.equal(UploadResult.Statuses.FAILED);
+      result.getError(action.id).code.should.equal("archived_source");
+      dataMember.contentDirty.should.equal(true);
+      sinon.assert.calledOnce(update);
+      sinon.assert.notCalled(downloadFromWriteTarget);
+    });
+
+    it("confirms an upload succeeded when archiving the original prevents a retry", async () => {
+      const clock = state.sandbox.useFakeTimers({ toFake: ["setTimeout"] });
+      const update = state.sandbox.stub();
+      update.onFirstCall().rejects({ status: 503 });
+      update.onSecondCall().resolves({ data: { identifier: "data.1" } });
+      const downloadFromWriteTarget = state.sandbox.stub();
+      downloadFromWriteTarget.onFirstCall().rejects({ status: 404 });
+      downloadFromWriteTarget
+        .onSecondCall()
+        .resolves(systemMetadata({ identifier: "data.1" }));
+      const { pkg, dataMember } = makeExecutorPackage({
+        objectService: { update },
+        sysMetaService: {
+          downloadFromWriteTarget,
+          invalidate: state.sandbox.stub().resolves(),
+        },
+      });
+      dataMember.remotePid = "data.old";
+      pkg.versionTracker.getSysMeta.callsFake(async (pid) =>
+        systemMetadata({ identifier: pid, archived: update.called }),
+      );
+      const action = {
+        ...dataAndResourceMapActions()[0],
+        id: "update:data.1",
+        operation: OPERATIONS.UPDATE,
+        sourcePid: "data.old",
+      };
+
+      const uploading = executeActions(pkg, [action], {
+        markPackageSaved: false,
+      });
+      await clock.tickAsync(500);
+      const result = await uploading;
+
+      result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+      sinon.assert.calledOnce(update);
+      sinon.assert.calledTwice(downloadFromWriteTarget);
+    });
+
     it("cancels a 429 retry while waiting for Retry-After", async () => {
       const clock = state.sandbox.useFakeTimers({ toFake: ["setTimeout"] });
       const create = state.sandbox.stub().rejects({
@@ -2400,7 +2681,12 @@ define([
           downloadFromWriteTarget,
           invalidate: state.sandbox.stub().resolves(),
         },
-        versionTracker: { getAllVersionsOneDirection },
+        versionTracker: {
+          getSysMeta: state.sandbox
+            .stub()
+            .resolves(systemMetadata({ identifier: "data.1" })),
+          getAllVersionsOneDirection,
+        },
       });
 
       const upload = executeActions(pkg, [
@@ -2452,6 +2738,9 @@ define([
             .rejects(Object.assign(new Error("conflict"), { status: 409 })),
         },
         versionTracker: {
+          getSysMeta: state.sandbox
+            .stub()
+            .resolves(systemMetadata({ identifier: "data.1" })),
           getAllVersionsOneDirection: state.sandbox.stub().resolves({
             versions: ["data.concurrent"],
             chainComplete: false,
@@ -2497,7 +2786,12 @@ define([
           create: state.sandbox.stub(),
           update: state.sandbox.stub().rejects(obsoleteError),
         },
-        versionTracker: { getAllVersionsOneDirection },
+        versionTracker: {
+          getSysMeta: state.sandbox
+            .stub()
+            .resolves(systemMetadata({ identifier: "data.1" })),
+          getAllVersionsOneDirection,
+        },
       });
 
       const result = await executeActions(pkg, [
@@ -2695,7 +2989,12 @@ define([
           members: [member],
           objectService: { update },
           sysMetaService: { downloadFromWriteTarget },
-          versionTracker: { getAllVersionsOneDirection },
+          versionTracker: {
+            getSysMeta: state.sandbox
+              .stub()
+              .resolves(systemMetadata({ identifier: "data.1" })),
+            getAllVersionsOneDirection,
+          },
         });
         const upload = executeActions(pkg, [
           {
@@ -3223,7 +3522,7 @@ define([
         failedMember,
       ]);
 
-      result.outcome.should.equal(UploadResult.Outcomes.SUCCESS);
+      result.outcome.should.equal(UploadResult.Outcomes.PARTIAL_FAILURE);
       result.actions
         .map((action) => action.targetPid)
         .should.deep.equal(["data.good"]);

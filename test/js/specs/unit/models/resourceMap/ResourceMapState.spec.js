@@ -108,14 +108,103 @@ define([
         .should.deep.equal([externalNode.value]);
     });
 
-    it("reuses provenance nodes with URL-valued DataONE identifiers", () => {
+    it("leaves foreign service URLs without identifiers unresolved", () => {
+      const resourceMap = createBaseResourceMap();
+      const dataNode = rdf.sym(resourceMap.getNodeUriForPid("data.1"));
+      for (const uri of [
+        "https://archive.example/resolve/data.1",
+        "https://archive.example/mn/v1/object/data.1",
+        "https://archive.example/mn/v2/object/data.1",
+      ]) {
+        const sourceNode = rdf.sym(uri);
+        resourceMap.mutateGraph(() => {
+          resourceMap.graph.addStatement({
+            subject: dataNode,
+            predicate: resourceMap.ns.PROV("wasDerivedFrom"),
+            object: sourceNode,
+          });
+        });
+        chai
+          .expect(resourceMap.graphState.pidFromNode(sourceNode))
+          .to.equal(null);
+      }
+    });
+
+    it("leaves conflicting identifiers unresolved when one looks like a service URL", () => {
+      const resourceMap = createBaseResourceMap();
+      const node = rdf.sym(resourceMap.getNodeUriForPid("data.1"));
+      const foreignIdentifier = "https://archive.example/resolve/data.1";
+      resourceMap.mutateGraph(() => {
+        resourceMap.graph.removeStatementsMatching({
+          subject: node,
+          predicate: resourceMap.ns.DCTERMS("identifier"),
+        });
+        [foreignIdentifier, "different.1"].forEach((identifier) => {
+          resourceMap.graph.addStatement({
+            subject: node,
+            predicate: resourceMap.ns.DCTERMS("identifier"),
+            object: rdf.literal(identifier),
+          });
+        });
+      });
+
+      chai.expect(resourceMap.graphState.pidFromNode(node)).to.equal(null);
+      resourceMap
+        .getEditBlockers()
+        .map(({ code }) => code)
+        .should.include("memberIdentifierMismatch");
+    });
+
+    it("reads configured CN and MN aliases without changing URL PIDs or literal percent signs", () => {
+      const objectServiceUrl = "https://mn.example/mn/v2/object";
+      const resourceMap = createBaseResourceMap({ objectServiceUrl });
+      const dataNode = rdf.sym(resourceMap.getNodeUriForPid("data.1"));
+      for (const serviceUrl of [TEST_RESOLVE_BASE, objectServiceUrl]) {
+        for (const pid of [
+          "data.1",
+          "https://archive.example/resolve/data.1",
+          `${TEST_RESOLVE_BASE}/data.1`,
+          "literal%2Fpid",
+          "literal/pid",
+        ]) {
+          const node = rdf.sym(`${serviceUrl}/${encodeURIComponent(pid)}`);
+          resourceMap.mutateGraph(() => {
+            resourceMap.graph.addStatement({
+              subject: dataNode,
+              predicate: resourceMap.ns.PROV("wasDerivedFrom"),
+              object: node,
+            });
+          });
+          chai.expect(resourceMap.graphState.pidFromNode(node)).to.equal(pid);
+        }
+      }
+    });
+
+    it("keeps full URL member PIDs unchanged", () => {
+      const urlPid = `${TEST_RESOLVE_BASE}/data.1`;
+      const resourceMap = createBaseResourceMap({
+        resourceMapPid: `${TEST_RESOLVE_BASE}/resource-map.1`,
+        memberPids: ["meta.1", urlPid],
+      });
+      resourceMap.graphState
+        .getMemberPids()
+        .should.have.members(["meta.1", urlPid]);
+      const node = rdf.sym(resourceMap.pidToUri(urlPid));
+      resourceMap.graphState.pidFromNode(node).should.equal(urlPid);
+      resourceMap.graphState
+        .pidFromNode(rdf.sym(resourceMap.resourceMapUri))
+        .should.equal(resourceMap.resourceMapPid);
+      resourceMap.getEditBlockers().should.deep.equal([]);
+    });
+
+    it("preserves foreign URL-valued identifiers during provenance edits", () => {
       const resourceMap = createBaseResourceMap({
         memberPids: ["meta.1", "data.1", "derived.1"],
       });
-      const sourcePid = "external.1";
-      const sourceNode = rdf.sym(
-        `https://old.example/cn/v2/resolve/${sourcePid}`,
-      );
+      // This other CN is not configured here. The full URL is the source PID,
+      // and a second provenance link must reuse its existing RDF node.
+      const sourcePid = "https://old.example/cn/v2/resolve/external.1";
+      const sourceNode = rdf.sym(sourcePid);
       const dataNode = rdf.sym(resourceMap.getNodeUriForPid("data.1"));
       const derivedNode = rdf.sym(resourceMap.getNodeUriForPid("derived.1"));
 

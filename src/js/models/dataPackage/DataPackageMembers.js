@@ -43,18 +43,6 @@ define(["common/ValueUtilities", "models/dataPackage/DataPackageMember"], (
     }
 
     /**
-     * Inject the loaded ObjectFormats collection and backfill it onto every
-     * member already in the collection.
-     * @param {ObjectFormats} objectFormats Loaded ObjectFormats collection
-     * @returns {DataPackageMembers} This collection
-     */
-    setObjectFormats(objectFormats) {
-      this.objectFormats = objectFormats || null;
-      this.members.forEach((member) => member.setObjectFormats(objectFormats));
-      return this;
-    }
-
-    /**
      * Add or merge member info into the collection.
      * @param {object|object[]} memberInfo One or more member info objects
      * @param {object} [options] Add options

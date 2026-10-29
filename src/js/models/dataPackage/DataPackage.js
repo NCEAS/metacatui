@@ -48,6 +48,8 @@ define([
   const { FORMAT_TYPES } = ObjectFormats.prototype;
   const { processConcurrently } = Utilities;
   const { throwIfAborted } = ErrorUtilities;
+  const AMBIGUOUS_WRITE_MESSAGE =
+    "Resolve the ambiguous remote write before changing System Metadata";
   const LOAD_PROGRESS_MESSAGES = Object.freeze({
     [DataPackageLoader.LoadPhases.RESOLVE]:
       "Finding the files that belong to this package...",
@@ -135,7 +137,6 @@ define([
       this.rootResourceMapPid =
         Values.normalizeText(options.rootResourceMapPid) || null;
       this.resolutionResult = null;
-      this.indexManifestTotal = null;
       this.draftRevision = 0;
       this.savedRevision = 0;
       // True when EML/metadata content has been edited since the last save. Set
@@ -211,11 +212,6 @@ define([
         });
       });
       return this;
-    }
-
-    // See DataPackageLoader.getManifest().
-    async getManifest(options = {}) {
-      return DataPackageLoader.getManifest(this, options);
     }
 
     // See DataPackageLoader.getManifestFromIndex().
@@ -649,7 +645,8 @@ define([
     }
 
     /**
-     * Discard a failed file replacement and restore the current remote file.
+     * Restore the remote file after a failed replacement, retaining independent
+     * sharing and ownership edits.
      * @param {string} pid Replacement PID currently assigned to the member
      * @returns {DataPackageMember} Restored member
      * @throws {Error} When the original member state cannot be restored
@@ -678,6 +675,7 @@ define([
         [
           "uploadFile",
           "contentDirty",
+          "removed",
           "sysMetaDirty",
           "accessPolicyDirty",
           "remoteState",
@@ -714,14 +712,29 @@ define([
           const remoteSysMeta = member.remoteSysMeta?.toJSON?.() || null;
           member.uploadFile = null;
           member.contentDirty = false;
-          member.sysMeta = member.remoteSysMeta?.clone?.() || null;
-          member.sysMetaDirty = false;
-          member.accessPolicyDirty = false;
           if (remoteSysMeta) {
+            const accessPolicy = member.sysMeta?.accessPolicy;
+            member.sysMeta = member.remoteSysMeta.clone();
+            if (member.accessPolicyDirty) {
+              member.sysMeta.accessPolicy =
+                AccessPolicy.fromValue(accessPolicy);
+            }
+            if (member._replacementDisplay) {
+              member.sysMeta.rightsHolder =
+                member._replacementDisplay.editedRightsHolder ||
+                remoteSysMeta.rightsHolder;
+            }
+            member.sysMetaDirty =
+              member.accessPolicyDirty ||
+              member.sysMeta.rightsHolder !== remoteSysMeta.rightsHolder;
             member.fileName = remoteSysMeta.fileName || null;
             member.size = remoteSysMeta.size;
             member.checksum = remoteSysMeta.checksum || null;
             member.checksumAlgorithm = remoteSysMeta.checksumAlgorithm || null;
+          } else {
+            member.sysMeta = null;
+            member.sysMetaDirty = false;
+            member.accessPolicyDirty = false;
           }
           member.remoteState = DataPackageMember.RemoteState.UPLOADED;
           member.lastUploadError = null;
@@ -852,7 +865,7 @@ define([
       this.assertCanEdit(pid);
       const member = this.requireMember(pid);
       const resourceMap = this.requireResourceMapModel();
-      const location = Values.normalizeText(path);
+      const location = Values.isNonEmptyString(path) ? path : null;
 
       resourceMap.setMemberLocations([
         { pid: member.pid, atLocations: location ? [location] : [] },
@@ -882,42 +895,64 @@ define([
       this.assertNotNestedResourceMap(member);
       this.assertCanEdit(member.pid);
 
-      const previousFileName = Values.normalizeText(member.getFileName()) || "";
+      const previousFileName = member.getFileName() || "";
       const locations = member.atLocations || [];
+      const locationUpdates = [];
       // Locations are arbitrary RDF values, not normalized filesystem paths.
       // Rewrite only a matching filename suffix and preserve every prefix/value.
-      const nextLocations = previousFileName
-        ? locations.map((location) => {
-            if (
-              location !== previousFileName &&
-              !location.endsWith(`/${previousFileName}`)
-            ) {
-              return location;
-            }
-            return `${location.slice(0, -previousFileName.length)}${nextFileName}`;
-          })
-        : locations;
-      const locationsChanged = nextLocations.some(
-        (location, index) => location !== locations[index],
-      );
-
-      member.fileName = nextFileName;
-      if (member.sysMeta) {
-        const sysMeta = member.sysMeta.clone();
-        sysMeta.fileName = nextFileName;
-        member.setSystemMetadata(sysMeta, { markDirty: true });
+      if (previousFileName) {
+        locations.forEach((location) => {
+          if (
+            location !== previousFileName &&
+            !location.endsWith(`/${previousFileName}`)
+          ) {
+            return;
+          }
+          const nextLocation = `${location.slice(0, -previousFileName.length)}${nextFileName}`;
+          if (nextLocation !== location) {
+            locationUpdates.push({
+              previousPath: location,
+              nextPath: nextLocation,
+            });
+          }
+        });
       }
-      if (locationsChanged) {
-        const resourceMap = this.requireResourceMapModel();
-        resourceMap.setMemberLocations([
-          { pid: member.pid, atLocations: nextLocations },
-        ]);
+
+      const previousMemberState = {
+        fileName: member.fileName,
+        sysMeta: member.sysMeta,
+        sysMetaDirty: member.sysMetaDirty,
+        remoteState: member.remoteState,
+      };
+      const resourceMap = locationUpdates.length
+        ? this.requireResourceMapModel()
+        : null;
+      try {
+        member.fileName = nextFileName;
+        if (member.sysMeta) {
+          const sysMeta = member.sysMeta.clone();
+          sysMeta.fileName = nextFileName;
+          member.setSystemMetadata(sysMeta, { markDirty: true });
+        }
+        if (locationUpdates.length) {
+          this.constructor._mutateResourceMap(resourceMap, () => {
+            locationUpdates.forEach(({ previousPath }) => {
+              resourceMap.removeLocation(member.pid, previousPath);
+            });
+            locationUpdates.forEach(({ nextPath }) => {
+              resourceMap.addLocation(member.pid, nextPath);
+            });
+          });
+        }
+      } catch (error) {
+        Object.assign(member, previousMemberState);
+        throw error;
+      }
+      if (locationUpdates.length) {
         this.refreshMemberGraphFields(resourceMap);
         this.recordUserEdit("member:location", {
           member,
-          path: nextLocations.find(
-            (location, index) => location !== locations[index],
-          ),
+          path: locationUpdates[0].nextPath,
         });
       } else {
         this.recordUserEdit("member:rename", { member });
@@ -1084,7 +1119,12 @@ define([
         this.assertNotNestedResourceMap(member, rootResourceMap),
       );
       this.assertCanEdit();
-      targets.forEach((member) => this.assertCanEdit(member.pid));
+      targets.forEach((member) => {
+        this.assertCanEdit(member.pid);
+        if (member.remoteState === DataPackageMember.RemoteState.AMBIGUOUS) {
+          throw new Error(AMBIGUOUS_WRITE_MESSAGE);
+        }
+      });
 
       targets.forEach((member) =>
         this.constructor._applyAccessPolicy(member, policy, { rightsHolder }),
@@ -1169,6 +1209,16 @@ define([
         this.assertCanEdit(affectedMember.pid),
       );
       const formatProperties = member.getFormatProperties?.() || {};
+      // An alternate source's inherited owner is not an ownership edit.
+      let editedRightsHolder =
+        member._replacementDisplay?.editedRightsHolder || null;
+      if (
+        !member._replacementDisplay &&
+        member.sysMetaDirty &&
+        member.sysMeta?.rightsHolder !== member.remoteSysMeta?.rightsHolder
+      ) {
+        editedRightsHolder = member.sysMeta.rightsHolder;
+      }
 
       return {
         pid,
@@ -1179,6 +1229,7 @@ define([
         replacementDisplay: {
           pid,
           fileName: member.getFileName?.() || member.fileName || null,
+          editedRightsHolder,
           title: member.title || "",
           size: member.size,
           formatType: member.getFormatType?.() || member.formatType || null,
@@ -1372,6 +1423,11 @@ define([
         values.rightsHolder = rightsHolder;
       }
       member.setSystemMetadata(values, { markDirty: true });
+      if (rightsHolder && member._replacementDisplay) {
+        Object.assign(member._replacementDisplay, {
+          editedRightsHolder: rightsHolder,
+        });
+      }
       Object.assign(member, { accessPolicyDirty: true });
       return member;
     }
@@ -1881,7 +1937,7 @@ define([
       const { signal, requireComplete = false } = options;
       let metadata = this.getPrimaryMetadataMember();
       if (!metadata) {
-        await this.getManifestFromResourceMap({ merge: true, signal });
+        await this.getManifestFromResourceMap({ signal });
         metadata = this.getPrimaryMetadataMember();
       }
       const versionTracker = this.getVersionTracker();
@@ -2021,21 +2077,6 @@ define([
         }
         throw error;
       }
-    }
-
-    /**
-     * Serialize package state.
-     * @returns {object} Serializable package state
-     */
-    toJSON() {
-      return {
-        inputId: this.inputId,
-        primaryMetadataPid: this.primaryMetadataPid,
-        rootResourceMapPid: this.rootResourceMapPid,
-        draftRevision: this.draftRevision,
-        savedRevision: this.savedRevision,
-        members: this.members.toArray().map((member) => member.toJSON()),
-      };
     }
   }
 

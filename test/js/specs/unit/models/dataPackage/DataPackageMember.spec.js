@@ -435,6 +435,37 @@ define([
       member.sysMeta.accessPolicy.should.have.lengthOf(0);
     });
 
+    it("keeps an unsaved filename change when fetching System Metadata", async () => {
+      const remoteSysMeta = new SystemMetadata({
+        ...SYSTEM_METADATA_DEFAULTS,
+        identifier: "data.1",
+        fileName: "original.csv",
+      });
+      const desiredSysMeta = remoteSysMeta.clone();
+      desiredSysMeta.fileName = "renamed.csv";
+      const member = new DataPackageMember({
+        pid: "data.1",
+        fileName: "renamed.csv",
+        remotePid: "data.1",
+        aggregatedPid: "data.1",
+        sysMeta: desiredSysMeta,
+        remoteSysMeta,
+        sysMetaDirty: true,
+      });
+
+      await member.fetchSysMeta({
+        sysMetaService: {
+          download: sinon.stub().resolves(remoteSysMeta),
+        },
+        useCache: false,
+      });
+
+      member.sysMeta.fileName.should.equal("renamed.csv");
+      member.remoteSysMeta.fileName.should.equal("original.csv");
+      member.fileName.should.equal("renamed.csv");
+      member.sysMetaDirty.should.equal(true);
+    });
+
     it("distinguishes private from unknown public status fetch failures", async () => {
       const member = new DataPackageMember({ pid: "private.1" });
       const errorStub = sinon.stub(console, "error");
@@ -1000,18 +1031,17 @@ define([
         error.message.should.equal("boom");
       });
 
-      it("uses a supplied ObjectService to download and parse a Resource Map", async () => {
-        sandbox
-          .stub(ObjectService.prototype, "download")
-          .rejects(new Error("fallback ObjectService should not be used"));
-        const objectService = {
+      it("keeps reads on the MN and new map URLs on the CN", async () => {
+        const xml = ResourceMap.create({
+          resourceMapPid: "resource_map_1",
+          resolveServiceUrl: "https://cn.example/cn/v2/resolve",
+          memberPids: ["meta.1"],
+        }).serialize();
+        const objectService = new ObjectService({
           readBaseUrl: "https://mn.example/mn/v2/object",
-          download: sandbox.stub().resolves(new Blob(["<rdf:RDF/>"])),
-        };
-        const parsedModel = { resourceMapPid: "resource_map_1" };
-        const fromXml = sandbox
-          .stub(ResourceMap, "fromXml")
-          .returns(parsedModel);
+          resolveServiceUrl: "https://cn.example/cn/v2/resolve",
+        });
+        sandbox.stub(objectService, "download").resolves(new Blob([xml]));
         const member = new DataPackageMember({
           pid: "resource_map_1",
           formatType: "RESOURCE",
@@ -1019,20 +1049,17 @@ define([
 
         const model = await member.fetchObject({ objectService });
 
-        model.should.equal(parsedModel);
+        model.setResourceMapPid("resource_map_2");
+        model.resourceMapUri.should.equal(
+          "https://cn.example/cn/v2/resolve/resource_map_2",
+        );
+        objectService
+          .getReadUrl("meta.1")
+          .should.equal("https://mn.example/mn/v2/object/meta.1");
         sinon.assert.calledOnceWithExactly(
           objectService.download,
           "resource_map_1",
           {},
-        );
-        sinon.assert.calledOnceWithExactly(
-          fromXml,
-          "resource_map_1",
-          "<rdf:RDF/>",
-          {
-            resolveServiceUrl: "https://mn.example/mn/v2/object",
-            objectServiceUrl: "https://mn.example/mn/v2/object",
-          },
         );
       });
 

@@ -147,7 +147,9 @@ define([
         resolveServiceUrl: RESOLVE_BASE,
       },
       objectService: {
-        readBaseUrl: RESOLVE_BASE,
+        // Read files from the Member Node; use Coordinating Node URLs in RDF.
+        readBaseUrl: "https://mn.test.dataone.org/mn/v2/object",
+        resolveServiceUrl: RESOLVE_BASE,
         download,
         create: async ({ pid }) => ({ data: { identifier: pid } }),
         update: async ({ newPid }) => ({ data: { identifier: newPid } }),
