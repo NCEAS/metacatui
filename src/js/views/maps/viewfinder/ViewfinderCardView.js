@@ -3,8 +3,9 @@
 define([
   "underscore",
   "backbone",
+  "showdownXssFilter",
   "text!templates/maps/viewfinder/viewfinder-card.html",
-], (_, Backbone, Template) => {
+], (_, Backbone, sanitizeHTML, Template) => {
   // The base classname to use for this View's template elements.
   const BASE_CLASS = "viewfinder-card";
 
@@ -305,7 +306,11 @@ define([
        * is passed an object with relevant view state.
        */
       render() {
-        this.templateVars.preset = this.preset.toJSON();
+        const preset = this.preset.toJSON();
+        preset.enabledLayerLabels = preset.enabledLayerLabels.map((label) =>
+          sanitizeHTML(label),
+        );
+        this.templateVars.preset = preset;
         this.el.innerHTML = _.template(Template)(this.templateVars);
         this.wireImageFallbacks();
       },

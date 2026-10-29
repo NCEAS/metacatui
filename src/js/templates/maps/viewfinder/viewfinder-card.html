@@ -37,7 +37,7 @@
   <div class="<%= classNames.layers %>">
     <div class="<%= classNames.layersInner %>">
       <% _.each(preset.enabledLayerLabels, label => { %>
-        <div class="<%= classNames.layer %>" title="<%= label %>">
+        <div class="<%= classNames.layer %>" title="<%- label %>">
           <div class="<%= classNames.layerContent %>">
             <i class="icon icon-eye-open"></i>
             <%= label %>
