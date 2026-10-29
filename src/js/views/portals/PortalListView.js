@@ -12,6 +12,7 @@ define([
     CREATE: ["btn", "btn-primary"],
     ICON: ["icon", "icon-plus", "icon-on-left"],
     LOADING: "loading",
+    STATUS: "portal-list-status",
   };
   const NEW_PORTAL_LABEL = "New ";
 
@@ -212,6 +213,7 @@ define([
           this.stopListening(this.searchResults, "error", this.showError);
           this.searchRequest?.abort();
           this.pagerView?.remove();
+          this.$(`.${CLASS_NAMES.STATUS}`).empty();
           this.$listContainerEl.html(
             $(this.template()).filter(this.listContainer).html(),
           );
@@ -307,7 +309,7 @@ define([
               ? `No matching ${MetacatUI.appModel.get("portalTermPlural")}.`
               : this.noResultsMessage;
             row.html(`<div class='no-results'>${message}</div>`);
-            this.$listContainerEl.html(row);
+            this.$(`.${CLASS_NAMES.STATUS}`).html(row);
 
             return;
           }
