@@ -21,7 +21,7 @@ define(["backbone"], (Backbone) => {
    * @name LayerLoadingIndicatorView
    * @augments Backbone.View
    * @screenshot views/maps/LayerLoadingIndicatorView.png
-   * @since 0.0.0
+   * @since 2.41.0
    * @constructs
    */
   const LayerLoadingIndicatorView = Backbone.View.extend(
@@ -59,7 +59,7 @@ define(["backbone"], (Backbone) => {
        * (`LayerItemView`), so it's set here via `innerHTML` rather than
        * `textContent` to render the same way.
        * @param {string} message The message to display.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       setMessage(message) {
         if (this.messageEl) this.messageEl.innerHTML = message || "";

@@ -144,7 +144,7 @@ define(["underscore", "backbone", "text!templates/maps/expansion-panel.html"], (
   /**
    * CSS class names used by expansion panels.
    * @type {Object<string, string>}
-   * @since 0.0.0
+   * @since 2.41.0
    */
   ExpansionPanelView.CLASS_NAMES = CLASS_NAMES;
 

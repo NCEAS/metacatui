@@ -124,7 +124,7 @@ define([
        * Save the current imagery source. Provider creation expands shortcuts
        * and converts options on a copy, leaving these attributes as config.
        * @returns {MapConfig#MapAssetConfig} A detached object of settings to save.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       toConfig() {
         return {
@@ -329,7 +329,7 @@ define([
        * in cache and is currently shown in the scene.
        * @param {Cesium.Scene} scene The scene where this imagery is rendered.
        * @returns {boolean} True when imagery should be considered display-ready.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       isDisplayReadyInScene: function (scene) {
         const imageryLayer = this.get("cesiumModel");
@@ -379,7 +379,7 @@ define([
        * pending request count whenever it changes.
        * @returns {Function} A function that restores the original
        * requestImage function.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       wrapRequestImageForPendingCount: function (
         provider,
@@ -429,7 +429,7 @@ define([
        * while panning brings new tiles into view after the first one loads.
        * @param {object} context A context object with a Cesium scene.
        * @param {Cesium.Scene} context.scene The scene where imagery is drawn.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       startLoadingStateTracking: function (context) {
         const scene = context?.scene;
@@ -500,7 +500,7 @@ define([
       /**
        * Stop any pending display-ready/loading-state watcher for this
        * imagery layer.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       stopLoadingStateTracking: function () {
         if (typeof this.loadingStateTrackerCancel === "function") {
@@ -608,7 +608,7 @@ define([
        * Validate candidate imagery source options without changing them.
        * @param {object} attrs The candidate model attributes
        * @returns {object|undefined} Field messages, or no error when valid
-       * @since 0.0.0
+       * @since 2.41.0
        */
       validate(attrs) {
         const source = attrs.cesiumOptions || {};
@@ -691,21 +691,21 @@ define([
   /**
    * Imagery source type identifiers shared by the model and editor.
    * @type {Object<string, string>}
-   * @since 0.0.0
+   * @since 2.41.0
    */
   CesiumImagery.PROVIDER_TYPES = PROVIDER_TYPES;
 
   /**
    * Standard OpenStreetMap tile server URL shared by the model and editor.
    * @type {string}
-   * @since 0.0.0
+   * @since 2.41.0
    */
   CesiumImagery.OSM_DEFAULT_URL = OSM_DEFAULT_URL;
 
   /**
    * Standard Bing Maps service URL shared by the model and editor.
    * @type {string}
-   * @since 0.0.0
+   * @since 2.41.0
    */
   CesiumImagery.BING_DEFAULT_URL = BING_DEFAULT_URL;
 

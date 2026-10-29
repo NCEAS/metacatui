@@ -232,7 +232,7 @@ define([
      * @param {string} [endpoints.resolveServiceUrl] CN resolve service URL
      * @param {string} [endpoints.objectServiceUrl] Object read service URL
      * @returns {string[]} Distinct endpoint PIDs, decoded once
-     * @since 0.0.0
+     * @since 2.41.0
      */
     configuredEndpointPids(
       value,

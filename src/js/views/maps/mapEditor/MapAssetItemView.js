@@ -29,7 +29,7 @@ define(["backbone", "views/maps/LayerItemView"], (Backbone, LayerItemView) => {
    * @classcategory Views/Maps/MapEditor
    * @augments Backbone.View
    * @screenshot views/maps/mapEditor/MapAssetItemView.png
-   * @since 0.0.0
+   * @since 2.41.0
    */
   const MapAssetItemView = Backbone.View.extend(
     /** @lends MapAssetItemView.prototype */ {

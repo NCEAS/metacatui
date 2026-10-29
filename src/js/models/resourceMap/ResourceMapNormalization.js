@@ -417,7 +417,7 @@ define([
      * @param {NamedNode[]} [nodes] Limit conversion to these nodes. By default,
      * inspect every node with an identifier statement
      * @returns {Map<string, string>} Old node URLs mapped to resolver URLs
-     * @since 0.0.0
+     * @since 2.41.0
      */
     normalizeEndpointUrls(nodes) {
       const { resourceMap } = this;
@@ -464,7 +464,7 @@ define([
      * A destination node may have no identifiers.
      * @param {NamedNode|BlankNode} subject RDF node to check
      * @returns {string|null} PID if the node can be used, otherwise null
-     * @since 0.0.0
+     * @since 2.41.0
      */
     getEndpointPidForNormalization(subject) {
       const { resourceMap } = this;

@@ -121,7 +121,7 @@ define([
       /**
        * Return the current category and its configured card source.
        * @returns {MapConfig#ViewfinderCardCategory} A plain category config
-       * @since 0.0.0
+       * @since 2.41.0
        */
       toConfig() {
         return {

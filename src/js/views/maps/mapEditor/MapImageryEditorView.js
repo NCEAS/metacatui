@@ -82,7 +82,7 @@ define(["backbone", "models/maps/assets/CesiumImagery"], (
    * @classcategory Views/Maps/MapEditor
    * @augments Backbone.View
    * @screenshot views/maps/mapEditor/MapImageryEditorView.png
-   * @since 0.0.0
+   * @since 2.41.0
    */
   const MapImageryEditorView = Backbone.View.extend(
     /** @lends MapImageryEditorView.prototype */ {

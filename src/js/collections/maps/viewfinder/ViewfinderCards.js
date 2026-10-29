@@ -123,7 +123,7 @@ define([
       /**
        * Return the configured URL source or the current inline cards.
        * @returns {object|object[]} Plain card source config
-       * @since 0.0.0
+       * @since 2.41.0
        */
       toConfig() {
         return this._configSource || this.map((card) => card.toConfig());

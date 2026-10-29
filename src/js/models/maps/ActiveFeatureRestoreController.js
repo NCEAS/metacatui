@@ -193,7 +193,7 @@ define([
    * @param {string[]} featureKeys Requested feature scope keys.
    * @param {string[]} layerIds Searchable visible layer ids.
    * @returns {string} Stable scope key.
-   * @since 0.0.0
+   * @since 2.41.0
    */
   function serializeRestoreScopeKey(featureKeys, layerIds) {
     return JSON.stringify({
@@ -217,7 +217,7 @@ define([
    * Check whether a layer supports Backbone-style event listening.
    * @param {object} layer Candidate layer object.
    * @returns {boolean} True when the layer has on/off event functions.
-   * @since 0.0.0
+   * @since 2.41.0
    */
   function isObservableLayer(layer) {
     return (
@@ -308,7 +308,7 @@ define([
      * Remove any feature-restore entries associated with a hidden layer.
      * @param {MapAsset} layer The layer whose visibility changed.
      * @returns {boolean} True when matching restore entries were removed.
-     * @since 0.0.0
+     * @since 2.41.0
      */
     clearFeatureRestoreEntriesForLayer(layer) {
       const layerId = layer?.get ? layer.get("layerId") : layer?.layerId;

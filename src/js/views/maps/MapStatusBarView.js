@@ -51,7 +51,7 @@ define([
    * @name MapStatusBarView
    * @augments Backbone.View
    * @screenshot views/maps/MapStatusBarView.png
-   * @since 0.0.0
+   * @since 2.41.0
    * @constructs
    */
   const MapStatusBarView = Backbone.View.extend(

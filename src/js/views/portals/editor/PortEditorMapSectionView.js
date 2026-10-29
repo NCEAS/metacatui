@@ -13,7 +13,7 @@ define([
    * @classcategory Views/Portals/Editor
    * @augments PortEditorSectionView
    * @screenshot views/portals/editor/PortEditorMapSectionView.png
-   * @since 0.0.0
+   * @since 2.41.0
    */
   const PortEditorMapSectionView = PortEditorSectionView.extend(
     /** @lends PortEditorMapSectionView.prototype */ {

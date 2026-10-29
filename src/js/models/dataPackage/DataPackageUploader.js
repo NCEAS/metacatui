@@ -201,7 +201,7 @@ define([
    * @param {SystemMetadata} [sysMeta] Fresh source System Metadata
    * @throws {Error} When the source is archived
    * @private
-   * @since 0.0.0
+   * @since 2.41.0
    */
   function assertContentSourceNotArchived(pid, sysMeta) {
     if (sysMeta?.archived !== true) return;
@@ -656,7 +656,7 @@ define([
      * @returns {Promise<object[]>} Raw upload actions
      * @private
      * @throws {Error} When package state cannot produce valid actions
-     * @since 0.0.0
+     * @since 2.41.0
      */
     static async buildUploadActions(
       changedMembers,

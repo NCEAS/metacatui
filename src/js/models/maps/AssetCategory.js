@@ -99,7 +99,7 @@ define([
       /**
        * Return the category metadata and current assets to save in map config.
        * @returns {MapConfig#AssetCategoryConfig} A plain category config
-       * @since 0.0.0
+       * @since 2.41.0
        */
       toConfig() {
         return {

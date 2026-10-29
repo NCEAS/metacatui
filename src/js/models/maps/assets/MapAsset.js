@@ -68,7 +68,7 @@ define([
       /**
        * Use layerId as Backbone identity; id remains the DataONE package ID.
        * @type {string}
-       * @since 0.0.0
+       * @since 2.41.0
        */
       idAttribute: "layerId",
 
@@ -453,7 +453,7 @@ define([
        * changes while loading or in use, return the originally configured value
        * rather than the live value.
        * @returns {MapConfig#MapAssetConfig} A plain object of settings to save.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       toConfig() {
         const config = JSON.parse(
@@ -884,13 +884,13 @@ define([
        * tiles in the current view) or stop tracking after the first tile
        * (e.g. while panning).
        * @param {object} _context Optional map-view context (e.g. scene).
-       * @since 0.0.0
+       * @since 2.41.0
        */
       startLoadingStateTracking(_context) {},
 
       /**
        * Stop any in-flight listeners started by startLoadingStateTracking.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       stopLoadingStateTracking() {},
 

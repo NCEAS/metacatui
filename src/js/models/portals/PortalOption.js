@@ -17,7 +17,7 @@ define(["common/XMLUtilities", "common/ValueUtilities"], (
    * {@link https://github.com/DataONEorg/collections-portals-schemas/blob/1.1.0/schemas/portals.xsd#L725-L754}
    * @class PortalOption
    * @classcategory Models/Portals
-   * @since 0.0.0
+   * @since 2.41.0
    */
   class PortalOption {
     /**

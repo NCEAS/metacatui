@@ -44,7 +44,7 @@ define([
        * share a package ID.
        * @param {object} attrs The asset attributes
        * @returns {string|undefined} The layer identifier, if assigned
-       * @since 0.0.0
+       * @since 2.41.0
        */
       modelId(attrs) {
         return attrs.layerId || undefined;
@@ -160,7 +160,7 @@ define([
        * Return the assets to save in map config, excluding live temporary
        * assets.
        * @returns {MapConfig#MapAssetConfig[]} Plain asset configs
-       * @since 0.0.0
+       * @since 2.41.0
        */
       toConfig() {
         return this.filter((asset) => asset.get("transient") !== true).map(

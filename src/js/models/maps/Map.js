@@ -634,7 +634,7 @@ define([
        * Remove any currently selected features that belong to a given layer.
        * @param {MapAsset} layer The layer being hidden.
        * @returns {boolean} True when at least one selected feature was removed.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       clearSelectedFeaturesForLayer(layer) {
         if (!layer) return false;
@@ -728,7 +728,7 @@ define([
 
       /**
        * Set up listeners that aggregate visible-layer and restore-session loading state.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       setUpLayerLoadingStateListeners() {
         this.stopListening(
@@ -785,7 +785,7 @@ define([
       /**
        * Rebuild flattened layers after collection mutations and recalculate
        * aggregate loading state.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       handleLayerGroupMutation() {
         this.refreshAllLayers();
@@ -794,7 +794,7 @@ define([
 
       /**
        * Recalculate aggregate loading state when layer readiness metadata changes.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       handleLayerLoadingStateChange() {
         const activeFeatures = this.get("restoreState")?.activeFeatures;
@@ -809,7 +809,7 @@ define([
        * Hidden layers should not keep map loading state active.
        * @param {MapAsset} layer The layer whose visibility changed.
        * @param {boolean} visible The layer's new visible value.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       handleLayerVisibilityChange(layer, visible) {
         const activeFeatures = this.get("restoreState")?.activeFeatures;
@@ -1127,7 +1127,7 @@ define([
        * @param {MapAssets} targetLayers An existing layer collection in this map
        * @param {number} index The final zero-based position in the destination
        * @returns {boolean} Whether the layer moved
-       * @since 0.0.0
+       * @since 2.41.0
        */
       moveAsset(asset, targetLayers, index) {
         // Get the assets collection that currently contains the asset.
@@ -1223,7 +1223,7 @@ define([
        * Return the current map config for saving, for example, into a portal
        * document.
        * @returns {MapConfig} A plain object of settings to save
-       * @since 0.0.0
+       * @since 2.41.0
        */
       toConfig() {
         const config = Object.fromEntries(

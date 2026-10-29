@@ -530,7 +530,7 @@ define([
       /**
        * Cancels the request and removes the pager and list.
        * @returns {PortalListView} This view
-       * @since 0.0.0
+       * @since 2.41.0
        */
       remove() {
         this.stopListening();

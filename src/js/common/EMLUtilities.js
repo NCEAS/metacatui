@@ -14,7 +14,7 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
      * Validate a year with four digits or a YYYY-MM-DD calendar date.
      * @param {string} dateString Date text to check
      * @returns {boolean} True if the format and calendar date are valid
-     * @since 0.0.0
+     * @since 2.41.0
      */
     isDateFormatValid(dateString) {
       if (/^\d{4}$/.test(dateString)) return true;
@@ -43,7 +43,7 @@ define(["common/XMLUtilities"], (XMLUtilities) => {
      * zone is given
      * @see https://eml.ecoinformatics.org/schema/eml-coverage_xsd
      * @see https://www.w3.org/TR/xmlschema-2/#time
-     * @since 0.0.0
+     * @since 2.41.0
      */
     parseTime(time) {
       // Match the whole HH:MM:SS value, with optional .fraction and optional

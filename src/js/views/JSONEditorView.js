@@ -19,7 +19,7 @@ define(["backbone", `text!${MetacatUI.root}/css/json-editor.css`], (
    * @classdesc Edits JSON values and keeps incomplete drafts.
    * @classcategory Views
    * @augments Backbone.View
-   * @since 0.0.0
+   * @since 2.41.0
    * @screenshot views/JSONEditorView.png
    */
   const JSONEditorView = Backbone.View.extend(

@@ -16,7 +16,7 @@ define([
    * @classcategory Views/Maps/MapEditor
    * @augments Backbone.View
    * @screenshot views/maps/mapEditor/MapEditorView.png
-   * @since 0.0.0
+   * @since 2.41.0
    */
   const MapEditorView = Backbone.View.extend(
     /** @lends MapEditorView.prototype */ {

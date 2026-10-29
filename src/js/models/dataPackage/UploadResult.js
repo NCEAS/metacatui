@@ -41,7 +41,7 @@ define([], () => {
       /**
        * Errors for members whose upload actions could not be prepared.
        * @type {Map<string, Error>}
-       * @since 0.0.0
+       * @since 2.41.0
        */
       this.preparationErrors = new Map();
       actions.forEach((action) => {

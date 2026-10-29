@@ -241,7 +241,7 @@ define(["backbone", "models/maps/GeoPoint"], (Backbone, GeoPoint) => {
       /**
        * Return configured card details and plain actions, excluding live data.
        * @returns {MapConfig#ViewfinderCard} A plain card config
-       * @since 0.0.0
+       * @since 2.41.0
        */
       toConfig() {
         const config = {

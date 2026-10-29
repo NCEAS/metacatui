@@ -169,7 +169,7 @@ define([
   /**
    * CSS class names used by layer lists.
    * @type {Object<string, string>}
-   * @since 0.0.0
+   * @since 2.41.0
    */
   LayerListView.CLASS_NAMES = CLASS_NAMES;
 

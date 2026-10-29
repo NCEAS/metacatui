@@ -18,7 +18,7 @@ define(["showdownXssFilter"], (sanitizeHTML) => {
    * off mid-tag.
    * @param {string} label The label to truncate, which may contain HTML markup.
    * @returns {string} The truncated label, as an HTML string.
-   * @since 0.0.0
+   * @since 2.41.0
    */
   function truncateLabel(label) {
     const container = document.createElement("div");
@@ -52,7 +52,7 @@ define(["showdownXssFilter"], (sanitizeHTML) => {
    * loading message reads the same as the layer menu.
    * @param {Backbone.Model|object} layer The layer model.
    * @returns {string|null} The label to surface in the loading message.
-   * @since 0.0.0
+   * @since 2.41.0
    */
   function getLoadingLayerLabel(layer) {
     const label = layer?.get("label");
@@ -64,7 +64,7 @@ define(["showdownXssFilter"], (sanitizeHTML) => {
    * Get the distinct labels for layers contributing to the current loading state.
    * @param {Backbone.Model[]} [loadingLayers] Optional precomputed loading layers.
    * @returns {string[]} A deduplicated list of loading layer labels.
-   * @since 0.0.0
+   * @since 2.41.0
    */
   function getLoadingLayerLabels(loadingLayers) {
     return loadingLayers
@@ -77,7 +77,7 @@ define(["showdownXssFilter"], (sanitizeHTML) => {
    * Internal helper layers can opt out explicitly.
    * @param {Backbone.Model|object} layer The layer model to check.
    * @returns {boolean} Whether the layer should be tracked.
-   * @since 0.0.0
+   * @since 2.41.0
    */
   function shouldTrackLayerLoading(layer) {
     return layer?.get("excludeFromLoadingState") !== true;
@@ -93,7 +93,7 @@ define(["showdownXssFilter"], (sanitizeHTML) => {
    * data) fall back to the one-time `displayReady` latch.
    * @param {Backbone.Model|object} layer The layer model to check.
    * @returns {boolean} Whether the layer is still loading.
-   * @since 0.0.0
+   * @since 2.41.0
    */
   function isTrackedLayerLoading(layer) {
     if (!shouldTrackLayerLoading(layer)) return false;
@@ -111,7 +111,7 @@ define(["showdownXssFilter"], (sanitizeHTML) => {
    * Get visible tracked layers that are actively loading.
    * @param {Backbone.Model} mapModel The parent map model.
    * @returns {Array} The layers still loading into the map.
-   * @since 0.0.0
+   * @since 2.41.0
    */
   function getTrackedLoadingLayers(mapModel) {
     return mapModel
@@ -123,7 +123,7 @@ define(["showdownXssFilter"], (sanitizeHTML) => {
    * Sync each layer's canonical loading flag to match current tracked loading state.
    * @param {Backbone.Model} mapModel The parent map model.
    * @param {Backbone.Model[]} [loadingLayers] Optional precomputed loading layers.
-   * @since 0.0.0
+   * @since 2.41.0
    */
   function syncTrackedLayerLoadingFlags(
     mapModel,
@@ -144,7 +144,7 @@ define(["showdownXssFilter"], (sanitizeHTML) => {
    * @param {Backbone.Model} mapModel The parent map model.
    * @param {Backbone.Model[]} [loadingLayers] Optional precomputed loading layers.
    * @returns {string|null} The user-facing loading message.
-   * @since 0.0.0
+   * @since 2.41.0
    */
   function getLoadingLayersMessage(
     mapModel,
@@ -169,7 +169,7 @@ define(["showdownXssFilter"], (sanitizeHTML) => {
   /**
    * Sync the aggregate map loading indicator state.
    * @param {Backbone.Model} mapModel The parent map model.
-   * @since 0.0.0
+   * @since 2.41.0
    */
   function updateLayerLoadingState(mapModel) {
     const loadingLayers = getTrackedLoadingLayers(mapModel);

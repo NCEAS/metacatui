@@ -241,7 +241,7 @@ define([
        * Create the (always-present, fixed-size) slot used to show the loading
        * spinner or error icon next to the label. Kept in the DOM permanently
        * and toggled via visibility so it never changes the label row's layout.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       insertStatusIconSlot() {
         const statusIconEl = document.createElement("span");
@@ -345,7 +345,7 @@ define([
       /**
        * Derive the current status state being rendered for this layer.
        * @returns {object} State data used by the status UI.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       getStatusState() {
         const layerModel = this.model;
@@ -364,7 +364,7 @@ define([
        * Append a status-related element to the layer label while keeping UI setup
        * centralized.
        * @param {HTMLElement} element The element to append.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       appendStatusElement(element) {
         if (!element || !this.labelEl) {
@@ -520,7 +520,7 @@ define([
   /**
    * CSS class names used by layer items.
    * @type {Object<string, string>}
-   * @since 0.0.0
+   * @since 2.41.0
    */
   LayerItemView.CLASS_NAMES = CLASS_NAMES;
 

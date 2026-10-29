@@ -179,7 +179,7 @@ define([
       /**
        * Identified endpoint nodes waiting for the grouped edit to finish.
        * @type {NamedNode[]}
-       * @since 0.0.0
+       * @since 2.41.0
        */
       this.pendingEndpointNodes = [];
       this.unsavedChanges = false;

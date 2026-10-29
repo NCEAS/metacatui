@@ -2011,7 +2011,7 @@ define([
        * is a workaround for now.
        * @param {PortalSectionModel} newSection - The section to add to the
        * sections array on the model.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       pushSectionToSectionsArray(newSection) {
         const sectionModels = [...this.get("sections")];

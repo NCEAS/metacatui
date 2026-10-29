@@ -1783,7 +1783,7 @@ define([
        * `renderAboveOtherLayers` to the top of the dataSourceCollection so
        * that they continue to render above vector data added afterwards, e.g.
        * the polygon that a user draws with the download tool.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       raiseAlwaysOnTopVectorData() {
         (this.alwaysOnTopDataSources || []).forEach((dataSource) => {
@@ -1951,7 +1951,7 @@ define([
        * map model. Called on view teardown so that tileset event callbacks
        * and patched imagery providers are not retained after the widget is
        * destroyed.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       stopAllLoadingStateTracking() {
         const allLayers =

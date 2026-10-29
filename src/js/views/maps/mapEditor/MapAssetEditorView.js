@@ -24,7 +24,7 @@ define([
    * @classcategory Views/Maps/MapEditor
    * @augments Backbone.View
    * @screenshot views/maps/mapEditor/MapAssetEditorView.png
-   * @since 0.0.0
+   * @since 2.41.0
    */
   const MapAssetEditorView = Backbone.View.extend(
     /** @lends MapAssetEditorView.prototype */ {
@@ -92,7 +92,7 @@ define([
       /**
        * Focus and select the label for editing.
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.41.0
        */
       focusLabel() {
         const label = this.el.querySelector('[name="label"]');

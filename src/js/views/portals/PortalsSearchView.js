@@ -61,7 +61,7 @@ define([
       /**
        * The submitted term shared by both portal lists.
        * @type {string}
-       * @since 0.0.0
+       * @since 2.41.0
        */
       searchTerm: "",
 
@@ -176,7 +176,7 @@ define([
       /**
        * Applies the submitted term to both portal lists.
        * @param {Event} event The form submission
-       * @since 0.0.0
+       * @since 2.41.0
        */
       search(event) {
         event.preventDefault();
@@ -191,7 +191,7 @@ define([
        * Stops searches and listeners while retaining the shared content
        * element.
        * @returns {void}
-       * @since 0.0.0
+       * @since 2.41.0
        */
       onClose() {
         this.undelegateEvents();
@@ -203,7 +203,7 @@ define([
       /**
        * Closes the search views and removes this element.
        * @returns {PortalsSearchView} This view
-       * @since 0.0.0
+       * @since 2.41.0
        */
       remove() {
         this.onClose();

@@ -456,7 +456,7 @@ define([
        * indicator reflects real, ongoing work rather than getting stuck
        * when no tiles are ever in view, or stopping after the first tile
        * while panning brings new tiles into view.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       startLoadingStateTracking: function () {
         const model = this;
@@ -530,7 +530,7 @@ define([
       /**
        * Stop any pending display-ready/loading-state watcher for this
        * tileset.
-       * @since 0.0.0
+       * @since 2.41.0
        */
       stopLoadingStateTracking: function () {
         if (typeof this.loadingStateTrackerCancel === "function") {

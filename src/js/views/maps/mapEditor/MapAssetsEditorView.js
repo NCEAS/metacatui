@@ -72,7 +72,7 @@ define([
    * @classcategory Views/Maps/MapEditor
    * @augments Backbone.View
    * @screenshot views/maps/mapEditor/MapAssetsEditorView.png
-   * @since 0.0.0
+   * @since 2.41.0
    */
   const MapAssetsEditorView = Backbone.View.extend(
     /** @lends MapAssetsEditorView.prototype */ {

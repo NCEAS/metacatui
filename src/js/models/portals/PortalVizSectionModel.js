@@ -33,7 +33,7 @@ define([
        * @param {object} [attributes.mapConfig] - The map configuration to
        * initialize the map model with
        * @param {object} [options] - Options to pass to the model
-       * @since 0.0.0
+       * @since 2.41.0
        */
       initialize(attributes = {}, options = {}) {
         PortalSectionModel.prototype.initialize.call(this, attributes, options);
@@ -111,7 +111,7 @@ define([
        * Initializes a Cesium map model for this portal section.
        * @param {object|Map} [mapConfigOrModel] The map to initialize the map
        * model with
-       * @since 0.0.0
+       * @since 2.41.0
        */
       initializeCesiumMap(mapConfigOrModel = {}) {
         const mapModel =
@@ -126,7 +126,7 @@ define([
        * @param {Element} objectDOM Section element to update
        * @returns {undefined} No return value
        * @throws {Error} When the existing map option is invalid
-       * @since 0.0.0
+       * @since 2.41.0
        */
       updateCesiumMapDOM(objectDOM) {
         const mapConfig = JSON.stringify(this.get("mapModel").toConfig());

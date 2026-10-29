@@ -1005,7 +1005,7 @@ define(["md5", "uuid", "common/ErrorUtilities"], (
      * Generate a random hexadecimal ID.
      * @param {number} [digits] Number of hexadecimal digits (default: 12)
      * @returns {string} The generated ID
-     * @since 0.0.0
+     * @since 2.41.0
      */
     makeShortId(digits = 12) {
       return Array.from({ length: digits }, () =>
