@@ -19,7 +19,9 @@ const src_dir = "src";
 
 app.use(express.static(__dirname + "/" + src_dir));
 app.get("/{*splat}", function (request, response) {
-  response.sendFile(path.resolve(__dirname, src_dir, "index.html"));
+  response.sendFile("index.html", {
+    root: path.resolve(__dirname, src_dir),
+  });
 });
 app.listen(port);
 
