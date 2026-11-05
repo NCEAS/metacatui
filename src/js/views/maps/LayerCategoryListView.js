@@ -75,6 +75,7 @@ define([
               icon,
               isSvgIcon: IconUtilities.isSVG(icon),
               panelsModel: new ExpansionPanelsModel({ isMulti: true }),
+              startOpen: categoryModel.get("expanded") === true,
               title: categoryModel.get("label"),
             });
 
