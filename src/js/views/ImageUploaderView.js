@@ -357,6 +357,8 @@ define([
 
             init: function () {
               try {
+                // Acceptance needs thumbnail dimensions for every allowed image.
+                this.options.maxThumbnailFilesize = this.options.maxFilesize;
                 this.on("addedfile", function (file) {
                   // Make sure only the most recently added image is shown in the upload zone
                   view.limitFileInput();
