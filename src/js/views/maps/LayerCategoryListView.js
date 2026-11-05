@@ -57,6 +57,7 @@ define([
        */
       initialize(options) {
         this.assetCategories = options.collection;
+        this.panelsModel = new ExpansionPanelsModel({ isMulti: true });
       },
 
       /**
@@ -74,7 +75,7 @@ define([
               }),
               icon,
               isSvgIcon: IconUtilities.isSVG(icon),
-              panelsModel: new ExpansionPanelsModel({ isMulti: true }),
+              panelsModel: this.panelsModel,
               startOpen: categoryModel.get("expanded") === true,
               title: categoryModel.get("label"),
             });
