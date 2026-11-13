@@ -149,7 +149,7 @@ define([
         expect(harness.isContentVisible()).to.be.false;
       });
 
-      it("does not collapse other on panels model in multi mode", () => {
+      it("does not collapse other open panels in model in multi mode", () => {
         const panelsModel = new ExpansionPanelsModel({ isMulti: true });
         const view = new ExpansionPanelView({
           title: "Some title",
