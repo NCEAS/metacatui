@@ -40,7 +40,6 @@ define([
       }
 
       return {
-        bodyHeight: document.body.style.height,
         renderMap,
         sandbox,
         view,
@@ -53,7 +52,10 @@ define([
         subview.remove();
       });
       state.view.remove();
-      document.body.style.height = state.bodyHeight;
+      document.body.classList.remove(
+        "portal-panels-map-active",
+        "portal-map-active",
+      );
       state.sandbox.restore();
     });
 
@@ -75,8 +77,7 @@ define([
     });
 
     [null, undefined].forEach((layout) => {
-      it(`does not set a fixed body height when layout is ${layout}`, () => {
-        document.body.style.height = "";
+      it(`sets the default-layout map class (not the panels one) when layout is ${layout}`, () => {
         state.view.model.set("layout", layout);
         state.view.addSection(
           new PortalVizSectionModel({
@@ -87,11 +88,16 @@ define([
 
         state.view.switchSection(state.view.subviews[0]);
 
-        expect(document.body.style.height).to.equal("");
+        expect(
+          document.body.classList.contains("portal-map-active"),
+        ).to.equal(true);
+        expect(
+          document.body.classList.contains("portal-panels-map-active"),
+        ).to.equal(false);
       });
     });
 
-    it("clears the fixed body height when switching to the default layout", () => {
+    it("swaps the panels map class for the default-layout one when switching layouts", () => {
       state.view.model.set("layout", "panels");
       state.view.addSection(
         new PortalVizSectionModel({
@@ -102,11 +108,18 @@ define([
       const sectionView = state.view.subviews[0];
 
       state.view.switchSection(sectionView);
-      expect(document.body.style.height).to.equal("100%");
+      expect(
+        document.body.classList.contains("portal-panels-map-active"),
+      ).to.equal(true);
 
       state.view.model.set("layout", null);
       state.view.switchSection(sectionView);
-      expect(document.body.style.height).to.equal("");
+      expect(
+        document.body.classList.contains("portal-panels-map-active"),
+      ).to.equal(false);
+      expect(
+        document.body.classList.contains("portal-map-active"),
+      ).to.equal(true);
     });
   });
 });

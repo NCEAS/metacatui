@@ -713,15 +713,20 @@ define([
         const isPanelsVisualization =
           this.model.get("layout") === "panels" &&
           sectionView instanceof PortalVisualizationsView;
+        const isCesiumViz =
+          sectionView instanceof PortalVisualizationsView &&
+          sectionView.model.get("visualizationType") === "cesium";
 
-        if (
-          isPanelsVisualization &&
-          sectionView.model.get("visualizationType") === "cesium"
-        ) {
-          document.body.style.setProperty("height", "100%");
-        } else {
-          document.body.style.removeProperty("height");
-        }
+        // Toggle body classes (instead of JS-computed inline heights) so the
+        // CSS cascade alone can size the map section to fill the viewport.
+        document.body.classList.toggle(
+          "portal-panels-map-active",
+          isPanelsVisualization && isCesiumViz,
+        );
+        document.body.classList.toggle(
+          "portal-map-active",
+          isCesiumViz && !isPanelsVisualization,
+        );
 
         if (isPanelsVisualization) {
           if (this.logosView) {
@@ -1073,17 +1078,15 @@ define([
        * This function is called whenever the window is scrolled.
        */
       handleScroll() {
-        const menu = $(".section-links-container")[0],
-          menuHeight = $(menu).height(),
-          hiddenHeight = menuHeight * -1;
-        const currentScrollPos = window.pageYOffset;
-        if (MetacatUI.appView.prevScrollpos > currentScrollPos) {
-          //Get the height of any menu that may be displayed at the bottom of the page, too
-
-          menu.style.bottom = "0px";
-        } else {
-          menu.style.bottom = hiddenHeight + "px";
+        const menu = $(".section-links-container")[0];
+        if (!menu) {
+          return;
         }
+        const currentScrollPos = window.pageYOffset;
+        const scrollingUp = MetacatUI.appView.prevScrollpos > currentScrollPos;
+        // Slide the nav off/onscreen via a CSS transform instead of
+        // measuring its height and animating an inline "bottom" position.
+        menu.classList.toggle("section-links-container--hidden", !scrollingUp);
         MetacatUI.appView.prevScrollpos = currentScrollPos;
       },
 
@@ -1129,7 +1132,10 @@ define([
         $(window).off("scroll", "", this.handleScroll);
 
         $("body").removeClass("PortalView");
-        document.body.style.removeProperty("height");
+        document.body.classList.remove(
+          "portal-panels-map-active",
+          "portal-map-active",
+        );
 
         // Make sure the footer is visible (hidden for dataViz sections + panels layout)
         MetacatUI.footerView.el.style.removeProperty("display");

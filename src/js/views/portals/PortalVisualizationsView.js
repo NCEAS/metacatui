@@ -2,9 +2,6 @@ define(["jquery", "views/portals/PortalSectionView"], (
   $,
   PortalSectionView,
 ) => {
-  const PANELS_LAYOUT = "panels";
-  const MIN_MAP_HEIGHT = "var(--max-map-toolbar-link-height)";
-
   /**
    * @class PortalVisualizationsView
    * @classdesc The PortalVisualizationsView is a view to render the
@@ -31,12 +28,6 @@ define(["jquery", "views/portals/PortalSectionView"], (
        * @type {PortalVizSectionModel}
        */
       model: null,
-
-      /**
-       * The parent portal, if provided
-       * @type {Portal|null}
-       */
-      portalModel: null,
 
       /* The list of subview instances contained in this view*/
       subviews: [], // Could be a literal object {}
@@ -136,7 +127,10 @@ define(["jquery", "views/portals/PortalSectionView"], (
             this.hasRendered = true;
           }
 
-          if (!this.resizeObserver) {
+          // The cesium map is sized entirely by CSS (see the
+          // `.portal-map-active`/`.portal-panels-map-active` rules), so only
+          // FEVer's iframe needs JS to recompute its height on resize.
+          if (vizType === "fever" && !this.resizeObserver) {
             $(window).on("resize", this.adjustVizHeight);
             this.resizeObserver = new ResizeObserver(this.adjustVizHeight);
             $(".auto-height-member:not(#Footer)").each((i, el) => {
@@ -154,19 +148,10 @@ define(["jquery", "views/portals/PortalSectionView"], (
         }
       },
 
-      /** Adjusts height of the viz based on the available viewport height */
+      /** Adjusts height of the FEVer iframe based on the available viewport height */
       adjustVizHeight: function () {
-        if (this.model.get("visualizationType") === "cesium") {
-          if (this.portalModel?.get("layout") === PANELS_LAYOUT) return;
-
-          const tabs = this.$el.parent().siblings(".section-links-container");
-          let height = $(window).outerHeight(true) - this.$el.offset().top;
-          height -=
-            tabs.css("position") === "fixed" ? tabs.outerHeight(true) : 0;
-          // Keep room for map controls in short windows.
-          this.$el.css("min-height", `max(${height}px, ${MIN_MAP_HEIGHT})`);
-          return;
-        }
+        // The cesium map's height is computed entirely by CSS; nothing to do here.
+        if (this.model.get("visualizationType") === "cesium") return;
 
         // Get the heights above the visualization, excluding the footer
         let otherHeight = 0;
