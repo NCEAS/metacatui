@@ -3,12 +3,14 @@ define(["showdown", "showdownXssFilter", "showdownIframes"], (showdown) => {
 
   describe("showdown-iframes", () => {
     it("links to an untrusted URL instead of creating an iframe when an HTML entity changes its host", () => {
-      const originalAppModel = MetacatUI.appModel;
-      MetacatUI.appModel = {
-        get: (key) =>
-          key === "trustedContentSources"
-            ? ["https://trusted.example.org/reports/*"]
-            : undefined,
+      const originalMetacatUI = globalThis.MetacatUI;
+      globalThis.MetacatUI = {
+        appModel: {
+          get: (key) =>
+            key === "trustedContentSources"
+              ? ["https://trusted.example.org/reports/*"]
+              : undefined,
+        },
       };
 
       try {
