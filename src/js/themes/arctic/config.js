@@ -274,11 +274,12 @@ MetacatUI.AppConfig = {
   // iFrames in portals
   defaultIframePermissions: ["allow-scripts", "allow-same-origin"],
   trustedContentSources: [
-    "https://*arcticdata.io",
-    "https://cosima.nceas.ucsb.edu*",
+    "https://arcticdata.io",
+    "https://*.arcticdata.io",
+    "https://cosima.nceas.ucsb.edu",
     "https://shirlysteph.github.io/salmon-storymap/",
     {
-      url: "https://water-timeseries.streamlit.app*",
+      url: "https://water-timeseries.streamlit.app",
       permissions: ["allow-scripts", "allow-same-origin"],
     },
     {

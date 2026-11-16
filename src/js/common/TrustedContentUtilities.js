@@ -108,18 +108,30 @@ define([], () => {
         }
 
         const parsedUrl = new URL(url);
+        const urlSuffix = parsedUrl.href.replace(/^https?:\/\/[^/]+/, "");
 
         const matchedSource = sources
           .map(TrustedContentUtilities.normalizeTrustedContentSource)
-          .find(
-            (normalized) =>
-              normalized &&
-              TrustedContentUtilities.patternToRegex(normalized.url).test(
-                /^(https?:\/\/[^/?#]+)$/i.test(normalized.url)
-                  ? parsedUrl.origin
-                  : parsedUrl.href,
-              ),
-          );
+          .find((normalized) => {
+            if (!normalized) return false;
+
+            // Keep host wildcards from matching the rest of the URL.
+            const [, originPattern, suffixPattern] =
+              normalized.url.match(/^(https?:\/\/[^/?#]+)(.*)$/i) ?? [];
+            const urlToMatch = originPattern
+              ? parsedUrl.origin
+              : parsedUrl.href;
+
+            return (
+              TrustedContentUtilities.patternToRegex(
+                originPattern ?? normalized.url,
+              ).test(urlToMatch) &&
+              (!suffixPattern ||
+                TrustedContentUtilities.patternToRegex(suffixPattern).test(
+                  urlSuffix,
+                ))
+            );
+          });
 
         return matchedSource ?? null;
       },

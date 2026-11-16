@@ -1760,30 +1760,26 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           feverUrl: "",
 
           /**
-           * A list of trusted content sources from which MetacatUI can safely
-           * embed external content. This property is used to define URLs or URL
-           * patterns that are considered secure for embedding content in
-           * iframes, especially when rendering user-generated Markdown content.
+           * URLs and URL patterns that MetacatUI trusts for iframe embeds.
            *
-           * The list can include string urls (which will automatically be
-           * given the configured default iframe permissions) and/or objects that specify
-           * a url and a string array of iframe permissions for embedding the
-           * content eg:
+           * Use a URL string to apply the default sandbox permissions or an
+           * object with a `url` and a `permissions` array.
+           *
+           * Use an origin without a trailing slash to allow any path on that
+           * origin. `https://*.dataone.org` matches HTTPS subdomains. Add a
+           * path pattern to limit which URLs on the origin can be embedded.
+           *
+           * Set to an empty array or a falsy value to disable embeds.
+           *
+           * @example
            *  trustedContentSources: [
-           *    "https://*arcticdata.io",
+           *    "https://arcticdata.io",
+           *    "https://*.arcticdata.io",
            *    {
            *      url: "https://virtualice.byrd.osu.edu/alaska-permafrost/*",
            *      permissions: ["allow-scripts", "allow-same-origin"],
            *    },
            *  ]
-           *
-           * Each source in the list can include wildcards (`*`) to match any
-           * subdomain or path. For example, `"https://*.dataone.org/*"` matches
-           * any subdomain of `dataone.org` over HTTPS, and `"*arcticdata.io*"`
-           * matches any URL containing `arcticdata.io`.
-           *
-           * Set to an empty array or a falsy value to disable all embedded content.
-           *
            * @type {string[]|object[]}
            * @since 2.32.0
            */
