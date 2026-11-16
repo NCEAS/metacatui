@@ -12,6 +12,8 @@ define(["showdown", "common/TrustedContentUtilities"], (showdown, trustedContent
    * markup. Everything else (event handlers, srcdoc, allow, etc.) is dropped.
    */
   const ALLOWED_ATTRS = ["title", "width", "height", "allowfullscreen"];
+  const EXTERNAL_CONTENT_LABEL = "<b>External Content</b>:";
+  const REMOVED_URL_MESSAGE = "(URL removed for security)";
 
   /**
    * Regular expression that finds all iframes in the markdown content. The
@@ -33,45 +35,45 @@ define(["showdown", "common/TrustedContentUtilities"], (showdown, trustedContent
     return match ? match[1] : null;
   }
 
+  /** Escape text for HTML and quoted attributes */
+  function escapeHtml(value) {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
   /**
-   * Replace iFrames that are NOT from trusted sources with a link to the
-   * source URL (or plain text for unsafe protocols). Reconstruct trusted
-   * iFrames from an attribute allowlist — dropping event handlers, srcdoc,
-  * and any other potentially dangerous attributes — and apply the sandbox
-  * permissions resolved from the trusted content source configuration.
-   * @param {string} iframe - The full iframe tag
-   * @param {string} src - The src attribute of the iframe
-   * @returns {string} - The sanitised iframe or fallback markup
+   * Embed a trusted URL with its configured sandbox and permitted attributes.
+   * Use a link for untrusted HTTP(S) URLs and warning text for other URLs.
+   * @param {string} iframe The matched iframe tag
+   * @param {string} rawSrc The src attribute as written in the HTML
+   * @returns {string} The iframe, fallback link, or warning text
    */
-  const secureIFrame = (iframe, src) => {
-    // Untrusted: render as a safe link for http(s) sources, plain text otherwise
-    if (!trustedContent.isTrustedUrl(src)) {
+  const secureIFrame = (iframe, rawSrc) => {
+    // Check the decoded attribute value the browser would load.
+    const template = document.createElement("template");
+    template.innerHTML = `<a href="${rawSrc}"></a>`;
+    const src = template.content.firstElementChild.getAttribute("href");
+    const escapedSrc = escapeHtml(src);
+
+    const sandbox = trustedContent.getTrustedIframeSandbox(src);
+    if (sandbox === null) {
       if (trustedContent.isHttpUrl(src)) {
-        const escaped = src
-          .replace(/&/g, "&amp;")
-          .replace(/"/g, "&quot;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
-        return `<a href="${escaped}" target="_blank" rel="noopener noreferrer"><b>External Content</b>: ${escaped}</a>`;
+        return `<a href="${escapedSrc}" target="_blank" rel="noopener noreferrer">${EXTERNAL_CONTENT_LABEL} ${escapedSrc}</a>`;
       }
-      return "<b>External Content</b>: (URL removed for security)";
+      return `${EXTERNAL_CONTENT_LABEL} ${REMOVED_URL_MESSAGE}`;
     }
 
-    // Trusted: rebuild the tag from the allowlist only
-    const sandbox = trustedContent.getTrustedIframeSandbox(src);
-    let attrs = `src="${src}"`;
+    let attrs = `src="${escapedSrc}"`;
     if (sandbox) {
       attrs += ` sandbox="${sandbox}"`;
     }
     ALLOWED_ATTRS.forEach((name) => {
       const value = extractAttr(iframe, name);
       if (value !== null) {
-        const escaped = value
-          .replace(/&/g, "&amp;")
-          .replace(/"/g, "&quot;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
-        attrs += ` ${name}="${escaped}"`;
+        attrs += ` ${name}="${escapeHtml(value)}"`;
       }
     });
 
