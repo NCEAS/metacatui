@@ -29,7 +29,7 @@ define(["showdown", "showdownXssFilter", "showdownIframes"], (showdown) => {
           "https://unrelated.example/@trusted.example.org/reports/report",
         );
       } finally {
-        MetacatUI.appModel = originalAppModel;
+        globalThis.MetacatUI = originalMetacatUI;
       }
     });
   });
