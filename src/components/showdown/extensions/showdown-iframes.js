@@ -7,11 +7,8 @@
 
 define(["showdown", "common/TrustedContentUtilities"], (showdown, trustedContent) => {
 
-  /**
-   * Allowlisted iframe attributes that are safe to forward from the author's
-   * markup. Everything else (event handlers, srcdoc, allow, etc.) is dropped.
-   */
-  const ALLOWED_ATTRS = ["title", "width", "height", "allowfullscreen"];
+  /** Presentation attributes to keep from the author's iframe */
+  const ALLOWED_ATTRS = ["title", "width", "height"];
   const EXTERNAL_CONTENT_LABEL = "<b>External Content</b>:";
   const REMOVED_URL_MESSAGE = "(URL removed for security)";
 
@@ -35,49 +32,40 @@ define(["showdown", "common/TrustedContentUtilities"], (showdown, trustedContent
     return match ? match[1] : null;
   }
 
-  /** Escape text for HTML and quoted attributes */
-  function escapeHtml(value) {
-    return value
-      .replace(/&/g, "&amp;")
-      .replace(/"/g, "&quot;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-  }
-
   /**
-   * Embed a trusted URL with its configured sandbox and permitted attributes.
+   * Embed a trusted URL with the source's sandbox and browser permissions.
    * Use a link for untrusted HTTP(S) URLs and warning text for other URLs.
-   * @param {string} iframe The matched iframe tag
+   * @param {string} tag The matched iframe tag
    * @param {string} rawSrc The src attribute as written in the HTML
    * @returns {string} The iframe, fallback link, or warning text
    */
-  const secureIFrame = (iframe, rawSrc) => {
+  const secureIFrame = (tag, rawSrc) => {
     // Check the decoded attribute value the browser would load.
     const template = document.createElement("template");
     template.innerHTML = `<a href="${rawSrc}"></a>`;
-    const src = template.content.firstElementChild.getAttribute("href");
-    const escapedSrc = escapeHtml(src);
+    const link = template.content.firstElementChild;
+    const src = link.getAttribute("href");
+    const iframe = document.createElement("iframe");
 
-    const sandbox = trustedContent.getTrustedIframeSandbox(src);
-    if (sandbox === null) {
-      if (trustedContent.isHttpUrl(src)) {
-        return `<a href="${escapedSrc}" target="_blank" rel="noopener noreferrer">${EXTERNAL_CONTENT_LABEL} ${escapedSrc}</a>`;
+    if (!trustedContent.configureTrustedIframe(iframe, src)) {
+      if (!trustedContent.isHttpUrl(src)) {
+        return `${EXTERNAL_CONTENT_LABEL} ${REMOVED_URL_MESSAGE}`;
       }
-      return `${EXTERNAL_CONTENT_LABEL} ${REMOVED_URL_MESSAGE}`;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.innerHTML = EXTERNAL_CONTENT_LABEL;
+      link.append(` ${src}`);
+      return link.outerHTML;
     }
 
-    let attrs = `src="${escapedSrc}"`;
-    if (sandbox) {
-      attrs += ` sandbox="${sandbox}"`;
-    }
     ALLOWED_ATTRS.forEach((name) => {
-      const value = extractAttr(iframe, name);
+      const value = extractAttr(tag, name);
       if (value !== null) {
-        attrs += ` ${name}="${escapeHtml(value)}"`;
+        iframe.setAttribute(name, value);
       }
     });
 
-    return `<iframe ${attrs}></iframe>`;
+    return iframe.outerHTML;
   };
 
   const extension = {

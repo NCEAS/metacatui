@@ -32,5 +32,41 @@ define(["showdown", "showdownXssFilter", "showdownIframes"], (showdown) => {
         globalThis.MetacatUI = originalMetacatUI;
       }
     });
+
+    it("uses the matching source's sandbox and allow settings", () => {
+      const storyUrl = "https://storymaps.example.org/stories/approved";
+      const otherUrl = "https://storymaps.example.org/stories/other";
+      const getConfig = sinon.stub(MetacatUI.appModel, "get").callThrough();
+
+      try {
+        getConfig.withArgs("trustedContentSources").returns([
+          {
+            url: storyUrl,
+            permissions: ["allow-scripts", "allow-same-origin", "allow-forms"],
+            allow: ["fullscreen", "geolocation"],
+          },
+          otherUrl,
+        ]);
+
+        const converter = new showdown.Converter({
+          extensions: ["xssfilter", "showdown-iframes"],
+        });
+        const output = document.createElement("template");
+        output.innerHTML = converter.makeHtml(
+          `<iframe src="${storyUrl}" allow="camera"></iframe>
+<iframe src="${otherUrl}" allow="geolocation" allowfullscreen="allowfullscreen"></iframe>`,
+        );
+
+        const [story, other] = output.content.querySelectorAll("iframe");
+        expect(story.getAttribute("allow")).to.equal("fullscreen; geolocation");
+        expect(story.getAttribute("sandbox")).to.equal(
+          "allow-scripts allow-same-origin allow-forms",
+        );
+        expect(other.hasAttribute("allow")).to.be.false;
+        expect(other.hasAttribute("allowfullscreen")).to.be.false;
+      } finally {
+        getConfig.restore();
+      }
+    });
   });
 });

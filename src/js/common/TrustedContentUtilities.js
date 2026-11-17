@@ -63,9 +63,12 @@ define([], () => {
       },
 
       /**
-       * Normalize a trusted content source entry to a consistent shape.
-       * @param {string|{url: string, permissions: (string[]|undefined)}} source Source entry from configuration.
-       * @returns {{url: string, permissions: string[]}|null} Normalized source object or null when invalid.
+       * Read the iframe permissions for a source and fill in sandbox defaults.
+       * @param {string|{url: string, permissions: (string[]|undefined), allow:
+       * (string[]|undefined)}} source URL pattern or source config
+       * @returns {{url: string, permissions: string[], allow:
+       * (string[]|undefined)}|null} Source settings, or null if the entry has
+       * no URL string
        * @since 2.37.0
        */
       normalizeTrustedContentSource(source) {
@@ -90,13 +93,16 @@ define([], () => {
             Array.isArray(source.permissions) && source.permissions.length
               ? source.permissions
               : defaultPermissions,
+          allow: Array.isArray(source.allow) ? source.allow : undefined,
         };
       },
 
       /**
-       * Resolve the trusted content source entry that matches the given URL.
-       * @param {string} url The URL to test.
-       * @returns {{url: string, permissions: string[]}|null} Matching trusted source entry, or null when no match is found.
+       * Find the first trusted source that matches a URL.
+       * @param {string} url URL to match
+       * @returns {{url: string, permissions: string[], allow:
+       * (string[]|undefined)}|null} Source settings, or null if no source
+       * matches
        * @since 2.37.0
        */
       getTrustedContentSource(url) {
@@ -134,6 +140,33 @@ define([], () => {
           });
 
         return matchedSource ?? null;
+      },
+
+      /**
+       * Apply the matching source's permissions before loading the iframe.
+       * Clear its source and permissions if the URL is untrusted.
+       * @param {HTMLIFrameElement} iframe An iframe created by the caller
+       * @param {string} url The URL to load
+       * @returns {boolean} Whether the URL matched a trusted source
+       * @since 0.0.0
+       */
+      configureTrustedIframe(iframe, url) {
+        const source = TrustedContentUtilities.getTrustedContentSource(url);
+        if (!source) {
+          iframe.removeAttribute("src");
+          iframe.removeAttribute("sandbox");
+          iframe.removeAttribute("allow");
+          return false;
+        }
+
+        iframe.setAttribute("sandbox", source.permissions.join(" "));
+        if (source.allow?.length) {
+          iframe.setAttribute("allow", source.allow.join("; "));
+        } else {
+          iframe.removeAttribute("allow");
+        }
+        Object.assign(iframe, { src: url });
+        return true;
       },
 
       /**

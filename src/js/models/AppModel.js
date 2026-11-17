@@ -1762,8 +1762,10 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
           /**
            * URLs and URL patterns that MetacatUI trusts for iframe embeds.
            *
-           * Use a URL string to apply the default sandbox permissions or an
-           * object with a `url` and a `permissions` array.
+           * Use a URL string for the default sandbox permissions, or an object
+           * with `url` and an optional `permissions` array to override them.
+           * Set `allow` to delegate browser features to Markdown and map
+           * visualization iframes, for example `["fullscreen", "geolocation"]`.
            *
            * Use an origin without a trailing slash to allow any path on that
            * origin. `https://*.dataone.org` matches HTTPS subdomains. Add a
@@ -1780,7 +1782,7 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            *      permissions: ["allow-scripts", "allow-same-origin"],
            *    },
            *  ]
-           * @type {string[]|object[]}
+           * @type {Array.<string|object>}
            * @since 2.32.0
            */
           trustedContentSources: [],

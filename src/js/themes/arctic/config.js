@@ -284,12 +284,8 @@ MetacatUI.AppConfig = {
     "https://nceas.github.io/*",
     {
       url: "https://storymaps.arcgis.com/stories/aff2330a6306405fa5327067e8bc12f5",
-      permissions: [
-        "allow-fullscreen",
-        "allow-geolocation",
-        "allow-scripts",
-        "allow-same-origin",
-      ],
+      permissions: ["allow-scripts", "allow-same-origin"],
+      allow: ["fullscreen", "geolocation"],
     },
   ],
   ...(MetacatUI.AppConfig || {}),
