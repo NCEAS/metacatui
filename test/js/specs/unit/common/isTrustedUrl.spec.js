@@ -118,7 +118,6 @@ define([
         globalThis.MetacatUI = makeMetacatUI([
           { url: "https://example.com/*" },
           { url: "http://example.com/*" },
-          { url: "*" },
         ]);
       });
 
@@ -266,14 +265,16 @@ define([
           .false;
       });
 
-      it("matches host-looking patterns against the URL origin only", () => {
-        globalThis.MetacatUI = makeMetacatUI([{ url: "https://*example.com" }]);
-
-        expect(
-          trustedContent.isTrustedUrl(
-            "https://evil.com/path?target=example.com",
-          ),
-        ).to.be.false;
+      it("rejects rules without an origin or with misplaced host wildcards", () => {
+        for (const pattern of [
+          "*",
+          "https://*example.com",
+          "https://example.com*",
+        ]) {
+          globalThis.MetacatUI = makeMetacatUI([pattern]);
+          expect(trustedContent.isTrustedUrl("https://example.com/"), pattern)
+            .to.be.false;
+        }
       });
     });
 

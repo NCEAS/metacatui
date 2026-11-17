@@ -12,45 +12,29 @@ define(["showdown", "common/TrustedContentUtilities"], (showdown, trustedContent
   const EXTERNAL_CONTENT_LABEL = "<b>External Content</b>:";
   const REMOVED_URL_MESSAGE = "(URL removed for security)";
 
-  /**
-   * Regular expression that finds all iframes in the markdown content. The
-   * regex captures the full iframe tag, the src attribute, the inner content,
-   * and the closing tag, if it exists.
-   * @type {RegExp}
-   */
-  const IFRAME_REGEX =
-    /<iframe[^>]*?\bsrc="([^"]*)"[^>]*?>([\s\S]*?)(<\/iframe>)?/g;
-
-  /**
-   * Extract the value of a single quoted attribute from a raw HTML tag string.
-   * @param {string} tag The raw opening tag text.
-   * @param {string} name Attribute name.
-   * @returns {string|null} Attribute value, or null if absent.
-   */
-  function extractAttr(tag, name) {
-    const match = tag.match(new RegExp(`\\b${name}="([^"]*)"`, "i"));
-    return match ? match[1] : null;
-  }
+  /** Match sanitized iframe tags with a src attribute */
+  const IFRAME_REGEX = /<iframe[^>]*?\bsrc="[^"]*"[^>]*?>(?:<\/iframe>)?/g;
 
   /**
    * Embed a trusted URL with the source's sandbox and browser permissions.
    * Use a link for untrusted HTTP(S) URLs and warning text for other URLs.
    * @param {string} tag The matched iframe tag
-   * @param {string} rawSrc The src attribute as written in the HTML
    * @returns {string} The iframe, fallback link, or warning text
    */
-  const secureIFrame = (tag, rawSrc) => {
-    // Check the decoded attribute value the browser would load.
+  const secureIFrame = (tag) => {
+    // Parse the tag in an inert template to read the decoded attributes.
     const template = document.createElement("template");
-    template.innerHTML = `<a href="${rawSrc}"></a>`;
-    const link = template.content.firstElementChild;
-    const src = link.getAttribute("href");
+    template.innerHTML = tag;
+    const original = template.content.firstElementChild;
+    const src = original.getAttribute("src");
     const iframe = document.createElement("iframe");
 
     if (!trustedContent.configureTrustedIframe(iframe, src)) {
       if (!trustedContent.isHttpUrl(src)) {
         return `${EXTERNAL_CONTENT_LABEL} ${REMOVED_URL_MESSAGE}`;
       }
+      const link = document.createElement("a");
+      link.href = src;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
       link.innerHTML = EXTERNAL_CONTENT_LABEL;
@@ -59,7 +43,7 @@ define(["showdown", "common/TrustedContentUtilities"], (showdown, trustedContent
     }
 
     ALLOWED_ATTRS.forEach((name) => {
-      const value = extractAttr(tag, name);
+      const value = original.getAttribute(name);
       if (value !== null) {
         iframe.setAttribute(name, value);
       }

@@ -36,30 +36,16 @@ define([], () => {
       },
 
       /**
-       * Convert a URL pattern with wildcards to a RegExp.
-       * The protocol (if present) is extracted and escaped separately so that
-       * "https://" in a pattern only matches HTTPS URLs, not HTTP.
-       * @param {string} wildcardPattern The pattern, which may include "*" wildcards.
-       * @returns {RegExp} Case-insensitive regex that matches the full URL.
+       * Convert a wildcard pattern to a regex that ignores case.
+       * @param {string} wildcardPattern The pattern, which may include "*" wildcards
+       * @returns {RegExp} Regular expression anchored at both ends
        * @since 2.37.0
        */
       patternToRegex(wildcardPattern) {
-        let protocol = "";
-        let pattern = wildcardPattern;
-        const protocolMatch = pattern.match(/^(https?:\/\/)/);
-        if (protocolMatch) {
-          [, protocol] = protocolMatch;
-          pattern = wildcardPattern.slice(protocol.length);
-        }
-
-        const escapedPattern = pattern
+        const escapedPattern = wildcardPattern
           .replace(/[-/\\^$+?.()|[\]{}]/g, "\\$&")
           .replace(/\*/g, ".*");
-        const escapedProtocol = protocol.replace(
-          /[-/\\^$+?.()|[\]{}]/g,
-          "\\$&",
-        );
-        return new RegExp(`^${escapedProtocol}${escapedPattern}$`, "i");
+        return new RegExp(`^${escapedPattern}$`, "i");
       },
 
       /**
@@ -109,11 +95,16 @@ define([], () => {
         const sources = MetacatUI?.appModel?.get("trustedContentSources") ?? [];
         if (!sources.length) return null;
 
-        if (!TrustedContentUtilities.isHttpUrl(url)) {
+        let parsedUrl;
+        try {
+          parsedUrl = new URL(url);
+        } catch {
+          return null;
+        }
+        if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
           return null;
         }
 
-        const parsedUrl = new URL(url);
         const urlSuffix = parsedUrl.href.replace(/^https?:\/\/[^/]+/, "");
 
         const matchedSource = sources
@@ -121,17 +112,17 @@ define([], () => {
           .find((normalized) => {
             if (!normalized) return false;
 
-            // Keep host wildcards from matching the rest of the URL.
-            const [, originPattern, suffixPattern] =
-              normalized.url.match(/^(https?:\/\/[^/?#]+)(.*)$/i) ?? [];
-            const urlToMatch = originPattern
-              ? parsedUrl.origin
-              : parsedUrl.href;
+            // Only a leading "*." can match across hostname labels.
+            const pattern = normalized.url.match(
+              /^(https?:\/\/(?:\*\.)?[^*/?#]+)([/?#].*)?$/i,
+            );
+            if (!pattern) return false;
 
+            const [, originPattern, suffixPattern] = pattern;
             return (
-              TrustedContentUtilities.patternToRegex(
-                originPattern ?? normalized.url,
-              ).test(urlToMatch) &&
+              TrustedContentUtilities.patternToRegex(originPattern).test(
+                parsedUrl.origin,
+              ) &&
               (!suffixPattern ||
                 TrustedContentUtilities.patternToRegex(suffixPattern).test(
                   urlSuffix,

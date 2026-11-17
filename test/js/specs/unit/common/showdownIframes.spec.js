@@ -33,7 +33,7 @@ define(["showdown", "showdownXssFilter", "showdownIframes"], (showdown) => {
       }
     });
 
-    it("uses the matching source's sandbox and allow settings", () => {
+    it("keeps the iframe title and applies the matching source's permissions", () => {
       const storyUrl = "https://storymaps.example.org/stories/approved";
       const otherUrl = "https://storymaps.example.org/stories/other";
       const getConfig = sinon.stub(MetacatUI.appModel, "get").callThrough();
@@ -53,11 +53,12 @@ define(["showdown", "showdownXssFilter", "showdownIframes"], (showdown) => {
         });
         const output = document.createElement("template");
         output.innerHTML = converter.makeHtml(
-          `<iframe src="${storyUrl}" allow="camera"></iframe>
+          `<iframe src="${storyUrl}" title="Maps &amp; charts" allow="camera"></iframe>
 <iframe src="${otherUrl}" allow="geolocation" allowfullscreen="allowfullscreen"></iframe>`,
         );
 
         const [story, other] = output.content.querySelectorAll("iframe");
+        expect(story.getAttribute("title")).to.equal("Maps & charts");
         expect(story.getAttribute("allow")).to.equal("fullscreen; geolocation");
         expect(story.getAttribute("sandbox")).to.equal(
           "allow-scripts allow-same-origin allow-forms",

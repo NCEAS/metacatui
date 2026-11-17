@@ -1767,9 +1767,10 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * Set `allow` to delegate browser features to Markdown and map
            * visualization iframes, for example `["fullscreen", "geolocation"]`.
            *
-           * Use an origin without a trailing slash to allow any path on that
-           * origin. `https://*.dataone.org` matches HTTPS subdomains. Add a
-           * path pattern to limit which URLs on the origin can be embedded.
+           * Start each rule with an HTTP or HTTPS origin. Use an exact hostname
+           * or a leading `*.` for subdomains, as in `https://*.dataone.org`.
+           * Use an origin without a trailing slash to allow any path, or add a
+           * path pattern to limit which URLs can be embedded.
            *
            * Set to an empty array or a falsy value to disable embeds.
            *
