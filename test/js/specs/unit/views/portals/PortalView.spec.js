@@ -54,6 +54,7 @@ define([
       });
       state.view.remove();
       document.body.style.height = state.bodyHeight;
+      document.body.classList.remove("portal-iframe-active");
       state.sandbox.restore();
     });
 
@@ -107,6 +108,28 @@ define([
       state.view.model.set("layout", null);
       state.view.switchSection(sectionView);
       expect(document.body.style.height).to.equal("");
+    });
+
+    it("hides the footer logos on an iframe page and restores them when leaving it", () => {
+      state.view.logosView = new Backbone.View();
+      state.view.addSection(
+        new PortalVizSectionModel({
+          label: "Visualizations",
+          visualizationType: "iframe",
+        }),
+      );
+      state.view.addSection(
+        new PortalVizSectionModel({
+          label: "Map",
+          visualizationType: "cesium",
+        }),
+      );
+
+      state.view.switchSection(state.view.subviews[0]);
+      expect(state.view.logosView.el.style.display).to.equal("none");
+
+      state.view.switchSection(state.view.subviews[1]);
+      expect(state.view.logosView.el.style.display).to.equal("");
     });
   });
 });

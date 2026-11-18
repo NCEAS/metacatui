@@ -1,9 +1,23 @@
-define(["jquery", "views/portals/PortalSectionView"], (
-  $,
-  PortalSectionView,
-) => {
+define([
+  "jquery",
+  "views/portals/PortalSectionView",
+  "common/TrustedContentUtilities",
+], ($, PortalSectionView, TrustedContentUtilities) => {
+  const CLASS_NAMES = {
+    ALERT: "alert",
+    WARNING: "alert-warning",
+    SECTION_LINKS: "section-links-container",
+  };
+  const VISUALIZATION_TYPES = {
+    FEVER: "fever",
+    CESIUM: "cesium",
+    IFRAME: "iframe",
+  };
+  const UNTRUSTED_IFRAME_MESSAGE =
+    "This visualization has not been approved for inclusion on this site. Please contact support for assistance.";
   const PANELS_LAYOUT = "panels";
   const MIN_MAP_HEIGHT = "var(--max-map-toolbar-link-height)";
+  const MIN_IFRAME_HEIGHT = 300;
 
   /**
    * @class PortalVisualizationsView
@@ -78,6 +92,25 @@ define(["jquery", "views/portals/PortalSectionView"], (
         this.$el.html(iframe);
       },
 
+      /** Render the portal's iframe using the site's embed policy */
+      renderIframe() {
+        const url = this.model.get("iframeUrl");
+        const iframe = document.createElement("iframe");
+        if (!TrustedContentUtilities.configureTrustedIframe(iframe, url)) {
+          const message = document.createElement("p");
+          message.className = `${CLASS_NAMES.ALERT} ${CLASS_NAMES.WARNING}`;
+          message.textContent = UNTRUSTED_IFRAME_MESSAGE;
+          this.$el.html(message);
+          return;
+        }
+
+        iframe.title = this.model.get("label");
+        iframe.src = new URL(url).href;
+        iframe.style.display = "block";
+        iframe.style.width = "100%";
+        this.$el.html(iframe);
+      },
+
       /**
        * Renders a {@link MapView} and inserts into this view
        */
@@ -85,7 +118,7 @@ define(["jquery", "views/portals/PortalSectionView"], (
         const mapConfigError = this.model.get("mapConfigError");
         if (mapConfigError) {
           const message = document.createElement("p");
-          message.className = "alert alert-warning";
+          message.className = `${CLASS_NAMES.ALERT} ${CLASS_NAMES.WARNING}`;
           message.textContent = mapConfigError;
           this.$el.html(message);
           return;
@@ -124,14 +157,19 @@ define(["jquery", "views/portals/PortalSectionView"], (
        */
       postRender: function () {
         try {
-          const vizType = this.model.get("visualizationType");
-          if (vizType !== "fever" && vizType !== "cesium") return;
-
           if (!this.hasRendered) {
-            if (vizType === "fever") {
-              this.renderFEVer();
-            } else {
-              this.renderMap();
+            switch (this.model.get("visualizationType")) {
+              case VISUALIZATION_TYPES.FEVER:
+                this.renderFEVer();
+                break;
+              case VISUALIZATION_TYPES.IFRAME:
+                this.renderIframe();
+                break;
+              case VISUALIZATION_TYPES.CESIUM:
+                this.renderMap();
+                break;
+              default:
+                return;
             }
             this.hasRendered = true;
           }
@@ -156,15 +194,33 @@ define(["jquery", "views/portals/PortalSectionView"], (
 
       /** Adjusts height of the viz based on the available viewport height */
       adjustVizHeight: function () {
-        if (this.model.get("visualizationType") === "cesium") {
-          if (this.portalModel?.get("layout") === PANELS_LAYOUT) return;
+        const vizType = this.model.get("visualizationType");
+        const isCesium = vizType === VISUALIZATION_TYPES.CESIUM;
+        const isIframe = vizType === VISUALIZATION_TYPES.IFRAME;
+        if (isCesium && this.portalModel?.get("layout") === PANELS_LAYOUT) {
+          return;
+        }
 
-          const tabs = this.$el.parent().siblings(".section-links-container");
-          let height = $(window).outerHeight(true) - this.$el.offset().top;
-          height -=
+        if (isIframe || isCesium) {
+          const tabs = this.$el
+            .parent()
+            .siblings(`.${CLASS_NAMES.SECTION_LINKS}`);
+          const fixedTabsHeight =
             tabs.css("position") === "fixed" ? tabs.outerHeight(true) : 0;
-          // Keep room for map controls in short windows.
-          this.$el.css("min-height", `max(${height}px, ${MIN_MAP_HEIGHT})`);
+          const height =
+            $(window).outerHeight(true) -
+            this.$el.offset().top -
+            fixedTabsHeight;
+          if (isIframe) {
+            // Leave room to scroll past the fixed tabs in short viewports.
+            this.$("iframe").css({
+              height: Math.max(MIN_IFRAME_HEIGHT, height),
+              marginBottom: fixedTabsHeight,
+            });
+          } else {
+            // Keep room for map controls in short windows.
+            this.$el.css("min-height", `max(${height}px, ${MIN_MAP_HEIGHT})`);
+          }
           return;
         }
 

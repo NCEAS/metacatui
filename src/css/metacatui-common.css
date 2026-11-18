@@ -5658,6 +5658,23 @@ i.toc-sub-item {
 }
 
 /** The Portal Visualization View **/
+.PortalView.portal-iframe-active {
+  grid-template-rows: auto 0 minmax(0, 1fr);
+  padding-bottom: 0;
+}
+.PortalView.portal-iframe-active #Content {
+  /* Some themes hide the header between the navbar and content. */
+  grid-row: 3;
+  min-height: 0;
+  padding-bottom: 0;
+  padding-inline: 0;
+}
+.PortalView.portal-iframe-active #Content > .portal-view {
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding-bottom: 0;
+}
 .portal-viz-section-view {
   background-color: black;
   height: 100%;

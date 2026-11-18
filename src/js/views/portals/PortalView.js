@@ -35,6 +35,16 @@ define([
 ) => {
   "use_strict";
 
+  const CLASS_NAMES = {
+    VIEW: "PortalView",
+    IFRAME_ACTIVE: "portal-iframe-active",
+  };
+  const PANELS_LAYOUT = "panels";
+  const VISUALIZATION_TYPES = {
+    CESIUM: "cesium",
+    IFRAME: "iframe",
+  };
+
   /**
    * @class PortalView
    * @classdesc The PortalView is a generic view to render
@@ -185,7 +195,7 @@ define([
         this.subviews = new Array();
 
         // Add the overall class immediately so the navbar is styled correctly right away
-        $("body").addClass("PortalView");
+        $("body").addClass(CLASS_NAMES.VIEW);
 
         this.$el.html(
           this.loadingTemplate({
@@ -499,7 +509,7 @@ define([
           const layout = this.model.get("layout");
           // TODO: make supported themes an app model config option?
           const supportedThemes = ["dark", "light"];
-          const supportedLayouts = ["panels"];
+          const supportedLayouts = [PANELS_LAYOUT];
           // We must remove theme/layout CSS when the user navigates away from the
           // portal in onClose(). To do this, we need to keep track of which CSS is
           // added during this step.
@@ -701,29 +711,26 @@ define([
           }
         });
 
-        // If the section view has post-render functionality, execute it now
-        if (typeof sectionView.postRender == "function") {
-          sectionView.postRender();
-        }
-
         // Eventually, the panels layout will allow showing multiple sections at the
         // same time in different panels. For now, the visualizations sections should
         // take up the full height of the viewport (minus the header elements), and the
         // footer should be hidden.
+        const isVisualization = sectionView instanceof PortalVisualizationsView;
+        const vizType = sectionView.model.get("visualizationType");
+        const isIframe =
+          isVisualization && vizType === VISUALIZATION_TYPES.IFRAME;
         const isPanelsVisualization =
-          this.model.get("layout") === "panels" &&
-          sectionView instanceof PortalVisualizationsView;
+          isVisualization && this.model.get("layout") === PANELS_LAYOUT;
 
-        if (
-          isPanelsVisualization &&
-          sectionView.model.get("visualizationType") === "cesium"
-        ) {
+        document.body.classList.toggle(CLASS_NAMES.IFRAME_ACTIVE, isIframe);
+
+        if (isPanelsVisualization && vizType === VISUALIZATION_TYPES.CESIUM) {
           document.body.style.setProperty("height", "100%");
         } else {
           document.body.style.removeProperty("height");
         }
 
-        if (isPanelsVisualization) {
+        if (isIframe || isPanelsVisualization) {
           if (this.logosView) {
             this.logosView.el.style.setProperty("display", "none");
           }
@@ -737,6 +744,11 @@ define([
           if (MetacatUI.footerView) {
             MetacatUI.footerView.show();
           }
+        }
+
+        // Size the visualization after the layout and footer have been updated.
+        if (typeof sectionView.postRender === "function") {
+          sectionView.postRender();
         }
 
         if (!this.nodeView) {
@@ -1128,7 +1140,10 @@ define([
         //Remove the scroll listener
         $(window).off("scroll", "", this.handleScroll);
 
-        $("body").removeClass("PortalView");
+        document.body.classList.remove(
+          CLASS_NAMES.VIEW,
+          CLASS_NAMES.IFRAME_ACTIVE,
+        );
         document.body.style.removeProperty("height");
 
         // Make sure the footer is visible (hidden for dataViz sections + panels layout)
