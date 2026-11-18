@@ -13,7 +13,7 @@ define(["showdown", "common/TrustedContentUtilities"], (showdown, trustedContent
   const REMOVED_URL_MESSAGE = "(URL removed for security)";
 
   /** Match sanitized iframe tags with a src attribute */
-  const IFRAME_REGEX = /<iframe[^>]*?\bsrc="[^"]*"[^>]*?>(?:<\/iframe>)?/g;
+  const IFRAME_REGEX = /<iframe[^>]*?\bsrc="[^"]*"[^>]*?>(?:(?:(?!<iframe\b)[\s\S])*?<\/iframe>)?/g;
 
   /**
    * Embed a trusted URL with the source's sandbox and browser permissions.
