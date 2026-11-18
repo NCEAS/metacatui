@@ -1,22 +1,25 @@
 define(["common/SearchParams"], (SearchParams) => {
   const expect = chai.expect;
-  const sandbox = sinon.createSandbox();
-  const stub = sandbox.stub;
   const resetUrl = () => {
-    window.history.replaceState(null, "", window.location.pathname);
+    if (window.location.search || window.location.hash) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
   };
 
   describe("SearchParams Test Suite", () => {
-    beforeEach(() => {
-      resetUrl();
-      SearchParams.clearStateInUrl();
+    let specUrl;
+
+    before(() => {
+      if (new URLSearchParams(window.location.search).has("spec")) {
+        specUrl = window.location.href;
+      }
     });
 
-    afterEach(() => {
-      sandbox.restore();
+    beforeEach(resetUrl);
+    afterEach(resetUrl);
 
-      resetUrl();
-      SearchParams.clearStateInUrl();
+    after(() => {
+      if (specUrl) window.history.replaceState(null, "", specUrl);
     });
 
     describe("clearStateInUrl", () => {

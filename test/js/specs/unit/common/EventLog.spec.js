@@ -1,29 +1,24 @@
 define([
   "/test/js/specs/shared/clean-state.js",
+  "backbone",
   "common/EventLog",
-  "models/analytics/Analytics",
-], (cleanState, EventLog, Analytics) => {
+], (cleanState, Backbone, EventLog) => {
   const should = chai.should();
   const expect = chai.expect;
 
   describe("EventLog Test Suite", () => {
-    // Establish a clean state before each test and restore afterwards
-    const state = cleanState(
-      () => {
-        const sandbox = sinon.createSandbox();
+    const state = cleanState(() => {
+      const sandbox = sinon.createSandbox();
 
-        // Stub console so tests stay quiet
-        sandbox.stub(console, "info");
-        sandbox.stub(console, "warn");
-        sandbox.stub(console, "error");
+      // Stub console so tests stay quiet
+      sandbox.stub(console, "info");
+      sandbox.stub(console, "warn");
+      sandbox.stub(console, "error");
 
-        const eventLog = new EventLog({ maxEvents: 3 }); // 3 makes trimming easy
+      const eventLog = new EventLog({ maxEvents: 3 }); // 3 makes trimming easy
 
-        return { sandbox, eventLog };
-      },
-      beforeEach,
-      afterEach,
-    );
+      return { sandbox, eventLog };
+    }, beforeEach);
 
     afterEach(() => {
       state.sandbox.restore();
@@ -44,22 +39,15 @@ define([
         console.error.called.should.be.false;
       });
 
-      it("uses an explicit analytics override or the current app model", () => {
-        const originalMetacatUI = globalThis.MetacatUI;
-        const override = new Analytics();
+      it("prefers the analytics override and falls back to app analytics", () => {
+        const override = new Backbone.Model();
+        const appAnalytics = new Backbone.Model();
         const eventLog = new EventLog({ analyticsModel: override });
 
-        try {
-          globalThis.MetacatUI = { ...(originalMetacatUI || {}) };
-          eventLog.analytics.should.equal(override);
+        state.sandbox.replace(globalThis.MetacatUI, "analytics", appAnalytics);
 
-          const appAnalytics = new Analytics();
-          const defaultEventLog = new EventLog();
-          globalThis.MetacatUI.analytics = appAnalytics;
-          defaultEventLog.analytics.should.equal(appAnalytics);
-        } finally {
-          globalThis.MetacatUI = originalMetacatUI;
-        }
+        eventLog.analytics.should.equal(override);
+        state.eventLog.analytics.should.equal(appAnalytics);
       });
     });
 

@@ -57,7 +57,7 @@ define(["jquery", "collections/ObjectFormats", "models/SolrResult"], function (
     });
 
     describe("downloadWithCredentials", function () {
-      it("should download a file with valid credentials", async function () {
+      it("starts a download with the filename from the response", async function () {
         const mockBlob = new Blob(["test"], { type: "text/plain" });
         const mockResponse = new Response(mockBlob, {
           status: 200,
@@ -66,20 +66,21 @@ define(["jquery", "collections/ObjectFormats", "models/SolrResult"], function (
           },
         });
 
-        // Mock fetch response
         fetchStub.resolves(mockResponse);
+        const downloadComplete = sinon.spy();
+        solrResult.once("downloadComplete", downloadComplete);
 
-        // Spy on model.trigger to check if the events are triggered
-        const triggerSpy = sinon.spy(solrResult, "trigger");
+        const clickStub = sinon.stub(HTMLAnchorElement.prototype, "click");
+        try {
+          await solrResult.downloadWithCredentials();
+        } finally {
+          clickStub.restore();
+        }
 
-        // Execute the downloadWithCredentials method
-        await solrResult.downloadWithCredentials();
-
-        // Ensure that fetch was called once
         sinon.assert.calledOnce(fetchStub);
-
-        // Check if the downloadComplete event was triggered
-        sinon.assert.calledWith(triggerSpy, "downloadComplete");
+        sinon.assert.calledOnce(clickStub);
+        expect(clickStub.firstCall.thisValue.download).to.equal("testfile.txt");
+        sinon.assert.calledOnce(downloadComplete);
       });
 
       it("passes the HTTP status to download error listeners", async function () {

@@ -45,13 +45,11 @@ The test suite to be run is defined in `test/config/tests.json`. Paths to new sp
 
 ## Unit tests
 
-All unit tests are run by default. To run the unit test suite, serve the `index.html` file via a Node Express server:
+Run the unit suite in headless Chrome with `npm test`.
 
-```
-npm run test
-```
-
-and view the tests in a web browser by going to the localhost address printed out (e.g. `http://localhost:3001`).
+To run the tests in your browser, start the server with `npm run view-tests` and
+open `http://localhost:3001/test/`. Click the test page and keep the tab active
+while the tests run so they receive native focus and blur events.
 
 ## Single spec tests
 
