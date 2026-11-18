@@ -1,26 +1,24 @@
 define(["common/SearchParams"], (SearchParams) => {
   const expect = chai.expect;
-  const resetUrl = () => {
-    if (window.location.search || window.location.hash) {
-      window.history.replaceState(null, "", window.location.pathname);
-    }
-  };
 
   describe("SearchParams Test Suite", () => {
-    let specUrl;
+    let sandbox;
+    let url;
 
-    before(() => {
-      if (new URLSearchParams(window.location.search).has("spec")) {
-        specUrl = window.location.href;
-      }
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+      url = new URL("https://example.org/map");
+
+      // Keep these URL transformations off the test runner's browser history.
+      sandbox.stub(document, "URL").get(() => url.href);
+      sandbox
+        .stub(window.history, "replaceState")
+        .callsFake((_state, _title, nextUrl) => {
+          url = new URL(nextUrl);
+        });
     });
 
-    beforeEach(resetUrl);
-    afterEach(resetUrl);
-
-    after(() => {
-      if (specUrl) window.history.replaceState(null, "", specUrl);
-    });
+    afterEach(() => sandbox.restore());
 
     describe("clearStateInUrl", () => {
       it("removes all saved view-related search parameters", () => {
@@ -169,7 +167,6 @@ define(["common/SearchParams"], (SearchParams) => {
       it("persists explicit empty enabledLayerIds as el in the URL", () => {
         SearchParams.updateStateInUrl({ enabledLayerIds: [] });
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.has("el")).to.equal(true);
         expect(SearchParams.parseStateFromUrl().enabledLayerIds).to.deep.equal(
           [],
@@ -203,11 +200,7 @@ define(["common/SearchParams"], (SearchParams) => {
 
     describe("parseStateFromUrl", () => {
       it("treats URLs without sv as schema 0 and ignores phase-1 params", () => {
-        window.history.replaceState(
-          null,
-          "",
-          "?lt=1&ln=2&ht=3&a=someAction&op=viewfinder",
-        );
+        url.search = "?lt=1&ln=2&ht=3&a=someAction&op=viewfinder";
 
         const state = SearchParams.parseStateFromUrl();
 
@@ -222,11 +215,7 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("parses phase-1 params when sv=1", () => {
-        window.history.replaceState(
-          null,
-          "",
-          "?sv=1&a=action-123&op=layers&lt=1&ln=2&ht=3",
-        );
+        url.search = "?sv=1&a=action-123&op=layers&lt=1&ln=2&ht=3";
 
         const state = SearchParams.parseStateFromUrl();
 
@@ -238,13 +227,12 @@ define(["common/SearchParams"], (SearchParams) => {
 
     describe("updateStateInUrl", () => {
       it("preserves unrelated query params", () => {
-        window.history.replaceState(null, "", "?foo=bar");
+        url.search = "?foo=bar";
 
         SearchParams.updateStateInUrl({
           openPanel: "viewfinder",
         });
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.get("foo")).to.equal("bar");
         expect(url.searchParams.get("sv")).to.equal("1");
         expect(url.searchParams.get("op")).to.equal("viewfinder");
@@ -253,15 +241,10 @@ define(["common/SearchParams"], (SearchParams) => {
 
     describe("clearStateInUrl", () => {
       it("removes known restore params and leaves unrelated params", () => {
-        window.history.replaceState(
-          null,
-          "",
-          "?foo=bar&sv=1&a=abc&op=layers&lt=1&ln=2&ht=3&el=l1,l2",
-        );
+        url.search = "?foo=bar&sv=1&a=abc&op=layers&lt=1&ln=2&ht=3&el=l1,l2";
 
         SearchParams.clearStateInUrl();
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.get("foo")).to.equal("bar");
         expect(url.searchParams.get("sv")).to.be.null;
         expect(url.searchParams.get("a")).to.be.null;
@@ -284,11 +267,8 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("applies namespaced params to a URI template", () => {
-        window.history.replaceState(
-          null,
-          "",
-          "?a=wt&wt-selected_lake=b7g1zd63mmt8&wt-lat=64.123&wt-lon=-148.456&wt-zoom=8&wt-section_id=time-series-header",
-        );
+        url.search =
+          "?a=wt&wt-selected_lake=b7g1zd63mmt8&wt-lat=64.123&wt-lon=-148.456&wt-zoom=8&wt-section_id=time-series-header";
 
         const resolved = SearchParams.resolveActionUrl({
           id: "wt",
@@ -301,11 +281,7 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("ignores namespaced params when share-url syncing is disabled", () => {
-        window.history.replaceState(
-          null,
-          "",
-          "?a=wt&wt-selected_lake=b7g1zd63mmt8&wt-zoom=8",
-        );
+        url.search = "?a=wt&wt-selected_lake=b7g1zd63mmt8&wt-zoom=8";
 
         const resolved = SearchParams.resolveActionUrl(
           {
@@ -324,11 +300,7 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("appends initial query params after template expansion", () => {
-        window.history.replaceState(
-          null,
-          "",
-          "?a=wt&wt-selected_lake=b7g1zd63mmt8&wt-zoom=8",
-        );
+        url.search = "?a=wt&wt-selected_lake=b7g1zd63mmt8&wt-zoom=8";
 
         const resolved = SearchParams.resolveActionUrl({
           id: "wt",
@@ -347,11 +319,8 @@ define(["common/SearchParams"], (SearchParams) => {
 
     describe("syncActionStateFromVisualizationUrl", () => {
       it("writes allow-listed values and clears omitted keys", () => {
-        window.history.replaceState(
-          null,
-          "",
-          "?foo=bar&wt-selected_lake=old-lake&wt-lat=65&wt-lon=-149&wt-theme=dark",
-        );
+        url.search =
+          "?foo=bar&wt-selected_lake=old-lake&wt-lat=65&wt-lon=-149&wt-theme=dark";
 
         const synced = SearchParams.syncActionStateFromVisualizationUrl({
           actionId: "wt",
@@ -363,7 +332,6 @@ define(["common/SearchParams"], (SearchParams) => {
 
         expect(synced).to.equal(true);
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.get("foo")).to.equal("bar");
         expect(url.searchParams.get("wt-selected_lake")).to.equal(
           "b7g1zd63mmt8",
@@ -375,7 +343,7 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("writes values when the visualization URL omits the trailing slash after the host", () => {
-        window.history.replaceState(null, "", "?foo=bar");
+        url.search = "?foo=bar";
 
         const synced = SearchParams.syncActionStateFromVisualizationUrl({
           actionId: "wt",
@@ -387,7 +355,6 @@ define(["common/SearchParams"], (SearchParams) => {
 
         expect(synced).to.equal(true);
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.get("wt-selected_lake")).to.equal(
           "b7fce5fz7s55",
         );
@@ -397,7 +364,7 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("writes allow-listed values when the visualization URL contains extra query or hash state", () => {
-        window.history.replaceState(null, "", "?foo=bar");
+        url.search = "?foo=bar";
 
         const synced = SearchParams.syncActionStateFromVisualizationUrl({
           actionId: "wt",
@@ -409,7 +376,6 @@ define(["common/SearchParams"], (SearchParams) => {
 
         expect(synced).to.equal(true);
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.get("wt-selected_lake")).to.equal(
           "b7g6k2stc04z",
         );
@@ -419,11 +385,8 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("keeps previous namespaced params when the visualization URL does not match the template", () => {
-        window.history.replaceState(
-          null,
-          "",
-          "?foo=bar&wt-selected_lake=old-lake&wt-lat=65&wt-lon=-149&wt-zoom=7",
-        );
+        url.search =
+          "?foo=bar&wt-selected_lake=old-lake&wt-lat=65&wt-lon=-149&wt-zoom=7";
 
         const synced = SearchParams.syncActionStateFromVisualizationUrl({
           actionId: "wt",
@@ -435,7 +398,6 @@ define(["common/SearchParams"], (SearchParams) => {
 
         expect(synced).to.equal(false);
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.get("foo")).to.equal("bar");
         expect(url.searchParams.get("wt-selected_lake")).to.equal("old-lake");
         expect(url.searchParams.get("wt-lat")).to.equal("65");
@@ -446,15 +408,10 @@ define(["common/SearchParams"], (SearchParams) => {
 
     describe("clearActionStateInUrl", () => {
       it("removes only namespaced params for the given action", () => {
-        window.history.replaceState(
-          null,
-          "",
-          "?foo=bar&wt-selected_lake=abc&wt-lat=65&xy-lat=11",
-        );
+        url.search = "?foo=bar&wt-selected_lake=abc&wt-lat=65&xy-lat=11";
 
         SearchParams.clearActionStateInUrl("wt");
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.get("foo")).to.equal("bar");
         expect(url.searchParams.get("xy-lat")).to.equal("11");
         expect(url.searchParams.get("wt-selected_lake")).to.be.null;
@@ -472,11 +429,7 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("parses encoded f entries as activeFeatures when sv=1", () => {
-        window.history.replaceState(
-          null,
-          "",
-          `?sv=1&f=${encodeFeature({ featureId: "feature-abc-123" })}`,
-        );
+        url.search = `?sv=1&f=${encodeFeature({ featureId: "feature-abc-123" })}`;
 
         const state = SearchParams.parseStateFromUrl();
         expect(state.activeFeatures).to.deep.equal([
@@ -485,29 +438,21 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("ignores encoded f entries when sv is absent", () => {
-        window.history.replaceState(
-          null,
-          "",
-          `?f=${encodeFeature({ featureId: "feature-abc-123" })}`,
-        );
+        url.search = `?f=${encodeFeature({ featureId: "feature-abc-123" })}`;
 
         const state = SearchParams.parseStateFromUrl();
         expect(state.activeFeatures).to.deep.equal([]);
       });
 
       it("ignores non-JSON f entries", () => {
-        window.history.replaceState(null, "", "?f=legacy-id-1&f=legacy-id-2");
+        url.search = "?f=legacy-id-1&f=legacy-id-2";
 
         const state = SearchParams.parseStateFromUrl();
         expect(state.activeFeatures).to.deep.equal([]);
       });
 
       it("parses repeated encoded f params as activeFeatures when sv=1", () => {
-        window.history.replaceState(
-          null,
-          "",
-          `?sv=1&f=${encodeFeature({ featureId: "id-one" })}&f=${encodeFeature({ featureId: "id-two" })}&f=${encodeFeature({ featureId: "id-three" })}`,
-        );
+        url.search = `?sv=1&f=${encodeFeature({ featureId: "id-one" })}&f=${encodeFeature({ featureId: "id-two" })}&f=${encodeFeature({ featureId: "id-three" })}`;
 
         const state = SearchParams.parseStateFromUrl();
         expect(state.activeFeatures).to.deep.equal([
@@ -522,7 +467,6 @@ define(["common/SearchParams"], (SearchParams) => {
           activeFeatures: [{ featureId: "feat-xyz", layerId: null }],
         });
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.getAll("f")).to.deep.equal([
           JSON.stringify({ featureId: "feat-xyz", layerId: null }),
         ]);
@@ -537,7 +481,6 @@ define(["common/SearchParams"], (SearchParams) => {
           ],
         });
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.getAll("f")).to.deep.equal([
           JSON.stringify({ featureId: "id-a", layerId: null }),
           JSON.stringify({ featureId: "id-b", layerId: null }),
@@ -566,32 +509,25 @@ define(["common/SearchParams"], (SearchParams) => {
           activeFeatures: [],
         });
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.has("f")).to.equal(false);
       });
 
       it("clears f param via clearStateInUrl", () => {
-        window.history.replaceState(
-          null,
-          "",
-          "?sv=1&f=feature-abc-123&op=viewfinder",
-        );
+        url.search = "?sv=1&f=feature-abc-123&op=viewfinder";
 
         SearchParams.clearStateInUrl();
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.has("f")).to.equal(false);
         expect(url.searchParams.has("op")).to.equal(false);
       });
 
       it("preserves unrelated params when writing activeFeatures", () => {
-        window.history.replaceState(null, "", "?unrelated=keep");
+        url.search = "?unrelated=keep";
 
         SearchParams.updateStateInUrl({
           activeFeatures: [{ featureId: "feat-1", layerId: null }],
         });
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.get("unrelated")).to.equal("keep");
         expect(url.searchParams.get("sv")).to.equal("1");
         expect(url.searchParams.getAll("f")).to.deep.equal([
@@ -621,7 +557,6 @@ define(["common/SearchParams"], (SearchParams) => {
           { featureId: "feat-2", layerId: null },
         ]);
 
-        const url = new URL(window.location.href);
         expect(url.searchParams.getAll("f")).to.deep.equal([
           JSON.stringify({ featureId: "feat-1", layerId: "layer-a" }),
           JSON.stringify({ featureId: "feat-1", layerId: "layer-b" }),
@@ -631,11 +566,7 @@ define(["common/SearchParams"], (SearchParams) => {
       });
 
       it("parses feature-layer pairs into activeFeatures when sv=1", () => {
-        window.history.replaceState(
-          null,
-          "",
-          `?sv=1&f=${encodeFeature({ featureId: "feat-1", layerId: "layer-a" })}&f=${encodeFeature({ featureId: "feat-1", layerId: "layer-b" })}&f=${encodeFeature({ featureId: "feat-2" })}`,
-        );
+        url.search = `?sv=1&f=${encodeFeature({ featureId: "feat-1", layerId: "layer-a" })}&f=${encodeFeature({ featureId: "feat-1", layerId: "layer-b" })}&f=${encodeFeature({ featureId: "feat-2" })}`;
 
         const state = SearchParams.parseStateFromUrl();
         expect(state.activeFeatures).to.deep.equal([

@@ -67,7 +67,7 @@ define(["common/UriTemplateUtilities"], (UriTemplateUtilities) => {
    * @returns {URL} the current URL
    * @since 2.38.0
    */
-  const getCurrentUrl = () => new URL(window.location.href);
+  const getCurrentUrl = () => new URL(document.URL);
 
   /**
    * Replace the browser URL without navigating.
