@@ -29,9 +29,9 @@ define([
 ) => {
   /**
    * @class LayerDetailsView
-   * @classdesc A panel with additional information about a Layer (a Map Asset like
-   * imagery or vector data), plus some UI for updating the appearance of the Layer on
-   * the map, such as the opacity.
+   * @classdesc A panel with additional information about a Layer (a Map Asset
+   * like imagery or vector data), plus some UI for updating the appearance of
+   * the Layer on the map, such as the opacity.
    * @classcategory Views/Maps
    * @name LayerDetailsView
    * @augments Backbone.View
@@ -66,19 +66,21 @@ define([
       template: _.template(Template),
 
       /**
-       * Classes that are used to identify the HTML elements that comprise this view.
+       * Classes that are used to identify the HTML elements that comprise this
+       * view.
        * @type {object}
-       * @property {string} open The class to add to the outermost HTML element for this
-       * view when the layer details view is open/expanded (not hidden)
-       * @property {string} toggle The element in the template that acts as a toggle to
-       * close/hide the details view
-       * @property {string} sections The container for all of the LayerDetailViews.
-       * @property {string} label The label element for the layer that displays a title
-       * in the header of the details view
-       * @property {string} notification The element that holds the notification message,
-       * if there is one. Inserted before all the details sections.
-       * @property {string} badge The class to add to the badge element that is shown
-       * when the layer has a notification message.
+       * @property {string} open The class to add to the outermost HTML element
+       * for this view when the layer details view is open/expanded (not hidden)
+       * @property {string} toggle The element in the template that acts as a
+       * toggle to close/hide the details view
+       * @property {string} sections The container for all of the
+       * LayerDetailViews.
+       * @property {string} label The label element for the layer that displays
+       * a title in the header of the details view
+       * @property {string} notification The element that holds the notification
+       * message, if there is one. Inserted before all the details sections.
+       * @property {string} badge The class to add to the badge element that is
+       * shown when the layer has a notification message.
        */
       classes: {
         open: "layer-details--open",
@@ -113,9 +115,9 @@ define([
        */
 
       /**
-       * A list of sections to render within this view that give details about the
-       * MapAsset, or allow editing of the MapAsset appearance. Each section will have a
-       * title and its content will be collapsible.
+       * A list of sections to render within this view that give details about
+       * the MapAsset, or allow editing of the MapAsset appearance. Each section
+       * will have a title and its content will be collapsible.
        * @type {DetailSectionOption[]}
        */
       sections: [
@@ -153,8 +155,9 @@ define([
       /** @inheritdoc */
       events() {
         const events = {};
-        // Close the layer details panel when the toggle button is clicked. Get the
-        // class of the toggle button from the classes property set in this view.
+        // Close the layer details panel when the toggle button is clicked. Get
+        // the class of the toggle button from the classes property set in this
+        // view.
         events[`click .${this.classes.toggle}`] = "close";
         return events;
       },
@@ -167,7 +170,8 @@ define([
 
       /**
        * Executed when a new LayerDetailsView is created
-       * @param {object} [options] - A literal object with options to pass to the view
+       * @param {object} [options] - A literal object with options to pass to
+       * the view
        */
       initialize(options) {
         // Get all the options and apply them to this view
@@ -217,15 +221,15 @@ define([
 
           const detailSection = new LayerDetailView({
             label: section.label,
-            contentView: section.view,
+            ContentView: section.view,
             model,
             collapsible: section.collapsible,
             showTitle: section.showTitle,
           });
           sectionsContainer.append(detailSection.el);
           detailSection.render();
-          // Hide the section if there is an error with the asset, and this section
-          // does make sense to show for a layer that can't be displayed
+          // Hide the section if there is an error with the asset, and this
+          // section does make sense to show for a layer that can't be displayed
           if (section.hideIfError && model) {
             if (model && model.get("status") === "error") {
               detailSection.el.style.display = "none";
@@ -235,17 +239,15 @@ define([
           return { ...section, renderedView: detailSection };
         });
 
-        // Hide/show sections with the 'hideIfError' property when the status of the
-        // MapAsset changes
+        // Hide/show sections with the 'hideIfError' property when the status of
+        // the MapAsset changes
         this.stopListening(model, "change:status");
         this.listenTo(model, "change:status", (_model, status) => {
-          let displayProperty = "";
-          if (status === "error") {
-            displayProperty = "none";
-          }
+          const displayProperty = status === "error" ? "none" : "";
           this.renderedSections.forEach((section) => {
-            if (section.hideIfError) {
-              section.renderedView.el.style.display = displayProperty;
+            const sectionViewEl = section.renderedView?.el;
+            if (section.hideIfError && sectionViewEl) {
+              sectionViewEl.style.display = displayProperty;
             }
           });
         });
@@ -295,8 +297,8 @@ define([
       },
 
       /**
-       * Hide/collapse the Layer Details panel. Closing the panel also changes the
-       * MapAsset model's 'selected attribute' to false.
+       * Hide/collapse the Layer Details panel. Closing the panel also changes
+       * the MapAsset model's 'selected attribute' to false.
        */
       close() {
         this.el.classList.remove(this.classes.open);
@@ -310,9 +312,9 @@ define([
       /**
        * Updates the MapAsset model set on the view then re-renders the view and
        * displays information about the new model.
-       * @param {MapAsset|null} newModel the new MapAsset model to use to render the
-       * view. If set to null, then the view will be rendered without any layer
-       * information.
+       * @param {MapAsset|null} newModel the new MapAsset model to use to render
+       * the view. If set to null, then the view will be rendered without any
+       * layer information.
        */
       updateModel(newModel) {
         // Remove listeners from sub-views
