@@ -1,8 +1,9 @@
 define([
+  "jquery",
   "models/maps/assets/CesiumImagery",
   "views/maps/mapEditor/MapImageryEditorView",
   "/test/js/specs/shared/clean-state.js",
-], (CesiumImagery, MapImageryEditorView, cleanState) => {
+], ($, CesiumImagery, MapImageryEditorView, cleanState) => {
   const expect = chai.expect;
   const { PROVIDER_TYPES } = CesiumImagery;
 
@@ -69,17 +70,48 @@ define([
 
     it("validates the extent after leaving its coordinate group", () => {
       state.view.el.querySelector("details").open = true;
-      field("south").focus();
+      const south = field("south");
+      const east = field("east");
+      const extentError = error("cesiumOptions.rectangle");
+
       change("south", "");
-      expect(error("cesiumOptions.rectangle").textContent).to.equal("");
-      field("east").focus();
-      expect(error("cesiumOptions.rectangle").textContent).to.equal("");
+      expect(extentError.textContent).to.equal("");
+
+      $(south).trigger({ type: "focusout", relatedTarget: east });
+      expect(extentError.textContent).to.equal("");
+
+      $(east).trigger({ type: "focusout", relatedTarget: state.outsideInput });
+      expect(extentError.textContent).not.to.equal("");
+
+      change("south", "69.65");
+      $(south).trigger({ type: "focusout", relatedTarget: state.outsideInput });
+      expect(extentError.textContent).to.equal("");
+    });
+
+    it("validates the extent when native focus leaves its coordinate group", function () {
+      if (!document.hasFocus()) this.skip();
+
+      state.view.el.querySelector("details").open = true;
+      const south = field("south");
+      const east = field("east");
+      const extentError = error("cesiumOptions.rectangle");
+
+      south.focus();
+      expect(document.activeElement).to.equal(south);
+      change("south", "");
+
+      east.focus();
+      expect(document.activeElement).to.equal(east);
+      expect(extentError.textContent).to.equal("");
+
       state.outsideInput.focus();
-      expect(error("cesiumOptions.rectangle").textContent).not.to.equal("");
-      field("south").focus();
+      expect(document.activeElement).to.equal(state.outsideInput);
+      expect(extentError.textContent).not.to.equal("");
+
+      south.focus();
       change("south", "69.65");
       state.outsideInput.focus();
-      expect(error("cesiumOptions.rectangle").textContent).to.equal("");
+      expect(extentError.textContent).to.equal("");
     });
 
     [

@@ -49,7 +49,9 @@ Run the unit suite in headless Chrome with `npm test`.
 
 To run the tests in your browser, start the server with `npm run view-tests` and
 open `http://localhost:3001/test/`. Click the test page and keep the tab active
-while the tests run so they receive native focus and blur events.
+to run tests that rely on native focus events. Tests that require native focus
+events are skipped when the test page is unfocused. Mocha reports them as
+pending.
 
 ## Single spec tests
 

@@ -156,11 +156,32 @@ define([
       expect(state.harness.getError()).to.match(/some error/);
     });
 
-    it("does not show an autocompletions list when input is not focused", () => {
+    it("hides suggestions when the search input loses focus", () => {
       state.view.render();
-      state.harness.blurInput();
+      const suggestions = state.view.getList();
+      expect(suggestions.is(":visible")).to.be.true;
 
-      expect(state.view.getList().is(":visible")).to.be.false;
+      state.harness
+        .getInput()
+        .trigger({ type: "focusout", relatedTarget: null });
+
+      expect(suggestions.is(":visible")).to.be.false;
+    });
+
+    it("hides suggestions when native focus moves outside the search view", function () {
+      if (!document.hasFocus()) this.skip();
+
+      const outsideInput = document.createElement("input");
+      state.testContainer.append(outsideInput);
+      state.view.render();
+
+      const suggestions = state.view.getList();
+      expect(document.activeElement).to.equal(state.harness.getInput()[0]);
+      expect(suggestions.is(":visible")).to.be.true;
+
+      outsideInput.focus();
+      expect(document.activeElement).to.equal(outsideInput);
+      expect(suggestions.is(":visible")).to.be.false;
     });
 
     it("updates autocompletions when list is shown with updated query string", () => {

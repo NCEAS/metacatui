@@ -104,7 +104,7 @@ define([
       expect(document.activeElement).to.equal(select());
     });
 
-    it("previews removal while hovering or focusing the remove control", () => {
+    it("shows the removal preview while hovering over the remove control", () => {
       remove().dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
       expect(state.view.el.classList.contains(CLASS_NAMES.REMOVING)).to.equal(
         true,
@@ -113,6 +113,11 @@ define([
       expect(state.view.el.classList.contains(CLASS_NAMES.REMOVING)).to.equal(
         false,
       );
+    });
+
+    it("keeps the removal preview until focus leaves the remove control", function () {
+      if (!document.hasFocus()) this.skip();
+
       remove().focus();
       expect(state.view.el.classList.contains(CLASS_NAMES.REMOVING)).to.equal(
         true,
