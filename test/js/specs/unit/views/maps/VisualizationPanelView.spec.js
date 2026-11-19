@@ -2,16 +2,15 @@
 
 define([
   "views/maps/VisualizationPanelView",
-  "common/TrustedContentUtilities",
   // The file extension is required for files loaded from the /test directory.
   "/test/js/specs/shared/clean-state.js",
-], (VisualizationPanelView, trustedContent, cleanState) => {
+], (VisualizationPanelView, cleanState) => {
   const expect = chai.expect;
 
   /**
    * Build a minimal MetacatUI stub whose appModel returns the given
    * trustedContentSources array.
-   * @param {Array.<string|{url: string, permissions?: string[]}>} sources
+   * @param {Array.<string|{url: string, permissions?: string[], allow?: string[]}>} sources
    * @returns {object}
    */
   function makeMetacatUI(sources, defaultIframePermissions = null) {
@@ -163,38 +162,33 @@ define([
         );
       });
 
-      it("uses configured default iframe permissions for a trusted URL", () => {
+      it("clears allow when switching to a trusted source without it", () => {
+        const storyUrl = "https://trusted.example.com/story";
         globalThis.MetacatUI = makeMetacatUI(
-          ["https://trusted.example.com/*"],
-          ["allow-scripts", "allow-same-origin"],
+          [
+            {
+              url: storyUrl,
+              permissions: ["allow-scripts", "allow-same-origin"],
+              allow: ["fullscreen", "geolocation"],
+            },
+            TRUSTED_URL,
+          ],
+          ["allow-scripts"],
         );
+        const iframe = state.view.el.querySelector("iframe");
 
-        state.view.open(TRUSTED_URL);
-
-        const iframe = state.view.el.querySelector(
-          ".visualization-panel__iframe",
-        );
-        expect(iframe.getAttribute("sandbox")).to.equal(
-          "allow-scripts allow-same-origin",
-        );
-      });
-
-      it("applies explicit sandbox permissions from trustedContentSources", () => {
-        globalThis.MetacatUI = makeMetacatUI([
-          {
-            url: "https://trusted.example.com/*",
-            permissions: ["allow-scripts", "allow-same-origin"],
-          },
-        ]);
-
-        state.view.open(TRUSTED_URL);
-
-        const iframe = state.view.el.querySelector(
-          ".visualization-panel__iframe",
+        state.view.open(storyUrl);
+        expect(iframe.getAttribute("allow")).to.equal(
+          "fullscreen; geolocation",
         );
         expect(iframe.getAttribute("sandbox")).to.equal(
           "allow-scripts allow-same-origin",
         );
+
+        state.view.open(TRUSTED_URL);
+        expect(iframe.getAttribute("src")).to.equal(TRUSTED_URL);
+        expect(iframe.getAttribute("sandbox")).to.equal("allow-scripts");
+        expect(iframe.hasAttribute("allow")).to.be.false;
       });
 
       it("hides the iframe and shows the fallback for an untrusted URL", () => {

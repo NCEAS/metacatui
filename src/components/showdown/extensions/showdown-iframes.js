@@ -7,75 +7,49 @@
 
 define(["showdown", "common/TrustedContentUtilities"], (showdown, trustedContent) => {
 
-  /**
-   * Allowlisted iframe attributes that are safe to forward from the author's
-   * markup. Everything else (event handlers, srcdoc, allow, etc.) is dropped.
-   */
-  const ALLOWED_ATTRS = ["title", "width", "height", "allowfullscreen"];
+  /** Presentation attributes to keep from the author's iframe */
+  const ALLOWED_ATTRS = ["title", "width", "height"];
+  const EXTERNAL_CONTENT_LABEL = "<b>External Content</b>:";
+  const REMOVED_URL_MESSAGE = "(URL removed for security)";
+
+  /** Match sanitized iframe tags with a src attribute */
+  const IFRAME_REGEX = /<iframe[^>]*?\bsrc="[^"]*"[^>]*?>(?:(?:(?!<iframe\b)[\s\S])*?<\/iframe>)?/g;
 
   /**
-   * Regular expression that finds all iframes in the markdown content. The
-   * regex captures the full iframe tag, the src attribute, the inner content,
-   * and the closing tag, if it exists.
-   * @type {RegExp}
+   * Embed a trusted URL with the source's sandbox and browser permissions.
+   * Use a link for untrusted HTTP(S) URLs and warning text for other URLs.
+   * @param {string} tag The matched iframe tag
+   * @returns {string} The iframe, fallback link, or warning text
    */
-  const IFRAME_REGEX =
-    /<iframe[^>]*?\bsrc="([^"]*)"[^>]*?>([\s\S]*?)(<\/iframe>)?/g;
+  const secureIFrame = (tag) => {
+    // Parse the tag in an inert template to read the decoded attributes.
+    const template = document.createElement("template");
+    template.innerHTML = tag;
+    const original = template.content.firstElementChild;
+    const src = original.getAttribute("src");
+    const iframe = document.createElement("iframe");
 
-  /**
-   * Extract the value of a single quoted attribute from a raw HTML tag string.
-   * @param {string} tag The raw opening tag text.
-   * @param {string} name Attribute name.
-   * @returns {string|null} Attribute value, or null if absent.
-   */
-  function extractAttr(tag, name) {
-    const match = tag.match(new RegExp(`\\b${name}="([^"]*)"`, "i"));
-    return match ? match[1] : null;
-  }
-
-  /**
-   * Replace iFrames that are NOT from trusted sources with a link to the
-   * source URL (or plain text for unsafe protocols). Reconstruct trusted
-   * iFrames from an attribute allowlist — dropping event handlers, srcdoc,
-  * and any other potentially dangerous attributes — and apply the sandbox
-  * permissions resolved from the trusted content source configuration.
-   * @param {string} iframe - The full iframe tag
-   * @param {string} src - The src attribute of the iframe
-   * @returns {string} - The sanitised iframe or fallback markup
-   */
-  const secureIFrame = (iframe, src) => {
-    // Untrusted: render as a safe link for http(s) sources, plain text otherwise
-    if (!trustedContent.isTrustedUrl(src)) {
-      if (trustedContent.isHttpUrl(src)) {
-        const escaped = src
-          .replace(/&/g, "&amp;")
-          .replace(/"/g, "&quot;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
-        return `<a href="${escaped}" target="_blank" rel="noopener noreferrer"><b>External Content</b>: ${escaped}</a>`;
+    if (!trustedContent.configureTrustedIframe(iframe, src)) {
+      if (!trustedContent.isHttpUrl(src)) {
+        return `${EXTERNAL_CONTENT_LABEL} ${REMOVED_URL_MESSAGE}`;
       }
-      return "<b>External Content</b>: (URL removed for security)";
+      const link = document.createElement("a");
+      link.href = src;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.innerHTML = EXTERNAL_CONTENT_LABEL;
+      link.append(` ${src}`);
+      return link.outerHTML;
     }
 
-    // Trusted: rebuild the tag from the allowlist only
-    const sandbox = trustedContent.getTrustedIframeSandbox(src);
-    let attrs = `src="${src}"`;
-    if (sandbox) {
-      attrs += ` sandbox="${sandbox}"`;
-    }
     ALLOWED_ATTRS.forEach((name) => {
-      const value = extractAttr(iframe, name);
+      const value = original.getAttribute(name);
       if (value !== null) {
-        const escaped = value
-          .replace(/&/g, "&amp;")
-          .replace(/"/g, "&quot;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
-        attrs += ` ${name}="${escaped}"`;
+        iframe.setAttribute(name, value);
       }
     });
 
-    return `<iframe ${attrs}></iframe>`;
+    return iframe.outerHTML;
   };
 
   const extension = {

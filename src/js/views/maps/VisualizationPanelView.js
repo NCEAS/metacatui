@@ -222,17 +222,10 @@ define([
         document.addEventListener("keydown", this.handleEscapeKey);
         window.addEventListener("message", this.handleMessage);
 
-        if (trustedContent.isTrustedUrl(resolvedUrl)) {
-          iframe.setAttribute(
-            "sandbox",
-            trustedContent.getTrustedIframeSandbox(resolvedUrl),
-          );
-          iframe.src = resolvedUrl;
+        if (trustedContent.configureTrustedIframe(iframe, resolvedUrl)) {
           iframe.style.display = "";
           untrusted.style.display = "none";
         } else {
-          iframe.removeAttribute("sandbox");
-          iframe.removeAttribute("src");
           iframe.style.display = "none";
 
           if (trustedContent.isHttpUrl(resolvedUrl)) {

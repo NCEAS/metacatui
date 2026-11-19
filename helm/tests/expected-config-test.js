@@ -13,9 +13,11 @@ const parts = [
     'temporaryMessageEndTime: new Date("2222-06-16T13:30:00Z")',
     'temporaryMessageStartTime: new Date("2020-06-16T13:30:00Z")',
     'trustedContentSources: [' +
-      '"https://*ecoinformatics.org*",' +
-      '"https://*arcticdata.io",' +
-      '"https://cosima.nceas.ucsb.edu*",' +
+      '"https://ecoinformatics.org",' +
+      '"https://*.ecoinformatics.org",' +
+      '"https://arcticdata.io",' +
+      '"https://*.arcticdata.io",' +
+      '"https://cosima.nceas.ucsb.edu",' +
       '"https://sasap-data.shinyapps.io/board_of_fisheries/",' +
       '"https://shirlysteph.github.io/salmon-storymap/"' +
     ']',

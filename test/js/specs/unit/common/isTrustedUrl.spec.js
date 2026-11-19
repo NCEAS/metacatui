@@ -118,7 +118,6 @@ define([
         globalThis.MetacatUI = makeMetacatUI([
           { url: "https://example.com/*" },
           { url: "http://example.com/*" },
-          { url: "*" },
         ]);
       });
 
@@ -235,6 +234,19 @@ define([
           .be.true;
       });
 
+      it("rejects URLs with a trusted subdomain only in the path, query, or fragment", () => {
+        globalThis.MetacatUI = makeMetacatUI(["https://*.dataone.org/*"]);
+
+        const urls = [
+          "https://unrelated.example/reports/search.dataone.org/page",
+          "https://unrelated.example/?next=https://search.dataone.org/page",
+          "https://unrelated.example/#https://search.dataone.org/page",
+        ];
+        urls.forEach((url) => {
+          expect(trustedContent.isTrustedUrl(url), url).to.be.false;
+        });
+      });
+
       it("returns true when any one of multiple patterns matches", () => {
         globalThis.MetacatUI = makeMetacatUI([
           { url: "https://a.example.com/*" },
@@ -253,14 +265,16 @@ define([
           .false;
       });
 
-      it("matches host-looking patterns against the URL origin only", () => {
-        globalThis.MetacatUI = makeMetacatUI([{ url: "https://*example.com" }]);
-
-        expect(
-          trustedContent.isTrustedUrl(
-            "https://evil.com/path?target=example.com",
-          ),
-        ).to.be.false;
+      it("rejects rules without an origin or with misplaced host wildcards", () => {
+        for (const pattern of [
+          "*",
+          "https://*example.com",
+          "https://example.com*",
+        ]) {
+          globalThis.MetacatUI = makeMetacatUI([pattern]);
+          expect(trustedContent.isTrustedUrl("https://example.com/"), pattern)
+            .to.be.false;
+        }
       });
     });
 

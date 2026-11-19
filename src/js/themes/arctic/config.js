@@ -274,20 +274,18 @@ MetacatUI.AppConfig = {
   // iFrames in portals
   defaultIframePermissions: ["allow-scripts", "allow-same-origin"],
   trustedContentSources: [
-    "https://*arcticdata.io",
-    "https://cosima.nceas.ucsb.edu*",
+    "https://arcticdata.io",
+    "https://*.arcticdata.io",
+    "https://cosima.nceas.ucsb.edu",
     "https://shirlysteph.github.io/salmon-storymap/",
+    "https://water-timeseries.streamlit.app",
+    "https://virtualice.byrd.osu.edu/alaska-permafrost/*",
+    "https://virtualice.byrd.osu.edu/permafrost/*",
+    "https://nceas.github.io/*",
     {
-      url: "https://water-timeseries.streamlit.app*",
+      url: "https://storymaps.arcgis.com/stories/aff2330a6306405fa5327067e8bc12f5",
       permissions: ["allow-scripts", "allow-same-origin"],
-    },
-    {
-      url: "https://virtualice.byrd.osu.edu/alaska-permafrost/*",
-      permissions: ["allow-scripts", "allow-same-origin"],
-    },
-    {
-      url: "https://virtualice.byrd.osu.edu/permafrost/*",
-      permissions: ["allow-scripts", "allow-same-origin"],
+      allow: ["fullscreen", "geolocation"],
     },
   ],
   ...(MetacatUI.AppConfig || {}),
