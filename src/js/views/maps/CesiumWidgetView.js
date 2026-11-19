@@ -2370,13 +2370,36 @@ define([
               return;
             }
             if (now - start >= timeoutMs) {
-              console.warn("Map export: timed out waiting for the scene.", {
-                pendingTiles: pending,
-                globeTilesLoaded: scene.globe?.tilesLoaded,
-                tilesetsLoading: view
-                  .getTilesets()
-                  .filter((t) => t.show && !t.tilesLoaded).length,
-              });
+              // Stringified so the details show without expanding the object.
+              // eslint-disable-next-line no-console
+              console.warn(
+                `Map export: timed out waiting for the scene. ${JSON.stringify({
+                  pendingTiles: pending,
+                  globeTilesLoaded: scene.globe?.tilesLoaded,
+                  tilesetsLoading: view
+                    .getTilesets()
+                    .filter((t) => t.show && !t.tilesLoaded).length,
+                  tilesets: view
+                    .getTilesets()
+                    .filter((t) => t.show && !t.tilesLoaded)
+                    .map((t) => {
+                      const s = t.statistics;
+                      return {
+                        url: String(t.resource?.url).slice(0, 100),
+                        attempted: s.numberOfAttemptedRequests,
+                        pending: s.numberOfPendingRequests,
+                        processing: s.numberOfTilesProcessing,
+                        selected: s.selected,
+                        loaded: s.numberOfLoadedTilesTotal,
+                        total: s.numberOfTilesTotal,
+                        sse: t.maximumScreenSpaceError,
+                      };
+                    }),
+                  dataSourcesReady: view.updateAllDataSources() !== false,
+                  frames,
+                  hidden: document.hidden,
+                })}`,
+              );
               finish(resolve, { settled: false });
               return;
             }

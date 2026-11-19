@@ -409,6 +409,20 @@ define([
           consoleError.restore();
         }
       });
+
+      it("downloads the image but warns and stays in export mode when the map had not finished loading", async () => {
+        exporter.exportMap.resolves({ blob: new Blob(["png"]), settled: false });
+        toolbar.pinSection("export");
+        await controller.save();
+        expect(download.callCount).to.equal(1);
+        expect(controller.state).to.equal("active");
+        const panel = toolbar.getSectionByKey("export").sectionView;
+        const status = panel.getPart("status");
+        expect(status.textContent).to.contain("still loading");
+        expect(status.classList.contains("export-panel__status--error")).to.be
+          .true;
+        expect(panel.getSaveButton().disabled).to.be.false;
+      });
     });
 
     describe("ExportOverlayView", () => {

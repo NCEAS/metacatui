@@ -25,6 +25,8 @@ define([
     loading: "Loading map data\u2026",
     rendering: "Creating the image\u2026",
     canceled: "Export canceled.",
+    incomplete:
+      "The map was still loading when this image was saved, so parts of it may be missing. Wait for the map to finish loading, then save again.",
     failed:
       "The map could not be exported. Try zooming out, or making the window smaller, then try again.",
   };
@@ -350,15 +352,15 @@ define([
         this.updatePanel();
         return;
       }
-      if (!result.settled) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          "The map was still loading data when it was exported, so parts of the image may be missing.",
-        );
-      }
       this.downloadBlob(result.blob, makeFileName());
       // Triggers "export:complete" with the ExportResult.
       this.trigger("export:complete", result);
+      if (!result.settled) {
+        // Stay in export mode so the user can retry once the map has loaded.
+        this.updatePanel();
+        panel?.setStatus(MESSAGES.incomplete, { isError: true });
+        return;
+      }
       this.exit();
     }
 
