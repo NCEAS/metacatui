@@ -10,10 +10,6 @@ define([], function () {
       this.getInput().focus();
     }
 
-    blurInput() {
-      this.getInput().blur();
-    }
-
     setQuery(searchString) {
       this.getInput().val(searchString);
       this.getInput().trigger("change");

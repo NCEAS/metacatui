@@ -23,14 +23,6 @@ define([], function () {
       return this.view.getInput();
     }
 
-    focusInput() {
-      this.view.getInput().focus();
-    }
-
-    blurInput() {
-      this.view.getInput().blur();
-    }
-
     keydown(key) {
       this.view.getInput().trigger({ type: "keydown", key });
     }

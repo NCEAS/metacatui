@@ -13,6 +13,8 @@ define(["/test/js/specs/shared/clean-state.js", "models/schemaOrg/SchemaOrg"], (
       return { schemaOrg };
     }, beforeEach);
 
+    afterEach(() => state.schemaOrg.stopListening());
+
     it("creates a SchemaOrg instance", () => {
       state.schemaOrg.should.be.instanceof(SchemaOrg);
     });

@@ -1373,7 +1373,7 @@ define([
         } catch (e) {
           // eslint-disable-next-line no-console
           console.error("Error while serializing the Portal XML document: ", e);
-          this.set("errorMessage", e.stack);
+          this.set("errorMessage", e.message);
           this.trigger(
             "errorSaving",
             MetacatUI.appModel.get("portalEditSaveErrorMsg"),

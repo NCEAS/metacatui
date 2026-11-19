@@ -290,7 +290,9 @@ define([
         });
       });
 
-      it("closes when focus leaves and keeps the new focus", () => {
+      it("closes when focus leaves and keeps the new focus", function () {
+        if (!document.hasFocus()) this.skip();
+
         grip(1).click();
         const close = moveControls().querySelector("[data-close-move]");
         close.focus();
