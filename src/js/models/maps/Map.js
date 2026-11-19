@@ -38,6 +38,7 @@ define([
     "showScaleBar",
     "showFeatureInfo",
     "showDownloadPanel",
+    "showExportMap",
     "clickFeatureAction",
     "showNavHelp",
     "showFeedback",
@@ -266,6 +267,9 @@ define([
        * @property {boolean} [showDownloadPanel=false] - Set to true to enable
        * the partial download panel, see {@link DownloadPanelView}.
        * `showLayerList` must also be set to true.
+       * @property {boolean} [showExportMap=false] - Set to true to enable the
+       * map export tool, which downloads a PNG of the map with a legend, scale
+       * bar, north arrow and sources. `showLayerList` must also be set to true.
        * @property {string} [clickFeatureAction="showDetails"] - The default
        * action to take when a user clicks on a feature on the map. The
        * available options are "showDetails" (show the feature details in the
@@ -409,6 +413,9 @@ define([
        * @property {boolean} [showDownloadPanel=false] Whether or not to show
        * users the panel that allows partial download of data. `showLayerList`
        * must also be set to true.
+       * @property {boolean} [showExportMap=false] Whether or not to show the
+       * map export tool (PNG with legend, scale bar, north arrow and sources).
+       * `showLayerList` must also be set to true.
        * @property {string} [clickFeatureAction="showDetails"] - The default
        * action to take when a user clicks on a feature on the map. The
        * available options are "showDetails" (show the feature details in the
@@ -462,6 +469,7 @@ define([
           showScaleBar: true,
           showFeatureInfo: true,
           showDownloadPanel: false,
+          showExportMap: false,
           clickFeatureAction: "showDetails",
           showNavHelp: true,
           showFeedback: false,
