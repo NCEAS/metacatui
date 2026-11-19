@@ -298,7 +298,7 @@ autoscaling:
 image:
   ## NGINX image version to use. Setting a specific value is safer than using "LATEST"
   ## See dockerhub for versions: https://hub.docker.com/_/nginx
-  tag: 1.29.0
+  tag: 1.31.9
   repository: "nginx"
   pullPolicy: "IfNotPresent"
 
