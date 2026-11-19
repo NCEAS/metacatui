@@ -12,6 +12,7 @@ define([
   "views/maps/FeatureInfoView",
   "views/maps/LayerDetailsView",
   "views/maps/VisualizationPanelView",
+  "views/maps/MapExportController",
   // CSS
   `text!${MetacatUI.root}/css/map-view.css`,
 ], (
@@ -26,6 +27,7 @@ define([
   FeatureInfoView,
   LayerDetailsView,
   VisualizationPanelView,
+  MapExportController,
   // CSS
   MapCSS,
 ) => {
@@ -233,7 +235,35 @@ define([
           this.model.updateSearchParams();
         });
         this.toolbar.render();
+        this.renderExportController();
         return this.toolbar;
+      },
+
+      /**
+       * Creates the controller that runs the "Export Map" tool, if the map is
+       * configured to show it and the toolbar has the export section.
+       * @returns {MapExportController|null} The controller, or null if the tool
+       * is not available.
+       * @since 2.41.0
+       */
+      renderExportController() {
+        this.exportController?.onClose();
+        this.exportController = null;
+        const widget = this.mapWidgetContainer?.mapWidget;
+        if (
+          !this.model.get("showExportMap") ||
+          !this.toolbar?.getSectionByKey("export") ||
+          !widget?.scene
+        ) {
+          return null;
+        }
+        this.exportController = new MapExportController({
+          model: this.model,
+          toolbar: this.toolbar,
+          widget,
+          rootEl: this.el,
+        });
+        return this.exportController;
       },
 
       /**
@@ -306,6 +336,7 @@ define([
        */
       getSubViews() {
         return [
+          this.exportController,
           this.mapWidgetContainer,
           this.toolbar,
           this.featureInfo,

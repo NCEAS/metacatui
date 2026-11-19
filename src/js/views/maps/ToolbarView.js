@@ -10,6 +10,7 @@ define([
   "views/maps/LayersPanelView",
   "views/maps/HelpPanelView",
   "views/maps/DownloadPanelView",
+  "views/maps/ExportPanelView",
   "views/maps/viewfinder/ViewfinderView",
   "views/maps/ShareUrlView",
 ], (
@@ -22,6 +23,7 @@ define([
   LayersPanelView,
   HelpPanel,
   DownloadPanelView,
+  ExportPanelView,
   ViewfinderView,
   ShareUrlView,
 ) => {
@@ -219,6 +221,23 @@ define([
           },
           isVisible(model) {
             return model.get("showDownloadPanel") && model.get("showLayerList");
+          },
+        },
+        {
+          label: "Export Map",
+          key: "export",
+          icon: "camera",
+          view: ExportPanelView,
+          dock: "bottom",
+          action(view) {
+            // Show the layers panel, with the export panel pinned below it. The
+            // MapExportController reacts to the section being pinned.
+            view.inactivateAllSections();
+            view.defaultActivationAction(view.getSectionByKey("layers"));
+            view.pinSection("export");
+          },
+          isVisible(model) {
+            return model.get("showExportMap") && model.get("showLayerList");
           },
         },
         {
