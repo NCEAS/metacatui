@@ -3,7 +3,7 @@
 /**
  * Chooses a "nice" scale bar length. Uses the same table as the on-screen
  * {@link ScaleBarView}.
- * @module mapExport/scaleBar
+ * @module models/maps/export/scaleBar
  * @since 2.41.0
  */
 define([], () => {

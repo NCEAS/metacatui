@@ -3,14 +3,14 @@
 /**
  * Draws the parts of the export that sit on top of the map: the legend, scale
  * bar and north arrow. Shared by the live preview and the saved image.
- * @module mapExport/painters/FramePainter
+ * @module views/maps/export/canvas/painters/FramePainter
  * @since 2.41.0
  */
 define([
-  "common/mapExport/constants",
-  "common/mapExport/painters/LegendPainter",
-  "common/mapExport/painters/ScaleBarPainter",
-  "common/mapExport/painters/NorthArrowPainter",
+  "views/maps/export/constants",
+  "views/maps/export/canvas/painters/LegendPainter",
+  "views/maps/export/canvas/painters/ScaleBarPainter",
+  "views/maps/export/canvas/painters/NorthArrowPainter",
 ], (constants, LegendPainter, ScaleBarPainter, NorthArrowPainter) => {
   const { STYLE } = constants;
 
@@ -20,9 +20,9 @@ define([
    * @param {object} content What to draw.
    * @param {object} content.layout The result of `ExportLayout.compute`.
    * @param {object|null} content.scaleBar The result of
-   * `ExportLayout.placeScaleBar`.
+   * `PlacementLayout.placeScaleBar`.
    * @param {object|null} content.northArrow The result of
-   * `ExportLayout.placeNorthArrow`.
+   * `PlacementLayout.placeNorthArrow`.
    * @param {number} content.northRotation Clockwise angle to north, radians.
    * @param {object} [style] The style.
    */

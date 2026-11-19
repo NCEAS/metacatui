@@ -3,12 +3,12 @@
 /**
  * Draws the white bands below the exported frame: the overflowed legend and
  * the data citations.
- * @module mapExport/painters/CitationsPainter
+ * @module views/maps/export/canvas/painters/CitationsPainter
  * @since 2.41.0
  */
 define([
-  "common/mapExport/constants",
-  "common/mapExport/painters/LegendPainter",
+  "views/maps/export/constants",
+  "views/maps/export/canvas/painters/LegendPainter",
 ], (constants, LegendPainter) => {
   const { STYLE, FONT_FAMILY } = constants;
 

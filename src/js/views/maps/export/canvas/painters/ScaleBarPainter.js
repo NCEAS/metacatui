@@ -2,15 +2,15 @@
 
 /**
  * Draws the scale bar: a bracket with the distance above it.
- * @module mapExport/painters/ScaleBarPainter
+ * @module views/maps/export/canvas/painters/ScaleBarPainter
  * @since 2.41.0
  */
-define(["common/mapExport/constants"], (constants) => {
+define(["views/maps/export/constants"], (constants) => {
   const { STYLE, FONT_FAMILY } = constants;
 
   /**
    * @param {CanvasRenderingContext2D} ctx The context (CSS pixel units).
-   * @param {object} placement The result of `ExportLayout.placeScaleBar`.
+   * @param {object} placement The result of `PlacementLayout.placeScaleBar`.
    * @param {object} [style] The style.
    */
   function paintScaleBar(ctx, placement, style = STYLE) {

@@ -1,9 +1,9 @@
 "use strict";
 
 /**
- * Constants shared by the map export tool. Lengths in `STYLE` are CSS pixels at
+ * Constants for the map export tool. Lengths in `STYLE` are CSS pixels at
  * scale 1; the painters multiply them by the scale they are given.
- * @module mapExport/constants
+ * @module views/maps/export/constants
  * @since 2.41.0
  */
 define([], () => {

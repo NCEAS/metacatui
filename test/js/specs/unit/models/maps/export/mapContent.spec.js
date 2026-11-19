@@ -2,8 +2,8 @@
 
 define([
   "backbone",
-  "common/mapExport/legendEntries",
-  "common/mapExport/citations",
+  "models/maps/export/legendEntries",
+  "models/maps/export/citations",
 ], (Backbone, getLegendEntries, getCitations) => {
   const { expect } = chai;
 

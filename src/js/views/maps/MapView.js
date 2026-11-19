@@ -12,7 +12,7 @@ define([
   "views/maps/FeatureInfoView",
   "views/maps/LayerDetailsView",
   "views/maps/VisualizationPanelView",
-  "views/maps/MapExportController",
+  "views/maps/export/MapExportController",
   // CSS
   `text!${MetacatUI.root}/css/map-view.css`,
 ], (

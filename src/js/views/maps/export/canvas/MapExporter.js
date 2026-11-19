@@ -4,18 +4,31 @@
  * Captures the map as a PNG: renders the Cesium scene at a higher resolution,
  * crops it to the export frame, and draws the legend, scale bar, north arrow
  * and the white bands below the frame.
- * @module mapExport/MapExporter
+ * @module views/maps/export/canvas/MapExporter
  * @since 2.41.0
  */
 define([
-  "common/mapExport/constants",
-  "common/mapExport/ExportLayout",
-  "common/mapExport/scaleBar",
-  "common/mapExport/painters/FramePainter",
-  "common/mapExport/painters/CitationsPainter",
-], (constants, ExportLayout, ScaleBar, FramePainter, CitationsPainter) => {
+  "common/CanvasTextUtilities",
+  "views/maps/export/constants",
+  "views/maps/export/canvas/layout/ExportLayout",
+  "views/maps/export/canvas/layout/FrameLayout",
+  "views/maps/export/canvas/layout/PlacementLayout",
+  "models/maps/export/scaleBar",
+  "views/maps/export/canvas/painters/FramePainter",
+  "views/maps/export/canvas/painters/CitationsPainter",
+], (
+  CanvasTextUtilities,
+  constants,
+  ExportLayout,
+  FrameLayout,
+  PlacementLayout,
+  ScaleBar,
+  FramePainter,
+  CitationsPainter,
+) => {
   const {
     STYLE,
+    FONT_FAMILY,
     EXPORT_BACKGROUND_COLOR,
     EXPORT_RESOLUTION_MULTIPLIER,
     EXPORT_MAX_RETRIES,
@@ -70,12 +83,12 @@ define([
       STYLE.scaleBar.maxBarWidth,
     );
     const frameSize = { width: frame.width, height: frame.height };
-    const scaleBar = ExportLayout.placeScaleBar({
+    const scaleBar = PlacementLayout.placeScaleBar({
       frame: frameSize,
       choice,
       measure,
     });
-    const northArrow = ExportLayout.placeNorthArrow({
+    const northArrow = PlacementLayout.placeNorthArrow({
       frame: frameSize,
       scaleBar,
     });
@@ -84,7 +97,7 @@ define([
     let drawn = false;
     widget.renderTo((source) => {
       if (!source.width || !source.height) return;
-      const crop = ExportLayout.computeCrop({
+      const crop = FrameLayout.computeCrop({
         frame,
         container,
         canvas: { width: source.width, height: source.height },
@@ -151,8 +164,9 @@ define([
     const { widget, frame, entries, citations } = opts;
     const desired = opts.multiplier || EXPORT_RESOLUTION_MULTIPLIER;
 
-    const measure = ExportLayout.createMeasurer(
+    const measure = CanvasTextUtilities.createMeasurer(
       document.createElement("canvas").getContext("2d"),
+      FONT_FAMILY,
     );
     const layout = ExportLayout.compute({
       frame: { width: frame.width, height: frame.height },
@@ -171,7 +185,7 @@ define([
     let multiplier = desired;
     let lastError = null;
     for (let attempt = 0; attempt <= EXPORT_MAX_RETRIES; attempt += 1) {
-      const { scale } = ExportLayout.computeResolutionScale({
+      const { scale } = FrameLayout.computeResolutionScale({
         desired: multiplier,
         baseRatio,
         container,

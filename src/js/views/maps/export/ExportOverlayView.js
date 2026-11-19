@@ -3,17 +3,21 @@
 define([
   "underscore",
   "backbone",
-  "common/mapExport/constants",
-  "common/mapExport/ExportLayout",
-  "common/mapExport/legendEntries",
-  "common/mapExport/citations",
-  "common/mapExport/scaleBar",
-  "common/mapExport/painters/FramePainter",
+  "common/CanvasTextUtilities",
+  "views/maps/export/constants",
+  "views/maps/export/canvas/layout/ExportLayout",
+  "views/maps/export/canvas/layout/PlacementLayout",
+  "models/maps/export/legendEntries",
+  "models/maps/export/citations",
+  "models/maps/export/scaleBar",
+  "views/maps/export/canvas/painters/FramePainter",
 ], (
   _,
   Backbone,
+  CanvasTextUtilities,
   constants,
   ExportLayout,
+  PlacementLayout,
   getLegendEntries,
   getCitations,
   ScaleBar,
@@ -31,7 +35,7 @@ define([
             </div>
           </div>`;;
 
-  const { STYLE } = constants;
+  const { STYLE, FONT_FAMILY } = constants;
 
   /**
    * @class ExportOverlayView
@@ -119,8 +123,9 @@ define([
         this.canvas = this.el.querySelector(`.${BLOCK}__preview`);
         this.maskEl = this.el.querySelector(`.${BLOCK}__mask`);
         this.maskMessageEl = this.el.querySelector(`.${BLOCK}__mask-message`);
-        this.measure = ExportLayout.createMeasurer(
+        this.measure = CanvasTextUtilities.createMeasurer(
           document.createElement("canvas").getContext("2d"),
+          FONT_FAMILY,
         );
         return this;
       },
@@ -247,12 +252,12 @@ define([
           STYLE.scaleBar.maxBarWidth,
         );
         const frameSize = { width: this.frame.width, height: this.frame.height };
-        const scaleBar = ExportLayout.placeScaleBar({
+        const scaleBar = PlacementLayout.placeScaleBar({
           frame: frameSize,
           choice,
           measure: this.measure,
         });
-        const northArrow = ExportLayout.placeNorthArrow({
+        const northArrow = PlacementLayout.placeNorthArrow({
           frame: frameSize,
           scaleBar,
         });

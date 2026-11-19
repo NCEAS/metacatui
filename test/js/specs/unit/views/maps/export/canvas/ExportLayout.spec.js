@@ -1,10 +1,10 @@
 "use strict";
 
 define([
-  "common/mapExport/ExportLayout",
-  "common/mapExport/scaleBar",
-  "common/mapExport/htmlText",
-], (ExportLayout, ScaleBar, htmlToText) => {
+  "views/maps/export/canvas/layout/ExportLayout",
+  "views/maps/export/canvas/layout/FrameLayout",
+  "views/maps/export/canvas/layout/PlacementLayout",
+], (ExportLayout, FrameLayout, PlacementLayout) => {
   const { expect } = chai;
 
   // Every character is half as wide as the font size is tall.
@@ -23,7 +23,7 @@ define([
   describe("ExportLayout Test Suite", () => {
     describe("computeFrameRect", () => {
       it("starts to the right of the sidebar", () => {
-        const frame = ExportLayout.computeFrameRect(
+        const frame = FrameLayout.computeFrameRect(
           { left: 50, right: 450 },
           { left: 50, top: 0, width: 1000, height: 600 },
           10,
@@ -37,7 +37,7 @@ define([
       });
 
       it("uses the whole container when there is no sidebar", () => {
-        const frame = ExportLayout.computeFrameRect(
+        const frame = FrameLayout.computeFrameRect(
           null,
           { left: 0, top: 0, width: 800, height: 400 },
           10,
@@ -51,7 +51,7 @@ define([
       });
 
       it("never returns a negative size", () => {
-        const frame = ExportLayout.computeFrameRect(
+        const frame = FrameLayout.computeFrameRect(
           { left: 0, right: 900 },
           { left: 0, top: 0, width: 800, height: 5 },
           10,
@@ -70,7 +70,7 @@ define([
       };
 
       it("uses the desired factor when nothing limits it", () => {
-        const result = ExportLayout.computeResolutionScale(base);
+        const result = FrameLayout.computeResolutionScale(base);
         expect(result.scale).to.equal(2);
         expect(result.reduced).to.equal(false);
         expect(result.outputWidth).to.equal(1200);
@@ -78,7 +78,7 @@ define([
       });
 
       it("includes the bands below the frame in the output height", () => {
-        const result = ExportLayout.computeResolutionScale({
+        const result = FrameLayout.computeResolutionScale({
           ...base,
           extraHeight: 100,
         });
@@ -86,7 +86,7 @@ define([
       });
 
       it("is limited by the GPU's maximum viewport", () => {
-        const result = ExportLayout.computeResolutionScale({
+        const result = FrameLayout.computeResolutionScale({
           ...base,
           limits: { maxViewportWidth: 1500, maxViewportHeight: 1500 },
         });
@@ -95,7 +95,7 @@ define([
       });
 
       it("is limited by the maximum number of pixels", () => {
-        const result = ExportLayout.computeResolutionScale({
+        const result = FrameLayout.computeResolutionScale({
           ...base,
           maxPixels: 1e6,
         });
@@ -107,7 +107,7 @@ define([
 
     describe("computeCrop", () => {
       it("maps the frame to the enlarged canvas", () => {
-        const crop = ExportLayout.computeCrop({
+        const crop = FrameLayout.computeCrop({
           frame: { left: 100, top: 10, width: 500, height: 300 },
           container: { width: 800, height: 400 },
           canvas: { width: 1600, height: 800 },
@@ -116,37 +116,13 @@ define([
       });
 
       it("stays inside the canvas", () => {
-        const crop = ExportLayout.computeCrop({
+        const crop = FrameLayout.computeCrop({
           frame: { left: 100, top: 10, width: 800, height: 500 },
           container: { width: 800, height: 400 },
           canvas: { width: 800, height: 400 },
         });
         expect(crop.sx + crop.sw).to.be.at.most(800);
         expect(crop.sy + crop.sh).to.be.at.most(400);
-      });
-    });
-
-    describe("wrapText", () => {
-      const m = (text) => text.length;
-
-      it("breaks at spaces", () => {
-        expect(ExportLayout.wrapText("aaa bbb ccc", 7, m)).to.deep.equal([
-          "aaa bbb",
-          "ccc",
-        ]);
-      });
-
-      it("breaks words that are too long", () => {
-        expect(ExportLayout.wrapText("abcdefgh", 3, m)).to.deep.equal([
-          "abc",
-          "def",
-          "gh",
-        ]);
-      });
-
-      it("returns one empty line for empty text", () => {
-        expect(ExportLayout.wrapText("", 10, m)).to.deep.equal([""]);
-        expect(ExportLayout.wrapText(null, 10, m)).to.deep.equal([""]);
       });
     });
 
@@ -213,7 +189,7 @@ define([
 
       it("places the scale bar in the lower right", () => {
         const choice = { meters: 1000, widthPx: 100, label: "1 km" };
-        const bar = ExportLayout.placeScaleBar({ frame, choice, measure });
+        const bar = PlacementLayout.placeScaleBar({ frame, choice, measure });
         expect(bar.label).to.equal("1 km");
         expect(bar.x + bar.width).to.be.at.most(frame.width);
         expect(bar.y + bar.height).to.be.at.most(frame.height);
@@ -222,61 +198,17 @@ define([
       });
 
       it("returns no scale bar when the scale is unknown", () => {
-        expect(ExportLayout.placeScaleBar({ frame, choice: null, measure })).to
-          .be.null;
+        expect(PlacementLayout.placeScaleBar({ frame, choice: null, measure }))
+          .to.be.null;
       });
 
       it("places the north arrow even without a scale bar", () => {
-        const arrow = ExportLayout.placeNorthArrow({ frame, scaleBar: null });
+        const arrow = PlacementLayout.placeNorthArrow({
+          frame,
+          scaleBar: null,
+        });
         expect(arrow).to.be.an("object");
       });
-    });
-  });
-
-  describe("scaleBar Test Suite", () => {
-    it("chooses the longest distance that fits", () => {
-      const choice = ScaleBar.chooseScaleBar(10, 150);
-      // 10 m per pixel: 1 km is 100 px, 2 km is 200 px.
-      expect(choice.meters).to.equal(1000);
-      expect(choice.widthPx).to.equal(100);
-      expect(choice.label).to.equal("1 km");
-    });
-
-    it("returns null when the scale is unknown", () => {
-      expect(ScaleBar.chooseScaleBar(null, 150)).to.equal(null);
-      expect(ScaleBar.chooseScaleBar(0, 150)).to.equal(null);
-      expect(ScaleBar.chooseScaleBar(NaN, 150)).to.equal(null);
-    });
-
-    it("formats distances", () => {
-      expect(ScaleBar.formatDistance(50000)).to.equal("50 km");
-      expect(ScaleBar.formatDistance(200)).to.equal("200 m");
-      expect(ScaleBar.formatDistance(0.5)).to.equal("50 cm");
-    });
-  });
-
-  describe("htmlToText Test Suite", () => {
-    it("removes tags and collapses whitespace", () => {
-      expect(htmlToText("<b>Land</b>   <i>cover</i>\n(2020)")).to.equal(
-        "Land cover (2020)",
-      );
-    });
-
-    it("decodes entities", () => {
-      expect(htmlToText("A &amp; B")).to.equal("A & B");
-    });
-
-    it("does not run scripts or load images", () => {
-      window.mapExportXss = false;
-      htmlToText('<img src="x" onerror="window.mapExportXss = true">');
-      const result = window.mapExportXss;
-      delete window.mapExportXss;
-      expect(result).to.equal(false);
-    });
-
-    it("returns an empty string for missing values", () => {
-      expect(htmlToText(null)).to.equal("");
-      expect(htmlToText(undefined)).to.equal("");
     });
   });
 });

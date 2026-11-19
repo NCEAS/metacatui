@@ -2,15 +2,15 @@
 
 /**
  * Draws the north arrow.
- * @module mapExport/painters/NorthArrowPainter
+ * @module views/maps/export/canvas/painters/NorthArrowPainter
  * @since 2.41.0
  */
-define(["common/mapExport/constants"], (constants) => {
+define(["views/maps/export/constants"], (constants) => {
   const { STYLE, FONT_FAMILY } = constants;
 
   /**
    * @param {CanvasRenderingContext2D} ctx The context (CSS pixel units).
-   * @param {object} placement The result of `ExportLayout.placeNorthArrow`.
+   * @param {object} placement The result of `PlacementLayout.placeNorthArrow`.
    * @param {number} rotation Clockwise rotation of north on screen, radians.
    * For a top-down camera this is the negative of the heading.
    * @param {object} [style] The style.

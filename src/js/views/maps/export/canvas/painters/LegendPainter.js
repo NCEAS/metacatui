@@ -1,12 +1,12 @@
 "use strict";
 
 /**
- * Draws a legend layout produced by `ExportLayout.layoutLegend`. Draws in CSS
+ * Draws a legend layout produced by `LegendLayout.layoutLegend`. Draws in CSS
  * pixels: the caller sets the context's transform to scale the drawing.
- * @module mapExport/painters/LegendPainter
+ * @module views/maps/export/canvas/painters/LegendPainter
  * @since 2.41.0
  */
-define(["common/mapExport/constants"], (constants) => {
+define(["views/maps/export/constants"], (constants) => {
   const { STYLE, FONT_FAMILY } = constants;
 
   const font = (px, bold) => `${bold ? "bold " : ""}${px}px ${FONT_FAMILY}`;

@@ -3,13 +3,15 @@
 /**
  * Reads the legend content for the map export from the Map model, without
  * changing any model state.
- * @module mapExport/legendEntries
+ * @module models/maps/export/legendEntries
  * @since 2.41.0
  */
-define(["common/mapExport/htmlText", "common/ValueUtilities"], (
-  htmlToText,
+define(["common/HtmlUtilities", "common/ValueUtilities"], (
+  HtmlUtilities,
   ValueUtilities,
 ) => {
+  const { htmlToText } = HtmlUtilities;
+
   /**
    * @typedef {object} LegendEntry
    * @property {string} layerId The layer's id, label or an index-based fallback.

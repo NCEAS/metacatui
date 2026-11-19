@@ -10,7 +10,7 @@ define([
   "models/maps/assets/Cesium3DTileset",
   "models/maps/Feature",
   "common/Utilities",
-  "common/mapExport/constants",
+  "views/maps/export/constants",
   "text!templates/maps/cesium-widget-view.html",
 ], (
   $,

@@ -2,10 +2,12 @@
 
 /**
  * Reads the source attributions for the map export from the Map model.
- * @module mapExport/citations
+ * @module models/maps/export/citations
  * @since 2.41.0
  */
-define(["common/mapExport/htmlText"], (htmlToText) => {
+define(["common/HtmlUtilities"], (HtmlUtilities) => {
+  const { htmlToText } = HtmlUtilities;
+
   /**
    * @typedef {object} Citation
    * @property {string[]} layers The names of the layers that share this text.

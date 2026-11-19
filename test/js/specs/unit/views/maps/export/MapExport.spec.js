@@ -2,9 +2,9 @@
 
 define([
   "views/maps/ToolbarView",
-  "views/maps/ExportPanelView",
-  "views/maps/ExportOverlayView",
-  "views/maps/MapExportController",
+  "views/maps/export/ExportPanelView",
+  "views/maps/export/ExportOverlayView",
+  "views/maps/export/MapExportController",
   "models/maps/Map",
 ], (
   ToolbarView,

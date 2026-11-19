@@ -3,11 +3,11 @@
 define([
   "underscore",
   "backbone",
-  "common/mapExport/constants",
-  "common/mapExport/ExportLayout",
-  "common/mapExport/MapExporter",
-  "views/maps/ExportOverlayView",
-], (_, Backbone, constants, ExportLayout, MapExporter, ExportOverlayView) => {
+  "views/maps/export/constants",
+  "views/maps/export/canvas/layout/FrameLayout",
+  "views/maps/export/canvas/MapExporter",
+  "views/maps/export/ExportOverlayView",
+], (_, Backbone, constants, FrameLayout, MapExporter, ExportOverlayView) => {
   const EXPORT_MODE_CLASS = "map-view--export-mode";
   const SECTION_KEY = "export";
 
@@ -223,7 +223,7 @@ define([
       const sidebarRect = sidebar?.offsetParent
         ? sidebar.getBoundingClientRect()
         : null;
-      return ExportLayout.computeFrameRect(sidebarRect, canvasRect);
+      return FrameLayout.computeFrameRect(sidebarRect, canvasRect);
     }
 
     /**
@@ -246,7 +246,7 @@ define([
       const { canvas } = this.widget.scene;
       const summary = this.overlay.summary || {};
       const tooSmall = isTooSmall(this.frame);
-      const resolution = ExportLayout.computeResolutionScale({
+      const resolution = FrameLayout.computeResolutionScale({
         desired: constants.EXPORT_RESOLUTION_MULTIPLIER,
         baseRatio: this.widget.getPixelRatio(),
         container: { width: canvas.clientWidth, height: canvas.clientHeight },

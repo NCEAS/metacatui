@@ -10,7 +10,7 @@ define([
   "views/maps/LayersPanelView",
   "views/maps/HelpPanelView",
   "views/maps/DownloadPanelView",
-  "views/maps/ExportPanelView",
+  "views/maps/export/ExportPanelView",
   "views/maps/viewfinder/ViewfinderView",
   "views/maps/ShareUrlView",
 ], (
