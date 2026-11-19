@@ -153,6 +153,7 @@
     "./js/specs/unit/models/SolrResult.spec.js",
     "./js/specs/unit/models/DataONEObject.spec.js",
     "./js/specs/unit/views/maps/MapView.spec.js",
+    "./js/specs/unit/common/mapExport/mapContent.spec.js",
     "./js/specs/unit/views/maps/MapWidgetContainerView.spec.js",
     "./js/specs/unit/views/maps/MapStatusBarView.spec.js",
     "./js/specs/unit/views/maps/legend/LayerLegendView.spec.js",
