@@ -10,6 +10,7 @@ define([
   "models/maps/assets/Cesium3DTileset",
   "models/maps/Feature",
   "common/Utilities",
+  "common/mapExport/constants",
   "text!templates/maps/cesium-widget-view.html",
 ], (
   $,
@@ -21,8 +22,24 @@ define([
   Cesium3DTileset,
   Feature,
   Utilities,
+  ExportConstants,
   Template,
 ) => {
+  /**
+   * The pointer gestures that rotate the map's heading while it is locked to a
+   * top-down view (see {@link CesiumWidgetView#enterTopDownMode}). Each entry
+   * has a `matches` function that takes the pointerdown event.
+   * @type {object[]}
+   * @since 2.41.0
+   */
+  const HEADING_DRAG_BINDINGS = [
+    { name: "right-drag", matches: (event) => event.button === 2 },
+    {
+      name: "ctrl-left-drag",
+      matches: (event) => event.button === 0 && event.ctrlKey,
+    },
+  ];
+
   /**
    * @class CesiumWidgetView
    * @classdesc An interactive 2D and/or 3D map/globe rendered using CesiumJS.
@@ -687,6 +704,7 @@ define([
             moveEnd: [],
             moveStart: [],
             changed: [
+              "enforceTopDown",
               "updateCameraPosition",
               "updateScale",
               "updateViewExtent",
@@ -936,7 +954,10 @@ define([
           // If the target is a Bounding Sphere, use the camera's built-in
           // function
           if (target instanceof Cesium.BoundingSphere) {
-            view.camera.flyToBoundingSphere(target, options);
+            view.camera.flyToBoundingSphere(
+              target,
+              view.applyTopDownToOptions(options),
+            );
             return;
           }
 
@@ -1531,8 +1552,10 @@ define([
        * that is equivalent to 1 pixel on the screen at the center bottom point
        * of the current scene. Returns false if there was a problem getting the
        * measurement.
+       * @param {{x: number, y: number}} [anchor] A canvas position, in CSS
+       * pixels, to measure at instead of the bottom center.
        */
-      pixelToMeters() {
+      pixelToMeters(anchor) {
         try {
           const view = this;
           const scene = view.scene;
@@ -1549,13 +1572,11 @@ define([
           // cesium canvas.
           const width = scene.canvas.clientWidth;
           const height = scene.canvas.clientHeight;
+          const x = anchor ? anchor.x : width / 2;
+          const y = anchor ? anchor.y : height - 1;
 
-          const left = camera.getPickRay(
-            new Cesium.Cartesian2((width / 2) | 0, height - 1),
-          );
-          const right = camera.getPickRay(
-            new Cesium.Cartesian2((1 + width / 2) | 0, height - 1),
-          );
+          const left = camera.getPickRay(new Cesium.Cartesian2(x | 0, y));
+          const right = camera.getPickRay(new Cesium.Cartesian2((1 + x) | 0, y));
 
           const leftPosition = globe.pick(left, scene);
           const rightPosition = globe.pick(right, scene);
@@ -1927,9 +1948,523 @@ define([
         }
       },
 
+      /**
+       * Locks the camera to a top-down view, for exporting the map. The camera
+       * flies to look straight down at the center of the screen. While locked,
+       * the user can still pan and zoom, and can rotate the heading (see
+       * `HEADING_DRAG_BINDINGS`), but cannot tilt or look around, and
+       * navigation (e.g. "Reset" or zooming to a layer) keeps the camera
+       * pointing straight down. Call {@link CesiumWidgetView#exitTopDownMode}
+       * to restore the normal controls.
+       * @since 2.41.0
+       */
+      enterTopDownMode() {
+        if (this.topDownLocked) return;
+        const controller = this.scene.screenSpaceCameraController;
+        this.topDownSaved = {
+          enableTilt: controller.enableTilt,
+          enableLook: controller.enableLook,
+          zoomEventTypes: controller.zoomEventTypes,
+        };
+        controller.enableTilt = false;
+        controller.enableLook = false;
+        // Remove right-drag zoom, since right-drag now rotates the heading.
+        controller.zoomEventTypes = [
+          Cesium.CameraEventType.WHEEL,
+          Cesium.CameraEventType.PINCH,
+        ];
+        this.topDownLocked = true;
+        this.bindHeadingRotation();
+        this.flyToTopDown();
+      },
+
+      /**
+       * Restores the camera controls that were changed by
+       * {@link CesiumWidgetView#enterTopDownMode}. The camera is not moved.
+       * @since 2.41.0
+       */
+      exitTopDownMode() {
+        if (!this.topDownLocked) return;
+        this.topDownLocked = false;
+        this.topDownTransition = false;
+        this.unbindHeadingRotation();
+        const saved = this.topDownSaved;
+        this.topDownSaved = null;
+        if (saved && this.scene && !this.scene.isDestroyed()) {
+          const controller = this.scene.screenSpaceCameraController;
+          controller.enableTilt = saved.enableTilt;
+          controller.enableLook = saved.enableLook;
+          controller.zoomEventTypes = saved.zoomEventTypes;
+        }
+      },
+
+      /**
+       * Moves the camera so that it looks straight down at whatever is at the
+       * center of the screen, at the same distance and heading.
+       * @since 2.41.0
+       */
+      flyToTopDown() {
+        const { scene, camera } = this;
+        if (scene.mode !== Cesium.SceneMode.SCENE3D) return;
+        const {heading} = camera;
+        const pitch = -Cesium.Math.PI_OVER_TWO;
+        const done = () => {
+          this.topDownTransition = false;
+          this.enforceTopDown();
+        };
+        this.topDownTransition = true;
+        const options = { duration: 0.6, complete: done, cancel: done };
+        const center = camera.pickEllipsoid(
+          new Cesium.Cartesian2(
+            scene.canvas.clientWidth / 2,
+            scene.canvas.clientHeight / 2,
+          ),
+          scene.globe.ellipsoid,
+        );
+        if (center) {
+          const range = Cesium.Cartesian3.distance(camera.positionWC, center);
+          camera.flyToBoundingSphere(new Cesium.BoundingSphere(center, 0), {
+            ...options,
+            offset: new Cesium.HeadingPitchRange(heading, pitch, range),
+          });
+        } else {
+          camera.flyTo({
+            ...options,
+            destination: Cesium.Cartesian3.clone(camera.positionWC),
+            orientation: { heading, pitch, roll: 0 },
+          });
+        }
+      },
+
+      /**
+       * While locked to a top-down view, puts the camera back to looking
+       * straight down if its pitch or roll has drifted.
+       * @since 2.41.0
+       */
+      enforceTopDown() {
+        if (!this.topDownLocked || this.topDownTransition) return;
+        const { camera, scene } = this;
+        if (scene.mode !== Cesium.SceneMode.SCENE3D) return;
+        const tolerance = Cesium.Math.toRadians(
+          ExportConstants.EXPORT_LEVEL_TOLERANCE_DEG,
+        );
+        const pitchError = Math.abs(camera.pitch + Cesium.Math.PI_OVER_TWO);
+        const rollError = Math.abs(Cesium.Math.negativePiToPi(camera.roll));
+        if (pitchError <= tolerance && rollError <= tolerance) return;
+        camera.setView({
+          orientation: {
+            heading: camera.heading,
+            pitch: -Cesium.Math.PI_OVER_TWO,
+            roll: 0,
+          },
+        });
+      },
+
+      /**
+       * Change the flight options so that the camera ends up looking straight
+       * down, if the view is locked to a top-down view.
+       * @param {object} options Options for Camera.flyToBoundingSphere.
+       * @returns {object} The options, with the offset's pitch overridden when
+       * locked.
+       * @since 2.41.0
+       */
+      applyTopDownToOptions(options) {
+        if (!this.topDownLocked) return options;
+        const offset = options?.offset;
+        return {
+          ...options,
+          offset: new Cesium.HeadingPitchRange(
+            offset?.heading ?? this.camera.heading,
+            -Cesium.Math.PI_OVER_TWO,
+            offset?.range ?? 0,
+          ),
+        };
+      },
+
+      /**
+       * Change the target of Camera.flyTo so that the camera ends up looking
+       * straight down, if the view is locked to a top-down view.
+       * @param {object} target Options for Camera.flyTo.
+       * @returns {object} The target, with the orientation overridden when
+       * locked.
+       * @since 2.41.0
+       */
+      applyTopDownToFlightTarget(target) {
+        if (!this.topDownLocked || !Cesium.defined(target?.destination)) {
+          return target;
+        }
+        return {
+          ...target,
+          orientation: {
+            heading: target.orientation?.heading ?? this.camera.heading,
+            pitch: -Cesium.Math.PI_OVER_TWO,
+            roll: 0,
+          },
+        };
+      },
+
+      /**
+       * Listen for the pointer gestures in `HEADING_DRAG_BINDINGS` on the map
+       * canvas and rotate the heading while they are dragged. Dragging to the
+       * right turns the map clockwise.
+       * @since 2.41.0
+       */
+      bindHeadingRotation() {
+        this.unbindHeadingRotation();
+        const view = this;
+        const { canvas } = this.scene;
+        const drag = { pointerId: null, x: 0 };
+
+        const onDown = (event) => {
+          const controller = view.scene.screenSpaceCameraController;
+          if (!controller.enableInputs || drag.pointerId !== null) return;
+          if (!HEADING_DRAG_BINDINGS.some((b) => b.matches(event))) return;
+          drag.pointerId = event.pointerId;
+          drag.x = event.clientX;
+          try {
+            canvas.setPointerCapture(event.pointerId);
+          } catch (e) {
+            // Pointer capture is optional.
+          }
+        };
+        const onMove = (event) => {
+          if (event.pointerId !== drag.pointerId) return;
+          const dx = event.clientX - drag.x;
+          drag.x = event.clientX;
+          view.rotateHeadingBy(-dx * ExportConstants.EXPORT_HEADING_RAD_PER_PX);
+        };
+        const onUp = (event) => {
+          if (event.pointerId !== drag.pointerId) return;
+          drag.pointerId = null;
+          try {
+            canvas.releasePointerCapture(event.pointerId);
+          } catch (e) {
+            // The capture may already be released.
+          }
+        };
+        // Right-click and Ctrl+click would otherwise open the context menu.
+        const onContextMenu = (event) => event.preventDefault();
+
+        canvas.addEventListener("pointerdown", onDown);
+        canvas.addEventListener("pointermove", onMove);
+        canvas.addEventListener("pointerup", onUp);
+        canvas.addEventListener("pointercancel", onUp);
+        canvas.addEventListener("contextmenu", onContextMenu);
+        this.removeHeadingRotation = () => {
+          canvas.removeEventListener("pointerdown", onDown);
+          canvas.removeEventListener("pointermove", onMove);
+          canvas.removeEventListener("pointerup", onUp);
+          canvas.removeEventListener("pointercancel", onUp);
+          canvas.removeEventListener("contextmenu", onContextMenu);
+        };
+      },
+
+      /**
+       * Remove the listeners added by
+       * {@link CesiumWidgetView#bindHeadingRotation}.
+       * @since 2.41.0
+       */
+      unbindHeadingRotation() {
+        if (this.removeHeadingRotation) {
+          this.removeHeadingRotation();
+          this.removeHeadingRotation = null;
+        }
+      },
+
+      /**
+       * Rotate the camera about its view direction, which, when looking
+       * straight down, rotates the map about the center of the screen.
+       * @param {number} radians The change in heading. Positive values turn the
+       * camera clockwise, so the map turns counter-clockwise.
+       * @since 2.41.0
+       */
+      rotateHeadingBy(radians) {
+        if (!radians) return;
+        this.camera.twistRight(radians);
+        this.scene.requestRender();
+      },
+
+      /**
+       * Allow or block the user from moving the camera.
+       * @param {boolean} enabled Whether inputs are enabled.
+       * @since 2.41.0
+       */
+      setCameraInputsEnabled(enabled) {
+        this.scene.screenSpaceCameraController.enableInputs = Boolean(enabled);
+      },
+
+      /**
+       * @returns {number} The number of drawing buffer pixels per CSS pixel.
+       * @since 2.41.0
+       */
+      getPixelRatio() {
+        const { canvas } = this.scene;
+        return canvas.clientWidth ? canvas.width / canvas.clientWidth : 1;
+      },
+
+      /**
+       * @returns {{maxViewportWidth: number, maxViewportHeight: number,
+       * maxRenderbufferSize: number}} The GPU's size limits, where known.
+       * @since 2.41.0
+       */
+      getRenderLimits() {
+        try {
+          // Cesium does not publicly expose these limits.
+          const gl = this.scene.context._gl;
+          const viewport = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+          return {
+            maxViewportWidth: viewport[0],
+            maxViewportHeight: viewport[1],
+            maxRenderbufferSize: gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),
+          };
+        } catch (e) {
+          return {};
+        }
+      },
+
+      /**
+       * Get the 3D tilesets in the scene.
+       * @returns {Cesium.Cesium3DTileset[]} The tilesets.
+       * @since 2.41.0
+       */
+      getTilesets() {
+        const tilesets = [];
+        const {primitives} = this.scene;
+        for (let i = 0; i < primitives.length; i += 1) {
+          const primitive = primitives.get(i);
+          if (primitive instanceof Cesium.Cesium3DTileset) {
+            tilesets.push(primitive);
+          }
+        }
+        return tilesets;
+      },
+
+      /**
+       * Render the map at a multiple of its normal resolution. Cesium measures
+       * screen space error in CSS pixels, so by default the maximum screen
+       * space error of the globe and the 3D tilesets is divided by the scale,
+       * so that the extra pixels show finer detail rather than a blown-up
+       * version of the usual detail. Call with 1 to restore.
+       * @param {number} [scale] The factor to multiply the resolution by.
+       * @param {object} [options] Options.
+       * @param {boolean} [options.scaleDetail] Set to false to leave the
+       * screen space error alone.
+       * @since 2.41.0
+       */
+      setResolutionScale(scale = 1, { scaleDetail = true } = {}) {
+        const { scene, widget } = this;
+        if (!widget || widget.isDestroyed()) return;
+
+        if (scale === 1) {
+          const baseline = this.detailBaseline;
+          if (baseline) {
+            scene.globe.maximumScreenSpaceError = baseline.globe;
+            baseline.tilesets.forEach(({ tileset, value }) => {
+              if (!tileset.isDestroyed()) {
+                tileset.maximumScreenSpaceError = value;
+              }
+            });
+            this.detailBaseline = null;
+          }
+        } else if (scaleDetail) {
+          if (!this.detailBaseline) {
+            this.detailBaseline = {
+              globe: scene.globe.maximumScreenSpaceError,
+              tilesets: this.getTilesets().map((tileset) => ({
+                tileset,
+                value: tileset.maximumScreenSpaceError,
+              })),
+            };
+          }
+          const baseline = this.detailBaseline;
+          scene.globe.maximumScreenSpaceError = baseline.globe / scale;
+          baseline.tilesets.forEach(({ tileset, value }) => {
+            if (!tileset.isDestroyed()) {
+              tileset.maximumScreenSpaceError = value / scale;
+            }
+          });
+        }
+
+        // Setting the scale also resizes the canvas.
+        widget.resolutionScale = scale;
+        scene.requestRender();
+      },
+
+      /**
+       * @returns {boolean} True when the globe, the 3D tilesets and the vector
+       * data have everything they need for the current camera position.
+       * @since 2.41.0
+       */
+      isSceneIdle() {
+        const { scene } = this;
+        if (scene.globe && !scene.globe.tilesLoaded) return false;
+        if (this.getTilesets().some((t) => t.show && !t.tilesLoaded)) {
+          return false;
+        }
+        // DataSourceDisplay#ready stays false because nothing calls its
+        // update(), so poll the visualizers directly.
+        return this.updateAllDataSources() !== false;
+      },
+
+      /**
+       * Waits until the map has finished loading the data for the current view.
+       * Resolves when the scene has been idle for a quiet period, or when the
+       * time limit is reached.
+       * @param {object} [options] Options.
+       * @param {AbortSignal} [options.signal] Rejects with an AbortError when
+       * aborted.
+       * @param {number} [options.timeoutMs] The time limit.
+       * @param {number} [options.stableFrames] How many frames must render
+       * while idle.
+       * @param {number} [options.quietMs] How long the scene must stay idle.
+       * @returns {Promise<{settled: boolean}>} `settled` is false when the time
+       * limit was reached first.
+       * @since 2.41.0
+       */
+      whenSceneSettled({
+        signal,
+        timeoutMs = ExportConstants.EXPORT_SETTLE_TIMEOUT_MS,
+        stableFrames = ExportConstants.EXPORT_SETTLE_STABLE_FRAMES,
+        quietMs = ExportConstants.EXPORT_QUIET_MS,
+      } = {}) {
+        const view = this;
+        const { scene } = view;
+        return new Promise((resolve, reject) => {
+          let pending = 0;
+          let frames = 0;
+          let idleSince = null;
+          let done = false;
+          const start = Date.now();
+          const removeProgress = scene.globe.tileLoadProgressEvent.addEventListener(
+            (remaining) => {
+              pending = remaining;
+            },
+          );
+          const removeRender = scene.postRender.addEventListener(() => {
+            frames += 1;
+          });
+          let timer = null;
+
+          const finish = (settle, value) => {
+            if (done) return;
+            done = true;
+            clearInterval(timer);
+            removeProgress();
+            removeRender();
+            settle(value);
+          };
+
+          const check = () => {
+            if (view.isClosed) {
+              finish(reject, new Error("The map was closed."));
+              return;
+            }
+            const now = Date.now();
+            if (pending !== 0 || !view.isSceneIdle()) {
+              idleSince = null;
+            } else if (idleSince === null) {
+              idleSince = now;
+              frames = 0;
+            } else if (now - idleSince >= quietMs && frames >= stableFrames) {
+              finish(resolve, { settled: true });
+              return;
+            }
+            if (now - start >= timeoutMs) {
+              console.warn("Map export: timed out waiting for the scene.", {
+                pendingTiles: pending,
+                globeTilesLoaded: scene.globe?.tilesLoaded,
+                tilesetsLoading: view
+                  .getTilesets()
+                  .filter((t) => t.show && !t.tilesLoaded).length,
+              });
+              finish(resolve, { settled: false });
+              return;
+            }
+            // With explicit rendering, nothing renders unless asked.
+            scene.requestRender();
+          };
+
+          if (signal) {
+            const abort = () =>
+              finish(reject, new DOMException("Aborted", "AbortError"));
+            if (signal.aborted) {
+              abort();
+              return;
+            }
+            signal.addEventListener("abort", abort, { once: true });
+          }
+          timer = setInterval(check, 100);
+          scene.requestRender();
+        });
+      },
+
+      /**
+       * Hides everything in the canvas that is only meant for interactive use,
+       * such as the highlight on selected 3D tile features.
+       * @returns {function(): void} A function that restores the scene.
+       * @since 2.41.0
+       */
+      applyCleanScene() {
+        const { scene, silhouettes } = this;
+        const saved = {
+          selected: silhouettes?.selected,
+          fps: scene.debugShowFramesPerSecond,
+        };
+        if (silhouettes) silhouettes.selected = [];
+        scene.debugShowFramesPerSecond = false;
+        return () => {
+          if (silhouettes) silhouettes.selected = saved.selected;
+          scene.debugShowFramesPerSecond = saved.fps;
+        };
+      },
+
+      /**
+       * Renders one frame and immediately passes the canvas to a callback.
+       * The canvas does not preserve its drawing buffer, so the callback must
+       * copy what it needs (e.g. with `drawImage`) synchronously.
+       * @param {function(HTMLCanvasElement): void} draw Called right after the
+       * frame is rendered.
+       * @since 2.41.0
+       */
+      renderTo(draw) {
+        const { scene, widget } = this;
+        const restore = this.applyCleanScene();
+        try {
+          widget.resize();
+          scene.requestRender();
+          widget.render();
+          draw(scene.canvas);
+        } finally {
+          restore();
+          scene.requestRender();
+        }
+      },
+
+      /**
+       * Gets the camera information shown on the exported map.
+       * @param {object} frame The frame (`left`, `top`, `width` and `height`),
+       * in CSS pixels relative to the map's top left corner.
+       * @returns {{metersPerPixel: (number|null), northRotation: number}}
+       * `metersPerPixel` is the ground distance of one CSS pixel near the
+       * bottom right of the frame, and `northRotation` is the clockwise angle,
+       * in radians, from the top of the screen to north.
+       * @since 2.41.0
+       */
+      getExportViewInfo(frame) {
+        const meters = this.pixelToMeters({
+          x: frame.left + frame.width * 0.75,
+          y: frame.top + frame.height - 1,
+        });
+        return {
+          metersPerPixel: typeof meters === "number" ? meters : null,
+          northRotation: -this.camera.heading,
+        };
+      },
+
       /** Remove listeners and destroy the widget when the view is closed */
       onClose() {
         this.isClosed = true;
+        this.exitTopDownMode();
         this.destroy3DTilesInspector();
         this.removeMouseListeners();
         this.removeCameraListeners();
