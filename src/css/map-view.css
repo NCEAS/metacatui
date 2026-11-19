@@ -710,10 +710,10 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
   position: relative;
 }
 
-/* The download panel is in-flow at the bottom of the flex column. It should
-   only take as much vertical space as its content needs — not stretch to fill
-   the remaining height the way sibling toolbar__content panels do. */
-.toolbar__content--download {
+/* The export and download panels are in-flow at the bottom of the flex column.
+   They should only take as much vertical space as its content needs — not stretch
+   to fill the remaining height the way sibling toolbar__content panels do. */
+.toolbar__content--dock-bottom {
   flex: 0 0 auto;
   min-height: 0;
   overflow: visible;
@@ -750,6 +750,17 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
     --portal-col-primary-6,
     var(--map-col-highlight__deprecate)
   );
+}
+
+/* A link that does nothing right now, e.g. Download while exporting. */
+.toolbar__link--disabled,
+.toolbar__link--disabled:hover {
+  cursor: not-allowed;
+  background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
+}
+
+.toolbar__link--disabled .toolbar__link-icon {
+  opacity: 0.4;
 }
 
 .toolbar__link-title {

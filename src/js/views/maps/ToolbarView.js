@@ -84,6 +84,13 @@ define([
        * container for the view associated with this section.
        * @property {string} contentActive A class added to a content container when it
        * is the active section
+       * @property {string} contentDockBottom A class added to the content container of
+       * a section that is docked to the bottom of the toolbar (see
+       * {@link SectionOption#dock})
+       * @property {string} linkDisabled A class added to a link while it is disabled
+       * (see {@link SectionOption#disabledWhilePinned})
+       * @property {string} linkPinned A class added to a link while its section is
+       * pinned (see {@link ToolbarView#pinSection})
        */
       classes: {
         open: "toolbar--open",
@@ -94,9 +101,11 @@ define([
         linkTitleHidden: "toolbar__link-title--hidden",
         linkIcon: "toolbar__link-icon",
         linkActive: "toolbar__link--active",
+        linkDisabled: "toolbar__link--disabled",
+        linkPinned: "toolbar__link--pinned",
         content: "toolbar__content",
         contentActive: "toolbar__content--active",
-        contentDownload: "toolbar__content--download",
+        contentDockBottom: "toolbar__content--dock-bottom",
       },
 
       /**
@@ -118,6 +127,13 @@ define([
        * link/tab.
        * @typedef {object} SectionOption
        * @property {string} label The name of this section to show to the user.
+       * @property {string} [key] An identifier for the section, used to find it with
+       * {@link ToolbarView#getSectionByKey}.
+       * @property {'bottom'} [dock] Set to 'bottom' to shrink-wrap the section's
+       * content and dock it to the bottom of the toolbar, below any other active
+       * section.
+       * @property {boolean} [disabledWhilePinned] When true, the link is disabled
+       * while a pinned section is active (see {@link ToolbarView#pinSection}).
        * @property {MapIconString} icon The icon to show in the link (tab) for this
        * section
        * @property {Backbone.View} [view] The view that renders the content of the
@@ -143,6 +159,7 @@ define([
       sectionOptions: [
         {
           label: "Viewfinder",
+          key: "viewfinder",
           panelId: "viewfinder",
           icon: "globe",
           view: ViewfinderView,
@@ -157,6 +174,7 @@ define([
         },
         {
           label: "Layers",
+          key: "layers",
           panelId: "layers",
           icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="m3.2 7.3 8.6 4.6a.5.5 0 0 0 .4 0l8.6-4.6a.4.4 0 0 0 0-.8L12.1 3a.5.5 0 0 0-.4 0L3.3 6.5a.4.4 0 0 0 0 .8Z"/><path d="M20.7 10.7 19 9.9l-6.7 3.6a.5.5 0 0 1-.4 0L5 9.9l-1.8.8a.5.5 0 0 0 0 .8l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.8Z"/><path d="m20.7 15.1-1.5-.7-7 3.8a.5.5 0 0 1-.4 0l-7-3.8-1.5.7a.5.5 0 0 0 0 .9l8.5 5a.5.5 0 0 0 .5 0l8.5-5a.5.5 0 0 0 0-.9Z"/></svg>',
           view: LayersPanelView,
@@ -166,6 +184,7 @@ define([
         },
         {
           label: "Reset",
+          key: "reset",
           icon: "rotate-left",
           action(_view, model) {
             model.flyHome();
@@ -178,19 +197,18 @@ define([
         // We can enable to the draw tool once we have a use case for it
         {
           label: "Download",
+          key: "download",
           icon: "cloud-download",
           view: DownloadPanelView,
+          dock: "bottom",
+          disabledWhilePinned: true,
           viewOptions: {
             toolbarView: this,
           },
           action(view) {
             // Show both the layer and download panels
-            const layerSectionEl = view.sectionElements.find(
-              (sectionEl) => sectionEl.linkEl.textContent === "Layers",
-            );
-            const downloadSectionEl = view.sectionElements.find(
-              (sectionEl) => sectionEl.linkEl.textContent === "Download",
-            );
+            const layerSectionEl = view.getSectionByKey("layers");
+            const downloadSectionEl = view.getSectionByKey("download");
             view.inactivateAllSections();
             view.defaultActivationAction(layerSectionEl);
             view.defaultActivationAction(downloadSectionEl);
@@ -205,6 +223,7 @@ define([
         },
         {
           label: "Help",
+          key: "help",
           icon: "question-sign",
           view: HelpPanel,
           viewOptions: {
@@ -218,6 +237,7 @@ define([
         },
         {
           label: "Share",
+          key: "share",
           icon: "link",
           action(view) {
             const title = this.linkEl.querySelector(
@@ -298,10 +318,10 @@ define([
 
         // Select and save a reference to the elements that will contain the
         // links/tabs and the section content.
-        this.contentContainer = document.querySelector(
+        this.contentContainer = this.el.querySelector(
           `.${view.classes.contentContainer}`,
         );
-        this.linksContainer = document.querySelector(
+        this.linksContainer = this.el.querySelector(
           `.${view.classes.linksContainer}`,
         );
 
@@ -334,6 +354,9 @@ define([
             isActive,
             action,
             sectionView,
+            key: sectionOption.key || null,
+            pinned: false,
+            disabledWhilePinned: Boolean(sectionOption.disabledWhilePinned),
             panelId: sectionOption.panelId || null,
           };
           view.sectionElements.push(sectionEl);
@@ -372,18 +395,34 @@ define([
        * @property {boolean} isActive True if this is the active section, false
        * otherwise.
        * @property {Backbone.View} sectionView The associated Backbone.View instance.
+       * @property {string|null} key The section's key, from its SectionOption.
+       * @property {boolean} pinned True while the section is pinned (see
+       * {@link ToolbarView#pinSection}).
+       * @property {boolean} disabledWhilePinned True if the link is disabled while a
+       * section is pinned.
        */
 
       /**
        * Executed when any one of the tabs/links are clicked. Opens the toolbar if it's
        * closed, closes it if the active section is clicked, and otherwise activates the
-       * clicked section content.
+       * clicked section content. While a section is pinned, the toolbar cannot be
+       * closed and the links that are disabled while pinned do nothing.
        * @param {SectionElement} sectionEl The section that was clicked
        */
       handleLinkClick(sectionEl) {
         const previousPanelId = this.getActivePanelId();
         const toolbarOpen = this.isOpen;
         const sectionActive = sectionEl.isActive;
+        if (this.getPinnedSection()) {
+          if (sectionEl.pinned || sectionEl.disabledWhilePinned) return;
+          // The toolbar cannot be closed, so a section that is showing is
+          // simply hidden.
+          if (sectionActive) {
+            this.inactivateSection(sectionEl);
+            this.triggerActivePanelChangeIfNeeded(previousPanelId);
+            return;
+          }
+        }
         if (toolbarOpen && sectionActive) {
           this.close();
           return;
@@ -479,10 +518,10 @@ define([
         const contentContainer = document.createElement("div");
         // Add the class that identifies a toolbar section's content
         contentContainer.classList.add(this.classes.content);
-        // If this section uses the DownloadPanelView, mark it so CSS can give it
+        // If this section is docked to the bottom, mark it so CSS can give it
         // shrink-wrap flex sizing without relying on the :has() selector.
-        if (sectionOption.view === DownloadPanelView) {
-          contentContainer.classList.add(this.classes.contentDownload);
+        if (sectionOption.dock === "bottom") {
+          contentContainer.classList.add(this.classes.contentDockBottom);
         }
         // Render the toolbar section view
         // Merge the icon and label with the other section options
@@ -516,9 +555,11 @@ define([
       },
 
       /**
-       * Closes the toolbar. Also inactivates all sections.
+       * Closes the toolbar. Also inactivates all sections. Does nothing while a
+       * section is pinned.
        */
       close() {
+        if (this.getPinnedSection()) return;
         const previousPanelId = this.getActivePanelId();
         this.isOpen = false;
         this.el.classList.remove(this.classes.open);
@@ -534,8 +575,79 @@ define([
        */
       getActivePanelId() {
         if (!this.isOpen) return null;
-        const active = this.sectionElements.find((section) => section.isActive);
+        const active = this.sectionElements.find(
+          (section) => section.isActive && !section.pinned,
+        );
         return active?.panelId || null;
+      },
+
+      /**
+       * Find a section by the key set in its SectionOption.
+       * @param {string} key The key.
+       * @returns {SectionElement|undefined} The section, if it is in the toolbar.
+       * @since 2.41.0
+       */
+      getSectionByKey(key) {
+        return this.sectionElements.find((section) => section.key === key);
+      },
+
+      /**
+       * @returns {SectionElement|undefined} The pinned section, if there is one.
+       * @since 2.41.0
+       */
+      getPinnedSection() {
+        return this.sectionElements.find((section) => section.pinned);
+      },
+
+      /**
+       * Activates a section and pins it. A pinned section stays visible when
+       * other sections are activated or the toolbar is closed, until it is
+       * released with {@link ToolbarView#releaseSection}. The links of sections
+       * that are disabledWhilePinned are disabled. Triggers
+       * "toolbar:sectionPinned" with the section's key.
+       * @param {string} key The key of the section to pin.
+       * @since 2.41.0
+       */
+      pinSection(key) {
+        const sectionEl = this.getSectionByKey(key);
+        if (!sectionEl || sectionEl.pinned) return;
+        this.defaultActivationAction(sectionEl);
+        // eslint-disable-next-line no-param-reassign
+        sectionEl.pinned = true;
+        sectionEl.linkEl.classList.add(this.classes.linkPinned);
+        this.refreshDisabledLinks();
+        this.trigger("toolbar:sectionPinned", key);
+      },
+
+      /**
+       * Inactivates a pinned section. Triggers "toolbar:sectionReleased" with the
+       * section's key.
+       * @param {string} key The key of the section to release.
+       * @since 2.41.0
+       */
+      releaseSection(key) {
+        const sectionEl = this.getSectionByKey(key);
+        if (!sectionEl || !sectionEl.pinned) return;
+        // eslint-disable-next-line no-param-reassign
+        sectionEl.pinned = false;
+        sectionEl.linkEl.classList.remove(this.classes.linkPinned);
+        this.inactivateSection(sectionEl);
+        this.refreshDisabledLinks();
+        this.trigger("toolbar:sectionReleased", key);
+      },
+
+      /**
+       * Disable the links that are disabledWhilePinned if a section is pinned, and
+       * enable them otherwise.
+       * @since 2.41.0
+       */
+      refreshDisabledLinks() {
+        const disabled = Boolean(this.getPinnedSection());
+        this.sectionElements.forEach(({ linkEl, disabledWhilePinned }) => {
+          if (!disabledWhilePinned) return;
+          linkEl.classList.toggle(this.classes.linkDisabled, disabled);
+          linkEl.setAttribute("aria-disabled", String(disabled));
+        });
       },
 
       /**
@@ -602,11 +714,13 @@ define([
       },
 
       /**
-       * Hide the content of a section
+       * Hide the content of a section. A pinned section is only hidden once it
+       * is released (see {@link ToolbarView#releaseSection}).
        * @param {SectionElement} sectionEl The section to inactivate
        */
       inactivateSection(sectionEl) {
         const el = sectionEl;
+        if (el.pinned) return;
         el.isActive = false;
         if (sectionEl.contentEl) {
           sectionEl.contentEl.classList.remove(this.classes.contentActive);
