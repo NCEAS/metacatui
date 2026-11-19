@@ -230,6 +230,13 @@ div.row-fluid > a[name] {
   grid-template-rows: 40px 100fr;
 }
 
+/* Overrides #Content's large padding-bottom (reserved for knb's own static
+   footer, up to 785px on narrow viewports) so it doesn't starve the portal
+   map's available height. */
+.PortalView #Content {
+  padding-bottom: 0px;
+}
+
 #Navbar .navbar-inner:before,
 .navbar-inner:after {
   display: none;
