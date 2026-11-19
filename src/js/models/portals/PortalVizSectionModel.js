@@ -4,6 +4,12 @@ define([
   "models/portals/PortalOption",
   "models/maps/Map",
 ], ($, PortalSectionModel, PortalOption, Map) => {
+  const VISUALIZATION_TYPES = {
+    FEVER: "fever",
+    CESIUM: "cesium",
+    IFRAME: "iframe",
+  };
+
   /**
    * @class PortalVizSectionModel
    * @classdesc A Portal Section for Data Visualizations. This is still an
@@ -22,7 +28,12 @@ define([
           ...PortalSectionModel.prototype.defaults(),
           sectionType: "visualization",
           visualizationType: "",
-          supportedVisualizationTypes: ["fever", "cesium"],
+          supportedVisualizationTypes: [
+            VISUALIZATION_TYPES.FEVER,
+            VISUALIZATION_TYPES.CESIUM,
+            VISUALIZATION_TYPES.IFRAME,
+          ],
+          iframeUrl: "",
           mapConfigError: null,
         };
       },
@@ -39,7 +50,7 @@ define([
         PortalSectionModel.prototype.initialize.call(this, attributes, options);
 
         if (
-          this.get("visualizationType") === "cesium" &&
+          this.get("visualizationType") === VISUALIZATION_TYPES.CESIUM &&
           !this.get("mapConfigError")
         ) {
           this.initializeCesiumMap(
@@ -82,7 +93,7 @@ define([
 
           // Find the map configuration JSON in the section option, if there is
           // one.
-          if (vizType === "cesium") {
+          if (vizType === VISUALIZATION_TYPES.CESIUM) {
             const mapConfigOption = PortalOption.findDirectChild(
               objectDOM,
               "mapConfig",
@@ -101,6 +112,14 @@ define([
               }
             }
             this.initializeCesiumMap(mapConfig);
+          } else if (vizType === VISUALIZATION_TYPES.IFRAME) {
+            const iframeUrlOption = PortalOption.findDirectChild(
+              objectDOM,
+              "iframeUrl",
+            );
+            modelJSON.iframeUrl = iframeUrlOption
+              ? PortalOption.fromElement(iframeUrlOption).optionValue[0]
+              : "";
           }
         }
 
@@ -214,7 +233,7 @@ define([
 
         // Keep the original map option when its JSON could not be parsed.
         if (
-          this.get("visualizationType") === "cesium" &&
+          this.get("visualizationType") === VISUALIZATION_TYPES.CESIUM &&
           !this.get("mapConfigError")
         ) {
           this.updateCesiumMapDOM(objectDOM);
@@ -251,7 +270,7 @@ define([
           }
 
           if (
-            this.get("visualizationType") === "cesium" &&
+            this.get("visualizationType") === VISUALIZATION_TYPES.CESIUM &&
             !this.get("mapConfigError")
           ) {
             this.get("mapModel")
@@ -279,7 +298,11 @@ define([
        * this portal section model.
        */
       reportSectionChange(isActive) {
-        if (isActive && !this.get("mapConfigError")) {
+        if (
+          isActive &&
+          this.get("visualizationType") === VISUALIZATION_TYPES.CESIUM &&
+          !this.get("mapConfigError")
+        ) {
           this.get("mapModel").trigger("change:searchparams");
         }
       },

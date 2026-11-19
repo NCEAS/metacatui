@@ -15,6 +15,17 @@ define([
   ImageEdit,
   Template,
 ) => {
+  const CLASS_NAMES = {
+    INFO_ALERT: "alert-info",
+    VISUALIZATION: "port-editor-viz",
+  };
+  const IFRAME_TYPE = "iframe";
+  const MESSAGES = {
+    IFRAME: "This iframe is configured in the portal XML.",
+    FEVER:
+      "You're all set! A Fluid Earth Viewer data visualization will appear here.",
+  };
+
   /**
    * @class PortEditorMdSectionView
    * @classdesc A section of the Portal Editor for adding/editing a Markdown
@@ -132,12 +143,16 @@ define([
            * rather than checking the section type here.
            */
           if (this.model.type === "PortalVizSection") {
+            const message =
+              this.model.get("visualizationType") === IFRAME_TYPE
+                ? MESSAGES.IFRAME
+                : MESSAGES.FEVER;
             MetacatUI.appView.showAlert(
-              "You're all set! A Fluid Earth Viewer data visualization will appear here.",
-              "alert-info",
+              message,
+              CLASS_NAMES.INFO_ALERT,
               this.$el,
             );
-            this.$el.addClass("port-editor-viz");
+            this.$el.addClass(CLASS_NAMES.VISUALIZATION);
 
             return this;
           }
