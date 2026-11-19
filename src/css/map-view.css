@@ -770,6 +770,7 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
   color: var(--portal-col-neutral-00, var(--map-col-text__deprecate));
   font-size: 0.75rem;
   font-weight: 700;
+  white-space: nowrap;
   /* don't show the link title until the link is hovered */
   display: none;
 }
@@ -3123,4 +3124,197 @@ other class: .ui-slider-range */
 .assets-editor__add .icon {
   width: 2rem;
   text-align: center;
+}
+
+/*****************************************************************************************
+ *
+ * Export Map
+ *
+ * While the map is in export mode, the map view has the class
+ * `map-view--export-mode`. The link column and status bar are made mostly
+ * transparent so that more of the map can be seen, and are restored on hover.
+ * The overlay shows the frame that will be saved and a preview of what will be
+ * drawn on it.
+ */
+
+.map-view--export-mode .toolbar__links,
+.map-view--export-mode .map-status-bar {
+  opacity: 0.25;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.map-view--export-mode .toolbar__links:hover,
+.map-view--export-mode .toolbar__links:focus-within,
+.map-view--export-mode .map-status-bar:hover {
+  opacity: 1;
+}
+
+/* The export has its own legend, and the details and feature info boxes would
+   cover the frame. */
+.map-view--export-mode .legend-container,
+.map-view--export-mode .map-view__feature-info-container,
+.map-view--export-mode .map-view__layer-details-container {
+  display: none;
+}
+
+/* Link titles say what is not part of the export. */
+.map-view--export-mode .toolbar__link-title::after {
+  content: " (Not shown in export)";
+  font-weight: 400;
+}
+
+.map-view--export-mode .toolbar__link--pinned .toolbar__link-title::after {
+  content: none;
+}
+
+.map-view--export-mode .toolbar__link--disabled .toolbar__link-title::after {
+  content: " (Unavailable while exporting)";
+}
+
+/* Overlay. It must not create a stacking context, so that the toolbar still
+   covers the mask and the status bar still covers the preview. */
+.map-export-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.map-export-overlay__frame {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px dashed #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+.map-export-overlay__preview {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.map-export-overlay__mask {
+  position: absolute;
+  inset: 0;
+  z-index: var(--map-z-index-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.7);
+  pointer-events: all;
+  cursor: progress;
+}
+
+.map-export-overlay__mask[hidden] {
+  display: none;
+}
+
+.map-export-overlay__mask-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--map-border-radius-big);
+  background: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
+  box-shadow: var(--map-shadow-md);
+  color: var(--portal-col-neutral-7, var(--map-col-text__deprecate));
+}
+
+.map-export-overlay__mask-message {
+  margin: 0;
+  font-weight: 600;
+}
+
+.map-export-overlay__mask .map-view__button {
+  border: 1px solid var(--portal-col-primary-2);
+}
+
+/* Export panel. Styles follow the download panel. */
+.export-panel {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  padding: 0 1.5rem 1rem;
+  box-sizing: border-box;
+  gap: 0.5rem;
+  border-top: 1px solid
+    var(--portal-col-neutral-2, var(--map-col-bkg-lightest__deprecate));
+  background-color: var(--portal-col-primary-1, var(--map-col-bkg__deprecate));
+}
+
+.export-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding-top: 15px;
+}
+
+.export-panel__title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-panel__title {
+  margin: 0 0 3px;
+  font-size: 20px;
+  font-weight: 700;
+  /* See the note on .download-panel__title about !important. */
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate)) !important;
+}
+
+.export-panel__icon {
+  font-size: 20px;
+  color: var(--portal-col-primary-6, var(--map-col-text__deprecate));
+}
+
+.export-panel__instructions,
+.export-panel__details,
+.export-panel__notices,
+.export-panel__status {
+  margin: 0;
+  font-size: 0.825rem;
+  color: var(--portal-col-neutral-7);
+}
+
+.export-panel__details {
+  font-weight: 700;
+}
+
+.export-panel__notices {
+  padding-left: 1.1rem;
+}
+
+.export-panel__notices[hidden] {
+  display: none;
+}
+
+.export-panel__status {
+  min-height: 1.1em;
+}
+
+.export-panel__status--error {
+  color: var(--portal-col-error, #b3261e);
+  font-weight: 700;
+}
+
+.export-panel__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.export-panel__button {
+  border: 1px solid var(--portal-col-primary-2);
+  padding: 0.4rem 0.9rem;
+}
+
+.export-panel__save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
