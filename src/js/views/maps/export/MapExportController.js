@@ -22,7 +22,8 @@ define([
       "The scale bar will be left out, because the scale cannot be determined for this view.",
     reduced:
       "The resolution will be reduced to fit within this device's memory limits.",
-    loading: "Loading map data\u2026",
+    loadingPreview: "Waiting for preview tiles\u2026",
+    loadingDetail: "Loading higher resolution data\u2026",
     rendering: "Creating the image\u2026",
     canceled: "Export canceled.",
     incomplete:
@@ -305,8 +306,8 @@ define([
 
       overlay.stop();
       panel?.setSaveEnabled(false);
-      panel?.setStatus(MESSAGES.loading);
-      overlay.showMask(MESSAGES.loading);
+      panel?.setStatus(MESSAGES.loadingPreview);
+      overlay.showMask(MESSAGES.loadingPreview);
       this.widget.setCameraInputsEnabled(false);
       this.setInert(true);
 
@@ -320,8 +321,12 @@ define([
           citations: content.citations,
           signal: abortController.signal,
           onStatus: (status) => {
-            const message =
-              status === "rendering" ? MESSAGES.rendering : MESSAGES.loading;
+            const message = {
+              loadingPreview: MESSAGES.loadingPreview,
+              loadingDetail: MESSAGES.loadingDetail,
+              rendering: MESSAGES.rendering,
+            }[status];
+            if (!message) return;
             overlay.showMask(message);
             panel?.setStatus(message);
           },

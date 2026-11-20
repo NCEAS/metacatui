@@ -71,8 +71,13 @@ define([
       height: widget.scene.canvas.clientHeight,
     };
 
+    // The preview's own tiles load first, at the resolution already on screen.
+    onStatus("loadingPreview");
+    await widget.whenSceneSettled({ signal });
+    if (signal?.aborted) throw abortError();
+
     widget.setResolutionScale(scale);
-    onStatus("loading");
+    onStatus("loadingDetail");
     const { settled } = await widget.whenSceneSettled({ signal });
     if (signal?.aborted) throw abortError();
     onStatus("rendering");
@@ -153,8 +158,8 @@ define([
    * @param {LegendEntry[]} options.entries The legend entries.
    * @param {string[]} options.citations The citations, one string each.
    * @param {AbortSignal} [options.signal] Aborts the export.
-   * @param {function(string): void} [options.onStatus] Called with "loading"
-   * and "rendering".
+   * @param {function(string): void} [options.onStatus] Called with
+   * "loadingPreview", "loadingDetail" and "rendering".
    * @param {number} [options.multiplier] The preferred resolution factor.
    * @returns {Promise<ExportResult>} The image. Rejects with an AbortError if
    * aborted.

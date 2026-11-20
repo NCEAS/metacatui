@@ -410,6 +410,30 @@ define([
         }
       });
 
+      it("describes whether it is waiting for the preview or loading the higher resolution data", async () => {
+        const seen = [];
+        let finish;
+        exporter.exportMap.callsFake(({ onStatus }) => {
+          onStatus("loadingPreview");
+          seen.push(
+            widget.el.querySelector(".map-export-overlay__mask").textContent,
+          );
+          onStatus("loadingDetail");
+          seen.push(
+            widget.el.querySelector(".map-export-overlay__mask").textContent,
+          );
+          return new Promise((resolve) => {
+            finish = resolve;
+          });
+        });
+        toolbar.pinSection("export");
+        const saving = controller.save();
+        finish({ blob: new Blob(["png"]), settled: true });
+        await saving;
+        expect(seen[0]).to.contain("Waiting for preview tiles");
+        expect(seen[1]).to.contain("Loading higher resolution data");
+      });
+
       it("downloads the image but warns and stays in export mode when the map had not finished loading", async () => {
         exporter.exportMap.resolves({ blob: new Blob(["png"]), settled: false });
         toolbar.pinSection("export");

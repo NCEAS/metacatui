@@ -2296,34 +2296,48 @@ define([
        * @since 2.41.0
        */
       isSceneIdle() {
+        return this.getUnsettledCount() === 0;
+      },
+
+      /**
+       * @returns {number} How many of the globe, the shown 3D tilesets and the
+       * vector data are still loading for the current camera position.
+       * @since 2.41.0
+       */
+      getUnsettledCount() {
         const { scene } = this;
-        if (scene.globe && !scene.globe.tilesLoaded) return false;
-        if (this.getTilesets().some((t) => t.show && !t.tilesLoaded)) {
-          return false;
-        }
+        let count = 0;
+        if (scene.globe && !scene.globe.tilesLoaded) count += 1;
+        count += this.getTilesets().filter((t) => t.show && !t.tilesLoaded).length;
         // DataSourceDisplay#ready stays false because nothing calls its
         // update(), so poll the visualizers directly.
-        return this.updateAllDataSources() !== false;
+        if (this.updateAllDataSources() === false) count += 1;
+        return count;
       },
 
       /**
        * Waits until the map has finished loading the data for the current view.
-       * Resolves when the scene has been idle for a quiet period, or when the
-       * time limit is reached.
+       * Resolves when the scene has been idle for a quiet period, when nothing
+       * has progressed for `stallMs`, or when `timeoutMs` has passed in total.
+       * Progress is a tileset loading another tile, the globe finishing a
+       * tile, or a layer finishing loading.
        * @param {object} [options] Options.
        * @param {AbortSignal} [options.signal] Rejects with an AbortError when
        * aborted.
-       * @param {number} [options.timeoutMs] The time limit.
+       * @param {number} [options.timeoutMs] The limit on the total wait.
+       * @param {number} [options.stallMs] The limit on the wait without
+       * progress.
        * @param {number} [options.stableFrames] How many frames must render
        * while idle.
        * @param {number} [options.quietMs] How long the scene must stay idle.
-       * @returns {Promise<{settled: boolean}>} `settled` is false when the time
-       * limit was reached first.
+       * @returns {Promise<{settled: boolean}>} `settled` is false when a limit
+       * was reached first.
        * @since 2.41.0
        */
       whenSceneSettled({
         signal,
         timeoutMs = ExportConstants.EXPORT_SETTLE_TIMEOUT_MS,
+        stallMs = ExportConstants.EXPORT_SETTLE_STALL_MS,
         stableFrames = ExportConstants.EXPORT_SETTLE_STABLE_FRAMES,
         quietMs = ExportConstants.EXPORT_QUIET_MS,
       } = {}) {
@@ -2335,8 +2349,12 @@ define([
           let idleSince = null;
           let done = false;
           const start = Date.now();
+          let lastProgress = start;
+          let lastUnsettled = Infinity;
+          let mostLoaded = 0;
           const removeProgress = scene.globe.tileLoadProgressEvent.addEventListener(
             (remaining) => {
+              if (remaining < pending) lastProgress = Date.now();
               pending = remaining;
             },
           );
@@ -2360,7 +2378,16 @@ define([
               return;
             }
             const now = Date.now();
-            if (pending !== 0 || !view.isSceneIdle()) {
+            const unsettled = view.getUnsettledCount();
+            const loaded = view
+              .getTilesets()
+              .reduce((n, t) => n + t.statistics.numberOfLoadedTilesTotal, 0);
+            if (unsettled < lastUnsettled || loaded > mostLoaded) {
+              lastProgress = now;
+            }
+            lastUnsettled = unsettled;
+            mostLoaded = Math.max(mostLoaded, loaded);
+            if (pending !== 0 || unsettled !== 0) {
               idleSince = null;
             } else if (idleSince === null) {
               idleSince = now;
@@ -2369,11 +2396,14 @@ define([
               finish(resolve, { settled: true });
               return;
             }
-            if (now - start >= timeoutMs) {
+            const stalled = now - lastProgress >= stallMs;
+            if (stalled || now - start >= timeoutMs) {
               // Stringified so the details show without expanding the object.
               // eslint-disable-next-line no-console
               console.warn(
-                `Map export: timed out waiting for the scene. ${JSON.stringify({
+                `Map export: gave up waiting for the scene. ${JSON.stringify({
+                  reason: stalled ? "no progress" : "time limit",
+                  waitedMs: now - start,
                   pendingTiles: pending,
                   globeTilesLoaded: scene.globe?.tilesLoaded,
                   tilesetsLoading: view

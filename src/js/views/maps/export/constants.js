@@ -13,7 +13,10 @@ define([], () => {
   const EXPORT_MAX_PIXELS = 64e6;
   /** @type {number} Narrowest frame (CSS px) that can be exported. */
   const EXPORT_MIN_FRAME_PX = 320;
-  const EXPORT_SETTLE_TIMEOUT_MS = 45000;
+  /** @type {number} Longest total wait for the map data to load. */
+  const EXPORT_SETTLE_TIMEOUT_MS = 180000;
+  /** @type {number} How long loading may go without any progress. */
+  const EXPORT_SETTLE_STALL_MS = 20000;
   const EXPORT_SETTLE_STABLE_FRAMES = 3;
   const EXPORT_QUIET_MS = 500;
   /** @type {number} Allowed pitch/roll deviation from top-down, in degrees. */
@@ -92,6 +95,7 @@ define([], () => {
     EXPORT_MAX_PIXELS,
     EXPORT_MIN_FRAME_PX,
     EXPORT_SETTLE_TIMEOUT_MS,
+    EXPORT_SETTLE_STALL_MS,
     EXPORT_SETTLE_STABLE_FRAMES,
     EXPORT_QUIET_MS,
     EXPORT_LEVEL_TOLERANCE_DEG,
