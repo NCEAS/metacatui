@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Draws the scale bar: a bracket with the distance above it.
+ * Draws the scale bar: a bracket with the distance beside or above it.
  * @module views/maps/export/canvas/painters/ScaleBarPainter
  * @since 2.41.0
  */
@@ -10,25 +10,27 @@ define(["views/maps/export/constants"], (constants) => {
 
   /**
    * @param {CanvasRenderingContext2D} ctx The context (CSS pixel units).
-   * @param {object} placement The result of `PlacementLayout.placeScaleBar`.
+   * @param {object} placement The scale bar from
+   * `PlacementLayout.placeControls`.
    * @param {object} [style] The style.
    */
   function paintScaleBar(ctx, placement, style = STYLE) {
     if (!placement) return;
     const S = style.scaleBar;
-    const centerX = placement.x + placement.width / 2;
-    const left = centerX - placement.barWidth / 2;
-    const right = centerX + placement.barWidth / 2;
-    const bottom = placement.y + placement.height;
+    const left = placement.barLeft;
+    const right = placement.barRight;
+    // The outer edge of the stroke sits on the shared bottom line.
+    const bottom = placement.bottom - S.lineWidth / 2;
     const top = bottom - S.tickHeight;
-    const labelY = top - S.textGap / 2;
+    const labelY = placement.labelAbove ? top - S.textGap : placement.bottom;
+    const { labelX } = placement;
 
     ctx.save();
     ctx.lineCap = "square";
     ctx.lineJoin = "miter";
     ctx.font = `bold ${S.fontPx}px ${FONT_FAMILY}`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
+    ctx.textAlign = placement.labelAlign;
+    ctx.textBaseline = "alphabetic";
 
     const bracket = () => {
       ctx.beginPath();
@@ -45,7 +47,7 @@ define(["views/maps/export/constants"], (constants) => {
     ctx.stroke();
     ctx.lineJoin = "round";
     ctx.lineWidth = S.outlineWidth * 2;
-    ctx.strokeText(placement.label, centerX, labelY);
+    ctx.strokeText(placement.label, labelX, labelY);
 
     ctx.strokeStyle = style.textColor;
     ctx.lineWidth = S.lineWidth;
@@ -53,7 +55,7 @@ define(["views/maps/export/constants"], (constants) => {
     bracket();
     ctx.stroke();
     ctx.fillStyle = style.textColor;
-    ctx.fillText(placement.label, centerX, labelY);
+    ctx.fillText(placement.label, labelX, labelY);
     ctx.restore();
   }
 

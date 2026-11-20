@@ -88,14 +88,13 @@ define([
       STYLE.scaleBar.maxBarWidth,
     );
     const frameSize = { width: frame.width, height: frame.height };
-    const scaleBar = PlacementLayout.placeScaleBar({
+    const { scaleBar, northArrow } = PlacementLayout.placeControls({
       frame: frameSize,
       choice,
       measure,
-    });
-    const northArrow = PlacementLayout.placeNorthArrow({
-      frame: frameSize,
-      scaleBar,
+      legendRight: layout.legend
+        ? layout.legend.x + layout.legend.layout.width
+        : 0,
     });
 
     const out = document.createElement("canvas");

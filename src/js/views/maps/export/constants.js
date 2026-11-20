@@ -65,6 +65,7 @@ define([], () => {
       outlineWidth: 3,
       fontPx: 13,
       textGap: 6,
+      unitsGap: 14,
       height: 24,
     },
     northArrow: {
@@ -72,7 +73,7 @@ define([], () => {
       background: "#ffffff",
       color: "#000000",
       gap: 12,
-      fontPx: 14,
+      fontPx: 20,
     },
     citations: {
       fontPx: 11,

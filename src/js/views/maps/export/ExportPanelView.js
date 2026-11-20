@@ -15,7 +15,8 @@ define(["backbone"], (Backbone) => {
     </div>
     <p class="${BLOCK}__instructions">
       Pan and zoom to position the map inside the dashed frame. Right-click and drag, or Ctrl-click and drag, to rotate it.
-      The legend, scale bar and north arrow shown in the frame are added to the saved PNG.
+      Resize your browser window to adjust the size of the frame. The legend, scale bar and north arrow shown will be in
+      the saved PNG. Data citations will be appended beneath the map.
     </p>
     <p class="${BLOCK}__details" data-role="details"></p>
     <ul class="${BLOCK}__notices" data-role="notices" hidden></ul>

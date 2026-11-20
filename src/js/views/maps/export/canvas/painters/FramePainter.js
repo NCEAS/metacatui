@@ -19,10 +19,10 @@ define([
    * the origin at the frame's top left corner).
    * @param {object} content What to draw.
    * @param {object} content.layout The result of `ExportLayout.compute`.
-   * @param {object|null} content.scaleBar The result of
-   * `PlacementLayout.placeScaleBar`.
-   * @param {object|null} content.northArrow The result of
-   * `PlacementLayout.placeNorthArrow`.
+   * @param {object|null} content.scaleBar The scale bar from
+   * `PlacementLayout.placeControls`.
+   * @param {object|null} content.northArrow The north arrow from
+   * `PlacementLayout.placeControls`.
    * @param {number} content.northRotation Clockwise angle to north, radians.
    * @param {object} [style] The style.
    */

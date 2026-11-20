@@ -184,30 +184,78 @@ define([
       });
     });
 
-    describe("placeScaleBar and placeNorthArrow", () => {
+    describe("placeControls", () => {
       const frame = { width: 800, height: 500 };
+      const choice = { meters: 1000, widthPx: 100, label: "1 km" };
+      const bottom = frame.height - 16;
 
-      it("places the scale bar in the lower right", () => {
-        const choice = { meters: 1000, widthPx: 100, label: "1 km" };
-        const bar = PlacementLayout.placeScaleBar({ frame, choice, measure });
-        expect(bar.label).to.equal("1 km");
-        expect(bar.x + bar.width).to.be.at.most(frame.width);
-        expect(bar.y + bar.height).to.be.at.most(frame.height);
-        expect(bar.x).to.be.above(frame.width / 2);
-        expect(bar.y).to.be.above(frame.height / 2);
+      it("lays the bar, units and north arrow out in a row", () => {
+        const { scaleBar, northArrow } = PlacementLayout.placeControls({
+          frame,
+          choice,
+          measure,
+        });
+        expect(scaleBar.arrangement).to.equal("row");
+        expect(scaleBar.label).to.equal("1 km");
+        expect(scaleBar.labelX).to.be.above(scaleBar.barRight);
+        expect(northArrow.cx - northArrow.diameter / 2).to.be.above(
+          scaleBar.labelX,
+        );
+        expect(scaleBar.bottom).to.equal(bottom);
+        expect(northArrow.cy + northArrow.diameter / 2).to.equal(bottom);
+        expect(northArrow.cx + northArrow.diameter / 2).to.equal(
+          frame.width - 16,
+        );
+      });
+
+      it("moves the units above the bar when the row does not fit", () => {
+        // The row needs 188px and the group with the units above, 156px.
+        const { scaleBar, northArrow } = PlacementLayout.placeControls({
+          frame,
+          choice,
+          measure,
+          legendRight: frame.width - 16 - 16 - 170,
+        });
+        expect(scaleBar.arrangement).to.equal("labelAbove");
+        expect(scaleBar.labelAbove).to.equal(true);
+        expect(northArrow.cx - northArrow.diameter / 2).to.be.above(
+          scaleBar.barRight,
+        );
+        expect(northArrow.cy + northArrow.diameter / 2).to.equal(bottom);
+      });
+
+      it("moves the north arrow above the scale bar when still too tight", () => {
+        const { scaleBar, northArrow } = PlacementLayout.placeControls({
+          frame,
+          choice,
+          measure,
+          legendRight: frame.width - 16 - 16 - 120,
+        });
+        expect(scaleBar.arrangement).to.equal("stacked");
+        expect(northArrow.cy + northArrow.diameter / 2).to.be.below(
+          scaleBar.y,
+        );
+        expect(northArrow.cx + northArrow.diameter / 2).to.equal(
+          frame.width - 16,
+        );
       });
 
       it("returns no scale bar when the scale is unknown", () => {
-        expect(PlacementLayout.placeScaleBar({ frame, choice: null, measure }))
-          .to.be.null;
+        const { scaleBar } = PlacementLayout.placeControls({
+          frame,
+          choice: null,
+          measure,
+        });
+        expect(scaleBar).to.be.null;
       });
 
       it("places the north arrow even without a scale bar", () => {
-        const arrow = PlacementLayout.placeNorthArrow({
+        const { northArrow } = PlacementLayout.placeControls({
           frame,
-          scaleBar: null,
+          choice: null,
+          measure,
         });
-        expect(arrow).to.be.an("object");
+        expect(northArrow).to.be.an("object");
       });
     });
   });

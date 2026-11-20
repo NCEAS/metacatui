@@ -252,14 +252,13 @@ define([
           STYLE.scaleBar.maxBarWidth,
         );
         const frameSize = { width: this.frame.width, height: this.frame.height };
-        const scaleBar = PlacementLayout.placeScaleBar({
+        const { scaleBar, northArrow } = PlacementLayout.placeControls({
           frame: frameSize,
           choice,
           measure: this.measure,
-        });
-        const northArrow = PlacementLayout.placeNorthArrow({
-          frame: frameSize,
-          scaleBar,
+          legendRight: this.layout.legend
+            ? this.layout.legend.x + this.layout.legend.layout.width
+            : 0,
         });
         FramePainter.paintFrame(ctx, {
           layout: this.layout,
