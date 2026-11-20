@@ -198,9 +198,9 @@ define([
         },
         // We can enable to the draw tool once we have a use case for it
         {
-          label: "Download",
+          label: "Download Partial Data",
           key: "download",
-          icon: "cloud-download",
+          icon: '<svg viewBox="2.5 2.5 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 5V12.5938L15.2812 10.3125C15.6562 9.90625 16.3125 9.90625 16.6875 10.3125C17.0938 10.6875 17.0938 11.3438 16.6875 11.7188L12.6875 15.7188C12.3125 16.125 11.6562 16.125 11.2812 15.7188L7.28125 11.7188C6.875 11.3438 6.875 10.6875 7.28125 10.3125C7.65625 9.90625 8.3125 9.90625 8.6875 10.3125L11 12.5938V5C11 4.46875 11.4375 4 12 4C12.5312 4 13 4.46875 13 5ZM6 15H9.15625L10.5625 16.4375C11.3438 17.2188 12.625 17.2188 13.4062 16.4375L14.8125 15H18C19.0938 15 20 15.9062 20 17V18C20 19.125 19.0938 20 18 20H6C4.875 20 4 19.125 4 18V17C4 15.9062 4.875 15 6 15ZM17.5 16.75C17.0625 16.75 16.75 17.0938 16.75 17.5C16.75 17.9375 17.0625 18.25 17.5 18.25C17.9062 18.25 18.25 17.9375 18.25 17.5C18.25 17.0938 17.9062 16.75 17.5 16.75Z" fill="currentColor"/></svg>',
           view: DownloadPanelView,
           dock: "bottom",
           disabledWhilePinned: true,
@@ -226,7 +226,7 @@ define([
         {
           label: "Export Map",
           key: "export",
-          icon: "camera",
+          icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.75 11.25V3.75L12 5.25L6.75 3.75L1.5 5.25V19.5L6.75 18L12 19.5L13.65 18.975" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor"/><path d="M6.75 3.75V18M12 5.25V19.5" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor"/><path d="M15.45 15H18.75V13.05C18.75 12.6 18.925 12.525 19.275 12.825L23.175 16.05C23.525 16.35 23.525 16.65 23.175 16.95L19.275 20.175C18.925 20.475 18.75 20.4 18.75 19.95V18H15.45C15.15 18 15 17.85 15 17.55V15.45C15 15.15 15.15 15 15.45 15Z" fill="currentColor"/></svg>',
           view: ExportPanelView,
           dock: "bottom",
           action(view) {

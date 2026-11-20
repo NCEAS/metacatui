@@ -725,7 +725,10 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
   height: var(--map-size-toolbar-link);
   width: var(--map-size-toolbar-link);
   background-color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
-  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   border-radius: var(--map-border-radius-small);
   border: 1px solid var(--portal-col-primary-2);
 }
@@ -801,9 +804,11 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
 
 .toolbar__link-icon {
   display: block;
+  flex: none;
   font-size: 1.5rem;
   height: 1.5rem;
-  line-height: 1;
+  line-height: 1.5rem;
+  text-align: center;
   width: 1.5rem;
 }
 
