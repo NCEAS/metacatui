@@ -2194,12 +2194,15 @@ define([
       },
 
       /**
-       * @returns {number} The number of drawing buffer pixels per CSS pixel.
+       * @returns {number} The number of drawing buffer pixels per CSS pixel,
+       * not counting any enlargement from `setResolutionScale`.
        * @since 2.41.0
        */
       getPixelRatio() {
         const { canvas } = this.scene;
-        return canvas.clientWidth ? canvas.width / canvas.clientWidth : 1;
+        if (!canvas.clientWidth) return 1;
+        const enlargement = this.widget?.resolutionScale || 1;
+        return canvas.width / canvas.clientWidth / enlargement;
       },
 
       /**
@@ -2287,6 +2290,8 @@ define([
 
         // Setting the scale also resizes the canvas.
         widget.resolutionScale = scale;
+        // Otherwise the canvas keeps its old size until the next frame.
+        widget.resize();
         scene.requestRender();
       },
 
@@ -2300,6 +2305,20 @@ define([
       },
 
       /**
+       * @returns {Cesium.Cesium3DTileset[]} The tilesets that are still loading
+       * and belong to a layer that is visible. Hidden layers keep requesting
+       * tiles, but nothing they load appears in the export.
+       * @since 2.41.0
+       */
+      getPendingTilesets() {
+        return this.getTilesets().filter((t) => {
+          if (!t.show || t.tilesLoaded) return false;
+          const mapAsset = t.mapAssetModel;
+          return !mapAsset || mapAsset.isVisible();
+        });
+      },
+
+      /**
        * @returns {number} How many of the globe, the shown 3D tilesets and the
        * vector data are still loading for the current camera position.
        * @since 2.41.0
@@ -2308,7 +2327,7 @@ define([
         const { scene } = this;
         let count = 0;
         if (scene.globe && !scene.globe.tilesLoaded) count += 1;
-        count += this.getTilesets().filter((t) => t.show && !t.tilesLoaded).length;
+        count += this.getPendingTilesets().length;
         // DataSourceDisplay#ready stays false because nothing calls its
         // update(), so poll the visualizers directly.
         if (this.updateAllDataSources() === false) count += 1;
@@ -2406,12 +2425,9 @@ define([
                   waitedMs: now - start,
                   pendingTiles: pending,
                   globeTilesLoaded: scene.globe?.tilesLoaded,
-                  tilesetsLoading: view
-                    .getTilesets()
-                    .filter((t) => t.show && !t.tilesLoaded).length,
+                  tilesetsLoading: view.getPendingTilesets().length,
                   tilesets: view
-                    .getTilesets()
-                    .filter((t) => t.show && !t.tilesLoaded)
+                    .getPendingTilesets()
                     .map((t) => {
                       const s = t.statistics;
                       return {
