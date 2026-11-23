@@ -443,9 +443,7 @@ define([
         const fetchStub = sandbox
           .stub(window, "fetch")
           .resolves({ ok: false, status: 500 });
-        sandbox.stub(window, "MetacatUI").value({
-          appUserModel: { createFetchSettings: sandbox.stub().returns({}) },
-        });
+        sandbox.stub(MetacatUI.appUserModel, "createFetchSettings").returns({});
 
         try {
           await QueryService.queryWithFetch();

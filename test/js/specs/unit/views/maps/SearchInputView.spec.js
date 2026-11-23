@@ -177,7 +177,7 @@ define([
     it("calls blurCallback on blur", () => {
       state.view.blurCallback = spy;
 
-      state.harness.blurInput();
+      state.harness.getInput().trigger("focusout");
 
       expect(spy.callCount).to.equal(1);
     });
@@ -185,7 +185,7 @@ define([
     it("calls focusCallback on focus", () => {
       state.view.focusCallback = spy;
 
-      state.harness.focusInput();
+      state.harness.getInput().trigger("focusin");
 
       expect(spy.callCount).to.equal(1);
     });
@@ -216,17 +216,20 @@ define([
       expect(state.harness.hasErrorInput()).to.be.false;
     });
 
-    it("focuses the input field on focus", () => {
+    it("focuses the search input", () => {
       state.view.focus();
 
-      expect(state.harness.getInput().is(":focus")).to.be.true;
+      expect(document.activeElement).to.equal(state.harness.getInput()[0]);
     });
 
-    it("blurs the input field on blur", () => {
+    it("blurs the search input", () => {
+      const input = state.harness.getInput()[0];
       state.view.focus();
+      expect(document.activeElement).to.equal(input);
+
       state.view.blur();
 
-      expect(state.harness.getInput().is(":focus")).to.be.false;
+      expect(document.activeElement).not.to.equal(input);
     });
   });
 });

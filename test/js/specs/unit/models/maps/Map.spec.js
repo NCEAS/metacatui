@@ -24,16 +24,19 @@ define([
   const expect = chai.expect;
 
   describe("Map Test Suite", () => {
-    const state = cleanState(() => {
-      return { model: new Map() };
-    }, beforeEach);
+    let baselineUrl;
 
-    beforeEach(() => {
+    before(() => {
       SearchParams.clearStateInUrl();
+      baselineUrl = window.location.href;
     });
 
+    const state = cleanState(() => ({ model: new Map() }), beforeEach);
+
     afterEach(() => {
-      SearchParams.clearStateInUrl();
+      if (window.location.href !== baselineUrl) {
+        window.history.replaceState(null, "", baselineUrl);
+      }
     });
 
     describe("Initialization", () => {
@@ -326,7 +329,6 @@ define([
 
       it("writes camera position and enabled layers to the URL", () => {
         const map = new Map({
-          showShareUrl: true,
           layers: [
             { layerId: "layer-1", visible: true },
             { layerId: "layer-2", visible: false },
@@ -341,6 +343,7 @@ define([
           pitch: 2,
           roll: 3,
         });
+        map.set("showShareUrl", true);
         map.updateSearchParams();
 
         expect(SearchParams.parseStateFromUrl().destination).to.deep.equal({
