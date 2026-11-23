@@ -1,7 +1,6 @@
 "use strict";
 
 define([
-  "jquery",
   "underscore",
   "backbone",
   "models/maps/Map",
@@ -15,7 +14,6 @@ define([
   // CSS
   `text!${MetacatUI.root}/css/map-view.css`,
 ], (
-  $,
   _,
   Backbone,
   Map,
@@ -74,15 +72,6 @@ define([
       template: _.template(Template),
 
       /**
-       * The events this view will listen to and the associated function to
-       * call.
-       * @type {object}
-       */
-      events: {
-        // 'event selector': 'function',
-      },
-
-      /**
        * @typedef {object} MapViewOptions
        * @property {Map} [model] The map model that contains the configs for
        * this map view.
@@ -98,7 +87,7 @@ define([
         // Add the CSS required for this view and its sub-views.
         MetacatUI.appModel.addCSS(MapCSS, "mapView");
 
-        this.model = options?.model ? options.model : new Map();
+        this.model = options?.model || new Map();
         this.isPortalMap = options?.isPortalMap;
       },
 
@@ -107,12 +96,7 @@ define([
        * @returns {MapView} This view
        */
       render() {
-        // Save a reference to this view
-        const view = this;
-
-        // TODO: Add a nice loading animation?
-
-        // Insert the template into the view
+        // Let jQuery clean up the toolbar and layer widgets on re-render.
         this.$el.html(this.template());
 
         // Ensure the view's main element has the given class name
@@ -124,7 +108,7 @@ define([
         // Select the elements that will be updatable
         this.subElements = {};
         Object.entries(CLASS_NAMES).forEach(([element, className]) => {
-          view.subElements[element] = this.el.querySelector(`.${className}`);
+          this.subElements[element] = this.el.querySelector(`.${className}`);
         });
 
         // Render the (Cesium) map

@@ -4,10 +4,9 @@ define([
   "jquery",
   "underscore",
   "backbone",
-  "models/maps/assets/MapAsset",
   "text!templates/maps/layer-opacity.html",
   "jqueryui",
-], ($, _, Backbone, MapAsset, Template) => {
+], ($, _, Backbone, Template) => {
   const CLASS_NAMES = {
     sliderContainer: "layer-opacity__slider",
     handle: "layer-opacity__handle",
@@ -72,13 +71,6 @@ define([
       classes: CLASS_NAMES,
 
       /**
-       * The events this view will listen to and the associated function to
-       * call.
-       * @type {object}
-       */
-      events: {},
-
-      /**
        * Executed when a new LayerOpacityView is created
        * @param {object} [options] A literal object with options to pass to the
        * view
@@ -97,15 +89,15 @@ define([
         // Ensure the view's main element has the given class name
         this.el.classList.add(this.className);
 
-        // Insert the template into the view
+        // jQuery UI destroys the previous slider when jQuery removes its element.
         this.$el.html(this.template({}));
 
         const startOpacity = this.model?.get("opacity") ?? 1;
 
         // Find the element that will contain the slider
-        this.sliderContainer = this.$el
-          .find(`.${this.classes.sliderContainer}`)
-          .first();
+        this.sliderContainer = $(
+          this.el.querySelector(`.${this.classes.sliderContainer}`),
+        );
 
         // The model opacity may be updated by this or other views or models.
         // Make sure that the UI reflects any of these changes.
@@ -153,7 +145,7 @@ define([
         this.opacityLabel.className = this.classes.label;
         this.sliderContainer
           .slider("instance")
-          .handle.append(this.opacityLabel);
+          .handle[0].append(this.opacityLabel);
         // Show the initial opacity value
         this.updateLabel(startOpacity);
 
@@ -192,11 +184,7 @@ define([
        * opacity value for the MapAsset model
        */
       updateLabel(newOpacity) {
-        if (
-          !this.opacityLabel ||
-          typeof newOpacity === "undefined" ||
-          typeof newOpacity !== "number"
-        ) {
+        if (!this.opacityLabel || typeof newOpacity !== "number") {
           return;
         }
         const opacityPercent = Math.round(newOpacity * 100);

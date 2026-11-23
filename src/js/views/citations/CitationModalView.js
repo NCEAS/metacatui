@@ -10,11 +10,12 @@ define([
   "use strict";
 
   const CLASS_NAMES = {
+    icon: "icon",
+    iconOnLeft: "icon-on-left",
     copyInput: "copy",
     checkIcon: "icon-ok",
     success: "success",
   };
-  const CLIPBOARD_TEXT_ATTRIBUTE = "data-clipboard-text";
   const COPY_HINT = "Press ctrl+C or command+C to copy";
 
   /**
@@ -38,14 +39,15 @@ define([
       template: _.template(Template),
 
       /**
-       * The underscore template for the copy citation button. This will render
-       * the inner HTML for the button, which will be added to the template and
-       * also used to update the button when the citation is copied.
-       * @type {Underscore.Template}
+       * Render the copy button's icon and text.
+       * @param {object} options Button contents
+       * @param {string} options.icon Icon class names
+       * @param {string} options.text Button label
+       * @returns {string} The button's inner HTML
        */
-      innerButtonTemplate: _.template(
-        "<i class='icon <%=icon%> icon-on-left'></i> <%=text%>",
-      ),
+      innerButtonTemplate({ icon, text }) {
+        return `<i class='${CLASS_NAMES.icon} ${icon ?? ""} ${CLASS_NAMES.iconOnLeft}'></i> ${text ?? ""}`;
+      },
 
       /**
        * The citation model that contains the citation data
@@ -217,59 +219,53 @@ define([
 
       /** Set up the copy button and its fallback for copying by hand */
       listenForCopy() {
-        const view = this;
-        const btn = view.copyButton;
-        if (!btn) return;
+        const button = this.copyButton;
+        if (!button) return;
 
         // Create a copy citation button
-        const clipboard = new Clipboard(btn);
-        clipboard.on("success", (e) => {
-          const originalWidth = $(e.trigger).width();
-          $(e.trigger)
-            .html(view.buttonSuccessInnerHTML)
-            .addClass(CLASS_NAMES.success)
-            .css("width", `${originalWidth}px`);
+        const clipboard = new Clipboard(button);
+        clipboard.on("success", () => {
+          button.style.width = getComputedStyle(button).width;
+          button.innerHTML = this.buttonSuccessInnerHTML;
+          button.classList.add(CLASS_NAMES.success);
           setTimeout(() => {
-            $(e.trigger)
-              .html(view.buttonInnerHTML)
-              .removeClass(CLASS_NAMES.success)
-              .css("width", "auto");
+            button.innerHTML = this.buttonInnerHTML;
+            button.classList.remove(CLASS_NAMES.success);
+            button.style.width = "auto";
           }, 500);
         });
-        clipboard.on("error", (e) => {
-          const $button = $(e.trigger);
-          let $input = $button.prev(`textarea.${CLASS_NAMES.copyInput}`);
-          if (!$input.length) {
-            $input = $(document.createElement("textarea"))
-              .attr("rows", 1)
-              .addClass(CLASS_NAMES.copyInput)
-              .css("width", "0");
-            $input.tooltip({
+        clipboard.on("error", () => {
+          let input = button.previousElementSibling;
+          if (!input?.matches(`textarea.${CLASS_NAMES.copyInput}`)) {
+            input = document.createElement("textarea");
+            input.rows = 1;
+            input.className = CLASS_NAMES.copyInput;
+            input.style.width = "0";
+            $(input).tooltip({
               title: COPY_HINT,
               placement: "top",
             });
-            $button.before($input);
+            button.before(input);
           }
-          const text =
-            $button.attr(CLIPBOARD_TEXT_ATTRIBUTE) ||
-            view.citationContainer?.innerText;
-          $input.val(text || "");
-          $input.animate(
-            { width: "100px" },
-            {
-              duration: "slow",
-              complete() {
-                $input.trigger("focus");
-                $input[0].select();
-                $input.tooltip("show");
-              },
-            },
-          );
-          $input.focusout(() => {
-            $input.animate({ width: "0px" }, () => {
-              $input.remove();
-            });
+          input.value =
+            button.dataset.clipboardText ||
+            this.citationContainer?.innerText ||
+            "";
+          const $input = $(input);
+          $input.animate({ width: "100px" }, "slow", () => {
+            input.focus();
+            input.select();
+            $input.tooltip("show");
           });
+          input.addEventListener(
+            "focusout",
+            () => {
+              $input.animate({ width: "0px" }, () => {
+                $input.remove();
+              });
+            },
+            { once: true },
+          );
         });
         this.$(".tooltip-this").tooltip();
       },

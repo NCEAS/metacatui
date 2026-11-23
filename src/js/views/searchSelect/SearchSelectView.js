@@ -119,9 +119,15 @@ define([
        * @since 2.31.0
        */
       splitModelViewOptions(options) {
-        const modelAttrNames = Object.keys(this.ModelType.prototype.defaults());
-        const modelAttrs = _.pick(options, modelAttrNames);
-        const viewAttrs = _.omit(options, modelAttrNames);
+        const modelAttrs = {};
+        const viewAttrs = {};
+        Object.keys(this.ModelType.prototype.defaults()).forEach((key) => {
+          if (key in options) modelAttrs[key] = options[key];
+        });
+        // Include inherited view options, as Backbone does.
+        _.allKeys(options).forEach((key) => {
+          if (!Object.hasOwn(modelAttrs, key)) viewAttrs[key] = options[key];
+        });
         return { modelAttrs, viewAttrs };
       },
 
@@ -266,17 +272,21 @@ define([
 
       /** @returns {HTMLElement[]} Labels for the selected dropdown values */
       getLabels() {
-        return this.$selectUI.find(Semantic.DROPDOWN_SELECTORS.label).toArray();
+        return Array.from(
+          this.selectContainerEl.querySelectorAll(
+            `:scope ${Semantic.DROPDOWN_SELECTORS.label}`,
+          ),
+        );
       },
 
       /** @returns {HTMLElement[]} Text elements for the selected value */
       getTexts() {
         // default text is the placeholder
-        return this.$selectUI
-          .find(
-            `${Semantic.DROPDOWN_SELECTORS.text}:not(.${Semantic.CLASS_NAMES.dropdown.placeholder})`,
-          )
-          .toArray();
+        return Array.from(
+          this.selectContainerEl.querySelectorAll(
+            `:scope ${Semantic.DROPDOWN_SELECTORS.text}:not(.${Semantic.CLASS_NAMES.dropdown.placeholder})`,
+          ),
+        );
       },
 
       /** Add tooltips to the selected labels or text elements */
@@ -288,6 +298,7 @@ define([
       /** Remove the separators between selected labels */
       removeAllSeparators() {
         this.separators?.forEach((sep) => sep.remove());
+        this.separators = [];
       },
 
       /** Add separators between labels in the dropdown if required */
@@ -308,15 +319,13 @@ define([
        * @param {HTMLElement} el The label element to add a separator before
        */
       addSeparator(el) {
-        if (!this.separators) this.separators = [];
         const separator = this.createSeparator();
         if (separator) {
           // Attach the separator to the label so that we can easily remove it
           // when the label is removed.
           $(el).data("separator", separator);
           // Add it before the label element.
-          separator.$el.insertBefore($(el));
-          this.separators.push(separator);
+          el.before(separator.el);
         }
       },
 
@@ -362,10 +371,16 @@ define([
        */
       listenToSelectUI() {
         // Save the active search term in the model
-        this.$selectUI.find("input").off("keyup blur focus");
-        this.$selectUI.find("input").on("keyup blur focus", (e) => {
-          this.model.set("lastInteraction", e.type);
-          this.model.set("searchTerm", e.target.value);
+        const updateSearchTerm = ({ type, target }) => {
+          this.model.set("lastInteraction", type);
+          this.model.set("searchTerm", target.value);
+        };
+        this.selectContainerEl.querySelectorAll("input").forEach((input) => {
+          Object.assign(input, {
+            onkeyup: updateSearchTerm,
+            onblur: updateSearchTerm,
+            onfocus: updateSearchTerm,
+          });
         });
       },
 
@@ -394,7 +409,7 @@ define([
             this.separators.forEach((sep) => sep.unhighlight()),
         });
         separator.render();
-        this.separators = this.separators || [];
+        if (!this.separators) this.separators = [];
         this.separators.push(separator);
         return separator;
       },
@@ -435,7 +450,7 @@ define([
        */
       createSelectContainer() {
         const dropdownEl = document.createElement("div");
-        let classesToAdd = [
+        const classesToAdd = [
           Semantic.CLASS_NAMES.base,
           Semantic.CLASS_NAMES.dropdown.dropdown,
           Semantic.CLASS_NAMES.dropdown.search,
@@ -451,10 +466,9 @@ define([
           this.model.get("icon")
             ? null
             : Semantic.CLASS_NAMES.dropdown.selection,
-        ];
-
-        classesToAdd = classesToAdd.filter(Boolean);
-        classesToAdd = classesToAdd.map((c) => c.split(" ")).flat();
+        ]
+          .filter(Boolean)
+          .flatMap((className) => className.split(" "));
 
         dropdownEl.classList.add(...classesToAdd);
 
@@ -610,13 +624,17 @@ define([
       /** Visually indicate that the select interface is enabled */
       enable() {
         this.enabled = true;
-        this.$selectUI.removeClass(Semantic.CLASS_NAMES.dropdown.disabled);
+        this.selectContainerEl.classList.remove(
+          Semantic.CLASS_NAMES.dropdown.disabled,
+        );
       },
 
       /** Visually indicate that the select interface is inactive */
       inactivate() {
         this.enabled = false;
-        this.$selectUI.addClass(Semantic.CLASS_NAMES.dropdown.disabled);
+        this.selectContainerEl.classList.add(
+          Semantic.CLASS_NAMES.dropdown.disabled,
+        );
       },
 
       /**
@@ -629,23 +647,25 @@ define([
        * soon as the user changes the selection
        */
       showMessage(message, type = "info", removeOnChange = true) {
-        if (!this.$selectUI) return;
+        if (!this.selectContainerEl) return;
 
         let level = typeof type === "string" ? type.toLowerCase() : "info";
-        if (!Object.keys(MESSAGE_TYPES).includes(level)) {
+        if (!Object.hasOwn(MESSAGE_TYPES, level)) {
           level = "info";
         }
 
         this.removeMessages();
-        this.$selectUI.addClass(MESSAGE_TYPES[level].selectUIClass);
+        const { selectUIClass, messageClass } = MESSAGE_TYPES[level];
+        if (selectUIClass) this.selectContainerEl.classList.add(selectUIClass);
 
-        if (message && message.length && typeof message === "string") {
-          this.message = $(
-            `<p style='margin:0.2rem' class='${MESSAGE_TYPES[level].messageClass}'><small>${message}</small></p>`,
-          );
+        if (typeof message === "string" && message.length) {
+          this.message = document.createElement("p");
+          this.message.className = messageClass;
+          this.message.style.margin = "0.2rem";
+          this.message.innerHTML = `<small>${message}</small>`;
         }
 
-        this.$el.append(this.message);
+        if (this.message) this.el.append(this.message);
 
         if (removeOnChange) {
           this.listenToOnce(this.model, "change:selected", this.removeMessages);
@@ -654,24 +674,26 @@ define([
 
       /** Remove all messages and classes set by the showMessage function */
       removeMessages() {
-        if (!this.$selectUI) {
-          return;
-        }
-        const classes = Object.values(MESSAGE_TYPES).map(
-          (type) => type.selectUIClass,
-        );
-        this.$selectUI.removeClass(classes.join(" "));
-        if (this.message) this.message.remove();
+        if (!this.selectContainerEl) return;
+        const classes = Object.values(MESSAGE_TYPES)
+          .map((type) => type.selectUIClass)
+          .filter(Boolean);
+        this.selectContainerEl.classList.remove(...classes);
+        this.message?.remove();
       },
 
       /** Visually indicate that dropdown options are loading */
       showLoading() {
-        this.$selectUI.addClass(Semantic.CLASS_NAMES.dropdown.loading);
+        this.selectContainerEl.classList.add(
+          Semantic.CLASS_NAMES.dropdown.loading,
+        );
       },
 
       /** Remove the loading spinner set by the showLoading */
       hideLoading() {
-        this.$selectUI.removeClass(Semantic.CLASS_NAMES.dropdown.loading);
+        this.selectContainerEl.classList.remove(
+          Semantic.CLASS_NAMES.dropdown.loading,
+        );
       },
 
       /**

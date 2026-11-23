@@ -1,10 +1,8 @@
 "use strict";
 
 define([
-  "jquery",
   "underscore",
   "backbone",
-  "models/maps/assets/MapAsset",
   "showdownXssFilter",
   "text!templates/maps/layer-details.html",
   // Sub-Views
@@ -14,10 +12,8 @@ define([
   "views/maps/LayerNavigationView",
   "views/maps/VectorFilterView",
 ], (
-  $,
   _,
   Backbone,
-  MapAsset,
   sanitizeHTML,
   Template,
   // Sub-Views
@@ -195,10 +191,10 @@ define([
           this.el.classList.add(this.classes.open);
         }
 
-        // Insert the template into the view
+        // Replacing the section elements through jQuery also cleans up their widgets.
         this.$el.html(
           this.template({
-            label: sanitizeHTML(model ? model.get("label") || "" : ""),
+            label: sanitizeHTML(model?.get("label") || ""),
           }),
         );
 
@@ -257,7 +253,7 @@ define([
 
         // If this layer has a notification, show the badge and notification
         // message
-        const notice = model ? model.get("notification") : null;
+        const notice = model?.get("notification");
         if (notice && (notice.message || notice.badge)) {
           // message
           if (notice.message) {
@@ -290,20 +286,14 @@ define([
       open() {
         this.el.classList.add(this.classes.open);
         this.isOpen = true;
-        // Ensure that the model is marked as selected
-        if (this.model) {
-          this.model.set("selected", true);
-        }
+        this.model?.set("selected", true);
       },
 
       /** Close the panel and clear its layer's selection */
       close() {
         this.el.classList.remove(this.classes.open);
         this.isOpen = false;
-        // Ensure that the model is not marked as selected
-        if (this.model) {
-          this.model.set("selected", false);
-        }
+        this.model?.set("selected", false);
       },
 
       /**
