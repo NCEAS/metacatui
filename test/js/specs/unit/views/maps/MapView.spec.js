@@ -114,6 +114,31 @@ define([
         expect(forests.get("selected")).to.be.true;
         expectOpenFor(layerDetails, forests);
       });
+
+      it("switches the open panel to the feature's layer when See layer details is clicked", () => {
+        const map = new MapModel({
+          layerCategories: [
+            { label: "Water", layers: [{ label: "Rivers" }] },
+            { label: "Land", layers: [{ label: "Forests" }] },
+          ],
+        });
+        const [rivers, forests] = map.getAllLayers();
+        const { layerDetails, featureInfo } = renderMap({ model: map });
+        // The feature iframe schedules a resize after the test removes the map.
+        sinon.stub(featureInfo, "updateIFrameHeight");
+
+        rivers.set("selected", true);
+        map.selectFeatures([
+          { featureID: "grove", mapAsset: forests, properties: {} },
+        ]);
+        expectOpenFor(layerDetails, rivers);
+
+        featureInfo.elements.layerDetailsButton.click();
+
+        expectOpenFor(layerDetails, forests);
+        expect(rivers.get("selected")).to.be.false;
+        expect(forests.get("selected")).to.be.true;
+      });
     });
 
     describe("Visualization panel restore", () => {

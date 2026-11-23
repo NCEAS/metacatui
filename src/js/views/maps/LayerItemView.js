@@ -295,6 +295,7 @@ define([
        */
       toggleVisibility(event) {
         if (
+          this.model.get("status") === "error" ||
           this.$(`.${CLASS_NAMES.SETTINGS}`).is(event.target) ||
           this.$(`.${CLASS_NAMES.SETTINGS}`).has(event.target).length > 0
         ) {
@@ -380,6 +381,9 @@ define([
       showStatus() {
         const { status, isLoading, badge, notice, errorMessage } =
           this.getStatusState();
+
+        this.el.querySelector(`.${CLASS_NAMES.VISIBILITY_TOGGLE}`).disabled =
+          status === "error";
 
         if (status === "error") {
           this.showError(errorMessage);
