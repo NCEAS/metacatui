@@ -64,7 +64,6 @@ define([
    * be grouped, and to display an icon or image for each item.
    * @classcategory Views/SearchSelect
    * @augments Backbone.View
-   * @class
    * @since 2.14.0
    * @screenshot views/searchSelect/SearchSelectView.png
    */
@@ -80,7 +79,7 @@ define([
       /**
        * The constructor function for the model that this view uses. Must be a
        * SearchSelect or an extension of it.
-       * @type {Backbone.Model}
+       * @type {function(new:SearchSelect, object=)}
        * @since 2.31.0
        */
       ModelType: SearchSelect,
@@ -88,7 +87,7 @@ define([
       /**
        * Options and selected values for the search select interface show a
        * tooltip with the description of the option when the user hovers over
-       * the option. This object is passed to the Formantic UI popup module to
+       * the option. This object is passed to the Fomantic UI popup module to
        * configure the tooltip. Set to false to disable tooltips.
        * @see https://fomantic-ui.com/modules/popup.html#/settings
        * @type {object|boolean}
@@ -129,7 +128,7 @@ define([
       /**
        * Create a new SearchSelect model and set it on the view. If a model
        * already exists, it will be destroyed.
-       * @param {object} options The options to pass to the model
+       * @param {object} [options] The options to pass to the model
        * @since 2.31.0
        */
       createModel(options) {
@@ -241,10 +240,8 @@ define([
       },
 
       /**
-       * Update the dropdown interface with the selected values from the model
-       * @param {boolean} [silent] Set to true to prevent the dropdown from
-       * triggering a change event (an infinite loop can occur if this is not set,
-       * as the dropdown will trigger a change event, which will update the model).
+       * Apply the model's selected values to the dropdown in order.
+       * @param {boolean} [silent] Skip the final dropdown selection update
        * @since 2.31.0
        */
       showSelected(silent = false) {
@@ -267,12 +264,12 @@ define([
         }
       },
 
-      /** @returns {HTMLElement[]} The selected label elements in a multi-select dropdown */
+      /** @returns {HTMLElement[]} Labels for the selected dropdown values */
       getLabels() {
         return this.$selectUI.find(Semantic.DROPDOWN_SELECTORS.label).toArray();
       },
 
-      /** @returns {HTMLElement[]} The selected text element in a single-select dropdown */
+      /** @returns {HTMLElement[]} Text elements for the selected value */
       getTexts() {
         // default text is the placeholder
         return this.$selectUI
@@ -288,7 +285,7 @@ define([
         els.forEach((el) => this.addTooltip(el));
       },
 
-      /** Remove all messages from the view */
+      /** Remove the separators between selected labels */
       removeAllSeparators() {
         this.separators?.forEach((sep) => sep.remove());
       },
@@ -373,8 +370,9 @@ define([
       },
 
       /**
-       * Change the options available in the dropdown menu and re-render.
-       * @param {SearchSelectOptions} options The new options
+       * Replace the options in the dropdown model.
+       * @param {object|object[]} options Options grouped by category or listed
+       * individually
        * @since 2.24.0
        */
       updateOptions(options) {
@@ -382,9 +380,8 @@ define([
       },
 
       /**
-       * Create the HTML for a separator element to insert between two labels.
-       * The view.separatorClass is added to the separator element.
-       * @returns {JQuery} Returns the separator as a jQuery element
+       * Render a separator that highlights the other separators on hover.
+       * @returns {SeparatorView} The rendered separator view
        * @since 2.15.0
        */
       createSeparator() {
@@ -419,7 +416,7 @@ define([
       /**
        * Create the label for the search select interface
        * @returns {HTMLElement|null} The label element, or null if no label is
-       * specified.
+       * specified
        * @since 2.31.0
        */
       createLabel() {
@@ -558,8 +555,8 @@ define([
        * attribute. Text elements are for single-select dropdowns, so the value
        * is the current selection.
        * @param {HTMLElement} el The text or label element
-       * @returns {SearchSelectOption|null} The option model or null if not
-       * found
+       * @returns {SearchSelectOption|null|undefined} The matching option, null
+       * for a missing element or value, or undefined when no option matches
        * @since 2.31.0
        */
       optionFromSelectionEl(el) {
@@ -573,12 +570,13 @@ define([
       /**
        * Create HTML for a tooltip for a given option. By default this method
        * returns the description of the option, but can be overridden in
-       * extended SearchSelectViews to return a custom HTML string based on
-       * the option.
-       * @param {SearchSelectOption} option The option to create a tooltip for
+       * extended SearchSelectViews to return a custom HTML string based on the
+       * option.
+       * @param {SearchSelectOption|null|undefined} option The option to create
+       * a tooltip for
        * @param {JQuery} _$element The element to attach the tooltip to
        * @returns {string|null} An HTML string to use for the content of the
-       * tooltip.
+       * tooltip
        * @since 2.31.0
        */
       tooltipHTML(option, _$element) {
@@ -588,10 +586,9 @@ define([
       /**
        * Add a tooltip to a given element using the description in the options
        * object that's set on the view.
-       * @param  {HTMLElement} element The HTML element a tooltip should be
-       * added
-       * @param  {object} settings Additional settings to override those set in
-       * view.tooltipSettings.
+       * @param {HTMLElement} element The element that gets the tooltip
+       * @param  {object} [settings] Additional settings to override those set
+       * in view.tooltipSettings
        */
       addTooltip(element, settings) {
         // Tooltips are disabled when tooltipSettings is false
@@ -626,9 +623,9 @@ define([
        * Show an error, warning, or informational message, and highlight the
        * select interface in an appropriate colour.
        * @param  {string} message The message to display. Use an empty string to
-       * only highlight the select interface without showing any message text.
-       * @param  {string} type one of "error", "warning", or "info"
-       * @param  {boolean} removeOnChange set to true to remove the message as
+       * only highlight the select interface without showing any message text
+       * @param  {string} [type] one of "error", "warning", or "info"
+       * @param  {boolean} [removeOnChange] set to true to remove the message as
        * soon as the user changes the selection
        */
       showMessage(message, type = "info", removeOnChange = true) {
@@ -678,8 +675,8 @@ define([
       },
 
       /**
-       * Remove the selected values from the dropdown interface
-       * and from the model.
+       * Remove the selected values from the dropdown interface and from the
+       * model.
        * @param {boolean} [silent] Set to true to prevent the dropdown and the
        * model from triggering change events
        * @param {boolean} [closeMenu] Set to true to close the dropdown menu

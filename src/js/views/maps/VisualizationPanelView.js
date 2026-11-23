@@ -293,5 +293,12 @@ define([
     },
   );
 
+  /**
+   * CSS classes used by VisualizationPanelView.
+   * @type {Object<string, string>}
+   * @since 0.0.0
+   */
+  VisualizationPanelView.CLASS_NAMES = CLASS_NAMES;
+
   return VisualizationPanelView;
 });

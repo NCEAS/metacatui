@@ -1,9 +1,10 @@
-define(["views/maps/MapView", "models/maps/Map", "common/SearchParams"], (
-  MapView,
-  MapAsset,
-  SearchParams,
-) => {
-  const expect = chai.expect;
+define([
+  "views/maps/MapView",
+  "models/maps/Map",
+  "common/SearchParams",
+  "views/maps/VisualizationPanelView",
+], (MapView, MapAsset, SearchParams, VisualizationPanelView) => {
+  const { expect } = chai;
 
   describe("MapView Test Suite", () => {
     beforeEach(() => {
@@ -29,7 +30,9 @@ define(["views/maps/MapView", "models/maps/Map", "common/SearchParams"], (
         document.body.appendChild(nonPortalMap.el);
 
         nonPortalMap.render();
-        expect(nonPortalMap.$el.hasClass("map-view__portal")).to.be.false;
+        expect(
+          nonPortalMap.$el.hasClass(MapView.CLASS_NAMES.portalIndicator),
+        ).to.equal(false);
 
         const portalMap = new MapView({ isPortalMap: true });
         // Required for iFrame to not break in FeatureInfoView.
@@ -37,7 +40,9 @@ define(["views/maps/MapView", "models/maps/Map", "common/SearchParams"], (
         document.body.appendChild(portalMap.el);
 
         portalMap.render();
-        expect(portalMap.$el.hasClass("map-view__portal")).to.be.true;
+        expect(
+          portalMap.$el.hasClass(MapView.CLASS_NAMES.portalIndicator),
+        ).to.equal(true);
       });
     });
 
@@ -55,8 +60,11 @@ define(["views/maps/MapView", "models/maps/Map", "common/SearchParams"], (
         try {
           view.render();
 
-          expect(view.el.querySelector(".visualization-panel--open")).to.not.be
-            .null;
+          expect(
+            view.el.querySelector(
+              `.${VisualizationPanelView.CLASS_NAMES.open}`,
+            ),
+          ).to.not.equal(null);
         } finally {
           view.remove();
         }
