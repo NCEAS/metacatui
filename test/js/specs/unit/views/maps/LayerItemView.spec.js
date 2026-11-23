@@ -90,6 +90,26 @@ define([
     });
 
     describe("visibility toggle", () => {
+      it("starts a zero-opacity layer disabled and makes it visible when toggled on", () => {
+        const asset = new MapAsset({ opacity: 0 });
+        const view = new LayerItemView({ model: asset });
+        try {
+          view.render();
+          expect(asset.get("opacity")).to.equal(0);
+          expect(asset.get("visible")).to.be.false;
+          expect(view.el.classList.contains(CLASS_NAMES.SHOWN)).to.be.false;
+
+          view.el.querySelector(`.${CLASS_NAMES.VISIBILITY_TOGGLE}`).click();
+
+          expect(asset.get("opacity")).to.equal(0.5);
+          expect(asset.get("visible")).to.be.true;
+          expect(view.el.classList.contains(CLASS_NAMES.SHOWN)).to.be.true;
+        } finally {
+          view.remove();
+          asset.stopListening();
+        }
+      });
+
       it("uses eye icon if layer is categorized", () => {
         state.view.isCategorized = true;
         state.view.render();

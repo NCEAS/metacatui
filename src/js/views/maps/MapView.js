@@ -266,14 +266,13 @@ define([
         });
         this.layerDetails.render();
 
-        // When a layer is selected, show the layer details panel. When a layer
-        // is de-selected, close it. The Layer model's 'selected' attribute gets
-        // updated from the Layer Item View, and also from the Layers
-        // collection.
+        // Selecting a layer can deselect the previous layer after this panel
+        // has switched. Only close the panel for the layer it still shows.
         this.model.getLayerGroups().forEach((layers) => {
           this.stopListening(layers);
           this.listenTo(layers, "change:selected", (layerModel, selected) => {
             if (selected === false) {
+              if (this.layerDetails.model !== layerModel) return;
               this.layerDetails.updateModel(null);
               this.layerDetails.close();
             } else {
@@ -288,8 +287,8 @@ define([
 
       /**
        * Get a list of the views that this view contains.
-       * @returns {Array<(Backbone.View|undefined)>} Child views, including undefined
-       * entries for views that have yet to render
+       * @returns {Array<(Backbone.View|undefined)>} Child views, including
+       * undefined entries for views that have yet to render
        * @since 2.27.0
        */
       getSubViews() {

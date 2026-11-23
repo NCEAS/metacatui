@@ -50,6 +50,72 @@ define([
       });
     });
 
+    describe("Selecting a layer", () => {
+      beforeEach(() => {
+        sinon.stub(MapView.prototype, "renderMapWidget");
+      });
+
+      afterEach(() => {
+        MapView.prototype.renderMapWidget.restore();
+      });
+
+      function expectOpenFor(panel, layer) {
+        expect(panel.el.classList.contains(panel.classes.open)).to.be.true;
+        expect(
+          panel.el.querySelector(`.${panel.classes.label}`).textContent,
+        ).to.equal(layer.get("label"));
+      }
+
+      it("opens, switches, and closes layer details within one category", () => {
+        const map = new MapModel({
+          showFeatureInfo: false,
+          layerCategories: [
+            {
+              label: "Water",
+              layers: [{ label: "Rivers" }, { label: "Lakes" }],
+            },
+          ],
+        });
+        const [rivers, lakes] = map.getAllLayers();
+        const { layerDetails } = renderMap({ model: map });
+
+        rivers.set("selected", true);
+        expectOpenFor(layerDetails, rivers);
+
+        lakes.set("selected", true);
+        expect(rivers.get("selected")).to.be.false;
+        expect(lakes.get("selected")).to.be.true;
+        expectOpenFor(layerDetails, lakes);
+
+        layerDetails.el
+          .querySelector(`.${layerDetails.classes.toggle}`)
+          .click();
+        expect(lakes.get("selected")).to.be.false;
+        expect(layerDetails.el.classList.contains(layerDetails.classes.open)).to
+          .be.false;
+      });
+
+      it("keeps the new layer's panel open when a layer in another category is deselected", () => {
+        const map = new MapModel({
+          showFeatureInfo: false,
+          layerCategories: [
+            { label: "Water", layers: [{ label: "Rivers" }] },
+            { label: "Land", layers: [{ label: "Forests" }] },
+          ],
+        });
+        const [rivers, forests] = map.getAllLayers();
+        const { layerDetails } = renderMap({ model: map });
+
+        rivers.set("selected", true);
+        expectOpenFor(layerDetails, rivers);
+        forests.set("selected", true);
+
+        expect(rivers.get("selected")).to.be.false;
+        expect(forests.get("selected")).to.be.true;
+        expectOpenFor(layerDetails, forests);
+      });
+    });
+
     describe("Visualization panel restore", () => {
       it("opens the visualization panel when activeVisualizationUrl is already set", () => {
         const view = renderMap({

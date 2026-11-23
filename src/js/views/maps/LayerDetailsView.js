@@ -315,6 +315,7 @@ define([
             section.renderedView.onClose();
           }
         });
+        this.stopListening(this.model, "change:status");
         this.model = newModel;
         this.render();
       },
