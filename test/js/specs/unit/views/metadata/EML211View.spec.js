@@ -3,8 +3,9 @@ define([
   "views/metadata/EML211View",
   "models/AppModel",
   "models/metadata/eml211/EML211",
+  "models/metadata/eml211/EMLKeywordSet",
   "models/metadata/eml211/EMLParty",
-], function (Backbone, EML211View, AppModel, EML211, EMLParty) {
+], function (Backbone, EML211View, AppModel, EML211, EMLKeywordSet, EMLParty) {
   describe("EML211View", function () {
     let view;
 
@@ -19,6 +20,41 @@ define([
 
     afterEach(function () {
       view.remove();
+    });
+
+    it("updates the keyword set and marks metadata changed when a keyword is edited", function () {
+      view.model.set("keywordSets", [
+        new EMLKeywordSet({ keywords: ["Old keyword"] }),
+      ]);
+      view.setElement('<div><div class="keywords"></div></div>');
+      view.addKeyword("Old keyword");
+      view.$("input.keyword").val("New keyword").trigger("change");
+
+      const [keywordSet] = view.model.get("keywordSets");
+      chai.expect(keywordSet.get("keywords")).to.deep.equal(["New keyword"]);
+      sinon.assert.calledOnce(view.model.trickleUpChange);
+    });
+
+    it("omits removed keywords from serialized EML", function () {
+      const keywords = ["Keep keyword", "Remove keyword"];
+      const eml = new EML211({
+        title: ["Dataset title"],
+        keywordSets: [new EMLKeywordSet({ keywords })],
+      });
+      eml.set("objectXML", eml.serialize());
+      const markMetadataChanged = sinon.stub(eml, "trickleUpChange");
+      view.model = eml;
+      view.setElement('<div><div class="keywords"></div></div>');
+      keywords.forEach((keyword) => view.addKeyword(keyword));
+      view.el.querySelectorAll(".keyword-row .remove")[1].click();
+
+      const xml = eml.serialize();
+      chai.expect(xml).to.contain("<keyword>Keep keyword</keyword>");
+      chai.expect(xml).not.to.contain("<keyword>Remove keyword</keyword>");
+
+      view.el.querySelector(".keyword-row .remove").click();
+      chai.expect(eml.serialize()).not.to.contain("<keywordSet>");
+      sinon.assert.calledTwice(markMetadataChanged);
     });
 
     it("shows and clears publication date errors, allowing an empty date", function () {

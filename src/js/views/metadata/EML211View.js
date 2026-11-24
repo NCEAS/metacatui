@@ -1672,6 +1672,7 @@ define([
 
         //Update the EML model
         this.model.set("keywordSets", newKeywordSets);
+        this.model.trickleUpChange();
 
         if (e) {
           var row = $(e.target).parent(".keyword-row");
@@ -2310,6 +2311,13 @@ define([
         }
 
         if (parentEl.length == 0) return;
+
+        // A keyword set can span several rows.
+        if (attribute === "keywordSets") {
+          parentEl.remove();
+          this.updateKeywords();
+          return;
+        }
 
         // Handle remove on a EML model / sub-model
         if (submodel) {
