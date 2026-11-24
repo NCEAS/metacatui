@@ -90,9 +90,21 @@ define([
       state.annotations.length.should.equal(1);
     });
 
-    it("gets the URI of the canonical dataset", () => {
-      state.annotations.addCanonicalDatasetAnnotation("http://example.com");
-      state.annotations.getCanonicalURI().should.equal("http://example.com");
+    it("gets the canonical dataset URI without emitting changes", () => {
+      const valueURI = "https://example.com/dataset";
+      const annotations = new EMLAnnotations([
+        { propertyURI: PROV_WAS_DERIVED_FROM, valueURI },
+        { propertyURI: SCHEMA_ORG_SAME_AS, valueURI },
+      ]);
+      const onChange = sinon.spy();
+      annotations.on("change", onChange);
+
+      expect(annotations.getCanonicalURI()).to.equal(valueURI);
+      expect(annotations.pluck("isCanonicalDataset")).to.deep.equal([
+        true,
+        true,
+      ]);
+      sinon.assert.notCalled(onChange);
     });
 
     it("adds annotations if they didn't exist when updating", () => {
