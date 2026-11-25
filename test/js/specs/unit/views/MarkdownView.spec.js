@@ -42,19 +42,25 @@ define(["views/MarkdownView", "xss"], (MarkdownView) => {
       expect(iframe.getAttribute("allow")).to.equal("fullscreen");
     });
 
-    it("prevents creating an iframe and instead links to an untrusted URL when src is single-quoted", async () => {
-      const url = "https://unrelated.example/";
-      view = new MarkdownView({
-        markdown: `<iframe src='${url}'></iframe>`,
-      });
+    for (const [quoting, quote] of [
+      ["single-quoted", "'"],
+      ["double-quoted", '"'],
+      ["unquoted", ""],
+    ]) {
+      it(`replaces an untrusted iframe with a link when src is ${quoting}`, async () => {
+        const url = "https://unrelated.example/";
+        view = new MarkdownView({
+          markdown: `<iframe src=${quote}${url}${quote}></iframe>`,
+        });
 
-      await new Promise((resolve) => {
-        view.once("mdRendered", resolve);
-        view.render();
-      });
+        await new Promise((resolve) => {
+          view.once("mdRendered", resolve);
+          view.render();
+        });
 
-      expect(view.el.querySelector("iframe")).to.equal(null);
-      expect(view.el.querySelector("a")?.getAttribute("href")).to.equal(url);
-    });
+        expect(view.el.querySelector("iframe")).to.equal(null);
+        expect(view.el.querySelector("a")?.href).to.equal(url);
+      });
+    }
   });
 });
