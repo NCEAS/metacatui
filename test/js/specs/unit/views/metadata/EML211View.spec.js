@@ -28,6 +28,17 @@ define([
       view.renderKeywords();
     }
 
+    it("marks metadata changed when Data Sensitivity is selected", function () {
+      view.model.addAnnotation = sinon.spy();
+      view.setElement(
+        '<div><input class="annotation" type="radio" value="http://purl.dataone.org/odo/SENSO_00000003"></div>',
+      );
+
+      view.el.querySelector("input").click();
+
+      sinon.assert.calledOnce(view.model.trickleUpChange);
+    });
+
     it("updates the keyword set and marks metadata changed when a keyword is edited", function () {
       const set = new EMLKeywordSet({ keywords: ["Old keyword"] });
       renderKeywords([set]);

@@ -2380,6 +2380,7 @@ define([
           }
 
           this.model.addAnnotation(annotationData);
+          this.model.trickleUpChange();
         } catch (error) {
           console.error("Couldn't add annotation: ", e);
         }
