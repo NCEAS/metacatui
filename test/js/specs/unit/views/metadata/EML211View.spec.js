@@ -22,38 +22,79 @@ define([
       view.remove();
     });
 
-    it("updates the keyword set and marks metadata changed when a keyword is edited", function () {
-      view.model.set("keywordSets", [
-        new EMLKeywordSet({ keywords: ["Old keyword"] }),
-      ]);
+    function renderKeywords(sets) {
+      view.model.set("keywordSets", sets);
       view.setElement('<div><div class="keywords"></div></div>');
-      view.addKeyword("Old keyword");
-      view.$("input.keyword").val("New keyword").trigger("change");
+      view.renderKeywords();
+    }
 
-      const [keywordSet] = view.model.get("keywordSets");
-      chai.expect(keywordSet.get("keywords")).to.deep.equal(["New keyword"]);
+    it("updates the keyword set and marks metadata changed when a keyword is edited", function () {
+      const set = new EMLKeywordSet({ keywords: ["Old keyword"] });
+      renderKeywords([set]);
+      view.$("input.keyword").first().val("New keyword").trigger("change");
+
+      chai.expect(set.get("keywords")).to.deep.equal(["New keyword"]);
       sinon.assert.calledOnce(view.model.trickleUpChange);
     });
 
-    it("omits removed keywords from serialized EML", function () {
-      const keywords = ["Keep keyword", "Remove keyword"];
-      const eml = new EML211({
-        title: ["Dataset title"],
-        keywordSets: [new EMLKeywordSet({ keywords })],
+    it("keeps the package clean until a new keyword has text", function () {
+      renderKeywords([]);
+      const row = view.$(".keyword-row.new");
+      row.find("select").prop("selectedIndex", 1).trigger("change");
+
+      chai.expect(view.model.get("keywordSets")).to.be.empty;
+      sinon.assert.notCalled(view.model.trickleUpChange);
+
+      row.find("input").val("Ice").trigger("keyup").trigger("change");
+      const [set] = view.model.get("keywordSets");
+      chai.expect(set.get("keywords")).to.deep.equal(["Ice"]);
+      chai.expect(set.get("thesaurus")).to.equal(row.find("select").val());
+      sinon.assert.calledOnce(view.model.trickleUpChange);
+    });
+
+    it("moves a keyword into an existing thesaurus and removes it from that set", function () {
+      const source = new EMLKeywordSet({
+        keywords: ["Move"],
+        thesaurus: "GCMD",
       });
-      eml.set("objectXML", eml.serialize());
+      const destination = new EMLKeywordSet({ keywords: ["Keep"] });
+      renderKeywords([source, destination]);
+      const row = view.$(".keyword-row").first();
+
+      row.find("select").val("None").trigger("change");
+      chai.expect(view.model.get("keywordSets")).to.have.length(1);
+      chai.expect(destination.get("keywords")).to.deep.equal(["Move", "Keep"]);
+
+      row.find(".remove").trigger("click");
+      chai.expect(destination.get("keywords")).to.deep.equal(["Keep"]);
+    });
+
+    it("removes only the selected keyword from serialized EML", function () {
+      const set = new EMLKeywordSet({
+        keywords: ["Keep", "Remove"],
+        thesaurus: "GCMD",
+      });
+      const otherSets = [
+        new EMLKeywordSet({ keywords: ["Unchanged"], thesaurus: "" }),
+        new EMLKeywordSet({ keywords: ["Other"], thesaurus: "GCMD" }),
+      ];
+      const unchangedXML = otherSets.map((other) => other.serialize());
+      const eml = new EML211({ title: ["Dataset title"] });
       const markMetadataChanged = sinon.stub(eml, "trickleUpChange");
       view.model = eml;
-      view.setElement('<div><div class="keywords"></div></div>');
-      keywords.forEach((keyword) => view.addKeyword(keyword));
-      view.el.querySelectorAll(".keyword-row .remove")[1].click();
+      renderKeywords([...otherSets, set]);
+      eml.set("objectXML", eml.serialize());
 
-      const xml = eml.serialize();
-      chai.expect(xml).to.contain("<keyword>Keep keyword</keyword>");
-      chai.expect(xml).not.to.contain("<keyword>Remove keyword</keyword>");
+      view.$(".keyword-row .remove").last().trigger("click");
+      let xml = eml.serialize();
+      chai.expect(xml).to.contain("<keyword>Keep</keyword>");
+      chai.expect(xml).not.to.contain("<keyword>Remove</keyword>");
 
-      view.el.querySelector(".keyword-row .remove").click();
-      chai.expect(eml.serialize()).not.to.contain("<keywordSet>");
+      view.$(".keyword-row .remove").last().trigger("click");
+      xml = eml.serialize();
+      chai.expect(xml).not.to.contain("<keyword>Keep</keyword>");
+      chai.expect(eml.get("keywordSets")).to.have.length(otherSets.length);
+      unchangedXML.forEach((original) => chai.expect(xml).to.contain(original));
       sinon.assert.calledTwice(markMetadataChanged);
     });
 

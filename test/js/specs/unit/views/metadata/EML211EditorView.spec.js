@@ -2452,7 +2452,7 @@ define([
       sinon.assert.calledOnce(rootDataPackage.upload);
     });
 
-    it("saves metadata filled in while the file table loads", async function () {
+    it("saves metadata once when Save is clicked twice while file details load", async function () {
       const rootDataPackage = createEditorRootDataPackage();
       let finishEnrichment;
       const enrichment = new Promise((resolve) => {
@@ -2467,7 +2467,9 @@ define([
         appUserModel: { get: sandbox.stub().returns([]) },
         rootDataPackage,
       };
-      view.setElement($('<div><div id="data-package-container"></div></div>'));
+      view.setElement(
+        '<div><button id="save-editor">Save</button><div id="data-package-container"></div></div>',
+      );
       sandbox.stub(view, "renderMetadata");
       sandbox.stub(view, "getEditorFileTableRows").returns([]);
       sandbox.stub(view, "renderFileTableStartMessage");
@@ -2480,8 +2482,11 @@ define([
       sandbox.stub(view, "saveSuccess");
 
       const saving = view.save();
+      const button = view.el.querySelector("#save-editor");
+      button.click();
       await Promise.resolve();
 
+      chai.expect(button.getAttribute("aria-busy")).to.equal("true");
       sinon.assert.notCalled(view.showSaving);
       sinon.assert.notCalled(view.syncMetadataForPackageSave);
       sinon.assert.notCalled(rootDataPackage.upload);
@@ -2489,9 +2494,28 @@ define([
       finishEnrichment();
       await saving;
 
+      chai.expect(button.hasAttribute("aria-busy")).to.equal(false);
       sinon.assert.calledOnce(view.showSaving);
       sinon.assert.calledOnce(view.syncMetadataForPackageSave);
       sinon.assert.calledOnce(rootDataPackage.upload);
+    });
+
+    it("does not upload the next package when the editor changes during save preparation", async function () {
+      const firstPackage = createEditorRootDataPackage();
+      firstPackage.draftRevision = 1;
+      const nextPackage = createEditorRootDataPackage();
+      const upload = sandbox.stub(nextPackage, "upload");
+      globalThis.MetacatUI = {
+        ...originalMetacatUI,
+        rootDataPackage: firstPackage,
+      };
+
+      const saving = view.save();
+      view.startRender();
+      globalThis.MetacatUI.rootDataPackage = nextPackage;
+      await saving;
+
+      sinon.assert.notCalled(upload);
     });
 
     it("skips entity sync and pre-upload refresh for metadata-only saves", async function () {

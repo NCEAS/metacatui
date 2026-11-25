@@ -51,6 +51,21 @@ define([
   LocationsTemplate,
   DataSensitivityTemplate,
 ) => {
+  const CLASS_NAMES = {
+    keywords: "keywords",
+    keywordRow: "keyword-row",
+    rowFluid: "row-fluid",
+    keywordInput: "keyword span10",
+    thesaurusSelect: "thesaurus span2",
+    newRow: "new",
+    remove: "remove",
+    removePreview: "remove-preview",
+  };
+  const KEYWORD_ROW = `.${CLASS_NAMES.keywordRow}`;
+  const KEYWORDS = `.${CLASS_NAMES.keywords}`;
+  const NO_THESAURUS = "None";
+  const KEYWORD_PLACEHOLDER = "Add one new keyword";
+
   /**
    * @class EMLView
    * @classdesc An EMLView renders an editable view of an EML 2.1.1 document
@@ -76,10 +91,12 @@ define([
 
         "keyup .eml-geocoverage.new": "updateLocations",
 
-        "change .keywords": "updateKeywords",
-        "keyup .keyword-row.new input": "addNewKeyword",
-        "mouseover .keyword-row .remove": "previewKeywordRemove",
-        "mouseout .keyword-row .remove": "previewKeywordRemove",
+        [`change ${KEYWORDS}`]: "updateKeywords",
+        [`keyup ${KEYWORD_ROW}.${CLASS_NAMES.newRow} input`]: "addNewKeyword",
+        [`mouseover ${KEYWORD_ROW} .${CLASS_NAMES.remove}`]:
+          "previewKeywordRemove",
+        [`mouseout ${KEYWORD_ROW} .${CLASS_NAMES.remove}`]:
+          "previewKeywordRemove",
 
         "change .usage": "updateRadioButtons",
 
@@ -291,24 +308,7 @@ define([
           $(overviewEl).find(".abstract").append(abstractEl);
         }
 
-        //Keywords
-        //Iterate over each keyword and add a text input for the keyword value and a dropdown menu for the thesaurus
-        _.each(
-          this.model.get("keywordSets"),
-          function (keywordSetModel) {
-            _.each(
-              keywordSetModel.get("keywords"),
-              function (keyword) {
-                this.addKeyword(keyword, keywordSetModel.get("thesaurus"));
-              },
-              this,
-            );
-          },
-          this,
-        );
-
-        //Add a new keyword row
-        this.addKeyword();
+        this.renderKeywords();
 
         //Alternate Ids
         var altIdsEls = this.createBasicTextFields(
@@ -1426,156 +1426,80 @@ define([
         }
       },
 
-      addKeyword: function (keyword, thesaurus) {
-        if (typeof keyword != "string" || !keyword) {
-          var keyword = "";
+      /** Show each keyword and leave a blank row for the next one */
+      renderKeywords() {
+        this.model.get("keywordSets").forEach((set) => {
+          set
+            .get("keywords")
+            .forEach((keyword) => this.addKeyword(keyword, set));
+        });
+        this.addKeyword();
+      },
 
-          //Only show one new keyword row at a time
-          if (
-            this.$(".keyword.new").length == 1 &&
-            !this.$(".keyword.new").val()
-          )
-            return;
-          else if (this.$(".keyword.new").length > 1) return;
-        }
-
-        //Create the keyword row HTML
-        var row = $(document.createElement("div")).addClass(
-            "row-fluid keyword-row",
-          ),
-          keywordInput = $(document.createElement("input"))
-            .attr("type", "text")
-            .addClass("keyword span10")
-            .attr("placeholder", "Add one new keyword"),
-          thesInput = $(document.createElement("select")).addClass(
-            "thesaurus span2",
-          ),
-          thesOptionExists = false,
-          removeButton;
-
-        // Piece together the inputs
-        row.append(keywordInput, thesInput);
-
-        //Create the thesaurus options dropdown menu
-        _.each(MetacatUI.appModel.get("emlKeywordThesauri"), function (option) {
-          var optionEl = $(document.createElement("option"))
-            .val(option.thesaurus)
-            .text(option.label);
-          thesInput.append(optionEl);
-
-          if (option.thesaurus == thesaurus) {
-            optionEl.prop("selected", true);
-            thesOptionExists = true;
+      /**
+       * Render one keyword from its EML set, or a blank row for a new keyword.
+       * @param {string} [keyword] Keyword text
+       * @param {EMLKeywordSet} [set] Set containing the keyword
+       */
+      addKeyword(keyword = "", set = null) {
+        const row = $("<div>").addClass(
+          `${CLASS_NAMES.rowFluid} ${CLASS_NAMES.keywordRow}`,
+        );
+        const input = $("<input>", {
+          type: "text",
+          placeholder: KEYWORD_PLACEHOLDER,
+        })
+          .addClass(CLASS_NAMES.keywordInput)
+          .val(keyword);
+        const select = $("<select>").addClass(CLASS_NAMES.thesaurusSelect);
+        const thesaurus = set?.get("thesaurus") || NO_THESAURUS;
+        const options = MetacatUI.appModel.get("emlKeywordThesauri") || [];
+        const isCustom =
+          thesaurus !== NO_THESAURUS &&
+          !options.some((option) => option.thesaurus === thesaurus);
+        select.append(new Option(NO_THESAURUS, NO_THESAURUS));
+        options.forEach((option) => {
+          if (!isCustom || option.label !== thesaurus) {
+            select.append(new Option(option.label, option.thesaurus));
           }
         });
-
-        //Add a "None" option, which is always in the dropdown
-        thesInput.prepend(
-          $(document.createElement("option")).val("None").text("None"),
-        );
-
-        if (thesaurus == "None" || !thesaurus) {
-          thesInput.val("None");
-        }
-        //If this keyword is from a custom thesaurus that is NOT configured in this App, AND
-        // there is an option with the same label, then remove the option so it doesn't look like a duplicate.
-        else if (
-          !thesOptionExists &&
-          _.findWhere(MetacatUI.appModel.get("emlKeywordThesauri"), {
-            label: thesaurus,
-          })
-        ) {
-          var duplicateOptions = thesInput.find(
-            "option:contains(" + thesaurus + ")",
-          );
-          duplicateOptions.each(function (i, option) {
-            if ($(option).text() == thesaurus && !$(option).prop("selected")) {
-              $(option).remove();
-            }
-          });
-        }
-        //If this keyword is from a custom thesaurus that is NOT configured in this App, then show it as a custom option
-        else if (!thesOptionExists) {
-          thesInput.append(
-            $(document.createElement("option"))
-              .val(thesaurus)
-              .text(thesaurus)
-              .prop("selected", true),
-          );
-        }
-
-        if (!keyword) row.addClass("new");
-        else {
-          //Set the keyword value on the text input
-          keywordInput.val(keyword);
-
-          // Add a remove button unless this is the .new keyword
+        if (isCustom) select.append(new Option(thesaurus, thesaurus));
+        select.val(thesaurus);
+        row.append(input, select);
+        if (set) {
+          row.data("model", set);
           row.append(
-            this.createRemoveButton(
-              null,
-              "keywordSets",
-              "div.keyword-row",
-              "div.keywords",
-            ),
+            this.createRemoveButton(null, "keywordSets", KEYWORD_ROW, KEYWORDS),
           );
+        } else {
+          row.addClass(CLASS_NAMES.newRow);
         }
-
-        this.$(".keywords").append(row);
+        this.$(KEYWORDS).append(row);
       },
 
-      addNewKeyword: function (e) {
-        if ($(e.target).val().trim() === "") return;
-
-        $(e.target).parents(".keyword-row").first().removeClass("new");
-
-        // Add in a remove button
-        $(e.target)
-          .parents(".keyword-row")
+      /**
+       * Add the next blank row when the user enters a keyword.
+       * @param {Event} event Keyword input or change event
+       */
+      addNewKeyword(event) {
+        const row = $(event.target).closest(KEYWORD_ROW);
+        if (
+          !row.hasClass(CLASS_NAMES.newRow) ||
+          !row.find("input").val().trim()
+        )
+          return;
+        row
+          .removeClass(CLASS_NAMES.newRow)
           .append(
-            this.createRemoveButton(
-              null,
-              "keywordSets",
-              "div.keyword-row",
-              "div.keywords",
-            ),
+            this.createRemoveButton(null, "keywordSets", KEYWORD_ROW, KEYWORDS),
           );
-
-        var row = $(document.createElement("div"))
-            .addClass("row-fluid keyword-row new")
-            .data({ model: new EMLKeywordSet() }),
-          keywordInput = $(document.createElement("input"))
-            .attr("type", "text")
-            .addClass("keyword span10"),
-          thesInput = $(document.createElement("select")).addClass(
-            "thesaurus span2",
-          );
-
-        row.append(keywordInput, thesInput);
-
-        //Create the thesaurus options dropdown menu
-        _.each(MetacatUI.appModel.get("emlKeywordThesauri"), function (option) {
-          thesInput.append(
-            $(document.createElement("option"))
-              .val(option.thesaurus)
-              .text(option.label),
-          );
-        });
-
-        //Add a "None" option, which is always in the dropdown
-        thesInput.prepend(
-          $(document.createElement("option"))
-            .val("None")
-            .text("None")
-            .prop("selected", true),
-        );
-
-        this.$(".keywords").append(row);
+        this.addKeyword();
       },
 
-      previewKeywordRemove: function (e) {
-        var row = $(e.target)
-          .parents(".keyword-row")
-          .toggleClass("remove-preview");
+      previewKeywordRemove(event) {
+        $(event.target)
+          .closest(KEYWORD_ROW)
+          .toggleClass(CLASS_NAMES.removePreview);
       },
 
       /*
@@ -1635,62 +1559,73 @@ define([
         this.model.trickleUpChange();
       },
 
-      //TODO: Comma and semi-colon separate keywords
-      updateKeywords: function (e) {
-        var keywordSets = this.model.get("keywordSets"),
-          newKeywordSets = [];
+      /**
+       * Apply a change to a keyword or its thesaurus.
+       * @param {Event} event Change to a keyword row
+       */
+      updateKeywords(event) {
+        const row = $(event.target).closest(KEYWORD_ROW);
+        this.setKeyword(row, row.find("input").val());
+        this.addNewKeyword(event);
+      },
 
-        //Get all the keywords in the view
-        _.each(
-          this.$(".keyword-row"),
-          function (thisRow) {
-            var thesaurus = this.model.cleanXMLText(
-                $(thisRow).find("select").val(),
-              ),
-              keyword = this.model.cleanXMLText($(thisRow).find("input").val());
-
-            if (!keyword) return;
-
-            var keywordSet = _.find(newKeywordSets, function (keywordSet) {
-              return keywordSet.get("thesaurus") == thesaurus;
+      /**
+       * Update one keyword, move it to a different thesaurus, or remove it.
+       * @param {jQuery} row Keyword row
+       * @param {string} text New keyword text, or an empty string to remove it
+       */
+      setKeyword(row, text) {
+        const source = row.data("model");
+        if (!source && !text.trim()) return;
+        const indexInSet = (set) =>
+          row
+            .prevAll(KEYWORD_ROW)
+            .filter((i, sibling) => $(sibling).data("model") === set).length;
+        const sourceIndex = source && indexInSet(source);
+        const oldKeyword = source?.get("keywords")[sourceIndex] ?? "";
+        const keyword =
+          text === oldKeyword ? text : this.model.cleanXMLText(text);
+        const thesaurus = row.find("select").val();
+        const matchesThesaurus = (set) =>
+          (set.get("thesaurus") || NO_THESAURUS) === thesaurus;
+        const sets = [...this.model.get("keywordSets")];
+        let destination;
+        if (keyword) {
+          destination =
+            source && matchesThesaurus(source)
+              ? source
+              : sets.find(matchesThesaurus);
+          if (!destination) {
+            destination = new EMLKeywordSet({
+              parentModel: this.model,
+              thesaurus,
             });
-
-            if (typeof keywordSet != "undefined") {
-              keywordSet.get("keywords").push(keyword);
-            } else {
-              newKeywordSets.push(
-                new EMLKeywordSet({
-                  parentModel: this.model,
-                  keywords: [keyword],
-                  thesaurus: thesaurus,
-                }),
-              );
-            }
-          },
-          this,
-        );
-
-        //Update the EML model
-        this.model.set("keywordSets", newKeywordSets);
-        this.model.trickleUpChange();
-
-        if (e) {
-          var row = $(e.target).parent(".keyword-row");
-
-          //Add a new row when the user has added a new keyword just now
-          if (row.is(".new")) {
-            row.removeClass("new");
-            row.append(
-              this.createRemoveButton(
-                null,
-                "keywordSets",
-                "div.keyword-row",
-                "div.keywords",
-              ),
-            );
-            this.addKeyword();
+            sets.push(destination);
           }
         }
+        if (source === destination && keyword === oldKeyword) return;
+
+        if (source && source !== destination) {
+          const remaining = [...source.get("keywords")];
+          remaining.splice(sourceIndex, 1);
+          if (remaining.length)
+            source.set("keywords", remaining, { silent: true });
+          else sets.splice(sets.indexOf(source), 1);
+        }
+        if (destination) {
+          const words = [...destination.get("keywords")];
+          words.splice(
+            indexInSet(destination),
+            source === destination ? 1 : 0,
+            keyword,
+          );
+          destination.set("keywords", words, { silent: true });
+          row.data("model", destination);
+        } else {
+          row.removeData("model");
+        }
+        this.model.set("keywordSets", sets);
+        this.model.trickleUpChange();
       },
 
       /*
@@ -2312,10 +2247,9 @@ define([
 
         if (parentEl.length == 0) return;
 
-        // A keyword set can span several rows.
         if (attribute === "keywordSets") {
+          this.setKeyword(parentEl, "");
           parentEl.remove();
-          this.updateKeywords();
           return;
         }
 
