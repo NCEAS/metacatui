@@ -1,16 +1,9 @@
 define([
   "jquery",
   "backbone",
-  "models/portals/PortalVizSectionModel",
   "views/portals/PortalVisualizationsView",
   "/test/js/specs/shared/clean-state.js",
-], (
-  $,
-  Backbone,
-  PortalVizSectionModel,
-  PortalVisualizationsView,
-  cleanState,
-) => {
+], ($, Backbone, PortalVisualizationsView, cleanState) => {
   const expect = chai.expect;
 
   describe("PortalVisualizationsView Test Suite", () => {
@@ -25,7 +18,7 @@ define([
       document.body.append(container);
       const portalModel = new Backbone.Model({ layout: null });
       const view = new PortalVisualizationsView({
-        model: new PortalVizSectionModel({ visualizationType: "cesium" }),
+        model: new Backbone.Model({ visualizationType: "cesium" }),
         portalModel,
       });
       container.querySelector(".portal-sections").append(view.el);
@@ -102,6 +95,74 @@ define([
 
       expect(state.view.$el.text()).to.contain("invalid JSON");
       expect(state.view.model.get("mapModel")).to.equal(null);
+    });
+
+    describe("iframe visualizations", () => {
+      beforeEach(() => {
+        state.view.model.set({
+          label: "Permafrost Tour",
+          visualizationType: "iframe",
+          iframeUrl: "https:visualization.example/tour",
+        });
+        state.sandbox
+          .stub(MetacatUI.appModel, "get")
+          .callThrough()
+          .withArgs("trustedContentSources")
+          .returns([
+            {
+              url: "https://visualization.example",
+              permissions: ["allow-scripts"],
+            },
+          ]);
+        state.view.render();
+      });
+
+      it("opens a titled, sandboxed iframe on first activation", () => {
+        expect(state.view.el.querySelector("iframe")).to.equal(null);
+
+        state.view.postRender();
+        const iframe = state.view.el.querySelector("iframe");
+        expect(iframe.getAttribute("src")).to.equal(
+          "https://visualization.example/tour",
+        );
+        expect(iframe.getAttribute("title")).to.equal("Permafrost Tour");
+        expect(iframe.getAttribute("sandbox")).to.equal("allow-scripts");
+
+        state.view.postRender();
+        expect(state.view.el.querySelector("iframe")).to.equal(iframe);
+      });
+
+      it("accounts for fixed mobile tabs when resizing the iframe", () => {
+        state.portalModel.set("layout", "panels");
+        state.container.querySelector(
+          ".section-links-container",
+        ).style.position = "fixed";
+        state.view.postRender();
+
+        const iframe = state.view.el.querySelector("iframe");
+        expect(iframe.style.height).to.equal("560px");
+
+        state.viewportHeight = 600;
+        $(window).trigger("resize");
+        expect(iframe.style.height).to.equal("360px");
+
+        state.viewportHeight = 200;
+        $(window).trigger("resize");
+        expect(iframe.style.height).to.equal("300px");
+        expect(iframe.style.marginBottom).to.equal("40px");
+      });
+
+      it("shows a message without loading a URL outside the trusted sources", () => {
+        state.view.model.set(
+          "iframeUrl",
+          "https://visualization.example.unapproved.test",
+        );
+
+        state.view.postRender();
+
+        expect(state.view.el.querySelector("iframe")).to.equal(null);
+        expect(state.view.el.querySelector(".alert")).to.exist;
+      });
     });
   });
 });

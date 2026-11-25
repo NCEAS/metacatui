@@ -164,6 +164,39 @@ define([
       expect(portal.get("sections")[0]).to.be.instanceof(PortalVizSectionModel);
     });
 
+    it("preserves an iframe URL when a section is renamed and saved", () => {
+      const portal = parsePortal(`
+        <por:portal xmlns:por="https://purl.dataone.org/portals-1.1.0">
+          <label>test-portal</label>
+          <definition><filter><field>formatType</field><value>METADATA</value></filter></definition>
+          <section>
+            <label>Visualizations</label>
+            <option><optionName>sectionType</optionName><optionValue>visualization</optionValue></option>
+            <option><optionName>visualizationType</optionName><optionValue>iframe</optionValue></option>
+            <option><optionName>iframeUrlExtra</optionName><optionValue>https://example.org/other</optionValue></option>
+            <option><optionName>iframeUrl</optionName><optionValue>https://example.org/view?a=1&amp;b=2</optionValue></option>
+          </section>
+        </por:portal>`);
+
+      const section = portal.get("sections")[0];
+      section.set("label", "Dashboard");
+      const reloaded = parsePortal(portal.serialize()).get("sections")[0];
+      expect(reloaded.get("label")).to.equal("Dashboard");
+      expect(reloaded.get("visualizationType")).to.equal("iframe");
+      expect(reloaded.get("iframeUrl")).to.equal(
+        "https://example.org/view?a=1&b=2",
+      );
+      expect(reloaded.get("objectDOM").querySelector("content")).to.be.null;
+    });
+
+    it("activates an iframe section without a map model", () => {
+      const section = new PortalVizSectionModel({
+        visualizationType: "iframe",
+      });
+
+      expect(() => section.reportSectionChange(true)).not.to.throw();
+    });
+
     it("preserves Cesium options when an existing section is renamed", () => {
       const mapConfig = {
         homePosition: {
