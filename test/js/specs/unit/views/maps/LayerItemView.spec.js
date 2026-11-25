@@ -90,6 +90,75 @@ define([
     });
 
     describe("visibility toggle", () => {
+      it("keeps a failed layer hidden when its row or eye is clicked and allows opening Settings", () => {
+        const { view } = state;
+        const asset = view.model;
+        const toggle = view.el.querySelector(
+          `.${CLASS_NAMES.VISIBILITY_TOGGLE}`,
+        );
+        asset.setError("Layer failed to load");
+
+        for (const target of [
+          view.el,
+          state.harness.getLabelText()[0],
+          toggle,
+        ]) {
+          target.click();
+
+          expect(asset.get("visible")).to.be.false;
+          expect(view.el.classList.contains(CLASS_NAMES.SHOWN)).to.be.false;
+          expect(asset.get("status")).to.equal("error");
+          expect(
+            view.el.querySelector(`.${CLASS_NAMES.WARNING_ICON}`),
+          ).to.not.equal(null);
+        }
+        expect(toggle.disabled).to.be.true;
+
+        view.el.querySelector(`.${CLASS_NAMES.SETTINGS_TOGGLE}`).click();
+
+        expect(asset.get("selected")).to.be.true;
+        expect(asset.get("visible")).to.be.false;
+      });
+
+      it("disables the eye when rendering a failed layer and enables toggling after recovery", () => {
+        const { view } = state;
+        const asset = view.model;
+        asset.set("visible", false);
+        asset.setError("Layer failed to load");
+        view.render();
+        const toggle = view.el.querySelector(
+          `.${CLASS_NAMES.VISIBILITY_TOGGLE}`,
+        );
+        expect(toggle.disabled).to.be.true;
+
+        asset.setReady();
+
+        expect(toggle.disabled).to.be.false;
+        toggle.click();
+        expect(asset.get("visible")).to.be.true;
+        expect(view.el.classList.contains(CLASS_NAMES.SHOWN)).to.be.true;
+      });
+
+      it("starts a zero-opacity layer disabled and makes it visible when toggled on", () => {
+        const asset = new MapAsset({ opacity: 0 });
+        const view = new LayerItemView({ model: asset });
+        try {
+          view.render();
+          expect(asset.get("opacity")).to.equal(0);
+          expect(asset.get("visible")).to.be.false;
+          expect(view.el.classList.contains(CLASS_NAMES.SHOWN)).to.be.false;
+
+          view.el.querySelector(`.${CLASS_NAMES.VISIBILITY_TOGGLE}`).click();
+
+          expect(asset.get("opacity")).to.equal(0.5);
+          expect(asset.get("visible")).to.be.true;
+          expect(view.el.classList.contains(CLASS_NAMES.SHOWN)).to.be.true;
+        } finally {
+          view.remove();
+          asset.stopListening();
+        }
+      });
+
       it("uses eye icon if layer is categorized", () => {
         state.view.isCategorized = true;
         state.view.render();

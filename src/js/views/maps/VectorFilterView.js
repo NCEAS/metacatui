@@ -1,14 +1,11 @@
 "use strict";
 
 define([
-  "jquery",
   "underscore",
   "backbone",
   "text!templates/maps/vector-filter-panel.html",
-  "models/maps/assets/MapAsset",
   "views/searchSelect/SearchSelectView",
-  "models/maps/assets/Cesium3DTileset",
-], ($, _, Backbone, Template, MapAsset, SearchSelect) => {
+], (_, Backbone, Template, SearchSelect) => {
   /**
    * @class VectorFilterView
    * @classdesc VectorFilterView is a shared component for visualizing data
@@ -32,7 +29,7 @@ define([
 
       /**
        * The model that this view uses
-       * @type {MapAsset}
+       * @type {MapAsset|undefined}
        */
       model: undefined,
 
@@ -55,36 +52,31 @@ define([
         valuesDropdownContainer: "filter-by-attribute__values-container",
       },
 
-      /**
-       * Executed when a new VectorFilterView is created
-       * @param {object} attributes - The attributes to initialize the view with
-       */
-      initialize(attributes) {
-        // Allow the view to be initialized with a model
-        if (attributes.model) {
-          this.model = attributes.model; // Set the model from the passed attributes
-        }
-        this.filters = this.model?.get("filters"); // Retrieve filters attribute from the Map model
-        this.filterModel = this.filters?.at(0); // Get the first filter model
+      /** Listen for changes to the first filter's selected values */
+      initialize() {
+        this.filters = this.model?.get("filters");
+        this.filterModel = this.filters?.at(0);
 
-        // Updates filter value dropdown when filters are updated in the legend view
-        const filterEvents = "change:values";
-        this.stopListening(this.filterModel, filterEvents);
-        this.listenTo(this.filterModel, filterEvents, this.renderValueSelect);
+        // The legend can change the selected values too.
+        this.listenTo(
+          this.filterModel,
+          "change:values",
+          this.renderValueSelect,
+        );
       },
 
       /**
        * Renders this view
-       * @returns {VectorFilterView} Returns the rendered view element
+       * @returns {VectorFilterView} This view
        */
       render() {
         // Exit early if there's no filter model
         if (!this.filterModel) {
-          this.$el.html(); // Clear DOM elements if filter model does not exist
+          this.$el.empty();
           return this;
         }
 
-        // Insert the template into the view
+        // Clear the old dropdowns' jQuery data and event handlers on re-render.
         this.$el.html(this.template({}));
 
         // Add filter properties dropdown (to select the attribute/property to
@@ -98,28 +90,17 @@ define([
         return this;
       },
 
-      /**
-       * Renders the dropdown for selecting a property (i.e., filterable
-       * attributes) from the filter models. These filterable attributes are
-       * defined by the "property" key in the portal configuration (Map model).
-       */
+      /** Show the layer's filterable properties in the dropdown */
       renderPropertySelect() {
-        const filterPropertyOptions = [];
-
-        // Collect all filter model properties (i.e., attributes that are
-        // "filterable") for the selected layer
-        this.filters.each((filterModel) => {
+        const filterPropertyOptions = this.filters.models.map((filterModel) => {
           const propertyName = filterModel.get("property");
-          filterPropertyOptions.push({
-            label: propertyName,
-            value: propertyName,
-          });
+          return { label: propertyName, value: propertyName };
         });
 
         const filterProperty = this.filterModel.get("property");
 
         // Initialize the property selection dropdown using SearchSelect
-        this.propretySelect = new SearchSelect({
+        this.propertySelect = new SearchSelect({
           options: filterPropertyOptions,
           allowMulti: false, // Allow only a single attribute to be selected at a time
           inputLabel: "Select property",
@@ -134,28 +115,28 @@ define([
         });
 
         // Append the dropdown to the DOM and render it
-        const propretySelectContainer = this.$(
+        const propertySelectContainer = this.el.querySelector(
           `.${this.classes.filterPropertyDropdownContainer}`,
         );
-        propretySelectContainer.append(this.propretySelect.el);
-        this.propretySelect.render();
+        propertySelectContainer?.append(this.propertySelect.el);
+        this.propertySelect.render();
 
         // Listen for changes to the selected property and update the value
         // selector accordingly
-        this.stopListening(this.propretySelect.model, "change:selected");
+        this.stopListening(this.propertySelect.model, "change:selected");
         this.listenTo(
-          this.propretySelect.model,
+          this.propertySelect.model,
           "change:selected",
-          (_model, propretySelection) => {
-            this.handlePropertyChange(propretySelection);
+          (_model, propertySelection) => {
+            this.handlePropertyChange(propertySelection);
           },
         );
       },
 
       /**
        * Updates the property values dropdown for the selected filter property
-       * @param {string[]} selectedFilterProperty - The property selected in the
-       * filter property dropdown in an array format.
+       * @param {string[]} selectedFilterProperty The property selected in the
+       * filter property dropdown in an array format
        */
       handlePropertyChange(selectedFilterProperty) {
         const selectedProperty = selectedFilterProperty?.[0];
@@ -165,7 +146,7 @@ define([
 
         let allValues = [];
         let selectedValues = [];
-        this.filters.each((filterModel) => {
+        this.filters.models.forEach((filterModel) => {
           const property = filterModel.get("property");
           if (selectedProperty === property) {
             allValues = filterModel.get("allValues") || [];
@@ -181,28 +162,17 @@ define([
         this.render();
       },
 
-      /**
-       * Renders the dropdown for selecting values corresponding to a filter
-       * property selection. Retrieves values from the (vector filter) model.
-       * During initialization, the filterStatus is false, and the "values"
-       */
+      /** Show the available and selected values for the current property */
       renderValueSelect() {
-        const propertyAllValuesOptions = [];
-
-        const propertyAllValues = this.filterModel.get("allValues") || [];
-        if (Array.isArray(propertyAllValues)) {
-          propertyAllValues.forEach((val) => {
-            propertyAllValuesOptions.push({
-              label: val,
-              value: val,
-            });
-          });
-        }
+        const propertyAllValues = this.filterModel.get("allValues");
+        const propertyAllValuesOptions = Array.isArray(propertyAllValues)
+          ? propertyAllValues.map((value) => ({ label: value, value }))
+          : [];
         const selectedValues = [...(this.filterModel.get("values") || [])];
 
-        const valuesSelectContainer = this.$(
+        const valuesSelectContainer = this.el.querySelector(
           `.${this.classes.valuesDropdownContainer}`,
-        )[0];
+        );
 
         if (!this.valuesSelect) {
           const filterValuesSelect = new SearchSelect({
@@ -215,7 +185,7 @@ define([
             selected: selectedValues,
           });
 
-          valuesSelectContainer.appendChild(filterValuesSelect.el); // Append to DOM
+          valuesSelectContainer.append(filterValuesSelect.el);
           filterValuesSelect.render();
 
           this.valuesSelect = filterValuesSelect;
@@ -238,33 +208,31 @@ define([
           this.valuesSelect.model.setSelected(selectedValues);
 
           if (!valuesSelectContainer.contains(this.valuesSelect.el)) {
-            valuesSelectContainer.appendChild(this.valuesSelect.el);
+            valuesSelectContainer.append(this.valuesSelect.el);
           }
           this.valuesSelect.render();
         }
       },
 
       /**
-       * Update the filter values in the filter model based on selection made in
-       * the Filter by Property dropdowns Update the map model. Update layer
-       * visibility and icons.
-       * @param {string[]} selectedValues - The values that are selected in
-       * values the Select View
+       * Set the filter values. Show the layer when any values are selected and
+       * hide it when the selection is cleared.
+       * @param {string[]} selectedValues The value dropdown selection
        */
       handleValueChange(selectedValues) {
         const filterValues = (selectedValues || []).filter(
           (value) => value !== "",
-        ); // filterValues will be 0 when everything is cleared
+        );
 
-        this.filterModel.set("values", [...filterValues]);
+        this.filterModel.set("values", filterValues);
 
         // If there is any value selected in the Filter by Property feature,
         // then make sure the asset is also visible. This updates the layer
         // toggle visibility icon (i.e., eye icon) and makes the layer visible
         // on the map.
-        if (filterValues?.length && !this.model.isVisible()) {
+        if (filterValues.length && !this.model.isVisible()) {
           this.model.show();
-        } else if (!filterValues?.length && this.model.isVisible()) {
+        } else if (!filterValues.length && this.model.isVisible()) {
           // When all values are cleared from the attribute values dropdown, the
           // layer visibility is set to false, and the filter icon is turned off
           // (i.e., transparent).

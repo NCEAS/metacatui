@@ -1282,26 +1282,22 @@ to/from an intrinsic content height without needing to measure pixels in JS. */
 .layer-details__notification--blue {
   background-color: var(--map-col-blue);
   color: var(--map-col-text-on-blue);
-  border-color: none;
 }
 
 .layer-details__notification--green {
   background-color: var(--map-col-green);
   color: var(--map-col-text-on-green);
-  border-color: none;
 }
 
 .layer-details__notification--yellow {
   background-color: var(--map-col-yellow);
   color: var(--map-col-text-on-yellow, var(--map-col-bkg-lighter__deprecate));
-  border-color: none;
 }
 
 .layer-details__notification--contrast {
   background-color: var(--portal-col-neutral-8, var(--map-col-text__deprecate));
   color: var(--portal-col-neutral-00, var(--map-col-bkg__deprecate));
   opacity: var(--map-no-brightness-or-opacity-tweaks, 0.95);
-  border-color: none;
 }
 
 .layer-details__sections {
@@ -2051,10 +2047,9 @@ other class: .ui-slider-range */
 .filter-by-attribute-controls__grid-container {
   display: grid;
   grid-template-columns: 150px 250px;
-  gap: 12px; /* spacing between the dropdowns */
-  align-items: center; /* vertically aligns them */
+  gap: 12px;
   margin: 0.75rem 0;
-  align-items: start; /* aligns items to the top of their cells */
+  align-items: start;
 }
 
 .filter-by-attribute__attributes-container {

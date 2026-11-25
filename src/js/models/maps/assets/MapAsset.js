@@ -7,6 +7,8 @@ define([
   "common/IconUtilities",
   `${MetacatUI.root}/components/dayjs.min.js`,
 ], (_, Backbone, AssetColorPalette, IconUtilities, dayjs) => {
+  const TERRAIN_MODEL_TYPE = "CesiumTerrain";
+
   // These settings stay the same while someone uses the map. Read them from
   // the model so changes to a label or link appear in the saved config.
   const CONFIG_FIELDS_FROM_MODEL = [
@@ -418,6 +420,11 @@ define([
           }
         });
         this._configValues = JSON.parse(JSON.stringify(configValues));
+
+        // Match moving the opacity slider to zero before loading the asset.
+        if (this.type !== TERRAIN_MODEL_TYPE && this.get("opacity") === 0) {
+          this.set("visible", false);
+        }
 
         // Set the color palette
         if (assetConfigCopy.colorPalette) {

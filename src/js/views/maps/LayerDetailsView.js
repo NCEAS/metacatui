@@ -1,10 +1,8 @@
 "use strict";
 
 define([
-  "jquery",
   "underscore",
   "backbone",
-  "models/maps/assets/MapAsset",
   "showdownXssFilter",
   "text!templates/maps/layer-details.html",
   // Sub-Views
@@ -14,10 +12,8 @@ define([
   "views/maps/LayerNavigationView",
   "views/maps/VectorFilterView",
 ], (
-  $,
   _,
   Backbone,
-  MapAsset,
   sanitizeHTML,
   Template,
   // Sub-Views
@@ -27,11 +23,21 @@ define([
   LayerNavigationView,
   VectorFilterView,
 ) => {
+  const CLASS_NAMES = {
+    open: "layer-details--open",
+    toggle: "layer-details__toggle",
+    sections: "layer-details__sections",
+    label: "layer-details__label",
+    notification: "layer-details__notification",
+    badge: "map-view__badge",
+  };
+
   /**
    * @class LayerDetailsView
-   * @classdesc A panel with additional information about a Layer (a Map Asset like
-   * imagery or vector data), plus some UI for updating the appearance of the Layer on
-   * the map, such as the opacity.
+   * @classdesc A panel containing information and controls for a
+   * {@link MapAsset}. Each configured section is rendered by a
+   * {@link LayerDetailView}. The panel also displays the asset's notification
+   * and badge, when present.
    * @classcategory Views/Maps
    * @name LayerDetailsView
    * @augments Backbone.View
@@ -42,80 +48,66 @@ define([
   const LayerDetailsView = Backbone.View.extend(
     /** @lends LayerDetailsView.prototype */ {
       /**
-       * The type of View this is
+       * The view type identifier.
        * @type {string}
        */
       type: "LayerDetailsView",
 
       /**
-       * The HTML classes to use for this view's element
+       * The CSS class for this view's root element.
        * @type {string}
        */
       className: "layer-details",
 
       /**
-       * The MapAsset model that this view uses
-       * @type {MapAsset}
+       * The map asset displayed by this panel, if one is set.
+       * @type {MapAsset|null|undefined}
        */
       model: undefined,
 
       /**
-       * The primary HTML template for this view
-       * @type {Underscore.template}
+       * The compiled template for the panel's header and section container.
+       * @type {function(object): string}
        */
       template: _.template(Template),
 
       /**
-       * Classes that are used to identify the HTML elements that comprise this view.
+       * CSS class names used to find and style elements in this view.
        * @type {object}
-       * @property {string} open The class to add to the outermost HTML element for this
-       * view when the layer details view is open/expanded (not hidden)
-       * @property {string} toggle The element in the template that acts as a toggle to
-       * close/hide the details view
-       * @property {string} sections The container for all of the LayerDetailViews.
-       * @property {string} label The label element for the layer that displays a title
-       * in the header of the details view
-       * @property {string} notification The element that holds the notification message,
-       * if there is one. Inserted before all the details sections.
-       * @property {string} badge The class to add to the badge element that is shown
-       * when the layer has a notification message.
+       * @property {string} open Class applied to the root element when the
+       * panel is expanded.
+       * @property {string} toggle Class identifying the panel's close button.
+       * @property {string} sections Class identifying the container for the
+       * detail sections.
+       * @property {string} label Class identifying the asset's header label.
+       * @property {string} notification Class applied to a notification message
+       * inserted before the detail sections.
+       * @property {string} badge Class applied to a badge appended to the
+       * header label.
        */
-      classes: {
-        open: "layer-details--open",
-        toggle: "layer-details__toggle",
-        sections: "layer-details__sections",
-        label: "layer-details__label",
-        notification: "layer-details__notification",
-        badge: "map-view__badge",
-      },
+      classes: CLASS_NAMES,
 
       /**
-       * Configuration for a Layer Detail section to show within this Layer
-       * Details view.
+       * Configuration for a section in this panel.
        * @typedef {object} DetailSectionOption
-       * @property {string} label The name to display for this section
-       * @property {Backbone.View} view Any view that will render content for
-       * the Layer Detail section. This view will be passed the MapAsset model.
-       * The view should display information about the MapAsset and/or allow
-       * some aspect of the MapAsset's appearance to be edited - e.g. a
-       * LayerInfoView or a LayerOpacityView.
-       * @property {boolean} collapsible Whether or not this section should be
-       * expandable and collapsible.
-       * @property {boolean} showTitle Whether or not to show the title/label
-       * for this section.
-       * @property {boolean} hideIfError Set to true to hide this section when
-       * there is an error loading the layer. Example: we should hide the
-       * opacity slider for layers that are not visible on the map
-       * @property {Function} [renderIf] A function that determines whether the
-       * Layer Detail seciton should be rendered. It will be passed the MapAsset
-       * (layer) model and should return true or false. If no function is
-       * provided, the section will always be rendered.
+       * @property {string} label The section label.
+       * @property {function(new:Backbone.View, object=)} view The child view
+       * constructor, instantiated with the panel's model. For example,
+       * LayerInfoView displays asset information and LayerOpacityView provides
+       * an opacity control.
+       * @property {boolean} collapsible Whether to show a collapse toggle.
+       * @property {boolean} showTitle Whether to display the section label.
+       * @property {boolean} hideIfError Whether to hide the section while the
+       * asset's status is "error". This is checked during render and whenever
+       * the asset's status changes.
+       * @property {function((MapAsset|null|undefined)): boolean} [renderIf]
+       * Predicate evaluated during render with the panel's current model. A
+       * falsy result skips the section. If omitted, the section is rendered.
        */
 
       /**
-       * A list of sections to render within this view that give details about the
-       * MapAsset, or allow editing of the MapAsset appearance. Each section will have a
-       * title and its content will be collapsible.
+       * Sections to render in order. Each section controls whether its label
+       * and collapse toggle are shown and whether it is rendered or hidden.
        * @type {DetailSectionOption[]}
        */
       sections: [
@@ -150,24 +142,31 @@ define([
         },
       ],
 
-      /** @inheritdoc */
+      /**
+       * Map clicks on the panel's close button to close().
+       * @returns {Object<string, string>} The delegated DOM event handlers
+       */
       events() {
-        const events = {};
-        // Close the layer details panel when the toggle button is clicked. Get the
-        // class of the toggle button from the classes property set in this view.
-        events[`click .${this.classes.toggle}`] = "close";
-        return events;
+        return { [`click .${this.classes.toggle}`]: "close" };
       },
 
       /**
-       * Whether or not the layer details view is open
+       * Whether the panel is expanded.
        * @type {boolean}
+       * @default false
        */
       isOpen: false,
 
       /**
-       * Executed when a new LayerDetailsView is created
-       * @param {object} [options] - A literal object with options to pass to the view
+       * Copy the supplied options onto this view.
+       * @param {object} [options] Properties to assign to the view, including
+       * standard Backbone.View options and the panel options below
+       * @param {MapAsset|null} [options.model] The asset displayed by the panel
+       * @param {DetailSectionOption[]} [options.sections] Sections to render,
+       * replacing the default navigation, filter, opacity, and information
+       * sections
+       * @param {boolean} [options.isOpen] Whether to expand the panel when it
+       * is rendered. Defaults to false
        */
       initialize(options) {
         // Get all the options and apply them to this view
@@ -177,8 +176,11 @@ define([
       },
 
       /**
-       * Renders this view
-       * @returns {LayerDetailsView} Returns the rendered view element
+       * Render the panel's header, configured sections, notification, and badge
+       * for the current model. Listen for asset status changes to update
+       * sections marked hideIfError. Sections whose renderIf predicate returns
+       * a falsy value are skipped until the next render.
+       * @returns {LayerDetailsView} This view, for chaining
        */
       render() {
         const { model } = this;
@@ -189,10 +191,10 @@ define([
           this.el.classList.add(this.classes.open);
         }
 
-        // Insert the template into the view
+        // Replacing the section elements through jQuery also cleans up their widgets.
         this.$el.html(
           this.template({
-            label: sanitizeHTML(model ? model.get("label") || "" : ""),
+            label: sanitizeHTML(model?.get("label") || ""),
           }),
         );
 
@@ -205,6 +207,11 @@ define([
         );
         const labelEl = this.el.querySelector(`.${this.classes.label}`);
 
+        /**
+         * Section configurations paired with their rendered views. Entries
+         * skipped by renderIf are null. Assigned during render().
+         * @type {Array<?object>}
+         */
         this.renderedSections = this.sections.map((section) => {
           // If the section has a renderIf function, check if we should render
           // this section or not
@@ -217,42 +224,36 @@ define([
 
           const detailSection = new LayerDetailView({
             label: section.label,
-            contentView: section.view,
+            ContentView: section.view,
             model,
             collapsible: section.collapsible,
             showTitle: section.showTitle,
           });
           sectionsContainer.append(detailSection.el);
           detailSection.render();
-          // Hide the section if there is an error with the asset, and this section
-          // does make sense to show for a layer that can't be displayed
-          if (section.hideIfError && model) {
-            if (model && model.get("status") === "error") {
-              detailSection.el.style.display = "none";
-            }
+          if (section.hideIfError && model?.get("status") === "error") {
+            detailSection.el.style.display = "none";
           }
 
           return { ...section, renderedView: detailSection };
         });
 
-        // Hide/show sections with the 'hideIfError' property when the status of the
-        // MapAsset changes
+        // Hide/show sections with the 'hideIfError' property when the status of
+        // the MapAsset changes
         this.stopListening(model, "change:status");
         this.listenTo(model, "change:status", (_model, status) => {
-          let displayProperty = "";
-          if (status === "error") {
-            displayProperty = "none";
-          }
+          const displayProperty = status === "error" ? "none" : "";
           this.renderedSections.forEach((section) => {
-            if (section.hideIfError) {
-              section.renderedView.el.style.display = displayProperty;
+            if (section?.hideIfError) {
+              const { el } = section.renderedView;
+              el.style.display = displayProperty;
             }
           });
         });
 
         // If this layer has a notification, show the badge and notification
         // message
-        const notice = model ? model.get("notification") : null;
+        const notice = model?.get("notification");
         if (notice && (notice.message || notice.badge)) {
           // message
           if (notice.message) {
@@ -281,38 +282,26 @@ define([
         return this;
       },
 
-      /**
-       * Show/expand the Layer Details panel. Opening the panel also changes the
-       * MapAsset model's 'selected attribute' to true.
-       */
+      /** Open the panel and mark its layer as selected */
       open() {
         this.el.classList.add(this.classes.open);
         this.isOpen = true;
-        // Ensure that the model is marked as selected
-        if (this.model) {
-          this.model.set("selected", true);
-        }
+        this.model?.set("selected", true);
       },
 
-      /**
-       * Hide/collapse the Layer Details panel. Closing the panel also changes the
-       * MapAsset model's 'selected attribute' to false.
-       */
+      /** Close the panel and clear its layer's selection */
       close() {
         this.el.classList.remove(this.classes.open);
         this.isOpen = false;
-        // Ensure that the model is not marked as selected
-        if (this.model) {
-          this.model.set("selected", false);
-        }
+        this.model?.set("selected", false);
       },
 
       /**
-       * Updates the MapAsset model set on the view then re-renders the view and
-       * displays information about the new model.
-       * @param {MapAsset|null} newModel the new MapAsset model to use to render the
-       * view. If set to null, then the view will be rendered without any layer
-       * information.
+       * Call the existing sections' onClose hooks, replace the model, and
+       * render the panel again. This view must have been rendered first so that
+       * renderedSections exists.
+       * @param {MapAsset|null} newModel The asset to display. Pass null to
+       * render the panel without an asset
        */
       updateModel(newModel) {
         // Remove listeners from sub-views
@@ -326,6 +315,7 @@ define([
             section.renderedView.onClose();
           }
         });
+        this.stopListening(this.model, "change:status");
         this.model = newModel;
         this.render();
       },

@@ -6,209 +6,186 @@ define([
   "backbone",
   "models/maps/assets/MapAsset",
   "text!templates/maps/layer-detail.html",
-], function ($, _, Backbone, MapAsset, Template) {
+], ($, _, Backbone, MapAsset, Template) => {
+  const CLASS_NAMES = {
+    open: "layer-detail--open",
+    noHeader: "layer-detail--no-header",
+    label: "layer-detail__label",
+    toggle: "layer-detail__toggle",
+    contentContainer: "layer-detail__content",
+  };
+
   /**
    * @class LayerDetailView
-   * @classdesc A LayerDetailView creates a section to be inserted into a
-   * LayerDetailsView. It renders a label and a toggle to collapse and expand the
-   * section's contents. The contents of the Detail section can be rendered by any other
-   * view, but the view should be one that shows details about a MapAsset or allows
-   * editing elements of the MapAsset.
+   * @classdesc A section within a {@link LayerDetailsView}, with an optional
+   * label and collapse toggle. A child view renders information or controls for
+   * the section's {@link MapAsset}.
    * @classcategory Views/Maps
    * @name LayerDetailView
-   * @extends Backbone.View
+   * @augments Backbone.View
    * @screenshot views/maps/LayerDetailView.png
    * @since 2.18.0
    * @constructs
    */
-  var LayerDetailView = Backbone.View.extend(
+  const LayerDetailView = Backbone.View.extend(
     /** @lends LayerDetailView.prototype */ {
       /**
-       * The type of View this is
+       * The view type identifier.
        * @type {string}
        */
       type: "LayerDetailView",
 
       /**
-       * The HTML classes to use for this view's element
+       * The CSS class for this view's root element.
        * @type {string}
        */
       className: "layer-detail",
 
       /**
-       * The model that this view uses
-       * @type {MapAsset}
+       * The map asset passed to the child view, if one is set.
+       * @type {MapAsset|null|undefined}
        */
       model: undefined,
 
       /**
-       * The primary HTML template for this view
-       * @type {Underscore.template}
+       * The compiled template for the section's label, toggle, and content
+       * container.
+       * @type {function(object): string}
        */
       template: _.template(Template),
 
       /**
-       * CSS classes for HTML elements within this view.
-       * @property {string} toggle The element in the template that acts as a toggle to
-       * expand or collapse this Layer Detail section.
-       * @property {string} open The class to add to the view when the contents are
-       * visible (i.e. the section is expanded)
-       * @property {string} noHeader The class to add to the view when there is no
-       * title/label and the view is not collapsible.
-       * @property {string} label The element that holds the view's label text
-       * @property {string} contentContainer The container into which the contentView's
-       * rendered content will be placed
+       * CSS class names used to find and style elements in this view.
+       * @type {object}
+       * @property {string} open Class applied to the root element when the
+       * section is expanded.
+       * @property {string} noHeader Class applied to the root element when both
+       * the title and collapse toggle are hidden.
+       * @property {string} label Class identifying the section's label element.
+       * @property {string} toggle Class identifying the collapse toggle.
+       * @property {string} contentContainer Class identifying the container for
+       * the child view's element.
        */
-      classes: {
-        open: "layer-detail--open",
-        noHeader: "layer-detail--no-header",
-        label: "layer-detail__label",
-        toggle: "layer-detail__toggle",
-        contentContainer: "layer-detail__content",
-      },
+      classes: CLASS_NAMES,
 
       /**
-       * Indicates whether this section is collapsed or expanded
-       * @type {Boolean}
+       * Whether the section is expanded.
+       * @type {boolean}
+       * @default true
        */
       isOpen: true,
 
       /**
-       * The name to display for the Layer Detail section
-       * @type {string}
+       * The section label, displayed when showTitle is truthy.
+       * @type {string|null}
+       * @default null
        */
       label: null,
 
       /**
-       * The sub-view that will show details about, or allow editing of, the given Layer
-       * model. The contentView will be passed the Layer model.
-       * @type {Backbone.View}
+       * The child view constructor, instantiated during render with this view's
+       * model. When null, the section's content container stays empty.
+       * @type {?function(new:Backbone.View, object=)}
+       * @default null
        */
-      contentView: null,
+      ContentView: null,
 
-      /**
-       * Creates an object that gives the events this view will listen to and the
-       * associated function to call. Each entry in the object has the format 'event
-       * selector': 'function'.
-       * @returns {Object}
-       */
-      events: function () {
-        var events = {};
-        // Collapse or expand this Detail section when the toggle button is clicked. Get
-        // the class of the toggle button from the classes property set in this view.
-        events["click ." + this.classes.toggle] = "toggle";
-        return events;
+      /** @inheritdoc */
+      events() {
+        return { [`click .${this.classes.toggle}`]: "toggle" };
       },
 
       /**
-       * Executed when a new LayerDetailView is created
-       * @param {Object} [options] - A literal object with options to pass to the view
+       * Copy the supplied options onto this view.
+       * @param {object} [options] Properties to assign to the view, including
+       * standard Backbone.View options and the section options below
+       * @param {MapAsset|null} [options.model] The asset passed to the child
+       * view
+       * @param {string|null} [options.label] The section label. Defaults to
+       * null
+       * @param {Function} [options.ContentView] The constructor used to render
+       * the section's content. Defaults to null
+       * @param {boolean} [options.collapsible] Whether to show a collapse
+       * toggle. An omitted or false value hides the toggle
+       * @param {boolean} [options.showTitle] Whether to show the section label.
+       * An omitted or false value hides the label
+       * @param {boolean} [options.isOpen] Whether to expand the section when it
+       * is rendered. Defaults to true
        */
-      initialize: function (options) {
-        try {
-          // Get all the options and apply them to this view
-          if (typeof options == "object") {
-            for (const [key, value] of Object.entries(options)) {
-              this[key] = value;
-            }
-          }
-        } catch (e) {
-          console.log(
-            "A LayerDetailView failed to initialize. Error message: " + e,
-          );
+      initialize(options) {
+        // Get all the options and apply them to this view
+        if (typeof options === "object") {
+          Object.keys(options).forEach((key) => {
+            this[key] = options[key];
+          });
         }
       },
 
       /**
-       * Renders this view
-       * @return {LayerDetailView} Returns the rendered view element
+       * Render the section's template and create and render its child view, if
+       * a ContentView constructor is configured.
+       * @returns {LayerDetailView} This view, for chaining
        */
-      render: function () {
-        try {
-          // Save a reference to this view
-          var view = this;
+      render() {
+        // Ensure the view's main element has the given class name
+        this.el.classList.add(this.className);
 
-          // Ensure the view's main element has the given class name
-          this.el.classList.add(this.className);
+        // Display the section's contents depending on the view's initial
+        // setting
+        if (this.isOpen) {
+          this.el.classList.add(this.classes.open);
+        }
 
-          // Display the section's contents depending on the view's initial setting
-          if (this.isOpen) {
-            this.el.classList.add(this.classes.open);
-          }
+        // Insert the template into the view
+        this.$el.html(
+          this.template({
+            label: this.label,
+            collapsible: this.collapsible,
+            showTitle: this.showTitle,
+          }),
+        );
 
-          // Insert the template into the view
-          this.$el.html(
-            this.template({
-              label: this.label,
-              collapsible: this.collapsible,
-              showTitle: this.showTitle,
-            }),
+        // Render the content for this Layer Detail section
+        if (this.ContentView) {
+          const contentContainer = this.el.querySelector(
+            `.${this.classes.contentContainer}`,
           );
+          /**
+           * The child view instance created by the most recent render that had
+           * a ContentView constructor.
+           * @type {Backbone.View}
+           */
+          this.renderedContentView = new this.ContentView({
+            model: this.model,
+          });
+          contentContainer.append(this.renderedContentView.el);
+          this.renderedContentView.render();
+        }
 
-          // Render the content for this Layer Detail section
-          if (this.contentView) {
-            var contentContainer = this.el.querySelector(
-              "." + this.classes.contentContainer,
-            );
-            this.renderedContentView = new this.contentView({
-              model: this.model,
-            });
-            contentContainer.append(this.renderedContentView.el);
-            this.renderedContentView.render();
-          }
+        if (!this.collapsible && !this.showTitle) {
+          this.el.classList.add(this.classes.noHeader);
+        }
 
-          if (!this.collapsible && !this.showTitle) {
-            this.el.classList.add(this.classes.noHeader);
-          }
+        return this;
+      },
 
-          return this;
-        } catch (error) {
-          console.log(
-            "There was an error rendering a LayerDetailView" +
-              ". Error details: " +
-              error,
-          );
+      /** Expand or collapse the section */
+      toggle() {
+        this.el.classList.toggle(this.classes.open);
+        if (this.isOpen) {
+          this.isOpen = false;
+        } else {
+          this.isOpen = true;
         }
       },
 
-      /**
-       * Show or hide this section's contents by adding or removing the open class.
-       */
-      toggle: function () {
-        try {
-          this.el.classList.toggle(this.classes.open);
-          if (this.isOpen) {
-            this.isOpen = false;
-          } else {
-            this.isOpen = true;
-          }
-        } catch (error) {
-          console.log(
-            "There was an error toggling a LayerDetailView" +
-              ". Error details: " +
-              error,
-          );
-        }
-      },
-
-      /**
-       * Perform clean-up functions when this view is about to be removed from the page
-       * or navigated away from.
-       */
-      onClose: function () {
-        try {
-          if (
-            this.renderedContentView &&
-            typeof this.renderedContentView.onClose === "function"
-          ) {
-            this.renderedContentView.onClose();
-          }
-        } catch (error) {
-          console.log(
-            "There was an error performing clean up functions in a LayerDetailView" +
-              ". Error details: " +
-              error,
-          );
+      /** Call the child view's close hook if it has one */
+      onClose() {
+        if (
+          this.renderedContentView &&
+          typeof this.renderedContentView.onClose === "function"
+        ) {
+          this.renderedContentView.onClose();
         }
       },
     },

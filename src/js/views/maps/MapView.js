@@ -1,7 +1,6 @@
 "use strict";
 
 define([
-  "jquery",
   "underscore",
   "backbone",
   "models/maps/Map",
@@ -15,7 +14,6 @@ define([
   // CSS
   `text!${MetacatUI.root}/css/map-view.css`,
 ], (
-  $,
   _,
   Backbone,
   Map,
@@ -39,8 +37,7 @@ define([
 
   /**
    * @class MapView
-   * @classdesc An interactive 2D or 3D map that allows visualization of geo-spatial
-   * data.
+   * @classdesc An interactive 2D or 3D map for geospatial data.
    * @classcategory Views/Maps
    * @name MapView
    * @augments Backbone.View
@@ -64,7 +61,7 @@ define([
 
       /**
        * The model that this view uses
-       * @type {Map}
+       * @type {Map|null}
        */
       model: null,
 
@@ -75,40 +72,31 @@ define([
       template: _.template(Template),
 
       /**
-       * The events this view will listen to and the associated function to call.
-       * @type {object}
+       * @typedef {object} MapViewOptions
+       * @property {Map} [model] The map model that contains the configs for
+       * this map view.
+       * @property {boolean} [isPortalMap] Indicates whether the map view is a
+       * part of a portal, which is styled differently.
        */
-      events: {
-        // 'event selector': 'function',
-      },
 
       /**
-       * @typedef {object} MapViewOptions
-       * @property {Map} model The map model that contains the configs for this map view.
-       * @property {boolean} isPortalMap Indicates whether the map view is a part of a
-       * portal, which is styled differently.
+       * Load the map styles and use the supplied map or create one.
+       * @param {MapViewOptions} [options] View options
        */
-
-      /** @inheritdoc */
       initialize(options) {
         // Add the CSS required for this view and its sub-views.
         MetacatUI.appModel.addCSS(MapCSS, "mapView");
 
-        this.model = options?.model ? options.model : new Map();
+        this.model = options?.model || new Map();
         this.isPortalMap = options?.isPortalMap;
       },
 
       /**
        * Renders this view
-       * @returns {MapView} Returns the rendered view element
+       * @returns {MapView} This view
        */
       render() {
-        // Save a reference to this view
-        const view = this;
-
-        // TODO: Add a nice loading animation?
-
-        // Insert the template into the view
+        // Let jQuery clean up the toolbar and layer widgets on re-render.
         this.$el.html(this.template());
 
         // Ensure the view's main element has the given class name
@@ -120,7 +108,7 @@ define([
         // Select the elements that will be updatable
         this.subElements = {};
         Object.entries(CLASS_NAMES).forEach(([element, className]) => {
-          view.subElements[element] = this.el.querySelector(`.${className}`);
+          this.subElements[element] = this.el.querySelector(`.${className}`);
         });
 
         // Render the (Cesium) map
@@ -139,9 +127,9 @@ define([
       },
 
       /**
-       * Renders the full-screen visualization overlay panel and wires it to
-       * the map model's activeVisualizationUrl attribute.
-       * @returns {VisualizationPanelView} Returns the rendered panel view.
+       * Render the visualization panel and open it when the map has an active
+       * visualization URL.
+       * @returns {VisualizationPanelView} Returns the rendered panel view
        * @since 2.37.0
        */
       renderVisualizationPanel() {
@@ -181,8 +169,8 @@ define([
           view.model.trigger("visualization:state", payload);
         });
 
-        // Keep map model in sync when the panel is closed via its own button
-        // or the Escape key (which triggers the "close" event on the panel).
+        // Keep map model in sync when the panel is closed via its own button or
+        // the Escape key (which triggers the "close" event on the panel).
         view.stopListening(view.visualizationPanel, "close");
         view.listenTo(view.visualizationPanel, "close", () => {
           view.model.set({
@@ -196,7 +184,7 @@ define([
       },
 
       /**
-       * Renders the view that shows the map/globe and all of the geo-spatial data.
+       * Render the map widget and its geospatial data.
        * @returns {MapWidgetContainerView} Returns the rendered view
        */
       renderMapWidget() {
@@ -209,8 +197,8 @@ define([
       },
 
       /**
-       * Renders the toolbar element that contains sections for viewing and editing the
-       * layer list.
+       * Renders the toolbar element that contains sections for viewing and
+       * editing the layer list.
        * @returns {ToolbarView} Returns the rendered view
        */
       renderToolbar() {
@@ -237,10 +225,9 @@ define([
       },
 
       /**
-       * Renders the info box that is displayed when a user clicks on a feature on the
-       * map. If there are multiple features selected, this will show information for
-       * the first one only.
-       * @returns {FeatureInfoView}  Returns the rendered view
+       * Show the first selected feature. When the selection changes, show the
+       * last feature in the updated collection.
+       * @returns {FeatureInfoView} The feature info panel
        */
       renderFeatureInfo() {
         const view = this;
@@ -253,15 +240,15 @@ define([
           model: features.at(0),
         }).render();
 
-        // When the selectedFeatures collection changes, update the feature
-        // info view
+        // When the selectedFeatures collection changes, update the feature info
+        // view
         view.stopListening(features, "update");
         view.listenTo(features, "update", () => {
           view.featureInfo.changeModel(features.at(-1));
         });
 
-        // If the Feature model is ever completely replaced for any reason,
-        // make the the Feature Info view gets updated.
+        // Rebuild the panel if the map replaces the selected features
+        // collection.
         const event = "change:selectedFeatures";
         view.stopListening(interactions, event);
         view.listenTo(interactions, event, view.renderFeatureInfo);
@@ -269,8 +256,8 @@ define([
       },
 
       /**
-       * Renders the layer details view that is displayed when a user clicks on a layer
-       * in the toolbar.
+       * Renders the layer details view that is displayed when a user clicks on
+       * a layer in the toolbar.
        * @returns {LayerDetailsView} Returns the rendered view
        */
       renderLayerDetails() {
@@ -279,13 +266,13 @@ define([
         });
         this.layerDetails.render();
 
-        // When a layer is selected, show the layer details panel. When a layer is
-        // de-selected, close it. The Layer model's 'selected' attribute gets updated
-        // from the Layer Item View, and also from the Layers collection.
+        // Selecting a layer can deselect the previous layer after this panel
+        // has switched. Only close the panel for the layer it still shows.
         this.model.getLayerGroups().forEach((layers) => {
           this.stopListening(layers);
           this.listenTo(layers, "change:selected", (layerModel, selected) => {
             if (selected === false) {
+              if (this.layerDetails.model !== layerModel) return;
               this.layerDetails.updateModel(null);
               this.layerDetails.close();
             } else {
@@ -300,8 +287,8 @@ define([
 
       /**
        * Get a list of the views that this view contains.
-       * @returns {Backbone.View[]} Returns an array of all of the sub-views.
-       * Some may be undefined if they have not been rendered yet.
+       * @returns {Array<(Backbone.View|undefined)>} Child views, including
+       * undefined entries for views that have yet to render
        * @since 2.27.0
        */
       getSubViews() {
@@ -328,6 +315,13 @@ define([
       },
     },
   );
+
+  /**
+   * CSS classes used by MapView.
+   * @type {Object<string, string>}
+   * @since 0.0.0
+   */
+  MapView.CLASS_NAMES = CLASS_NAMES;
 
   return MapView;
 });

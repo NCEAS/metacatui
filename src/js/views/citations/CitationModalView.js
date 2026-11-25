@@ -9,13 +9,20 @@ define([
 ], ($, _, Backbone, Clipboard, Citation, CitationView, Template) => {
   "use strict";
 
+  const CLASS_NAMES = {
+    icon: "icon",
+    iconOnLeft: "icon-on-left",
+    copyInput: "copy",
+    checkIcon: "icon-ok",
+    success: "success",
+  };
+  const COPY_HINT = "Press ctrl+C or command+C to copy";
+
   /**
    * @class CitationModalView
-   * @classdesc The CitationModalView shows a citation information displayed as
-   * a modal, along with a copy citation button. This view will eventually allow
-   * switching between different citation styles.
+   * @classdesc A dialog for reading and copying dataset citations.
    * @classcategory Views
-   * @extends Backbone.View
+   * @augments Backbone.View
    */
   const CitationModalView = Backbone.View.extend(
     /** @lends CitationModalView.prototype */ {
@@ -32,25 +39,26 @@ define([
       template: _.template(Template),
 
       /**
-       * The underscore template for the copy citation button. This will render
-       * the inner HTML for the button, which will be added to the template and
-       * also used to update the button when the citation is copied.
-       * @type {Underscore.Template}
+       * Render the copy button's icon and text.
+       * @param {object} options Button contents
+       * @param {string} options.icon Icon class names
+       * @param {string} options.text Button label
+       * @returns {string} The button's inner HTML
        */
-      innerButtonTemplate: _.template(
-        "<i class='icon <%=icon%> icon-on-left'></i> <%=text%>",
-      ),
+      innerButtonTemplate({ icon, text }) {
+        return `<i class='${CLASS_NAMES.icon} ${icon ?? ""} ${CLASS_NAMES.iconOnLeft}'></i> ${text ?? ""}`;
+      },
 
       /**
        * The citation model that contains the citation data
-       * @type {CitationModel}
+       * @type {Backbone.Model|null}
        */
       model: null,
 
       /**
        * The citation style to use
        * @type {string}
-       * @default "apa"
+       * @default "apaAllAuthors"
        * @see {@link CitationView#styles}
        */
       style: "apaAllAuthors",
@@ -58,7 +66,7 @@ define([
       /**
        * The events this view will listen for. See
        * {@link https://backbonejs.org/#View-events}
-       * @type {Object}
+       * @type {object}
        */
       events: {
         hidden: "teardown",
@@ -66,24 +74,24 @@ define([
 
       /**
        * The font awesome icons to use for this view
-       * @type {Object}
-       * @property {string} title - The icon to use in the modal title
-       * @property {string} button - The icon to use in the copy citation button
-       * @property {string} buttonSuccess - The icon to use in the copy citation
+       * @type {object}
+       * @property {string} title The icon to use in the modal title
+       * @property {string} button The icon to use in the copy citation button
+       * @property {string} buttonSuccess The icon to use in the copy citation
        * button when the citation has been copied
        */
       icons: {
         title: "icon-quote-right",
         button: "icon-copy",
-        buttonSuccess: "icon-ok success",
+        buttonSuccess: `${CLASS_NAMES.checkIcon} ${CLASS_NAMES.success}`,
       },
 
       /**
        * The ids to use for this view
-       * @type {Object}
-       * @property {string} citationContainer - The id to use for the citation
+       * @type {object}
+       * @property {string} citationContainer The id to use for the citation
        * container
-       * @property {string} copyButton - The id to use for the copy citation
+       * @property {string} copyButton The id to use for the copy citation
        * button
        */
       ids: {
@@ -93,11 +101,11 @@ define([
 
       /**
        * The text to use for this view
-       * @type {Object}
-       * @property {string} title - The title to use in the modal
-       * @property {string} copyButton - The text to use in the copy citation
+       * @type {object}
+       * @property {string} title The title to use in the modal
+       * @property {string} copyButton The text to use in the copy citation
        * button
-       * @property {string} copySuccess - The text to use in the copy citation
+       * @property {string} copySuccess The text to use in the copy citation
        * button when the citation has been copied
        */
       text: {
@@ -107,40 +115,28 @@ define([
       },
 
       /**
-       * Initialize a new CitationModalView
-       * @param {Object} options - A literal object with options to pass to the
-       * view
-       * @param {CitationModel} options.model - The citation model, or other
-       * model accepted by the CitationView, that contains the citation data
-       * @param {string} options.style - The citation style to use. This will be
-       * passed to the CitationView
+       * Set the citation source and style.
+       * @param {object} [options] View options
+       * @param {Backbone.Model} [options.model] Citation or source metadata
+       * @param {string} [options.style] Citation style to use
        */
-      initialize: function (options) {
-        if (typeof options === "undefined") {
-          var options = {};
-        }
-
-        this.model = options.model || new Citation();
-        this.style = options.style || this.style;
+      initialize(options = {}) {
+        this.model = options?.model || new Citation();
+        this.style = options?.style || this.style;
       },
 
-      /**
-       * Render the view
-       */
-      render: function () {
+      /** @inheritdoc */
+      render() {
         // Set listeners
         this.$el.off("shown");
         this.$el.on("shown", this.renderView.bind(this));
         return this;
       },
 
-      /**
-       * Render the view
-       * @returns {CitationModalView} - Returns this view
-       */
-      renderView: function () {
+      /** Fill the dialog and fire `rendered` once the citation is ready */
+      renderView() {
         try {
-          const ids = this.ids;
+          const { ids } = this;
 
           // Make the inner HTML for the copy button. This will be added in the
           // template and after the button has been clicked and the citation has
@@ -160,24 +156,23 @@ define([
           // Render the modal
           this.el.innerHTML = this.template({
             icons: this.icons,
-            ids: ids,
+            ids,
             text: this.text,
             buttonInnerHTML: this.buttonInnerHTML,
           });
 
           // Find the citation container
           this.citationContainer = this.el.querySelector(
-            "#" + ids.citationContainer,
+            `#${ids.citationContainer}`,
           );
 
           // Find the citation button
-          this.copyButton = this.el.querySelector("#" + ids.copyButton);
+          this.copyButton = this.el.querySelector(`#${ids.copyButton}`);
 
           this.insertCitation();
           this.listenForCopy();
           this.trigger("rendered");
-        } catch (e) {
-          console.error("Failed to render the Citation Modal View: ", e);
+        } catch {
           MetacatUI.appView.showAlert({
             message: `Something went wrong displaying the citation for this dataset.`,
             classes: "alert-info",
@@ -191,15 +186,12 @@ define([
       },
 
       /**
-       * Insert the citation view into the modal. This can be used by parent
-       * views to insert additional citation views into the modal.
-       * @param {CitationModel} model - The citation model to use. If not
-       * provided, the model passed to the view will be used.
-       * @param {boolean} after - If true, the citation will be inserted after
-       * any existing citations. If false, the citation will be inserted before
-       * any existing citations.
-       * @returns {CitationView} - Returns the CitationView that was inserted
-       * into the modal
+       * Insert a citation before or after the existing citations.
+       * @param {Backbone.Model} [model] Citation source (defaults to
+       * this.model)
+       * @param {boolean} [after] Append by default, or prepend when false
+       * @returns {CitationView|null} The inserted view, or null if the dialog
+       * has no citation container
        */
       insertCitation(model, after = true) {
         const container = this.citationContainer;
@@ -225,83 +217,73 @@ define([
         return citationView;
       },
 
-      /**
-       * Listen for the copy button to be clicked, and copy the citation to the
-       * clipboard
-       */
-      listenForCopy: function () {
-        const view = this;
-        const btn = view.copyButton;
-        if (!btn) return;
+      /** Set up the copy button and its fallback for copying by hand */
+      listenForCopy() {
+        const button = this.copyButton;
+        if (!button) return;
 
-        //Create a copy citation button
-        var clipboard = new Clipboard(btn);
-        clipboard.on("success", function (e) {
-          var originalWidth = $(e.trigger).width();
-          $(e.trigger)
-            .html(view.buttonSuccessInnerHTML)
-            .addClass("success")
-            .css("width", originalWidth + "px");
-          setTimeout(function () {
-            $(e.trigger)
-              .html(view.buttonInnerHTML)
-              .removeClass("success")
-              .css("width", "auto");
+        // Create a copy citation button
+        const clipboard = new Clipboard(button);
+        clipboard.on("success", () => {
+          button.style.width = getComputedStyle(button).width;
+          button.innerHTML = this.buttonSuccessInnerHTML;
+          button.classList.add(CLASS_NAMES.success);
+          setTimeout(() => {
+            button.innerHTML = this.buttonInnerHTML;
+            button.classList.remove(CLASS_NAMES.success);
+            button.style.width = "auto";
           }, 500);
         });
-        clipboard.on("error", function (e) {
-          if (!$(e.trigger).prev("input.copy").length) {
-            var textarea = $(document.createElement("input"))
-              .val($(e.trigger).attr("data-clipboard-text"))
-              .addClass("copy")
-              .css("width", "0");
-            textarea.tooltip({
-              title: "Press ctrl+C or command+C to copy",
+        clipboard.on("error", () => {
+          let input = button.previousElementSibling;
+          if (!input?.matches(`textarea.${CLASS_NAMES.copyInput}`)) {
+            input = document.createElement("textarea");
+            input.rows = 1;
+            input.className = CLASS_NAMES.copyInput;
+            input.style.width = "0";
+            $(input).tooltip({
+              title: COPY_HINT,
               placement: "top",
             });
-            $(e.trigger).before(textarea);
-          } else {
-            var textarea = $(e.trigger).prev("input.copy");
+            button.before(input);
           }
-          textarea.animate(
-            { width: "100px" },
-            {
-              duration: "slow",
-              complete: function () {
-                textarea.trigger("focus");
-                textarea.tooltip("show");
-              },
-            },
-          );
-          textarea.focusout(function () {
-            textarea.animate({ width: "0px" }, function () {
-              textarea.remove();
-            });
+          input.value =
+            button.dataset.clipboardText ||
+            this.citationContainer?.innerText ||
+            "";
+          const $input = $(input);
+          $input.animate({ width: "100px" }, "slow", () => {
+            input.focus();
+            input.select();
+            $input.tooltip("show");
           });
+          input.addEventListener(
+            "focusout",
+            () => {
+              $input.animate({ width: "0px" }, () => {
+                $input.remove();
+              });
+            },
+            { once: true },
+          );
         });
         this.$(".tooltip-this").tooltip();
       },
 
-      /**
-       * Make the modal visible
-       */
-      show: function () {
+      /** Show the citation dialog */
+      show() {
         this.$el.modal("show");
       },
 
-      /**
-       * Remove the modal from the DOM
-       */
-      teardown: function () {
+      /** Hide the dialog and remove it from the DOM */
+      teardown() {
         this.$el.modal("hide");
         this.$el.data("modal", null);
         this.remove();
       },
 
-      /**
-       * Cleans up and removes all artifacts created for view
-       */
-      onClose: function () {
+      /** Remove the citation dialog */
+      onClose() {
         this.teardown();
       },
     },
