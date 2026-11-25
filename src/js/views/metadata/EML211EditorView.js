@@ -3,6 +3,7 @@ define([
   "localforage",
   "collections/ObjectFormats",
   "models/dataPackage/DataPackage",
+  "models/dataPackage/UploadResult",
   "models/fileTable/DataPackageFileTableAdapter",
   "models/metadata/eml211/EML211",
   "models/metadata/eml211/EMLOtherEntity",
@@ -28,6 +29,7 @@ define([
   LocalForage,
   ObjectFormats,
   DataPackage,
+  UploadResult,
   DataPackageFileTableAdapter,
   EML,
   EMLOtherEntity,
@@ -54,6 +56,7 @@ define([
   const EDITOR_FILE_TABLE_ROOT_ROW_ID = "dataset:editor-root";
   const FALLBACK_OBJECT_FORMATS = new ObjectFormats();
   const FAILED_UPLOAD_STATE = "failed";
+  const SAVE_BUTTON_ID = "save-editor";
   // A draft re-serializes the entire EML, which blocks the main thread
   // roughly linearly in document size. Coalesce bursts of change events into
   // one trailing save, and skip documents so large that producing the draft
@@ -65,8 +68,10 @@ define([
     accessPolicyViewContainer: "access-policy-view-container",
     accessPolicyViewModal: "access-policy-view-modal",
     alertError: "alert-error",
+    alertInfo: "alert-info",
     alertSuccess: "alert-success",
     alertWarning: "alert-warning",
+    buttonDisabled: "btn-disabled",
     center: "center",
     citationContainer: "citation-container",
     clear: "clear",
@@ -82,6 +87,7 @@ define([
     icon: "icon",
     iconCaretDown: "icon icon-caret-down",
     loading: "loading",
+    loadingSpinner: "icon icon-spinner icon-spin icon-on-left",
     notification: "notification",
     pointer: "pointer",
     primarySaveButton: "btn btn-primary save",
@@ -165,6 +171,7 @@ define([
     missingAttributes: "This file needs to be described. Click Describe.",
     missingAttributeInfo:
       "There is missing information about this file. Click Describe.",
+    noChangesToSave: "No changes to save.",
     notAllSubmitted: "Not all of your changes could be submitted.",
     notAuthorized: "You are not authorized to edit this data set.",
     packageSaveInProgress: "A package save is in progress.",
@@ -192,6 +199,10 @@ define([
       "You do not have permission to view or change sharing settings for this file.",
     sharingSettingsLoadError:
       "Sharing settings could not be loaded. Please try again.",
+    skippedFileReplacements:
+      "These file replacements were skipped because their uploads failed:",
+    skippedNewDataFiles:
+      "These new files were not added because their uploads failed:",
     startingEditor: "Starting the editor...",
     submittingChanges: "Submitting changes...",
     submittedChanges: "Your changes have been submitted.",
@@ -301,7 +312,7 @@ define([
           </section>
           <section id="editor-footer" class="${CLASS_NAMES.editorControls}">
             <div class="${CLASS_NAMES.editorSaveControls}">
-              <a class="${CLASS_NAMES.primarySaveButton}" id="save-editor">${attrs.submitButtonText}</a>
+              <a class="${CLASS_NAMES.primarySaveButton}" id="${SAVE_BUTTON_ID}">${attrs.submitButtonText}</a>
             </div>
           </section>
         </article>`;
@@ -719,6 +730,8 @@ define([
       startRender() {
         this.abortRender();
         this.renderId = ValueUtilities.makeUUID({ prefix: "render-" });
+        if (this.pendingSave) this.resetPackageSaveProgress();
+        this.pendingSave = null;
         this.renderAbortController = new AbortController();
         return {
           renderId: this.renderId,
@@ -3075,11 +3088,12 @@ ${supportDetails}`;
 
       /**
        * Return failed data members that replaced an existing remote PID.
+       * @param {DataPackage} [dataPackage] Package being saved
        * @returns {DataPackageMember[]} Failed replacement members
        * @since 2.39.0
        */
-      getFailedFileReplacements() {
-        return (MetacatUI.rootDataPackage?.toArray?.() || []).filter(
+      getFailedFileReplacements(dataPackage = MetacatUI.rootDataPackage) {
+        return (dataPackage?.toArray?.() || []).filter(
           (member) =>
             member?.isData?.() &&
             !member.removed &&
@@ -3103,23 +3117,23 @@ ${supportDetails}`;
 
       /**
        * Restore remote members after their replacement uploads fail.
+       * @param {DataPackage} [dataPackage] Package being saved
        * @returns {Promise<string[]>} Labels for discarded replacements
        * @since 2.39.0
        */
-      async discardFailedFileReplacements() {
-        const discardReplacement =
-          MetacatUI.rootDataPackage?.discardFileReplacement;
-        if (typeof discardReplacement !== "function") return [];
+      async discardFailedFileReplacements(
+        dataPackage = MetacatUI.rootDataPackage,
+      ) {
+        if (typeof dataPackage?.discardFileReplacement !== "function")
+          return [];
 
-        const failedReplacements = this.getFailedFileReplacements();
+        const failedReplacements = this.getFailedFileReplacements(dataPackage);
         const skipped = failedReplacements.map((member) =>
           this.getFailedFileMessage(member),
         );
         await failedReplacements.reduce(
           (chain, member) =>
-            chain.then(() =>
-              discardReplacement.call(MetacatUI.rootDataPackage, member.pid),
-            ),
+            chain.then(() => dataPackage.discardFileReplacement(member.pid)),
           Promise.resolve(),
         );
         return skipped;
@@ -3133,6 +3147,7 @@ ${supportDetails}`;
        * @since 2.39.0
        */
       async discardFailedFilesBeforeSave(packageMembers) {
+        const { rootDataPackage } = MetacatUI;
         const failedNewDataMembers = packageMembers.filter(
           (member) =>
             member?.isData?.() &&
@@ -3146,10 +3161,10 @@ ${supportDetails}`;
           (member) => member.pid,
         );
         if (failedNewDataPids.length) {
-          await MetacatUI.rootDataPackage.removeMembers(failedNewDataPids);
+          await rootDataPackage.removeMembers(failedNewDataPids);
         }
         const skippedFileReplacements =
-          await this.discardFailedFileReplacements();
+          await this.discardFailedFileReplacements(rootDataPackage);
         return { skippedNewDataFiles, skippedFileReplacements };
       },
 
@@ -3183,68 +3198,118 @@ ${supportDetails}`;
 
       /**
        * Upload the package, retrying once without failed file replacements.
-       * @returns {Promise<object>} Final result, reload message, and skipped files
+       * @returns {Promise<object>} Final result, reload message, skipped files,
+       * and whether a write succeeded before retrying
        * @private
        * @since 2.39.0
        */
       async uploadWithReplacementFallback() {
-        let result = await MetacatUI.rootDataPackage.upload();
-        let reloadMessage = getPackageSaveReloadMessage(
-          MetacatUI.rootDataPackage.toArray?.() || [],
-          result,
-        );
-        const skippedFileReplacements = [];
+        const { rootDataPackage } = MetacatUI;
+        let result = await rootDataPackage.upload();
+        const members = rootDataPackage.toArray?.() || [];
+        let reloadMessage = getPackageSaveReloadMessage(members, result);
+        let skippedFileReplacements = [];
+        let wroteBeforeRetry = false;
 
         if (
           !reloadMessage &&
-          result.outcome === "partial_failure" &&
-          !result.reloadRequired
+          result.outcome === UploadResult.Outcomes.PARTIAL_FAILURE
         ) {
-          const members = MetacatUI.rootDataPackage.toArray?.() || [];
           const failedMembers = members.filter(
             (member) =>
               !member.removed && member.remoteState === FAILED_UPLOAD_STATE,
           );
-          const failedReplacements = this.getFailedFileReplacements();
+          const failedReplacements =
+            this.getFailedFileReplacements(rootDataPackage);
           if (
             failedReplacements.length &&
             failedMembers.every((member) => failedReplacements.includes(member))
           ) {
-            skippedFileReplacements.push(
-              ...(await this.discardFailedFileReplacements()),
+            wroteBeforeRetry = result.actions.some(
+              ({ id }) =>
+                result.getStatus(id) === UploadResult.Statuses.SUCCEEDED,
             );
-            result = await MetacatUI.rootDataPackage.upload();
+            skippedFileReplacements =
+              await this.discardFailedFileReplacements(rootDataPackage);
+            result = await rootDataPackage.upload();
             reloadMessage = getPackageSaveReloadMessage(
-              MetacatUI.rootDataPackage.toArray?.() || [],
+              rootDataPackage.toArray?.() || [],
               result,
             );
           }
         }
 
-        return { result, reloadMessage, skippedFileReplacements };
+        return {
+          result,
+          reloadMessage,
+          skippedFileReplacements,
+          wroteBeforeRetry,
+        };
       },
 
       /**
-       * Saves all edits in the collection
-       * @param {Event} e - The DOM Event that triggerd this function
+       * Save pending package edits after the file table finishes loading.
+       * @param {Event} [event] Save button click
+       * @returns {Promise<void>} Resolves after the save request finishes
        */
-      async save(e) {
-        const btn = e && e.target ? $(e.target) : this.$("#save-editor");
+      save(event) {
+        if (!this.pendingSave) {
+          const { renderId } = this;
+          this.pendingSave = this.savePackage(event).finally(() => {
+            if (this.renderId === renderId) this.pendingSave = null;
+          });
+        }
+        return this.pendingSave;
+      },
 
-        // If the save button is disabled, then we don't want to save right now
-        if (btn.is(".btn-disabled")) return;
+      /**
+       * Check for edits, validate the EML and upload the package.
+       * @param {Event} [event] Save button click
+       * @returns {Promise<void>} Resolves when the request finishes
+       * @private
+       */
+      async savePackage(event) {
+        const target = event?.currentTarget || event?.target;
+        const button = target ? $(target) : this.$(`#${SAVE_BUTTON_ID}`);
+        const { rootDataPackage } = MetacatUI;
+        const { renderId } = this;
+        const isCurrent = () =>
+          this.isCurrentRender(renderId) &&
+          rootDataPackage === MetacatUI.rootDataPackage;
+        const isSaveDisabled = () =>
+          button.hasClass(CLASS_NAMES.buttonDisabled) ||
+          rootDataPackage?.isEditLocked?.();
+
+        if (isSaveDisabled()) return;
         if (this.fileTableEditInProgress) {
           this.toggleEnableControls();
           return;
         }
 
-        if (!this.model.isValid()) {
-          this.model.trigger("invalid");
-          return;
+        // Loading file details can fill in missing EML fields.
+        let hasChanges = this.hasUnsavedChanges();
+        if (!hasChanges && this.fileTableEnrichmentPromise) {
+          const spinner = $("<i>")
+            .addClass(CLASS_NAMES.loadingSpinner)
+            .attr("aria-hidden", "true");
+          button.attr("aria-busy", "true").prepend(spinner);
+          try {
+            await this.fileTableEnrichmentPromise;
+          } finally {
+            spinner.remove();
+            button.removeAttr("aria-busy");
+          }
+          if (
+            !isCurrent() ||
+            isSaveDisabled() ||
+            this.fileTableEditInProgress
+          ) {
+            return;
+          }
+          hasChanges = this.hasUnsavedChanges();
         }
-        this.model.trigger("valid");
 
-        const packageMembers = MetacatUI.rootDataPackage.toArray?.() || [];
+        const packageMembers = rootDataPackage?.toArray?.() || [];
         const preSaveReloadMessage =
           this.packageSaveReloadMessage ||
           getPackageSaveReloadMessage(packageMembers);
@@ -3254,27 +3319,37 @@ ${supportDetails}`;
           return;
         }
 
-        let skippedNewDataFiles = [];
-        let skippedFileReplacements = [];
-        try {
-          ({ skippedNewDataFiles, skippedFileReplacements } =
-            await this.discardFailedFilesBeforeSave(packageMembers));
-        } catch (error) {
-          this.saveError(error.message || String(error));
+        if (!hasChanges) {
+          this.hideControls();
+          this.showPackageSaveResult();
           return;
         }
 
+        if (!this.model.isValid()) {
+          this.model.trigger("invalid");
+          return;
+        }
+        this.model.trigger("valid");
+
+        let skippedFiles;
+        try {
+          skippedFiles =
+            await this.discardFailedFilesBeforeSave(packageMembers);
+        } catch (error) {
+          if (isCurrent()) this.saveError(error.message || String(error));
+          return;
+        }
+
+        if (!isCurrent()) return;
         this.showSaving();
         this.setFileTableDisabled(true);
 
         try {
-          // Make sure the file table enrichment has completed before proceeding
-          // with the save, otherwise it can result in metadata changes being
-          // missed
           await this.fileTableEnrichmentPromise;
+          if (!isCurrent()) return;
           await this.syncMetadataForPackageSave();
-          const changedMembers =
-            MetacatUI.rootDataPackage.getChangedMembers?.() || [];
+          if (!isCurrent()) return;
+          const changedMembers = rootDataPackage.getChangedMembers?.() || [];
           this.packageSavePrepMessage = null;
           this.packageSavePendingPids = new Set();
           changedMembers.forEach((member) => {
@@ -3292,12 +3367,18 @@ ${supportDetails}`;
           }
           this.toggleEnableControls();
           const upload = await this.uploadWithReplacementFallback();
+          if (!isCurrent()) return;
           const { result, reloadMessage } = upload;
-          skippedFileReplacements.push(...upload.skippedFileReplacements);
-          if (!reloadMessage && result.outcome === "success") {
+          if (
+            !reloadMessage &&
+            result.outcome === UploadResult.Outcomes.SUCCESS
+          ) {
+            skippedFiles.skippedFileReplacements.push(
+              ...upload.skippedFileReplacements,
+            );
             this.saveSuccess(result, {
-              skippedFileReplacements,
-              skippedNewDataFiles,
+              ...skippedFiles,
+              wroteBeforeRetry: upload.wroteBeforeRetry,
             });
           } else {
             if (reloadMessage) {
@@ -3306,6 +3387,7 @@ ${supportDetails}`;
             this.saveError(reloadMessage || this.getUploadErrorMessage(result));
           }
         } catch (error) {
+          if (!isCurrent()) return;
           if (error?.code === "validation_failure") {
             const issueWithModelErrors = error.issues?.find(
               (issue) => issue?.errors,
@@ -3313,13 +3395,7 @@ ${supportDetails}`;
             if (issueWithModelErrors) {
               this.model.validationError = issueWithModelErrors.errors;
               this.model.trigger("invalid");
-              this.packageSaveUploadCount = null;
-              this.packageSaveUploadTotal = null;
-              this.packageSavePrepMessage = null;
-              this.packageSavePendingPids = null;
-              this.fileUploadProgressByPid = {};
-              this.setFileTableDisabled(false);
-              this.hideSaving();
+              this.resetPackageSaveProgress();
               this.refreshFileTable();
               this.toggleEnableControls();
               return;
@@ -3365,101 +3441,96 @@ ${supportDetails}`;
       },
 
       /**
-       * When the data package collection saves successfully, tell the user
-       * @param {UploadResult} _result Upload result
-       * @param {object} [options] Success options
-       * @param {string[]} [options.skippedFileReplacements] File replacements
-       * skipped so the rest of the package could save
-       * @param {string[]} [options.skippedNewDataFiles] New files omitted so the
-       * rest of the package could save
+       * Restore the editor and show what the package saved.
+       * @param {UploadResult} result Upload result
+       * @param {object} [options] Save details
+       * @param {string[]} [options.skippedFileReplacements] Failed replacements
+       * @param {string[]} [options.skippedNewDataFiles] Failed new files
+       * @param {boolean} [options.wroteBeforeRetry] Whether the first attempt wrote changes
        */
-      saveSuccess(
-        _result,
-        { skippedFileReplacements = [], skippedNewDataFiles = [] } = {},
-      ) {
-        this.packageSaveUploadCount = null;
-        this.packageSaveUploadTotal = null;
-        this.packageSavePrepMessage = null;
-        this.packageSavePendingPids = null;
-        this.setFileTableDisabled(false);
-        this.hideSaving();
-        const metadataPid =
-          MetacatUI.rootDataPackage.getPrimaryMetadataMember()?.pid ||
-          this.model.get("id");
-        if (metadataPid && metadataPid !== this.model.get("id")) {
-          this.model.set("id", metadataPid);
+      saveSuccess(result, options = {}) {
+        this.resetPackageSaveProgress();
+        const wroteChanges =
+          options.wroteBeforeRetry || result.actions.length > 0;
+        let savedMetadataPid;
+        if (wroteChanges) {
+          savedMetadataPid =
+            MetacatUI.rootDataPackage.getPrimaryMetadataMember()?.pid ||
+            this.model.get("id");
+          if (savedMetadataPid && savedMetadataPid !== this.model.get("id")) {
+            this.model.set("id", savedMetadataPid);
+          }
+          MetacatUI.uiRouter.navigate(
+            `submit/${encodeURIComponent(savedMetadataPid)}`,
+            { trigger: false, replace: true },
+          );
         }
 
-        // Change the URL to the new id
-        MetacatUI.uiRouter.navigate(
-          `submit/${encodeURIComponent(metadataPid)}`,
-          { trigger: false, replace: true },
-        );
-
-        this.fileUploadProgressByPid = {};
         this.refreshFileTable();
         this.toggleControls();
         this.toggleEnableControls();
 
-        // Construct the save message
-        const message = this.editorSubmitMessageTemplate({
-          messageText: MESSAGES.submittedChanges,
-          viewURL: `${MetacatUI.root}/view/${encodeURIComponent(metadataPid)}`,
-          buttonText: MESSAGES.viewDataset,
-        });
+        this.showPackageSaveResult(savedMetadataPid, options);
 
-        MetacatUI.appView.showAlert(
-          message,
-          CLASS_NAMES.alertSuccess,
-          this.$el,
-          null,
-          { remove: true },
-        );
-
-        this.showSkippedFilesWarning(
-          "The dataset was saved, but these file replacements were skipped because their uploads failed:",
-          skippedFileReplacements,
-        );
-        this.showSkippedFilesWarning(
-          "The dataset was saved, but these new files were not added because their uploads failed:",
-          skippedNewDataFiles,
-        );
-
-        // Rerender the CitationView
-        if (this.citationView) {
+        if (wroteChanges && this.citationView) {
           this.citationView.createTitleLink = true;
           this.citationView.render();
         }
 
-        // Reset the state to clean. The package's saved state is reconciled by
-        // the upload finalization (savedRevision sync).
         this.model.set("hasContentChanges", false);
       },
 
+      /** Clear upload progress and re-enable editing */
+      resetPackageSaveProgress() {
+        this.packageSaveUploadCount = null;
+        this.packageSaveUploadTotal = null;
+        this.packageSavePrepMessage = null;
+        this.packageSavePendingPids = null;
+        this.fileUploadProgressByPid = {};
+        this.setFileTableDisabled(false);
+        this.hideSaving();
+      },
+
       /**
-       * Show files omitted from an otherwise successful package save.
-       * @param {string} introText Warning introduction
-       * @param {string[]} [messages] Skipped file messages
-       * @returns {void}
-       * @since 2.39.0
+       * Show the save result and any skipped files in one alert.
+       * @param {string} [savedMetadataPid] Metadata PID after a write
+       * @param {object} [options] Skipped files to list
+       * @param {string[]} [options.skippedFileReplacements] Failed replacements
+       * @param {string[]} [options.skippedNewDataFiles] Failed new files
        */
-      showSkippedFilesWarning(introText, messages = []) {
-        if (!messages.length) return;
-        const warning = $(document.createElement("div")).append(
-          $(document.createElement("p")).text(introText),
-        );
-        const skippedList = $(document.createElement("ul"));
-        messages.forEach((message) => {
-          skippedList.append($(document.createElement("li")).text(message));
+      showPackageSaveResult(
+        savedMetadataPid,
+        { skippedFileReplacements = [], skippedNewDataFiles = [] } = {},
+      ) {
+        let message = MESSAGES.noChangesToSave;
+        let alertClass = CLASS_NAMES.alertInfo;
+        if (savedMetadataPid) {
+          message = this.editorSubmitMessageTemplate({
+            messageText: MESSAGES.submittedChanges,
+            viewURL: `${MetacatUI.root}/view/${encodeURIComponent(savedMetadataPid)}`,
+            buttonText: MESSAGES.viewDataset,
+          });
+          alertClass = CLASS_NAMES.alertSuccess;
+        }
+
+        const skippedFiles = [
+          [MESSAGES.skippedFileReplacements, skippedFileReplacements],
+          [MESSAGES.skippedNewDataFiles, skippedNewDataFiles],
+        ].filter(([, files]) => files.length);
+        if (skippedFiles.length) {
+          const details = $("<div>").append(message);
+          skippedFiles.forEach(([heading, files]) => {
+            const list = $("<ul>");
+            files.forEach((file) => list.append($("<li>").text(file)));
+            details.append($("<p>").text(heading), list);
+          });
+          message = details;
+          alertClass = CLASS_NAMES.alertWarning;
+        }
+
+        MetacatUI.appView.showAlert(message, alertClass, this.$el, null, {
+          remove: true,
         });
-        warning.append(skippedList);
-        MetacatUI.appView.showAlert(
-          warning,
-          CLASS_NAMES.alertWarning,
-          this.$el,
-          null,
-          { remove: true },
-        );
       },
 
       /**
@@ -3571,14 +3642,7 @@ ${supportDetails}`;
           },
         );
 
-        // Reset the Saving styling
-        this.packageSaveUploadCount = null;
-        this.packageSaveUploadTotal = null;
-        this.packageSavePrepMessage = null;
-        this.packageSavePendingPids = null;
-        this.fileUploadProgressByPid = {};
-        this.setFileTableDisabled(false);
-        this.hideSaving();
+        this.resetPackageSaveProgress();
         this.refreshFileTable();
         this.toggleEnableControls();
       },

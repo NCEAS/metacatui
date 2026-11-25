@@ -3,8 +3,9 @@ define([
   "views/metadata/EML211View",
   "models/AppModel",
   "models/metadata/eml211/EML211",
+  "models/metadata/eml211/EMLKeywordSet",
   "models/metadata/eml211/EMLParty",
-], function (Backbone, EML211View, AppModel, EML211, EMLParty) {
+], function (Backbone, EML211View, AppModel, EML211, EMLKeywordSet, EMLParty) {
   describe("EML211View", function () {
     let view;
 
@@ -19,6 +20,93 @@ define([
 
     afterEach(function () {
       view.remove();
+    });
+
+    function renderKeywords(sets) {
+      view.model.set("keywordSets", sets);
+      view.setElement('<div><div class="keywords"></div></div>');
+      view.renderKeywords();
+    }
+
+    it("marks metadata changed when Data Sensitivity is selected", function () {
+      view.model.addAnnotation = sinon.spy();
+      view.setElement(
+        '<div><input class="annotation" type="radio" value="http://purl.dataone.org/odo/SENSO_00000003"></div>',
+      );
+
+      view.el.querySelector("input").click();
+
+      sinon.assert.calledOnce(view.model.trickleUpChange);
+    });
+
+    it("updates the keyword set and marks metadata changed when a keyword is edited", function () {
+      const set = new EMLKeywordSet({ keywords: ["Old keyword"] });
+      renderKeywords([set]);
+      view.$("input.keyword").first().val("New keyword").trigger("change");
+
+      chai.expect(set.get("keywords")).to.deep.equal(["New keyword"]);
+      sinon.assert.calledOnce(view.model.trickleUpChange);
+    });
+
+    it("keeps the package clean until a new keyword has text", function () {
+      renderKeywords([]);
+      const row = view.$(".keyword-row.new");
+      row.find("select").prop("selectedIndex", 1).trigger("change");
+
+      chai.expect(view.model.get("keywordSets")).to.be.empty;
+      sinon.assert.notCalled(view.model.trickleUpChange);
+
+      row.find("input").val("Ice").trigger("keyup").trigger("change");
+      const [set] = view.model.get("keywordSets");
+      chai.expect(set.get("keywords")).to.deep.equal(["Ice"]);
+      chai.expect(set.get("thesaurus")).to.equal(row.find("select").val());
+      sinon.assert.calledOnce(view.model.trickleUpChange);
+    });
+
+    it("moves a keyword into an existing thesaurus and removes it from that set", function () {
+      const source = new EMLKeywordSet({
+        keywords: ["Move"],
+        thesaurus: "GCMD",
+      });
+      const destination = new EMLKeywordSet({ keywords: ["Keep"] });
+      renderKeywords([source, destination]);
+      const row = view.$(".keyword-row").first();
+
+      row.find("select").val("None").trigger("change");
+      chai.expect(view.model.get("keywordSets")).to.have.length(1);
+      chai.expect(destination.get("keywords")).to.deep.equal(["Move", "Keep"]);
+
+      row.find(".remove").trigger("click");
+      chai.expect(destination.get("keywords")).to.deep.equal(["Keep"]);
+    });
+
+    it("removes only the selected keyword from serialized EML", function () {
+      const set = new EMLKeywordSet({
+        keywords: ["Keep", "Remove"],
+        thesaurus: "GCMD",
+      });
+      const otherSets = [
+        new EMLKeywordSet({ keywords: ["Unchanged"], thesaurus: "" }),
+        new EMLKeywordSet({ keywords: ["Other"], thesaurus: "GCMD" }),
+      ];
+      const unchangedXML = otherSets.map((other) => other.serialize());
+      const eml = new EML211({ title: ["Dataset title"] });
+      const markMetadataChanged = sinon.stub(eml, "trickleUpChange");
+      view.model = eml;
+      renderKeywords([...otherSets, set]);
+      eml.set("objectXML", eml.serialize());
+
+      view.$(".keyword-row .remove").last().trigger("click");
+      let xml = eml.serialize();
+      chai.expect(xml).to.contain("<keyword>Keep</keyword>");
+      chai.expect(xml).not.to.contain("<keyword>Remove</keyword>");
+
+      view.$(".keyword-row .remove").last().trigger("click");
+      xml = eml.serialize();
+      chai.expect(xml).not.to.contain("<keyword>Keep</keyword>");
+      chai.expect(eml.get("keywordSets")).to.have.length(otherSets.length);
+      unchangedXML.forEach((original) => chai.expect(xml).to.contain(original));
+      sinon.assert.calledTwice(markMetadataChanged);
     });
 
     it("shows and clears publication date errors, allowing an empty date", function () {

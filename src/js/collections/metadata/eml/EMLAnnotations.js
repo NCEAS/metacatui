@@ -167,12 +167,13 @@ define(["underscore", "backbone", "models/metadata/eml211/EMLAnnotation"], (
         // There is only one pair left in this case
         const canonAnnos = pairs[0];
 
-        // Make sure each annotation has the isCanonicalDataset flag set,
-        // we will use it later, e.g. in validation
-        canonAnnos.derived.set("isCanonicalDataset", true);
-        canonAnnos.same.set("isCanonicalDataset", true);
+        // Make sure each annotation has the isCanonicalDataset flag set, we
+        // will use it later, e.g. in validation. Keep it silent so it doesn't
+        // mark the EML doc as changed.
+        canonAnnos.derived.set("isCanonicalDataset", true, { silent: true });
+        canonAnnos.same.set("isCanonicalDataset", true, { silent: true });
 
-        return pairs[0];
+        return canonAnnos;
       },
 
       /**

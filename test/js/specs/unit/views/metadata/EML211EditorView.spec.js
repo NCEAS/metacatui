@@ -4,6 +4,7 @@ define([
   "models/AppModel",
   "models/dataPackage/DataPackage",
   "models/dataPackage/DataPackageRecovery",
+  "models/dataPackage/UploadResult",
   "models/dataONEServices/SysMetaService",
   "models/fileTable/DataPackageFileTableAdapter",
   "views/EditorView",
@@ -18,6 +19,7 @@ define([
   AppModel,
   DataPackage,
   DataPackageRecovery,
+  UploadResult,
   SysMetaService,
   DataPackageFileTableAdapter,
   EditorView,
@@ -2272,7 +2274,7 @@ define([
       sandbox.stub(view, "toggleControls");
       sandbox.stub(view, "toggleEnableControls");
 
-      view.saveSuccess({ outcome: "success" });
+      view.saveSuccess({ outcome: "success", actions: [{ id: "metadata" }] });
 
       view.fileUploadProgressByPid.should.deep.equal({});
       (view.packageSaveUploadCount === null).should.equal(true);
@@ -2282,47 +2284,6 @@ define([
       sinon.assert.calledOnce(view.refreshFileTable);
       sinon.assert.calledOnce(view.toggleControls);
       sinon.assert.calledOnce(view.toggleEnableControls);
-    });
-
-    it("warns when a successful save skips newly added files", function () {
-      globalThis.MetacatUI = {
-        ...(originalMetacatUI || {}),
-        root: "",
-        rootDataPackage: {
-          getPrimaryMetadataMember: sandbox
-            .stub()
-            .returns({ pid: "metadata.1" }),
-        },
-        uiRouter: {
-          navigate: sandbox.stub(),
-        },
-        appView: {
-          showAlert: sandbox.stub(),
-        },
-      };
-      model.set("id", "metadata.1");
-      view.fileTableView = { setDisabled: sandbox.stub() };
-      view.subviews = [];
-      sandbox.stub(view, "hideSaving");
-      sandbox.stub(view, "refreshFileTable");
-      sandbox.stub(view, "toggleControls");
-      sandbox.stub(view, "toggleEnableControls");
-
-      view.saveSuccess(
-        { outcome: "success" },
-        { skippedNewDataFiles: ["failed.csv - network down"] },
-      );
-
-      sinon.assert.calledTwice(globalThis.MetacatUI.appView.showAlert);
-      const warningArgs =
-        globalThis.MetacatUI.appView.showAlert.secondCall.args;
-      warningArgs[0]
-        .text()
-        .should.contain(
-          "The dataset was saved, but these new files were not added",
-        );
-      warningArgs[0].text().should.contain("failed.csv - network down");
-      warningArgs[1].should.equal("alert-warning");
     });
 
     it("registers model change listeners only once", function () {
@@ -2400,6 +2361,55 @@ define([
       sinon.assert.calledOnce(view.hideControls);
     });
 
+    it("skips validation and upload when there are no changes", async function () {
+      const rootDataPackage = createEditorRootDataPackage();
+      const showAlert = sandbox.stub();
+      globalThis.MetacatUI = {
+        ...originalMetacatUI,
+        rootDataPackage,
+        appView: { showAlert },
+      };
+      const upload = sandbox.stub(rootDataPackage, "upload");
+      sandbox.spy(model, "isValid");
+      sandbox.spy(view, "showSaving");
+      view.fileTableEnrichmentPromise = Promise.resolve();
+
+      await view.save();
+
+      sinon.assert.calledWith(showAlert, "No changes to save.", "alert-info");
+      sinon.assert.notCalled(model.isValid);
+      sinon.assert.notCalled(view.showSaving);
+      sinon.assert.notCalled(upload);
+    });
+
+    it("restores the editor and reports no changes when a save writes nothing", async function () {
+      const rootDataPackage = createEditorRootDataPackage();
+      rootDataPackage.draftRevision = 1;
+      const showAlert = sandbox.stub();
+      const navigate = sandbox.stub();
+      globalThis.MetacatUI = {
+        ...originalMetacatUI,
+        rootDataPackage,
+        appView: { showAlert },
+        uiRouter: { navigate },
+      };
+      sandbox.stub(rootDataPackage, "upload").callsFake(async () => {
+        rootDataPackage.savedRevision = rootDataPackage.draftRevision;
+        return new UploadResult().finalize();
+      });
+      const setDisabled = sandbox.stub();
+      view.fileTableView = { setDisabled };
+      sandbox.stub(view, "refreshFileTable");
+
+      await view.save();
+
+      sinon.assert.calledWith(setDisabled, true);
+      sinon.assert.calledWithExactly(setDisabled.lastCall, false);
+      chai.expect(view.packageSaveUploadCount).to.equal(null);
+      sinon.assert.calledWith(showAlert, "No changes to save.", "alert-info");
+      sinon.assert.notCalled(navigate);
+    });
+
     it("shows a package save count for sysmeta-only uploads", async function () {
       const sysMetaOnlyMember = {
         pid: "data.1",
@@ -2408,6 +2418,7 @@ define([
         isData: () => true,
       };
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         hasMetadataContentEdits: sandbox.stub().returns(false),
         getPrimaryMetadataMember: sandbox.stub().returns({
           pid: "metadata.1",
@@ -2441,13 +2452,14 @@ define([
       sinon.assert.calledOnce(rootDataPackage.upload);
     });
 
-    it("waits for background file enrichment before preparing a save", async function () {
-      // Otherwise enrichment can change metadata after upload contents are prepared.
+    it("saves metadata once when Save is clicked twice while file details load", async function () {
+      const rootDataPackage = createEditorRootDataPackage();
       let finishEnrichment;
       const enrichment = new Promise((resolve) => {
         finishEnrichment = resolve;
+      }).then(() => {
+        rootDataPackage.recordUserEdit("metadata:changed", {});
       });
-      const rootDataPackage = createEditorRootDataPackage();
       sandbox.stub(rootDataPackage, "upload").resolves({ outcome: "success" });
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
@@ -2455,7 +2467,9 @@ define([
         appUserModel: { get: sandbox.stub().returns([]) },
         rootDataPackage,
       };
-      view.setElement($('<div><div id="data-package-container"></div></div>'));
+      view.setElement(
+        '<div><button id="save-editor">Save</button><div id="data-package-container"></div></div>',
+      );
       sandbox.stub(view, "renderMetadata");
       sandbox.stub(view, "getEditorFileTableRows").returns([]);
       sandbox.stub(view, "renderFileTableStartMessage");
@@ -2463,25 +2477,45 @@ define([
       sandbox.stub(view, "toggleEnableControls");
       sandbox.stub(view, "enrichEditorFileTableMembers").returns(enrichment);
       view.renderDataPackage();
-      let savingStarted;
-      const savingState = new Promise((resolve) => {
-        savingStarted = resolve;
-      });
-      sandbox.stub(view, "showSaving").callsFake(savingStarted);
+      sandbox.stub(view, "showSaving");
       sandbox.stub(view, "syncMetadataForPackageSave").resolves();
       sandbox.stub(view, "saveSuccess");
 
-      const saving = view.save({ target: $("<button></button>")[0] });
-      await savingState;
+      const saving = view.save();
+      const button = view.el.querySelector("#save-editor");
+      button.click();
+      await Promise.resolve();
 
+      chai.expect(button.getAttribute("aria-busy")).to.equal("true");
+      sinon.assert.notCalled(view.showSaving);
       sinon.assert.notCalled(view.syncMetadataForPackageSave);
       sinon.assert.notCalled(rootDataPackage.upload);
 
       finishEnrichment();
       await saving;
 
+      chai.expect(button.hasAttribute("aria-busy")).to.equal(false);
+      sinon.assert.calledOnce(view.showSaving);
       sinon.assert.calledOnce(view.syncMetadataForPackageSave);
       sinon.assert.calledOnce(rootDataPackage.upload);
+    });
+
+    it("does not upload the next package when the editor changes during save preparation", async function () {
+      const firstPackage = createEditorRootDataPackage();
+      firstPackage.draftRevision = 1;
+      const nextPackage = createEditorRootDataPackage();
+      const upload = sandbox.stub(nextPackage, "upload");
+      globalThis.MetacatUI = {
+        ...originalMetacatUI,
+        rootDataPackage: firstPackage,
+      };
+
+      const saving = view.save();
+      view.startRender();
+      globalThis.MetacatUI.rootDataPackage = nextPackage;
+      await saving;
+
+      sinon.assert.notCalled(upload);
     });
 
     it("skips entity sync and pre-upload refresh for metadata-only saves", async function () {
@@ -2491,6 +2525,7 @@ define([
         isData: () => false,
       };
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         hasMetadataContentEdits: sandbox.stub().returns(false),
         getPrimaryMetadataMember: sandbox.stub().returns(metadataMember),
         getChangedMembers: sandbox.stub().returns([metadataMember]),
@@ -2535,6 +2570,7 @@ define([
         isData: () => false,
       };
       const rootDataPackage = new Backbone.Model();
+      rootDataPackage.hasUnsavedChanges = () => true;
       rootDataPackage.events = { ...Backbone.Events };
       rootDataPackage.hasMetadataContentEdits = sandbox.stub().returns(true);
       rootDataPackage.getPrimaryMetadataMember = sandbox
@@ -2651,6 +2687,7 @@ define([
         sysMeta: { fileName: "urn_uuid_metadata_1.xml" },
       };
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         hasMetadataContentEdits: sandbox.stub().returns(true),
         getMember: sandbox.stub().returns(metadataMember),
         getPrimaryMetadataMember: sandbox.stub().returns(metadataMember),
@@ -2702,6 +2739,7 @@ define([
     it("requires reload after cancellation even without an ambiguous member", async function () {
       model.validationError = null;
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         toArray: sandbox.stub().returns([]),
         hasMetadataContentEdits: sandbox.stub().returns(false),
         getChangedMembers: sandbox.stub().returns([]),
@@ -2741,6 +2779,7 @@ define([
       it(`allows another save after ${scenario}`, async function () {
         model.validationError = null;
         const rootDataPackage = {
+          hasUnsavedChanges: () => true,
           toArray: sandbox.stub().returns([]),
           hasMetadataContentEdits: sandbox.stub().returns(false),
           getChangedMembers: sandbox.stub().returns([]),
@@ -2790,6 +2829,7 @@ define([
         reloadRequired: true,
       });
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         toArray: sandbox.stub().returns([]),
         hasMetadataContentEdits: sandbox.stub().returns(false),
         getChangedMembers: sandbox.stub().returns([]),
@@ -2842,6 +2882,7 @@ define([
         isData: sandbox.stub().returns(true),
       };
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         toArray: sandbox.stub().returns([failedNewMember, failedReplacement]),
         removeMembers: sandbox.stub().resolves(),
         discardFileReplacement: sandbox.stub().resolves(),
@@ -2901,6 +2942,7 @@ define([
         isData: sandbox.stub().returns(true),
       };
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         toArray: sandbox.stub().returns([failedNewMember, failedRemoteMember]),
         removeMembers: sandbox.stub().resolves([failedNewMember]),
         hasMetadataContentEdits: sandbox.stub().returns(false),
@@ -2932,6 +2974,7 @@ define([
       sinon.assert.calledWithExactly(view.saveSuccess, successResult, {
         skippedFileReplacements: [],
         skippedNewDataFiles: ["failed.csv - network down"],
+        wroteBeforeRetry: false,
       });
     });
 
@@ -2945,6 +2988,7 @@ define([
       };
       const cleanupError = new Error("ResourceMap update failed");
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         toArray: sandbox.stub().returns([failedNewMember]),
         removeMembers: sandbox.stub().rejects(cleanupError),
         upload: sandbox.stub().resolves({ outcome: "success" }),
@@ -3101,8 +3145,7 @@ define([
       );
     });
 
-    it("retries a save without failed file replacements", async function () {
-      model.validationError = null;
+    it("confirms the first upload and lists skipped files when the retry is empty", async function () {
       const removedReplacement = {
         pid: "data.removed.2",
         remotePid: "data.removed.1",
@@ -3120,48 +3163,62 @@ define([
         lastUploadError: new Error("replacement rejected"),
         isData: sandbox.stub().returns(true),
       };
+      const failedNewFile = {
+        pid: "data.new",
+        fileName: "new.csv",
+        remoteState: "failed",
+        lastUploadError: new Error("network down"),
+        isData: () => true,
+      };
       const rootDataPackage = {
-        toArray: sandbox
-          .stub()
-          .returns([removedReplacement, failedReplacement]),
-        hasMetadataContentEdits: sandbox.stub().returns(false),
-        getChangedMembers: sandbox.stub().returns([]),
-        getPrimaryMetadataMember: sandbox.stub().returns({
-          pid: "metadata.1",
-          contentDirty: false,
-        }),
+        hasUnsavedChanges: () => true,
+        toArray: () => [failedNewFile, removedReplacement, failedReplacement],
+        removeMembers: () => {
+          failedNewFile.removed = true;
+        },
+        getPrimaryMetadataMember: () => ({ pid: "metadata.1" }),
         discardFileReplacement: sandbox.stub().callsFake(async () => {
           failedReplacement.remoteState = "uploaded";
           failedReplacement.pid = "data.1";
         }),
         upload: sandbox.stub(),
       };
-      const successResult = { outcome: "success" };
+      const firstResult = new UploadResult([
+        { id: "create:data.3" },
+        { id: "update:data.2" },
+      ])
+        .markSucceeded("create:data.3")
+        .markFailed("update:data.2", failedReplacement.lastUploadError)
+        .finalize();
       rootDataPackage.upload.onFirstCall().callsFake(async () => {
         failedReplacement.remoteState = "failed";
-        return { outcome: "partial_failure", reloadRequired: false };
+        return firstResult;
       });
-      rootDataPackage.upload.onSecondCall().resolves(successResult);
+      rootDataPackage.upload
+        .onSecondCall()
+        .resolves(new UploadResult().finalize());
+      const showAlert = sandbox.stub();
       globalThis.MetacatUI = {
         ...(originalMetacatUI || {}),
         rootDataPackage,
+        appView: { showAlert },
+        uiRouter: { navigate: sandbox.stub() },
       };
-      sandbox.stub(view, "showSaving");
-      sandbox.stub(view, "refreshFileTable");
-      sandbox.stub(view, "saveSuccess");
-      sandbox.stub(view, "saveError");
-
-      await view.save({ target: $("<button></button>")[0] });
+      await view.save();
 
       sinon.assert.calledTwice(rootDataPackage.upload);
       sinon.assert.calledOnceWithExactly(
         rootDataPackage.discardFileReplacement,
         "data.2",
       );
-      sinon.assert.calledWithExactly(view.saveSuccess, successResult, {
-        skippedFileReplacements: ["data.csv - replacement rejected"],
-        skippedNewDataFiles: [],
-      });
+      sinon.assert.calledOnce(showAlert);
+      const [message, alertClass] = showAlert.firstCall.args;
+      const text = message.text();
+      text.should.contain("Your changes have been submitted.");
+      text.should.contain("data.csv - replacement rejected");
+      text.should.contain("new files were not added");
+      text.should.contain("new.csv - network down");
+      alertClass.should.equal("alert-warning");
     });
 
     it("requires reload when the replacement retry becomes ambiguous", async function () {
@@ -3180,6 +3237,7 @@ define([
         isData: sandbox.stub().returns(false),
       };
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         toArray: sandbox.stub().returns([failedReplacement, metadataMember]),
         hasMetadataContentEdits: sandbox.stub().returns(false),
         getChangedMembers: sandbox.stub().returns([]),
@@ -3192,7 +3250,9 @@ define([
       };
       rootDataPackage.upload.onFirstCall().callsFake(async () => {
         failedReplacement.remoteState = "failed";
-        return { outcome: "partial_failure", reloadRequired: false };
+        return new UploadResult([{ id: "update:data.2" }])
+          .markFailed("update:data.2", failedReplacement.lastUploadError)
+          .finalize();
       });
       rootDataPackage.upload.onSecondCall().callsFake(async () => {
         metadataMember.remoteState = "ambiguous";
@@ -3237,6 +3297,7 @@ define([
         reloadRequired: true,
       };
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         toArray: sandbox.stub().returns([failedReplacement]),
         hasMetadataContentEdits: sandbox.stub().returns(false),
         getChangedMembers: sandbox.stub().returns([]),
@@ -3301,6 +3362,7 @@ define([
         isData: sandbox.stub().returns(false),
       };
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         toArray: sandbox.stub().returns([failedReplacement, ambiguousMember]),
         hasMetadataContentEdits: sandbox.stub().returns(false),
         getChangedMembers: sandbox.stub().returns([]),
@@ -3362,6 +3424,7 @@ define([
         },
       );
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         hasMetadataContentEdits: sandbox.stub().returns(false),
         getPrimaryMetadataMember: sandbox.stub().returns({
           pid: "metadata.1",
@@ -3417,6 +3480,7 @@ define([
         },
       );
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         hasMetadataContentEdits: sandbox.stub().returns(false),
         getPrimaryMetadataMember: sandbox.stub().returns({
           pid: "metadata.1",
@@ -3444,6 +3508,7 @@ define([
         contentDirty: false,
       };
       const rootDataPackage = {
+        hasUnsavedChanges: () => true,
         hasMetadataContentEdits: sandbox.stub().returns(false),
         getMember: sandbox.stub().returns(metadataMember),
         getPrimaryMetadataMember: sandbox.stub().returns(metadataMember),
