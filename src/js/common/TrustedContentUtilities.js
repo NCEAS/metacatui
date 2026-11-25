@@ -161,23 +161,6 @@ define([], () => {
       },
 
       /**
-       * Test whether a URL is trusted according to the app's
-       * `trustedContentSources` configuration.
-       *
-       * A URL is trusted when all of the following hold:
-       * - `trustedContentSources` is non-empty
-       * - The URL is syntactically valid
-       * - The URL uses the `http:` or `https:` protocol
-       * - The URL matches at least one `trustedContentSources` pattern
-       * @param {string} url The URL to test.
-       * @returns {boolean} `true` when the URL is trusted.
-       * @since 2.37.0
-       */
-      isTrustedUrl(url) {
-        return TrustedContentUtilities.getTrustedContentSource(url) !== null;
-      },
-
-      /**
        * Return true when the URL uses the `http:` or `https:` protocol.
        * @param {string} url URL to validate.
        * @returns {boolean} `true` when protocol is HTTP(S).
@@ -190,20 +173,6 @@ define([], () => {
         } catch {
           return false;
         }
-      },
-
-      /**
-       * Resolve the sandbox permissions for a trusted iframe URL.
-       * @param {string} url The URL to test.
-       * @returns {string|null} The sandbox permissions string, or null when untrusted.
-       * @since 2.37.0
-       */
-      getTrustedIframeSandbox(url) {
-        const trustedContentSource =
-          TrustedContentUtilities.getTrustedContentSource(url);
-        if (!trustedContentSource) return null;
-
-        return trustedContentSource.permissions.join(" ");
       },
     };
 

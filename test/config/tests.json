@@ -16,7 +16,7 @@
     "./js/specs/unit/views/maps/viewfinder/ViewfinderView.spec.js",
     "./js/specs/unit/views/maps/VisualizationPanelView.spec.js",
     "./js/specs/unit/views/JSONEditorView.spec.js",
-    "./js/specs/unit/common/isTrustedUrl.spec.js",
+    "./js/specs/unit/common/TrustedContentUtilities.spec.js",
     "./js/specs/unit/common/showdownIframes.spec.js",
     "./js/specs/unit/views/MarkdownView.spec.js",
     "./js/specs/unit/views/maps/ExpansionPanelView.spec.js",

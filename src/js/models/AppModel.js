@@ -1767,10 +1767,19 @@ define(["jquery", "underscore", "backbone"], ($, _, Backbone) => {
            * Set `allow` to delegate browser features to Markdown and map
            * visualization iframes, for example `["fullscreen", "geolocation"]`.
            *
-           * Start each rule with an HTTP or HTTPS origin. Use an exact hostname
-           * or a leading `*.` for subdomains, as in `https://*.dataone.org`.
+           * Start each rule with `http://` or `https://` and an exact hostname
+           * or a leading `*.` wildcard. Unsupported rule formats are skipped.
+           * `https://*.dataone.org` matches subdomains only. Add
+           * `https://dataone.org` as a separate rule to allow that domain too.
+           *
+           * Include non-default ports explicitly, as in `https://example.org:8443`.
+           * Port wildcards such as `http://localhost:*` are skipped.
+           *
            * Use an origin without a trailing slash to allow any path, or add a
            * path pattern to limit which URLs can be embedded.
+           *
+           * Markdown keeps the author's `title`, `width` and `height` attributes.
+           * Enable fullscreen with `allow: ["fullscreen"]` on the trusted source.
            *
            * Set to an empty array or a falsy value to disable embeds.
            *
