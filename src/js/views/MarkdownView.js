@@ -6,7 +6,7 @@ define([
   "showdown",
   "text!templates/loading.html",
 ], ($, _, Backbone, showdown, LoadingTemplate) => {
-  const XSS_FILTER_EXTENSION = "xssfilter";
+  const XSS_FILTER_EXTENSION = "xssfilter-with-iframes";
   const IFRAME_EXTENSION = "showdown-iframes";
 
   /**

@@ -386,6 +386,82 @@ define([
       expect(state.harness.getDescription()).to.match(/For testing/);
     });
 
+    it("blocks iframes in card content while preserving description formatting", () => {
+      const url = "https://trusted.example.org/report";
+      state.sandbox
+        .stub(MetacatUI.appModel, "get")
+        .callThrough()
+        .withArgs("trustedContentSources")
+        .returns([url]);
+      const iframe = `<iframe src="${url}"></iframe>`;
+      const description = `<strong>Report</strong><a href="${url}" onclick="alert(1)">Read more</a>${iframe}`;
+      state.view.preset.set({
+        title: iframe,
+        description,
+        enabledLayerLabels: [iframe],
+        buttons: [
+          { type: "iframe", ordinality: "primary", label: iframe, url },
+          { type: "map", ordinality: "secondary", label: iframe },
+        ],
+      });
+      state.view.el.remove();
+
+      state.view.render();
+
+      expect(state.view.el.querySelector("iframe")).to.equal(null);
+      const renderedDescription = state.view.el.querySelector(
+        ".viewfinder-card__description",
+      );
+      expect(renderedDescription.querySelector("strong")?.textContent).to.equal(
+        "Report",
+      );
+      const link = renderedDescription.querySelector("a");
+      expect(link.getAttribute("href")).to.equal(url);
+      expect(link.hasAttribute("onclick")).to.be.false;
+      expect(state.harness.getTitle()).to.equal(iframe);
+      for (const button of state.view.el.querySelectorAll("button")) {
+        expect(button.textContent.trim()).to.equal(iframe);
+      }
+      expect(state.view.preset.get("description")).to.equal(description);
+    });
+
+    it("escapes iframe markup in image and button attributes", () => {
+      const injection =
+        '"><iframe src="https://unrelated.example/"></iframe><i class="';
+      state.view.preset.set({
+        title: injection,
+        image: injection,
+        imageFallback: injection,
+        buttons: [
+          {
+            type: "iframe",
+            ordinality: "primary",
+            label: "Report",
+            icon: injection,
+          },
+          {
+            type: "map",
+            ordinality: "secondary",
+            label: "Layers",
+            icon: injection,
+          },
+        ],
+      });
+      state.view.el.remove();
+
+      state.view.render();
+
+      expect(state.view.el.querySelector("iframe")).to.equal(null);
+      const image = state.view.el.querySelector("img");
+      expect(image.getAttribute("src")).to.equal(injection);
+      expect(image.getAttribute("data-fallback-src")).to.equal(injection);
+      expect(image.getAttribute("alt")).to.equal(`${injection} preview image`);
+      expect(state.harness.getTitle()).to.equal(injection);
+      for (const icon of state.view.el.querySelectorAll("button i")) {
+        expect(icon.getAttribute("class")).to.equal(`icon icon-${injection}`);
+      }
+    });
+
     it("shows which layers are enabled", () => {
       expect(state.harness.getEnabledLayers()).to.match(/Layer 1/);
       expect(state.harness.getEnabledLayers()).to.match(/Layer 2/);

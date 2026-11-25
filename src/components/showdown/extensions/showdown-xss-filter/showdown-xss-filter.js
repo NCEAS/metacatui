@@ -5,15 +5,19 @@
  *  2015, Visionist, Inc.
  */
 define(['showdown', 'xss'], function (showdown, xss) {
-  var sanitizeHTML;
+  const XSS_FILTER_EXTENSION = 'xssfilter';
+  const IFRAME_XSS_FILTER_EXTENSION = 'xssfilter-with-iframes';
 
-  showdown.extension('xssfilter', function () {
-
+  /**
+   * Create an HTML filter that can keep iframes for Markdown's URL check.
+   * @param {boolean} [allowIframes=false] Keep iframe attributes for Markdown
+   * @returns {object} Showdown output extension
+   */
+  const createExtension = (allowIframes = false) => {
     // custom rules
-    var options = {
+    const options = {
       css: false,
       allowList: {
-        iframe: ["src", "title", "width", "height", "frameborder", "allowfullscreen"],
         a: ["target", "href", "title", "class", "target"],
         abbr: ["title"],
         address: [],
@@ -93,19 +97,21 @@ define(['showdown', 'xss'], function (showdown, xss) {
       }
     };
 
-    //myxss = new xss.FilterXSS(options);
+    if (allowIframes) {
+      options.allowList.iframe = ["src", "title", "width", "height"];
+    }
 
-    var extensions = {
+    return {
       type: "output",
-      filter: function (text) {
+      filter(text) {
         return xss(text, options);
       }
     };
+  };
 
-    sanitizeHTML = extensions.filter;
-    return extensions;
+  const defaultExtension = createExtension();
+  showdown.extension(XSS_FILTER_EXTENSION, () => defaultExtension);
+  showdown.extension(IFRAME_XSS_FILTER_EXTENSION, () => createExtension(true));
 
-  });
-
-  return sanitizeHTML;
+  return defaultExtension.filter;
 });
