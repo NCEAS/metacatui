@@ -1,12 +1,12 @@
 <% if (preset.image) { %>
   <div class="<%= classNames.hero %>">
-    <img class="<%= classNames.image %>" src="<%= preset.image %>" alt="<%= preset.title %> preview image"<% if (preset.imageFallback) { %> data-fallback-src="<%= preset.imageFallback %>"<% } %> />
-    <div class="<%= classNames.title %>"><%= preset.title %></div>
+    <img class="<%= classNames.image %>" src="<%- preset.image %>" alt="<%- preset.title %> preview image"<% if (preset.imageFallback) { %> data-fallback-src="<%- preset.imageFallback %>"<% } %> />
+    <div class="<%= classNames.title %>"><%- preset.title %></div>
   </div>
 <% } %>
 <div class="<%= classNames.body %>">
   <% if (!preset.image) { %>
-    <div class="<%= classNames.title %>"><%= preset.title %></div>
+    <div class="<%= classNames.title %>"><%- preset.title %></div>
   <% } %>
   <% if (preset.description) { %>
     <div class="<%= classNames.description %>"><%= preset.description %></div>
@@ -15,13 +15,13 @@
     <% preset.buttons.forEach(function(action, i) { %>
       <% if (action.ordinality === 'secondary') { %>
         <button class="<%= classNames.buttonSecondary %>" data-button-index="<%= i %>">
-          <i class="icon icon-<%= action.icon || 'eye-open' %>"></i>
-          <%= action.label %>
+          <i class="icon icon-<%- action.icon || 'eye-open' %>"></i>
+          <%- action.label %>
         </button>
       <% } else { %>
         <button class="<%= classNames.buttonPrimary %> map-view__button map-view__button--emphasis" data-button-index="<%= i %>">
-          <% if (action.icon) { %><i class="icon icon-<%= action.icon %>"></i><% } %>
-          <%= action.label %>
+          <% if (action.icon) { %><i class="icon icon-<%- action.icon %>"></i><% } %>
+          <%- action.label %>
         </button>
       <% } %>
     <% }); %>

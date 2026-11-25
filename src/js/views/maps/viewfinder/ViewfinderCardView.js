@@ -307,6 +307,7 @@ define([
        */
       render() {
         const preset = this.preset.toJSON();
+        preset.description = sanitizeHTML(preset.description);
         preset.enabledLayerLabels = preset.enabledLayerLabels.map((label) =>
           sanitizeHTML(label),
         );

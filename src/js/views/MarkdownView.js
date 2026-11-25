@@ -6,6 +6,9 @@ define([
   "showdown",
   "text!templates/loading.html",
 ], ($, _, Backbone, showdown, LoadingTemplate) => {
+  const XSS_FILTER_EXTENSION = "xssfilter-with-iframes";
+  const IFRAME_EXTENSION = "showdown-iframes";
+
   /**
    * @class MarkdownView
    * @classdesc A view of markdown content rendered into HTML with optional
@@ -172,7 +175,7 @@ define([
         // SDextensions lists the desired order* of all potentailly required
         // showdown extensions (* order matters! )
         const SDextensions = [
-          "xssfilter",
+          XSS_FILTER_EXTENSION,
           "katex",
           "highlight",
           "docbook",
@@ -181,7 +184,7 @@ define([
           "footnotes",
           "showdown-citation",
           "showdown-images",
-          "showdown-iframes",
+          IFRAME_EXTENSION,
         ];
 
         let numTestsTodo = SDextensions.length;
@@ -224,19 +227,15 @@ define([
         // test for any <h.> tags
         const regexHtags = /#\\s/;
         const regexImages = /!\[.*\]\(\S+\)/;
-        // test for anything that looks like an iframe. Keep it very general.
-        const regexIframes = /<iframe.*?src="(.*?)"(.*?)><\/iframe>/g;
 
         // ================================================================
         // Test for and load each as required each showdown extension
 
-        // --- Test for XSS --- //
-
-        // There is no test for the xss filter because it should always be
-        // included. It's included via the updateExtensionList function for
-        // consistency with the other, optional extensions.
-        require(["showdownXssFilter"], (_showdownXss) => {
-          updateExtensionList("xssfilter", true);
+        // The XSS filter normalizes src attributes to double quotes before
+        // the iframe filter checks their URLs.
+        require(["showdownXssFilter", "showdownIframes"], () => {
+          updateExtensionList(XSS_FILTER_EXTENSION, true);
+          updateExtensionList(IFRAME_EXTENSION, true);
         });
 
         // --- Test for katex --- //
@@ -343,15 +342,6 @@ define([
           });
         } else {
           updateExtensionList("showdown-images", false);
-        }
-
-        // --- Test for iframes --- //
-        if (regexIframes.test(markdown)) {
-          require(["showdownIframes"], (_showdownIframes) => {
-            updateExtensionList("showdown-iframes", true);
-          });
-        } else {
-          updateExtensionList("showdown-iframes", false);
         }
       },
 

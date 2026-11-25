@@ -93,8 +93,9 @@ MetacatUI.AppConfig = Object.assign(
     // iFrames in portals
     defaultIframePermissions: ["allow-scripts", "allow-same-origin"],
     trustedContentSources: [
-      "https://*ecoinformatics.org*",
-      "https://cosima.nceas.ucsb.edu*",
+      "https://ecoinformatics.org",
+      "https://*.ecoinformatics.org",
+      "https://cosima.nceas.ucsb.edu",
       "https://sasap-data.shinyapps.io/board_of_fisheries/",
     ],
   },

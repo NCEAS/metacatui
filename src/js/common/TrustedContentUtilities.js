@@ -36,36 +36,25 @@ define([], () => {
       },
 
       /**
-       * Convert a URL pattern with wildcards to a RegExp.
-       * The protocol (if present) is extracted and escaped separately so that
-       * "https://" in a pattern only matches HTTPS URLs, not HTTP.
-       * @param {string} wildcardPattern The pattern, which may include "*" wildcards.
-       * @returns {RegExp} Case-insensitive regex that matches the full URL.
+       * Convert a wildcard pattern to a regex that ignores case.
+       * @param {string} wildcardPattern The pattern, which may include "*" wildcards
+       * @returns {RegExp} Regular expression anchored at both ends
        * @since 2.37.0
        */
       patternToRegex(wildcardPattern) {
-        let protocol = "";
-        let pattern = wildcardPattern;
-        const protocolMatch = pattern.match(/^(https?:\/\/)/);
-        if (protocolMatch) {
-          [, protocol] = protocolMatch;
-          pattern = wildcardPattern.slice(protocol.length);
-        }
-
-        const escapedPattern = pattern
+        const escapedPattern = wildcardPattern
           .replace(/[-/\\^$+?.()|[\]{}]/g, "\\$&")
           .replace(/\*/g, ".*");
-        const escapedProtocol = protocol.replace(
-          /[-/\\^$+?.()|[\]{}]/g,
-          "\\$&",
-        );
-        return new RegExp(`^${escapedProtocol}${escapedPattern}$`, "i");
+        return new RegExp(`^${escapedPattern}$`, "i");
       },
 
       /**
-       * Normalize a trusted content source entry to a consistent shape.
-       * @param {string|{url: string, permissions: (string[]|undefined)}} source Source entry from configuration.
-       * @returns {{url: string, permissions: string[]}|null} Normalized source object or null when invalid.
+       * Read the iframe permissions for a source and fill in sandbox defaults.
+       * @param {string|{url: string, permissions: (string[]|undefined), allow:
+       * (string[]|undefined)}} source URL pattern or source config
+       * @returns {{url: string, permissions: string[], allow:
+       * (string[]|undefined)}|null} Source settings, or null if the entry has
+       * no URL string
        * @since 2.37.0
        */
       normalizeTrustedContentSource(source) {
@@ -90,55 +79,85 @@ define([], () => {
             Array.isArray(source.permissions) && source.permissions.length
               ? source.permissions
               : defaultPermissions,
+          allow: Array.isArray(source.allow) ? source.allow : undefined,
         };
       },
 
       /**
-       * Resolve the trusted content source entry that matches the given URL.
-       * @param {string} url The URL to test.
-       * @returns {{url: string, permissions: string[]}|null} Matching trusted source entry, or null when no match is found.
+       * Find the first trusted source that matches a URL.
+       * @param {string} url URL to match
+       * @returns {{url: string, permissions: string[], allow:
+       * (string[]|undefined)}|null} Source settings, or null if no source
+       * matches
        * @since 2.37.0
        */
       getTrustedContentSource(url) {
         const sources = MetacatUI?.appModel?.get("trustedContentSources") ?? [];
         if (!sources.length) return null;
 
-        if (!TrustedContentUtilities.isHttpUrl(url)) {
+        let parsedUrl;
+        try {
+          parsedUrl = new URL(url);
+        } catch {
+          return null;
+        }
+        if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
           return null;
         }
 
-        const parsedUrl = new URL(url);
+        const urlSuffix = parsedUrl.href.replace(/^https?:\/\/[^/]+/, "");
 
         const matchedSource = sources
           .map(TrustedContentUtilities.normalizeTrustedContentSource)
-          .find(
-            (normalized) =>
-              normalized &&
-              TrustedContentUtilities.patternToRegex(normalized.url).test(
-                /^(https?:\/\/[^/?#]+)$/i.test(normalized.url)
-                  ? parsedUrl.origin
-                  : parsedUrl.href,
-              ),
-          );
+          .find((normalized) => {
+            if (!normalized) return false;
+
+            // Only a leading "*." can match across hostname labels.
+            const pattern = normalized.url.match(
+              /^(https?:\/\/(?:\*\.)?[^*/?#]+)([/?#].*)?$/i,
+            );
+            if (!pattern) return false;
+
+            const [, originPattern, suffixPattern] = pattern;
+            return (
+              TrustedContentUtilities.patternToRegex(originPattern).test(
+                parsedUrl.origin,
+              ) &&
+              (!suffixPattern ||
+                TrustedContentUtilities.patternToRegex(suffixPattern).test(
+                  urlSuffix,
+                ))
+            );
+          });
 
         return matchedSource ?? null;
       },
 
       /**
-       * Test whether a URL is trusted according to the app's
-       * `trustedContentSources` configuration.
-       *
-       * A URL is trusted when all of the following hold:
-       * - `trustedContentSources` is non-empty
-       * - The URL is syntactically valid
-       * - The URL uses the `http:` or `https:` protocol
-       * - The URL matches at least one `trustedContentSources` pattern
-       * @param {string} url The URL to test.
-       * @returns {boolean} `true` when the URL is trusted.
-       * @since 2.37.0
+       * Apply the matching source's permissions before loading the iframe.
+       * Clear its source and permissions if the URL is untrusted.
+       * @param {HTMLIFrameElement} iframe An iframe created by the caller
+       * @param {string} url The URL to load
+       * @returns {boolean} Whether the URL matched a trusted source
+       * @since 0.0.0
        */
-      isTrustedUrl(url) {
-        return TrustedContentUtilities.getTrustedContentSource(url) !== null;
+      configureTrustedIframe(iframe, url) {
+        const source = TrustedContentUtilities.getTrustedContentSource(url);
+        if (!source) {
+          iframe.removeAttribute("src");
+          iframe.removeAttribute("sandbox");
+          iframe.removeAttribute("allow");
+          return false;
+        }
+
+        iframe.setAttribute("sandbox", source.permissions.join(" "));
+        if (source.allow?.length) {
+          iframe.setAttribute("allow", source.allow.join("; "));
+        } else {
+          iframe.removeAttribute("allow");
+        }
+        Object.assign(iframe, { src: url });
+        return true;
       },
 
       /**
@@ -154,20 +173,6 @@ define([], () => {
         } catch {
           return false;
         }
-      },
-
-      /**
-       * Resolve the sandbox permissions for a trusted iframe URL.
-       * @param {string} url The URL to test.
-       * @returns {string|null} The sandbox permissions string, or null when untrusted.
-       * @since 2.37.0
-       */
-      getTrustedIframeSandbox(url) {
-        const trustedContentSource =
-          TrustedContentUtilities.getTrustedContentSource(url);
-        if (!trustedContentSource) return null;
-
-        return trustedContentSource.permissions.join(" ");
       },
     };
 
