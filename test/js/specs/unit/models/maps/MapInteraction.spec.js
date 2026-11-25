@@ -90,4 +90,35 @@ define([
     model.handleClick(model, "LEFT_CLICK");
     model.get("clickFeatureAction").should.equal("zoom");
   });
+
+  describe("disabling feature interaction", function () {
+    it("should ignore hover, click and select while disabled", function () {
+      const model = new MapInteraction();
+      model.disableFeatureInteraction();
+      model.setHoveredFeatures([{ id: "a" }]);
+      model.selectFeatures([{ id: "a" }]);
+      model.set("hoveredFeatures", new Features([{ label: "a" }]));
+      model.handleClick(model, "LEFT_CLICK");
+      model.get("hoveredFeatures").length.should.equal(1);
+      model.get("selectedFeatures").length.should.equal(0);
+      model.get("clickedFeatures").length.should.equal(0);
+    });
+
+    it("should clear hovered features and keep the selection", function () {
+      const model = new MapInteraction();
+      model.set("selectedFeatures", new Features([{ label: "a" }]));
+      model.set("hoveredFeatures", new Features([{ label: "b" }]));
+      model.disableFeatureInteraction();
+      model.get("hoveredFeatures").length.should.equal(0);
+      model.get("selectedFeatures").length.should.equal(1);
+    });
+
+    it("should select features again once enabled", function () {
+      const model = new MapInteraction();
+      model.disableFeatureInteraction();
+      model.enableFeatureInteraction();
+      model.selectFeatures([{ label: "a" }]);
+      model.get("selectedFeatures").length.should.equal(1);
+    });
+  });
 });

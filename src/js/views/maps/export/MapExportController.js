@@ -145,6 +145,8 @@ define([
       if (this.state !== "idle" || !this.widget?.scene) return;
       this.state = "active";
       this.rootEl.classList.add(EXPORT_MODE_CLASS);
+      this.interactions = this.model.get("interactions");
+      this.interactions?.disableFeatureInteraction();
       this.widget.enterTopDownMode();
 
       this.overlay = new ExportOverlayView({
@@ -197,6 +199,8 @@ define([
       this.widget.setCameraInputsEnabled(true);
       this.widget.exitTopDownMode();
       this.rootEl.classList.remove(EXPORT_MODE_CLASS);
+      this.interactions?.enableFeatureInteraction();
+      this.interactions = null;
       this.panel?.setStatus("");
       this.toolbar.releaseSection(SECTION_KEY);
       this.widget.scene?.requestRender();

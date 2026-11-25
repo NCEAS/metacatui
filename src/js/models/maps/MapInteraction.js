@@ -177,6 +177,7 @@ define([
       handleClick: function (m, action) {
         // updated by Shirly - testing
         if (action !== "LEFT_CLICK" && action !== "LEFT_DOUBLE_CLICK") return;
+        if (this.get("featureInteractionDisabled")) return;
         // Clone the models in hovered features and set them as clicked features
         const hoveredFeatures = this.get("hoveredFeatures").models;
         this.setClickedFeatures(hoveredFeatures);
@@ -216,6 +217,25 @@ define([
       /** Enable click actions on features if previous prevented */
       enableClickAction() {
         this.set("preventClickAction", false);
+      },
+
+      /**
+       * Stop features from being hovered, clicked or selected, by the user or by
+       * code such as search or URL restore. Used while exporting the map. Any
+       * current selection is left as it is.
+       * @since 2.41.0
+       */
+      disableFeatureInteraction() {
+        this.set("featureInteractionDisabled", true);
+        this.setFeatures([], "hoveredFeatures", true);
+      },
+
+      /**
+       * Allow features to be hovered, clicked and selected again.
+       * @since 2.41.0
+       */
+      enableFeatureInteraction() {
+        this.set("featureInteractionDisabled", false);
       },
 
       /**
@@ -322,6 +342,7 @@ define([
        * An array of feature objects selected directly from the map view.
        */
       setHoveredFeatures: function (features) {
+        if (this.get("featureInteractionDisabled")) return;
         this.setFeatures(features, "hoveredFeatures", true);
       },
 
@@ -342,7 +363,7 @@ define([
        * view.
        */
       selectFeatures: function (features) {
-        const model = this;
+        if (this.get("featureInteractionDisabled")) return;
         this.setFeatures(features, "selectedFeatures", true);
       },
 

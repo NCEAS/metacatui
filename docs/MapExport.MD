@@ -28,7 +28,7 @@ An **Export Map** link appears in the map toolbar, below **Download**. Clicking 
 - A **live preview** of the legend, scale bar and north arrow is drawn inside the frame. It is drawn by the same code that draws the saved image, so the preview matches the result.
 - The camera is locked to a **top-down view**. The user can pan, zoom and rotate the heading (right-drag, or Ctrl+left-drag). Tilting and looking around are disabled.
 - The toolbar link column and the status bar become 75% transparent so more of the map is visible, and return to opaque on hover or keyboard focus. Link tooltips get the suffix "(Not shown in export)", except the pinned Export link. The **Download** link is disabled, with the tooltip suffix "(Unavailable while exporting)".
-- The on-screen legend, the feature info box and the layer details box are hidden, because the export has its own legend and these would cover the frame.
+- The on-screen legend, the feature info box and the layer details box are hidden, because the export has its own legend and these would cover the frame. Features on the map cannot be hovered, clicked or selected: the cursor does not change to a pointer, clicking does nothing, and the URL's feature selection is not changed. An existing selection is kept, and it is shown again when export mode ends.
 - The Export panel shows the output size in pixels, and notices such as "N layers did not fit in the legend", "the scale bar will be left out" or "the resolution will be reduced to fit within this device's memory limits".
 
 **Save PNG** produces a file named `map-export-YYYYMMDD-HHMMSS.png`. The image is the frame rendered at up to 2× the on-screen resolution. Its legend, scale bar and north arrow sit on the map. Below the map there is a white band for any legend entries that did not fit, and a band of data citations.
@@ -331,6 +331,17 @@ The wait is done twice: first for the preview tiles at the on-screen resolution,
 **Re-render the Cesium scene instead of capturing the page.** A page screenshot is limited to the screen resolution and cannot render the overlay at a different scale. Re-rendering at a multiple of the resolution, with the screen-space error divided by the same factor, produces real extra detail. The canvas does not preserve its drawing buffer, so `renderTo` renders and hands the canvas to a callback that must copy it synchronously.
 
 **Lock the camera to a top-down view.** A map with a scale bar and a north arrow only makes sense when viewed from above. The lock is implemented by disabling tilt and look, correcting drift in `enforceTopDown`, and overriding the pitch of programmatic flights. Heading rotation uses custom pointer bindings (right-drag and Ctrl+left-drag) because Cesium's right-drag is used for zoom; the right-drag zoom binding is removed while locked. The saved controller settings are restored on exit.
+
+**Hide the on-screen panels, and make features non-interactive, while exporting.** The export draws its own legend, and the legend, feature info box and layer details box sit over the map and would cover the frame. The controller adds the class `map-view--export-mode` to the map view, and [map-view.css](../src/css/map-view.css) sets `display: none` on `.legend-container`, `.map-view__feature-info-container` and `.map-view__layer-details-container`. The overlay view does not change these panels. Hiding with CSS clears no selection state and removes no view.
+
+Features are made non-interactive rather than leaving the feature info box open over the map, so it cannot block the frame or overlay. The controller calls `disableFeatureInteraction()` on the map's `MapInteraction` model when export mode starts and `enableFeatureInteraction()` when it ends. While disabled, `MapInteraction` ignores clicks (`handleClick`), `setHoveredFeatures` and `selectFeatures`, and clears the hovered features. This has these effects:
+
+- The map cursor never becomes a pointer, because `CesiumWidgetView.updateCursor` follows the hovered features.
+- Clicking a feature does not select it, zoom to it or open the feature info box.
+- Nothing writes a selection to the URL, because the URL sync listens to the selected features. Because the check is in `selectFeatures`, it also covers selection by search, the viewfinder and URL restore, not only clicks.
+- A feature that was already selected stays selected, and is not written to or removed from the URL. Its feature info box reappears when export mode ends.
+
+The selection silhouettes that Cesium draws on 3D tiles are handled separately, by `applyCleanScene()`, which hides them while the image is rendered.
 
 **Progress-based settling with a stall limit.** A fixed time limit was either too short for large 3D tilesets or too long when nothing was loading (see the bug fixes). Measuring progress means a slow but moving load keeps going, and a stuck one ends quickly.
 

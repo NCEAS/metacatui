@@ -261,6 +261,14 @@ define([
         expect(controller.getFrame().width).to.be.above(0);
       });
 
+      it("disables feature interaction only while in export mode", () => {
+        const interactions = model.get("interactions");
+        toolbar.pinSection("export");
+        expect(interactions.get("featureInteractionDisabled")).to.be.true;
+        pressEscape();
+        expect(interactions.get("featureInteractionDisabled")).to.be.false;
+      });
+
       it("leaves export mode on Escape", () => {
         toolbar.pinSection("export");
         pressEscape();

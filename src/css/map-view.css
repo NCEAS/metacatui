@@ -3154,8 +3154,9 @@ other class: .ui-slider-range */
   opacity: 1;
 }
 
-/* The export has its own legend, and the details and feature info boxes would
-   cover the frame. */
+/* The export has its own legend. The feature info box would cover the frame and
+   the layer details box would cover the Export panel. Features cannot be selected
+   in export mode, so the feature info box can only show an earlier selection. */
 .map-view--export-mode .legend-container,
 .map-view--export-mode .map-view__feature-info-container,
 .map-view--export-mode .map-view__layer-details-container {
