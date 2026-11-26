@@ -3,8 +3,9 @@
 /**
  * Draws the white bands below the exported frame: the overflowed legend and
  * the data citations.
- * @module views/maps/export/canvas/painters/CitationsPainter
- * @since 2.41.0
+ * @module CitationsPainter
+ * @classcategory Views/Maps/Export/Canvas/Painters
+ * @since 0.0.0
  */
 define([
   "views/maps/export/constants",

@@ -4,8 +4,9 @@
  * Captures the map as a PNG: renders the Cesium scene at a higher resolution,
  * crops it to the export frame, and draws the legend, scale bar, north arrow
  * and the white bands below the frame.
- * @module views/maps/export/canvas/MapExporter
- * @since 2.41.0
+ * @module MapExporter
+ * @classcategory Views/Maps/Export/Canvas
+ * @since 0.0.0
  */
 define([
   "common/CanvasTextUtilities",

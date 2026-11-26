@@ -4,8 +4,9 @@
  * Pure placement of the scale bar and north arrow in the lower right corner of
  * the frame, next to the legend. The two are laid out together because the
  * arrangement depends on how much room the legend leaves.
- * @module views/maps/export/canvas/layout/PlacementLayout
- * @since 2.41.0
+ * @module PlacementLayout
+ * @classcategory Views/Maps/Export/Canvas/Layout
+ * @since 0.0.0
  */
 define(["views/maps/export/constants"], (constants) => {
   const { STYLE } = constants;

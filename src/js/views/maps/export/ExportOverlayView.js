@@ -43,10 +43,11 @@ define([
    * a dashed outline of the frame, and a preview of the legend, scale bar and
    * north arrow drawn with the same code that draws the saved image. Also
    * provides the mask that covers the map while the image is being created.
-   * @classcategory Views/Maps
+   * @classcategory Views/Maps/Export
    * @name ExportOverlayView
    * @augments Backbone.View
-   * @since 2.41.0
+   * @screenshot views/maps/export/ExportOverlayView.png
+   * @since 0.0.0
    * @constructs
    * @fires ExportOverlayView#summary
    * @fires ExportOverlayView#cancel

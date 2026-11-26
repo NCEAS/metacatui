@@ -33,10 +33,11 @@ define(["backbone"], (Backbone) => {
    * of the image and anything that will be left out or reduced, and has the Save
    * and Cancel buttons. It does not change the map; the
    * {@link MapExportController} listens to its events.
-   * @classcategory Views/Maps
+   * @classcategory Views/Maps/Export
    * @name ExportPanelView
    * @augments Backbone.View
-   * @since 2.41.0
+   * @screenshot views/maps/export/ExportPanelView.png
+   * @since 0.0.0
    * @constructs
    * @fires ExportPanelView#save
    * @fires ExportPanelView#cancel

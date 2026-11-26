@@ -5,8 +5,9 @@
  * drawn for an export. Nothing here touches the DOM; text is measured through
  * a `measure(text, fontPx, bold)` function so the logic can be tested without
  * a canvas. All lengths are CSS pixels unless stated otherwise.
- * @module views/maps/export/canvas/layout/ExportLayout
- * @since 2.41.0
+ * @module ExportLayout
+ * @classcategory Views/Maps/Export/Canvas/Layout
+ * @since 0.0.0
  */
 define([
   "views/maps/export/constants",

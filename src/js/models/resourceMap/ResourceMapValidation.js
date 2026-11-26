@@ -2,7 +2,9 @@
 
 /**
  * Check Resource Map identity, structure, documentation, dates, and provenance.
+ * @category Models/ResourceMap
  * @module ResourceMapValidation
+ * @classcategory Models/ResourceMap
  * @since 2.39.0
  */
 

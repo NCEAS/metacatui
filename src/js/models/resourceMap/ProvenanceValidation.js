@@ -4,7 +4,9 @@
  * Check provenance relationships that MetacatUI cannot read or edit safely
  * through methods that use PIDs instead of exact RDF nodes.
  * @since 2.39.0
+ * @category Models/ResourceMap
  * @module ProvenanceValidation
+ * @classcategory Models/ResourceMap
  */
 
 define([

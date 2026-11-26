@@ -3,8 +3,9 @@
 /**
  * Draws the parts of the export that sit on top of the map: the legend, scale
  * bar and north arrow. Shared by the live preview and the saved image.
- * @module views/maps/export/canvas/painters/FramePainter
- * @since 2.41.0
+ * @module FramePainter
+ * @classcategory Views/Maps/Export/Canvas/Painters
+ * @since 0.0.0
  */
 define([
   "views/maps/export/constants",

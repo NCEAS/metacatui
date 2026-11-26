@@ -5,7 +5,7 @@ define([], () => {
    * Helpers for measuring and wrapping text drawn on a canvas.
    * @namespace CanvasTextUtilities
    * @classcategory Common
-   * @since 2.41.0
+   * @since 0.0.0
    */
   const CanvasTextUtilities = {
     /**

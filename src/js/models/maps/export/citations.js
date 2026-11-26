@@ -2,8 +2,9 @@
 
 /**
  * Reads the source attributions for the map export from the Map model.
- * @module models/maps/export/citations
- * @since 2.41.0
+ * @module citations
+ * @classcategory Models/Maps/Export
+ * @since 0.0.0
  */
 define(["common/HtmlUtilities"], (HtmlUtilities) => {
   const { htmlToText } = HtmlUtilities;

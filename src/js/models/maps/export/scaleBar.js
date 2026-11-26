@@ -3,8 +3,9 @@
 /**
  * Chooses a "nice" scale bar length. Uses the same table as the on-screen
  * {@link ScaleBarView}.
- * @module models/maps/export/scaleBar
- * @since 2.41.0
+ * @module scaleBar
+ * @classcategory Models/Maps/Export
+ * @since 0.0.0
  */
 define([], () => {
   const DISTANCES = [

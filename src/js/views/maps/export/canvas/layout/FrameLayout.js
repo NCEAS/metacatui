@@ -4,8 +4,9 @@
  * Pure geometry for the export frame: where it sits, how much the drawing
  * buffer is enlarged, and which part of it is kept. Nothing here touches the
  * DOM. All lengths are CSS pixels unless stated otherwise.
- * @module views/maps/export/canvas/layout/FrameLayout
- * @since 2.41.0
+ * @module FrameLayout
+ * @classcategory Views/Maps/Export/Canvas/Layout
+ * @since 0.0.0
  */
 define(["views/maps/export/constants"], (constants) => {
   const { EXPORT_FRAME_INSET, EXPORT_MAX_PIXELS } = constants;

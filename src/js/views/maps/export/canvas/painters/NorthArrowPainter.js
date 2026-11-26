@@ -2,8 +2,9 @@
 
 /**
  * Draws the north arrow.
- * @module views/maps/export/canvas/painters/NorthArrowPainter
- * @since 2.41.0
+ * @module NorthArrowPainter
+ * @classcategory Views/Maps/Export/Canvas/Painters
+ * @since 0.0.0
  */
 define(["views/maps/export/constants"], (constants) => {
   const { STYLE, FONT_FAMILY } = constants;

@@ -3,27 +3,28 @@
 /**
  * Constants for the map export tool. Lengths in `STYLE` are CSS pixels at
  * scale 1; the painters multiply them by the scale they are given.
- * @module views/maps/export/constants
- * @since 2.41.0
+ * @module constants
+ * @classcategory Views/Maps/Export
+ * @since 0.0.0
  */
 define([], () => {
-  /** @type {number} Times the on-screen drawing buffer. */
+  /** Times the on-screen drawing buffer. */
   const EXPORT_RESOLUTION_MULTIPLIER = 2;
-  /** @type {number} Maximum pixels in the Cesium canvas or the output. */
+  /** Maximum pixels in the Cesium canvas or the output. */
   const EXPORT_MAX_PIXELS = 64e6;
-  /** @type {number} Narrowest frame (CSS px) that can be exported. */
+  /** Narrowest frame (CSS px) that can be exported. */
   const EXPORT_MIN_FRAME_PX = 320;
-  /** @type {number} Longest total wait for the map data to load. */
+  /** Longest total wait for the map data to load. */
   const EXPORT_SETTLE_TIMEOUT_MS = 180000;
-  /** @type {number} How long loading may go without any progress. */
+  /** How long loading may go without any progress. */
   const EXPORT_SETTLE_STALL_MS = 20000;
   const EXPORT_SETTLE_STABLE_FRAMES = 3;
   const EXPORT_QUIET_MS = 500;
-  /** @type {number} Allowed pitch/roll deviation from top-down, in degrees. */
+  /** Allowed pitch/roll deviation from top-down, in degrees. */
   const EXPORT_LEVEL_TOLERANCE_DEG = 0.5;
-  /** @type {number} Heading change per horizontal pixel of a rotate drag. */
+  /** Heading change per horizontal pixel of a rotate drag. */
   const EXPORT_HEADING_RAD_PER_PX = 0.005;
-  /** @type {number} Factor applied to the resolution multiplier on retry. */
+  /** Factor applied to the resolution multiplier on retry. */
   const EXPORT_RETRY_FACTOR = 0.75;
   const EXPORT_MAX_RETRIES = 2;
   const LEGEND_MAX_HEIGHT_FRACTION = 0.5;
@@ -31,7 +32,7 @@ define([], () => {
   const LEGEND_MIN_FONT_PX = 10;
 
   const EXPORT_BACKGROUND_COLOR = "#ffffff";
-  /** @type {number} Gap (CSS px) between the sidebar/edges and the frame. */
+  /** Gap (CSS px) between the sidebar/edges and the frame. */
   const EXPORT_FRAME_INSET = 12;
 
   const FONT_FAMILY =

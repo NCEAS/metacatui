@@ -83,9 +83,9 @@ define([
    * States: "idle" (not exporting), "active" (the user is positioning the map)
    * and "capturing" (the image is being created; the map and the toolbar are
    * locked, and Cancel or Escape aborts).
-   * @classcategory Views/Maps
+   * @classcategory Views/Maps/Export
    * @name MapExportController
-   * @since 2.41.0
+   * @since 0.0.0
    */
   class MapExportController {
     /**

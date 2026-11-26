@@ -2,8 +2,9 @@
 
 /**
  * Draws the scale bar: a bracket with the distance beside or above it.
- * @module views/maps/export/canvas/painters/ScaleBarPainter
- * @since 2.41.0
+ * @module ScaleBarPainter
+ * @classcategory Views/Maps/Export/Canvas/Painters
+ * @since 0.0.0
  */
 define(["views/maps/export/constants"], (constants) => {
   const { STYLE, FONT_FAMILY } = constants;

@@ -4,8 +4,9 @@
  * Pure layout math for the legend: measures each entry and packs the entries
  * into columns. Text is measured through a `measure(text, fontPx, bold)`
  * function so the logic can be tested without a canvas.
- * @module views/maps/export/canvas/layout/LegendLayout
- * @since 2.41.0
+ * @module LegendLayout
+ * @classcategory Views/Maps/Export/Canvas/Layout
+ * @since 0.0.0
  */
 define([
   "common/CanvasTextUtilities",

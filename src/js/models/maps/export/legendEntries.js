@@ -3,8 +3,9 @@
 /**
  * Reads the legend content for the map export from the Map model, without
  * changing any model state.
- * @module models/maps/export/legendEntries
- * @since 2.41.0
+ * @module legendEntries
+ * @classcategory Models/Maps/Export
+ * @since 0.0.0
  */
 define(["common/HtmlUtilities", "common/ValueUtilities"], (
   HtmlUtilities,
@@ -18,8 +19,8 @@ define(["common/HtmlUtilities", "common/ValueUtilities"], (
    * @property {string} name The layer name, with the palette property in
    * parentheses when there is one.
    * @property {'categorical'|'continuous'} type
-   * @property {{label: string, css: string}[]} [categories] Categorical only.
-   * @property {{offset: number, css: string}[]} [stops] Continuous only,
+   * @property {Array<{label: string, css: string}>} [categories] Categorical only.
+   * @property {Array<{offset: number, css: string}>} [stops] Continuous only,
    * ordered from the top (min) to the bottom (max) of the gradient.
    * @property {string[]} [labels] Continuous only: min, mid and max labels.
    */

@@ -5,7 +5,7 @@ define([], () => {
    * Helpers for working with HTML strings.
    * @namespace HtmlUtilities
    * @classcategory Common
-   * @since 2.41.0
+   * @since 0.0.0
    */
   const HtmlUtilities = {
     /**

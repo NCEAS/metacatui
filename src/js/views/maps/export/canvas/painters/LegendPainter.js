@@ -3,8 +3,9 @@
 /**
  * Draws a legend layout produced by `LegendLayout.layoutLegend`. Draws in CSS
  * pixels: the caller sets the context's transform to scale the drawing.
- * @module views/maps/export/canvas/painters/LegendPainter
- * @since 2.41.0
+ * @module LegendPainter
+ * @classcategory Views/Maps/Export/Canvas/Painters
+ * @since 0.0.0
  */
 define(["views/maps/export/constants"], (constants) => {
   const { STYLE, FONT_FAMILY } = constants;

@@ -2,8 +2,9 @@
 
 /**
  * Pure layout math for the sources text below the frame.
- * @module views/maps/export/canvas/layout/CitationsLayout
- * @since 2.41.0
+ * @module CitationsLayout
+ * @classcategory Views/Maps/Export/Canvas/Layout
+ * @since 0.0.0
  */
 define([
   "common/CanvasTextUtilities",
